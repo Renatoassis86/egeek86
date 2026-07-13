@@ -1,0 +1,9 @@
+node_modules
+.next
+.vercel
+out
+build
+drizzle/migrations
+*.lock
+package-lock.json
+.env*

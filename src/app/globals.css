@@ -1,0 +1,351 @@
+/* ===========================================================
+ * Espaço Geek 86 — globals.css
+ *
+ * Tailwind v4 com @theme:
+ * - CSS variables são a única fonte de verdade
+ * - Tokens TS (design-system/tokens) espelham estas vars
+ * - Trocar de tema = trocar [data-theme] no <html>
+ * =========================================================== */
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Variantes customizadas */
+@custom-variant dark ([data-theme="dark"] &);
+@custom-variant light ([data-theme="light"] &);
+@custom-variant hover-supported (@media (hover: hover) { &:hover });
+
+/* ===========================================================
+ * @theme — tokens consumidos pelo Tailwind como utilities.
+ * Tudo aqui vira class disponível (bg-bg-canvas, text-display-xl, etc).
+ * =========================================================== */
+@theme {
+  /* ---------- COLORS (defaults, override por [data-theme]) ---------- */
+  --color-bg-canvas: #0A0A0F;
+  --color-bg-surface: #13131A;
+  --color-bg-elevated: #1C1C26;
+  --color-bg-inset: #08080C;
+  --color-bg-overlay: rgb(10 10 15 / 0.72);
+
+  --color-text-primary: #F5F5F7;
+  --color-text-secondary: #A1A1AA;
+  --color-text-tertiary: #71717A;
+  --color-text-inverse: #0A0A0F;
+  --color-text-disabled: #52525B;
+
+  --color-border-subtle: #1F1F28;
+  --color-border-default: #26262F;
+  --color-border-strong: #3A3A47;
+  --color-border-focus: #A855F7;
+
+  --color-accent-primary: #A855F7;
+  --color-accent-primary-hover: #9333EA;
+  --color-accent-primary-muted: rgb(168 85 247 / 0.12);
+  --color-accent-hype: #F59E0B;
+  --color-accent-hype-hover: #D97706;
+  --color-accent-hype-muted: rgb(245 158 11 / 0.12);
+  --color-accent-success: #10B981;
+  --color-accent-danger: #EF4444;
+  --color-accent-info: #3B82F6;
+
+  --color-rank-iniciante: #71717A;
+  --color-rank-otaku: #3B82F6;
+  --color-rank-colecionador: #A855F7;
+  --color-rank-hunter: #F59E0B;
+
+  /* ---------- TYPOGRAPHY ---------- */
+  --font-display: var(--font-sans-display), system-ui, sans-serif;
+  --font-body: var(--font-sans-body), system-ui, sans-serif;
+  --font-mono: var(--font-sans-mono), ui-monospace, monospace;
+
+  /* font-size --text-* → também aceita line-height/tracking/weight via custom modifiers */
+  --text-display-2xl: 72px;
+  --text-display-2xl--line-height: 76px;
+  --text-display-2xl--letter-spacing: -0.025em;
+  --text-display-2xl--font-weight: 700;
+
+  --text-display-xl: 56px;
+  --text-display-xl--line-height: 60px;
+  --text-display-xl--letter-spacing: -0.022em;
+  --text-display-xl--font-weight: 700;
+
+  --text-display-lg: 40px;
+  --text-display-lg--line-height: 44px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+
+  --text-display-md: 32px;
+  --text-display-md--line-height: 36px;
+  --text-display-md--letter-spacing: -0.015em;
+  --text-display-md--font-weight: 700;
+
+  --text-heading-xl: 28px;
+  --text-heading-xl--line-height: 34px;
+  --text-heading-xl--font-weight: 600;
+
+  --text-heading-lg: 24px;
+  --text-heading-lg--line-height: 30px;
+  --text-heading-lg--font-weight: 600;
+
+  --text-heading-md: 20px;
+  --text-heading-md--line-height: 26px;
+  --text-heading-md--font-weight: 600;
+
+  --text-heading-sm: 18px;
+  --text-heading-sm--line-height: 24px;
+  --text-heading-sm--font-weight: 600;
+
+  --text-body-lg: 17px;
+  --text-body-lg--line-height: 26px;
+
+  --text-body-md: 15px;
+  --text-body-md--line-height: 22px;
+
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+
+  --text-label: 13px;
+  --text-label--line-height: 18px;
+  --text-label--letter-spacing: 0.04em;
+  --text-label--font-weight: 500;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--letter-spacing: 0.02em;
+  --text-caption--font-weight: 500;
+
+  --text-mono-lg: 32px;
+  --text-mono-lg--line-height: 36px;
+  --text-mono-lg--font-weight: 500;
+
+  --text-mono-md: 15px;
+  --text-mono-md--line-height: 22px;
+  --text-mono-md--font-weight: 500;
+
+  --text-mono-sm: 13px;
+  --text-mono-sm--line-height: 18px;
+  --text-mono-sm--font-weight: 500;
+
+  /* ---------- RADII ---------- */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+
+  /* ---------- SHADOWS ---------- */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.40);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.45);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.55);
+  --shadow-xl: 0 24px 56px rgb(0 0 0 / 0.65);
+  --shadow-card: 0 4px 12px rgb(0 0 0 / 0.40);
+  --shadow-card-hover: 0 12px 28px rgb(0 0 0 / 0.55);
+  --shadow-glow-primary: 0 0 24px rgb(168 85 247 / 0.35);
+  --shadow-glow-hype: 0 0 24px rgb(245 158 11 / 0.35);
+  --shadow-glow-success: 0 0 20px rgb(16 185 129 / 0.30);
+  --shadow-glow-danger: 0 0 20px rgb(239 68 68 / 0.30);
+
+  /* ---------- MOTION ---------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-medium: 400ms;
+  --duration-slow: 600ms;
+  --duration-cinematic: 800ms;
+
+  /* ---------- LAYOUT ---------- */
+  --container-7xl: 1280px;
+  --header-mobile: 56px;
+  --header-desktop: 72px;
+  --bottom-tab-bar: 64px;
+}
+
+/* ===========================================================
+ * Light theme override
+ * =========================================================== */
+[data-theme="light"] {
+  --color-bg-canvas: #FAFAFA;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-inset: #F4F4F5;
+  --color-bg-overlay: rgb(0 0 0 / 0.40);
+
+  --color-text-primary: #0A0A0F;
+  --color-text-secondary: #52525B;
+  --color-text-tertiary: #71717A;
+  --color-text-inverse: #FFFFFF;
+  --color-text-disabled: #A1A1AA;
+
+  --color-border-subtle: #F4F4F5;
+  --color-border-default: #E4E4E7;
+  --color-border-strong: #D4D4D8;
+
+  --color-accent-primary: #9333EA;
+  --color-accent-primary-hover: #7E22CE;
+  --color-accent-primary-muted: rgb(147 51 234 / 0.08);
+  --color-accent-hype: #D97706;
+  --color-accent-hype-muted: rgb(217 119 6 / 0.08);
+
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 8px 24px rgb(0 0 0 / 0.10);
+}
+
+/* ===========================================================
+ * Base styles
+ * =========================================================== */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  [data-theme="light"] {
+    color-scheme: light;
+  }
+
+  *, *::before, *::after {
+    border-color: var(--color-border-default);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--color-bg-canvas);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-feature-settings: "cv11", "ss01", "ss03";
+    overflow-x: hidden;
+    min-height: 100dvh;
+  }
+
+  /* Selection */
+  ::selection {
+    background: var(--color-accent-primary-muted);
+    color: var(--color-text-primary);
+  }
+
+  /* Scrollbar (webkit) */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-bg-canvas); }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-default);
+    border-radius: var(--radius-xs);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-border-strong); }
+
+  /* Focus visible global */
+  :focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-xs);
+  }
+
+  /* Headings */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--color-text-primary);
+  }
+
+  /* Inputs herdam tipografia */
+  input, textarea, select, button {
+    font-family: inherit;
+  }
+
+  /* Tabular numerais para preços/timers */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* ===========================================================
+ * Utilities customizadas
+ * =========================================================== */
+@layer utilities {
+  /* Safe area (iOS notch / Android nav bar) */
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pl-safe { padding-left: env(safe-area-inset-left); }
+  .pr-safe { padding-right: env(safe-area-inset-right); }
+
+  .h-safe-bottom { height: env(safe-area-inset-bottom); }
+
+  /* Touch target enforcement */
+  .min-h-touch { min-height: 44px; }
+  .min-w-touch { min-width: 44px; }
+  .min-touch { min-width: 44px; min-height: 44px; }
+
+  /* Layout helpers */
+  .h-svh { height: 100svh; }
+  .h-dvh { height: 100dvh; }
+  .min-h-dvh { min-height: 100dvh; }
+
+  /* Skeleton shimmer */
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-bg-surface) 0%,
+      var(--color-bg-elevated) 50%,
+      var(--color-bg-surface) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Subtle pulse para drop timer ao vivo */
+  .pulse-live {
+    animation: pulse-live 1s var(--ease-in-out) infinite;
+  }
+  @keyframes pulse-live {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+  }
+
+  /* Glow utilities expostas como class */
+  .glow-primary { box-shadow: var(--shadow-glow-primary); }
+  .glow-hype    { box-shadow: var(--shadow-glow-hype); }
+
+  /* Gradient holográfico para tier Legend */
+  .text-rank-legend {
+    background: conic-gradient(
+      from 180deg at 50% 50%,
+      #A855F7, #F59E0B, #10B981, #3B82F6, #A855F7
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: hue-rotate 8s linear infinite;
+  }
+  @keyframes hue-rotate {
+    to { filter: hue-rotate(360deg); }
+  }
+
+  /* No-scroll quando drawer/modal aberto */
+  .no-scroll { overflow: hidden; }
+}
+
+/* ===========================================================
+ * Reduce motion
+ * =========================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
