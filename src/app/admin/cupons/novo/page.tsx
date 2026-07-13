@@ -1,6 +1,10 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { listNetworks } from '@/server/queries/affiliate';
 import { createCoupon } from '@/server/actions/affiliate';
@@ -10,78 +14,67 @@ export default async function NewCouponPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <Text as="h1" variant="heading-xl">
-        Novo cupom
-      </Text>
+      <div className="flex flex-col gap-1">
+        <Button asChild variant="ghost" size="sm" className="w-fit -ml-2 text-[var(--color-text-secondary)]">
+          <Link href="/admin/cupons">
+            <ArrowLeft className="size-4" />
+            Cupons
+          </Link>
+        </Button>
+        <Text as="h1" variant="heading-xl">
+          Novo cupom
+        </Text>
+      </div>
 
       <Card className="max-w-xl">
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <form action={createCoupon} className="flex flex-col gap-4">
-            <div>
-              <label className="text-body-sm text-[var(--color-text-secondary)] mb-1 block" htmlFor="networkId">
-                Rede
-              </label>
-              <select
-                id="networkId"
-                name="networkId"
-                required
-                className="flex h-11 w-full rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] px-4 text-[15px] text-[var(--color-text-primary)]"
-              >
-                <option value="">Selecione...</option>
-                {networks.map((network) => (
-                  <option key={network.id} value={network.id}>
-                    {network.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Field label="Rede" htmlFor="networkId" required>
+              <Select name="networkId" required>
+                <SelectTrigger id="networkId">
+                  <SelectValue placeholder="Selecione..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {networks.map((network) => (
+                    <SelectItem key={network.id} value={network.id}>
+                      {network.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
 
-            <div>
-              <label className="text-body-sm text-[var(--color-text-secondary)] mb-1 block" htmlFor="code">
-                Código do cupom
-              </label>
+            <Field label="Código do cupom" htmlFor="code" required>
               <Input id="code" name="code" placeholder="GEEK10" required />
-            </div>
+            </Field>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-body-sm text-[var(--color-text-secondary)] mb-1 block" htmlFor="discountType">
-                  Tipo de desconto
-                </label>
-                <select
-                  id="discountType"
-                  name="discountType"
-                  required
-                  className="flex h-11 w-full rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] px-4 text-[15px] text-[var(--color-text-primary)]"
-                >
-                  <option value="percentage">% (percentual)</option>
-                  <option value="fixed">R$ (fixo)</option>
-                  <option value="free_shipping">Frete grátis</option>
-                </select>
-              </div>
-              <div>
-                <label className="text-body-sm text-[var(--color-text-secondary)] mb-1 block" htmlFor="discountValue">
-                  Valor
-                </label>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field label="Tipo de desconto" htmlFor="discountType" required>
+                <Select name="discountType" defaultValue="percentage" required>
+                  <SelectTrigger id="discountType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">% (percentual)</SelectItem>
+                    <SelectItem value="fixed">R$ (fixo)</SelectItem>
+                    <SelectItem value="free_shipping">Frete grátis</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Valor" htmlFor="discountValue" required>
                 <Input id="discountValue" name="discountValue" placeholder="10" required />
-              </div>
+              </Field>
             </div>
 
-            <div>
-              <label className="text-body-sm text-[var(--color-text-secondary)] mb-1 block" htmlFor="validUntil">
-                Válido até (opcional)
-              </label>
+            <Field label="Válido até (opcional)" htmlFor="validUntil">
               <Input id="validUntil" name="validUntil" type="date" />
-            </div>
+            </Field>
 
-            <div>
-              <label className="text-body-sm text-[var(--color-text-secondary)] mb-1 block" htmlFor="description">
-                Descrição (opcional)
-              </label>
+            <Field label="Descrição (opcional)" htmlFor="description">
               <Input id="description" name="description" placeholder="10% off em toda a loja" />
-            </div>
+            </Field>
 
-            <Button type="submit" className="w-fit">
+            <Button type="submit" size="lg" fullWidth className="sm:w-fit">
               Criar cupom
             </Button>
           </form>

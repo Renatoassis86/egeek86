@@ -74,7 +74,7 @@ export function WhatsappMessageDrawer(props: WhatsappMessageDrawerProps) {
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button variant="hype" leftIcon={<MessageSquareText className="size-4" />}>
+        <Button variant="hype" fullWidth className="sm:w-fit" leftIcon={<MessageSquareText className="size-4" />}>
           Gerar mensagem WhatsApp
         </Button>
       </DrawerTrigger>

@@ -40,15 +40,17 @@ export default async function AdminNetworksPage() {
         )}
         {networks.map((network) => (
           <Card key={network.id}>
-            <CardContent className="flex items-center justify-between gap-4 p-4">
-              <div className="flex items-center gap-3">
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+              <div className="flex min-w-0 items-center gap-3">
                 <span
-                  className="size-3 rounded-full"
+                  className="size-3 shrink-0 rounded-full"
                   style={{ backgroundColor: network.colorHex ?? 'var(--color-text-tertiary)' }}
                   aria-hidden
                 />
-                <div>
-                  <Text variant="body-md">{network.name}</Text>
+                <div className="min-w-0">
+                  <Text variant="body-md" className="line-clamp-1">
+                    {network.name}
+                  </Text>
                   <Text variant="caption" color="tertiary">
                     {network.slug}
                   </Text>

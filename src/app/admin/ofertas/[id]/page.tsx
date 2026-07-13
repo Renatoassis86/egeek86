@@ -1,8 +1,12 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { WhatsappMessageDrawer } from '@/components/affiliate/whatsapp-message-drawer';
 import { formatBRL } from '@/lib/format';
@@ -33,8 +37,14 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <Text as="h1" variant="heading-xl">
+      <div className="flex flex-col gap-1">
+        <Button asChild variant="ghost" size="sm" className="w-fit -ml-2 text-[var(--color-text-secondary)]">
+          <Link href="/admin/ofertas">
+            <ArrowLeft className="size-4" />
+            Ofertas
+          </Link>
+        </Button>
+        <Text as="h1" variant="heading-xl" className="break-words">
           {offer.title}
         </Text>
         <Text variant="body-sm" color="secondary" className="mt-1">
@@ -42,7 +52,7 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
         </Text>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
           <CardContent className="p-5">
             <Text variant="caption" color="tertiary">
@@ -132,36 +142,36 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
               {offer.masterProduct.gameCollection && <Badge variant="default">{offer.masterProduct.gameCollection}</Badge>}
             </div>
 
-            <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
               <form action={reclassifyMasterProduct}>
                 <input type="hidden" name="masterProductId" value={offer.masterProduct.id} />
                 <input type="hidden" name="offerId" value={offer.id} />
-                <Button type="submit" variant="secondary" size="sm">
+                <Button type="submit" variant="secondary" size="sm" fullWidth className="sm:w-fit">
                   Reclassificar via API
                 </Button>
               </form>
 
-              <form action={correctGameEditionType} className="flex items-end gap-2">
+              <form
+                action={correctGameEditionType}
+                className="flex flex-col gap-2 sm:flex-row sm:items-end"
+              >
                 <input type="hidden" name="masterProductId" value={offer.masterProduct.id} />
                 <input type="hidden" name="offerId" value={offer.id} />
-                <div>
-                  <label className="text-caption text-[var(--color-text-tertiary)] mb-1 block" htmlFor="gameEditionType">
-                    Corrigir tipo de edição
-                  </label>
-                  <select
-                    id="gameEditionType"
-                    name="gameEditionType"
-                    defaultValue={offer.masterProduct.gameEditionType}
-                    className="flex h-9 rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] px-3 text-body-sm text-[var(--color-text-primary)]"
-                  >
-                    {EDITION_TYPE_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <Button type="submit" variant="secondary" size="sm">
+                <Field label="Corrigir tipo de edição" htmlFor="gameEditionType" className="sm:w-56">
+                  <Select name="gameEditionType" defaultValue={offer.masterProduct.gameEditionType}>
+                    <SelectTrigger id="gameEditionType" size="sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {EDITION_TYPE_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
+                <Button type="submit" variant="secondary" size="sm" fullWidth className="sm:w-fit">
                   Salvar correção
                 </Button>
               </form>

@@ -165,6 +165,43 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   return rows.map(toOfferWithRelations);
 }
 
+export interface AdminOffersFilter {
+  gameFormat?: GameFormat;
+  gamePlatformGen?: GamePlatformGen;
+  gameEditionType?: GameEditionType;
+  networkId?: string;
+  status?: AffiliateOffer['status'];
+  sortBy?: 'recent' | 'price_asc' | 'price_desc';
+}
+
+/**
+ * Admin — mesma composição de filtros de listRankedOffers (formato/geração/
+ * tipo de edição/rede), mas SEM travar status='active': a tela de gestão
+ * precisa mostrar rascunho/pausada/expirada/arquivada também, não só o que já
+ * está na vitrine. Status vira só mais um filtro opcional (nenhum = todas).
+ */
+export async function listOffersForAdminFiltered(filter: AdminOffersFilter = {}): Promise<OfferWithRelations[]> {
+  const conditions: SQL[] = [];
+  if (filter.status) conditions.push(eq(affiliateOffers.status, filter.status));
+  if (filter.gameFormat) conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
+  if (filter.gamePlatformGen) conditions.push(eq(masterProducts.gamePlatformGen, filter.gamePlatformGen));
+  if (filter.gameEditionType) conditions.push(eq(masterProducts.gameEditionType, filter.gameEditionType));
+  if (filter.networkId) conditions.push(eq(affiliateOffers.networkId, filter.networkId));
+
+  const orderColumn =
+    filter.sortBy === 'price_asc'
+      ? asc(affiliateOffers.currentPriceCents)
+      : filter.sortBy === 'price_desc'
+        ? desc(affiliateOffers.currentPriceCents)
+        : desc(affiliateOffers.createdAt);
+
+  const rows = await baseOfferQuery()
+    .where(and(...conditions))
+    .orderBy(orderColumn);
+
+  return rows.map(toOfferWithRelations);
+}
+
 export async function listNetworks(): Promise<AffiliateNetwork[]> {
   return db.select().from(affiliateNetworks).orderBy(affiliateNetworks.name);
 }
@@ -292,6 +329,83 @@ export async function getOfferMetrics(offerId: string): Promise<OfferMetrics | n
   };
 }
 
+export interface OfferListingMetrics {
+  /** Preço do snapshot mais recente (pode divergir por segundos do cache em affiliate_offers.current_price_cents). */
+  currentPriceCents: number;
+  lowestPriceCents: number;
+  isLowestEver: boolean;
+  /** "Preço de tabela" do snapshot mais recente (quando a fonte informou original_price/list price). */
+  listPriceCents: number | null;
+  /** % de desconto vs. listPriceCents — calculado aqui quando a fonte não grava discount_percent (caso comum hoje). */
+  discountPercent: number | null;
+}
+
+/**
+ * Versão em lote de métricas pra grades de cards (evita 1 query por oferta ao
+ * renderizar a vitrine) — cobre só o que os cards precisam: menor preço
+ * histórico e desconto vs. preço de tabela do snapshot mais recente. Pra
+ * métricas completas (tendência, média 30d) de UMA oferta, use getOfferMetrics.
+ */
+export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<string, OfferListingMetrics>> {
+  const map = new Map<string, OfferListingMetrics>();
+  if (offerIds.length === 0) return map;
+
+  const idList = sql.join(
+    offerIds.map((id) => sql`${id}`),
+    sql`, `
+  );
+
+  const rows = await db.execute<{
+    offer_id: string;
+    current_price_cents: string;
+    list_price_cents: string | null;
+    discount_percent: string | null;
+    lowest_price_cents: string;
+  }>(sql`
+    WITH latest AS (
+      SELECT DISTINCT ON (offer_id) offer_id, price_cents, list_price_cents, discount_percent
+      FROM affiliate_price_snapshots
+      WHERE offer_id IN (${idList})
+      ORDER BY offer_id, collected_at DESC
+    ),
+    lowest AS (
+      SELECT offer_id, MIN(price_cents)::bigint AS lowest_price_cents
+      FROM affiliate_price_snapshots
+      WHERE offer_id IN (${idList})
+      GROUP BY offer_id
+    )
+    SELECT
+      latest.offer_id,
+      latest.price_cents::bigint AS current_price_cents,
+      latest.list_price_cents,
+      latest.discount_percent,
+      lowest.lowest_price_cents
+    FROM latest JOIN lowest ON latest.offer_id = lowest.offer_id
+  `);
+
+  for (const row of rows) {
+    const current = Number(row.current_price_cents);
+    const lowest = Number(row.lowest_price_cents);
+    const listPriceCents = row.list_price_cents != null ? Number(row.list_price_cents) : null;
+    const discountPercent =
+      row.discount_percent != null
+        ? Number(row.discount_percent)
+        : listPriceCents && listPriceCents > current
+          ? Math.round(((listPriceCents - current) / listPriceCents) * 100)
+          : null;
+
+    map.set(row.offer_id, {
+      currentPriceCents: current,
+      lowestPriceCents: lowest,
+      isLowestEver: current <= lowest,
+      listPriceCents,
+      discountPercent,
+    });
+  }
+
+  return map;
+}
+
 export interface AdminDashboardMetrics {
   activeOffersCount: number;
   totalOffersCount: number;
@@ -348,4 +462,36 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
     messagesThisWeek,
     couponsExpiringSoon,
   };
+}
+
+export interface DailyClicksPoint {
+  /** "YYYY-MM-DD" (dia em UTC — suficiente pra um sparkline, não precisa de fuso exato). */
+  date: string;
+  clicks: number;
+}
+
+/**
+ * Série diária de cliques em afiliado (evento 'affiliate_click') pros últimos
+ * `days` dias — usada só no mini-sparkline do dashboard. generate_series +
+ * LEFT JOIN preenche dias sem nenhum clique com 0 (sem isso, dias vazios
+ * simplesmente não apareceriam na série e distorceriam a leitura do gráfico).
+ */
+export async function getDailyClicks(days = 14): Promise<DailyClicksPoint[]> {
+  const rows = await db.execute<{ day: string; clicks: string }>(sql`
+    SELECT
+      to_char(d::date, 'YYYY-MM-DD') AS day,
+      COUNT(ae.id)::int AS clicks
+    FROM generate_series(
+      date_trunc('day', now() - make_interval(days => ${days - 1})),
+      date_trunc('day', now()),
+      interval '1 day'
+    ) AS d
+    LEFT JOIN analytics_events ae
+      ON date_trunc('day', ae.created_at) = d
+      AND ae.event_name = 'affiliate_click'
+    GROUP BY d
+    ORDER BY d
+  `);
+
+  return rows.map((row) => ({ date: row.day, clicks: Number(row.clicks) }));
 }

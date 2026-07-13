@@ -22,11 +22,13 @@ export default async function AdminMessagesPage() {
         {messages.map((message) => (
           <Card key={message.id}>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-4">
-                <Link href={`/admin/ofertas`} className="hover:underline">
-                  <Text variant="body-md">{message.offerTitle}</Text>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Link href={`/admin/ofertas`} className="min-w-0 hover:underline">
+                  <Text variant="body-md" className="line-clamp-1">
+                    {message.offerTitle}
+                  </Text>
                 </Link>
-                <Text variant="caption" color="tertiary">
+                <Text variant="caption" color="tertiary" className="shrink-0">
                   {message.createdAt.toLocaleString('pt-BR')}
                 </Text>
               </div>

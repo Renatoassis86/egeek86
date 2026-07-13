@@ -1,48 +1,39 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, Tags, Network, Ticket, MessageSquareText } from 'lucide-react';
 import { Text } from '@/components/ui/text';
-import { cn } from '@/lib/cn';
+import { AdminNavLinks } from '@/components/layout/admin-nav-links';
+import { AdminMobileNav } from '@/components/layout/admin-mobile-nav';
 
-const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/ofertas', label: 'Ofertas', icon: Tags },
-  { href: '/admin/redes', label: 'Redes', icon: Network },
-  { href: '/admin/cupons', label: 'Cupons', icon: Ticket },
-  { href: '/admin/mensagens', label: 'Mensagens', icon: MessageSquareText },
-];
+function AdminLogo() {
+  return (
+    <Link href="/" className="flex items-center gap-2">
+      <div className="size-7 shrink-0 rounded-[var(--radius-sm)] bg-gradient-to-br from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] flex items-center justify-center text-xs font-bold text-[var(--color-text-inverse)]">
+        86
+      </div>
+      <Text variant="heading-sm">Geek Deals</Text>
+    </Link>
+  );
+}
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh bg-[var(--color-bg-canvas)]">
-      <aside className="hidden w-60 shrink-0 border-r border-[var(--color-border-subtle)] p-4 lg:block">
-        <Link href="/" className="mb-6 flex items-center gap-2 px-2">
-          <div className="size-7 rounded-[var(--radius-sm)] bg-gradient-to-br from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] flex items-center justify-center text-xs font-bold text-[var(--color-text-inverse)]">
-            86
-          </div>
-          <Text variant="heading-sm">Geek Deals</Text>
-        </Link>
+    <div className="flex min-h-dvh flex-col bg-[var(--color-bg-canvas)] lg:flex-row">
+      {/* Topbar mobile — só aparece abaixo de lg, é o substituto da sidebar que
+          some no mobile (hidden lg:block). Sticky pra ficar acessível ao rolar. */}
+      <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)]/95 backdrop-blur px-3 py-2.5 pt-safe lg:hidden">
+        <AdminMobileNav />
+        <AdminLogo />
+      </header>
 
-        <nav className="flex flex-col gap-1" aria-label="Navegação admin">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-2.5 rounded-[var(--radius-sm)] px-3 h-10',
-                'text-body-sm font-medium text-[var(--color-text-secondary)]',
-                'hover:bg-[var(--color-bg-surface)] hover:text-[var(--color-text-primary)]',
-                'transition-colors duration-[var(--duration-fast)]'
-              )}
-            >
-              <item.icon className="size-4" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+      {/* Sidebar desktop — fixa, sem substituto era a lacuna original. */}
+      <aside className="hidden w-60 shrink-0 border-r border-[var(--color-border-subtle)] p-4 lg:block">
+        <div className="mb-6 px-2">
+          <AdminLogo />
+        </div>
+        <AdminNavLinks />
       </aside>
 
-      <main className="flex-1 p-4 lg:p-8">{children}</main>
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">{children}</main>
     </div>
   );
 }
