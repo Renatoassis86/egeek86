@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { collectPrices } from '@/server/collector/collect-prices';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /**
  * Disparado periodicamente por um agendador externo (Vercel Cron ou

@@ -1,0 +1,117 @@
+{
+  "_readme": [
+    "Prompts prontos pra gerar as imagens que faltam no site (Midjourney, DALL-E, Firefly, Ideogram, etc). Cole o texto de 'prompt' direto na ferramenta, no tamanho indicado em 'gerar_em_px'.",
+    "Inventário de hoje: só a página inicial tem espaços de imagem ilustrativa (mosaico da Hero, tiles de Universos, banner da Hype Zone). /ofertas, a página de cada jogo e /conta já usam 100% foto real do produto (vinda do Mercado Livre) — não têm espaço pra imagem gerada. /hype-zone e /universos/[slug] completas ainda não foram construídas (só o link existe hoje na home), então não dá pra medir o espaço exato delas ainda.",
+    "Todos os spots aqui hoje mostram um fallback atmosférico gerado por CSS (gradiente + grain + selo 'em produção', ver src/components/motion/scene-image.tsx). Assim que você tiver a imagem real, salve em public/ e passe o caminho na prop `src` do SceneImage correspondente.",
+    "IMPORTANTE sobre a seção 'universos': NÃO gere arte com IA 'no estilo de' Naruto, One Piece, Marvel, Star Wars, Pokémon ou Dragon Ball pra usar no site. São marcas registradas e obras protegidas de terceiros ativamente licenciadas, é risco jurídico real (diferente dos mascotes originais, que são só 'inspirados' no universo gamer/geek em geral, sem citar nenhuma franquia específica). A seção 'universos' abaixo usa tratamento abstrato por cor em vez de pseudo-fan-art."
+  ],
+  "estilo_global": {
+    "paleta": {
+      "dourado_principal": "#D4AF37",
+      "laranja_hype": "#E8721C",
+      "creme_texto": "#F2E9D8",
+      "preto_canvas": "#0B0908",
+      "grafite_superficie": "#161311",
+      "grafite_elevado": "#201C18"
+    },
+    "nota_tecnica": "Modelos de imagem renderizam texto/logo mal — não peça pra IA desenhar a marca 'Espaço Geek 86'. A logo real (public/geek 86.webp) é aplicada depois por cima, em pós-produção/CSS, não pela IA.",
+    "nota_dimensoes": "As imagens são exibidas via object-cover (cortam pra preencher o quadro sem distorcer). Bater a PROPORÇÃO exata importa mais do que o pixel exato — as resoluções abaixo já têm margem de sobra pra qualidade em telas retina."
+  },
+  "mascotes_originais": {
+    "_nota": "Personagens 100% originais, só 'inspirados' no universo gamer/geek em geral (arquétipos genéricos: ninja, piloto, caçadora espacial etc), nunca citando o nome de um jogo/anime/filme específico no prompt. Sem local fixo no código ainda (uso livre: cards futuros, social, banners) — por isso um único formato versátil pra todos.",
+    "gerar_em_px": "1600x2000 (proporção 4:5, retrato)",
+    "itens": [
+      {
+        "id": "mascote-speedrunner",
+        "titulo": "Corredora de velocidade retrô",
+        "prompt": "Original character concept art, a confident young woman gamer with short asymmetric black hair with gold (#D4AF37) streak highlights, wearing a fitted black racing jacket with gold trim and small circular emblem patches (no text on patches), headset around neck, holding a retro handheld console that glows gold, dynamic mid-motion pose against a dark graphite background (#161311) with soft gold rim lighting, cinematic three-quarter portrait, premium editorial illustration style, no legible text, no logos"
+      },
+      {
+        "id": "mascote-robo-arcade",
+        "titulo": "Robô guardião de arcade",
+        "prompt": "Original character concept art, a friendly retro-futuristic arcade robot mascot, matte black chassis with warm gold (#D4AF37) accent lines and glowing amber joint lights, rounded friendly proportions (not menacing), one arm shaped like an old joystick, dark moody environment with cinematic gold rim light, subtle film grain, premium editorial illustration style, no legible text, no logos"
+      },
+      {
+        "id": "mascote-cacadora-espacial",
+        "titulo": "Caçadora de recompensas espacial",
+        "prompt": "Original character concept art, a stylish space bounty huntress with a sleek black and gold (#D4AF37) tactical suit, cropped jacket with burnt-orange (#E8721C) accent stripes, holding a stylized non-violent scanner device instead of a weapon, short practical haircut, confident relaxed pose, dark background (#0B0908) with atmospheric gold and ember lighting, cinematic three-quarter portrait, premium editorial illustration style, no legible text, no logos"
+      },
+      {
+        "id": "mascote-ninja-cyber",
+        "titulo": "Ninja urbano cyber",
+        "prompt": "Original character concept art, a generic stealthy urban ninja-inspired gamer character (not based on any specific existing franchise), black streetwear hoodie with gold (#D4AF37) geometric embroidery patterns (no readable symbols), LED-accent sneakers, holding a floating holographic price-chart interface with no readable numbers, dynamic crouched pose, dark cinematic background (#0B0908) with gold and ember rim light, premium editorial illustration style, no legible text, no logos"
+      },
+      {
+        "id": "mascote-domadora-criaturas",
+        "titulo": "Exploradora e sua criatura companheira",
+        "prompt": "Original character concept art, a cheerful young explorer gamer character with a small original invented fantasy creature companion (not based on any existing franchise, round friendly shape with gold-tipped fur and ember-colored eyes), explorer outfit in black with gold (#D4AF37) buckles and a small collectible badge sash (no readable text on badges), warm adventurous pose, dark atmospheric background (#0B0908) with soft gold light, premium editorial illustration style, no legible text, no logos"
+      }
+    ]
+  },
+  "site_imagens": {
+    "hero_home": [
+      {
+        "id": "hero-tile-back",
+        "local": "src/app/(shop)/page.tsx, mosaico da Hero (tile de trás, rotacionado -3°)",
+        "gerar_em_px": "1200x1600 (proporção 3:4, retrato)",
+        "prompt": "Atmospheric editorial close-up of collectible gaming merchandise arranged artfully in soft shadow, a stylized game controller and a vinyl collectible figure partially visible, deep near-black background (#0B0908) with a single warm gold (#D4AF37) rim light from the side, extreme shallow depth of field, premium product photography, cinematic mood, subtle film grain, no legible text, no logos, no watermark, no brand names visible"
+      },
+      {
+        "id": "hero-tile-main",
+        "local": "src/app/(shop)/page.tsx, mosaico da Hero (tile principal, rotacionado +2°, tem prioridade de carregamento, selo 'Vitrine em curadoria')",
+        "gerar_em_px": "1600x2000 (proporção 4:5, retrato)",
+        "prompt": "Premium editorial photograph of a curated collectible gaming showcase shelf, a handheld game console and generic collectible figures displayed on a dark graphite shelf (#161311), warm gold (#D4AF37) spotlight from above creating dramatic highlights, deep black background (#0B0908), cinematic product photography, high-end retail curation feel, subtle film grain, no legible text, no logos, no watermark, no visible brand names on packaging"
+      },
+      {
+        "id": "hero-tile-accent",
+        "local": "src/app/(shop)/page.tsx, mosaico da Hero (tile pequeno, canto inferior direito, rotacionado -6°, é só um detalhe/acento)",
+        "gerar_em_px": "800x800 (proporção 1:1, quadrado)",
+        "prompt": "Tight macro shot of a glowing game cartridge or generic collectible pin badge in gold (#D4AF37) and black tones, dramatic rim lighting, extreme shallow depth of field, dark moody background (#0B0908), premium product photography, no legible text, no logos, no watermark"
+      }
+    ],
+    "hype_zone_banner": [
+      {
+        "id": "hype-zone-banner",
+        "local": "src/app/(shop)/page.tsx, seção HypeTeaser (painel lateral direito do card 'Drops que acabam quando acabam')",
+        "gerar_em_px": "1600x2000 (proporção 4:5, retrato)",
+        "prompt": "Cinematic action shot representing a live limited-edition product drop event, a spotlight beam cutting through dark smoky atmosphere illuminating an empty pedestal about to reveal a collectible box, burnt-orange (#E8721C) and gold (#D4AF37) dramatic lighting, sense of anticipation and countdown energy, deep black background (#0B0908), premium editorial photography, subtle film grain, no legible text, no logos, no watermark, no countdown numbers baked in"
+      }
+    ],
+    "universos": {
+      "_aviso": "NÃO gerar com IA 'no estilo de' Naruto/One Piece/Marvel/Star Wars/Pokémon/Dragon Ball — risco de violação de marca/direito autoral em uso comercial. Prompts abaixo são tratamento abstrato por paleta de cor (sem citar a franquia, sem personagem, sem símbolo reconhecível). Alternativa de longo prazo: foto real da capa do produto assim que existir pelo menos 1 oferta daquele universo no catálogo.",
+      "gerar_em_px": "1200x1600 (proporção 3:4, retrato — é o formato exato do mobile; no desktop o CSS corta um pouco mais as bordas automaticamente, sem distorcer)",
+      "itens": [
+        {
+          "id": "universo-naruto-abstrato",
+          "categoria": "Naruto (tile 1, o 'maior' da fileira — fica menos cortado no desktop, prefira composição centralizada/simétrica)",
+          "prompt": "Abstract atmospheric background evoking energy and speed, swirling warm orange (#E8721C) and gold (#D4AF37) ink-like smoke trails against a deep black background (#0B0908), dynamic diagonal motion lines, cinematic lighting, centered symmetric composition, no characters, no recognizable symbols, no legible text, no logos"
+        },
+        {
+          "id": "universo-onepiece-abstrato",
+          "categoria": "One Piece",
+          "prompt": "Abstract atmospheric background evoking adventure and the open sea, dark near-black gradient (#0B0908) with subtle gold (#D4AF37) wave-like light streaks and a faint compass-rose light flare, cinematic moody lighting, no characters, no recognizable symbols, no legible text, no logos"
+        },
+        {
+          "id": "universo-marvel-abstrato",
+          "categoria": "Marvel",
+          "prompt": "Abstract atmospheric background evoking heroic energy, dramatic gold (#D4AF37) and deep red light beams crossing on a near-black background (#0B0908), subtle particle sparks, cinematic comic-inspired lighting without any specific character silhouette, no legible text, no logos, no recognizable symbols"
+        },
+        {
+          "id": "universo-starwars-abstrato",
+          "categoria": "Star Wars",
+          "prompt": "Abstract atmospheric deep-space background, dark near-black gradient (#0B0908) with distant warm gold (#D4AF37) starfield bokeh and a single soft light beam like a spotlight from above, cinematic sci-fi mood, no ships, no characters, no recognizable symbols, no legible text, no logos"
+        },
+        {
+          "id": "universo-pokemon-abstrato",
+          "categoria": "Pokémon",
+          "prompt": "Abstract atmospheric background evoking a collectible card pack opening, soft golden (#D4AF37) particle sparkles floating against a dark graphite background (#161311), gentle warm glow in the center, cinematic collectible-reveal mood, no creatures, no recognizable symbols, no legible text, no logos"
+        },
+        {
+          "id": "universo-dragonball-abstrato",
+          "categoria": "Dragon Ball",
+          "prompt": "Abstract atmospheric background evoking raw energy and power, warm gold (#D4AF37) and ember (#E8721C) energy-wisp trails radiating from a bright center point against a deep black background (#0B0908), dynamic radial light burst, cinematic mood, no characters, no recognizable symbols, no legible text, no logos"
+        }
+      ]
+    }
+  }
+}

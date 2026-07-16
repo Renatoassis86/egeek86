@@ -36,7 +36,7 @@ const inter = Inter({
 // ============================================================
 export const metadata: Metadata = {
   title: {
-    default: 'Espaço Geek 86 — O cofre da cultura geek',
+    default: 'Espaço Geek 86, o cofre da cultura geek',
     template: '%s | Espaço Geek 86',
   },
   description:
@@ -58,8 +58,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: dark)', color: '#0A0A0F' },
-    { media: '(prefers-color-scheme: light)', color: '#FAFAFA' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B0908' },
+    { media: '(prefers-color-scheme: light)', color: '#FAF7F0' },
   ],
 };
 

@@ -204,6 +204,7 @@ export const notificationChannel = pgEnum('notification_channel', [
   'whatsapp',
   'sms',
   'in_app',
+  'telegram',
 ]);
 
 export const notificationStatus = pgEnum('notification_status', [
@@ -246,3 +247,21 @@ export const gameEditionType = pgEnum('game_edition_type', [
 // 'structured' reservado pro futuro (Mercado Livre não expõe hoje um atributo
 // estruturado pra full/DLC/bundle) — na prática só 'keyword_rule' e 'manual'.
 export const gameEditionSource = pgEnum('game_edition_source', ['structured', 'keyword_rule', 'manual']);
+
+// ============================================================
+// Notícias
+// ============================================================
+// 'original' = artigo escrito pela própria editoria, lido inteiro no site.
+// 'curated_link' = destaque de matéria de outro portal: só resumo próprio +
+// link de saída, nunca reprodução do texto de terceiros (mesmo princípio de
+// "nunca raspagem" já seguido pro dado de preço).
+export const articleKind = pgEnum('article_kind', ['original', 'curated_link']);
+
+export const articleCategory = pgEnum('article_category', [
+  'cultura_pop',
+  'sinopse_jogo',
+  'tecnologia',
+  'lancamentos',
+]);
+
+export const articleStatus = pgEnum('article_status', ['draft', 'published', 'archived']);

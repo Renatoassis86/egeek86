@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import { Suspense, type ReactNode } from 'react';
-import { Flame, Sparkles } from 'lucide-react';
+import { Flame, LineChart, Sparkles } from 'lucide-react';
 import { Reveal } from '@/components/motion/reveal';
+import { Glow } from '@/components/motion/glow';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { OfferCard } from '@/components/affiliate/offer-card';
 import { OfferFilters } from '@/components/affiliate/offer-filters';
+import { cn } from '@/lib/cn';
 import {
   listRankedOffers,
   listNetworks,
@@ -68,25 +70,44 @@ export default async function OffersPage({
     })
     .slice(0, 6);
 
-  return (
-    <section className="mx-auto max-w-7xl px-4 lg:px-8 py-12 lg:py-16">
-      <Reveal>
-        <Text as="h1" variant="heading-xl">
-          Ofertas
-        </Text>
-        <Text variant="body-md" color="secondary" className="mt-2 max-w-[60ch]">
-          Preços monitorados nos principais marketplaces, com histórico e cupons — pra você comprar
-          na hora certa.
-        </Text>
-      </Reveal>
+  const lowestEverCount = pool.filter((o) => metricsMap.get(o.id)?.isLowestEver).length;
 
-      <Reveal delay={0.05}>
-        <div className="mt-6">
-          <Suspense fallback={null}>
-            <OfferFilters networks={networks} />
-          </Suspense>
+  return (
+    <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
+      <div className="relative overflow-hidden rounded-[var(--radius-xl)]">
+        <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.28} />
+        <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.14} />
+
+        <div className="relative">
+          <Reveal>
+            <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
+              <LineChart className="size-3.5" aria-hidden />
+              Geek Deals · Inteligência de preço
+            </Text>
+            <Text as="h1" variant="display-md" className="mt-3 max-w-2xl">
+              Ofertas
+            </Text>
+            <Text variant="body-md" color="secondary" className="mt-3 max-w-[60ch]">
+              Preços monitorados nos principais marketplaces, com histórico e cupons, pra você
+              comprar na hora certa.
+            </Text>
+          </Reveal>
+
+          <Reveal delay={0.06}>
+            <div className="mt-7 flex flex-wrap gap-x-10 gap-y-4">
+              <StatBlock value={pool.length} label="ofertas monitoradas" />
+              <StatBlock value={lowestEverCount} label="no menor preço histórico" accent="hype" />
+              <StatBlock value={networks.length} label="lojas parceiras" />
+            </div>
+          </Reveal>
         </div>
-      </Reveal>
+      </div>
+
+      <div className="sticky top-[calc(var(--header-mobile)+8px)] lg:top-[calc(var(--header-desktop)+12px)] z-20 mt-8">
+        <Suspense fallback={null}>
+          <OfferFilters networks={networks} resultCount={pool.length} />
+        </Suspense>
+      </div>
 
       {pool.length === 0 ? (
         <Text variant="body-sm" color="secondary" className="mt-10">
@@ -101,6 +122,7 @@ export default async function OffersPage({
               badgeLabel="Diferencial Geek 86"
               offers={featured}
               metricsMap={metricsMap}
+              cardVariant="feature"
             />
           )}
 
@@ -117,27 +139,59 @@ export default async function OffersPage({
   );
 }
 
+function StatBlock({
+  value,
+  label,
+  accent = 'gold',
+}: {
+  value: number;
+  label: string;
+  accent?: 'gold' | 'hype';
+}) {
+  return (
+    <div className="flex flex-col">
+      <Text
+        variant="mono-lg"
+        className={cn(
+          'text-[26px] leading-none tabular',
+          accent === 'hype' ? 'text-[var(--color-accent-hype)]' : 'text-[var(--color-accent-primary)]'
+        )}
+      >
+        {value}
+      </Text>
+      <Text variant="caption" color="tertiary" className="mt-1.5">
+        {label}
+      </Text>
+    </div>
+  );
+}
+
 function OfferSection({
   title,
   icon,
   badgeLabel,
   offers,
   metricsMap,
+  cardVariant = 'grid',
 }: {
   title: string;
   icon?: ReactNode;
   badgeLabel?: string;
   offers: OfferWithRelations[];
   metricsMap: Map<string, OfferListingMetrics>;
+  cardVariant?: 'grid' | 'feature';
 }) {
   return (
     <div>
       <Reveal>
-        <div className="flex flex-wrap items-center gap-2 mb-5">
+        <div className="flex flex-wrap items-center gap-2.5 mb-5">
           {icon}
           <Text as="h2" variant="heading-lg">
             {title}
           </Text>
+          <Badge variant="outline" size="sm">
+            {offers.length}
+          </Badge>
           {badgeLabel && (
             <Badge variant="hype" size="sm">
               <Sparkles className="size-3" />
@@ -146,10 +200,16 @@ function OfferSection({
           )}
         </div>
       </Reveal>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4">
+      <div
+        className={cn(
+          cardVariant === 'feature'
+            ? 'grid grid-cols-1 lg:grid-cols-2 gap-4'
+            : 'grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 lg:gap-4'
+        )}
+      >
         {offers.map((offer, i) => (
           <Reveal key={offer.id} delay={Math.min(i * 0.03, 0.3)}>
-            <OfferCard offer={offer} metrics={metricsMap.get(offer.id)} />
+            <OfferCard offer={offer} metrics={metricsMap.get(offer.id)} variant={cardVariant} />
           </Reveal>
         ))}
       </div>

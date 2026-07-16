@@ -51,6 +51,7 @@ export * from './affiliate_sellers';
 export * from './affiliate_offers';
 export * from './affiliate_pricing';
 export * from './affiliate_messages';
+export * from './affiliate_watches';
 
 // Loyalty / Gamificação
 export * from './loyalty';
@@ -63,6 +64,9 @@ export * from './search';
 
 // Notification
 export * from './notification';
+
+// Notícias
+export * from './news_articles';
 
 // Analytics
 export * from './analytics';

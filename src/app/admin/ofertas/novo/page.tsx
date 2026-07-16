@@ -36,7 +36,7 @@ export default async function NewOfferPage() {
                 <Input id="productName" name="productName" placeholder="Funko Pop Naruto #71" required />
               </Field>
               <Field label="Título da oferta" htmlFor="title" required>
-                <Input id="title" name="title" placeholder="Funko Pop Naruto #71 — Amazon" required />
+                <Input id="title" name="title" placeholder="Funko Pop Naruto #71 (Amazon)" required />
               </Field>
             </div>
 

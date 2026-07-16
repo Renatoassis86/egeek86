@@ -69,7 +69,7 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
               Menor histórico
             </Text>
             <Text variant="mono-lg" className="tabular">
-              {metrics ? formatBRL(metrics.lowestPriceCents) : '—'}
+              {metrics ? formatBRL(metrics.lowestPriceCents) : 'N/D'}
             </Text>
             {metrics && (
               <Text variant="caption" color="tertiary">
@@ -186,7 +186,7 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
             <Text variant="heading-sm" className="mb-2">
               Vendedor atual (buy-box)
             </Text>
-            <Text variant="body-sm">{offer.seller.nickname ?? '—'}</Text>
+            <Text variant="body-sm">{offer.seller.nickname ?? 'N/D'}</Text>
             <Text variant="caption" color="tertiary">
               {offer.seller.reputationLevel ?? 'sem nível'}
               {offer.seller.powerSellerStatus && ` · ${offer.seller.powerSellerStatus}`}

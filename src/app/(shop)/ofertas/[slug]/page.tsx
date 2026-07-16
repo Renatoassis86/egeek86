@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
+  ArrowLeft,
   Flame,
   ShieldCheck,
-  Tag,
   TrendingDown,
   TrendingUp,
   Minus,
   Star,
   BadgeCheck,
+  LineChart,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +18,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { Separator } from '@/components/ui/separator';
 import { Reveal } from '@/components/motion/reveal';
+import { Glow } from '@/components/motion/glow';
+import { SceneImage } from '@/components/motion/scene-image';
+import { PriceRangeBar } from '@/components/geek-deals/price-range-bar';
+import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
 import { formatBRL, formatDiscountLabel } from '@/lib/format';
 import { isLowestPrice } from '@/lib/affiliate/message-template';
 import {
@@ -26,6 +32,8 @@ import {
   sellerTrustTextColor,
 } from '@/lib/affiliate/labels';
 import { getOfferBySlug, getOfferMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
+import { getWatchedMasterProductIds } from '@/server/queries/price-watches';
+import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 export async function generateMetadata({
   params,
@@ -53,10 +61,14 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const offer = await getOfferBySlug(slug);
   if (!offer) notFound();
 
-  const [metrics, coupons] = await Promise.all([
+  const [metrics, coupons, profile] = await Promise.all([
     getOfferMetrics(offer.id),
     listActiveCouponsByNetwork(offer.networkId),
+    getCurrentProfile(),
   ]);
+  const isWatching = profile
+    ? (await getWatchedMasterProductIds(profile.id)).has(offer.masterProductId)
+    : false;
 
   const images = offer.masterProduct.defaultImages as unknown as string[];
   const image = offer.imageUrl ?? images?.[0] ?? null;
@@ -69,103 +81,137 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
     offer.masterProduct.gamePlatformGen !== 'unknown' ||
     offer.masterProduct.gameEditionType !== 'unknown';
 
+  const specLine = [
+    offer.masterProduct.gameFormat !== 'unknown' ? GAME_FORMAT_LABELS[offer.masterProduct.gameFormat] : null,
+    offer.masterProduct.gamePlatformGen !== 'unknown' ? GAME_PLATFORM_GEN_LABELS[offer.masterProduct.gamePlatformGen] : null,
+    offer.masterProduct.gameEditionType !== 'unknown' ? GAME_EDITION_TYPE_LABELS[offer.masterProduct.gameEditionType] : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
   return (
-    <section className="mx-auto max-w-5xl px-4 lg:px-8 py-10 lg:py-16">
-      <div className="grid gap-8 lg:grid-cols-2">
-        <Reveal>
-          <div className="aspect-square rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] flex items-center justify-center overflow-hidden">
-            {image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={image} alt={offer.title} className="h-full w-full object-cover" />
-            ) : (
-              <Tag className="size-16 text-[var(--color-text-tertiary)]" aria-hidden />
-            )}
+    <section className="mx-auto max-w-6xl px-4 lg:px-8 py-8 lg:py-14">
+      <Link
+        href="/ofertas"
+        className="inline-flex items-center gap-1.5 text-body-sm text-[var(--color-text-tertiary)] hover:text-[var(--color-text-primary)] transition-colors duration-[var(--duration-fast)]"
+      >
+        <ArrowLeft className="size-4" aria-hidden />
+        Ofertas
+      </Link>
+
+      <div className="mt-5 grid gap-8 lg:gap-14 lg:grid-cols-[minmax(0,440px)_1fr] lg:items-start">
+        <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] aspect-square lg:sticky lg:top-24">
+          <Glow color="gold" size="md" className="-top-16 -right-16" intensity={0.22} />
+          <SceneImage src={image} alt={offer.title} tone="gold" fit="contain" className="relative" priority />
+
+          <div className="absolute left-3 top-3">
+            <Badge
+              variant="outline"
+              size="md"
+              className="bg-[var(--color-bg-canvas)]/85 backdrop-blur-sm"
+              style={offer.network.colorHex ? { borderColor: offer.network.colorHex } : undefined}
+            >
+              {offer.network.name}
+            </Badge>
           </div>
-        </Reveal>
 
-        <Reveal delay={0.08}>
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" size="md">
-                {offer.network.name}
-              </Badge>
-              {hasClassification && (
-                <>
-                  {offer.masterProduct.gameFormat !== 'unknown' && (
-                    <Badge variant="outline" size="md">
-                      {GAME_FORMAT_LABELS[offer.masterProduct.gameFormat]}
-                    </Badge>
-                  )}
-                  {offer.masterProduct.gamePlatformGen !== 'unknown' && (
-                    <Badge variant="outline" size="md">
-                      {GAME_PLATFORM_GEN_LABELS[offer.masterProduct.gamePlatformGen]}
-                    </Badge>
-                  )}
-                  {offer.masterProduct.gameEditionType !== 'unknown' && (
-                    <Badge variant="outline" size="md">
-                      {GAME_EDITION_TYPE_LABELS[offer.masterProduct.gameEditionType]}
-                    </Badge>
-                  )}
-                </>
-              )}
+          {isLowest && (
+            <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-[var(--color-accent-hype)]/95 py-2.5">
+              <Flame className="size-4 text-[var(--color-text-inverse)]" aria-hidden />
+              <Text variant="body-sm" color="inverse" className="font-semibold">
+                Menor preço já registrado
+              </Text>
             </div>
+          )}
+        </div>
 
-            <Text as="h1" variant="heading-xl">
+        <Reveal delay={0.06}>
+          <div className="flex flex-col gap-5">
+            {hasClassification && (
+              <Text variant="label" color="tertiary" className="uppercase tracking-[0.04em]">
+                {specLine}
+              </Text>
+            )}
+
+            <Text as="h1" variant="heading-xl" className="lg:text-display-md">
               {offer.title}
             </Text>
 
-            {isLowest && (
-              <Badge variant="hype" size="lg" className="w-fit">
-                <Flame className="size-3.5" />
-                Menor preço já registrado
-              </Badge>
-            )}
-
-            <Text variant="display-md" className="tabular">
-              {formatBRL(offer.currentPriceCents)}
-            </Text>
+            <div className="flex flex-col gap-1">
+              <Text variant="display-lg" color="primary" className="tabular leading-none">
+                {formatBRL(offer.currentPriceCents)}
+              </Text>
+              {metrics?.avgPriceCents30d != null && (
+                <Text variant="body-sm" color="secondary">
+                  Média dos últimos 30 dias: {formatBRL(metrics.avgPriceCents30d)}
+                </Text>
+              )}
+            </div>
 
             {metrics && (
-              <div className="flex flex-wrap items-center gap-2">
-                {trend && (
-                  <Badge variant={trend.color === 'secondary' ? 'default' : trend.color} size="md">
-                    <trend.Icon className="size-3.5" />
-                    {trend.label}
-                  </Badge>
-                )}
-                <Text variant="body-sm" color="secondary">
-                  Menor histórico: {formatBRL(metrics.lowestPriceCents)} (em{' '}
-                  {metrics.lowestPriceAt.toLocaleDateString('pt-BR')})
-                  {metrics.avgPriceCents30d != null && <> · Média 30d: {formatBRL(metrics.avgPriceCents30d)}</>}
-                </Text>
-              </div>
-            )}
-
-            {metrics && <PriceRangeBar currentPriceCents={offer.currentPriceCents} metrics={metrics} />}
-
-            {coupons.length > 0 && (
-              <Card variant="outline">
-                <CardContent className="p-4">
-                  <Text variant="label" color="tertiary">
-                    Cupom disponível
-                  </Text>
-                  <Text variant="body-md" className="font-mono mt-1">
-                    {coupons[0].code} — {formatDiscountLabel(coupons[0].discountType, coupons[0].discountValue)}
-                  </Text>
-                  {coupons[0].description && (
-                    <Text variant="caption" color="secondary">
-                      {coupons[0].description}
+              <Card variant="outline" className="border-[var(--color-border-default)]">
+                <CardContent className="p-4 sm:p-5 flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Text variant="label" color="tertiary" className="inline-flex items-center gap-1.5">
+                      <LineChart className="size-3.5" aria-hidden />
+                      Histórico de preço
                     </Text>
-                  )}
+                    {trend && (
+                      <Badge variant={trend.color === 'secondary' ? 'default' : trend.color} size="sm">
+                        <trend.Icon className="size-3.5" />
+                        {trend.label}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <PriceRangeBar currentPriceCents={offer.currentPriceCents} metrics={metrics} />
+
+                  <Text variant="caption" color="tertiary">
+                    Menor preço em {metrics.lowestPriceAt.toLocaleDateString('pt-BR')} · {metrics.snapshotCount}{' '}
+                    coletas registradas
+                  </Text>
                 </CardContent>
               </Card>
             )}
 
-            <Button asChild size="lg" leftIcon={<ShieldCheck className="size-4" />}>
-              <a href={`/go/${offer.slug}`} target="_blank" rel="noopener noreferrer nofollow sponsored">
-                Ver oferta na {offer.network.name}
-              </a>
-            </Button>
+            {coupons.length > 0 && (
+              <Card variant="outline" className="border-dashed border-[var(--color-accent-primary)]/40">
+                <CardContent className="p-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <Text variant="label" color="tertiary">
+                      Cupom disponível
+                    </Text>
+                    <Text variant="body-md" className="font-mono mt-1 text-[var(--color-accent-primary)] truncate">
+                      {coupons[0].code}
+                    </Text>
+                    {coupons[0].description && (
+                      <Text variant="caption" color="secondary" className="mt-0.5">
+                        {coupons[0].description}
+                      </Text>
+                    )}
+                  </div>
+                  <Badge variant="primary" size="md" className="shrink-0">
+                    {formatDiscountLabel(coupons[0].discountType, coupons[0].discountValue)}
+                  </Badge>
+                </CardContent>
+              </Card>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              <Button asChild size="lg" className="flex-1 sm:flex-none">
+                <a href={`/go/${offer.slug}`} target="_blank" rel="noopener noreferrer nofollow sponsored">
+                  <ShieldCheck className="size-4" />
+                  {`Ver oferta na ${offer.network.name}`}
+                </a>
+              </Button>
+              {profile ? (
+                <WatchToggleButton masterProductId={offer.masterProductId} initialWatching={isWatching} />
+              ) : (
+                <Button asChild variant="outline" size="lg">
+                  <a href={`/entrar?next=/ofertas/${offer.slug}`}>Acompanhar preço</a>
+                </Button>
+              )}
+            </div>
 
             {offer.highlightNote && (
               <Text variant="caption" color="hype">
@@ -177,7 +223,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
               <>
                 <Separator className="my-1" />
                 <Card variant="ghost" className="border border-[var(--color-border-subtle)]">
-                  <CardContent className="p-4 flex flex-col gap-2">
+                  <CardContent className="p-4 flex flex-col gap-3">
                     <div className="flex items-center gap-2">
                       <BadgeCheck className="size-4 text-[var(--color-text-tertiary)]" aria-hidden />
                       <Text variant="heading-sm">Vendedor</Text>
@@ -187,13 +233,13 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                       <Text
                         variant="caption"
                         color={sellerTrustTextColor(trustInfo.variant)}
-                        className="inline-flex items-center gap-1"
+                        className="inline-flex w-fit items-center gap-1.5 rounded-[var(--radius-full)] bg-[var(--color-bg-elevated)] px-2.5 py-1"
                       >
                         <ShieldCheck className="size-3.5" aria-hidden />
                         {trustInfo.label}
                       </Text>
                     )}
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
+                    <div className="flex flex-wrap gap-x-5 gap-y-1">
                       {offer.seller.totalSales != null && (
                         <Text variant="caption" color="tertiary">
                           {offer.seller.totalSales.toLocaleString('pt-BR')} vendas
@@ -214,63 +260,5 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
         </Reveal>
       </div>
     </section>
-  );
-}
-
-/**
- * Barra visual leve (sem lib de gráfico) posicionando o preço atual e a
- * média de 30d entre o menor histórico e o teto conhecido — dá noção de
- * "onde" o preço de hoje está sem precisar ler 3 números separados.
- */
-function PriceRangeBar({
-  currentPriceCents,
-  metrics,
-}: {
-  currentPriceCents: number;
-  metrics: { lowestPriceCents: number; avgPriceCents30d: number | null };
-}) {
-  const low = metrics.lowestPriceCents;
-  const high = Math.max(currentPriceCents, metrics.avgPriceCents30d ?? low, low);
-  const range = high - low;
-  if (range <= 0) return null;
-
-  const currentPct = Math.min(100, Math.max(0, ((currentPriceCents - low) / range) * 100));
-  const avgPct =
-    metrics.avgPriceCents30d != null
-      ? Math.min(100, Math.max(0, ((metrics.avgPriceCents30d - low) / range) * 100))
-      : null;
-
-  return (
-    <div className="mt-1">
-      <div className="relative h-2 rounded-[var(--radius-full)] bg-[var(--color-bg-elevated)]">
-        <div
-          className="absolute inset-y-0 left-0 rounded-[var(--radius-full)] bg-[var(--color-accent-success)]/40"
-          style={{ width: `${currentPct}%` }}
-          aria-hidden
-        />
-        {avgPct != null && (
-          <div
-            className="absolute top-1/2 size-2 -translate-y-1/2 rounded-full bg-[var(--color-text-tertiary)]"
-            style={{ left: `${avgPct}%` }}
-            aria-hidden
-            title="Média 30 dias"
-          />
-        )}
-        <div
-          className="absolute top-1/2 size-3 -translate-y-1/2 -translate-x-1/2 rounded-full border-2 border-[var(--color-bg-canvas)] bg-[var(--color-accent-primary)]"
-          style={{ left: `${currentPct}%` }}
-          aria-hidden
-          title="Preço atual"
-        />
-      </div>
-      <div className="mt-1.5 flex justify-between">
-        <Text variant="caption" color="tertiary">
-          {formatBRL(low)} (menor já visto)
-        </Text>
-        <Text variant="caption" color="tertiary">
-          {formatBRL(high)}
-        </Text>
-      </div>
-    </div>
   );
 }

@@ -7,8 +7,17 @@ import { recordPriceSnapshot } from './record-price-snapshot';
 import { upsertSellerFromOffer } from './sources/mercado-livre-seller';
 import './sources'; // registra os adapters disponíveis (efeito colateral do import)
 
-/** Intervalo mínimo entre coletas da mesma oferta. */
+/** Intervalo mínimo entre coletas — catálogo geral. */
 const REFRESH_INTERVAL = sql`interval '15 minutes'`;
+/** Intervalo mínimo entre coletas — jogos com pelo menos um cliente acompanhando (dado "quente"). */
+const WATCHED_REFRESH_INTERVAL = sql`interval '5 minutes'`;
+/** Protege contra timeout se o backlog crescer — o que sobrar pega no próximo tick do cron (a cada 5min). */
+const MAX_OFFERS_PER_RUN = 200;
+
+const isWatchedExpr = sql`EXISTS (
+  SELECT 1 FROM affiliate_price_watches w
+  WHERE w.master_product_id = ${affiliateOffers.masterProductId} AND w.is_active = true
+)`;
 
 export interface CollectPricesSummary {
   checked: number;
@@ -38,9 +47,17 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       and(
         eq(affiliateOffers.status, 'active'),
         isNotNull(affiliateOffers.externalRef),
-        or(isNull(affiliateOffers.lastCheckedAt), lt(affiliateOffers.lastCheckedAt, sql`now() - ${REFRESH_INTERVAL}`))
+        or(
+          isNull(affiliateOffers.lastCheckedAt),
+          lt(
+            affiliateOffers.lastCheckedAt,
+            sql`now() - CASE WHEN ${isWatchedExpr} THEN ${WATCHED_REFRESH_INTERVAL} ELSE ${REFRESH_INTERVAL} END`
+          )
+        )
       )
-    );
+    )
+    .orderBy(sql`${isWatchedExpr} DESC`, sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`)
+    .limit(MAX_OFFERS_PER_RUN);
 
   const summary: CollectPricesSummary = {
     checked: 0,

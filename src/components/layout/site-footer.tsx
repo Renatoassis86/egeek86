@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Text } from '@/components/ui/text';
 import { Separator } from '@/components/ui/separator';
 
@@ -39,13 +40,8 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 flex flex-col gap-3">
-            <Link href="/" className="flex items-center gap-2 w-fit" aria-label="Espaço Geek 86">
-              <div className="size-8 rounded-[var(--radius-sm)] bg-gradient-to-br from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] flex items-center justify-center font-bold text-[var(--color-text-inverse)] text-sm">
-                86
-              </div>
-              <Text variant="heading-sm" className="font-display tracking-tight">
-                ESPAÇO GEEK
-              </Text>
+            <Link href="/" className="flex items-center w-fit" aria-label="Espaço Geek 86">
+              <Image src="/geek 86.webp" alt="Espaço Geek 86" width={4220} height={1568} className="h-7 w-auto" />
             </Link>
             <Text variant="body-sm" color="secondary" className="max-w-[28ch]">
               O cofre da cultura geek. Drops, raridades e curadoria.
@@ -79,9 +75,17 @@ export function SiteFooter() {
           <Text variant="caption" color="tertiary">
             © {new Date().getFullYear()} Espaço Geek 86. Todos os direitos reservados.
           </Text>
-          <Text variant="caption" color="tertiary">
-            Feito com cuidado em São Paulo.
-          </Text>
+          <a
+            href="https://arkosintelligence.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
+          >
+            <Text variant="caption" color="tertiary">
+              Criado por
+            </Text>
+            <Image src="/arkos.png" alt="Arkos Intelligence" width={1200} height={1400} className="h-5 w-auto rounded-[3px]" />
+          </a>
         </div>
       </div>
     </footer>

@@ -4,9 +4,11 @@ import { db } from '@/lib/db';
 import { profiles } from '@/db/schema';
 
 /**
- * Callback do magic link (Supabase Auth). Não existe trigger `handle_new_user`
- * no banco (auth.users -> public.profiles) — o upsert abaixo é o que garante
- * que a linha em `profiles` existe no primeiro login.
+ * Callback de troca de código por sessão (Supabase Auth PKCE) — usado tanto
+ * pelo magic link do admin (/login) quanto pelo link de redefinição de senha
+ * do cliente (/esqueci-senha -> /redefinir-senha). Não existe trigger
+ * `handle_new_user` no banco (auth.users -> public.profiles) — o upsert
+ * abaixo é o que garante que a linha em `profiles` existe no primeiro login.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;

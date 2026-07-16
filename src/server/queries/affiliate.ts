@@ -338,6 +338,10 @@ export interface OfferListingMetrics {
   listPriceCents: number | null;
   /** % de desconto vs. listPriceCents — calculado aqui quando a fonte não grava discount_percent (caso comum hoje). */
   discountPercent: number | null;
+  /** Preço médio dos últimos 30 dias (null se não houver snapshot nesse período). */
+  avgPriceCents30d: number | null;
+  /** % abaixo da média de 30 dias, só quando o preço atual está de fato abaixo dela (null caso contrário). */
+  avgDiscountPercent: number | null;
 }
 
 /**
@@ -361,6 +365,7 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
     list_price_cents: string | null;
     discount_percent: string | null;
     lowest_price_cents: string;
+    avg_price_30d: string | null;
   }>(sql`
     WITH latest AS (
       SELECT DISTINCT ON (offer_id) offer_id, price_cents, list_price_cents, discount_percent
@@ -373,14 +378,23 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
       FROM affiliate_price_snapshots
       WHERE offer_id IN (${idList})
       GROUP BY offer_id
+    ),
+    avg30d AS (
+      SELECT offer_id, AVG(price_cents)::numeric AS avg_price_30d
+      FROM affiliate_price_snapshots
+      WHERE offer_id IN (${idList}) AND collected_at >= now() - interval '30 days'
+      GROUP BY offer_id
     )
     SELECT
       latest.offer_id,
       latest.price_cents::bigint AS current_price_cents,
       latest.list_price_cents,
       latest.discount_percent,
-      lowest.lowest_price_cents
-    FROM latest JOIN lowest ON latest.offer_id = lowest.offer_id
+      lowest.lowest_price_cents,
+      avg30d.avg_price_30d
+    FROM latest
+    JOIN lowest ON latest.offer_id = lowest.offer_id
+    LEFT JOIN avg30d ON latest.offer_id = avg30d.offer_id
   `);
 
   for (const row of rows) {
@@ -393,6 +407,11 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
         : listPriceCents && listPriceCents > current
           ? Math.round(((listPriceCents - current) / listPriceCents) * 100)
           : null;
+    const avgPriceCents30d = row.avg_price_30d != null ? Number(row.avg_price_30d) : null;
+    const avgDiscountPercent =
+      avgPriceCents30d != null && avgPriceCents30d > current
+        ? Math.round(((avgPriceCents30d - current) / avgPriceCents30d) * 100)
+        : null;
 
     map.set(row.offer_id, {
       currentPriceCents: current,
@@ -400,6 +419,8 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
       isLowestEver: current <= lowest,
       listPriceCents,
       discountPercent,
+      avgPriceCents30d,
+      avgDiscountPercent,
     });
   }
 

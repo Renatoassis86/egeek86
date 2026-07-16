@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     return htmlResponse('Autorização recusada', `O Mercado Livre retornou: ${error}. Tente de novo em /auth/mercadolivre/start.`, false);
   }
   if (!code) {
-    return htmlResponse('Faltou o código', 'Nenhum "code" veio na URL — tente iniciar de novo em /auth/mercadolivre/start.', false);
+    return htmlResponse('Faltou o código', 'Nenhum "code" veio na URL. Tente iniciar de novo em /auth/mercadolivre/start.', false);
   }
 
   try {

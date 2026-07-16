@@ -19,7 +19,7 @@ export default async function AdminDashboardPage() {
     <div className="flex flex-col gap-6">
       <div>
         <Text as="h1" variant="heading-xl">
-          Geek Deals — Dashboard
+          Geek Deals: Dashboard
         </Text>
         <Text variant="body-sm" color="secondary" className="mt-1">
           Visão geral das ofertas de afiliado monitoradas manualmente.

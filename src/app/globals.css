@@ -20,30 +20,38 @@
  * Tudo aqui vira class disponível (bg-bg-canvas, text-display-xl, etc).
  * =========================================================== */
 @theme {
-  /* ---------- COLORS (defaults, override por [data-theme]) ---------- */
-  --color-bg-canvas: #0A0A0F;
-  --color-bg-surface: #13131A;
-  --color-bg-elevated: #1C1C26;
-  --color-bg-inset: #08080C;
-  --color-bg-overlay: rgb(10 10 15 / 0.72);
+  /* ---------- COLORS (defaults, override por [data-theme]) ----------
+   * Identidade oficial (docs/PROJECT_BLUEPRINT.md #10): preto profundo,
+   * dourado, creme, grafite. Cores semânticas (success/danger/info) ficam
+   * FORA da identidade de marca de propósito — são convenção universal de
+   * UI, não devem virar dourado.
+   */
+  --color-bg-canvas: #0B0908;
+  --color-bg-surface: #161311;
+  --color-bg-elevated: #201C18;
+  --color-bg-inset: #060504;
+  --color-bg-overlay: rgb(6 5 4 / 0.72);
 
-  --color-text-primary: #F5F5F7;
-  --color-text-secondary: #A1A1AA;
-  --color-text-tertiary: #71717A;
-  --color-text-inverse: #0A0A0F;
-  --color-text-disabled: #52525B;
+  --color-text-primary: #F2E9D8;
+  --color-text-secondary: #B8AD98;
+  --color-text-tertiary: #8A8072;
+  --color-text-inverse: #0B0908;
+  --color-text-disabled: #5C5347;
 
-  --color-border-subtle: #1F1F28;
-  --color-border-default: #26262F;
-  --color-border-strong: #3A3A47;
-  --color-border-focus: #A855F7;
+  --color-border-subtle: #221E19;
+  --color-border-default: #2C2620;
+  --color-border-strong: #453C31;
+  --color-border-focus: #D4AF37;
 
-  --color-accent-primary: #A855F7;
-  --color-accent-primary-hover: #9333EA;
-  --color-accent-primary-muted: rgb(168 85 247 / 0.12);
-  --color-accent-hype: #F59E0B;
-  --color-accent-hype-hover: #D97706;
-  --color-accent-hype-muted: rgb(245 158 11 / 0.12);
+  --color-accent-primary: #D4AF37;
+  --color-accent-primary-hover: #C29A2E;
+  --color-accent-primary-muted: rgb(212 175 55 / 0.14);
+  /* Hype fica deliberadamente distinto do dourado principal — dourado é
+   * "confiança/marca", hype é "urgência/drop" — virarem a mesma cor perde
+   * o sinal visual. */
+  --color-accent-hype: #E8721C;
+  --color-accent-hype-hover: #C75F13;
+  --color-accent-hype-muted: rgb(232 114 28 / 0.14);
   --color-accent-success: #10B981;
   --color-accent-danger: #EF4444;
   --color-accent-info: #3B82F6;
@@ -141,8 +149,8 @@
   --shadow-xl: 0 24px 56px rgb(0 0 0 / 0.65);
   --shadow-card: 0 4px 12px rgb(0 0 0 / 0.40);
   --shadow-card-hover: 0 12px 28px rgb(0 0 0 / 0.55);
-  --shadow-glow-primary: 0 0 24px rgb(168 85 247 / 0.35);
-  --shadow-glow-hype: 0 0 24px rgb(245 158 11 / 0.35);
+  --shadow-glow-primary: 0 0 24px rgb(212 175 55 / 0.35);
+  --shadow-glow-hype: 0 0 24px rgb(232 114 28 / 0.35);
   --shadow-glow-success: 0 0 20px rgb(16 185 129 / 0.30);
   --shadow-glow-danger: 0 0 20px rgb(239 68 68 / 0.30);
 
@@ -169,27 +177,30 @@
  * Light theme override
  * =========================================================== */
 [data-theme="light"] {
-  --color-bg-canvas: #FAFAFA;
+  --color-bg-canvas: #FAF7F0;
   --color-bg-surface: #FFFFFF;
   --color-bg-elevated: #FFFFFF;
-  --color-bg-inset: #F4F4F5;
+  --color-bg-inset: #F1ECE0;
   --color-bg-overlay: rgb(0 0 0 / 0.40);
 
-  --color-text-primary: #0A0A0F;
-  --color-text-secondary: #52525B;
-  --color-text-tertiary: #71717A;
+  --color-text-primary: #1A1611;
+  --color-text-secondary: #5C5347;
+  --color-text-tertiary: #8A8072;
   --color-text-inverse: #FFFFFF;
-  --color-text-disabled: #A1A1AA;
+  --color-text-disabled: #B8AD98;
 
-  --color-border-subtle: #F4F4F5;
-  --color-border-default: #E4E4E7;
-  --color-border-strong: #D4D4D8;
+  --color-border-subtle: #F1ECE0;
+  --color-border-default: #E5DCC8;
+  --color-border-strong: #D4C7A8;
 
-  --color-accent-primary: #9333EA;
-  --color-accent-primary-hover: #7E22CE;
-  --color-accent-primary-muted: rgb(147 51 234 / 0.08);
-  --color-accent-hype: #D97706;
-  --color-accent-hype-muted: rgb(217 119 6 / 0.08);
+  /* Dourado escurecido pra manter contraste legível em texto/ícone sobre
+   * fundo claro — o dourado "puro" do tema escuro (#D4AF37) fica sem
+   * contraste suficiente aqui. */
+  --color-accent-primary: #B8901F;
+  --color-accent-primary-hover: #9C7A1A;
+  --color-accent-primary-muted: rgb(184 144 31 / 0.10);
+  --color-accent-hype: #C75F13;
+  --color-accent-hype-muted: rgb(199 95 19 / 0.10);
 
   --shadow-card: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
   --shadow-card-hover: 0 8px 24px rgb(0 0 0 / 0.10);

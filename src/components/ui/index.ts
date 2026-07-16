@@ -9,5 +9,7 @@ export * from './input';
 export * from './select';
 export * from './separator';
 export * from './skeleton';
+export * from './switch';
 export * from './text';
+export * from './textarea';
 export * from './toast';

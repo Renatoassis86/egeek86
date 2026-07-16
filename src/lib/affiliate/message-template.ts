@@ -46,7 +46,7 @@ export function buildWhatsappMessage(input: WhatsappMessageInput): string {
     historyLine,
     couponLine,
     `🛒 ${input.shortLink}`,
-    `_${input.networkName} — confira disponibilidade antes de comprar._`,
+    `_${input.networkName}: confira disponibilidade antes de comprar._`,
   ];
 
   return lines.filter((line): line is string => Boolean(line)).join('\n');

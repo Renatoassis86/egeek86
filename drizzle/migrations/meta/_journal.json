@@ -43,6 +43,20 @@
       "when": 1783962827409,
       "tag": "0005_geek_deals_classification_and_sellers",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784066327944,
+      "tag": "0006_geek_deals_watches_and_telegram",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784205072649,
+      "tag": "0007_news_articles",
+      "breakpoints": true
     }
   ]
 }

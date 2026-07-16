@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, ShoppingBag, Heart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Text } from '@/components/ui/text';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { cn } from '@/lib/cn';
 
@@ -12,6 +12,8 @@ const navLinks = [
   { href: '/categorias', label: 'Categorias' },
   { href: '/hype-zone', label: 'Hype Zone', highlight: true },
   { href: '/ofertas', label: 'Ofertas' },
+  { href: '/monitoramento', label: 'Monitoramento' },
+  { href: '/noticias', label: 'Notícias' },
   { href: '/sellers', label: 'Sellers' },
 ];
 
@@ -30,15 +32,17 @@ export function AppHeader() {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] rounded-[var(--radius-xs)]"
-          aria-label="Espaço Geek 86 — Início"
+          className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] rounded-[var(--radius-xs)]"
+          aria-label="Espaço Geek 86, início"
         >
-          <div className="size-8 rounded-[var(--radius-sm)] bg-gradient-to-br from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] flex items-center justify-center font-bold text-[var(--color-text-inverse)] text-sm transition-transform group-hover:scale-105">
-            86
-          </div>
-          <Text variant="heading-sm" className="hidden sm:inline-block font-display tracking-tight">
-            ESPAÇO GEEK
-          </Text>
+          <Image
+            src="/geek 86.webp"
+            alt="Espaço Geek 86"
+            width={4220}
+            height={1568}
+            priority
+            className="h-6 lg:h-7 w-auto transition-transform group-hover:scale-105"
+          />
         </Link>
 
         {/* Nav desktop */}

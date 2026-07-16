@@ -23,6 +23,13 @@ export const notificationPreferences = pgTable('notification_preferences', {
   pushOrders: boolean('push_orders').notNull().default(true),
   whatsappOrders: boolean('whatsapp_orders').notNull().default(true),
   whatsappMarketing: boolean('whatsapp_marketing').notNull().default(false),
+  // Geek Deals — alerta diário de queda de preço (jogos acompanhados).
+  // Flags próprias (não emailMarketing/whatsappMarketing) porque são de um
+  // domínio diferente (Geek Deals, não a loja geral) com opt-in próprio.
+  emailPriceAlerts: boolean('email_price_alerts').notNull().default(true),
+  telegramPriceAlerts: boolean('telegram_price_alerts').notNull().default(true),
+  // Preenchido só depois do vínculo via /start no bot (ver telegramLinkTokens).
+  telegramChatId: text('telegram_chat_id'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -71,6 +78,23 @@ export const pushTokens = pgTable(
   (t) => [uniqueIndex('push_tokens_token_uq').on(t.token)]
 );
 
+/**
+ * telegramLinkTokens — vincula profiles.id ao chat_id do Telegram. Bots não
+ * podem iniciar conversa: o cliente clica num deep-link (t.me/<bot>?start=<token>)
+ * gerado aqui, o Telegram manda "/start <token>" pro nosso webhook, que
+ * resolve o token de volta pro userId e grava telegramChatId. Token expira
+ * por idade (checado em JS ao consumir, não precisa de TTL no banco).
+ */
+export const telegramLinkTokens = pgTable('telegram_link_tokens', {
+  token: text('token').primaryKey(),
+  userId: uuid('user_id')
+    .notNull()
+    .references(() => profiles.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+});
+
 export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
 export type NotificationDelivery = typeof notificationDeliveries.$inferSelect;
 export type PushToken = typeof pushTokens.$inferSelect;
+export type TelegramLinkToken = typeof telegramLinkTokens.$inferSelect;
