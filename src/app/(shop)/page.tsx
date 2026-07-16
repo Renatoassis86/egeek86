@@ -34,6 +34,11 @@ import { cn } from '@/lib/cn';
 // islands isoladas via Reveal/SceneImage/Carousel/ThemeToggle etc.
 // ============================================================
 
+// Mostra dado ao vivo (preço/destaques) sem searchParams pra disparar isso
+// sozinho — sem isso, o build tenta pré-renderizar como estática e trava
+// buscando no banco no ambiente de build (visto ao vivo no primeiro deploy).
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <>

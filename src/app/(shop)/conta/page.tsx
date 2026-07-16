@@ -18,6 +18,8 @@ const TREND_META = {
 };
 
 export const metadata = { title: 'Meus jogos' };
+// Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
+export const dynamic = 'force-dynamic';
 
 export default async function ContaPage() {
   const profile = await getCurrentProfile();

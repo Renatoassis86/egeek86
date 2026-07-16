@@ -10,6 +10,9 @@ import { Text } from '@/components/ui/text';
 import { listNetworks } from '@/server/queries/affiliate';
 import { createAffiliateOffer } from '@/server/actions/affiliate';
 
+// Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
+export const dynamic = 'force-dynamic';
+
 export default async function NewOfferPage() {
   const networks = await listNetworks();
 

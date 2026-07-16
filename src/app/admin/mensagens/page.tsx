@@ -4,6 +4,9 @@ import { Text } from '@/components/ui/text';
 import { formatBRL } from '@/lib/format';
 import { listMessagesForAdmin } from '@/server/queries/affiliate';
 
+// Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
+export const dynamic = 'force-dynamic';
+
 export default async function AdminMessagesPage() {
   const messages = await listMessagesForAdmin();
 

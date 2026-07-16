@@ -7,6 +7,9 @@ import { Text } from '@/components/ui/text';
 import { getAdminArticles } from '@/server/queries/news';
 import type { ArticleStatus, ArticleKind } from '@/db/schema';
 
+// Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
+export const dynamic = 'force-dynamic';
+
 const STATUS_LABEL: Record<ArticleStatus, string> = {
   draft: 'Rascunho',
   published: 'Publicado',

@@ -4,6 +4,10 @@ import { Text } from '@/components/ui/text';
 import { ClicksSparkline } from '@/components/admin/clicks-sparkline';
 import { getAdminDashboardMetrics, getDailyClicks } from '@/server/queries/affiliate';
 
+// Dashboard com dado ao vivo, sem searchParams — força dinâmica pra não
+// tentar pré-renderizar como estática (travava buscando no banco no build).
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboardPage() {
   const [metrics, dailyClicks] = await Promise.all([getAdminDashboardMetrics(), getDailyClicks(14)]);
 

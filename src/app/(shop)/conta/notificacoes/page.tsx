@@ -10,6 +10,8 @@ import { notificationPreferences } from '@/db/schema';
 import { requireCustomer } from '@/lib/auth/require-customer';
 
 export const metadata = { title: 'Notificações' };
+// Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
+export const dynamic = 'force-dynamic';
 
 export default async function NotificacoesPage() {
   const profile = await requireCustomer();

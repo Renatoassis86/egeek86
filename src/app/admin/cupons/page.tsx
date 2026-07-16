@@ -7,6 +7,9 @@ import { formatDiscountLabel } from '@/lib/format';
 import { listCouponsForAdmin, listNetworks } from '@/server/queries/affiliate';
 import { updateCouponStatus } from '@/server/actions/affiliate';
 
+// Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
+export const dynamic = 'force-dynamic';
+
 const statusVariant = {
   active: 'primary',
   paused: 'outline',
