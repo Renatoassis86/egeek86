@@ -14,6 +14,7 @@ import { getOfferByIdForAdmin, getOfferMetrics, listActiveCouponsByNetwork } fro
 import {
   logNewPrice,
   updateOfferStatus,
+  updateAffiliateUrl,
   reclassifyMasterProduct,
   correctGameEditionType,
 } from '@/server/actions/affiliate';
@@ -225,6 +226,16 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
           <Badge variant="outline" className="mt-2">
             Link de rastreio público: {shortLink}
           </Badge>
+
+          <form action={updateAffiliateUrl} className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-end">
+            <input type="hidden" name="id" value={offer.id} />
+            <Field label="Atualizar link de afiliado" htmlFor="affiliateUrl" className="flex-1">
+              <Input id="affiliateUrl" name="affiliateUrl" type="url" placeholder="https://..." required />
+            </Field>
+            <Button type="submit" variant="secondary" size="md">
+              Salvar link
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>

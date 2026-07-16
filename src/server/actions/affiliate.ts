@@ -273,6 +273,21 @@ export async function updateOfferStatus(formData: FormData) {
 }
 
 /**
+ * Anexa o link de afiliado de verdade — usado principalmente pra completar
+ * uma oferta 'draft' criada pela descoberta automática (que entra com um
+ * placeholder honesto, a URL pública do produto, sem rastreio de comissão).
+ */
+export async function updateAffiliateUrl(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get('id'));
+  const affiliateUrl = z.string().url().parse(formData.get('affiliateUrl'));
+
+  await db.update(affiliateOffers).set({ affiliateUrl }).where(eq(affiliateOffers.id, id));
+
+  revalidatePath(`/admin/ofertas/${id}`);
+}
+
+/**
  * Reexecuta a classificação via API — sempre atualiza os campos estruturados
  * (gameFormat/gamePlatformGen/gameCollection, vêm direto do atributo do ML,
  * seguro sobrescrever), mas só sobrescreve gameEditionType/gameEditionSource

@@ -234,7 +234,15 @@ export const affiliatePriceSource = pgEnum('affiliate_price_source', ['manual', 
 // ============================================================
 export const gameFormat = pgEnum('game_format', ['physical', 'digital', 'unknown']);
 
-export const gamePlatformGen = pgEnum('game_platform_gen', ['switch_1', 'switch_2', 'unknown']);
+export const gamePlatformGen = pgEnum('game_platform_gen', [
+  'switch_1',
+  'switch_2',
+  'ps4',
+  'ps5',
+  'xbox_one',
+  'xbox_series',
+  'unknown',
+]);
 
 export const gameEditionType = pgEnum('game_edition_type', [
   'full_game',

@@ -14,6 +14,10 @@ export const GAME_FORMAT_LABELS: Record<GameFormat, string> = {
 export const GAME_PLATFORM_GEN_LABELS: Record<GamePlatformGen, string> = {
   switch_1: 'Nintendo Switch',
   switch_2: 'Nintendo Switch 2',
+  ps4: 'PlayStation 4',
+  ps5: 'PlayStation 5',
+  xbox_one: 'Xbox One',
+  xbox_series: 'Xbox Series',
   unknown: 'Geração não identificada',
 };
 

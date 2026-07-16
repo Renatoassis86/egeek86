@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, isNotNull, isNull, or, lt, sql } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, isNull, or, lt, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks } from '@/db/schema';
 import { getPriceSource } from './price-sources';
@@ -45,7 +45,11 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
     .where(
       and(
-        eq(affiliateOffers.status, 'active'),
+        // 'draft' entra aqui de propósito: produto descoberto automaticamente
+        // (src/server/collector/discover-products.ts) começa sem link de afiliado
+        // (não publicado), mas o histórico de preço deve começar a ser construído
+        // mesmo assim — publicação e rastreamento de preço são decisões independentes.
+        inArray(affiliateOffers.status, ['active', 'draft']),
         isNotNull(affiliateOffers.externalRef),
         or(
           isNull(affiliateOffers.lastCheckedAt),

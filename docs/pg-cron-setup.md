@@ -67,6 +67,23 @@ select cron.schedule(
   );
   $$
 );
+
+-- Descoberta de produto novo no catálogo do Mercado Livre: a cada 6h — não
+-- tem a mesma urgência de preço, só precisa rodar com alguma regularidade.
+select cron.schedule(
+  'geek-deals-discover-products',
+  '0 */6 * * *',
+  $$
+  select net.http_post(
+    url := 'https://<DOMINIO>/api/cron/discover-products',
+    headers := jsonb_build_object(
+      'Authorization', 'Bearer <CRON_SECRET>',
+      'Content-Type', 'application/json'
+    ),
+    timeout_milliseconds := 55000
+  );
+  $$
+);
 ```
 
 `net.http_post` é assíncrono (fire-and-forget) — o job do cron não fica esperando a
@@ -103,7 +120,19 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://<DOMINIO>/api/w
 ```sql
 select cron.unschedule('geek-deals-collect-prices');
 select cron.unschedule('geek-deals-notify-price-drops');
+select cron.unschedule('geek-deals-discover-products');
 ```
+
+## Descoberta automática de produto — lembrete
+
+`geek-deals-discover-products` cadastra sozinho todo produto novo achado no
+catálogo do Mercado Livre (Switch/PS4/PS5/Xbox), mas sempre como oferta
+**`draft`** — o link de afiliado que gera comissão precisa ser gerado
+manualmente no painel do Mercado Livre por produto (não tem fórmula pra
+aplicar em lote), então a descoberta só alimenta catálogo/histórico de
+preço. Revisar a fila em `/admin/ofertas?status=draft`, colar o link de
+afiliado de verdade (formulário "Atualizar link de afiliado" na página de
+detalhe da oferta) e mudar o status pra `active` quando quiser publicar.
 
 ## Reforço futuro (não necessário pro v1)
 
