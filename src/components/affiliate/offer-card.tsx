@@ -109,27 +109,37 @@ export function OfferCard({
           </Text>
 
           <div className="mt-auto flex flex-col gap-1">
-            {metrics?.avgPriceCents30d != null && (
-              <Text
-                variant="caption"
-                color="tertiary"
-                className={cn(metrics.avgPriceCents30d > offer.currentPriceCents && 'line-through')}
-              >
-                Preço médio: {formatBRL(metrics.avgPriceCents30d)}
-              </Text>
-            )}
-            <Text
-              variant="mono-lg"
-              color="primary"
-              className={cn('leading-none', isFeature ? 'text-[26px] sm:text-[30px]' : 'text-[21px]')}
-            >
-              {formatBRL(offer.currentPriceCents)}
-            </Text>
+            {offer.currentPriceCents > 0 ? (
+              <>
+                {metrics?.avgPriceCents30d != null && (
+                  <Text
+                    variant="caption"
+                    color="tertiary"
+                    className={cn(metrics.avgPriceCents30d > offer.currentPriceCents && 'line-through')}
+                  >
+                    Preço médio: {formatBRL(metrics.avgPriceCents30d)}
+                  </Text>
+                )}
+                <Text
+                  variant="mono-lg"
+                  color="primary"
+                  className={cn('leading-none', isFeature ? 'text-[26px] sm:text-[30px]' : 'text-[21px]')}
+                >
+                  {formatBRL(offer.currentPriceCents)}
+                </Text>
 
-            {metrics && !metrics.isLowestEver && (
-              <Text variant="caption" color="secondary" className="inline-flex items-center gap-1">
-                <TrendingDown className="size-3" aria-hidden />
-                Menor já visto: {formatBRL(metrics.lowestPriceCents)}
+                {metrics && !metrics.isLowestEver && (
+                  <Text variant="caption" color="secondary" className="inline-flex items-center gap-1">
+                    <TrendingDown className="size-3" aria-hidden />
+                    Menor já visto: {formatBRL(metrics.lowestPriceCents)}
+                  </Text>
+                )}
+              </>
+            ) : (
+              // Item descoberto automaticamente, ainda sem nenhuma coleta de
+              // preço concluída — nunca mostrar "R$ 0,00" (parece grátis/quebrado).
+              <Text variant="body-sm" color="tertiary" className="italic">
+                Coletando preço...
               </Text>
             )}
           </div>

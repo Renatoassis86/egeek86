@@ -3,6 +3,7 @@ import { Suspense, type ReactNode } from 'react';
 import { Flame, LineChart, Sparkles } from 'lucide-react';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
+import { LetterMask } from '@/components/motion/letter-mask';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { OfferCard } from '@/components/affiliate/offer-card';
@@ -15,7 +16,7 @@ import {
   type OfferWithRelations,
   type OfferListingMetrics,
 } from '@/server/queries/affiliate';
-import type { GameFormat, GamePlatformGen } from '@/db/schema';
+import type { GameFormat, GamePlatformGen, ProductType } from '@/db/schema';
 
 export const metadata: Metadata = {
   title: 'Ofertas',
@@ -23,7 +24,16 @@ export const metadata: Metadata = {
 };
 
 const FORMAT_VALUES: readonly GameFormat[] = ['physical', 'digital', 'unknown'];
-const GEN_VALUES: readonly GamePlatformGen[] = ['switch_1', 'switch_2', 'unknown'];
+const GEN_VALUES: readonly GamePlatformGen[] = [
+  'switch_1',
+  'switch_2',
+  'ps4',
+  'ps5',
+  'xbox_one',
+  'xbox_series',
+  'unknown',
+];
+const TYPE_VALUES: readonly ProductType[] = ['game', 'console', 'accessory'];
 
 function parseEnumParam<T extends string>(
   value: string | string[] | undefined,
@@ -41,12 +51,13 @@ export default async function OffersPage({
   const sp = await searchParams;
   const gameFormat = parseEnumParam(sp.formato, FORMAT_VALUES);
   const gamePlatformGen = parseEnumParam(sp.geracao, GEN_VALUES);
+  const productType = parseEnumParam(sp.tipo, TYPE_VALUES);
   const networkId = typeof sp.rede === 'string' && sp.rede ? sp.rede : undefined;
   const sortBy = sp.ordenar === 'price_desc' ? 'price_desc' : 'price_asc';
 
   const [networks, pool] = await Promise.all([
     listNetworks(),
-    listRankedOffers({ gameFormat, gamePlatformGen, networkId, sortBy, limit: 60 }),
+    listRankedOffers({ gameFormat, gamePlatformGen, productType, networkId, sortBy, limit: 60 }),
   ]);
 
   const metricsMap = await getOfferListingMetrics(pool.map((o) => o.id));
@@ -78,7 +89,17 @@ export default async function OffersPage({
         <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.28} />
         <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.14} />
 
-        <div className="relative">
+        {/* "8" — número da marca, tratamento geométrico pedido. Fica só em
+            xl+, onde sobra folga real ao lado do texto (que já é limitado
+            a max-w-2xl/60ch, então nunca disputa espaço com o glifo). */}
+        <LetterMask
+          id="ofertas-8"
+          letter="8"
+          src="/images/ofertas/header-collage.png"
+          className="pointer-events-none absolute -right-2 top-1/2 hidden h-60 w-48 -translate-y-1/2 xl:block"
+        />
+
+        <div className="relative xl:max-w-[65%]">
           <Reveal>
             <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
               <LineChart className="size-3.5" aria-hidden />

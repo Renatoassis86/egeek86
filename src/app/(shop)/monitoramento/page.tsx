@@ -1,14 +1,28 @@
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { getUserWatches } from '@/server/queries/price-watches';
 import { getMasterProductPriceHistory, getMasterProductChangePercent } from '@/server/queries/price-history';
-import { PriceHistoryChart } from '@/components/monitoring/price-history-chart';
-import { WatchlistPanel } from '@/components/monitoring/watchlist-panel';
-import { AnimatedPrice } from '@/components/monitoring/animated-price';
+import { MonitoringBoard } from '@/components/monitoring/monitoring-board';
+
+// Ilustração decorativa do estado vazio (deslogado ou sem watchlist) — ver
+// docs/banco-mestre-prompts-imagens.md item 1.2. O dashboard com dado real
+// não leva imagem nenhuma (100% interface de dado, de propósito).
+function EmptyStateIllustration() {
+  return (
+    <div className="relative mx-auto mb-8 aspect-[8/5] w-full max-w-md overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)]">
+      <Image
+        src="/images/monitoramento/empty-state.png"
+        alt=""
+        fill
+        sizes="(min-width: 1024px) 448px, 90vw"
+        className="object-cover"
+      />
+    </div>
+  );
+}
 
 export const metadata = { title: 'Monitoramento' };
 
@@ -31,6 +45,7 @@ export default async function MonitoramentoPage({
   if (!profile) {
     return (
       <section className="mx-auto max-w-3xl px-4 lg:px-8 py-16 text-center">
+        <EmptyStateIllustration />
         <Text as="h1" variant="heading-xl">
           Monitoramento de preço
         </Text>
@@ -49,6 +64,7 @@ export default async function MonitoramentoPage({
   if (watches.length === 0) {
     return (
       <section className="mx-auto max-w-3xl px-4 lg:px-8 py-16 text-center">
+        <EmptyStateIllustration />
         <Text as="h1" variant="heading-xl">
           Monitoramento de preço
         </Text>
@@ -91,40 +107,11 @@ export default async function MonitoramentoPage({
         </Text>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-        <WatchlistPanel initialItems={watchlistItems} selectedMasterProductId={selected.masterProductId} />
-
-        <Card>
-          <CardContent className="p-5">
-            <div className="mb-4 flex items-baseline justify-between gap-4">
-              <div>
-                <Text variant="heading-md">{selected.title}</Text>
-                <Text variant="caption" color="tertiary">
-                  Menor preço agora em {selected.networkName}
-                </Text>
-              </div>
-              <Link
-                href={`/monitoramento/comparar/${selected.masterProductId}`}
-                className="group inline-flex items-center gap-1 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
-              >
-                <AnimatedPrice cents={selected.currentPriceCents} className="text-mono-lg" />
-                <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-              </Link>
-            </div>
-            <PriceHistoryChart
-              key={selected.masterProductId}
-              masterProductId={selected.masterProductId}
-              initialHistory={initialHistory}
-              initialTimeframe="1M"
-            />
-            <Text variant="caption" color="tertiary" className="mt-3">
-              <Link href={`/monitoramento/comparar/${selected.masterProductId}`} className="underline">
-                Comparar preço entre vendedores
-              </Link>
-            </Text>
-          </CardContent>
-        </Card>
-      </div>
+      <MonitoringBoard
+        watchlistItems={watchlistItems}
+        initialSelectedId={selected.masterProductId}
+        initialHistory={initialHistory}
+      />
     </section>
   );
 }

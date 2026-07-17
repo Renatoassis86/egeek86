@@ -1,5 +1,5 @@
 import 'server-only';
-import { sql, eq, and, asc, inArray } from 'drizzle-orm';
+import { sql, eq, and, asc, gt, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, affiliateSellers, masterProducts } from '@/db/schema';
 
@@ -269,7 +269,10 @@ export async function getMasterProductChangePercent(
     WITH active_offers AS (
       SELECT id AS offer_id, master_product_id, current_price_cents
       FROM affiliate_offers
-      WHERE master_product_id IN (${idList}) AND status = 'active'
+      -- current_price_cents = 0 é "ainda não coletado" (placeholder da
+      -- descoberta automática) — nunca um preço real, nunca deixar vencer
+      -- como "menor preço" de um produto.
+      WHERE master_product_id IN (${idList}) AND status = 'active' AND current_price_cents > 0
     ),
     current_lowest AS (
       SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
@@ -347,7 +350,8 @@ export async function getTopMovers({
       SELECT o.id AS offer_id, o.master_product_id, o.current_price_cents, o.slug, o.image_url, n.name AS network_name
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
-      WHERE o.status = 'active'
+      -- current_price_cents = 0 é "ainda não coletado", nunca um preço real.
+      WHERE o.status = 'active' AND o.current_price_cents > 0
     ),
     cheapest AS (
       SELECT DISTINCT ON (master_product_id) master_product_id, offer_id, current_price_cents, slug, image_url, network_name
@@ -448,7 +452,14 @@ export async function getOfferComparisonForMasterProduct(masterProductId: string
     .from(affiliateOffers)
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
     .leftJoin(affiliateSellers, eq(affiliateOffers.sellerId, affiliateSellers.id))
-    .where(and(eq(affiliateOffers.masterProductId, masterProductId), eq(affiliateOffers.status, 'active')))
+    .where(
+      and(
+        eq(affiliateOffers.masterProductId, masterProductId),
+        eq(affiliateOffers.status, 'active'),
+        // current_price_cents = 0 é "ainda não coletado", nunca um preço real.
+        gt(affiliateOffers.currentPriceCents, 0)
+      )
+    )
     .orderBy(asc(affiliateOffers.currentPriceCents));
 }
 

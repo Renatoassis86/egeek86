@@ -124,9 +124,18 @@ export function PriceHistoryChart({
         setTooltip(null);
         return;
       }
+      // Tamanho estimado do card do tooltip (w-60 = 240px; altura varia com o
+      // conteúdo, 220px cobre o pior caso) — usado só pra decidir de que lado
+      // do cursor abrir, pra nunca cortar fora do container do gráfico.
+      const containerWidth = containerRef.current?.clientWidth ?? 0;
+      const containerHeight = containerRef.current?.clientHeight ?? 0;
+      const TOOLTIP_WIDTH = 240;
+      const TOOLTIP_HEIGHT = 220;
+      const x = param.point.x + 12 + TOOLTIP_WIDTH > containerWidth ? param.point.x - TOOLTIP_WIDTH - 12 : param.point.x + 12;
+      const y = Math.min(Math.max(param.point.y - 12, 8), Math.max(containerHeight - TOOLTIP_HEIGHT - 8, 8));
       setTooltip({
-        x: param.point.x,
-        y: param.point.y,
+        x: Math.max(x, 8),
+        y,
         priceCents: Math.round(value * 100),
         offer: pointOffersRef.current[param.time as number] ?? null,
       });
@@ -276,10 +285,7 @@ function ChartTooltip({
   return (
     <div
       className="pointer-events-none absolute z-10 w-60 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-3 shadow-[var(--shadow-lg)]"
-      style={{
-        left: Math.min(Math.max(tooltip.x + 12, 8), 320),
-        top: Math.max(tooltip.y - 12, 8),
-      }}
+      style={{ left: tooltip.x, top: tooltip.y }}
     >
       <Text variant="mono-lg" className="leading-none">
         {formatBRL(tooltip.priceCents)}

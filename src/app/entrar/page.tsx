@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { Mail, Lock, User, Phone, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
+import { CornerBrackets } from '@/components/motion/corner-brackets';
 import { PLATFORM_VALUES, PLATFORM_LABELS, type Platform } from '@/lib/auth/platforms';
 import { completeRegistration } from '@/server/actions/auth';
 
@@ -23,33 +25,60 @@ function EntrarForm() {
   const [mode, setMode] = React.useState<'login' | 'register'>('login');
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[var(--color-bg-canvas)] px-4 py-10">
-      <Card className="w-full max-w-sm">
-        <CardContent className="flex flex-col gap-5 p-8">
-          <div>
-            <div className="mb-2 flex items-center gap-2 text-[var(--color-accent-hype)]">
-              <Sparkles className="size-4" />
-              <Text variant="label">Geek Deals</Text>
+    <div className="grid min-h-dvh bg-[var(--color-bg-canvas)] lg:grid-cols-2">
+      {/* Painel visual — split-screen só em lg+ (docs/dimensoes-imagens.md
+          item 17). Em telas menores o form volta a ser centralizado sozinho,
+          sem cortar a foto num painel baixo demais pra fazer sentido. */}
+      <div className="relative hidden overflow-hidden lg:block">
+        <Image
+          src="/images/login/split-panel.png"
+          alt=""
+          fill
+          priority
+          sizes="50vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-canvas)] via-transparent to-[var(--color-bg-canvas)]/25" />
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[var(--color-bg-canvas)]/50" />
+        <CornerBrackets inset={28} size={32} />
+        <div className="absolute inset-x-10 bottom-12">
+          <Text variant="label" color="tertiary">
+            Espaço Geek 86
+          </Text>
+          <Text as="p" variant="heading-md" className="mt-2 max-w-[22ch]">
+            Sua conta, seu painel de dado.
+          </Text>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center px-4 py-10">
+        <Card className="w-full max-w-sm">
+          <CardContent className="flex flex-col gap-5 p-8">
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-[var(--color-accent-hype)]">
+                <Sparkles className="size-4" />
+                <Text variant="label">Geek Deals</Text>
+              </div>
+              <Text as="h1" variant="heading-lg">
+                {mode === 'login' ? 'Entrar' : 'Criar conta'}
+              </Text>
+              <Text variant="body-sm" color="secondary" className="mt-1">
+                Acompanhe preços e receba alertas dos jogos que você quer.
+              </Text>
             </div>
-            <Text as="h1" variant="heading-lg">
-              {mode === 'login' ? 'Entrar' : 'Criar conta'}
-            </Text>
-            <Text variant="body-sm" color="secondary" className="mt-1">
-              Acompanhe preços e receba alertas dos jogos que você quer.
-            </Text>
-          </div>
 
-          {mode === 'login' ? <LoginForm next={next} /> : <RegisterForm next={next} />}
+            {mode === 'login' ? <LoginForm next={next} /> : <RegisterForm next={next} />}
 
-          <button
-            type="button"
-            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-            className="self-center text-body-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
-          >
-            {mode === 'login' ? 'Ainda não tem conta? Cadastrar' : 'Já tem conta? Entrar'}
-          </button>
-        </CardContent>
-      </Card>
+            <button
+              type="button"
+              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+              className="self-center text-body-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
+            >
+              {mode === 'login' ? 'Ainda não tem conta? Cadastrar' : 'Já tem conta? Entrar'}
+            </button>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

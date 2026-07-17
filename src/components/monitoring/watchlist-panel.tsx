@@ -41,9 +41,12 @@ interface WatchlistPanelItem {
 export function WatchlistPanel({
   initialItems,
   selectedMasterProductId,
+  onSelect,
 }: {
   initialItems: WatchlistPanelItem[];
   selectedMasterProductId: string | null;
+  /** Chamado ANTES do router.push, pra quem estiver ouvindo (ex: o gráfico) reagir na hora, sem esperar o round-trip de navegação. */
+  onSelect?: (masterProductId: string) => void;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -61,9 +64,10 @@ export function WatchlistPanel({
   usePollingRefresh(refreshWatchlist, POLL_INTERVAL_MS);
 
   function selectProduct(masterProductId: string) {
+    onSelect?.(masterProductId);
     const params = new URLSearchParams(searchParams.toString());
     params.set('jogo', masterProductId);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (

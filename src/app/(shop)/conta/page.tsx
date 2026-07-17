@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { TrendingDown, TrendingUp, Minus, Flame, Search, Bell } from 'lucide-react';
+import Image from 'next/image';
+import { TrendingDown, TrendingUp, Minus, Flame, Bell } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -52,7 +53,15 @@ export default async function ContaPage() {
         <Reveal delay={0.05}>
           <Card className="mt-8">
             <CardContent className="flex flex-col items-center gap-3 p-12 text-center">
-              <Search className="size-8 text-[var(--color-text-tertiary)]" aria-hidden />
+              <div className="relative mb-2 aspect-[8/5] w-full max-w-sm overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]">
+                <Image
+                  src="/images/conta/empty-state.png"
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 384px, 90vw"
+                  className="object-cover"
+                />
+              </div>
               <Text variant="heading-sm">Você ainda não está acompanhando nenhum jogo</Text>
               <Text variant="body-sm" color="secondary" className="max-w-[46ch]">
                 Encontre um jogo na vitrine e clique em &quot;Acompanhar preço&quot;. A partir daí

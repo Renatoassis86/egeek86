@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, count, desc, asc, eq, gte, sql, type SQL } from 'drizzle-orm';
+import { and, count, desc, asc, eq, gt, gte, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   affiliateOffers,
@@ -149,7 +149,15 @@ export interface RankedOffersFilter {
  * a ordenação embutida; fica mais simples de renderizar em seções/tabs.
  */
 export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise<OfferWithRelations[]> {
-  const conditions: SQL[] = [eq(affiliateOffers.status, 'active')];
+  const conditions: SQL[] = [
+    eq(affiliateOffers.status, 'active'),
+    // current_price_cents = 0 é "ainda não coletado" (placeholder da
+    // descoberta automática) — nunca um preço real. Sem isso, esses itens
+    // sempre "vencem" qualquer ordenação por menor preço (0 é sempre o
+    // menor valor possível), lotando vitrines de "melhor preço"/destaque
+    // com item sem preço nenhum em vez de ofertas de verdade.
+    gt(affiliateOffers.currentPriceCents, 0),
+  ];
   if (filter.productType) conditions.push(eq(masterProducts.productType, filter.productType));
   if (filter.gameFormat) conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
   if (filter.gamePlatformGen) conditions.push(eq(masterProducts.gamePlatformGen, filter.gamePlatformGen));

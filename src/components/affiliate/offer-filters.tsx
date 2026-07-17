@@ -5,6 +5,7 @@ import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
+import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import type { AffiliateNetwork } from '@/db/schema';
 
 const FORMAT_LABELS: Record<string, string> = {
@@ -12,10 +13,10 @@ const FORMAT_LABELS: Record<string, string> = {
   digital: 'Digital',
 };
 
-const GEN_LABELS: Record<string, string> = {
-  switch_1: 'Switch',
-  switch_2: 'Switch 2',
-};
+// 'unknown' fora de propósito — não é um filtro útil pro cliente escolher.
+const GEN_LABELS = Object.fromEntries(
+  Object.entries(GAME_PLATFORM_GEN_LABELS).filter(([value]) => value !== 'unknown')
+) as Record<string, string>;
 
 const SORT_LABELS: Record<string, string> = {
   price_asc: 'Menor preço',

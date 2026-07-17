@@ -13,7 +13,15 @@ import type { AffiliateOffer, GameFormat, GamePlatformGen, GameEditionType } fro
 
 const STATUS_VALUES: readonly AffiliateOffer['status'][] = ['draft', 'active', 'paused', 'expired', 'archived'];
 const FORMAT_VALUES: readonly GameFormat[] = ['physical', 'digital', 'unknown'];
-const GEN_VALUES: readonly GamePlatformGen[] = ['switch_1', 'switch_2', 'unknown'];
+const GEN_VALUES: readonly GamePlatformGen[] = [
+  'switch_1',
+  'switch_2',
+  'ps4',
+  'ps5',
+  'xbox_one',
+  'xbox_series',
+  'unknown',
+];
 const EDITION_VALUES: readonly GameEditionType[] = ['full_game', 'upgrade_pack', 'dlc', 'bundle', 'unknown'];
 
 const statusVariant = {

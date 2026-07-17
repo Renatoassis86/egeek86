@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Search, ShoppingBag, Heart, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
@@ -18,6 +19,8 @@ const navLinks = [
 ];
 
 export function AppHeader() {
+  const pathname = usePathname();
+
   return (
     <header
       className={cn(
@@ -47,21 +50,27 @@ export function AppHeader() {
 
         {/* Nav desktop */}
         <nav className="hidden lg:flex items-center gap-1" aria-label="Navegação principal">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                'px-3 h-9 inline-flex items-center rounded-[var(--radius-sm)]',
-                'text-body-sm font-medium text-[var(--color-text-secondary)]',
-                'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
-                'transition-colors duration-[var(--duration-fast)]',
-                link.highlight && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]'
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive ? 'page' : undefined}
+                className={cn(
+                  'px-3 h-9 inline-flex items-center rounded-[var(--radius-sm)]',
+                  'text-body-sm font-medium text-[var(--color-text-secondary)]',
+                  'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
+                  'transition-colors duration-[var(--duration-fast)]',
+                  link.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]',
+                  isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right actions */}

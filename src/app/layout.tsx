@@ -46,8 +46,19 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'pt_BR',
     siteName: 'Espaço Geek 86',
+    images: [
+      {
+        url: '/images/system/og-cover.png',
+        width: 1734,
+        height: 907,
+        alt: 'Espaço Geek 86 — informação real sobre games, decisões inteligentes.',
+      },
+    ],
   },
-  twitter: { card: 'summary_large_image' },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/images/system/og-cover.png'],
+  },
   applicationName: 'Espaço Geek 86',
   formatDetection: { telephone: false },
 };

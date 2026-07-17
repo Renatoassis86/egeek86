@@ -138,12 +138,20 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
             </Text>
 
             <div className="flex flex-col gap-1">
-              <Text variant="display-lg" color="primary" className="tabular leading-none">
-                {formatBRL(offer.currentPriceCents)}
-              </Text>
-              {metrics?.avgPriceCents30d != null && (
-                <Text variant="body-sm" color="secondary">
-                  Média dos últimos 30 dias: {formatBRL(metrics.avgPriceCents30d)}
+              {offer.currentPriceCents > 0 ? (
+                <>
+                  <Text variant="display-lg" color="primary" className="tabular leading-none">
+                    {formatBRL(offer.currentPriceCents)}
+                  </Text>
+                  {metrics?.avgPriceCents30d != null && (
+                    <Text variant="body-sm" color="secondary">
+                      Média dos últimos 30 dias: {formatBRL(metrics.avgPriceCents30d)}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text variant="heading-lg" color="tertiary" className="italic">
+                  Coletando preço...
                 </Text>
               )}
             </div>

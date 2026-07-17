@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   ArrowRight,
   Sparkles,
@@ -18,7 +19,10 @@ import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
 import { SceneImage, type SceneTone } from '@/components/motion/scene-image';
+import { LetterMask } from '@/components/motion/letter-mask';
+import { CornerBrackets } from '@/components/motion/corner-brackets';
 import { WeeklyPromosSection } from '@/components/geek-deals/weekly-promos-section';
+import { CategoryShortcuts } from '@/components/geek-deals/category-shortcuts';
 import { SalesHighlights } from '@/components/geek-deals/sales-highlights';
 import { cn } from '@/lib/cn';
 
@@ -43,14 +47,88 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <StatementBand />
       <WeeklyPromosSection />
+      <CategoryShortcuts />
       <SalesHighlights />
       <PriceIntelligence />
       <UniversesSection />
+      <DividerEmblem />
       <HypeTeaser />
       <Benefits />
       <NewsletterCTA />
     </>
+  );
+}
+
+// ----- Statement band ------------------------------------------
+// Banda full-bleed logo após a Hero: fundo fotográfico "puro" (a composição
+// tem 2/3 de espaço negativo à direita, pensada de propósito pra receber
+// texto por cima) + scrim em gradiente pra legibilidade + cantos estilo HUD
+// (tratamento "desconstruído" pedido). Sem Reveal de mosaico, sem cards —
+// é uma pausa editorial entre o Hero e os carrosséis de dado real.
+function StatementBand() {
+  return (
+    <section className="relative isolate overflow-hidden border-b border-[var(--color-border-subtle)]">
+      <div aria-hidden className="absolute inset-0">
+        <Image
+          src="/images/home/statement-band.png"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover object-left"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-canvas)] via-[var(--color-bg-canvas)]/55 to-[var(--color-bg-canvas)]/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-canvas)] via-transparent to-transparent" />
+      </div>
+      <CornerBrackets inset={20} size={24} />
+
+      <div className="relative mx-auto max-w-7xl px-4 lg:px-8 py-14 lg:py-20">
+        <Reveal>
+          <Text variant="label" color="tertiary" className="inline-flex items-center gap-1.5">
+            <History className="size-3.5" aria-hidden />
+            Por trás de cada preço
+          </Text>
+          <Text as="h2" variant="display-md" className="mt-3 max-w-[24ch]">
+            Um cockpit de dado pra cada jogo que você acompanha.
+          </Text>
+          <Text variant="body-md" color="secondary" className="mt-3 max-w-[46ch]">
+            Console, controle, cupom, histórico — tudo cruzado em tempo real pra você nunca
+            comprar no escuro.
+          </Text>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ----- Divider emblem (letterform "E") --------------------------
+// Um dos usos pedidos explicitamente: imagem recortada dentro de uma
+// interpretação geométrica das iniciais/número da marca (E de "Espaço").
+// Pausa editorial entre Universos e a Hype Zone, não compete com nenhum
+// texto por cima (o glifo carrega a própria legenda ao lado).
+function DividerEmblem() {
+  return (
+    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-4 lg:py-8">
+      <Reveal>
+        <div className="flex flex-col items-center gap-6 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] px-6 py-10 lg:flex-row lg:justify-center lg:gap-10 lg:py-14">
+          <LetterMask
+            id="divider-emblem-e"
+            letter="E"
+            src="/images/home/divider-emblem.png"
+            className="h-40 w-36 shrink-0 sm:h-52 sm:w-44 lg:h-64 lg:w-56"
+          />
+          <div className="max-w-[36ch] text-center lg:text-left">
+            <Text variant="label" color="tertiary">
+              Espaço Geek 86
+            </Text>
+            <Text as="p" variant="heading-md" className="mt-2">
+              Dado, curadoria e cultura geek — a mesma vitrine, num só lugar.
+            </Text>
+          </div>
+        </div>
+      </Reveal>
+    </section>
   );
 }
 
@@ -70,10 +148,22 @@ function Hero() {
       <Glow color="gold" size="xl" intensity={0.3} className="-top-64 -left-48" />
       <Glow color="hype" size="md" intensity={0.2} className="top-24 -right-32" />
 
+      {/* "G" fantasma — geometria EG86 aplicada como marca d'água atrás do
+          copy, opacidade baixa o bastante pra nunca brigar com o texto.
+          Só lg+: em telas estreitas o espaço atrás do H1 é curto demais
+          pro glifo respirar sem parecer ruído. */}
+      <LetterMask
+        id="hero-g-watermark"
+        letter="G"
+        src="/images/home/hero-watermark.png"
+        className="pointer-events-none absolute -top-6 left-0 hidden h-[420px] w-[360px] opacity-[0.16] lg:block"
+        tint={false}
+      />
+
       <div className="relative mx-auto max-w-7xl px-4 lg:px-8 pt-14 pb-20 lg:pt-24 lg:pb-28">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
           {/* Copy — coluna dominante, alinhada à esquerda */}
-          <div className="lg:col-span-7">
+          <div className="relative lg:col-span-7">
             <Reveal>
               <Badge variant="primary" size="lg">
                 <Sparkles className="size-3" />
@@ -144,19 +234,27 @@ function Hero() {
             <Reveal delay={0.1}>
               <div className="relative mt-2 aspect-[4/5] lg:mt-6">
                 <div className="absolute inset-x-6 inset-y-4 -rotate-3 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-default)] shadow-[var(--shadow-lg)]">
-                  <SceneImage alt="" tone="ink" className="absolute inset-0" />
+                  <SceneImage
+                    src="/images/hero/tile-back.png"
+                    alt=""
+                    tone="ink"
+                    focal="left"
+                    className="absolute inset-0"
+                  />
                 </div>
                 <div className="absolute inset-2 rotate-2 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-default)] shadow-[var(--shadow-xl)]">
                   <SceneImage
+                    src="/images/hero/tile-main.png"
                     alt="Vitrine de colecionáveis Espaço Geek 86"
                     tone="gold"
+                    focal="left"
                     caption="Vitrine em curadoria"
                     priority
                     className="absolute inset-0"
                   />
                 </div>
                 <div className="absolute -bottom-4 -right-3 size-28 -rotate-6 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-strong)] shadow-[var(--shadow-lg)] sm:size-32">
-                  <SceneImage alt="" tone="ember" className="absolute inset-0" />
+                  <SceneImage src="/images/hero/tile-accent.png" alt="" tone="ember" className="absolute inset-0" />
                 </div>
                 <Card className="absolute -bottom-6 -left-4 w-56 border-[var(--color-border-strong)] bg-[var(--color-bg-canvas)]/90 p-4 shadow-[var(--shadow-lg)] backdrop-blur-md sm:-left-8 sm:w-60">
                   <Badge variant="hype" size="sm" className="mb-2">
@@ -370,6 +468,9 @@ function HypeTeaser() {
     <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-20 lg:py-28">
       <Card variant="elevated" className="relative overflow-hidden">
         <Glow color="hype" size="lg" intensity={0.3} className="-top-32 -right-24" />
+        {/* Glow extra na costura do corte diagonal — sangramento de luz
+            "colando" o painel de imagem ao resto do card, só lg+. */}
+        <Glow color="hype" size="sm" intensity={0.3} className="hidden lg:block top-1/3 left-[62%]" />
 
         <div className="relative grid lg:grid-cols-12">
           <div className="flex flex-col justify-center p-8 lg:col-span-7 lg:p-14">
@@ -395,10 +496,15 @@ function HypeTeaser() {
             </Button>
           </div>
 
-          <div className="relative min-h-[260px] lg:col-span-5 lg:min-h-full">
+          {/* Corte geométrico diagonal (referência Mevos) — só lg+: em
+              mobile o clip-path angular corta demais a foto num painel
+              baixo e largo, então cai pra retângulo reto simples. */}
+          <div className="relative min-h-[260px] lg:col-span-5 lg:min-h-full lg:[clip-path:polygon(10%_0,100%_0,100%_100%,0%_100%)]">
             <SceneImage
+              src="/images/hype-zone/banner.png"
               alt="Drop ao vivo da Hype Zone"
               tone="ember"
+              focal="left"
               caption="Drop ao vivo · em produção"
               className="absolute inset-0"
             />

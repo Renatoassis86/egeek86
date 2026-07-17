@@ -24,6 +24,10 @@ export async function getBestActiveOfferIdsForMasterProducts(
       sql`, `
     )})
       AND status = 'active'
+      -- current_price_cents = 0 é "ainda não coletado" (placeholder da
+      -- descoberta automática), nunca um preço real — nunca deixar isso
+      -- vencer como "menor preço" de um produto.
+      AND current_price_cents > 0
     ORDER BY master_product_id, current_price_cents ASC
   `);
 
