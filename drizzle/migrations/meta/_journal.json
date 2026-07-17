@@ -78,6 +78,13 @@
       "when": 1784255052214,
       "tag": "0010_master_product_type",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784256117518,
+      "tag": "0011_affiliate_link_pending",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "affiliate_offers" ADD COLUMN "affiliate_link_pending" boolean DEFAULT false NOT NULL;

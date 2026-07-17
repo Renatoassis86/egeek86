@@ -274,17 +274,23 @@ export async function updateOfferStatus(formData: FormData) {
 
 /**
  * Anexa o link de afiliado de verdade — usado principalmente pra completar
- * uma oferta 'draft' criada pela descoberta automática (que entra com um
- * placeholder honesto, a URL pública do produto, sem rastreio de comissão).
+ * uma oferta criada pela descoberta automática (que entra com um placeholder
+ * honesto, a URL pública do produto, sem rastreio de comissão). Limpa
+ * affiliateLinkPending: é esse flag que libera o CTA de compra pro público
+ * (ver /go/[slug]/route.ts) — antes disso o item aparece mas não é clicável.
  */
 export async function updateAffiliateUrl(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get('id'));
   const affiliateUrl = z.string().url().parse(formData.get('affiliateUrl'));
 
-  await db.update(affiliateOffers).set({ affiliateUrl }).where(eq(affiliateOffers.id, id));
+  await db
+    .update(affiliateOffers)
+    .set({ affiliateUrl, affiliateLinkPending: false })
+    .where(eq(affiliateOffers.id, id));
 
   revalidatePath(`/admin/ofertas/${id}`);
+  revalidatePath('/ofertas');
 }
 
 /**

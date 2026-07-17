@@ -418,6 +418,8 @@ export interface ComparisonOfferItem {
   /** Tag "vendedor alterou o preço" — null quando nunca mudou desde que a oferta foi criada. */
   lastPriceChangeAt: Date | null;
   previousPriceCents: number | null;
+  /** true = ainda não tem link de afiliado real, CTA de compra fica desabilitado no front. */
+  affiliateLinkPending: boolean;
 }
 
 /**
@@ -441,6 +443,7 @@ export async function getOfferComparisonForMasterProduct(masterProductId: string
       sellerTotalSales: affiliateSellers.totalSales,
       lastPriceChangeAt: affiliateOffers.lastPriceChangeAt,
       previousPriceCents: affiliateOffers.previousPriceCents,
+      affiliateLinkPending: affiliateOffers.affiliateLinkPending,
     })
     .from(affiliateOffers)
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))

@@ -253,6 +253,9 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
           // comissão em 100% dos cliques. Admin ainda pode trocar pelo link
           // real a qualquer momento em /admin/ofertas/[id].
           affiliateUrl: `https://www.mercadolivre.com.br/p/${result.id}`,
+          // Aparece publicado, mas o CTA de compra fica desabilitado (ver
+          // /go/[slug]/route.ts) até o admin colar o link de afiliado real.
+          affiliateLinkPending: true,
           imageUrl: result.pictures?.[0]?.url ?? null,
           externalRef: result.id,
           // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.

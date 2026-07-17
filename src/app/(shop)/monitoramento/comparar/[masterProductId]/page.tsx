@@ -4,6 +4,7 @@ import { ShieldCheck, ArrowRight, Flame, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
+import { cn } from '@/lib/cn';
 import { SceneImage } from '@/components/motion/scene-image';
 import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
 import { formatBRL } from '@/lib/format';
@@ -141,13 +142,23 @@ export default async function CompararPrecosPage({
             <Text variant="mono-lg" color="primary">
               {formatBRL(cheapest.currentPriceCents)}
             </Text>
-            <Link
-              href={`/go/${cheapest.slug}`}
-              className="inline-flex items-center gap-1 text-body-sm font-medium text-[var(--color-accent-primary)]"
-            >
-              Ver oferta
-              <ArrowRight className="size-3.5" />
-            </Link>
+            {cheapest.affiliateLinkPending ? (
+              <Text
+                variant="body-sm"
+                color="tertiary"
+                title="Esse item ainda está sendo preparado — o link de compra libera em breve."
+              >
+                Link em preparação
+              </Text>
+            ) : (
+              <Link
+                href={`/go/${cheapest.slug}`}
+                className="inline-flex items-center gap-1 text-body-sm font-medium text-[var(--color-accent-primary)]"
+              >
+                Ver oferta
+                <ArrowRight className="size-3.5" />
+              </Link>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -168,12 +179,13 @@ export default async function CompararPrecosPage({
                 ((offer.currentPriceCents - cheapest.currentPriceCents) / cheapest.currentPriceCents) * 100
               );
 
-              return (
-                <Link
-                  key={offer.offerId}
-                  href={`/go/${offer.slug}`}
-                  className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-[var(--color-bg-surface)]"
-                >
+              const rowClassName = cn(
+                'flex items-center gap-4 px-4 py-3 transition-colors',
+                offer.affiliateLinkPending ? 'opacity-60' : 'hover:bg-[var(--color-bg-surface)]'
+              );
+
+              const rowContent = (
+                <>
                   <div className="min-w-0 flex-1">
                     <Text variant="body-sm" className="truncate font-medium">
                       {offer.title}
@@ -196,6 +208,11 @@ export default async function CompararPrecosPage({
                           {trust.label}
                         </Text>
                       )}
+                      {offer.affiliateLinkPending && (
+                        <Text variant="caption" color="tertiary">
+                          Link em preparação
+                        </Text>
+                      )}
                     </div>
                     <PriceChangeTag
                       lastPriceChangeAt={offer.lastPriceChangeAt}
@@ -209,6 +226,20 @@ export default async function CompararPrecosPage({
                       +{diffPercent}%
                     </Text>
                   </div>
+                </>
+              );
+
+              if (offer.affiliateLinkPending) {
+                return (
+                  <div key={offer.offerId} className={rowClassName}>
+                    {rowContent}
+                  </div>
+                );
+              }
+
+              return (
+                <Link key={offer.offerId} href={`/go/${offer.slug}`} className={rowClassName}>
+                  {rowContent}
                 </Link>
               );
             })}

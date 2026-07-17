@@ -23,6 +23,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.redirect(new URL('/ofertas', request.url), 302);
   }
 
+  // Link ainda não é o de afiliado real (descoberta automática, aguardando
+  // admin colar o de verdade) — nunca redireciona pra fora nem loga clique
+  // de afiliado (não existe comissão possível ainda). Volta pra própria
+  // página da oferta, efetivamente "não faz nada" do ponto de vista do
+  // visitante (front já nem deveria renderizar isso como link clicável,
+  // isso aqui é a segunda trava, não a única).
+  if (offer.affiliateLinkPending) {
+    return NextResponse.redirect(new URL(`/ofertas/${slug}`, request.url), 302);
+  }
+
   await db.insert(analyticsEvents).values({
     eventName: 'affiliate_click',
     properties: {

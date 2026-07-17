@@ -3,6 +3,7 @@ import {
   uuid,
   text,
   bigint,
+  boolean,
   timestamp,
   uniqueIndex,
   index,
@@ -35,6 +36,13 @@ export const affiliateOffers = pgTable(
     title: text('title').notNull(),
     slug: citext('slug').notNull(),
     affiliateUrl: text('affiliate_url').notNull(),
+    // true = affiliate_url ainda é o placeholder honesto (página pública do
+    // produto/vendedor, sem rastreio) que a descoberta automática usa —
+    // nunca gera comissão. Setado pela descoberta automática ao criar,
+    // limpo em updateAffiliateUrl quando o admin cola o link real. Enquanto
+    // true, o front mostra o item mas não deixa clicar pra comprar (ver
+    // /go/[slug]/route.ts e a página de detalhe da oferta).
+    affiliateLinkPending: boolean('affiliate_link_pending').notNull().default(false),
     imageUrl: text('image_url'),
     storeName: text('store_name'),
     // ID do item na loja de origem (ex: "MLB1234567890" no Mercado Livre) —

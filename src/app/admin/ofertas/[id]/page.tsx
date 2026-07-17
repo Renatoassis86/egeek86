@@ -217,6 +217,11 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
 
       <Card>
         <CardContent className="p-5">
+          {offer.affiliateLinkPending && (
+            <Badge variant="danger" size="sm" className="mb-3">
+              Link pendente — item está no ar, mas o botão de compra fica desabilitado pro público até você colar o link real aqui embaixo
+            </Badge>
+          )}
           <Text variant="caption" color="tertiary" className="block mb-1">
             Link de afiliado (não exposto publicamente)
           </Text>

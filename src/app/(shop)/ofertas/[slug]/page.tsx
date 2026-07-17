@@ -198,12 +198,24 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
             )}
 
             <div className="flex flex-wrap gap-2">
-              <Button asChild size="lg" className="flex-1 sm:flex-none">
-                <a href={`/go/${offer.slug}`} target="_blank" rel="noopener noreferrer nofollow sponsored">
+              {offer.affiliateLinkPending ? (
+                <Button
+                  size="lg"
+                  disabled
+                  className="flex-1 sm:flex-none"
+                  title="Esse item ainda está sendo preparado — o link de compra libera em breve."
+                >
                   <ShieldCheck className="size-4" />
-                  {`Ver oferta na ${offer.network.name}`}
-                </a>
-              </Button>
+                  Link de compra em preparação
+                </Button>
+              ) : (
+                <Button asChild size="lg" className="flex-1 sm:flex-none">
+                  <a href={`/go/${offer.slug}`} target="_blank" rel="noopener noreferrer nofollow sponsored">
+                    <ShieldCheck className="size-4" />
+                    {`Ver oferta na ${offer.network.name}`}
+                  </a>
+                </Button>
+              )}
               {profile ? (
                 <WatchToggleButton masterProductId={offer.masterProductId} initialWatching={isWatching} />
               ) : (

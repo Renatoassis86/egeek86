@@ -141,9 +141,16 @@ export default async function AdminOffersPage({
                       </Text>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={statusVariant[offer.status]} size="sm">
-                        {statusLabel[offer.status]}
-                      </Badge>
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant={statusVariant[offer.status]} size="sm">
+                          {statusLabel[offer.status]}
+                        </Badge>
+                        {offer.affiliateLinkPending && (
+                          <Badge variant="danger" size="sm" title="Sem link de afiliado real ainda — clique fica desabilitado pro público">
+                            Link pendente
+                          </Badge>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-1 text-right">
                       <Button asChild variant="ghost" size="icon-sm" aria-label="Ver detalhes da oferta">
@@ -177,6 +184,11 @@ export default async function AdminOffersPage({
                         <Badge variant={statusVariant[offer.status]} size="sm">
                           {statusLabel[offer.status]}
                         </Badge>
+                        {offer.affiliateLinkPending && (
+                          <Badge variant="danger" size="sm">
+                            Link pendente
+                          </Badge>
+                        )}
                         {offer.masterProduct.gameFormat !== 'unknown' && (
                           <Badge variant="outline" size="sm">
                             {GAME_FORMAT_LABELS[offer.masterProduct.gameFormat]}

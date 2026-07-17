@@ -226,6 +226,9 @@ async function applySnapshotsToGroup(
           // Admin ainda pode trocar pelo link real do vendedor específico
           // a qualquer momento em /admin/ofertas/[id].
           affiliateUrl: `https://www.mercadolivre.com.br/p/${group.externalRef}`,
+          // Aparece publicado, mas o CTA de compra fica desabilitado (ver
+          // /go/[slug]/route.ts) até o admin colar o link de afiliado real.
+          affiliateLinkPending: true,
           imageUrl: masterProduct.defaultImages[0] ?? null,
           externalRef: group.externalRef,
           sellerId,
