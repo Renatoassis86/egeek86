@@ -75,7 +75,7 @@ export function PriceHistoryChart({
     const palette = CHART_PALETTES[useThemeStore.getState().resolvedTheme];
 
     const chart = createChart(containerRef.current, {
-      layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: palette.text },
+      layout: { background: { type: ColorType.Solid, color: 'transparent' }, textColor: palette.text, attributionLogo: false },
       grid: { vertLines: { color: palette.grid }, horzLines: { color: palette.grid } },
       timeScale: { borderColor: palette.grid, timeVisible: true, secondsVisible: false },
       rightPriceScale: { borderColor: palette.grid },
