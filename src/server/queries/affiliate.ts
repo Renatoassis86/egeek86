@@ -360,6 +360,14 @@ export interface OfferListingMetrics {
  * renderizar a vitrine) — cobre só o que os cards precisam: menor preço
  * histórico e desconto vs. preço de tabela do snapshot mais recente. Pra
  * métricas completas (tendência, média 30d) de UMA oferta, use getOfferMetrics.
+ *
+ * IMPORTANTE: lowest_price_cents e avg_price_30d são calculados por
+ * MASTER_PRODUCT (entre TODOS os vendedores ativos daquele produto), não só
+ * a partir do histórico da oferta em questão — mesmo princípio já usado em
+ * getMasterProductPriceHistory/getBestActiveOfferIdsForMasterProducts.
+ * Sem isso, duas ofertas do mesmo produto (vendedores diferentes) mostravam
+ * "preço médio" diferente uma da outra, o que não faz sentido: o produto
+ * tem UMA média só, formada pelo preço de todo mundo que vende ele.
  */
 export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<string, OfferListingMetrics>> {
   const map = new Map<string, OfferListingMetrics>();
@@ -378,34 +386,49 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
     lowest_price_cents: string;
     avg_price_30d: string | null;
   }>(sql`
-    WITH latest AS (
+    WITH target_offers AS (
+      SELECT id AS offer_id, master_product_id
+      FROM affiliate_offers
+      WHERE id IN (${idList})
+    ),
+    latest AS (
       SELECT DISTINCT ON (offer_id) offer_id, price_cents, list_price_cents, discount_percent
       FROM affiliate_price_snapshots
-      WHERE offer_id IN (${idList})
+      WHERE offer_id IN (SELECT offer_id FROM target_offers)
       ORDER BY offer_id, collected_at DESC
     ),
-    lowest AS (
-      SELECT offer_id, MIN(price_cents)::bigint AS lowest_price_cents
-      FROM affiliate_price_snapshots
-      WHERE offer_id IN (${idList})
-      GROUP BY offer_id
+    -- Todo vendedor ATIVO do mesmo produto (não só as ofertas pedidas) —
+    -- base pro menor preço/média serem do produto, não de um vendedor só.
+    sibling_offers AS (
+      SELECT ao.id AS offer_id, ao.master_product_id
+      FROM affiliate_offers ao
+      WHERE ao.master_product_id IN (SELECT DISTINCT master_product_id FROM target_offers)
+        AND ao.status = 'active'
     ),
-    avg30d AS (
-      SELECT offer_id, AVG(price_cents)::numeric AS avg_price_30d
-      FROM affiliate_price_snapshots
-      WHERE offer_id IN (${idList}) AND collected_at >= now() - interval '30 days'
-      GROUP BY offer_id
+    lowest_by_product AS (
+      SELECT so.master_product_id, MIN(s.price_cents)::bigint AS lowest_price_cents
+      FROM affiliate_price_snapshots s
+      INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
+      GROUP BY so.master_product_id
+    ),
+    avg30d_by_product AS (
+      SELECT so.master_product_id, AVG(s.price_cents)::numeric AS avg_price_30d
+      FROM affiliate_price_snapshots s
+      INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
+      WHERE s.collected_at >= now() - interval '30 days'
+      GROUP BY so.master_product_id
     )
     SELECT
       latest.offer_id,
       latest.price_cents::bigint AS current_price_cents,
       latest.list_price_cents,
       latest.discount_percent,
-      lowest.lowest_price_cents,
-      avg30d.avg_price_30d
+      lowest_by_product.lowest_price_cents,
+      avg30d_by_product.avg_price_30d
     FROM latest
-    JOIN lowest ON latest.offer_id = lowest.offer_id
-    LEFT JOIN avg30d ON latest.offer_id = avg30d.offer_id
+    INNER JOIN target_offers ON target_offers.offer_id = latest.offer_id
+    LEFT JOIN lowest_by_product ON lowest_by_product.master_product_id = target_offers.master_product_id
+    LEFT JOIN avg30d_by_product ON avg30d_by_product.master_product_id = target_offers.master_product_id
   `);
 
   for (const row of rows) {

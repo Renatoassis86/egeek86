@@ -84,7 +84,19 @@ export function SiteFooter() {
             <Text variant="caption" color="tertiary">
               Criado por
             </Text>
-            <Image src="/arkos.png" alt="Arkos Intelligence" width={1200} height={1400} className="h-5 w-auto rounded-[3px]" />
+            {/* arkos.png é um lockup vertical inteiro (marca "A" + wordmark
+                ARKOS + slogan) — recorta só a marca do topo pro selo de
+                rodapé, senão a imagem inteira espremida em poucos px vira
+                um triângulo genérico sem ler como "A". */}
+            <span className="relative h-6 w-6 overflow-hidden">
+              <Image
+                src="/arkos.png"
+                alt="Arkos Intelligence"
+                fill
+                sizes="24px"
+                className="object-cover object-[50%_16%]"
+              />
+            </span>
           </a>
         </div>
       </div>

@@ -29,8 +29,8 @@ const GENRE_MODIFIERS = [
 
 interface SearchTerm {
   term: string;
-  kind: 'game' | 'console';
-  /** Só usado quando kind='console' — já sabemos a plataforma pelo termo de busca, não precisa inferir de atributo. */
+  kind: 'game' | 'console' | 'accessory';
+  /** Usado quando kind='console'/'accessory' com plataforma conhecida — já sabemos pelo termo de busca, não precisa inferir de atributo. */
   platform?: GamePlatformGen;
 }
 
@@ -57,10 +57,53 @@ const CONSOLE_SEARCH_TERMS: SearchTerm[] = [
 ];
 
 /**
+ * Escopo do catálogo pedido pelo usuário (2026-07-17): jogo, console,
+ * joystick/controle avulso, e tecnologia ligada à experiência de jogo —
+ * nada de acessório genérico de montagem/proteção (suporte de parede, capa,
+ * skin etc — ver NON_PRODUCT_KEYWORDS abaixo, que filtra esse ruído).
+ */
+const ACCESSORY_SEARCH_TERMS: SearchTerm[] = [
+  { term: 'controle dualsense ps5', kind: 'accessory', platform: 'ps5' },
+  { term: 'controle ps4', kind: 'accessory', platform: 'ps4' },
+  { term: 'controle xbox series', kind: 'accessory', platform: 'xbox_series' },
+  { term: 'controle xbox one', kind: 'accessory', platform: 'xbox_one' },
+  { term: 'joy-con nintendo switch', kind: 'accessory', platform: 'switch_1' },
+  { term: 'joystick pc gamer', kind: 'accessory' },
+  { term: 'headset gamer', kind: 'accessory' },
+  { term: 'cadeira gamer', kind: 'accessory' },
+  { term: 'mouse gamer', kind: 'accessory' },
+  { term: 'teclado mecanico gamer', kind: 'accessory' },
+  { term: 'volante gamer', kind: 'accessory' },
+];
+
+/**
+ * Ruído recorrente na busca textual do Mercado Livre pra termo de
+ * console/acessório: monte/proteção/capa não é o produto em si, é algo QUE
+ * VESTE o produto — nunca deve virar item de catálogo aqui.
+ */
+const NON_PRODUCT_KEYWORDS = [
+  /suporte/i,
+  /\bparede\b/i,
+  /\bcapa\b/i,
+  /\bcase\b/i,
+  /\bskin\b/i,
+  /prote[cç][aã]o/i,
+  /pel[ií]cula/i,
+  /\badesivo\b/i,
+  /\bbolsa\b/i,
+  /\bmochila\b/i,
+  /base de carregamento/i,
+];
+
+function isNonProductAccessory(title: string): boolean {
+  return NON_PRODUCT_KEYWORDS.some((re) => re.test(title));
+}
+
+/**
  * Não processamos tudo isso numa execução só (ver TERMS_PER_RUN abaixo) —
  * roda em rotação, um pedaço por vez, ao longo do dia.
  */
-const SEARCH_TERMS: SearchTerm[] = [...GAME_SEARCH_TERMS, ...CONSOLE_SEARCH_TERMS];
+const SEARCH_TERMS: SearchTerm[] = [...GAME_SEARCH_TERMS, ...CONSOLE_SEARCH_TERMS, ...ACCESSORY_SEARCH_TERMS];
 
 /** Quantos termos por execução — ajustado pra caber com folga no limite de 60s do Vercel mesmo com latência real de rede. */
 const TERMS_PER_RUN = 10;
@@ -182,12 +225,16 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
     // variação do catálogo) não deve derrubar o resto dos resultados desse termo.
     for (const result of results) {
       try {
-        // Busca textual do Mercado Livre pra termo de console não é filtro
-        // exato — às vezes devolve jogo ("Jogo X Para Console Switch") junto
-        // com hardware de verdade. Descarta o caso mais óbvio; o resto do
-        // ruído (acessório, capa etc) fica pra revisão manual em
-        // /admin/ofertas?status=draft, igual qualquer outro item descoberto.
-        if (searchTerm.kind === 'console' && /^jogo\b/i.test(result.name)) {
+        // Busca textual do Mercado Livre pra termo de console/acessório não é
+        // filtro exato — às vezes devolve jogo junto ("Jogo X Para Console
+        // Switch"), ou acessório de montagem/proteção que não é o produto em
+        // si (suporte de parede, capa, skin). Descarta os dois casos aqui —
+        // fora do escopo pedido: jogo, console, joystick/controle avulso,
+        // tecnologia de experiência de jogo.
+        if (searchTerm.kind !== 'game' && /^jogo\b/i.test(result.name)) {
+          continue;
+        }
+        if (searchTerm.kind !== 'game' && isNonProductAccessory(result.name)) {
           continue;
         }
 

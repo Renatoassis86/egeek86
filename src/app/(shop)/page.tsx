@@ -62,42 +62,44 @@ export default function HomePage() {
 }
 
 // ----- Statement band ------------------------------------------
-// Banda full-bleed logo após a Hero: fundo fotográfico "puro" (a composição
-// tem 2/3 de espaço negativo à direita, pensada de propósito pra receber
-// texto por cima) + scrim em gradiente pra legibilidade + cantos estilo HUD
-// (tratamento "desconstruído" pedido). Sem Reveal de mosaico, sem cards —
-// é uma pausa editorial entre o Hero e os carrosséis de dado real.
+// Banda em formato "cartela" (cartão contido, não full-bleed de ponta a
+// ponta da viewport) — a composição da foto foi pensada pra uma proporção
+// mais fechada; esticada em 100vw ela sobra espaço negativo demais do lado
+// direito. Como cartão com aspect-ratio fixo, a imagem cobre o container de
+// canto a canto de verdade (object-cover garante isso em qualquer tela).
 function StatementBand() {
   return (
-    <section className="relative isolate overflow-hidden border-b border-[var(--color-border-subtle)]">
-      <div aria-hidden className="absolute inset-0">
-        <Image
-          src="/images/home/statement-band.png"
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover object-left"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-canvas)] via-[var(--color-bg-canvas)]/55 to-[var(--color-bg-canvas)]/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-canvas)] via-transparent to-transparent" />
-      </div>
-      <CornerBrackets inset={20} size={24} />
+    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
+      <Reveal>
+        <div className="relative isolate aspect-[16/7] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] sm:aspect-[21/9]">
+          <Image
+            src="/images/home/statement-band.png"
+            alt=""
+            fill
+            sizes="(min-width: 1280px) 1280px, 100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-canvas)] via-[var(--color-bg-canvas)]/45 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-canvas)]/80 via-transparent to-transparent" />
+          <CornerBrackets inset={16} size={20} />
 
-      <div className="relative mx-auto max-w-7xl px-4 lg:px-8 py-14 lg:py-20">
-        <Reveal>
-          <Text variant="label" color="tertiary" className="inline-flex items-center gap-1.5">
-            <History className="size-3.5" aria-hidden />
-            Por trás de cada preço
-          </Text>
-          <Text as="h2" variant="display-md" className="mt-3 max-w-[24ch]">
-            Um cockpit de dado pra cada jogo que você acompanha.
-          </Text>
-          <Text variant="body-md" color="secondary" className="mt-3 max-w-[46ch]">
-            Console, controle, cupom, histórico — tudo cruzado em tempo real pra você nunca
-            comprar no escuro.
-          </Text>
-        </Reveal>
-      </div>
+          <div className="relative flex h-full items-center px-6 py-8 sm:px-10 lg:px-14">
+            <div>
+              <Text variant="label" color="tertiary" className="inline-flex items-center gap-1.5">
+                <History className="size-3.5" aria-hidden />
+                Por trás de cada preço
+              </Text>
+              <Text as="h2" variant="heading-xl" className="mt-3 max-w-[22ch] lg:text-display-md">
+                Um cockpit de dado pra cada jogo que você acompanha.
+              </Text>
+              <Text variant="body-md" color="secondary" className="mt-3 max-w-[42ch]">
+                Console, controle, cupom, histórico — tudo cruzado em tempo real pra você nunca
+                comprar no escuro.
+              </Text>
+            </div>
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -105,20 +107,34 @@ function StatementBand() {
 // ----- Divider emblem (letterform "E") --------------------------
 // Um dos usos pedidos explicitamente: imagem recortada dentro de uma
 // interpretação geométrica das iniciais/número da marca (E de "Espaço").
-// Pausa editorial entre Universos e a Hype Zone, não compete com nenhum
-// texto por cima (o glifo carrega a própria legenda ao lado).
+// Pausa editorial entre Universos e a Hype Zone — os 4 glifos (E · G · 8 · 6,
+// iniciais + número da marca) juntos no mesmo painel, cada um com uma foto
+// diferente, formando o emblema "EG86" completo num só lugar da página (em
+// vez de espalhado letra por letra em headers de outras rotas).
 function DividerEmblem() {
+  const glyphs: { id: string; letter: 'E' | 'G' | '8' | '6'; src: string }[] = [
+    { id: 'eg86-e', letter: 'E', src: '/images/home/divider-emblem.png' },
+    { id: 'eg86-g', letter: 'G', src: '/images/emblem/g-gadgets.png' },
+    { id: 'eg86-8', letter: '8', src: '/images/emblem/8-drop-reveal.png' },
+    { id: 'eg86-6', letter: '6', src: '/images/emblem/6-collectibles.png' },
+  ];
+
   return (
-    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-4 lg:py-8">
+    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
       <Reveal>
-        <div className="flex flex-col items-center gap-6 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] px-6 py-10 lg:flex-row lg:justify-center lg:gap-10 lg:py-14">
-          <LetterMask
-            id="divider-emblem-e"
-            letter="E"
-            src="/images/home/divider-emblem.png"
-            className="h-40 w-36 shrink-0 sm:h-52 sm:w-44 lg:h-64 lg:w-56"
-          />
-          <div className="max-w-[36ch] text-center lg:text-left">
+        <div className="flex flex-col items-center gap-8 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] px-6 py-10 lg:py-14">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 lg:gap-4">
+            {glyphs.map(({ id, letter, src }) => (
+              <LetterMask
+                key={id}
+                id={id}
+                letter={letter}
+                src={src}
+                className="h-24 w-20 shrink-0 sm:h-36 sm:w-28 lg:h-48 lg:w-40"
+              />
+            ))}
+          </div>
+          <div className="max-w-[48ch] text-center">
             <Text variant="label" color="tertiary">
               Espaço Geek 86
             </Text>
@@ -147,18 +163,6 @@ function Hero() {
     >
       <Glow color="gold" size="xl" intensity={0.3} className="-top-64 -left-48" />
       <Glow color="hype" size="md" intensity={0.2} className="top-24 -right-32" />
-
-      {/* "G" fantasma — geometria EG86 aplicada como marca d'água atrás do
-          copy, opacidade baixa o bastante pra nunca brigar com o texto.
-          Só lg+: em telas estreitas o espaço atrás do H1 é curto demais
-          pro glifo respirar sem parecer ruído. */}
-      <LetterMask
-        id="hero-g-watermark"
-        letter="G"
-        src="/images/home/hero-watermark.png"
-        className="pointer-events-none absolute -top-6 left-0 hidden h-[420px] w-[360px] opacity-[0.16] lg:block"
-        tint={false}
-      />
 
       <div className="relative mx-auto max-w-7xl px-4 lg:px-8 pt-14 pb-20 lg:pt-24 lg:pb-28">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
