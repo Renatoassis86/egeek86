@@ -61,8 +61,9 @@ interface OfferGroup {
  * seria feita várias vezes por execução, uma pra cada oferta irmã. Cada
  * resultado devolvido pela fonte vira uma oferta própria: se já existe uma
  * affiliate_offer pra aquele (produto, rede, vendedor), atualiza; senão,
- * cria como 'draft' (mesma regra de discover-products.ts — vendedor novo
- * nunca é publicado sozinho, precisa de link de afiliado real).
+ * cria já publicada ('active', mesma regra de discover-products.ts — decisão
+ * explícita do usuário de priorizar vitrine sempre cheia sobre garantir link
+ * de afiliado real em 100% dos itens desde o primeiro instante).
  */
 export async function collectPrices(): Promise<CollectPricesSummary> {
   const dueOffers = await db
@@ -77,10 +78,12 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
     .where(
       and(
-        // 'draft' entra aqui de propósito: produto descoberto automaticamente
-        // (src/server/collector/discover-products.ts) começa sem link de afiliado
-        // (não publicado), mas o histórico de preço deve começar a ser construído
-        // mesmo assim — publicação e rastreamento de preço são decisões independentes.
+        // 'draft' entra aqui de propósito: publicação e rastreamento de preço
+        // são decisões independentes — mesmo uma oferta ainda não publicada
+        // (ex: rascunho criado manualmente pelo admin) já acumula histórico.
+        // Descoberta automática hoje já entra direto como 'active' (ver
+        // discover-products.ts), então 'draft' aqui cobre principalmente o
+        // fluxo manual do admin.
         inArray(affiliateOffers.status, ['active', 'draft']),
         isNotNull(affiliateOffers.externalRef),
         or(
@@ -217,16 +220,18 @@ async function applySnapshotsToGroup(
           title: masterProduct.name,
           slug,
           // Placeholder honesto (página de catálogo pública, deixa o
-          // visitante escolher o vendedor) — nunca exposto publicamente
-          // enquanto status='draft'. Admin troca pelo link de afiliado real
-          // do vendedor específico antes de publicar.
+          // visitante escolher o vendedor) — publica direto (decisão
+          // explícita do usuário, 2026-07-17: vitrine sempre cheia importa
+          // mais que garantir link de afiliado real em 100% dos itens).
+          // Admin ainda pode trocar pelo link real do vendedor específico
+          // a qualquer momento em /admin/ofertas/[id].
           affiliateUrl: `https://www.mercadolivre.com.br/p/${group.externalRef}`,
           imageUrl: masterProduct.defaultImages[0] ?? null,
           externalRef: group.externalRef,
           sellerId,
           currentPriceCents: result.priceCents,
-          status: 'draft',
-          highlightNote: 'Vendedor adicional descoberto na coleta de preço, aguardando link de afiliado',
+          status: 'active',
+          publishedAt: new Date(),
           lastCheckedAt: new Date(),
         })
         .returning();

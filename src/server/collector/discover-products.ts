@@ -106,12 +106,15 @@ async function saveCursor(index: number): Promise<void> {
 }
 
 /**
- * Descobre produto NOVO no catálogo do Mercado Livre e cadastra sozinho —
- * mas sempre como oferta 'draft' (nunca 'active'): o link de afiliado que
- * gera comissão precisa ser gerado manualmente no painel do Mercado Livre
- * por produto (confirmado em investigação anterior — não existe fórmula de
- * parâmetro pra aplicar em lote), então a descoberta automática só alimenta
- * o catálogo/histórico de preço, nunca publica uma oferta monetizada sozinha.
+ * Descobre produto NOVO no catálogo do Mercado Livre e cadastra sozinho,
+ * já publicado (status='active') — decisão explícita do usuário
+ * (2026-07-17): a vitrine sempre cheia, atualizada sozinha, importa mais
+ * que garantir link de afiliado real em 100% dos itens. O link de afiliado
+ * que gera comissão de verdade continua exigindo geração manual no painel
+ * do Mercado Livre por produto (não existe fórmula de parâmetro pra aplicar
+ * em lote) — até o admin trocar (/admin/ofertas/[id]), o item fica no ar
+ * com um link honesto pra página pública do produto, sem rastreio de
+ * comissão nesse meio-tempo.
  *
  * Processa só uma fatia de SEARCH_TERMS por execução (rotação por cursor
  * persistido em system_config) — com o cron rodando periodicamente, a lista
@@ -243,18 +246,19 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
           networkId: network.id,
           title: result.name,
           slug: offerSlug,
-          // Placeholder honesto (página pública real do produto) — nunca é
-          // exposto publicamente enquanto status='draft' (/go/[slug] só serve
-          // oferta 'active'). Admin troca pelo link de afiliado de verdade
-          // antes de publicar.
+          // Placeholder honesto (página pública real do produto, sem
+          // rastreio de comissão) — decisão explícita do usuário (2026-07-17):
+          // publica direto em vez de esperar o admin colar o link de afiliado
+          // de verdade, priorizando vitrine sempre cheia sobre garantir
+          // comissão em 100% dos cliques. Admin ainda pode trocar pelo link
+          // real a qualquer momento em /admin/ofertas/[id].
           affiliateUrl: `https://www.mercadolivre.com.br/p/${result.id}`,
           imageUrl: result.pictures?.[0]?.url ?? null,
           externalRef: result.id,
-          // Ainda sem preço coletado — o próximo ciclo do coletor de preço
-          // (que já processa 'draft', ver collect-prices.ts) preenche o real.
+          // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.
           currentPriceCents: 0,
-          status: 'draft',
-          highlightNote: 'Descoberto automaticamente, aguardando link de afiliado',
+          status: 'active',
+          publishedAt: new Date(),
         });
 
         summary.created++;

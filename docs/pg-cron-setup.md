@@ -131,13 +131,21 @@ select cron.unschedule('geek-deals-discover-products');
 ## Descoberta automática de produto — lembrete
 
 `geek-deals-discover-products` cadastra sozinho todo produto novo achado no
-catálogo do Mercado Livre (Switch/PS4/PS5/Xbox), mas sempre como oferta
-**`draft`** — o link de afiliado que gera comissão precisa ser gerado
-manualmente no painel do Mercado Livre por produto (não tem fórmula pra
-aplicar em lote), então a descoberta só alimenta catálogo/histórico de
-preço. Revisar a fila em `/admin/ofertas?status=draft`, colar o link de
-afiliado de verdade (formulário "Atualizar link de afiliado" na página de
-detalhe da oferta) e mudar o status pra `active` quando quiser publicar.
+catálogo do Mercado Livre (jogos Switch/PS4/PS5/Xbox e consoles/hardware) e
+`geek-deals-collect-prices` cadastra sozinho todo vendedor novo de um
+produto já existente — **os dois já entram como `active` direto, publicados
+na hora, sem esperar nenhum comando** (decisão explícita do usuário,
+2026-07-17: vitrine sempre cheia importa mais que garantir link de afiliado
+real em 100% dos itens desde o primeiro instante).
+
+**Trade-off aceito conscientemente**: o link de afiliado que gera comissão
+de verdade continua exigindo geração manual no painel do Mercado Livre por
+produto (não existe fórmula pra aplicar em lote) — até alguém trocar,
+o item fica no ar com um link honesto pra página pública do produto,
+**sem rastreio de comissão nesse meio-tempo**. Trocar pelo link real
+quando quiser: formulário "Atualizar link de afiliado" na página de
+detalhe da oferta (`/admin/ofertas/[id]`), não precisa mudar o status
+(já publica sozinho).
 
 ## Reforço futuro (não necessário pro v1)
 
