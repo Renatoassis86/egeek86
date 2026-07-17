@@ -43,6 +43,17 @@ function parseEnumParam<T extends string>(
   return v != null && (allowed as readonly string[]).includes(v) ? (v as T) : undefined;
 }
 
+/** Cards de plataforma (Home) linkam com `?geracao=ps4,ps5` pra cobrir a marca inteira. */
+function parseEnumListParam<T extends string>(
+  value: string | string[] | undefined,
+  allowed: readonly T[]
+): T[] | undefined {
+  const v = Array.isArray(value) ? value[0] : value;
+  if (v == null) return undefined;
+  const parsed = v.split(',').filter((item): item is T => (allowed as readonly string[]).includes(item));
+  return parsed.length > 0 ? parsed : undefined;
+}
+
 export default async function OffersPage({
   searchParams,
 }: {
@@ -50,7 +61,7 @@ export default async function OffersPage({
 }) {
   const sp = await searchParams;
   const gameFormat = parseEnumParam(sp.formato, FORMAT_VALUES);
-  const gamePlatformGen = parseEnumParam(sp.geracao, GEN_VALUES);
+  const gamePlatformGen = parseEnumListParam(sp.geracao, GEN_VALUES);
   const productType = parseEnumParam(sp.tipo, TYPE_VALUES);
   const networkId = typeof sp.rede === 'string' && sp.rede ? sp.rede : undefined;
   const sortBy = sp.ordenar === 'price_desc' ? 'price_desc' : 'price_asc';

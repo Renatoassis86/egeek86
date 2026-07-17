@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, count, desc, asc, eq, gt, gte, sql, type SQL } from 'drizzle-orm';
+import { and, count, desc, asc, eq, gt, gte, inArray, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   affiliateOffers,
@@ -134,7 +134,8 @@ export async function listOffersForAdmin(): Promise<OfferWithRelations[]> {
 export interface RankedOffersFilter {
   productType?: ProductType;
   gameFormat?: GameFormat;
-  gamePlatformGen?: GamePlatformGen;
+  /** Cards de plataforma (Home) agrupam mais de uma geração, ex: PS4+PS5. */
+  gamePlatformGen?: GamePlatformGen | GamePlatformGen[];
   gameEditionType?: GameEditionType;
   networkId?: string;
   minSellerSales?: number;
@@ -160,7 +161,11 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   ];
   if (filter.productType) conditions.push(eq(masterProducts.productType, filter.productType));
   if (filter.gameFormat) conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
-  if (filter.gamePlatformGen) conditions.push(eq(masterProducts.gamePlatformGen, filter.gamePlatformGen));
+  if (Array.isArray(filter.gamePlatformGen)) {
+    if (filter.gamePlatformGen.length > 0) conditions.push(inArray(masterProducts.gamePlatformGen, filter.gamePlatformGen));
+  } else if (filter.gamePlatformGen) {
+    conditions.push(eq(masterProducts.gamePlatformGen, filter.gamePlatformGen));
+  }
   if (filter.gameEditionType) conditions.push(eq(masterProducts.gameEditionType, filter.gameEditionType));
   if (filter.networkId) conditions.push(eq(affiliateOffers.networkId, filter.networkId));
   if (filter.minSellerSales != null) conditions.push(sql`${affiliateSellers.totalSales} >= ${filter.minSellerSales}`);

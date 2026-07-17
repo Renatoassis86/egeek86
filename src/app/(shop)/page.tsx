@@ -22,7 +22,7 @@ import { SceneImage, type SceneTone } from '@/components/motion/scene-image';
 import { LetterMask } from '@/components/motion/letter-mask';
 import { CornerBrackets } from '@/components/motion/corner-brackets';
 import { WeeklyPromosSection } from '@/components/geek-deals/weekly-promos-section';
-import { CategoryShortcuts } from '@/components/geek-deals/category-shortcuts';
+import { PlatformShowcase } from '@/components/geek-deals/platform-showcase';
 import { SalesHighlights } from '@/components/geek-deals/sales-highlights';
 import { cn } from '@/lib/cn';
 
@@ -49,7 +49,7 @@ export default function HomePage() {
       <Hero />
       <StatementBand />
       <WeeklyPromosSection />
-      <CategoryShortcuts />
+      <PlatformShowcase />
       <SalesHighlights />
       <PriceIntelligence />
       <UniversesSection />
@@ -379,12 +379,12 @@ function PriceIntelligence() {
 // com SceneImage por tom variando gold/ember/ink, no espírito
 // Netflix/Steam de categoria com imagem, não ícone solto.
 const universes = [
-  { slug: 'naruto', label: 'Naruto' },
-  { slug: 'one-piece', label: 'One Piece' },
-  { slug: 'marvel', label: 'Marvel' },
-  { slug: 'star-wars', label: 'Star Wars' },
-  { slug: 'pokemon', label: 'Pokémon' },
-  { slug: 'dragon-ball', label: 'Dragon Ball' },
+  { slug: 'naruto', label: 'Naruto', image: '/images/universos/naruto.png' },
+  { slug: 'one-piece', label: 'One Piece', image: '/images/universos/one-piece.png' },
+  { slug: 'marvel', label: 'Marvel', image: '/images/universos/marvel.png' },
+  { slug: 'star-wars', label: 'Star Wars', image: '/images/universos/star-wars.png' },
+  { slug: 'pokemon', label: 'Pokémon', image: '/images/universos/pokemon.png' },
+  { slug: 'dragon-ball', label: 'Dragon Ball', image: '/images/universos/dragon-ball.png' },
 ];
 
 const universeTones: SceneTone[] = ['gold', 'ember', 'ink'];
@@ -436,6 +436,7 @@ function UniversesSection() {
             >
               <Card interactive className="relative aspect-[3/4] overflow-hidden lg:aspect-auto lg:h-full">
                 <SceneImage
+                  src={u.image}
                   alt={u.label}
                   tone={universeTones[i % universeTones.length]}
                   caption="Em curadoria"
