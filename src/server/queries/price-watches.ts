@@ -1,5 +1,5 @@
 import 'server-only';
-import { eq, and, inArray, sql } from 'drizzle-orm';
+import { eq, and, inArray, ilike, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliatePriceWatches, masterProducts, affiliateOffers, affiliateNetworks } from '@/db/schema';
 import { getOfferMetrics, type OfferMetrics } from './affiliate';
@@ -117,4 +117,64 @@ export async function getWatchedMasterProductIds(userId: string): Promise<Set<st
     .where(and(eq(affiliatePriceWatches.userId, userId), eq(affiliatePriceWatches.isActive, true)));
 
   return new Set(rows.map((r) => r.masterProductId));
+}
+
+export interface WatchSearchResult {
+  masterProductId: string;
+  name: string;
+  imageUrl: string | null;
+  currentPriceCents: number | null;
+  networkName: string | null;
+  alreadyWatched: boolean;
+}
+
+/**
+ * Busca por nome pra o campo "+ Adicionar símbolo" do painel de
+ * Monitoramento (estilo TradingView) — resolve cada resultado pro seu
+ * melhor preço ativo (mesma lógica de getUserWatches) e marca se o usuário
+ * já acompanha, pra desenhar "Adicionado" em vez de duplicar o watch.
+ */
+export async function searchMasterProductsToWatch(query: string, userId: string, limit = 8): Promise<WatchSearchResult[]> {
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return [];
+
+  const [rows, watchedIds] = await Promise.all([
+    db
+      .select({ id: masterProducts.id, name: masterProducts.name, defaultImages: masterProducts.defaultImages })
+      .from(masterProducts)
+      .where(ilike(masterProducts.name, `%${trimmed}%`))
+      .limit(limit),
+    getWatchedMasterProductIds(userId),
+  ]);
+
+  if (rows.length === 0) return [];
+
+  const bestOfferIds = await getBestActiveOfferIdsForMasterProducts(rows.map((r) => r.id));
+  const offerIds = [...bestOfferIds.values()];
+  const offerRows = offerIds.length
+    ? await db
+        .select({
+          id: affiliateOffers.id,
+          currentPriceCents: affiliateOffers.currentPriceCents,
+          networkName: affiliateNetworks.name,
+        })
+        .from(affiliateOffers)
+        .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
+        .where(inArray(affiliateOffers.id, offerIds))
+    : [];
+  const offerById = new Map(offerRows.map((o) => [o.id, o]));
+
+  return rows.map((r) => {
+    const offerId = bestOfferIds.get(r.id);
+    const offer = offerId ? offerById.get(offerId) : null;
+    const images = r.defaultImages as unknown as string[] | null;
+    return {
+      masterProductId: r.id,
+      name: r.name,
+      imageUrl: images?.[0] ?? null,
+      currentPriceCents: offer?.currentPriceCents ?? null,
+      networkName: offer?.networkName ?? null,
+      alreadyWatched: watchedIds.has(r.id),
+    };
+  });
 }

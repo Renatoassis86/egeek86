@@ -25,6 +25,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'parâmetros inválidos' }, { status: 400 });
   }
 
-  const points = await getMasterProductPriceHistory(parsed.data.masterProductId, parsed.data.timeframe);
-  return NextResponse.json({ points });
+  const result = await getMasterProductPriceHistory(parsed.data.masterProductId, parsed.data.timeframe);
+  return NextResponse.json(result);
 }

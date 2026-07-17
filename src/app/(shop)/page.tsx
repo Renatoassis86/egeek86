@@ -86,9 +86,9 @@ function Hero() {
                 as="h1"
                 id="hero-title"
                 variant="display-xl"
-                className="mt-6 max-w-[22ch] tracking-tight lg:text-display-2xl"
+                className="mt-6 max-w-[24ch] tracking-tight lg:max-w-[32ch] lg:text-display-2xl"
               >
-                Informação real.
+                Informação real sobre games
                 <br />
                 <span className="bg-gradient-to-r from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] bg-clip-text text-transparent">
                   Decisões inteligentes.

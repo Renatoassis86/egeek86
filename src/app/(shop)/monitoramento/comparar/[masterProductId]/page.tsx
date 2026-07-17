@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ShieldCheck, ArrowRight, Flame } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Flame, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
@@ -11,6 +11,45 @@ import { getSellerTrustInfo, sellerTrustTextColor } from '@/lib/affiliate/labels
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { getMasterProductSummary, getOfferComparisonForMasterProduct } from '@/server/queries/price-history';
 import { getWatchedMasterProductIds } from '@/server/queries/price-watches';
+
+const PRICE_CHANGE_RECENT_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** "há 3h" / "há 2 dias" — só usado nessa tela, não vale virar util compartilhado ainda. */
+function formatRelativeTime(date: Date): string {
+  const diffMs = Date.now() - date.getTime();
+  const hours = Math.round(diffMs / (60 * 60 * 1000));
+  if (hours < 1) return 'há poucos minutos';
+  if (hours < 24) return `há ${hours}h`;
+  const days = Math.round(hours / 24);
+  return `há ${days} dia${days > 1 ? 's' : ''}`;
+}
+
+function PriceChangeTag({
+  lastPriceChangeAt,
+  previousPriceCents,
+  currentPriceCents,
+}: {
+  lastPriceChangeAt: Date | null;
+  previousPriceCents: number | null;
+  currentPriceCents: number;
+}) {
+  if (!lastPriceChangeAt || previousPriceCents == null) return null;
+  if (Date.now() - lastPriceChangeAt.getTime() > PRICE_CHANGE_RECENT_MS) return null;
+
+  const direction = currentPriceCents < previousPriceCents ? 'success' : 'danger';
+
+  return (
+    <Text
+      variant="caption"
+      color={direction}
+      className="inline-flex items-center gap-1"
+      title={`Preço anterior: ${formatBRL(previousPriceCents)}`}
+    >
+      <History className="size-3" />
+      Vendedor alterou o preço {formatRelativeTime(lastPriceChangeAt)}
+    </Text>
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -92,6 +131,11 @@ export default async function CompararPrecosPage({
             <Text variant="caption" color="tertiary">
               {cheapest.networkName}
             </Text>
+            <PriceChangeTag
+              lastPriceChangeAt={cheapest.lastPriceChangeAt}
+              previousPriceCents={cheapest.previousPriceCents}
+              currentPriceCents={cheapest.currentPriceCents}
+            />
           </div>
           <div className="flex flex-col items-end gap-2 sm:text-right">
             <Text variant="mono-lg" color="primary">
@@ -153,6 +197,11 @@ export default async function CompararPrecosPage({
                         </Text>
                       )}
                     </div>
+                    <PriceChangeTag
+                      lastPriceChangeAt={offer.lastPriceChangeAt}
+                      previousPriceCents={offer.previousPriceCents}
+                      currentPriceCents={offer.currentPriceCents}
+                    />
                   </div>
                   <div className="shrink-0 text-right">
                     <Text variant="mono-md">{formatBRL(offer.currentPriceCents)}</Text>

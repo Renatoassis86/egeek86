@@ -14,6 +14,8 @@ export interface ChartPalette {
   areaBottom: string;
   up: string;
   down: string;
+  /** Linha de média móvel — precisa contrastar com o dourado da série principal. */
+  movingAverage: string;
 }
 
 export const CHART_PALETTES: Record<'dark' | 'light', ChartPalette> = {
@@ -27,6 +29,7 @@ export const CHART_PALETTES: Record<'dark' | 'light', ChartPalette> = {
     areaBottom: 'rgba(212, 175, 55, 0.02)',
     up: '#10B981',
     down: '#EF4444',
+    movingAverage: '#5B8DEF',
   },
   light: {
     background: '#FAF7F0',
@@ -38,5 +41,6 @@ export const CHART_PALETTES: Record<'dark' | 'light', ChartPalette> = {
     areaBottom: 'rgba(184, 144, 31, 0.02)',
     up: '#10B981',
     down: '#EF4444',
+    movingAverage: '#3B6FD6',
   },
 };

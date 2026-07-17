@@ -48,6 +48,13 @@ export const affiliateOffers = pgTable(
     sellerId: uuid('seller_id').references(() => affiliateSellers.id),
     // Cache do último snapshot — mesmo padrão de products.viewCount/popularityScore.
     currentPriceCents: bigint('current_price_cents', { mode: 'number' }).notNull(),
+    // Tag "vendedor alterou o preço" — setado em record-price-snapshot.ts
+    // sempre que um novo snapshot chega com price_cents diferente do cache
+    // atual (nunca no primeiro snapshot de uma oferta recém-criada, já que
+    // não há "antes" pra comparar). previousPriceCents guarda o valor de
+    // antes da última mudança, pra mostrar "de R$X para R$Y" na UI.
+    lastPriceChangeAt: timestamp('last_price_change_at', { withTimezone: true }),
+    previousPriceCents: bigint('previous_price_cents', { mode: 'number' }),
     currency: text('currency').notNull().default('BRL'),
     status: affiliateOfferStatus('status').notNull().default('draft'),
     highlightNote: text('highlight_note'),

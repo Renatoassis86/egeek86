@@ -152,14 +152,25 @@ Cada resultado tem um `id` (esse é o `catalog_product_id` — vira o
 - Jogo Mario Kart World Switch 2 — `MLB49246742` — R$ 488,00
 - Jogo Nintendo Switch Princess Peach Showtime — `MLB32487605` — R$ 496,00
 
-### Implicação de design
+### Implicação de design (revisado em 2026-07-16)
 
-Como rastreamos pelo `catalog_product_id` (produto canônico), o preço
-rastreado é o **melhor preço ativo entre todos os vendedores daquele
-produto no Mercado Livre** — não necessariamente o preço exato do vendedor
-específico que está no link de afiliado cadastrado. Isso é o comportamento
-correto pra uma plataforma de inteligência de preço (se o buy box mudar de
-vendedor, o preço rastreado acompanha o mercado).
+Versão inicial só guardava o vencedor do buy box (`results[0]`) e descartava
+o resto do array — funcionava pra "qual é o melhor preço agora", mas jogava
+fora o histórico de preço dos outros vendedores do mesmo produto, que a
+própria resposta já traz de graça. Corrigido: `fetchSnapshots` retorna TODOS
+os vendedores do array `results`, um `PriceSnapshotResult` por vendedor
+(cada um com `externalSellerId`/`externalItemId` próprios).
+
+`collect-prices.ts` cria uma `affiliate_offer` por vendedor detectado (uma
+por `(master_product_id, network_id, seller_id)`) — a que já existia
+continua sendo atualizada normalmente; vendedor novo (nunca visto pra esse
+produto) entra como `status: 'draft'` (mesma regra de
+`discover-products.ts`: preço já começa a ser rastreado, mas só publica com
+link de afiliado real colado manualmente pelo admin). O "melhor preço atual"
+do produto continua sendo calculado em cima disso — só que agora como o
+`MIN()` real entre as ofertas de todos os vendedores rastreados, calculado
+em `getMasterProductPriceHistory`/`getBestActiveOfferIdsForMasterProducts`,
+em vez de já vir pré-resolvido pela API numa oferta só.
 
 ## 6. Rate limits
 

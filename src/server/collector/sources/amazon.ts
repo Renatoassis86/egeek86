@@ -9,7 +9,7 @@ import { registerPriceSource, type PriceSource, type PriceSnapshotResult } from 
  */
 const amazonSource: PriceSource = {
   networkSlug: 'amazon',
-  async fetchSnapshot(): Promise<PriceSnapshotResult | null> {
+  async fetchSnapshots(): Promise<PriceSnapshotResult[]> {
     throw new Error(
       'Amazon: coleta ainda não configurada. Falta credenciar a Amazon PA-API 5.0 (AMAZON_PA_API_ACCESS_KEY, AMAZON_PA_API_SECRET_KEY, AMAZON_PA_API_PARTNER_TAG). Aguardando credenciais.'
     );

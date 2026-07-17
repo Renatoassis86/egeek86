@@ -14,7 +14,7 @@ import { citext } from './_types';
 import { brands } from './brands';
 import { categories } from './categories';
 import { franchises } from './franchises';
-import { gameFormat, gamePlatformGen, gameEditionType, gameEditionSource } from './_enums';
+import { productType, gameFormat, gamePlatformGen, gameEditionType, gameEditionSource } from './_enums';
 
 /**
  * master_products — catálogo canônico controlado pela plataforma.
@@ -38,6 +38,10 @@ export const masterProducts = pgTable(
     attributes: jsonb('attributes').notNull().default({}),
     defaultImages: jsonb('default_images').notNull().default([]),
     isVerified: boolean('is_verified').notNull().default(false),
+    // Distingue jogo de hardware/acessório no mesmo catálogo — todo produto
+    // já existente é 'game' (default), nada muda pra ele. 'console' reaproveita
+    // gamePlatformGen abaixo pra dizer QUAL console é (não pra qual roda).
+    productType: productType('product_type').notNull().default('game'),
     // Classificação de jogos (Geek Deals) — gameFormat/gamePlatformGen vêm
     // direto de atributo estruturado do Mercado Livre (FORMAT/CONSOLE_VERSION),
     // gameEditionType é a única inferida por regra de palavra-chave sobre o
@@ -73,6 +77,7 @@ export const masterProducts = pgTable(
 
 export type MasterProduct = typeof masterProducts.$inferSelect;
 
+export type ProductType = (typeof productType.enumValues)[number];
 export type GameFormat = (typeof gameFormat.enumValues)[number];
 export type GamePlatformGen = (typeof gamePlatformGen.enumValues)[number];
 export type GameEditionType = (typeof gameEditionType.enumValues)[number];

@@ -17,6 +17,7 @@ import {
   type GameFormat,
   type GamePlatformGen,
   type GameEditionType,
+  type ProductType,
 } from '@/db/schema';
 
 type MasterProductPick = Pick<
@@ -131,6 +132,7 @@ export async function listOffersForAdmin(): Promise<OfferWithRelations[]> {
 }
 
 export interface RankedOffersFilter {
+  productType?: ProductType;
   gameFormat?: GameFormat;
   gamePlatformGen?: GamePlatformGen;
   gameEditionType?: GameEditionType;
@@ -148,6 +150,7 @@ export interface RankedOffersFilter {
  */
 export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise<OfferWithRelations[]> {
   const conditions: SQL[] = [eq(affiliateOffers.status, 'active')];
+  if (filter.productType) conditions.push(eq(masterProducts.productType, filter.productType));
   if (filter.gameFormat) conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
   if (filter.gamePlatformGen) conditions.push(eq(masterProducts.gamePlatformGen, filter.gamePlatformGen));
   if (filter.gameEditionType) conditions.push(eq(masterProducts.gameEditionType, filter.gameEditionType));

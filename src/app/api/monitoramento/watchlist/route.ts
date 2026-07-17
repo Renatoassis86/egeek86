@@ -9,6 +9,7 @@ export interface WatchlistApiItem {
   masterProductId: string;
   slug: string;
   title: string;
+  imageUrl: string | null;
   networkName: string;
   currentPriceCents: number;
   changePercent: number | null;
@@ -37,6 +38,7 @@ export async function GET() {
     masterProductId: w.masterProductId,
     slug: w.offerSlug,
     title: w.title,
+    imageUrl: w.imageUrl,
     networkName: w.networkName,
     currentPriceCents: w.currentPriceCents,
     changePercent: changeMap.get(w.masterProductId)?.changePercent ?? null,

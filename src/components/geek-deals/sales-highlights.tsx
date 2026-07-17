@@ -14,18 +14,26 @@ async function fetchRow(title: string, href: string, filter: RankedOffersFilter)
  * Módulo de vendas em destaque — dado real (listRankedOffers), não mockup.
  * Segmentado por preço e por geração de console. Só físico aqui de propósito
  * (decisão do produto): digital fica reservado pro filtro em /ofertas, não
- * disputa espaço de destaque na home. Hoje só temos Nintendo Switch
- * catalogado (Mercado Livre) — PS4/Xbox aparecem sozinhos aqui assim que
- * existir fonte de dado pra eles, sem precisar mexer neste componente.
+ * disputa espaço de destaque na home. Cada linha só aparece quando existe
+ * pelo menos 1 oferta real daquela geração — PS4/PS5/Xbox somem sozinhos até
+ * a descoberta automática (discover-products.ts, já busca esses termos)
+ * popular catálogo real pra eles, sem precisar mexer neste componente.
  */
 export async function SalesHighlights() {
-  const [cheapest, switch2, switch1] = await Promise.all([
+  const [cheapest, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne] = await Promise.all([
     fetchRow('Menor preço agora', '/ofertas?ordenar=price_asc&formato=physical', { sortBy: 'price_asc', gameFormat: 'physical' }),
+    // Consoles (hardware) — productType='console' cruza todas as plataformas
+    // na mesma linha, não segmenta por geração como as linhas de jogo abaixo.
+    fetchRow('Consoles', '/ofertas', { productType: 'console' }),
     fetchRow('Switch 2', '/ofertas?geracao=switch_2&formato=physical', { gamePlatformGen: 'switch_2', gameFormat: 'physical' }),
     fetchRow('Switch 1', '/ofertas?geracao=switch_1&formato=physical', { gamePlatformGen: 'switch_1', gameFormat: 'physical' }),
+    fetchRow('PS5', '/ofertas?geracao=ps5&formato=physical', { gamePlatformGen: 'ps5', gameFormat: 'physical' }),
+    fetchRow('PS4', '/ofertas?geracao=ps4&formato=physical', { gamePlatformGen: 'ps4', gameFormat: 'physical' }),
+    fetchRow('Xbox Series', '/ofertas?geracao=xbox_series&formato=physical', { gamePlatformGen: 'xbox_series', gameFormat: 'physical' }),
+    fetchRow('Xbox One', '/ofertas?geracao=xbox_one&formato=physical', { gamePlatformGen: 'xbox_one', gameFormat: 'physical' }),
   ]);
 
-  const rows = [cheapest, switch2, switch1].filter((r) => r.offers.length > 0);
+  const rows = [cheapest, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne].filter((r) => r.offers.length > 0);
   if (rows.length === 0) return null;
 
   const allOfferIds = rows.flatMap((r) => r.offers.map((o) => o.id));

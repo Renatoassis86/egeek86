@@ -230,6 +230,16 @@ export const affiliateOfferStatus = pgEnum('affiliate_offer_status', [
 export const affiliatePriceSource = pgEnum('affiliate_price_source', ['manual', 'api', 'scrape']);
 
 // ============================================================
+// Geek Deals — Tipo de produto
+// ============================================================
+// Distingue jogo de hardware/acessório no mesmo catálogo (master_products).
+// gameFormat/gamePlatformGen/gameEditionType só fazem sentido pra
+// productType='game' — 'console' reaproveita gamePlatformGen (mesmo enum de
+// plataforma: ps4/ps5/xbox_one/xbox_series/switch_1/switch_2) só que com
+// outro significado: "qual console isso É", não "pra qual console isso serve".
+export const productType = pgEnum('product_type', ['game', 'console', 'accessory']);
+
+// ============================================================
 // Geek Deals — Classificação de jogos
 // ============================================================
 export const gameFormat = pgEnum('game_format', ['physical', 'digital', 'unknown']);

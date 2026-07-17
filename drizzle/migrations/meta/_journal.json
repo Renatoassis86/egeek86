@@ -64,6 +64,20 @@
       "when": 1784234241091,
       "tag": "0008_game_platform_gen_console_variants",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1784254615059,
+      "tag": "0009_offer_price_change_tag",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784255052214,
+      "tag": "0010_master_product_type",
+      "breakpoints": true
     }
   ]
 }

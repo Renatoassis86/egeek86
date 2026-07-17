@@ -9,7 +9,7 @@ import { registerPriceSource, type PriceSource, type PriceSnapshotResult } from 
  */
 const shopeeSource: PriceSource = {
   networkSlug: 'shopee',
-  async fetchSnapshot(): Promise<PriceSnapshotResult | null> {
+  async fetchSnapshots(): Promise<PriceSnapshotResult[]> {
     throw new Error(
       'Shopee: coleta ainda não configurada. Falta credenciar a Shopee Affiliate API (SHOPEE_AFFILIATE_APP_ID, SHOPEE_AFFILIATE_APP_SECRET). Aguardando credenciais.'
     );

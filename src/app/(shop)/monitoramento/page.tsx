@@ -64,7 +64,7 @@ export default async function MonitoramentoPage({
   }
 
   const selected = watches.find((w) => w.masterProductId === jogo) ?? watches[0];
-  const [initialPoints, changeMap] = await Promise.all([
+  const [initialHistory, changeMap] = await Promise.all([
     getMasterProductPriceHistory(selected.masterProductId, '1M'),
     getMasterProductChangePercent(watches.map((w) => w.masterProductId)),
   ]);
@@ -73,6 +73,7 @@ export default async function MonitoramentoPage({
     masterProductId: w.masterProductId,
     slug: w.offerSlug,
     title: w.title,
+    imageUrl: w.imageUrl,
     networkName: w.networkName,
     currentPriceCents: w.currentPriceCents,
     changePercent: changeMap.get(w.masterProductId)?.changePercent ?? null,
@@ -111,8 +112,9 @@ export default async function MonitoramentoPage({
               </Link>
             </div>
             <PriceHistoryChart
+              key={selected.masterProductId}
               masterProductId={selected.masterProductId}
-              initialData={initialPoints}
+              initialHistory={initialHistory}
               initialTimeframe="1M"
             />
             <Text variant="caption" color="tertiary" className="mt-3">

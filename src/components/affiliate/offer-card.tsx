@@ -109,9 +109,13 @@ export function OfferCard({
           </Text>
 
           <div className="mt-auto flex flex-col gap-1">
-            {metrics?.listPriceCents && metrics.listPriceCents > offer.currentPriceCents && (
-              <Text variant="caption" color="tertiary" className="line-through">
-                {formatBRL(metrics.listPriceCents)}
+            {metrics?.avgPriceCents30d != null && (
+              <Text
+                variant="caption"
+                color="tertiary"
+                className={cn(metrics.avgPriceCents30d > offer.currentPriceCents && 'line-through')}
+              >
+                Preço médio: {formatBRL(metrics.avgPriceCents30d)}
               </Text>
             )}
             <Text

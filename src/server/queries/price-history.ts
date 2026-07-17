@@ -1,5 +1,5 @@
 import 'server-only';
-import { sql, eq, and, asc } from 'drizzle-orm';
+import { sql, eq, and, asc, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, affiliateSellers, masterProducts } from '@/db/schema';
 
@@ -14,11 +14,89 @@ const TIMEFRAME_INTERVALS: Record<Exclude<PriceHistoryTimeframe, 'Tudo'>, string
   '1A': '365 days',
 };
 
+/** Espelha TIMEFRAME_INTERVALS em ms — pra calcular o início da janela no app,
+ * sem duplicar parsing de intervalo do Postgres. */
+const TIMEFRAME_MS: Record<Exclude<PriceHistoryTimeframe, 'Tudo'>, number> = {
+  '1D': 24 * 60 * 60 * 1000,
+  '1S': 7 * 24 * 60 * 60 * 1000,
+  '1M': 30 * 24 * 60 * 60 * 1000,
+  '3M': 90 * 24 * 60 * 60 * 1000,
+  '6M': 180 * 24 * 60 * 60 * 1000,
+  '1A': 365 * 24 * 60 * 60 * 1000,
+};
+
+/**
+ * Janela da média móvel, por período exibido — mesmo espírito de MA7/MA25 de
+ * gráfico de bolsa, mas escalada pelo próprio período em vez de fixa: no "1D"
+ * uma janela de dias ficaria achatada num ponto só; no "1A" uma janela de
+ * horas seria ruído puro. É por TEMPO (não por quantidade de pontos), porque
+ * os eventos de coleta são irregulares — dia com muito vendedor postando
+ * preço tem mais pontos que dia parado, e isso não pode distorcer a média.
+ */
+const MOVING_AVERAGE_WINDOW_MS: Record<PriceHistoryTimeframe, number> = {
+  '1D': 4 * 60 * 60 * 1000,
+  '1S': 24 * 60 * 60 * 1000,
+  '1M': 3 * 24 * 60 * 60 * 1000,
+  '3M': 7 * 24 * 60 * 60 * 1000,
+  '6M': 14 * 24 * 60 * 60 * 1000,
+  '1A': 30 * 24 * 60 * 60 * 1000,
+  Tudo: 30 * 24 * 60 * 60 * 1000,
+};
+
+/** Média móvel por janela de tempo (não por contagem de pontos) — two-pointer, O(n), assume `points` já ordenado por time. */
+function computeMovingAverage(points: PricePoint[], windowMs: number): PricePoint[] {
+  const windowSeconds = windowMs / 1000;
+  const result: PricePoint[] = [];
+  let sum = 0;
+  let start = 0;
+
+  for (let i = 0; i < points.length; i++) {
+    sum += points[i].value;
+    while (points[start].time < points[i].time - windowSeconds) {
+      sum -= points[start].value;
+      start++;
+    }
+    const count = i - start + 1;
+    result.push({ time: points[i].time, value: sum / count });
+  }
+
+  return result;
+}
+
 export interface PricePoint {
   /** Segundos desde epoch (UTCTimestamp), formato exigido pelo lightweight-charts. */
   time: number;
   /** Preço em reais (não centavos), pronto pro eixo do gráfico. */
   value: number;
+}
+
+/** Credenciais do vendedor que detinha o menor preço num ponto do tempo — pro tooltip do gráfico. */
+export interface PriceHistoryPointOffer {
+  offerId: string;
+  offerTitle: string;
+  networkName: string;
+  networkColorHex: string | null;
+  sellerNickname: string | null;
+  sellerReputationLevel: string | null;
+  sellerPowerSellerStatus: string | null;
+  sellerTotalSales: number | null;
+  sellerPositiveRatingPercent: string | null;
+}
+
+export interface PriceHistoryStats {
+  avgPriceCents: number | null;
+  minPriceCents: number | null;
+  maxPriceCents: number | null;
+}
+
+export interface PriceHistoryResult {
+  points: PricePoint[];
+  /** Média móvel (janela de tempo escalada pelo timeframe) sobre `points` — acompanha a tendência sem saltar a cada evento isolado. */
+  movingAveragePoints: PricePoint[];
+  /** Metadados do vendedor vencedor em cada ponto — chave é o mesmo `time` do PricePoint correspondente. */
+  pointOffers: Record<number, PriceHistoryPointOffer>;
+  /** Média/mínimo/máximo do MENOR preço entre vendedores dentro do período exibido — mesma série do gráfico. */
+  stats: PriceHistoryStats;
 }
 
 /**
@@ -29,6 +107,11 @@ export interface PricePoint {
  * atualiza o preço conhecido daquele vendedor e recalcula o menor preço
  * entre todos os vendedores conhecidos até aquele instante.
  *
+ * Também busca um preço-base de cada oferta ANTES do início da janela
+ * (quando há timeframe): sem isso, uma oferta cujo snapshot mais recente cai
+ * pouco antes do corte fica "invisível" pro merge até a próxima coleta dela,
+ * inflando artificialmente o menor preço reconstruído no início do período.
+ *
  * Limitação aceita: só considera ofertas ATIVAS hoje (mesmo espírito de
  * getUserWatches) — se um vendedor sair do ar, o histórico dele some do
  * gráfico inteiro, não só do ponto em diante. Corrigir com rastreio de
@@ -37,8 +120,19 @@ export interface PricePoint {
 export async function getMasterProductPriceHistory(
   masterProductId: string,
   timeframe: PriceHistoryTimeframe
-): Promise<PricePoint[]> {
+): Promise<PriceHistoryResult> {
   const interval = timeframe === 'Tudo' ? null : TIMEFRAME_INTERVALS[timeframe];
+
+  const baselineRows = interval
+    ? await db.execute<{ offer_id: string; price_cents: string }>(sql`
+        SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
+        FROM affiliate_price_snapshots s
+        INNER JOIN affiliate_offers o ON o.id = s.offer_id
+        WHERE o.master_product_id = ${masterProductId} AND o.status = 'active'
+          AND s.collected_at < now() - (${interval})::interval
+        ORDER BY s.offer_id, s.collected_at DESC
+      `)
+    : [];
 
   const rows = await db.execute<{ offer_id: string; collected_at: string; price_cents: string }>(
     interval
@@ -60,15 +154,79 @@ export async function getMasterProductPriceHistory(
   );
 
   const lastKnownByOffer = new Map<string, number>();
-  const byTime = new Map<number, number>();
+  for (const row of baselineRows) {
+    lastKnownByOffer.set(row.offer_id, Number(row.price_cents) / 100);
+  }
+
+  function currentMin(): { value: number; offerId: string } {
+    let minValue = Infinity;
+    let minOfferId = '';
+    for (const [offerId, price] of lastKnownByOffer) {
+      if (price < minValue) {
+        minValue = price;
+        minOfferId = offerId;
+      }
+    }
+    return { value: minValue, offerId: minOfferId };
+  }
+
+  const byTime = new Map<number, { value: number; offerId: string }>();
+
+  // Com baseline conhecida, a janela já começa com o menor preço vigente até
+  // ali, em vez de ficar "vazia" até a primeira coleta real dentro dela.
+  if (interval && lastKnownByOffer.size > 0) {
+    const windowStart = Math.floor((Date.now() - TIMEFRAME_MS[timeframe as Exclude<PriceHistoryTimeframe, 'Tudo'>]) / 1000);
+    byTime.set(windowStart, currentMin());
+  }
 
   for (const row of rows) {
     lastKnownByOffer.set(row.offer_id, Number(row.price_cents) / 100);
     const time = Math.floor(new Date(row.collected_at).getTime() / 1000);
-    byTime.set(time, Math.min(...lastKnownByOffer.values()));
+    byTime.set(time, currentMin());
   }
 
-  return [...byTime.entries()].sort((a, b) => a[0] - b[0]).map(([time, value]) => ({ time, value }));
+  const points: PricePoint[] = [...byTime.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([time, { value }]) => ({ time, value }));
+
+  const winningOfferIds = [...new Set([...byTime.values()].map((v) => v.offerId))].filter(Boolean);
+
+  const pointOffers: Record<number, PriceHistoryPointOffer> = {};
+  if (winningOfferIds.length > 0) {
+    const offerRows = await db
+      .select({
+        offerId: affiliateOffers.id,
+        offerTitle: affiliateOffers.title,
+        networkName: affiliateNetworks.name,
+        networkColorHex: affiliateNetworks.colorHex,
+        sellerNickname: affiliateSellers.nickname,
+        sellerReputationLevel: affiliateSellers.reputationLevel,
+        sellerPowerSellerStatus: affiliateSellers.powerSellerStatus,
+        sellerTotalSales: affiliateSellers.totalSales,
+        sellerPositiveRatingPercent: affiliateSellers.positiveRatingPercent,
+      })
+      .from(affiliateOffers)
+      .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
+      .leftJoin(affiliateSellers, eq(affiliateOffers.sellerId, affiliateSellers.id))
+      .where(inArray(affiliateOffers.id, winningOfferIds));
+
+    const offerById = new Map(offerRows.map((o) => [o.offerId, o]));
+    for (const [time, { offerId }] of byTime) {
+      const offer = offerById.get(offerId);
+      if (offer) pointOffers[time] = offer;
+    }
+  }
+
+  const values = points.map((p) => p.value);
+  const stats: PriceHistoryStats = {
+    avgPriceCents: values.length ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 100) : null,
+    minPriceCents: values.length ? Math.round(Math.min(...values) * 100) : null,
+    maxPriceCents: values.length ? Math.round(Math.max(...values) * 100) : null,
+  };
+
+  const movingAveragePoints = computeMovingAverage(points, MOVING_AVERAGE_WINDOW_MS[timeframe]);
+
+  return { points, movingAveragePoints, pointOffers, stats };
 }
 
 export type MoverPeriod = '24h' | '7d' | '30d';
@@ -257,6 +415,9 @@ export interface ComparisonOfferItem {
   sellerReputationLevel: string | null;
   sellerPowerSellerStatus: string | null;
   sellerTotalSales: number | null;
+  /** Tag "vendedor alterou o preço" — null quando nunca mudou desde que a oferta foi criada. */
+  lastPriceChangeAt: Date | null;
+  previousPriceCents: number | null;
 }
 
 /**
@@ -278,6 +439,8 @@ export async function getOfferComparisonForMasterProduct(masterProductId: string
       sellerReputationLevel: affiliateSellers.reputationLevel,
       sellerPowerSellerStatus: affiliateSellers.powerSellerStatus,
       sellerTotalSales: affiliateSellers.totalSales,
+      lastPriceChangeAt: affiliateOffers.lastPriceChangeAt,
+      previousPriceCents: affiliateOffers.previousPriceCents,
     })
     .from(affiliateOffers)
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
