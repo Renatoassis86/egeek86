@@ -54,20 +54,36 @@ export async function createArticle(formData: FormData) {
   const profile = await requireAdmin();
   const parsed = parseArticleForm(formData);
   const status = formData.get('status') === 'published' ? 'published' : 'draft';
-  const slug = await uniqueArticleSlug(slugify(parsed.title));
+
+  let finalTitle = parsed.title;
+  let finalCoverImage = parsed.coverImageUrl || null;
+  let finalBodyMarkdown = parsed.bodyMarkdown || null;
+  let finalKind = parsed.kind;
+
+  // Se for curated_link, transcrevemos e persistimos como original
+  if (parsed.kind === 'curated_link' && parsed.sourceUrl) {
+    const scraped = await scrapeNewsArticle(parsed.sourceUrl, parsed.sourceName);
+    finalKind = 'original';
+    finalBodyMarkdown = scraped.bodyMarkdown;
+    if (!finalCoverImage && scraped.coverImageUrl) {
+      finalCoverImage = scraped.coverImageUrl;
+    }
+  }
+
+  const slug = await uniqueArticleSlug(slugify(finalTitle));
 
   const [created] = await db
     .insert(newsArticles)
     .values({
       slug,
-      title: parsed.title,
+      title: finalTitle,
       excerpt: parsed.excerpt,
-      coverImageUrl: parsed.coverImageUrl || null,
-      kind: parsed.kind,
-      bodyMarkdown: parsed.kind === 'original' ? (parsed.bodyMarkdown ?? null) : null,
+      coverImageUrl: finalCoverImage,
+      kind: finalKind,
+      bodyMarkdown: finalBodyMarkdown,
       category: parsed.category,
-      sourceName: parsed.kind === 'curated_link' ? parsed.sourceName || null : null,
-      sourceUrl: parsed.kind === 'curated_link' ? (parsed.sourceUrl ?? null) : null,
+      sourceName: null,
+      sourceUrl: null, // assegura conformidade com o check constraint do DB
       status,
       authorId: profile.id,
       publishedAt: status === 'published' ? new Date() : null,
@@ -85,17 +101,32 @@ export async function updateArticle(formData: FormData) {
   const id = String(formData.get('id'));
   const parsed = parseArticleForm(formData);
 
+  let finalTitle = parsed.title;
+  let finalCoverImage = parsed.coverImageUrl || null;
+  let finalBodyMarkdown = parsed.bodyMarkdown || null;
+  let finalKind = parsed.kind;
+
+  // Se for curated_link, transcrevemos e persistimos como original
+  if (parsed.kind === 'curated_link' && parsed.sourceUrl) {
+    const scraped = await scrapeNewsArticle(parsed.sourceUrl, parsed.sourceName);
+    finalKind = 'original';
+    finalBodyMarkdown = scraped.bodyMarkdown;
+    if (!finalCoverImage && scraped.coverImageUrl) {
+      finalCoverImage = scraped.coverImageUrl;
+    }
+  }
+
   await db
     .update(newsArticles)
     .set({
-      title: parsed.title,
+      title: finalTitle,
       excerpt: parsed.excerpt,
-      coverImageUrl: parsed.coverImageUrl || null,
-      kind: parsed.kind,
-      bodyMarkdown: parsed.kind === 'original' ? (parsed.bodyMarkdown ?? null) : null,
+      coverImageUrl: finalCoverImage,
+      kind: finalKind,
+      bodyMarkdown: finalBodyMarkdown,
       category: parsed.category,
-      sourceName: parsed.kind === 'curated_link' ? parsed.sourceName || null : null,
-      sourceUrl: parsed.kind === 'curated_link' ? (parsed.sourceUrl ?? null) : null,
+      sourceName: null,
+      sourceUrl: null, // assegura conformidade com o check constraint do DB
       updatedAt: new Date(),
     })
     .where(eq(newsArticles.id, id));
@@ -104,6 +135,70 @@ export async function updateArticle(formData: FormData) {
   revalidatePath(`/admin/noticias/${id}`);
   revalidatePath('/noticias');
   redirect(`/admin/noticias/${id}`);
+}
+
+/**
+ * Raspador de notícias automático a partir de matérias de terceiros.
+ */
+async function scrapeNewsArticle(url: string, sourceName?: string): Promise<{ title?: string; coverImageUrl?: string; bodyMarkdown: string }> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      },
+    });
+    if (!res.ok) throw new Error('Não foi possível acessar a notícia original.');
+
+    const html = await res.text();
+
+    // 1. og:title
+    const titleMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) ||
+                       html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
+    let scrapedTitle = titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim() : undefined;
+
+    // 2. og:image
+    const imgMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+                     html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    const scrapedCover = imgMatch ? imgMatch[1].trim() : undefined;
+
+    // 3. Parágrafos
+    const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+    const paragraphs: string[] = [];
+    let m;
+    while ((m = pRegex.exec(html)) !== null) {
+      const clean = m[1]
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
+        .replace(/&quot;/g, '"')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (clean.length > 50 && 
+          !clean.toLowerCase().includes('cookie') && 
+          !clean.toLowerCase().includes('política de privacidade') &&
+          !clean.toLowerCase().includes('inscreva-se') &&
+          !clean.toLowerCase().includes('newsletter') &&
+          !clean.toLowerCase().includes('assine')) {
+        paragraphs.push(clean);
+      }
+    }
+
+    const bodyContent = paragraphs.slice(0, 15).join('\n\n');
+    const sourceLabel = sourceName || new URL(url).hostname.replace('www.', '');
+    const footerCitation = `\n\n---\n*Matéria completa publicada originalmente em [${sourceLabel}](${url}). Transcrita automaticamente para o Espaço Geek 86.*`;
+
+    return {
+      title: scrapedTitle,
+      coverImageUrl: scrapedCover,
+      bodyMarkdown: bodyContent + footerCitation,
+    };
+  } catch (error) {
+    console.error('Falha ao transcrever notícia:', error);
+    return {
+      bodyMarkdown: `## Transcrição Indisponível\n\nNão foi possível transcrever automaticamente os parágrafos deste link. Acesse a matéria na íntegra pelo link original: [Acesse aqui](${url}).`,
+    };
+  }
 }
 
 /** Preserva o publishedAt original se já existia (republicar não conta como nova publicação). */

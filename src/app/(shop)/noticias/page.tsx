@@ -1,10 +1,13 @@
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import { ChevronLeft, ChevronRight, Award } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
-import { SceneImage } from '@/components/motion/scene-image';
 import { Glow } from '@/components/motion/glow';
+import { Reveal } from '@/components/motion/reveal';
+import { SceneImage } from '@/components/motion/scene-image';
 import { TextImageMask } from '@/components/motion/text-image-mask';
 import { cn } from '@/lib/cn';
 import { getPublishedArticles } from '@/server/queries/news';
@@ -38,21 +41,45 @@ export default async function NoticiasPage({
 
   return (
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-14">
-      <div className="relative mb-8 overflow-hidden">
-        <Glow color="hype" size="md" intensity={0.16} className="-top-20 -right-10" />
-        {/* "6" — número da marca, na mesma fonte do logotipo, só xl+. */}
-        <TextImageMask
-          text="6"
-          src="/images/noticias/header-collage.png"
-          className="pointer-events-none absolute -right-2 top-1/2 hidden -translate-y-1/2 text-[160px] xl:block"
-        />
-        <div className="relative xl:max-w-[65%]">
-          <Text as="h1" variant="heading-xl">
-            Notícias
-          </Text>
-          <Text variant="body-md" color="secondary" className="mt-1">
-            Cultura pop, sinopse de jogos, tecnologia e tudo que envolve o mundo gamer e geek.
-          </Text>
+      {/* Header Banner Visual */}
+      <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-14 overflow-hidden mb-10 z-10">
+        
+        {/* Imagem do banner inteira com recorte diagonal na direita */}
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
+          <div 
+            className="relative w-full h-full"
+            style={{
+              clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
+            }}
+          >
+            <Image
+              src="/images/noticias/header-collage.png"
+              alt="Notícias Banner"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+            {/* Gradiente sutil de fade na junção do corte diagonal */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-transparent to-transparent opacity-80 pointer-events-none" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 relative z-10 max-w-2xl">
+          <Reveal>
+            <Badge variant="hype" size="md">
+              Mural Geek
+            </Badge>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <Text as="h1" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+              Notícias
+            </Text>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <Text variant="body-sm" color="secondary" className="max-w-[50ch] leading-relaxed text-xs md:text-sm">
+              Cultura pop, sinopse de jogos, tecnologia e tudo que envolve o mundo gamer e geek.
+            </Text>
+          </Reveal>
         </div>
       </div>
 
@@ -84,21 +111,105 @@ export default async function NoticiasPage({
         ))}
       </div>
 
-      {items.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <Text variant="body-sm" color="tertiary">
-              Nenhuma matéria publicada ainda{category ? ' nessa categoria' : ''}.
-            </Text>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((article) => (
-            <ArticleCard key={article.id} article={article} />
-          ))}
+      {/* Grid Duas Colunas: Matérias vs Coluna Editorial */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Lado Esquerdo: Grid de Artigos */}
+        <div className="lg:col-span-8">
+          {items.length === 0 ? (
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Text variant="body-sm" color="tertiary">
+                  Nenhuma matéria publicada ainda{category ? ' nessa categoria' : ''}.
+                </Text>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-5 sm:grid-cols-2">
+              {items.map((article) => (
+                <ArticleCard key={article.id} article={article} />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Lado Direito: Colunistas & Coluna Editorial */}
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          <Card className="border-[var(--color-border-default)] bg-[var(--color-bg-inset)]/20">
+            <CardContent className="p-5 flex flex-col gap-4">
+              
+              {/* Cabeçalho do Bloco */}
+              <div className="flex items-center gap-2.5 border-b border-[var(--color-border-subtle)] pb-3">
+                <div className="flex size-7 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)]">
+                  <Award className="size-4" />
+                </div>
+                <div>
+                  <Text variant="body-sm" className="font-bold text-[var(--color-text-primary)]">
+                    Coluna Editorial
+                  </Text>
+                  <Text variant="caption" color="tertiary" className="text-[10px]">
+                    Colunistas Parceiros
+                  </Text>
+                </div>
+              </div>
+
+              {/* Feed de Opiniões */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all">
+                  <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
+                    Arthur Pendragon · Mestre
+                  </span>
+                  <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[13px]">
+                    O Futuro do Retro Gaming e a Preservação Digital
+                  </Text>
+                  <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                    Por que as mídias físicas antigas estão morrendo e o que podemos fazer para salvar os clássicos.
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-1.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all">
+                  <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
+                    Jéssica Ramos · Hunter Pro
+                  </span>
+                  <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[13px]">
+                    O Impacto do Pro Controller na Competitividade
+                  </Text>
+                  <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                    Análise tática dos analógicos mecânicos e botões traseiros nos consoles atuais.
+                  </span>
+                </div>
+
+                <div className="flex flex-col gap-1.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all">
+                  <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
+                    Renato Assis · Renato86
+                  </span>
+                  <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[13px]">
+                    Por que Colecionar Funko Virou Cultura de Massa?
+                  </Text>
+                  <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                    O fenômeno do design minimalista cabeçudo que conquistou prateleiras no mundo inteiro.
+                  </span>
+                </div>
+              </div>
+
+              {/* Call-to-Action */}
+              <div className="border-t border-[var(--color-border-subtle)] pt-4 mt-2">
+                <span className="text-xs font-bold text-[var(--color-text-primary)] block">
+                  Quer ser um colunista?
+                </span>
+                <span className="text-[10px] text-[var(--color-text-secondary)] leading-relaxed mt-1 block">
+                  Escreva sobre cultura pop, games ou tecnologia e compartilhe com milhares de leitores.
+                </span>
+                <Button asChild size="sm" variant="outline" className="w-full mt-3 text-[11px] h-8">
+                  <Link href="/contato">Candidatar-se à Coluna</Link>
+                </Button>
+              </div>
+
+            </CardContent>
+          </Card>
+        </div>
+
+      </div>
 
       {totalPages > 1 && (
         <div className="mt-10 flex items-center justify-center gap-3">
