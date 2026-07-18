@@ -15,7 +15,7 @@ export function TextImageMask({
   text,
   src,
   className,
-  outline = true,
+  outline = false,
 }: {
   text: string;
   src: string;
