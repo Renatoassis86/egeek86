@@ -74,10 +74,18 @@ export default async function OffersPage({
 
   const metricsMap = await getOfferListingMetrics(pool.map((o) => o.id));
 
-  // Prioridade pedida pelo produto: Físico sempre antes de Digital.
-  const physical = pool.filter((o) => o.masterProduct.gameFormat === 'physical');
-  const digital = pool.filter((o) => o.masterProduct.gameFormat === 'digital');
-  const other = pool.filter((o) => o.masterProduct.gameFormat === 'unknown');
+  // Separados por plataforma de jogos por padrão
+  const playstation = pool.filter((o) => o.masterProduct.gamePlatformGen === 'ps5' || o.masterProduct.gamePlatformGen === 'ps4');
+  const nintendo = pool.filter((o) => o.masterProduct.gamePlatformGen === 'switch' || o.masterProduct.gamePlatformGen === 'switch_2');
+  const xbox = pool.filter((o) => o.masterProduct.gamePlatformGen === 'xbox_series' || o.masterProduct.gamePlatformGen === 'xbox_one');
+  const other = pool.filter((o) => 
+    o.masterProduct.gamePlatformGen !== 'ps5' && 
+    o.masterProduct.gamePlatformGen !== 'ps4' && 
+    o.masterProduct.gamePlatformGen !== 'switch' && 
+    o.masterProduct.gamePlatformGen !== 'switch_2' && 
+    o.masterProduct.gamePlatformGen !== 'xbox_series' && 
+    o.masterProduct.gamePlatformGen !== 'xbox_one'
+  );
 
   const featured = [...pool]
     .filter((o) => {
@@ -169,12 +177,14 @@ export default async function OffersPage({
             />
           )}
 
-          {physical.length > 0 && <OfferSection title="Físico" offers={physical} metricsMap={metricsMap} />}
+          {playstation.length > 0 && <OfferSection title="PlayStation" offers={playstation} metricsMap={metricsMap} />}
 
-          {digital.length > 0 && <OfferSection title="Digital" offers={digital} metricsMap={metricsMap} />}
+          {nintendo.length > 0 && <OfferSection title="Nintendo" offers={nintendo} metricsMap={metricsMap} />}
+
+          {xbox.length > 0 && <OfferSection title="Xbox" offers={xbox} metricsMap={metricsMap} />}
 
           {other.length > 0 && (
-            <OfferSection title="Outras ofertas" offers={other} metricsMap={metricsMap} />
+            <OfferSection title="Geral / Outros" offers={other} metricsMap={metricsMap} />
           )}
         </div>
       )}
