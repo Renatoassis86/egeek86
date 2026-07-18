@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import { Eye, Target, Shield, Users, Sparkles } from 'lucide-react';
+import { Sparkles, Users } from 'lucide-react';
 import { Text } from '@/components/ui/text';
-import { Card } from '@/components/ui/card';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
 import { SceneImage } from '@/components/motion/scene-image';
@@ -9,7 +8,7 @@ import { SceneImage } from '@/components/motion/scene-image';
 export const metadata: Metadata = {
   title: 'Quem somos',
   description:
-    'A história do Espaço Geek 86 — de uma coleção pessoal a uma plataforma de inteligência de preço pra cultura geek.',
+    'A história do Espaço Geek 86, de uma coleção pessoal a uma plataforma de inteligência de preço pra cultura geek.',
 };
 
 export default function SobrePage() {
@@ -35,7 +34,7 @@ function Hero() {
           O novo e o velho, na mesma estante.
         </Text>
         <Text variant="body-lg" color="secondary" className="mt-4 max-w-[62ch]">
-          O Espaço Geek 86 nasceu de uma coleção pessoal que virou pesquisa de preço, virou planilha,
+          O Espaço Geek 86 nasceu de uma coleção pessoal que virou pesquisa de preço, virou planilha e
           virou o hábito de ajudar amigo a comprar direito. Hoje é uma plataforma inteira, mas a ideia
           continua a mesma: cultura geek com carinho de colecionador e informação de verdade, nunca
           achismo.
@@ -89,8 +88,8 @@ function Origem() {
           <div className="mt-5 flex flex-col gap-4">
             <Text variant="body-md" color="secondary">
               Fliperama de shopping, fichas contadas, os 30 minutos cronometrados de TV alugada com os
-              amigos — sentado, esperando a vez, torcendo pro seu não estourar antes de passar o
-              controle. Locadora no fim de semana pra levar um jogo emprestado, devolver na segunda,
+              amigos, sentado, esperando a vez, torcendo pro seu não estourar antes de passar o
+              controle. Locadora no fim de semana pra levar um jogo emprestado, devolver na segunda e
               alugar outro. Essa é a memória que o Espaço Geek 86 quer manter viva.
             </Text>
             <Text variant="body-md" color="secondary">
@@ -116,52 +115,100 @@ function Origem() {
   );
 }
 
-const pillars = [
+const valores = [
   {
-    Icon: Target,
-    label: 'Missão',
-    text: 'Ajudar quem ama cultura geek a comprar com informação real, não no impulso — juntando o carinho de quem viveu os anos 80/90 com a mesma inteligência de dado que se usa pra decisão de mercado.',
+    n: '01',
+    title: 'Dado real, sempre',
+    text: 'Nunca publicamos preço, histórico ou métrica que não venha de coleta verificada. Quando o dado ainda não existe, o site informa isso claramente, em vez de aproximar ou inventar.',
   },
   {
-    Icon: Eye,
-    label: 'Visão',
-    text: 'Ser a referência em cultura geek e inteligência de preço no Brasil — o lugar onde o colecionador de ontem encontra o comprador de hoje, sempre com histórico de verdade por trás.',
+    n: '02',
+    title: 'Nostalgia com propósito',
+    text: 'O passado inspira curadoria e design, mas nunca substitui utilidade real para quem compra hoje.',
   },
   {
-    Icon: Shield,
-    label: 'Valores',
-    text: 'Transparência (nunca inventamos dado — se não coletamos ainda, o site avisa em vez de fingir); comunidade antes de venda; nostalgia com propósito, não só estética.',
+    n: '03',
+    title: 'Comunidade antes de venda',
+    text: 'Toda decisão de produto prioriza ajudar quem compra a decidir melhor, não maximizar clique ou conversão.',
+  },
+  {
+    n: '04',
+    title: 'Transparência de ponta a ponta',
+    text: 'Reputação de vendedor, histórico de preço e condição de cada oferta ficam visíveis, sempre.',
   },
 ];
 
+/**
+ * Missão/visão como declaração grande (referência: página institucional de
+ * Disney/Netflix/Amazon), não card pequeno espremido — e valores como lista
+ * numerada de princípios distintos (referência: Leadership Principles da
+ * Amazon), não uma frase só misturando tudo. Pedido explícito do cliente:
+ * sem travessão no texto, missão e valores objetivos, com todo elemento que
+ * precisa compor cada um.
+ */
 function MissaoVisaoValores() {
   return (
     <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24">
       <Reveal>
-        <div className="max-w-[52ch]">
-          <Text variant="label" color="tertiary">
-            Como pensamos
-          </Text>
-          <Text as="h2" variant="display-md" className="mt-2">
-            Missão, visão e valores.
-          </Text>
-        </div>
+        <Text variant="label" color="tertiary">
+          Como pensamos
+        </Text>
       </Reveal>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
-        {pillars.map(({ Icon, label, text }, i) => (
-          <Reveal key={label} delay={i * 0.06}>
-            <Card className="h-full p-6">
-              <Icon className="size-5 text-[var(--color-accent-primary)]" aria-hidden />
-              <Text as="h3" variant="heading-sm" className="mt-4">
-                {label}
-              </Text>
-              <Text variant="body-sm" color="secondary" className="mt-2">
-                {text}
-              </Text>
-            </Card>
-          </Reveal>
-        ))}
+      <div className="mt-8 grid gap-10 border-t border-[var(--color-border-subtle)] pt-10 lg:grid-cols-2 lg:gap-16">
+        <Reveal>
+          <Text variant="label" color="hype">
+            Missão
+          </Text>
+          <Text as="h2" variant="heading-xl" className="mt-3 lg:text-display-md">
+            Ajudar colecionadores e jogadores a comprar cultura geek com informação real.
+          </Text>
+          <Text variant="body-md" color="secondary" className="mt-4 max-w-[52ch]">
+            Unimos preço monitorado em tempo real, histórico verificável e curadoria humana em um único
+            lugar, para que cada decisão de compra seja baseada em dado, não em impulso.
+          </Text>
+        </Reveal>
+
+        <Reveal delay={0.08}>
+          <Text variant="label" color="hype">
+            Visão
+          </Text>
+          <Text as="h2" variant="heading-xl" className="mt-3 lg:text-display-md">
+            Ser a plataforma de referência em cultura geek e inteligência de preço no Brasil.
+          </Text>
+          <Text variant="body-md" color="secondary" className="mt-4 max-w-[52ch]">
+            Reconhecida tanto por quem cresceu jogando nos anos 80 e 90 quanto por quem começa sua
+            coleção hoje.
+          </Text>
+        </Reveal>
+      </div>
+
+      <div className="mt-16 border-t border-[var(--color-border-subtle)] pt-10">
+        <Reveal>
+          <Text variant="label" color="hype">
+            Valores
+          </Text>
+        </Reveal>
+
+        <div className="mt-8 grid gap-8 sm:grid-cols-2">
+          {valores.map(({ n, title, text }, i) => (
+            <Reveal key={n} delay={0.05 + i * 0.05}>
+              <div className="flex gap-4">
+                <Text variant="mono-md" color="tertiary" className="shrink-0 tabular">
+                  {n}
+                </Text>
+                <div>
+                  <Text as="h3" variant="heading-sm">
+                    {title}
+                  </Text>
+                  <Text variant="body-sm" color="secondary" className="mt-1.5 max-w-[46ch]">
+                    {text}
+                  </Text>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -196,7 +243,7 @@ function Idealizador() {
           <div className="mt-5 flex flex-col gap-4">
             <Text variant="body-md" color="secondary">
               Economista, mestre em Economia Regional (UFRN) e bacharel em Ciência de Dados, com mais de
-              16 anos analisando mercado e construindo modelo estatístico pra decisão — hoje à frente da
+              16 anos analisando mercado e construindo modelo estatístico pra decisão. Hoje à frente da
               Arkos Intelligence, transformando dado bruto em decisão executiva pra empresa.
             </Text>
             <Text variant="body-md" color="secondary">
@@ -204,11 +251,11 @@ function Idealizador() {
               trabalho todo dia: pesquisar preço direito, entender o que faz um jogo ou console valer o
               que custa, comparar vendedor antes de fechar. Com o tempo virou hábito ajudar amigo a
               comprar console novo sem se arrepender, ou fechar negócio bom num jogo usado sem cair em
-              enrolação. O Espaço Geek 86 é essa mesma lógica — a de transformar dado em decisão —
+              enrolação. O Espaço Geek 86 é essa mesma lógica, a de transformar dado em decisão,
               aplicada à paixão que começou tudo.
             </Text>
             <Text variant="body-sm" color="tertiary" className="italic">
-              Essa seção ainda está crescendo — mais histórias de coleção, de compra, de ajuda a amigo
+              Essa seção ainda está crescendo. Mais histórias de coleção, de compra e de ajuda a amigo
               entram aqui com o tempo.
             </Text>
           </div>
