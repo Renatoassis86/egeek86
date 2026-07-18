@@ -8,6 +8,8 @@ import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Sparkles } from 'lucide-react';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { getUpcomingDrops } from '@/server/queries/hype';
 
@@ -160,6 +162,63 @@ export default async function CurationPage() {
         </div>
 
       </div>
+
+      {/* Bloco de Regulamento e Metodologia de Pontuação */}
+      <Reveal delay={0.2} className="mt-12">
+        <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/15">
+          <CardContent className="p-6 lg:p-8 flex flex-col gap-6">
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-9 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)]">
+                <Sparkles className="size-5" />
+              </div>
+              <div>
+                <Text variant="heading-sm" className="font-bold">Regulamento & Metodologia das Milhas Geek</Text>
+                <Text variant="caption" color="tertiary">Entenda como acumular pontos, subir de nível e resgatar descontos reais.</Text>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-[var(--color-text-secondary)]">
+              {/* Coluna 1: Como Acumular */}
+              <div className="flex flex-col gap-2 p-4 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded">
+                <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  📥 1. Como Acumular XP e Pontos
+                </span>
+                <ul className="list-disc pl-4 flex flex-col gap-1.5 text-[11px] leading-relaxed">
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">+10 XP imediato</strong> por participar de qualquer curadoria de drop ou auditoria de review.</li>
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">+50 Geek Points</strong> adicionais quando seu veredicto for correto e bater com a decisão final da moderação.</li>
+                  <li>Pontos bônus por positivação recebida de compradores em seus próprios drops.</li>
+                </ul>
+              </div>
+
+              {/* Coluna 2: Regra de Conversão */}
+              <div className="flex flex-col gap-2 p-4 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded">
+                <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  💸 2. Regra de Resgate (Milhas)
+                </span>
+                <ul className="list-disc pl-4 flex flex-col gap-1.5 text-[11px] leading-relaxed">
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">Taxa Conversora</strong>: 100 Geek Points = R$ 1,00 de desconto na loja do administrador.</li>
+                  <li>Resgates podem ser feitos em qualquer múltiplo de 100 pontos.</li>
+                  <li>O sistema gera um código de cupom exclusivo na hora para você aplicar no carrinho.</li>
+                </ul>
+              </div>
+
+              {/* Coluna 3: Níveis de Classificação */}
+              <div className="flex flex-col gap-2 p-4 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded">
+                <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  🎖️ 3. Níveis de Reputação
+                </span>
+                <ul className="list-disc pl-4 flex flex-col gap-1 text-[11px] leading-relaxed">
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">Iniciante</strong>: 0 a 199 XP (Votos não-oficiais).</li>
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">Explorador</strong>: 200 a 799 XP (Libera voto oficial de peso 1).</li>
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">Veterano</strong>: 800 a 1999 XP (Voto de peso 2 + descontos).</li>
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">Mestre</strong>: 2000 a 4999 XP (Voto de peso 3 + taxas de venda reduzidas).</li>
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">Lendário</strong>: 5000+ XP (Acesso a drops ultra-restritos).</li>
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Reveal>
 
     </section>
   );
