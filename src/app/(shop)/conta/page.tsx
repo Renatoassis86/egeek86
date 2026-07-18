@@ -49,7 +49,31 @@ export default async function ContaPage() {
         </div>
       </Reveal>
 
-      {watches.length === 0 ? (
+      {!profile ? (
+        <Reveal delay={0.05}>
+          <Card className="mt-8">
+            <CardContent className="flex flex-col items-center gap-3 p-12 text-center">
+              <div className="relative mb-2 aspect-[8/5] w-full max-w-sm overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]">
+                <Image
+                  src="/images/conta/empty-state.png"
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 384px, 90vw"
+                  className="object-cover"
+                />
+              </div>
+              <Text variant="heading-sm">Entre na sua conta pra ver seus jogos</Text>
+              <Text variant="body-sm" color="secondary" className="max-w-[46ch]">
+                Acompanhe preço, receba aviso de queda e monte sua coleção. Leva menos de um minuto
+                pra criar sua conta.
+              </Text>
+              <Button asChild className="mt-2">
+                <Link href="/entrar">Entrar ou cadastrar</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </Reveal>
+      ) : watches.length === 0 ? (
         <Reveal delay={0.05}>
           <Card className="mt-8">
             <CardContent className="flex flex-col items-center gap-3 p-12 text-center">

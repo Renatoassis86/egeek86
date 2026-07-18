@@ -17,7 +17,20 @@ const articleSchema = z
     coverImageUrl: z.string().url().optional().or(z.literal('')),
     kind: z.enum(['original', 'curated_link']),
     bodyMarkdown: z.string().optional(),
-    category: z.enum(['cultura_pop', 'sinopse_jogo', 'tecnologia', 'lancamentos']),
+    category: z.enum([
+      'cultura_pop',
+      'sinopse_jogo',
+      'tecnologia',
+      'lancamentos',
+      'filmes',
+      'series_tv',
+      'animes',
+      'games',
+      'korea',
+      'criticas',
+      'listas',
+      'colunistas',
+    ]),
     sourceName: z.string().optional(),
     sourceUrl: z.string().url().optional().or(z.literal('')),
   })
@@ -153,11 +166,11 @@ export async function scrapeNewsArticle(url: string, sourceName?: string): Promi
 
     const html = await res.text();
 
-    // 1. Extração robusta do Título (Múltiplas opções de tags)
+    // 1. Extração robusta do Título (Múltiplas opções de tags com suporte a atributos intermediários)
     const ogTitleRegexes = [
-      /<meta\s+[^>]*property\s*=\s*["']og:title["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
-      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["']\s+[^>]*property\s*=\s*["']og:title["']/i,
-      /<meta\s+[^>]*name\s*=\s*["']twitter:title["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*property\s*=\s*["']og:title["'][^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*property\s*=\s*["']og:title["']/i,
+      /<meta\s+[^>]*name\s*=\s*["']twitter:title["'][^>]*content\s*=\s*["']([^"']+)["']/i,
     ];
     let scrapedTitle: string | undefined = undefined;
     for (const regex of ogTitleRegexes) {
@@ -174,11 +187,11 @@ export async function scrapeNewsArticle(url: string, sourceName?: string): Promi
 
     // 2. Extração robusta da Imagem de Capa (OG, Twitter, Itemprop, Fallback tag <img>)
     const ogImageRegexes = [
-      /<meta\s+[^>]*property\s*=\s*["']og:image["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
-      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["']\s+[^>]*property\s*=\s*["']og:image["']/i,
-      /<meta\s+[^>]*name\s*=\s*["']twitter:image["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
-      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["']\s+[^>]*name\s*=\s*["']twitter:image["']/i,
-      /<meta\s+[^>]*itemprop\s*=\s*["']image["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*property\s*=\s*["']og:image["'][^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*property\s*=\s*["']og:image["']/i,
+      /<meta\s+[^>]*name\s*=\s*["']twitter:image["'][^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*name\s*=\s*["']twitter:image["']/i,
+      /<meta\s+[^>]*itemprop\s*=\s*["']image["'][^>]*content\s*=\s*["']([^"']+)["']/i,
     ];
     let scrapedCover: string | undefined = undefined;
     for (const regex of ogImageRegexes) {
@@ -213,11 +226,27 @@ export async function scrapeNewsArticle(url: string, sourceName?: string): Promi
       scrapedCover = 'https:' + scrapedCover;
     }
 
+    // Isola a área do artigo para evitar a cópia de menus, cabeçalhos, rodapés ou CSS lateral
+    let articleHtml = html;
+    const articleContainerRegexes = [
+      /<article[^>]*>([\s\S]*?)<\/article>/i,
+      /<div[^>]*itemprop=["']articleBody["'][^>]*>([\s\S]*?)<\/div>/i,
+      /<div[^>]*class=["'][^"']*(?:article-content|article-body|entry-content|post-body|story-content|article-text|page-content)[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+      /<section[^>]*class=["'][^"']*(?:article-content|article-body|entry-content|post-body)[^"']*["'][^>]*>([\s\S]*?)<\/section>/i
+    ];
+    for (const regex of articleContainerRegexes) {
+      const match = html.match(regex);
+      if (match && match[1] && match[1].length > 400) {
+        articleHtml = match[1];
+        break;
+      }
+    }
+
     // 3. Parágrafos
     const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
     const paragraphs: string[] = [];
     let m;
-    while ((m = pRegex.exec(html)) !== null) {
+    while ((m = pRegex.exec(articleHtml)) !== null) {
       const clean = m[1]
         .replace(/<[^>]+>/g, '')
         .replace(/&nbsp;/g, ' ')
@@ -231,7 +260,11 @@ export async function scrapeNewsArticle(url: string, sourceName?: string): Promi
           !clean.toLowerCase().includes('política de privacidade') &&
           !clean.toLowerCase().includes('inscreva-se') &&
           !clean.toLowerCase().includes('newsletter') &&
-          !clean.toLowerCase().includes('assine')) {
+          !clean.toLowerCase().includes('assine') &&
+          !clean.toLowerCase().includes('termos de uso') &&
+          !clean.startsWith('.st0') &&
+          !clean.startsWith('st0') &&
+          !clean.includes('stroke-width')) {
         paragraphs.push(clean);
       }
     }

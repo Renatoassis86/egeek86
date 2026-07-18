@@ -11,6 +11,21 @@ import { Text } from '@/components/ui/text';
 import { ArticleKindFields } from '@/components/admin/article-kind-fields';
 import { createArticle } from '@/server/actions/news';
 
+const CATEGORIES = [
+  { value: 'cultura_pop', label: 'Cultura pop' },
+  { value: 'sinopse_jogo', label: 'Sinopse de jogo' },
+  { value: 'tecnologia', label: 'Tecnologia' },
+  { value: 'lancamentos', label: 'Lançamentos' },
+  { value: 'filmes', label: 'Filmes' },
+  { value: 'series_tv', label: 'Séries e TV' },
+  { value: 'animes', label: 'Animes' },
+  { value: 'games', label: 'Games' },
+  { value: 'korea', label: 'Korea' },
+  { value: 'criticas', label: 'Críticas' },
+  { value: 'listas', label: 'Listas' },
+  { value: 'colunistas', label: 'Colunistas' },
+] as const;
+
 export default function NewArticlePage() {
   return (
     <div className="flex flex-col gap-6">
@@ -51,10 +66,11 @@ export default function NewArticlePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cultura_pop">Cultura pop</SelectItem>
-                    <SelectItem value="sinopse_jogo">Sinopse de jogo</SelectItem>
-                    <SelectItem value="tecnologia">Tecnologia</SelectItem>
-                    <SelectItem value="lancamentos">Lançamentos</SelectItem>
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </Field>

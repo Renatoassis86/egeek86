@@ -54,6 +54,67 @@ export function AppHeader() {
           {navLinks.map((link) => {
             const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
 
+            if (link.href === '/noticias') {
+              return (
+                <div key={link.href} className="relative group/nav">
+                  <Link
+                    href={link.href}
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                      'px-3 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all',
+                      'text-body-sm font-medium text-[var(--color-text-secondary)]',
+                      'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
+                      isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
+                    )}
+                  >
+                    {link.label}
+                    <svg className="size-3.5 opacity-60 transition-transform duration-200 group-hover/nav:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="m6 9 6 6 6-6"/>
+                    </svg>
+                  </Link>
+
+                  {/* Dropdown de Temas */}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1.5 w-52 opacity-0 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:pointer-events-auto transition-all duration-200 z-50">
+                    <div className="flex flex-col p-1.5 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)]">
+                      <Link href="/noticias?categoria=filmes" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Filmes</span>
+                        <span>🎥</span>
+                      </Link>
+                      <Link href="/noticias?categoria=series_tv" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Séries e TV</span>
+                        <span>📺</span>
+                      </Link>
+                      <Link href="/noticias?categoria=animes" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Animes</span>
+                        <span>◓</span>
+                      </Link>
+                      <Link href="/noticias?categoria=games" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Games</span>
+                        <span>🎮</span>
+                      </Link>
+                      <Link href="/noticias?categoria=korea" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Korea</span>
+                        <span>🫰</span>
+                      </Link>
+                      <Link href="/noticias?categoria=criticas" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Críticas</span>
+                        <span>🎭</span>
+                      </Link>
+                      <Link href="/noticias?categoria=listas" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Listas</span>
+                        <span>📺</span>
+                      </Link>
+                      <div className="h-px bg-[var(--color-border-subtle)] my-1" />
+                      <Link href="/noticias?categoria=colunistas" className="flex items-center justify-between px-3 py-2 text-xs font-bold text-[var(--color-accent-hype)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                        <span>Colunistas</span>
+                        <span>✍️</span>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={link.href}

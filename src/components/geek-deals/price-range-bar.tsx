@@ -66,16 +66,16 @@ export function PriceRangeBar({
         <Text variant="caption" color="success" className="font-medium whitespace-nowrap">
           {formatBRL(low)} · menor já visto
         </Text>
-        {metrics.avgPriceCents30d != null && (
-          <Text variant="caption" color="tertiary" className="hidden sm:inline-flex items-center gap-1 whitespace-nowrap">
-            <span className="size-1.5 rounded-full bg-[var(--color-text-secondary)]" aria-hidden />
-            Média 30d: {formatBRL(metrics.avgPriceCents30d)}
-          </Text>
-        )}
         <Text variant="caption" color="tertiary" className="whitespace-nowrap">
           {formatBRL(high)}
         </Text>
       </div>
+      {metrics.avgPriceCents30d != null && (
+        <Text variant="caption" color="tertiary" className="mt-1 inline-flex items-center gap-1 whitespace-nowrap">
+          <span className="size-1.5 rounded-full bg-[var(--color-text-secondary)]" aria-hidden />
+          Média 30d: {formatBRL(metrics.avgPriceCents30d)}
+        </Text>
+      )}
     </div>
   );
 }

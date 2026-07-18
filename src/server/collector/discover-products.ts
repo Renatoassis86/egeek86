@@ -10,7 +10,7 @@ import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
 import { mapWithConcurrency } from '@/lib/concurrency';
 
-const PLATFORM_TERMS = ['nintendo switch', 'nintendo switch 2', 'ps4', 'ps5', 'xbox one', 'xbox series'];
+const PLATFORM_TERMS = ['nintendo switch', 'nintendo switch 2', 'ps4', 'ps5', 'xbox one', 'xbox series', 'xbox 360'];
 
 /** '' = termo genérico "jogo {plataforma}" (cobre o buy box mais popular); o resto amplia a cobertura pra além da primeira página de resultado mais óbvia. */
 const GENRE_MODIFIERS = [
@@ -53,6 +53,7 @@ const CONSOLE_SEARCH_TERMS: SearchTerm[] = [
   { term: 'console playstation 4', kind: 'console', platform: 'ps4' },
   { term: 'console xbox series x', kind: 'console', platform: 'xbox_series' },
   { term: 'console xbox one', kind: 'console', platform: 'xbox_one' },
+  { term: 'console xbox 360', kind: 'console', platform: 'xbox_360' },
   { term: 'console nintendo switch 2', kind: 'console', platform: 'switch_2' },
   { term: 'console nintendo switch', kind: 'console', platform: 'switch_1' },
 ];

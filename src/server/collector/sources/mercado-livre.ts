@@ -34,11 +34,23 @@ const mercadoLivreSource: PriceSource = {
     }
 
     const data = (await response.json()) as {
-      results: { item_id: string; price: number; original_price: number | null; seller_id: number }[];
+      results: {
+        item_id: string;
+        price: number;
+        original_price: number | null;
+        seller_id: number;
+        condition: string | null;
+      }[];
     };
 
     return data.results
-      .filter((r) => r.seller_id != null && r.item_id != null)
+      // Só item NOVO — decisão explícita do cliente (2026-07-18): Geek
+      // Deals é a vitrine de afiliado, nunca usado/seminovo (isso fica pra
+      // um módulo de segunda-mão futuro, à parte). O endpoint retorna
+      // "condition" por resultado (confirmado ao vivo, ver
+      // docs/mercado-livre-api.md), então cortamos aqui, na fonte — antes
+      // de qualquer oferta/snapshot ser criado.
+      .filter((r) => r.seller_id != null && r.item_id != null && r.condition === 'new')
       .map((r) => ({
         priceCents: Math.round(r.price * 100),
         listPriceCents: r.original_price != null ? Math.round(r.original_price * 100) : null,

@@ -12,20 +12,42 @@ import { TextImageMask } from '@/components/motion/text-image-mask';
 import { cn } from '@/lib/cn';
 import { getPublishedArticles } from '@/server/queries/news';
 import type { ArticleCategory, NewsArticle } from '@/db/schema';
+import { db } from '@/lib/db';
+import { sql } from 'drizzle-orm';
 
 export const metadata = { title: 'Notícias' };
 
 const CATEGORY_LABELS: Record<ArticleCategory, string> = {
-  cultura_pop: 'Cultura pop',
-  sinopse_jogo: 'Sinopse de jogo',
-  tecnologia: 'Tecnologia',
-  lancamentos: 'Lançamentos',
+  cultura_pop: 'Cultura pop 🍿',
+  sinopse_jogo: 'Sinopse de jogo 📖',
+  tecnologia: 'Tecnologia 💻',
+  lancamentos: 'Lançamentos 🚀',
+  filmes: 'Filmes 🎥',
+  series_tv: 'Séries e TV 📺',
+  animes: 'Animes ◓',
+  games: 'Games 🎮',
+  korea: 'Korea 🫰',
+  criticas: 'Críticas 🎭',
+  listas: 'Listas 📺',
+  colunistas: 'Colunistas ✍️',
 };
 
 const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS) as [ArticleCategory, string][];
 
 function parseCategoryParam(value?: string): ArticleCategory | undefined {
   return value && value in CATEGORY_LABELS ? (value as ArticleCategory) : undefined;
+}
+
+// Executa migrações dinâmicas de enums de notícias para garantir consistência
+async function ensureDbEnums() {
+  const newCategories = ['filmes', 'series_tv', 'animes', 'games', 'korea', 'criticas', 'listas', 'colunistas'];
+  for (const cat of newCategories) {
+    try {
+      await db.execute(sql.raw(`ALTER TYPE article_category ADD VALUE '${cat}'`));
+    } catch (e) {
+      // Ignora se o valor já existir no enum do Postgres
+    }
+  }
 }
 
 export default async function NoticiasPage({
@@ -36,6 +58,9 @@ export default async function NoticiasPage({
   const { categoria, pagina } = await searchParams;
   const category = parseCategoryParam(categoria);
   const page = Number(pagina) > 0 ? Number(pagina) : 1;
+
+  // Garante os enums no banco antes de buscar
+  await ensureDbEnums();
 
   const { items, totalPages } = await getPublishedArticles({ category, page });
 

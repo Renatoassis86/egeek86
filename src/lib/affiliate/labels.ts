@@ -18,6 +18,7 @@ export const GAME_PLATFORM_GEN_LABELS: Record<GamePlatformGen, string> = {
   ps5: 'PlayStation 5',
   xbox_one: 'Xbox One',
   xbox_series: 'Xbox Series',
+  xbox_360: 'Xbox 360',
   unknown: 'Geração não identificada',
 };
 

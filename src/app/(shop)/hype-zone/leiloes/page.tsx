@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { auctions, profiles } from '@/db/schema';
+import { auctions, profiles, sellers } from '@/db/schema';
 import { LiveBidRoom } from '@/components/geek-deals/live-bid-room';
 import { CreateAuctionForm } from '@/components/geek-deals/create-auction-form';
 import { Glow } from '@/components/motion/glow';
@@ -15,7 +15,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { Gavel, Clock, ArrowRight, ShieldCheck, Plus } from 'lucide-react';
+import { Gavel, Clock, ArrowRight, ShieldCheck, Plus, User } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Geek Hammer - Leilões de Raridades',
@@ -32,6 +32,21 @@ export default async function AuctionsPage({
   const profile = await getCurrentProfile();
   const isAuthenticated = !!profile;
   const activeTab = (await searchParams).aba || 'ativos';
+
+  // Verifica se o usuário é um vendedor ativo
+  let seller = null;
+  if (profile) {
+    try {
+      const [existingSeller] = await db
+        .select()
+        .from(sellers)
+        .where(and(eq(sellers.userId, profile.id), eq(sellers.status, 'active')))
+        .limit(1);
+      seller = existingSeller;
+    } catch (e) {
+      console.error('Erro ao verificar registro de vendedor:', e);
+    }
+  }
 
   // 1. Carrega leilões do banco
   let list: any[] = [];
@@ -291,7 +306,46 @@ export default async function AuctionsPage({
 
       {activeTab === 'novo' && (
         <div className="z-10 relative">
-          <CreateAuctionForm />
+          {!isAuthenticated ? (
+            <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
+              <div className="flex size-14 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] mx-auto">
+                <User className="size-8" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Text variant="heading-md">Área Restrita a Colecionadores</Text>
+                <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
+                  Para cadastrar lotes de leilão e vender em nosso portal, você precisa entrar em sua conta ou criar uma nova.
+                </Text>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button asChild size="lg" className="w-full">
+                  <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Acessar Minha Conta</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full">
+                  <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Criar Nova Conta</Link>
+                </Button>
+              </div>
+            </Card>
+          ) : !seller ? (
+            <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
+              <div className="flex size-14 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)] mx-auto">
+                <ShieldCheck className="size-8" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Text variant="heading-md">Torne-se um Vendedor Oficial</Text>
+                <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
+                  Sua conta está autenticada, mas ainda não possui qualificação de Vendedor. Complete o Onboarding de Colecionador para ativar seu perfil e começar a postar seus itens.
+                </Text>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button asChild size="lg" variant="hype" className="w-full">
+                  <Link href="/conta/vendedor/onboarding">Fazer Cadastro de Vendedor</Link>
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <CreateAuctionForm />
+          )}
         </div>
       )}
 

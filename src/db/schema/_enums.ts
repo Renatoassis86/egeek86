@@ -251,6 +251,7 @@ export const gamePlatformGen = pgEnum('game_platform_gen', [
   'ps5',
   'xbox_one',
   'xbox_series',
+  'xbox_360',
   'unknown',
 ]);
 
@@ -280,6 +281,14 @@ export const articleCategory = pgEnum('article_category', [
   'sinopse_jogo',
   'tecnologia',
   'lancamentos',
+  'filmes',
+  'series_tv',
+  'animes',
+  'games',
+  'korea',
+  'criticas',
+  'listas',
+  'colunistas',
 ]);
 
 export const articleStatus = pgEnum('article_status', ['draft', 'published', 'archived']);

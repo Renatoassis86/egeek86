@@ -20,6 +20,7 @@ const GEN_VALUES: readonly GamePlatformGen[] = [
   'ps5',
   'xbox_one',
   'xbox_series',
+  'xbox_360',
   'unknown',
 ];
 const EDITION_VALUES: readonly GameEditionType[] = ['full_game', 'upgrade_pack', 'dlc', 'bundle', 'unknown'];

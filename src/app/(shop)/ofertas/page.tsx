@@ -32,12 +32,22 @@ const GEN_VALUES: readonly GamePlatformGen[] = [
   'ps5',
   'xbox_one',
   'xbox_series',
+  'xbox_360',
   'unknown',
 ];
 const TYPE_VALUES: readonly ProductType[] = ['game', 'console', 'accessory'];
 
 /** Ordem de exibição das seções por plataforma quando nenhuma geração está filtrada. */
-const PLATFORM_ORDER: GamePlatformGen[] = ['ps5', 'ps4', 'switch_2', 'switch_1', 'xbox_series', 'xbox_one', 'unknown'];
+const PLATFORM_ORDER: GamePlatformGen[] = [
+  'ps5',
+  'ps4',
+  'switch_2',
+  'switch_1',
+  'xbox_series',
+  'xbox_one',
+  'xbox_360',
+  'unknown',
+];
 
 function parseEnumParam<T extends string>(
   value: string | string[] | undefined,

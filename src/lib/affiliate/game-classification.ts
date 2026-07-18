@@ -26,6 +26,7 @@ export function normalizeGamePlatformGen(consoleVersion: string | null, fallback
   if (value === 'playstation 4' || value === 'ps4') return 'ps4';
   if (/xbox series/.test(value ?? '')) return 'xbox_series';
   if (value === 'xbox one') return 'xbox_one';
+  if (value === 'xbox 360') return 'xbox_360';
 
   const text = fallbackText?.toLowerCase() ?? '';
   if (/switch\s*2/.test(text)) return 'switch_2';
@@ -33,6 +34,9 @@ export function normalizeGamePlatformGen(consoleVersion: string | null, fallback
   if (/\b(playstation\s*5|ps5)\b/.test(text)) return 'ps5';
   if (/\b(playstation\s*4|ps4)\b/.test(text)) return 'ps4';
   if (/xbox\s*series/.test(text)) return 'xbox_series';
+  // "xbox 360" precisa vir antes de "xbox one" no texto livre: título como
+  // "Xbox 360 / One" (jogo cross-gen) não pode cair só na checagem de one.
+  if (/xbox\s*360/.test(text)) return 'xbox_360';
   if (/xbox\s*one/.test(text)) return 'xbox_one';
 
   return 'unknown';
