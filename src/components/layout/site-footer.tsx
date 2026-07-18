@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Text } from '@/components/ui/text';
 import { Separator } from '@/components/ui/separator';
+import { Instagram, Youtube, Send } from 'lucide-react';
 
 const footerSections = [
   {
@@ -46,6 +47,36 @@ export function SiteFooter() {
             <Text variant="body-sm" color="secondary" className="max-w-[28ch]">
               O cofre da cultura geek. Drops, raridades e curadoria.
             </Text>
+            {/* Redes Sociais */}
+            <div className="flex items-center gap-3.5 mt-2">
+              <a
+                href="https://instagram.com/espacogeek86"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-accent-primary)] transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="size-5" />
+              </a>
+              <a
+                href="https://youtube.com/@espacogeek86"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-accent-primary)] transition-colors"
+                aria-label="YouTube"
+              >
+                <Youtube className="size-5" />
+              </a>
+              <a
+                href="https://t.me/espacogeek86"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--color-text-secondary)] hover:text-[var(--color-accent-primary)] transition-colors"
+                aria-label="Telegram"
+              >
+                <Send className="size-4.5" />
+              </a>
+            </div>
           </div>
 
           {footerSections.map((section) => (
