@@ -12,6 +12,7 @@ const navLinks = [
   { href: '/sobre', label: 'Quem somos' },
   { href: '/categorias', label: 'Categorias' },
   { href: '/hype-zone', label: 'Hype Zone', highlight: true },
+  { href: '/hype-zone/leiloes', label: 'Leilões', highlight: true },
   { href: '/ofertas', label: 'Ofertas' },
   { href: '/monitoramento', label: 'Monitoramento' },
   { href: '/noticias', label: 'Notícias' },
@@ -44,7 +45,7 @@ export function AppHeader() {
             width={4220}
             height={1568}
             priority
-            className="h-6 lg:h-7 w-auto transition-transform group-hover:scale-105"
+            className="theme-logo h-6 lg:h-7 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
 

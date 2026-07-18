@@ -360,3 +360,12 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Logo Adaptativa para Temas */
+.theme-logo {
+  transition: filter var(--duration-normal) ease-out;
+}
+
+[data-theme="light"] .theme-logo {
+  filter: brightness(0.12) contrast(1.1);
+}

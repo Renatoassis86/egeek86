@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Flame, ShieldCheck, ShoppingBag, Users, Award, ChevronRight } from 'lucide-react';
+import { Flame, ShieldCheck, ShoppingBag, Users, Award, ChevronRight, Gavel } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -114,7 +114,7 @@ export default async function HypeZonePage() {
 
       {/* Manifesto Comercial Explicativo (Fácil & Direto) */}
       <Reveal delay={0.12}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 z-10 relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 z-10 relative">
           {/* Card: Para Comprar */}
           <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 hover:border-[var(--color-border-default)] transition-all backdrop-blur-md">
             <CardContent className="p-6 flex flex-col gap-4">
@@ -124,10 +124,10 @@ export default async function HypeZonePage() {
                 </div>
                 <div>
                   <Text variant="heading-sm">Quero Comprar Raridades</Text>
-                  <Text variant="caption" color="tertiary">Para Colecionadores e Caçadores de Drops</Text>
+                  <Text variant="caption" color="tertiary">Para Colecionadores e Caçadores</Text>
                 </div>
               </div>
-              <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              <Text variant="body-sm" color="secondary" className="leading-relaxed text-[11px] md:text-xs">
                 Chega de comprar no escuro ou pagar fortunas para robôs revendedores. Na Hype Zone, 
                 você disputa <strong className="text-[var(--color-text-primary)] font-bold">itens originais e inspecionados</strong> diretamente de outros colecionadores. 
                 Os lançamentos têm hora marcada e são protegidos por nosso escudo anti-bot.
@@ -144,23 +144,40 @@ export default async function HypeZonePage() {
                 </div>
                 <div>
                   <Text variant="heading-sm">Quero Vender do Meu Acervo</Text>
-                  <Text variant="caption" color="tertiary">Para Vendedores e Criadores de Hype</Text>
+                  <Text variant="caption" color="tertiary">Para Criadores de Hype</Text>
                 </div>
               </div>
-              <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              <Text variant="body-sm" color="secondary" className="leading-relaxed text-[11px] md:text-xs mb-auto">
                 Transforme seu colecionável em um evento de lançamento com hora marcada! Conte a história da 
                 sua peça, envie até <strong className="text-[var(--color-text-primary)] font-bold">10 fotos detalhadas</strong> e crie uma disputa saudável que atrai centenas 
                 de interessados em minutos.
               </Text>
-              <div className="flex flex-col gap-3 border-t border-[var(--color-border-subtle)] pt-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex flex-col gap-1 text-xs text-[var(--color-text-secondary)] font-mono">
-                  <div className="flex items-center gap-2">
-                    <Award className="size-3.5 text-[var(--color-accent-primary)]" />
-                    <span>Ganhe +150 Geek Points no onboarding!</span>
-                  </div>
-                </div>
-                <Button asChild size="sm" variant="outline" className="w-full sm:w-auto text-xs" rightIcon={<ChevronRight className="size-3" />}>
+              <div className="flex flex-col gap-3 border-t border-[var(--color-border-subtle)] pt-3">
+                <Button asChild size="sm" variant="outline" className="w-full text-[11px]" rightIcon={<ChevronRight className="size-3" />}>
                   <Link href="/conta/vendedor/onboarding">Seja um Vendedor</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card: Leilões Geek Hammer */}
+          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 hover:border-[var(--color-border-default)] transition-all backdrop-blur-md">
+            <CardContent className="p-6 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)]">
+                  <Gavel className="size-5" />
+                </div>
+                <div>
+                  <Text variant="heading-sm">Leilões Geek Hammer</Text>
+                  <Text variant="caption" color="tertiary">Disputas por Lotes de Itens Raros</Text>
+                </div>
+              </div>
+              <Text variant="body-sm" color="secondary" className="leading-relaxed text-[11px] md:text-xs mb-auto">
+                Participe de disputas dinâmicas lance a lance. Sistema com <strong className="text-[var(--color-text-primary)] font-bold">proteção de prorrogação automática (soft close)</strong> contra robôs atiradores e garantia de caução para impedir inadimplência de vencedores.
+              </Text>
+              <div className="flex flex-col gap-3 border-t border-[var(--color-border-subtle)] pt-3">
+                <Button asChild size="sm" variant="hype" className="w-full text-[11px]" rightIcon={<ChevronRight className="size-3" />}>
+                  <Link href="/hype-zone/leiloes">Ir para os Leilões</Link>
                 </Button>
               </div>
             </CardContent>

@@ -94,6 +94,16 @@ const NON_PRODUCT_KEYWORDS = [
   /\bbolsa\b/i,
   /\bmochila\b/i,
   /base de carregamento/i,
+  // Item de merchandising/novidade que só referencia o produto de jogo, mas
+  // não é usado pra jogar (chaveiro, miniatura, réplica de exibição, pelúcia,
+  // boneco avulso) — pedido explícito do cliente: só entra item de jogo em
+  // si ou que melhore a experiência de jogo, não colecionável decorativo.
+  /chaveiro/i,
+  /porta.?chaves/i,
+  /\bminiatura/i,
+  /\br[eé]plica\b/i,
+  /pel[uú]cia/i,
+  /\bboneco\b/i,
 ];
 
 function isNonProductAccessory(title: string): boolean {

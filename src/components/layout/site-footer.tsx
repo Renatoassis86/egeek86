@@ -41,7 +41,7 @@ export function SiteFooter() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1 flex flex-col gap-3">
             <Link href="/" className="flex items-center w-fit" aria-label="Espaço Geek 86">
-              <Image src="/geek 86.webp" alt="Espaço Geek 86" width={4220} height={1568} className="h-7 w-auto" />
+              <Image src="/geek 86.webp" alt="Espaço Geek 86" width={4220} height={1568} className="theme-logo h-7 w-auto" />
             </Link>
             <Text variant="body-sm" color="secondary" className="max-w-[28ch]">
               O cofre da cultura geek. Drops, raridades e curadoria.

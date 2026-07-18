@@ -66,35 +66,35 @@ export function OfferCard({
             </div>
           )}
 
-          <div className="absolute inset-x-2 top-2 flex items-start justify-between gap-1">
-            {metrics?.avgDiscountPercent ? (
-              <Badge variant="danger" size="sm" title="Desconto em relação à média de preço dos últimos 30 dias">
-                -{metrics.avgDiscountPercent}%
-              </Badge>
-            ) : (
-              <span />
-            )}
-            <Badge
-              variant="outline"
-              size="sm"
-              className="bg-[var(--color-bg-canvas)]/80 backdrop-blur-sm"
-              style={offer.network.colorHex ? { borderColor: offer.network.colorHex } : undefined}
+          {metrics?.avgDiscountPercent ? (
+            <span
+              className="absolute left-2 top-2 z-10 inline-flex items-center rounded-[var(--radius-sm)] bg-[var(--color-accent-danger)] px-2 py-1 text-[13px] font-bold leading-none text-white shadow-[var(--shadow-md)]"
+              title="Desconto em relação à média de preço dos últimos 30 dias"
             >
-              {offer.network.name}
-            </Badge>
-          </div>
+              -{metrics.avgDiscountPercent}%
+            </span>
+          ) : null}
+
+          <Badge
+            variant="outline"
+            size="sm"
+            className="absolute right-2 top-2 z-10 max-w-[55%] truncate bg-[var(--color-bg-canvas)]/80 backdrop-blur-sm"
+            style={offer.network.colorHex ? { borderColor: offer.network.colorHex } : undefined}
+          >
+            {offer.network.name}
+          </Badge>
 
         </div>
 
         <CardContent className={cn('flex flex-1 flex-col gap-2', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-4')}>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 w-full min-w-0">
             {specLine && (
-              <Text variant="caption" color="tertiary" className="min-w-0 truncate uppercase tracking-[0.04em]">
+              <Text variant="caption" color="tertiary" className="flex-1 min-w-0 truncate uppercase tracking-[0.04em]">
                 {specLine}
               </Text>
             )}
             {metrics?.isLowestEver && (
-              <Badge variant="hype" size="sm" className="shrink-0 whitespace-nowrap">
+              <Badge variant="hype" size="sm" className="flex-shrink-0 shrink-0 whitespace-nowrap">
                 <Flame className="size-3" />
                 Menor já visto
               </Badge>
@@ -103,7 +103,7 @@ export function OfferCard({
 
           <Text
             variant={isFeature ? 'body-md' : 'body-sm'}
-            className={cn('line-clamp-2 font-medium', isFeature ? 'min-h-11' : 'min-h-10')}
+            className={cn('line-clamp-2 overflow-hidden text-ellipsis font-medium', isFeature ? 'min-h-11' : 'min-h-10')}
           >
             {offer.title}
           </Text>
