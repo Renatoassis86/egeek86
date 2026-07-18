@@ -81,22 +81,19 @@ export function SiteFooter() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
           >
-            <Text variant="caption" color="tertiary">
+            <Text variant="caption" color="tertiary" className="flex items-center gap-1.5 select-none font-medium">
               Criado por
+              <span className="relative h-5 w-5 overflow-hidden inline-block align-middle rounded-sm">
+                <Image
+                  src="/arkos.png"
+                  alt="Arkos Logo"
+                  fill
+                  sizes="20px"
+                  className="object-cover object-[50%_16%]"
+                />
+              </span>
+              <span className="font-bold text-[var(--color-text-primary)] hover:underline">Arkos Intelligence</span>
             </Text>
-            {/* arkos.png é um lockup vertical inteiro (marca "A" + wordmark
-                ARKOS + slogan) — recorta só a marca do topo pro selo de
-                rodapé, senão a imagem inteira espremida em poucos px vira
-                um triângulo genérico sem ler como "A". */}
-            <span className="relative h-6 w-6 overflow-hidden">
-              <Image
-                src="/arkos.png"
-                alt="Arkos Intelligence"
-                fill
-                sizes="24px"
-                className="object-cover object-[50%_16%]"
-              />
-            </span>
           </a>
         </div>
       </div>
