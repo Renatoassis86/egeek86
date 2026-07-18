@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { formatBRL } from '@/lib/format';
+import { cn } from '@/lib/cn';
 import { Gavel, Clock, ArrowRight, ShieldCheck, Plus } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -146,7 +147,7 @@ export default async function AuctionsPage({
             </Badge>
           </Reveal>
           <Reveal delay={0.05}>
-            <Text as="h1" variant="display-sm" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+            <Text as="h1" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
               Lances & Martelo Hype
             </Text>
           </Reveal>
