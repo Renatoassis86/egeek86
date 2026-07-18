@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { Flame, LineChart, Sparkles } from 'lucide-react';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
-import { TextImageMask } from '@/components/motion/text-image-mask';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { OfferCard } from '@/components/affiliate/offer-card';
@@ -17,6 +16,7 @@ import {
   type OfferWithRelations,
   type OfferListingMetrics,
 } from '@/server/queries/affiliate';
+import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import type { GameFormat, GamePlatformGen, ProductType } from '@/db/schema';
 
 export const metadata: Metadata = {
@@ -35,6 +35,9 @@ const GEN_VALUES: readonly GamePlatformGen[] = [
   'unknown',
 ];
 const TYPE_VALUES: readonly ProductType[] = ['game', 'console', 'accessory'];
+
+/** Ordem de exibição das seções por plataforma quando nenhuma geração está filtrada. */
+const PLATFORM_ORDER: GamePlatformGen[] = ['ps5', 'ps4', 'switch_2', 'switch_1', 'xbox_series', 'xbox_one', 'unknown'];
 
 function parseEnumParam<T extends string>(
   value: string | string[] | undefined,
@@ -67,41 +70,58 @@ export default async function OffersPage({
   const networkId = typeof sp.rede === 'string' && sp.rede ? sp.rede : undefined;
   const sortBy = sp.ordenar === 'price_desc' ? 'price_desc' : 'price_asc';
 
-  const [networks, pool] = await Promise.all([
+  const baseFilter = { gameFormat, productType, networkId, sortBy: sortBy as 'price_asc' | 'price_desc' };
+
+  // Pool amplo (sem filtro de geração) só pra achar promoção real e contar
+  // estatística — nunca usado pra render direto quando a vitrine está
+  // dividida por plataforma (ver platformSections abaixo).
+  const [networks, broadPool] = await Promise.all([
     listNetworks(),
-    listRankedOffers({ gameFormat, gamePlatformGen, productType, networkId, sortBy, limit: 60 }),
+    listRankedOffers({ ...baseFilter, gamePlatformGen, limit: 200 }),
   ]);
 
-  const metricsMap = await getOfferListingMetrics(pool.map((o) => o.id));
+  // Quando nenhuma geração específica está filtrada, cada plataforma vira uma
+  // consulta própria e independente (nunca um recorte do pool amplo) — assim
+  // toda seção mostra profundidade real, não sobra desigual de um limit
+  // compartilhado. Quando uma geração já está filtrada (inclusive via lista,
+  // ex: ?geracao=ps4,ps5 do card da home), a vitrine já está no contexto
+  // daquela plataforma, então mostra o pool amplo direto numa seção só.
+  const platformSections = gamePlatformGen
+    ? []
+    : await Promise.all(
+        PLATFORM_ORDER.map(async (gen) => ({
+          gen,
+          title: GAME_PLATFORM_GEN_LABELS[gen],
+          offers: await listRankedOffers({ ...baseFilter, gamePlatformGen: gen, limit: 12 }),
+        }))
+      );
+  const visiblePlatformSections = platformSections.filter((s) => s.offers.length > 0);
 
-  // Separados por plataforma de jogos por padrão
-  const playstation = pool.filter((o) => o.masterProduct.gamePlatformGen === 'ps5' || o.masterProduct.gamePlatformGen === 'ps4');
-  const nintendo = pool.filter((o) => o.masterProduct.gamePlatformGen === 'switch_1' || o.masterProduct.gamePlatformGen === 'switch_2');
-  const xbox = pool.filter((o) => o.masterProduct.gamePlatformGen === 'xbox_series' || o.masterProduct.gamePlatformGen === 'xbox_one');
-  const other = pool.filter((o) => 
-    o.masterProduct.gamePlatformGen !== 'ps5' && 
-    o.masterProduct.gamePlatformGen !== 'ps4' && 
-    o.masterProduct.gamePlatformGen !== 'switch_1' && 
-    o.masterProduct.gamePlatformGen !== 'switch_2' && 
-    o.masterProduct.gamePlatformGen !== 'xbox_series' && 
-    o.masterProduct.gamePlatformGen !== 'xbox_one'
-  );
+  const allOfferIds = [
+    ...broadPool.map((o) => o.id),
+    ...visiblePlatformSections.flatMap((s) => s.offers.map((o) => o.id)),
+  ];
+  const metricsMap = await getOfferListingMetrics(allOfferIds);
 
-  const featured = [...pool]
+  // Destaque = promoção real confirmada pelo NOSSO monitoramento (média
+  // móvel de 30 dias e menor preço já visto), nunca o desconto que a própria
+  // loja afirma ter (discountPercent, sem verificação nossa) nem preço
+  // nominal mais baixo sozinho.
+  const featured = [...broadPool]
     .filter((o) => {
       const m = metricsMap.get(o.id);
-      return m ? m.isLowestEver || (m.discountPercent ?? 0) > 0 : false;
+      return m ? m.isLowestEver || (m.avgDiscountPercent ?? 0) > 0 : false;
     })
     .sort((a, b) => {
       const ma = metricsMap.get(a.id);
       const mb = metricsMap.get(b.id);
-      const scoreA = (ma?.isLowestEver ? 1000 : 0) + (ma?.discountPercent ?? 0);
-      const scoreB = (mb?.isLowestEver ? 1000 : 0) + (mb?.discountPercent ?? 0);
+      const scoreA = (ma?.isLowestEver ? 1000 : 0) + (ma?.avgDiscountPercent ?? 0);
+      const scoreB = (mb?.isLowestEver ? 1000 : 0) + (mb?.avgDiscountPercent ?? 0);
       return scoreB - scoreA;
     })
     .slice(0, 6);
 
-  const lowestEverCount = pool.filter((o) => metricsMap.get(o.id)?.isLowestEver).length;
+  const lowestEverCount = broadPool.filter((o) => metricsMap.get(o.id)?.isLowestEver).length;
 
   return (
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
@@ -111,7 +131,7 @@ export default async function OffersPage({
 
         {/* Imagem do banner inteira com recorte diagonal na esquerda (igual Hype Zone) */}
         <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
-          <div 
+          <div
             className="relative w-full h-full"
             style={{
               clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
@@ -146,7 +166,7 @@ export default async function OffersPage({
 
           <Reveal delay={0.06}>
             <div className="mt-7 flex flex-wrap gap-x-10 gap-y-4">
-              <StatBlock value={pool.length} label="ofertas monitoradas" />
+              <StatBlock value={broadPool.length} label="ofertas monitoradas" />
               <StatBlock value={lowestEverCount} label="no menor preço histórico" accent="hype" />
               <StatBlock value={networks.length} label="lojas parceiras" />
             </div>
@@ -156,11 +176,11 @@ export default async function OffersPage({
 
       <div className="sticky top-[calc(var(--header-mobile)+8px)] lg:top-[calc(var(--header-desktop)+12px)] z-20 mt-8">
         <Suspense fallback={null}>
-          <OfferFilters networks={networks} resultCount={pool.length} />
+          <OfferFilters networks={networks} resultCount={broadPool.length} />
         </Suspense>
       </div>
 
-      {pool.length === 0 ? (
+      {broadPool.length === 0 ? (
         <Text variant="body-sm" color="secondary" className="mt-10">
           Nenhuma oferta encontrada com esses filtros. Tente outra combinação.
         </Text>
@@ -177,14 +197,12 @@ export default async function OffersPage({
             />
           )}
 
-          {playstation.length > 0 && <OfferSection title="PlayStation" offers={playstation} metricsMap={metricsMap} />}
-
-          {nintendo.length > 0 && <OfferSection title="Nintendo" offers={nintendo} metricsMap={metricsMap} />}
-
-          {xbox.length > 0 && <OfferSection title="Xbox" offers={xbox} metricsMap={metricsMap} />}
-
-          {other.length > 0 && (
-            <OfferSection title="Geral / Outros" offers={other} metricsMap={metricsMap} />
+          {gamePlatformGen ? (
+            <OfferSection title="Resultado da busca" offers={broadPool} metricsMap={metricsMap} />
+          ) : (
+            visiblePlatformSections.map(({ gen, title, offers }) => (
+              <OfferSection key={gen} title={title} offers={offers} metricsMap={metricsMap} />
+            ))
           )}
         </div>
       )}

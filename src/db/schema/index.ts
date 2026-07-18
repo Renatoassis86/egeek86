@@ -45,6 +45,7 @@ export * from './payments';
 // Hype Zone
 export * from './hype';
 export * from './curations';
+export * from './auctions';
 
 // Geek Deals (Afiliados)
 export * from './affiliate_networks';
