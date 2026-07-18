@@ -129,7 +129,7 @@ export default async function HypeZonePage() {
               </div>
               <Text variant="body-sm" color="secondary" className="leading-relaxed">
                 Chega de comprar no escuro ou pagar fortunas para robôs revendedores. Na Hype Zone, 
-                você disputa **itens originais e inspecionados** diretamente de outros colecionadores. 
+                você disputa <strong className="text-[var(--color-text-primary)] font-bold">itens originais e inspecionados</strong> diretamente de outros colecionadores. 
                 Os lançamentos têm hora marcada e são protegidos por nosso escudo anti-bot.
               </Text>
             </CardContent>
@@ -149,7 +149,7 @@ export default async function HypeZonePage() {
               </div>
               <Text variant="body-sm" color="secondary" className="leading-relaxed">
                 Transforme seu colecionável em um evento de lançamento com hora marcada! Conte a história da 
-                sua peça, envie até **10 fotos detalhadas** e crie uma disputa saudável que atrai centenas 
+                sua peça, envie até <strong className="text-[var(--color-text-primary)] font-bold">10 fotos detalhadas</strong> e crie uma disputa saudável que atrai centenas 
                 de interessados em minutos.
               </Text>
               <div className="flex flex-col gap-3 border-t border-[var(--color-border-subtle)] pt-3 sm:flex-row sm:items-center sm:justify-between">

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { dropCurations, profiles, drops } from '@/db/schema';
+import { dropCurations, profiles, drops, reviewCurations, reviews } from '@/db/schema';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 /**
@@ -204,5 +204,134 @@ export async function resolveDropCuration(dropId: string, correctVerdict: 'authe
   } catch (error) {
     console.error('Erro ao resolver curadoria do drop:', error);
     return { error: 'Ocorreu um erro no servidor ao tentar finalizar a curadoria.' };
+  }
+}
+
+/**
+ * Registra ou atualiza o veredicto de um colecionador auditando a avaliação enviada por um comprador.
+ */
+export async function submitReviewCuration(data: {
+  reviewId: string;
+  verdict: 'approve' | 'reject';
+  notes: string;
+}) {
+  try {
+    const profile = await getCurrentProfile();
+    if (!profile) {
+      return { error: 'Você precisa estar logado para auditar avaliações.' };
+    }
+
+    if (!data.notes.trim() || data.notes.length < 10) {
+      return { error: 'Por favor, escreva uma justificativa com pelo menos 10 caracteres.' };
+    }
+
+    // Verifica se o curador já votou nesta avaliação
+    const [existing] = await db
+      .select()
+      .from(reviewCurations)
+      .where(and(eq(reviewCurations.reviewId, data.reviewId), eq(reviewCurations.userId, profile.id)))
+      .limit(1);
+
+    if (existing) {
+      await db
+        .update(reviewCurations)
+        .set({
+          verdict: data.verdict,
+          notes: data.notes,
+          createdAt: new Date(),
+        })
+        .where(eq(reviewCurations.id, existing.id));
+    } else {
+      await db.insert(reviewCurations).values({
+        reviewId: data.reviewId,
+        userId: profile.id,
+        verdict: data.verdict,
+        notes: data.notes,
+      });
+
+      // Bônus imediato: +10 pontos pela auditoria
+      await db
+        .update(profiles)
+        .set({
+          geekPoints: (profile.geekPoints || 0) + 10,
+          updatedAt: new Date(),
+        })
+        .where(eq(profiles.id, profile.id));
+    }
+
+    revalidatePath('/hype-zone/curadoria');
+    return { success: true, message: 'Auditoria registrada! Você ganhou +10 Geek Points por ajudar a manter a integridade da plataforma.' };
+  } catch (error) {
+    console.error('Erro ao registrar auditoria de avaliação:', error);
+    return { error: 'Ocorreu um erro ao processar seu voto de curadoria.' };
+  }
+}
+
+/**
+ * Ação administrativa para fechar a auditoria de avaliação e julgar a legitimidade (Consenso/Blockchain).
+ */
+export async function resolveReviewCuration(reviewId: string, correctVerdict: 'approve' | 'reject') {
+  try {
+    const profile = await getCurrentProfile();
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Apenas administradores podem julgar as auditorias de avaliações.' };
+    }
+
+    // Busca votos corretos da rede
+    const correctVoters = await db
+      .select({ id: reviewCurations.id, userId: reviewCurations.userId })
+      .from(reviewCurations)
+      .where(and(eq(reviewCurations.reviewId, reviewId), eq(reviewCurations.verdict, correctVerdict)));
+
+    // Se o veredicto correto for 'approve', a avaliação do cliente é aprovada e exibida em produção.
+    // Se for 'reject', ela é rejeitada (não afeta score do vendedor/exibição).
+    await db
+      .update(reviews)
+      .set({
+        status: correctVerdict === 'approve' ? 'approved' : 'rejected',
+        moderatedBy: profile.id,
+        moderatedAt: new Date(),
+        moderationReason: correctVerdict === 'approve' 
+          ? 'Legítima - Aprovada pelo consenso de curadores.' 
+          : 'Rejeitada - Identificada como erro/má-fé pelo consenso de curadores.',
+        updatedAt: new Date(),
+      })
+      .where(eq(reviews.id, reviewId));
+
+    // Bonifica colecionadores assertivos com +50 pontos adicionais
+    for (const voter of correctVoters) {
+      await db
+        .update(reviewCurations)
+        .set({
+          isAssertive: true,
+          pointsRewarded: 50,
+        })
+        .where(eq(reviewCurations.id, voter.id));
+
+      const [voterProfile] = await db
+        .select({ geekPoints: profiles.geekPoints })
+        .from(profiles)
+        .where(eq(profiles.id, voter.userId))
+        .limit(1);
+
+      if (voterProfile) {
+        await db
+          .update(profiles)
+          .set({
+            geekPoints: (voterProfile.geekPoints || 0) + 50,
+            updatedAt: new Date(),
+          })
+          .where(eq(profiles.id, voter.userId));
+      }
+    }
+
+    revalidatePath('/hype-zone/curadoria');
+    return {
+      success: true,
+      message: `Auditoria de avaliação encerrada! ${correctVoters.length} curador(es) assertivo(s) receberam +50 Geek Points (Milhas Geek).`
+    };
+  } catch (error) {
+    console.error('Erro ao resolver auditoria de avaliação:', error);
+    return { error: 'Ocorreu um erro no servidor ao tentar finalizar a auditoria.' };
   }
 }

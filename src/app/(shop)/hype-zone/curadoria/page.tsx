@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { dropCurations } from '@/db/schema';
+import { dropCurations, reviewCurations, reviews, products, profiles, sellers } from '@/db/schema';
 import { CurationPanel } from '@/components/geek-deals/curation-panel';
 import { PointsRewardsCard } from '@/components/geek-deals/points-rewards-card';
 import { Glow } from '@/components/motion/glow';
@@ -26,7 +26,7 @@ export default async function CurationPage() {
   // Carrega drops pendentes (scheduled)
   const pendingDrops = await getUpcomingDrops();
 
-  // Carrega votos que o usuário já enviou
+  // Carrega votos de drops que o usuário já enviou
   const userCurationVotes: Record<string, { verdict: string; confidence: number; notes: string }> = {};
   if (profile) {
     try {
@@ -46,6 +46,59 @@ export default async function CurationPage() {
       console.error('Erro ao carregar votos de curadoria do usuário:', err);
     }
   }
+
+  // Carrega avaliações pendentes do banco
+  let pendingReviewsList: any[] = [];
+  const userReviewVotes: Record<string, { verdict: 'approve' | 'reject'; notes: string }> = {};
+
+  if (profile) {
+    try {
+      pendingReviewsList = await db
+        .select({
+          id: reviews.id,
+          productId: reviews.productId,
+          productTitle: products.title,
+          buyerName: profiles.name,
+          sellerName: sellers.displayName,
+          rating: reviews.rating,
+          comment: reviews.comment,
+          images: reviews.images,
+          createdAt: reviews.createdAt,
+        })
+        .from(reviews)
+        .leftJoin(products, eq(reviews.productId, products.id))
+        .leftJoin(profiles, eq(reviews.userId, profiles.id))
+        .leftJoin(sellers, eq(products.sellerId, sellers.id))
+        .where(eq(reviews.status, 'pending'))
+        .limit(10);
+
+      const reviewVotesList = await db
+        .select()
+        .from(reviewCurations)
+        .where(eq(reviewCurations.userId, profile.id));
+
+      for (const vote of reviewVotesList) {
+        userReviewVotes[vote.reviewId] = {
+          verdict: vote.verdict as 'approve' | 'reject',
+          notes: vote.notes,
+        };
+      }
+    } catch (err) {
+      console.error('Erro ao carregar avaliações pendentes:', err);
+    }
+  }
+
+  const typedReviews = pendingReviewsList.map((r) => ({
+    id: r.id,
+    productId: r.productId || 'unknown',
+    productTitle: r.productTitle || 'Item Colecionável',
+    buyerName: r.buyerName || 'Comprador Anônimo',
+    sellerName: r.sellerName || 'Vendedor',
+    rating: Number(r.rating || 5),
+    comment: r.comment || '',
+    images: Array.isArray(r.images) ? (r.images as string[]) : [],
+    createdAt: r.createdAt ? new Date(r.createdAt).toISOString() : new Date().toISOString(),
+  }));
 
   const activeCoupons = (profile?.preferences as any)?.coupons || [];
 
@@ -80,12 +133,14 @@ export default async function CurationPage() {
       {/* Grid: Coluna do Feed de Curadoria & Recompensas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 z-10 relative items-start">
         
-        {/* Lado Esquerdo: Feed de Drops Pendentes */}
+        {/* Lado Esquerdo: Feed de Drops e Avaliações Pendentes */}
         <div className="lg:col-span-2">
           <Reveal delay={0.12}>
             <CurationPanel
               pendingDrops={pendingDrops}
               userCurationVotes={userCurationVotes}
+              pendingReviews={typedReviews}
+              userReviewVotes={userReviewVotes}
               isAdmin={isAdmin}
               isAuthenticated={isAuthenticated}
               userGeekPoints={profile?.geekPoints || 0}

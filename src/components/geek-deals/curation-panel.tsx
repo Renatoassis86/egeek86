@@ -1,22 +1,35 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Award, UserCheck, MessageSquare } from 'lucide-react';
+import { Star, ShieldCheck, CheckCircle2, AlertTriangle, XCircle, Award, UserCheck, MessageSquare, ShieldAlert } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/toast';
 import { HypeMediaCarousel } from '@/components/geek-deals/hype-media-carousel';
-import { CollectorCard } from '@/components/geek-deals/collector-card';
-import { submitDropCuration, resolveDropCuration } from '@/server/actions/curation';
+import { submitDropCuration, resolveDropCuration, submitReviewCuration, resolveReviewCuration } from '@/server/actions/curation';
 import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import type { DropWithRelations } from '@/server/queries/hype';
 
+export interface PendingReview {
+  id: string;
+  productId: string;
+  productTitle: string;
+  buyerName: string;
+  sellerName: string;
+  rating: number;
+  comment: string;
+  images: string[];
+  createdAt: string;
+}
+
 interface CurationPanelProps {
   pendingDrops: DropWithRelations[];
   userCurationVotes: Record<string, { verdict: string; confidence: number; notes: string }>;
+  pendingReviews?: PendingReview[];
+  userReviewVotes?: Record<string, { verdict: string; notes: string }>;
   isAdmin: boolean;
   isAuthenticated: boolean;
   userGeekPoints: number;
@@ -25,29 +38,67 @@ interface CurationPanelProps {
 export function CurationPanel({
   pendingDrops,
   userCurationVotes,
+  pendingReviews = [],
+  userReviewVotes = {},
   isAdmin,
   isAuthenticated,
   userGeekPoints,
 }: CurationPanelProps) {
   const [isPending, startTransition] = useTransition();
-  const [votes, setVotes] = useState<Record<string, { verdict: 'authentic' | 'fake' | 'suspicious'; confidence: number; notes: string }>>(
+  const [activeSubTab, setActiveSubTab] = useState<'drops' | 'reviews'>('drops');
+  
+  // Votos de Drops
+  const [dropVotes, setDropVotes] = useState<Record<string, { verdict: 'authentic' | 'fake' | 'suspicious'; confidence: number; notes: string }>>(
     (userCurationVotes as any) || {}
   );
-  
-  // Votos locais de formulário ativos
-  const [formVerdict, setFormVerdict] = useState<Record<string, 'authentic' | 'fake' | 'suspicious'>>({});
-  const [formConfidence, setFormConfidence] = useState<Record<string, number>>({});
-  const [formNotes, setFormNotes] = useState<Record<string, string>>({});
+  const [formDropVerdict, setFormDropVerdict] = useState<Record<string, 'authentic' | 'fake' | 'suspicious'>>({});
+  const [formDropConfidence, setFormDropConfidence] = useState<Record<string, number>>({});
+  const [formDropNotes, setFormDropNotes] = useState<Record<string, string>>({});
 
-  const handleVoteSubmit = (dropId: string) => {
+  // Votos de Reviews (Auditoria)
+  const [reviewVotes, setReviewVotes] = useState<Record<string, { verdict: 'approve' | 'reject'; notes: string }>>(
+    (userReviewVotes as any) || {}
+  );
+  const [formReviewVerdict, setFormReviewVerdict] = useState<Record<string, 'approve' | 'reject'>>({});
+  const [formReviewNotes, setFormReviewNotes] = useState<Record<string, string>>({});
+
+  // Mock de avaliações pendentes caso venha vazio da API/banco
+  const fallbackReviews: PendingReview[] = [
+    {
+      id: 'rev-mock-1',
+      productId: 'p1',
+      productTitle: 'PlayStation 5 Pro - Edição Limitada 30 Anos',
+      buyerName: 'Carlos G. (Comprador)',
+      sellerName: 'Renato Assis (Renato86)',
+      rating: 1,
+      comment: 'O console veio com cabo de força preto comum em vez do cabo comemorativo clássico cinza. Propaganda enganosa!',
+      images: ['/images/hero/tile-accent.png'],
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: 'rev-mock-2',
+      productId: 'p2',
+      productTitle: 'Vaporwave Custom Keyboard mechanical (65%)',
+      buyerName: 'Julia M. (Compradora)',
+      sellerName: 'Aline Tech & Craft',
+      rating: 2,
+      comment: 'O teclado faz muito barulho ao digitar. Comprei achando que switches lubrificados fossem totalmente silenciosos. Não recomendo.',
+      images: [],
+      createdAt: new Date().toISOString(),
+    }
+  ];
+
+  const targetReviews = pendingReviews.length > 0 ? pendingReviews : fallbackReviews;
+
+  const handleDropVoteSubmit = (dropId: string) => {
     if (!isAuthenticated) {
       toast.error('Faça login para poder votar.');
       return;
     }
 
-    const verdict = formVerdict[dropId];
-    const confidence = formConfidence[dropId] || 3;
-    const notes = formNotes[dropId] || '';
+    const verdict = formDropVerdict[dropId];
+    const confidence = formDropConfidence[dropId] || 3;
+    const notes = formDropNotes[dropId] || '';
 
     if (!verdict) {
       toast.error('Selecione um veredicto para o item.');
@@ -65,7 +116,7 @@ export function CurationPanel({
         toast.error(res.error);
       } else {
         toast.success(res.message);
-        setVotes((prev) => ({
+        setDropVotes((prev) => ({
           ...prev,
           [dropId]: { verdict, confidence, notes },
         }));
@@ -73,10 +124,54 @@ export function CurationPanel({
     });
   };
 
-  // Resolução do Administrador
-  const handleResolve = (dropId: string, correctVerdict: 'authentic' | 'fake') => {
+  const handleResolveDrop = (dropId: string, correctVerdict: 'authentic' | 'fake') => {
     startTransition(async () => {
       const res = await resolveDropCuration(dropId, correctVerdict);
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        toast.success(res.message);
+      }
+    });
+  };
+
+  // Voto de Auditoria de Avaliação C2C
+  const handleReviewVoteSubmit = (reviewId: string) => {
+    if (!isAuthenticated) {
+      toast.error('Faça login para poder votar.');
+      return;
+    }
+
+    const verdict = formReviewVerdict[reviewId];
+    const notes = formReviewNotes[reviewId] || '';
+
+    if (!verdict) {
+      toast.error('Selecione se aprova ou rejeita a avaliação.');
+      return;
+    }
+
+    if (!notes.trim() || notes.length < 10) {
+      toast.error('Escreva uma justificativa com pelo menos 10 caracteres.');
+      return;
+    }
+
+    startTransition(async () => {
+      const res = await submitReviewCuration({ reviewId, verdict, notes });
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        toast.success(res.message);
+        setReviewVotes((prev) => ({
+          ...prev,
+          [reviewId]: { verdict, notes },
+        }));
+      }
+    });
+  };
+
+  const handleResolveReview = (reviewId: string, correctVerdict: 'approve' | 'reject') => {
+    startTransition(async () => {
+      const res = await resolveReviewCuration(reviewId, correctVerdict);
       if (res.error) {
         toast.error(res.error);
       } else {
@@ -88,7 +183,7 @@ export function CurationPanel({
   const isQualified = userGeekPoints >= 200 || isAdmin;
 
   return (
-    <div className="flex flex-col gap-8 w-full">
+    <div className="flex flex-col gap-6 w-full">
       <div className="flex items-center gap-3 border-b border-[var(--color-border-subtle)] pb-4">
         <div className="flex size-9 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)]">
           <ShieldCheck className="size-5" />
@@ -96,231 +191,313 @@ export function CurationPanel({
         <div>
           <Text variant="heading-md">Conselho de Curadores EG86</Text>
           <Text variant="caption" color="tertiary">
-            Avalie itens postados pela comunidade de colecionadores. Acertos garantem milhas de desconto!
+            Consenso descentralizado de colecionadores. Avalie produtos e denuncie reviews falsos.
           </Text>
         </div>
+      </div>
+
+      {/* Sub-Abas do Painel */}
+      <div className="flex border-b border-[var(--color-border-subtle)] pb-px gap-4">
+        <button
+          onClick={() => setActiveSubTab('drops')}
+          className={cn(
+            'pb-3 text-xs font-bold transition-all border-b-2 border-transparent focus:outline-none',
+            activeSubTab === 'drops'
+              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)]'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          )}
+        >
+          Curadoria de Drops ({pendingDrops.length})
+        </button>
+        <button
+          onClick={() => setActiveSubTab('reviews')}
+          className={cn(
+            'pb-3 text-xs font-bold transition-all border-b-2 border-transparent focus:outline-none',
+            activeSubTab === 'reviews'
+              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)]'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          )}
+        >
+          Auditoria de Avaliações ({targetReviews.length})
+        </button>
       </div>
 
       {!isQualified && (
         <div className="bg-[var(--color-accent-hype)]/5 border border-[var(--color-accent-hype)]/20 text-[var(--color-text-secondary)] rounded-[var(--radius-md)] p-4 text-xs leading-relaxed">
           <AlertTriangle className="size-4 text-[var(--color-accent-hype)] inline-block align-middle mr-1.5" />
           <span className="font-semibold text-[var(--color-text-primary)]">Restrição de Nível</span>: 
-          Você precisa de pelo menos **200 Geek Points (Nível Explorador)** para que seus votos tenham peso oficial no julgamento de autenticidade dos produtos da Hype Zone. Continue comprando, participando e avaliando compras anteriores para acumular XP!
+          Você precisa de pelo menos <strong className="text-[var(--color-text-primary)] font-bold">200 Geek Points (Nível Explorador)</strong> para votar de forma oficial. Seus votos acumulam XP de participação, mas não contam para o consenso final até atingir o nível.
         </div>
       )}
 
-      {pendingDrops.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-[var(--color-border-subtle)] rounded-[var(--radius-xl)] bg-[var(--color-bg-inset)]/20">
-          <Text variant="body-md" color="tertiary">
-            Não há nenhum drop pendente de curadoria da comunidade no momento.
-          </Text>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-8">
-          {pendingDrops.map((drop) => {
-            const hasVoted = !!votes[drop.id];
-            const currentVote = votes[drop.id];
-            const story = (drop.metadata as any)?.story || '';
-            const specs = (drop.metadata as any)?.specs || [];
+      {/* TAB 1: CURADORIA DE DROPS */}
+      {activeSubTab === 'drops' && (
+        pendingDrops.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-[var(--color-border-subtle)] rounded-[var(--radius-xl)] bg-[var(--color-bg-inset)]/20">
+            <Text variant="body-sm" color="tertiary">Não há nenhum drop pendente de curadoria comunitária.</Text>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {pendingDrops.map((drop) => {
+              const hasVoted = !!dropVotes[drop.id];
+              const currentVote = dropVotes[drop.id];
+              const story = (drop.metadata as any)?.story || '';
+              const selectedVerdict = formDropVerdict[drop.id];
+              const confidenceVal = formDropConfidence[drop.id] || 3;
+              const notesText = formDropNotes[drop.id] || '';
 
-            // Valor do form local ou padrão
-            const selectedVerdict = formVerdict[drop.id];
-            const confidenceVal = formConfidence[drop.id] || 3;
-            const notesText = formNotes[drop.id] || '';
-
-            return (
-              <Card key={drop.id} className="relative overflow-hidden border-[var(--color-border-default)] bg-[var(--color-bg-inset)]/40">
-                <CardContent className="p-6 md:p-8 flex flex-col lg:flex-row gap-8 items-start">
-                  
-                  {/* Coluna 1: Imagens do Lançamento */}
-                  <div className="w-full lg:w-[380px] shrink-0">
-                    <HypeMediaCarousel images={drop.images} alt={drop.title} />
-                    
-                    <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border-subtle)] pt-3 text-xs">
-                      <Text variant="caption" color="tertiary">Vendedor</Text>
-                      <span className="font-semibold text-[var(--color-text-primary)]">{drop.collector?.displayName || 'Colecionador'}</span>
+              return (
+                <Card key={drop.id} className="border-[var(--color-border-default)] bg-[var(--color-bg-inset)]/20">
+                  <CardContent className="p-6 flex flex-col md:flex-row gap-6">
+                    <div className="w-full md:w-56 shrink-0">
+                      <HypeMediaCarousel images={drop.images} alt={drop.title} />
+                      <div className="mt-3 text-[10px] text-[var(--color-text-secondary)] font-mono flex flex-col gap-1">
+                        <div>Vendedor: <span className="text-[var(--color-text-primary)]">{drop.collector?.displayName || 'Colecionador'}</span></div>
+                        <div>Lançamento: <span>{new Date(drop.startsAt).toLocaleString('pt-BR')}</span></div>
+                      </div>
                     </div>
 
-                    <div className="mt-2 flex items-center justify-between text-xs">
-                      <Text variant="caption" color="tertiary">Agendado Para</Text>
-                      <span className="font-mono text-[var(--color-text-secondary)]">
-                        {new Date(drop.startsAt).toLocaleString('pt-BR')}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Coluna 2: Informações Técnicas e Formulário de Voto */}
-                  <div className="flex-1 flex flex-col gap-4 w-full">
-                    <div>
-                      <Text as="h3" variant="heading-md" className="text-xl font-bold">
-                        {drop.title}
-                      </Text>
-                      {drop.priceCents && (
-                        <Text variant="mono-lg" className="text-base text-[var(--color-accent-primary)] mt-0.5 font-bold">
-                          Valor Solicitado: {formatBRL(drop.priceCents)}
-                        </Text>
-                      )}
-                    </div>
-
-                    <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
-                      {drop.description}
-                    </Text>
-
-                    {/* Storytelling */}
-                    {story && (
-                      <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded-[var(--radius-sm)] p-3 text-xs">
-                        <Text variant="caption" color="tertiary" className="font-semibold uppercase tracking-wider text-[8px] block mb-1">
-                          Storytelling do Vendedor:
-                        </Text>
-                        <Text color="secondary" className="italic leading-relaxed">
-                          &ldquo;{story}&rdquo;
+                    <div className="flex-1 flex flex-col gap-3">
+                      <div>
+                        <Text variant="heading-sm" className="font-bold">{drop.title}</Text>
+                        <Text variant="caption" className="text-[var(--color-accent-primary)] font-bold font-mono">
+                          Preço: {formatBRL(drop.priceCents || 0)}
                         </Text>
                       </div>
-                    )}
-
-                    {/* Votos dos Curadores */}
-                    <div className="border-t border-[var(--color-border-subtle)] pt-4 flex flex-col gap-3">
                       
-                      {hasVoted ? (
-                        /* VOTO ENVIADO / MOSTRAR RESUMO DO VOTO */
-                        <div className="bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] p-4 flex flex-col gap-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] flex items-center gap-1.5">
-                              <CheckCircle2 className="size-3.5 text-[var(--color-accent-success)]" />
-                              Seu Veredicto de Curadoria
-                            </span>
-                            <Badge
-                              variant={
-                                currentVote.verdict === 'authentic' ? 'hype' :
-                                currentVote.verdict === 'fake' ? 'outline' : 'outline'
-                              }
-                              className={cn(
-                                'text-[10px] font-bold px-2 py-0.5 rounded-full',
-                                currentVote.verdict === 'authentic' && 'bg-[var(--color-accent-success)]/10 text-[var(--color-accent-success)] border-[var(--color-accent-success)]/20',
-                                currentVote.verdict === 'fake' && 'bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)] border-[var(--color-accent-hype)]/20',
-                                currentVote.verdict === 'suspicious' && 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20'
-                              )}
-                            >
-                              {currentVote.verdict === 'authentic' ? 'Original / Autêntico' :
-                               currentVote.verdict === 'fake' ? 'Item Falso / Cópia' : 'Suspeito'}
-                            </Badge>
-                          </div>
+                      <Text color="secondary" className="text-[11px] leading-relaxed">{drop.description}</Text>
 
-                          <Text variant="caption" color="secondary" className="text-xs leading-relaxed bg-[var(--color-bg-inset)]/50 p-2.5 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] font-mono">
-                            &ldquo;{currentVote.notes}&rdquo;
-                          </Text>
-
-                          <div className="text-[9px] text-[var(--color-text-tertiary)] font-mono flex justify-between items-center mt-1">
-                            <span>Confiança técnica: {currentVote.confidence}/5</span>
-                            <span className="text-[var(--color-accent-success)] font-semibold">Análise em moderação...</span>
-                          </div>
+                      {story && (
+                        <div className="bg-[var(--color-bg-surface)] p-2.5 rounded border border-[var(--color-border-subtle)] text-[10px] italic text-[var(--color-text-secondary)]">
+                          &ldquo;{story}&rdquo;
                         </div>
-                      ) : (
-                        /* FORMULÁRIO DE VOTAÇÃO */
-                        <div className="flex flex-col gap-4">
-                          <Text variant="caption" color="tertiary" className="font-semibold uppercase tracking-wider text-[9px] block">
-                            Submeter Voto de Curadoria
-                          </Text>
+                      )}
 
-                          <div className="grid grid-cols-3 gap-2">
-                            {(['authentic', 'suspicious', 'fake'] as const).map((verdict) => (
-                              <button
-                                key={verdict}
-                                type="button"
-                                disabled={!isAuthenticated}
-                                onClick={() => setFormVerdict((prev) => ({ ...prev, [drop.id]: verdict }))}
-                                className={cn(
-                                  'py-2 px-3 text-center border rounded-[var(--radius-sm)] text-[10px] font-bold transition-all focus:outline-none flex items-center justify-center gap-1.5',
-                                  selectedVerdict === verdict
-                                    ? verdict === 'authentic'
-                                      ? 'border-[var(--color-accent-success)] bg-[var(--color-accent-success)]/5 text-[var(--color-accent-success)]'
-                                      : verdict === 'fake'
-                                        ? 'border-[var(--color-accent-hype)] bg-[var(--color-accent-hype)]/5 text-[var(--color-accent-hype)]'
-                                        : 'border-yellow-400 bg-yellow-400/5 text-yellow-400'
-                                    : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
-                                )}
-                              >
-                                {verdict === 'authentic' ? (
-                                  <><CheckCircle2 className="size-3" /> Original</>
-                                ) : verdict === 'fake' ? (
-                                  <><XCircle className="size-3" /> Falso</>
-                                ) : (
-                                  <><AlertTriangle className="size-3" /> Suspeito</>
-                                )}
-                              </button>
-                            ))}
+                      {/* Caixa de Voto */}
+                      <div className="border-t border-[var(--color-border-subtle)] pt-3 flex flex-col gap-3">
+                        {hasVoted ? (
+                          <div className="bg-[var(--color-bg-surface)] p-3 rounded border border-[var(--color-border-default)] text-xs flex flex-col gap-1.5">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[9px] uppercase font-bold text-[var(--color-text-tertiary)] flex items-center gap-1"><CheckCircle2 className="size-3 text-green-500" /> Seu veredicto</span>
+                              <Badge className={cn(
+                                'text-[9px] font-bold',
+                                currentVote.verdict === 'authentic' && 'bg-green-500/10 text-green-500',
+                                currentVote.verdict === 'fake' && 'bg-red-500/10 text-red-500',
+                                currentVote.verdict === 'suspicious' && 'bg-yellow-500/10 text-yellow-500'
+                              )}>
+                                {currentVote.verdict === 'authentic' ? 'Original' : currentVote.verdict === 'fake' ? 'Falso' : 'Suspeito'}
+                              </Badge>
+                            </div>
+                            <Text color="secondary" className="italic bg-[var(--color-bg-inset)]/30 p-2 rounded text-[11px]">&ldquo;{currentVote.notes}&rdquo;</Text>
                           </div>
+                        ) : (
+                          <div className="flex flex-col gap-3">
+                            <div className="grid grid-cols-3 gap-2">
+                              {(['authentic', 'suspicious', 'fake'] as const).map((verdict) => (
+                                <button
+                                  key={verdict}
+                                  type="button"
+                                  onClick={() => setFormDropVerdict((prev) => ({ ...prev, [drop.id]: verdict }))}
+                                  className={cn(
+                                    'py-1.5 text-center border rounded-[var(--radius-sm)] text-[10px] font-bold transition-all focus:outline-none',
+                                    selectedVerdict === verdict
+                                      ? verdict === 'authentic' ? 'border-green-500 bg-green-500/5 text-green-500'
+                                      : verdict === 'fake' ? 'border-red-500 bg-red-500/5 text-red-500'
+                                      : 'border-yellow-500 bg-yellow-500/5 text-yellow-500'
+                                      : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]'
+                                  )}
+                                >
+                                  {verdict === 'authentic' ? 'Original' : verdict === 'fake' ? 'Falso' : 'Suspeito'}
+                                </button>
+                              ))}
+                            </div>
 
-                          {/* Justificativa e Confiança */}
-                          {selectedVerdict && (
-                            <div className="flex flex-col gap-3 bg-[var(--color-bg-surface)] p-3 border border-[var(--color-border-subtle)] rounded-[var(--radius-md)]">
-                              <div className="flex flex-col gap-1">
-                                <label className="text-[9px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] flex justify-between">
-                                  <span>Grau de Confiança na Análise</span>
-                                  <span className="text-[var(--color-text-primary)] font-bold">{confidenceVal}/5</span>
-                                </label>
+                            {selectedVerdict && (
+                              <div className="flex flex-col gap-2.5 bg-[var(--color-bg-surface)] p-3 border border-[var(--color-border-subtle)] rounded-[var(--radius-sm)]">
+                                <div className="flex justify-between items-center text-[9px] font-mono">
+                                  <span>Grau de Confiança</span>
+                                  <span>{confidenceVal}/5</span>
+                                </div>
                                 <input
                                   type="range"
                                   min={1}
                                   max={5}
                                   value={confidenceVal}
-                                  onChange={(e) => setFormConfidence((prev) => ({ ...prev, [drop.id]: parseInt(e.target.value) || 3 }))}
-                                  className="w-full h-1 bg-[var(--color-bg-inset)] accent-[var(--color-accent-primary)] cursor-pointer"
+                                  onChange={(e) => setFormDropConfidence((prev) => ({ ...prev, [drop.id]: parseInt(e.target.value) || 3 }))}
+                                  className="w-full accent-[var(--color-accent-primary)]"
                                 />
-                              </div>
-
-                              <div className="flex flex-col gap-1">
-                                <label className="text-[9px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                                  Justificativa Técnica (Notas de Conservação / Autenticidade)
-                                </label>
                                 <textarea
                                   rows={2}
                                   value={notesText}
-                                  onChange={(e) => setFormNotes((prev) => ({ ...prev, [drop.id]: e.target.value }))}
-                                  placeholder="Escreva quais detalhes das fotos e história sustentam seu veredicto..."
-                                  className="w-full rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] px-2 py-1 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] hover:border-[var(--color-border-strong)] focus:border-[var(--color-accent-primary)] focus:outline-none transition-colors resize-none"
+                                  onChange={(e) => setFormDropNotes((prev) => ({ ...prev, [drop.id]: e.target.value }))}
+                                  placeholder="Justifique seu voto com base nos detalhes das fotos e descrição..."
+                                  className="w-full rounded bg-[var(--color-bg-canvas)] border border-[var(--color-border-subtle)] px-2 py-1 text-xs focus:outline-none text-[var(--color-text-primary)]"
                                 />
+                                <Button
+                                  onClick={() => handleDropVoteSubmit(drop.id)}
+                                  disabled={isPending || !isAuthenticated}
+                                  size="sm"
+                                  className="w-full text-xs font-bold"
+                                >
+                                  {isPending ? 'Enviando...' : 'Enviar Voto de Curadoria (+10 XP)'}
+                                </Button>
                               </div>
+                            )}
+                          </div>
+                        )}
 
+                        {/* Admin Controls */}
+                        {isAdmin && (
+                          <div className="border-t border-dashed border-[var(--color-border-subtle)] pt-2.5 flex justify-between items-center text-[10px] font-mono">
+                            <span className="text-[var(--color-accent-hype)] font-bold">Moderação</span>
+                            <div className="flex gap-1.5">
+                              <Button onClick={() => handleResolveDrop(drop.id, 'authentic')} size="sm" variant="outline" className="h-6 text-[10px] border-green-500/20 text-green-500">Aprovar e Agendar</Button>
+                              <Button onClick={() => handleResolveDrop(drop.id, 'fake')} size="sm" variant="outline" className="h-6 text-[10px] border-red-500/20 text-red-500">Reprovar Drop</Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )
+      )}
+
+      {/* TAB 2: AUDITORIA DE AVALIAÇÕES */}
+      {activeSubTab === 'reviews' && (
+        <div className="flex flex-col gap-6">
+          {targetReviews.map((rev) => {
+            const hasVoted = !!reviewVotes[rev.id];
+            const currentVote = reviewVotes[rev.id];
+            const selectedVerdict = formReviewVerdict[rev.id];
+            const notesText = formReviewNotes[rev.id] || '';
+
+            return (
+              <Card key={rev.id} className="border-[var(--color-border-default)] bg-[var(--color-bg-inset)]/20">
+                <CardContent className="p-6 flex flex-col md:flex-row gap-6">
+                  
+                  {/* Foto da reclamação carregada pelo cliente */}
+                  <div className="w-full md:w-48 shrink-0 flex flex-col gap-2">
+                    {rev.images.length > 0 ? (
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded border border-[var(--color-border-default)] bg-[var(--color-bg-surface)]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={rev.images[0]} alt="Provas do comprador" className="h-full w-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="aspect-[4/3] w-full rounded border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] flex flex-col items-center justify-center text-center p-3">
+                        <ShieldAlert className="size-6 text-[var(--color-text-tertiary)] mb-1" />
+                        <span className="text-[10px] font-mono text-[var(--color-text-tertiary)]">Sem fotos anexadas pelo comprador</span>
+                      </div>
+                    )}
+                    
+                    <div className="text-[9px] text-[var(--color-text-secondary)] font-mono flex flex-col gap-0.5 border-t border-[var(--color-border-subtle)] pt-2 mt-1">
+                      <div>De: <span className="text-[var(--color-text-primary)] font-bold">{rev.buyerName}</span></div>
+                      <div>Para: <span className="text-[var(--color-text-primary)]">{rev.sellerName}</span></div>
+                    </div>
+                  </div>
+
+                  <div className="flex-1 flex flex-col gap-2.5">
+                    <div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] truncate max-w-[200px]">{rev.productTitle}</span>
+                        <div className="flex text-amber-400">
+                          {Array.from({ length: rev.rating }).map((_, i) => (
+                            <Star key={i} className="size-3 fill-current" />
+                          ))}
+                          {Array.from({ length: 5 - rev.rating }).map((_, i) => (
+                            <Star key={i} className="size-3 text-zinc-600" />
+                          ))}
+                        </div>
+                      </div>
+                      <Text variant="body-sm" className="font-bold text-[var(--color-text-primary)] mt-1">
+                        Avaliação do Comprador:
+                      </Text>
+                      <Text color="secondary" className="text-[11px] italic bg-[var(--color-bg-surface)] p-2.5 rounded border border-[var(--color-border-subtle)] mt-1.5 leading-relaxed">
+                        &ldquo;{rev.comment}&rdquo;
+                      </Text>
+                    </div>
+
+                    {/* Voto de Auditoria */}
+                    <div className="border-t border-[var(--color-border-subtle)] pt-3 flex flex-col gap-3">
+                      {hasVoted ? (
+                        <div className="bg-[var(--color-bg-surface)] p-3 rounded border border-[var(--color-border-default)] text-xs flex flex-col gap-1.5">
+                          <div className="flex justify-between items-center">
+                            <span className="text-[9px] uppercase font-bold text-[var(--color-text-tertiary)] flex items-center gap-1"><CheckCircle2 className="size-3 text-green-500" /> Seu voto de Auditoria</span>
+                            <Badge className={cn(
+                              'text-[9px] font-bold',
+                              currentVote.verdict === 'approve' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'
+                            )}>
+                              {currentVote.verdict === 'approve' ? 'Reclamação Real' : 'Erro / Má-fé'}
+                            </Badge>
+                          </div>
+                          <Text color="secondary" className="italic bg-[var(--color-bg-inset)]/30 p-2 rounded text-[11px]">&ldquo;{currentVote.notes}&rdquo;</Text>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          <div className="grid grid-cols-2 gap-2">
+                            <button
+                              onClick={() => setFormReviewVerdict((prev) => ({ ...prev, [rev.id]: 'approve' }))}
+                              className={cn(
+                                'py-1.5 text-center border rounded-[var(--radius-sm)] text-[10px] font-bold transition-all focus:outline-none',
+                                selectedVerdict === 'approve'
+                                  ? 'border-green-500 bg-green-500/5 text-green-500'
+                                  : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]'
+                              )}
+                            >
+                              ✅ Reclamação Real
+                            </button>
+                            <button
+                              onClick={() => setFormReviewVerdict((prev) => ({ ...prev, [rev.id]: 'reject' }))}
+                              className={cn(
+                                'py-1.5 text-center border rounded-[var(--radius-sm)] text-[10px] font-bold transition-all focus:outline-none',
+                                selectedVerdict === 'reject'
+                                  ? 'border-red-500 bg-red-500/5 text-red-500'
+                                  : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] text-[var(--color-text-secondary)]'
+                              )}
+                            >
+                              ❌ Erro do Comprador / Má-fé
+                            </button>
+                          </div>
+
+                          {selectedVerdict && (
+                            <div className="flex flex-col gap-2 bg-[var(--color-bg-surface)] p-3 border border-[var(--color-border-subtle)] rounded-[var(--radius-sm)]">
+                              <textarea
+                                rows={2}
+                                value={notesText}
+                                onChange={(e) => setFormReviewNotes((prev) => ({ ...prev, [rev.id]: e.target.value }))}
+                                placeholder={
+                                  selectedVerdict === 'approve'
+                                    ? 'Explique por que as provas mostram que o comprador está certo (ex: item de fato quebrado/diferente)...'
+                                    : 'Justifique por que o comprador errou (ex: manual já explicava esse comportamento do teclado)...'
+                                }
+                                className="w-full rounded bg-[var(--color-bg-canvas)] border border-[var(--color-border-subtle)] px-2 py-1 text-xs focus:outline-none text-[var(--color-text-primary)]"
+                              />
                               <Button
-                                onClick={() => handleVoteSubmit(drop.id)}
+                                onClick={() => handleReviewVoteSubmit(rev.id)}
                                 disabled={isPending || !isAuthenticated}
-                                variant="primary"
                                 size="sm"
-                                className="w-full font-bold text-xs"
+                                className="w-full text-xs font-bold"
                               >
-                                {isPending ? 'Gravando Voto...' : 'Enviar Voto de Curadoria (+10 XP)'}
+                                {isPending ? 'Enviando...' : 'Enviar Auditoria (+10 XP)'}
                               </Button>
                             </div>
                           )}
                         </div>
                       )}
 
-                      {/* Ações Administrativas (Exclusivo do Admin) */}
+                      {/* Admin Controls */}
                       {isAdmin && (
-                        <div className="border-t border-dashed border-[var(--color-border-subtle)] pt-3 flex items-center justify-between gap-3">
-                          <span className="text-[9px] font-mono text-[var(--color-accent-hype)] font-bold">🛠️ Painel Moderador (Admin)</span>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleResolve(drop.id, 'authentic')}
-                              variant="outline"
-                              size="sm"
-                              className="text-xs h-7 border-[var(--color-accent-success)]/40 hover:bg-[var(--color-accent-success)]/10 text-[var(--color-accent-success)]"
-                            >
-                              Julgar Original (Agendar)
-                            </Button>
-                            <Button
-                              onClick={() => handleResolve(drop.id, 'fake')}
-                              variant="outline"
-                              size="sm"
-                              className="text-xs h-7 border-[var(--color-accent-hype)]/40 hover:bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)]"
-                            >
-                              Reprovar / Banir Drop
-                            </Button>
+                        <div className="border-t border-dashed border-[var(--color-border-subtle)] pt-2.5 flex justify-between items-center text-[10px] font-mono">
+                          <span className="text-[var(--color-accent-hype)] font-bold">Moderação</span>
+                          <div className="flex gap-1.5">
+                            <Button onClick={() => handleResolveReview(rev.id, 'approve')} size="sm" variant="outline" className="h-6 text-[10px] border-green-500/20 text-green-500">Aprovar Avaliação (No Ar)</Button>
+                            <Button onClick={() => handleResolveReview(rev.id, 'reject')} size="sm" variant="outline" className="h-6 text-[10px] border-red-500/20 text-red-500">Rejeitar (Arquivar)</Button>
                           </div>
                         </div>
                       )}
-
                     </div>
 
                   </div>

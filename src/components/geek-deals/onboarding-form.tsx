@@ -147,22 +147,29 @@ export function OnboardingForm() {
               />
             </div>
 
-            {/* Acordo de Autenticidade */}
-            <div className="flex items-start gap-3 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-4 mt-2">
-              <input
-                id="authentic-agreement"
-                type="checkbox"
-                checked={guaranteesAuthentic}
-                onChange={(e) => setGuaranteesAuthentic(e.target.checked)}
-                className="mt-1 size-4 rounded border-[var(--color-border-subtle)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]"
-              />
-              <label htmlFor="authentic-agreement" className="text-xs text-[var(--color-text-secondary)] leading-relaxed cursor-pointer select-none">
-                <span className="font-bold text-[var(--color-text-primary)] block mb-0.5 flex items-center gap-1.5">
-                  <ShieldCheck className="size-3.5 text-[var(--color-accent-success)]" />
-                  Compromisso Espaço Geek 86
-                </span>
-                Declaro que todos os itens postados em meus drops serão originais, inspecionados por mim e exatamente fiéis à descrição e fotos publicadas.
-              </label>
+            {/* Acordo de Autenticidade e Rede de Consenso (Blockchain-style Trust) */}
+            <div className="flex flex-col gap-3 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded-[var(--radius-md)] p-4 mt-2">
+              <div className="flex items-start gap-3">
+                <input
+                  id="authentic-agreement"
+                  type="checkbox"
+                  checked={guaranteesAuthentic}
+                  onChange={(e) => setGuaranteesAuthentic(e.target.checked)}
+                  className="mt-1 size-4 rounded border-[var(--color-border-subtle)] text-[var(--color-accent-primary)] focus:ring-[var(--color-accent-primary)]"
+                />
+                <label htmlFor="authentic-agreement" className="text-xs text-[var(--color-text-secondary)] leading-relaxed cursor-pointer select-none">
+                  <span className="font-bold text-[var(--color-text-primary)] block mb-1 flex items-center gap-1.5">
+                    <ShieldCheck className="size-3.5 text-[var(--color-accent-success)]" />
+                    Consenso e Rede de Confiança C2C (Trust Chain)
+                  </span>
+                  Aceito fazer parte da rede descentralizada de curadores. Entendo que:
+                  <ul className="list-disc pl-4 mt-1.5 flex flex-col gap-1 text-[11px]">
+                    <li>Meus drops de produtos serão <strong className="text-[var(--color-text-primary)] font-bold">auditados e votados por outros colecionadores</strong> antes e durante o lançamento para garantir a originalidade e o storytelling exato.</li>
+                    <li>As avaliações e notas que eu receber de compradores <strong className="text-[var(--color-text-primary)] font-bold">passarão por uma auditoria do conselho de colecionadores</strong> antes de irem a público. Isso comprovará se a reclamação é real (com fotos de prova) ou se é erro/má-fé do comprador, me blindando contra avaliações injustas.</li>
+                    <li>Garanto que meus itens são 100% autênticos e correspondem exatamente às descrições e às fotos cadastradas.</li>
+                  </ul>
+                </label>
+              </div>
             </div>
 
           </div>
