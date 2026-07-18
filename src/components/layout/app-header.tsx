@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { cn } from '@/lib/cn';
 
 const navLinks = [
-  { href: '/universos', label: 'Universos' },
+  { href: '/sobre', label: 'Quem somos' },
   { href: '/categorias', label: 'Categorias' },
   { href: '/hype-zone', label: 'Hype Zone', highlight: true },
   { href: '/ofertas', label: 'Ofertas' },
