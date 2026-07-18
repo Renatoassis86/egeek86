@@ -19,7 +19,20 @@ export function OnboardingForm() {
   const [selectedFranchises, setSelectedFranchises] = useState<string[]>([]);
   const [guaranteesAuthentic, setGuaranteesAuthentic] = useState(false);
 
-  const franchises = ['Naruto', 'One Piece', 'Pokémon', 'Dragon Ball', 'Star Wars', 'Marvel', 'Retro Gaming', 'TCG / MTG'];
+  const franchises = [
+    'Naruto & Animes',
+    'One Piece',
+    'Pokémon & Nintendo',
+    'Dragon Ball',
+    'Star Wars & Sci-Fi',
+    'Marvel & DC Comics',
+    'Retro Gaming & Consoles',
+    'Edições de Colecionador (Games)',
+    'Estátuas & Action Figures',
+    'Acessórios Custom (Mods/Setups)',
+    'Itens In-Game & Skins Raras',
+    'Card Games / Magic / Yu-Gi-Oh'
+  ];
 
   const handleToggleFranchise = (item: string) => {
     setSelectedFranchises((prev) =>
