@@ -11,7 +11,6 @@ import { toast } from '@/components/ui/toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { HypeCountdown } from '@/components/geek-deals/hype-countdown';
 import { HypeStockBar } from '@/components/geek-deals/hype-stock-bar';
-import { AntiBotShield } from '@/components/geek-deals/antibot-shield';
 import { CollectorCard } from '@/components/geek-deals/collector-card';
 import { HypeMediaCarousel } from '@/components/geek-deals/hype-media-carousel';
 import { joinDropWaitlist } from '@/server/actions/hype';
@@ -148,11 +147,6 @@ export function HypeZoneTabs({
                   <div className="w-full lg:w-[420px] shrink-0">
                     <HypeMediaCarousel images={drop.images} alt={drop.title} />
                     
-                    {/* Telemetria Anti-Bot */}
-                    {activeTab === 'live' && (
-                      <AntiBotShield className="mt-4" />
-                    )}
-
                     {/* Rótulo de Raridade */}
                     {rarityGrade && (
                       <div className="mt-4 flex items-center justify-between border-t border-[var(--color-border-subtle)] pt-3">

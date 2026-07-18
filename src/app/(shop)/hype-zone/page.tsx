@@ -132,16 +132,6 @@ export default async function HypeZonePage() {
                 você disputa **itens originais e inspecionados** diretamente de outros colecionadores. 
                 Os lançamentos têm hora marcada e são protegidos por nosso escudo anti-bot.
               </Text>
-              <div className="flex flex-col gap-2 text-xs text-[var(--color-text-secondary)] font-mono border-t border-[var(--color-border-subtle)] pt-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-3.5 text-[var(--color-accent-success)]" />
-                  <span>Garantia de originalidade e integridade física.</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-3.5 text-[var(--color-accent-success)]" />
-                  <span>Fila justa anti-bot para todos os compradores.</span>
-                </div>
-              </div>
             </CardContent>
           </Card>
 
