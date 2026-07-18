@@ -161,6 +161,8 @@ export async function createCollectorDrop(data: {
         .values({
           name: 'Colecionáveis Raros',
           slug: 'colecionaveis-raros',
+          path: '/colecionaveis-raros',
+          level: 0,
         })
         .returning();
       categoryId = newCat.id;
