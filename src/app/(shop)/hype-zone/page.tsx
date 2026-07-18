@@ -31,10 +31,40 @@ export default async function HypeZonePage() {
   ]);
 
   return (
-    <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
-      
+    <section className="relative mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16 overflow-hidden">
+      {/* Circuitos e Linhas Decorativas de Fundo (Brushes de Tecnologia) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.04] dark:opacity-[0.08] z-0" aria-hidden="true">
+        {/* Circuito Superior Direito (Accent Primary) */}
+        <svg className="absolute top-0 right-0 w-[500px] h-[500px] text-[var(--color-accent-primary)]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.3">
+          <path d="M 100,10 L 75,10 L 60,25 L 60,50 L 45,65 L 15,65" strokeDasharray="2 1" />
+          <circle cx="15" cy="65" r="1" fill="currentColor" />
+          <path d="M 100,30 L 85,30 L 75,40 L 75,70 L 65,80" />
+          <circle cx="65" cy="80" r="0.8" fill="currentColor" />
+          <path d="M 60,25 L 50,15 L 20,15" />
+          <circle cx="20" cy="15" r="1" fill="currentColor" />
+          <line x1="75" y1="40" x2="40" y2="40" strokeWidth="0.1" strokeDasharray="1 2" />
+        </svg>
+
+        {/* Circuito Central Esquerdo (Accent Hype) */}
+        <svg className="absolute top-1/3 left-0 w-[450px] h-[450px] text-[var(--color-accent-hype)]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.3">
+          <path d="M 0,50 L 25,50 L 40,35 L 40,15 L 55,0" />
+          <circle cx="40" cy="15" r="1.2" />
+          <path d="M 0,30 L 15,30 L 25,20 L 25,5 L 30,0" strokeDasharray="3 1" />
+          <path d="M 25,50 L 35,60 L 65,60 L 75,70" />
+          <circle cx="75" cy="70" r="0.8" fill="currentColor" />
+        </svg>
+
+        {/* Circuito Inferior Direito (Accent Primary) */}
+        <svg className="absolute bottom-0 right-10 w-[600px] h-[600px] text-[var(--color-accent-primary)]" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.25">
+          <path d="M 100,90 L 70,90 L 50,70 L 50,40 L 30,20 L 0,20" />
+          <circle cx="30" cy="20" r="1" fill="currentColor" />
+          <path d="M 50,55 L 25,55 L 15,45 L 15,10" strokeDasharray="1 1" />
+          <circle cx="15" cy="10" r="0.8" fill="currentColor" />
+        </svg>
+      </div>
+
       {/* Header / Hero de Lançamento */}
-      <div className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 px-6 py-10 lg:py-16 mb-8">
+      <div className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 px-6 py-10 lg:py-16 mb-8 z-10">
         <Glow color="hype" size="lg" className="-top-36 -right-24" intensity={0.28} />
         <Glow color="gold" size="md" className="-bottom-28 -left-16" intensity={0.14} />
 
@@ -75,9 +105,9 @@ export default async function HypeZonePage() {
 
       {/* Manifesto Comercial Explicativo (Fácil & Direto) */}
       <Reveal delay={0.12}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12 z-10 relative">
           {/* Card: Para Comprar */}
-          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-[var(--color-border-default)] transition-all">
+          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 hover:border-[var(--color-border-default)] transition-all backdrop-blur-md">
             <CardContent className="p-6 flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)]">
@@ -107,7 +137,7 @@ export default async function HypeZonePage() {
           </Card>
 
           {/* Card: Para Vender */}
-          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-[var(--color-border-default)] transition-all">
+          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 hover:border-[var(--color-border-default)] transition-all backdrop-blur-md">
             <CardContent className="p-6 flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)]">
@@ -141,13 +171,15 @@ export default async function HypeZonePage() {
 
       {/* Tabs com os Drops e Lógica de negócio interativa */}
       <Reveal delay={0.15}>
-        <HypeZoneTabs
-          liveDrops={liveDrops}
-          upcomingDrops={upcomingDrops}
-          pastDrops={pastDrops}
-          userWaitlistIds={userWaitlistIds}
-          isAuthenticated={isAuthenticated}
-        />
+        <div className="z-10 relative">
+          <HypeZoneTabs
+            liveDrops={liveDrops}
+            upcomingDrops={upcomingDrops}
+            pastDrops={pastDrops}
+            userWaitlistIds={userWaitlistIds}
+            isAuthenticated={isAuthenticated}
+          />
+        </div>
       </Reveal>
     </section>
   );
