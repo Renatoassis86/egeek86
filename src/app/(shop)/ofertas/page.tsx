@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense, type ReactNode } from 'react';
+import Image from 'next/image';
 import { Flame, LineChart, Sparkles } from 'lucide-react';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
@@ -100,19 +101,24 @@ export default async function OffersPage({
         <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.28} />
         <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.14} />
 
-        {/* EG86 — marca completa na mesma fonte do logotipo, mesma imagem
-            recortada dentro de cada letra. Fica só em xl+, onde sobra folga
-            real ao lado do texto (que já é limitado a max-w-2xl/60ch, então
-            nunca disputa espaço com o glifo). */}
-        <div className="pointer-events-none absolute -right-2 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 xl:flex">
-          {['E', 'G', '8', '6'].map((letter) => (
-            <TextImageMask
-              key={letter}
-              text={letter}
+        {/* Imagem do banner inteira com recorte diagonal na esquerda (igual Hype Zone) */}
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
+          <div 
+            className="relative w-full h-full"
+            style={{
+              clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
+            }}
+          >
+            <Image
               src="/images/ofertas/header-collage.png"
-              className="text-[80px]"
+              alt="Geek Deals Banner"
+              fill
+              className="object-cover object-center"
+              priority
             />
-          ))}
+            {/* Gradiente sutil de fade na junção do corte diagonal */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-transparent to-transparent opacity-80 pointer-events-none" />
+          </div>
         </div>
 
         <div className="relative xl:max-w-[65%]">
