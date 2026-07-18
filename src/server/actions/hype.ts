@@ -18,6 +18,17 @@ export async function joinDropWaitlist(dropId: string) {
       return { error: 'Você precisa estar logado para entrar na lista de espera.' };
     }
 
+    const isMockDrop = 
+      dropId.startsWith('d1111111') || 
+      dropId.startsWith('d2222222') || 
+      dropId.startsWith('d3333333') || 
+      dropId.startsWith('d4444444') || 
+      dropId.startsWith('d5555555');
+
+    if (isMockDrop) {
+      return { success: true, message: 'Inscrição realizada com sucesso! (Modo Simulação de Drop)' };
+    }
+
     // Verificar se já está cadastrado
     const [existing] = await db
       .select()
@@ -58,6 +69,18 @@ export async function joinDropWaitlist(dropId: string) {
 export async function logDropAccess(dropId: string, action: 'view' | 'reserve' | 'convert' | 'fail', clientMetadata: any = {}) {
   try {
     const profile = await getCurrentProfile();
+
+    const isMockDrop = 
+      dropId.startsWith('d1111111') || 
+      dropId.startsWith('d2222222') || 
+      dropId.startsWith('d3333333') || 
+      dropId.startsWith('d4444444') || 
+      dropId.startsWith('d5555555');
+
+    if (isMockDrop) {
+      return { success: true };
+    }
+
     await logDropAccessInternal({
       dropId,
       userId: profile?.id ?? null,
