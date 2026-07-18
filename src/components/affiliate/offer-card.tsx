@@ -84,22 +84,22 @@ export function OfferCard({
             </Badge>
           </div>
 
-          {metrics?.isLowestEver && (
-            <div className="absolute inset-x-0 bottom-0 flex items-center gap-1.5 bg-[var(--color-accent-hype)]/95 px-2.5 py-1.5">
-              <Flame className="size-3.5 text-[var(--color-text-inverse)]" aria-hidden />
-              <Text variant="caption" color="inverse" className="font-semibold">
-                Menor preço já visto
-              </Text>
-            </div>
-          )}
         </div>
 
-        <CardContent className={cn('flex flex-1 flex-col gap-2.5', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-4')}>
-          {specLine && (
-            <Text variant="caption" color="tertiary" className="uppercase tracking-[0.04em]">
-              {specLine}
-            </Text>
-          )}
+        <CardContent className={cn('flex flex-1 flex-col gap-2', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-4')}>
+          <div className="flex items-center justify-between gap-2">
+            {specLine && (
+              <Text variant="caption" color="tertiary" className="min-w-0 truncate uppercase tracking-[0.04em]">
+                {specLine}
+              </Text>
+            )}
+            {metrics?.isLowestEver && (
+              <Badge variant="hype" size="sm" className="shrink-0 whitespace-nowrap">
+                <Flame className="size-3" />
+                Menor já visto
+              </Badge>
+            )}
+          </div>
 
           <Text
             variant={isFeature ? 'body-md' : 'body-sm'}

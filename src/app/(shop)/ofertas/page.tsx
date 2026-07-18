@@ -3,7 +3,7 @@ import { Suspense, type ReactNode } from 'react';
 import { Flame, LineChart, Sparkles } from 'lucide-react';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
-import { LetterMask } from '@/components/motion/letter-mask';
+import { TextImageMask } from '@/components/motion/text-image-mask';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { OfferCard } from '@/components/affiliate/offer-card';
@@ -100,14 +100,13 @@ export default async function OffersPage({
         <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.28} />
         <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.14} />
 
-        {/* "8" — número da marca, tratamento geométrico pedido. Fica só em
+        {/* "8" — número da marca, na mesma fonte do logotipo. Fica só em
             xl+, onde sobra folga real ao lado do texto (que já é limitado
             a max-w-2xl/60ch, então nunca disputa espaço com o glifo). */}
-        <LetterMask
-          id="ofertas-8"
-          letter="8"
+        <TextImageMask
+          text="8"
           src="/images/ofertas/header-collage.png"
-          className="pointer-events-none absolute -right-2 top-1/2 hidden h-60 w-48 -translate-y-1/2 xl:block"
+          className="pointer-events-none absolute -right-2 top-1/2 hidden -translate-y-1/2 text-[190px] xl:block"
         />
 
         <div className="relative xl:max-w-[65%]">

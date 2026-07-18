@@ -2,7 +2,7 @@ import 'server-only';
 import { eq, and, inArray, ilike, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliatePriceWatches, masterProducts, affiliateOffers, affiliateNetworks } from '@/db/schema';
-import { getOfferMetrics, type OfferMetrics } from './affiliate';
+import { getMasterProductMetrics, type OfferMetrics } from './affiliate';
 import type { GameFormat, GamePlatformGen } from '@/db/schema';
 
 /**
@@ -94,7 +94,7 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
     const offer = offerId ? offerById.get(offerId) : null;
     if (!offerId || !offer) continue; // jogo acompanhado sem nenhuma oferta ativa no momento
 
-    const metrics = await getOfferMetrics(offerId);
+    const metrics = await getMasterProductMetrics(watch.masterProductId);
     items.push({
       watchId: watch.watchId,
       masterProductId: watch.masterProductId,

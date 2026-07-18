@@ -50,8 +50,11 @@ const PLATFORMS: PlatformCard[] = [
 export function PlatformShowcase() {
   return (
     <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-8 lg:py-10">
-      <Text variant="label" color="tertiary" className="mb-4">
-        Explore por plataforma
+      <Text variant="label" color="hype">
+        Geek Deals · Explore por plataforma
+      </Text>
+      <Text as="h2" variant="display-lg" className="mt-2 mb-4 max-w-[24ch]">
+        Ache pela plataforma que você joga.
       </Text>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {PLATFORMS.map((platform) => (

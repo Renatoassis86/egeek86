@@ -345,6 +345,78 @@ export async function getOfferMetrics(offerId: string): Promise<OfferMetrics | n
   };
 }
 
+/**
+ * Igual a getOfferMetrics, mas agregado por master_product (entre TODOS os
+ * vendedores/redes ativos daquele produto), não de uma oferta específica —
+ * usada em qualquer lugar que representa o "produto" pro cliente (watchlist,
+ * alerta de queda de preço), nunca um vendedor isolado. getOfferMetrics
+ * continua correta pra tela de detalhe de UMA oferta específica (histórico
+ * daquele anúncio/vendedor) e pro admin editando um anúncio.
+ */
+export async function getMasterProductMetrics(masterProductId: string): Promise<OfferMetrics | null> {
+  const aggRows = await db.execute<{
+    current_price_cents: string | null;
+    previous_price_cents: string | null;
+    lowest_price_cents: string | null;
+    lowest_price_at: string | null;
+    avg_price_30d: string | null;
+    snapshot_count: string;
+  }>(sql`
+    WITH sibling_offers AS (
+      SELECT ao.id AS offer_id
+      FROM affiliate_offers ao
+      WHERE ao.master_product_id = ${masterProductId} AND ao.status = 'active'
+    ),
+    ranked AS (
+      SELECT
+        s.price_cents,
+        s.collected_at,
+        ROW_NUMBER() OVER (PARTITION BY s.offer_id ORDER BY s.collected_at DESC) AS rn
+      FROM affiliate_price_snapshots s
+      WHERE s.offer_id IN (SELECT offer_id FROM sibling_offers)
+    ),
+    agg AS (
+      SELECT
+        MIN(price_cents)::bigint AS lowest_price_cents,
+        AVG(price_cents) FILTER (WHERE collected_at >= now() - interval '30 days')::numeric AS avg_price_30d,
+        COUNT(*)::int AS snapshot_count
+      FROM ranked
+    ),
+    lowest_at AS (
+      SELECT collected_at FROM ranked ORDER BY price_cents ASC, collected_at ASC LIMIT 1
+    )
+    SELECT
+      (SELECT MIN(price_cents) FROM ranked WHERE rn = 1)::bigint AS current_price_cents,
+      (SELECT MIN(price_cents) FROM ranked WHERE rn = 2)::bigint AS previous_price_cents,
+      agg.lowest_price_cents,
+      (SELECT collected_at FROM lowest_at) AS lowest_price_at,
+      agg.avg_price_30d,
+      agg.snapshot_count
+    FROM agg
+  `);
+
+  const agg = aggRows[0];
+  if (!agg || Number(agg.snapshot_count) === 0 || !agg.lowest_price_cents || agg.current_price_cents == null) {
+    return null;
+  }
+
+  const lastPrice = Number(agg.current_price_cents);
+  const prevPrice = agg.previous_price_cents != null ? Number(agg.previous_price_cents) : null;
+  const trend: OfferMetrics['trend'] =
+    prevPrice === null ? 'stable' : lastPrice < prevPrice ? 'down' : lastPrice > prevPrice ? 'up' : 'stable';
+
+  const lowest = Number(agg.lowest_price_cents);
+  return {
+    currentPriceCents: lastPrice,
+    lowestPriceCents: lowest,
+    lowestPriceAt: new Date(agg.lowest_price_at!),
+    avgPriceCents30d: agg.avg_price_30d ? Number(agg.avg_price_30d) : null,
+    discountVsLowestPercent: lowest > 0 ? Math.round(((lastPrice - lowest) / lowest) * 100) : 0,
+    trend,
+    snapshotCount: Number(agg.snapshot_count),
+  };
+}
+
 export interface OfferListingMetrics {
   /** Preço do snapshot mais recente (pode divergir por segundos do cache em affiliate_offers.current_price_cents). */
   currentPriceCents: number;

@@ -19,7 +19,7 @@ import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
 import { SceneImage, type SceneTone } from '@/components/motion/scene-image';
-import { LetterMask } from '@/components/motion/letter-mask';
+import { TextImageMask } from '@/components/motion/text-image-mask';
 import { CornerBrackets } from '@/components/motion/corner-brackets';
 import { WeeklyPromosSection } from '@/components/geek-deals/weekly-promos-section';
 import { PlatformShowcase } from '@/components/geek-deals/platform-showcase';
@@ -112,7 +112,7 @@ function StatementBand() {
 // diferente, formando o emblema "EG86" completo num só lugar da página (em
 // vez de espalhado letra por letra em headers de outras rotas).
 function DividerEmblem() {
-  const glyphs: { id: string; letter: 'E' | 'G' | '8' | '6'; src: string }[] = [
+  const glyphs: { id: string; letter: string; src: string }[] = [
     { id: 'eg86-e', letter: 'E', src: '/images/home/divider-emblem.png' },
     { id: 'eg86-g', letter: 'G', src: '/images/emblem/g-gadgets.png' },
     { id: 'eg86-8', letter: '8', src: '/images/emblem/8-drop-reveal.png' },
@@ -123,14 +123,13 @@ function DividerEmblem() {
     <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
       <Reveal>
         <div className="flex flex-col items-center gap-8 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] px-6 py-10 lg:py-14">
-          <div className="flex items-center justify-center gap-2 sm:gap-3 lg:gap-4">
+          <div className="flex items-center justify-center gap-0.5 sm:gap-1">
             {glyphs.map(({ id, letter, src }) => (
-              <LetterMask
+              <TextImageMask
                 key={id}
-                id={id}
-                letter={letter}
+                text={letter}
                 src={src}
-                className="h-24 w-20 shrink-0 sm:h-36 sm:w-28 lg:h-48 lg:w-40"
+                className="text-[100px] sm:text-[160px] lg:text-[240px]"
               />
             ))}
           </div>
@@ -412,29 +411,18 @@ function UniversesSection() {
         </div>
       </Reveal>
 
-      {/* lg:h-[420px] explícito é necessário: aspect-ratio (no Card) precisa de
-          uma largura definida pra calcular a altura, mas em lg: a largura vem
-          de flex-grow — que por sua vez depende da altura da linha. Sem uma
-          altura explícita no container, isso vira referência circular e o
-          flexbox colapsa a linha pro menor tamanho possível (bug real visto
-          em captura de tela, não só teórico). */}
-      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 lg:mx-0 lg:h-[420px] lg:snap-none lg:gap-4 lg:overflow-visible lg:px-0">
+      {/* Card em aspect-[3/2] — mesma proporção real das imagens geradas
+          (1536×1024), pra caber inteira sem cortar e sem sobrar borda vazia.
+          Grid uniforme (sem card "herói" maior) fica mais contido/editorial
+          que o mosaico assimétrico anterior. */}
+      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-4 lg:overflow-visible lg:px-0 lg:pb-0">
         {universes.map((u, i) => (
-          <Reveal
-            key={u.slug}
-            delay={i * 0.05}
-            className={cn(
-              'shrink-0 snap-start',
-              i === 0
-                ? 'w-[70vw] sm:w-80 lg:w-auto lg:flex-[1.6]'
-                : 'w-[46vw] sm:w-52 lg:w-auto lg:flex-1'
-            )}
-          >
+          <Reveal key={u.slug} delay={i * 0.05} className="w-[78vw] shrink-0 snap-start sm:w-72 lg:w-auto">
             <Link
               href={`/universos/${u.slug}`}
-              className="group block h-full rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
+              className="group block rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
             >
-              <Card interactive className="relative aspect-[3/4] overflow-hidden lg:aspect-auto lg:h-full">
+              <Card interactive className="relative aspect-[3/2] overflow-hidden">
                 <SceneImage
                   src={u.image}
                   alt={u.label}
@@ -444,17 +432,13 @@ function UniversesSection() {
                 />
                 <div
                   aria-hidden
-                  className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent"
+                  className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/5 to-transparent"
                 />
                 <span className="absolute left-3 top-3 font-mono text-[11px] tracking-[0.08em] text-[var(--color-text-primary)]/55">
                   0{i + 1}
                 </span>
                 <div className="absolute inset-x-0 bottom-0 p-4">
-                  <Text
-                    as="h3"
-                    variant={i === 0 ? 'heading-lg' : 'heading-sm'}
-                    className="text-[var(--color-text-primary)]"
-                  >
+                  <Text as="h3" variant="heading-sm" className="text-[var(--color-text-primary)]">
                     {u.label}
                   </Text>
                 </div>

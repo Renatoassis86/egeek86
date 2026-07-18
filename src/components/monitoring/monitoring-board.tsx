@@ -63,7 +63,7 @@ export function MonitoringBoard({
             <div>
               <Text variant="heading-md">{selected.title}</Text>
               <Text variant="caption" color="tertiary">
-                Menor preço agora em {selected.networkName}
+                Menor preço entre todas as lojas · atualmente em {selected.networkName}
               </Text>
             </div>
             <Link

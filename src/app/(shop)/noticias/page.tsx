@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { SceneImage } from '@/components/motion/scene-image';
 import { Glow } from '@/components/motion/glow';
-import { LetterMask } from '@/components/motion/letter-mask';
+import { TextImageMask } from '@/components/motion/text-image-mask';
 import { cn } from '@/lib/cn';
 import { getPublishedArticles } from '@/server/queries/news';
 import type { ArticleCategory, NewsArticle } from '@/db/schema';
@@ -40,12 +40,11 @@ export default async function NoticiasPage({
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-14">
       <div className="relative mb-8 overflow-hidden">
         <Glow color="hype" size="md" intensity={0.16} className="-top-20 -right-10" />
-        {/* "6" — número da marca, tratamento geométrico pedido, só xl+. */}
-        <LetterMask
-          id="noticias-6"
-          letter="6"
+        {/* "6" — número da marca, na mesma fonte do logotipo, só xl+. */}
+        <TextImageMask
+          text="6"
           src="/images/noticias/header-collage.png"
-          className="pointer-events-none absolute -right-2 top-1/2 hidden h-48 w-40 -translate-y-1/2 xl:block"
+          className="pointer-events-none absolute -right-2 top-1/2 hidden -translate-y-1/2 text-[160px] xl:block"
         />
         <div className="relative xl:max-w-[65%]">
           <Text as="h1" variant="heading-xl">
