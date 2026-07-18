@@ -8,6 +8,7 @@ import type { PriceSnapshotResult } from './price-sources';
 import { recordPriceSnapshot } from './record-price-snapshot';
 import { upsertSellerFromOffer } from './sources/mercado-livre-seller';
 import { slugify } from '@/lib/slugify';
+import { mapWithConcurrency } from '@/lib/concurrency';
 import './sources'; // registra os adapters disponíveis (efeito colateral do import)
 
 /** Intervalo mínimo entre coletas — catálogo geral. */
@@ -16,16 +17,12 @@ const REFRESH_INTERVAL = sql`interval '15 minutes'`;
 const WATCHED_REFRESH_INTERVAL = sql`interval '5 minutes'`;
 /**
  * Protege contra timeout se o backlog crescer — o que sobrar pega no próximo
- * tick do cron (a cada 5min). Reduzido de 30 pra 12 depois de bater o
- * timeout de 60s (maxDuration) na reativação do cron após dias sem rodar:
- * com tudo atrasado ao mesmo tempo, cada oferta "due" tende a cair num
- * external_ref diferente — cada grupo distinto é uma chamada de API externa
- * ao Mercado Livre, sequencial (não paralela), e isso domina o tempo total
- * mais que a query em si. Uma vez com o backlog em dia (rodando a cada 5min
- * de verdade), a maioria das ofertas não estará mais "due" a cada execução,
- * então o lote real por rodada tende a ficar bem menor que o teto.
+ * tick do cron (a cada 5min). 40 com processamento em paralelo (4 grupos
+ * por vez, ver GROUP_CONCURRENCY) — 12 sequencial levava 26s pra completar;
+ * em paralelo a mesma carga cabe com folga, então dá pra processar mais
+ * por execução sem se aproximar do maxDuration.
  */
-const MAX_OFFERS_PER_RUN = 12;
+const MAX_OFFERS_PER_RUN = 40;
 
 const isWatchedExpr = sql`EXISTS (
   SELECT 1 FROM affiliate_price_watches w
@@ -126,18 +123,23 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     }
   }
 
-  for (const group of groups.values()) {
+  // Cada grupo = 1 chamada de API externa (I/O, não CPU) — processar em
+  // paralelo é o que faz a rota caber no maxDuration com mais ofertas por
+  // execução. Concorrência 4: deixa folga no pool de conexão do banco
+  // (max:5) pro trabalho de escrita (snapshot + upsert de vendedor) de cada grupo.
+  const GROUP_CONCURRENCY = 4;
+  await mapWithConcurrency(Array.from(groups.values()), GROUP_CONCURRENCY, async (group) => {
     const source = getPriceSource(group.networkSlug);
     if (!source) {
       summary.skippedNoSource += group.offerIds.length;
-      continue;
+      return;
     }
 
     try {
       const results = await source.fetchSnapshots(group.externalRef);
       if (results.length === 0) {
         summary.skippedNoOffer += group.offerIds.length;
-        continue;
+        return;
       }
 
       const { updated, created } = await applySnapshotsToGroup(group, results);
@@ -151,7 +153,7 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         .set({ lastCheckedAt: new Date() })
         .where(inArray(affiliateOffers.id, group.offerIds));
     }
-  }
+  });
 
   return summary;
 }

@@ -2,7 +2,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { collectPrices } from '@/server/collector/collect-prices';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+// 120s (era 60s) — projeto está no plano Pro da Vercel (suporta até 300s).
+// Com processamento em paralelo (ver GROUP_CONCURRENCY em collect-prices.ts)
+// e lote maior por execução, 60s ficava justo demais como margem de segurança.
+export const maxDuration = 120;
 
 /**
  * Disparado periodicamente por um agendador externo (Vercel Cron ou

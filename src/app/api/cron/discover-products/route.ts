@@ -2,7 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { discoverNewProducts } from '@/server/collector/discover-products';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+// 120s (era 60s) — mesmo motivo de collect-prices/route.ts (plano Pro,
+// processamento em paralelo por TERM_CONCURRENCY, lote maior por execução).
+export const maxDuration = 120;
 
 /**
  * Disparado periodicamente por um agendador externo (Supabase pg_cron +

@@ -8,6 +8,7 @@ import { getValidAccessToken } from './sources/mercado-livre-auth';
 import { classifyFromAttributes, type MeliAttribute } from './sources/mercado-livre-classify';
 import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
+import { mapWithConcurrency } from '@/lib/concurrency';
 
 const PLATFORM_TERMS = ['nintendo switch', 'nintendo switch 2', 'ps4', 'ps5', 'xbox one', 'xbox series'];
 
@@ -106,13 +107,11 @@ function isNonProductAccessory(title: string): boolean {
 const SEARCH_TERMS: SearchTerm[] = [...GAME_SEARCH_TERMS, ...CONSOLE_SEARCH_TERMS, ...ACCESSORY_SEARCH_TERMS];
 
 /**
- * Quantos termos por execução. Reduzido de 10 pra 5 depois de bater o
- * timeout de 60s (maxDuration) num teste real — cada termo é uma chamada de
- * busca na API do Mercado Livre mais uma consulta por resultado novo
- * (classificação/dedup), tudo sequencial; 10 não cabia com folga na
- * latência real de produção.
+ * Quantos termos por execução. 16 com processamento em paralelo (4 termos
+ * por vez, ver TERM_CONCURRENCY) — 5 sequencial levava 15s; em paralelo a
+ * mesma carga cabe com folga, então dá pra processar mais por execução.
  */
-const TERMS_PER_RUN = 5;
+const TERMS_PER_RUN = 16;
 
 /** Cap por termo — defensivo, rate limit da API do Mercado Livre não é documentado publicamente. */
 const MAX_RESULTS_PER_TERM = 20;
@@ -205,7 +204,12 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
 
   const accessToken = await getValidAccessToken();
 
-  for (const searchTerm of terms) {
+  // Cada termo = 1 chamada de API externa (I/O, não CPU) — processar em
+  // paralelo (não um de cada vez) é o que faz a rota caber no maxDuration
+  // com mais termos por execução. Concorrência 4: deixa folga no pool de
+  // conexão do banco (max:5) pro trabalho de escrita de cada termo.
+  const TERM_CONCURRENCY = 4;
+  await mapWithConcurrency(terms, TERM_CONCURRENCY, async (searchTerm) => {
     summary.termsSearched++;
     let results: MeliSearchResult[];
     try {
@@ -216,7 +220,7 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
 
       if (!response.ok) {
         summary.errors.push({ term: searchTerm.term, message: `HTTP ${response.status}: ${await response.text()}` });
-        continue;
+        return;
       }
 
       const data = (await response.json()) as { results: MeliSearchResult[] };
@@ -224,7 +228,7 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
       summary.found += results.length;
     } catch (err) {
       summary.errors.push({ term: searchTerm.term, message: (err as Error).message });
-      continue;
+      return;
     }
 
     // Try/catch por item: um produto com dado inesperado (ex: hierarquia de
@@ -322,7 +326,7 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
         summary.errors.push({ term: searchTerm.term, message: `${result.id}: ${(err as Error).message}` });
       }
     }
-  }
+  });
 
   await saveCursor((cursorStart + TERMS_PER_RUN) % SEARCH_TERMS.length);
 
