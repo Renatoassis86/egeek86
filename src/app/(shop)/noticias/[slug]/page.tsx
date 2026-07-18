@@ -1,6 +1,10 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { MarkdownAsync } from 'react-markdown';
+import { eq } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import { newsArticles } from '@/db/schema';
+import { scrapeNewsArticle } from '@/server/actions/news';
 import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/text';
 import { SceneImage } from '@/components/motion/scene-image';
@@ -31,7 +35,35 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
   const article = await getArticleBySlug(slug);
 
   if (!article) notFound();
-  if (article.kind === 'curated_link') redirect(`/go/noticia/${slug}`);
+
+  let bodyMarkdown = article.bodyMarkdown;
+  let coverImageUrl = article.coverImageUrl;
+
+  // Transcrição sob demanda para matérias antigas ou que falharam na criação
+  if ((article.kind === 'curated_link' || !bodyMarkdown) && article.sourceUrl) {
+    try {
+      const scraped = await scrapeNewsArticle(article.sourceUrl, article.sourceName ?? undefined);
+      bodyMarkdown = scraped.bodyMarkdown;
+      if (!coverImageUrl && scraped.coverImageUrl) {
+        coverImageUrl = scraped.coverImageUrl;
+      }
+      
+      // Atualiza o banco de dados e converte em artigo próprio ('original') de forma definitiva
+      await db
+        .update(newsArticles)
+        .set({
+          kind: 'original',
+          bodyMarkdown,
+          coverImageUrl,
+          sourceName: null,
+          sourceUrl: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(newsArticles.id, article.id));
+    } catch (e) {
+      console.error('Falha na transcrição sob demanda do artigo:', e);
+    }
+  }
 
   return (
     <article className="mx-auto max-w-3xl px-4 lg:px-8 py-10 lg:py-14">
@@ -55,7 +87,7 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
       )}
 
       <div className="relative mt-6 aspect-[16/9] overflow-hidden rounded-[var(--radius-lg)] bg-[var(--color-bg-inset)]">
-        <SceneImage src={article.coverImageUrl} alt={article.title} tone="gold" priority />
+        <SceneImage src={coverImageUrl} alt={article.title} tone="gold" priority />
       </div>
 
       <div className="mt-8 flex flex-col gap-4 text-body-lg text-[var(--color-text-secondary)]">
@@ -101,7 +133,7 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
             ),
           }}
         >
-          {article.bodyMarkdown ?? ''}
+          {bodyMarkdown ?? ''}
         </MarkdownAsync>
       </div>
     </article>

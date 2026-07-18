@@ -281,7 +281,7 @@ export default async function NoticiasPage({
 
 function ArticleCard({ article }: { article: NewsArticle }) {
   const isCurated = article.kind === 'curated_link';
-  const href = isCurated ? `/go/noticia/${article.slug}` : `/noticias/${article.slug}`;
+  const href = `/noticias/${article.slug}`;
 
   return (
     <Link href={href} className="group block h-full">

@@ -140,7 +140,7 @@ export async function updateArticle(formData: FormData) {
 /**
  * Raspador de notícias automático a partir de matérias de terceiros.
  */
-async function scrapeNewsArticle(url: string, sourceName?: string): Promise<{ title?: string; coverImageUrl?: string; bodyMarkdown: string }> {
+export async function scrapeNewsArticle(url: string, sourceName?: string): Promise<{ title?: string; coverImageUrl?: string; bodyMarkdown: string }> {
   try {
     const res = await fetch(url, {
       headers: {
@@ -199,6 +199,18 @@ async function scrapeNewsArticle(url: string, sourceName?: string): Promise<{ ti
           break;
         }
       }
+    }
+
+    // Resolve caminhos de imagens relativos ou protocolo implícito
+    if (scrapedCover && !scrapedCover.startsWith('http') && !scrapedCover.startsWith('//')) {
+      try {
+        const baseUrl = new URL(url);
+        scrapedCover = new URL(scrapedCover, baseUrl.origin).toString();
+      } catch (e) {
+        console.error('Failed to resolve relative cover image:', e);
+      }
+    } else if (scrapedCover && scrapedCover.startsWith('//')) {
+      scrapedCover = 'https:' + scrapedCover;
     }
 
     // 3. Parágrafos
