@@ -33,6 +33,13 @@ duas habilitadas, mas **confirme, não assuma**.
 Troque `<DOMINIO>` pela URL de produção real (ex: `espacogeek86.com.br`) e `<CRON_SECRET>`
 pelo valor de `CRON_SECRET` do `.env` de produção. Rode no SQL Editor:
 
+**Importante: `net.http_get`, não `net.http_post`** — as três rotas (`/api/cron/*`) só
+implementam `GET`. Usar `http_post` retorna 405 (Method Not Allowed) — o job do cron
+"roda" (aparece `succeeded` em `cron.job_run_details`), mas a chamada HTTP em si falha
+silenciosamente (só aparece o 405 em `net._http_response`). Erro real já cometido uma vez
+nesta configuração — confirme sempre em `net._http_response` depois de agendar, não só em
+`cron.job_run_details`.
+
 ```sql
 -- Coleta de preço: a cada 5 minutos. O WHERE dentro de collectPrices() já decide
 -- por linha quem está devido (5min pra jogos acompanhados, 15min pro resto) —
@@ -41,13 +48,10 @@ select cron.schedule(
   'geek-deals-collect-prices',
   '*/5 * * * *',
   $$
-  select net.http_post(
+  select net.http_get(
     url := 'https://<DOMINIO>/api/cron/collect-prices',
-    headers := jsonb_build_object(
-      'Authorization', 'Bearer <CRON_SECRET>',
-      'Content-Type', 'application/json'
-    ),
-    timeout_milliseconds := 25000
+    headers := jsonb_build_object('Authorization', 'Bearer <CRON_SECRET>'),
+    timeout_milliseconds := 110000
   );
   $$
 );
@@ -57,12 +61,9 @@ select cron.schedule(
   'geek-deals-notify-price-drops',
   '0 12 * * *',
   $$
-  select net.http_post(
+  select net.http_get(
     url := 'https://<DOMINIO>/api/cron/notify-price-drops',
-    headers := jsonb_build_object(
-      'Authorization', 'Bearer <CRON_SECRET>',
-      'Content-Type', 'application/json'
-    ),
+    headers := jsonb_build_object('Authorization', 'Bearer <CRON_SECRET>'),
     timeout_milliseconds := 55000
   );
   $$
@@ -71,19 +72,16 @@ select cron.schedule(
 -- Descoberta de produto novo no catálogo do Mercado Livre: a cada 30min.
 -- discoverNewProducts() processa só uma fatia da lista de termos por
 -- execução (rotação por cursor em system_config, ver discover-products.ts)
--- — com 72 termos no total e 5 por execução (reduzido de 10 depois de bater
--- timeout de 60s em produção), uma volta completa leva ~15 execuções (~7h).
+-- — com 89 termos no total e 16 por execução (paralelizado, TERM_CONCURRENCY
+-- em discover-products.ts), uma volta completa leva ~6 execuções (~3h).
 select cron.schedule(
   'geek-deals-discover-products',
   '*/30 * * * *',
   $$
-  select net.http_post(
+  select net.http_get(
     url := 'https://<DOMINIO>/api/cron/discover-products',
-    headers := jsonb_build_object(
-      'Authorization', 'Bearer <CRON_SECRET>',
-      'Content-Type', 'application/json'
-    ),
-    timeout_milliseconds := 55000
+    headers := jsonb_build_object('Authorization', 'Bearer <CRON_SECRET>'),
+    timeout_milliseconds := 110000
   );
   $$
 );
