@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { eq, desc } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { auctions, profiles } from '@/db/schema';
@@ -115,24 +116,47 @@ export default async function AuctionsPage({
       <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.12} />
       <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.08} />
 
-      {/* Header */}
-      <div className="flex flex-col gap-3 mb-10">
-        <Reveal>
-          <Badge variant="hype" size="md">
-            Geek Hammer Leilões
-          </Badge>
-        </Reveal>
-        <Reveal delay={0.05}>
-          <Text as="h1" variant="heading-xl" className="text-[32px] md:text-[40px] font-black">
-            Lances & Martelo Hype
-          </Text>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <Text variant="body-sm" color="secondary" className="max-w-2xl leading-relaxed">
-            Participe de leilões ao vivo conduzidos pela comunidade. Lances protegidos com garantia 
-            de caução contra inadimplência, prorrogação inteligente de tempo e integridade auditada.
-          </Text>
-        </Reveal>
+      {/* Header Banner Visual */}
+      <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-14 overflow-hidden mb-10 z-10">
+        
+        {/* Imagem do banner inteira com recorte diagonal na direita (igual Hype Zone/Ofertas) */}
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
+          <div 
+            className="relative w-full h-full"
+            style={{
+              clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
+            }}
+          >
+            <Image
+              src="/images/hype-zone/geek-hammer.png"
+              alt="Geek Hammer Banner"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+            {/* Gradiente sutil de fade na junção do corte diagonal */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-transparent to-transparent opacity-80 pointer-events-none" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 relative z-10 max-w-2xl">
+          <Reveal>
+            <Badge variant="hype" size="md">
+              Geek Hammer Leilões
+            </Badge>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <Text as="h1" variant="display-sm" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+              Lances & Martelo Hype
+            </Text>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <Text variant="body-sm" color="secondary" className="max-w-[50ch] leading-relaxed text-xs md:text-sm">
+              Participe de leilões ao vivo conduzidos pela comunidade. Lances protegidos com garantia 
+              de caução contra inadimplência, prorrogação inteligente de tempo e integridade auditada.
+            </Text>
+          </Reveal>
+        </div>
       </div>
 
       {/* Sub-Abas do Painel */}
