@@ -95,7 +95,7 @@ export interface PriceHistoryResult {
   movingAveragePoints: PricePoint[];
   /** Metadados do vendedor vencedor em cada ponto — chave é o mesmo `time` do PricePoint correspondente. */
   pointOffers: Record<number, PriceHistoryPointOffer>;
-  /** Média/mínimo/máximo do MENOR preço entre vendedores dentro do período exibido — mesma série do gráfico. */
+  /** Média/máximo somam TODA cotação de TODO vendedor ativo do produto no período (não só a série de menor preço do gráfico); mínimo coincide com o ponto mais baixo do gráfico de qualquer forma. */
   stats: PriceHistoryStats;
 }
 
@@ -217,11 +217,18 @@ export async function getMasterProductPriceHistory(
     }
   }
 
+  // Média/máximo vêm de TODAS as cotações de preço do período (soma de todo
+  // snapshot de toda oferta ativa do produto, dividido pela quantidade) — não
+  // da série de "menor preço vigente" (essa é só o traçado do gráfico, pesa
+  // demais pro vendedor que mais posta preço e nunca reflete a cotação de um
+  // vendedor que não estava ganhando o menor preço num dado momento). Mínimo
+  // dá o mesmo valor nos dois cálculos, então fica como estava.
+  const rawPrices = rows.map((r) => Number(r.price_cents) / 100);
   const values = points.map((p) => p.value);
   const stats: PriceHistoryStats = {
-    avgPriceCents: values.length ? Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 100) : null,
+    avgPriceCents: rawPrices.length ? Math.round((rawPrices.reduce((a, b) => a + b, 0) / rawPrices.length) * 100) : null,
     minPriceCents: values.length ? Math.round(Math.min(...values) * 100) : null,
-    maxPriceCents: values.length ? Math.round(Math.max(...values) * 100) : null,
+    maxPriceCents: rawPrices.length ? Math.round(Math.max(...rawPrices) * 100) : null,
   };
 
   const movingAveragePoints = computeMovingAverage(points, MOVING_AVERAGE_WINDOW_MS[timeframe]);
