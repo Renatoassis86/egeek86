@@ -150,7 +150,7 @@ export default async function AdminCollectorsPage() {
                         <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] block font-normal">{col.email}</span>
                       </td>
                       <td className="px-4">
-                        <Badge variant={col.status === 'active' ? 'outline' : 'secondary'} className={col.status === 'active' ? 'bg-green-500/10 text-green-500 border-green-500/20' : ''}>
+                        <Badge variant={col.status === 'active' ? 'success' : 'outline'}>
                           {col.status === 'active' ? 'Ativo' : 'Pendente'}
                         </Badge>
                       </td>
