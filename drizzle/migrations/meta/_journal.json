@@ -85,6 +85,13 @@
       "when": 1784256117518,
       "tag": "0011_affiliate_link_pending",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1784334903525,
+      "tag": "0012_affiliate_offers_active_price_idx",
+      "breakpoints": true
     }
   ]
 }

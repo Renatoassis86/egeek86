@@ -78,6 +78,15 @@ export const affiliateOffers = pgTable(
     index('affiliate_offers_status_published_idx')
       .on(t.status, t.publishedAt)
       .where(sql`status = 'active'`),
+    // Serve ao mesmo tempo o filtro (status ativo + preço coletado) E a
+    // ordenação (ASC/DESC por preço) de listRankedOffers — a query mais
+    // repetida do site (home, /ofertas, todas as seções de destaque).
+    // Sem isso, o Postgres varre e ordena a tabela inteira sem índice —
+    // virou statement_timeout em produção com o catálogo maior (ver
+    // erro real capturado nos Runtime Logs da Vercel).
+    index('affiliate_offers_active_price_idx')
+      .on(t.status, t.currentPriceCents)
+      .where(sql`status = 'active' AND current_price_cents > 0`),
     check('affiliate_offers_price_chk', sql`${t.currentPriceCents} >= 0`),
   ]
 );

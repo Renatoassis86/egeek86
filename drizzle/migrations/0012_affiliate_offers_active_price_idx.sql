@@ -1,0 +1,1 @@
+CREATE INDEX "affiliate_offers_active_price_idx" ON "affiliate_offers" USING btree ("status","current_price_cents") WHERE status = 'active' AND current_price_cents > 0;
