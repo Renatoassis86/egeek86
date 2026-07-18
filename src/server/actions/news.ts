@@ -145,21 +145,61 @@ async function scrapeNewsArticle(url: string, sourceName?: string): Promise<{ ti
     const res = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       },
     });
     if (!res.ok) throw new Error('Não foi possível acessar a notícia original.');
 
     const html = await res.text();
 
-    // 1. og:title
-    const titleMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i) ||
-                       html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i);
-    let scrapedTitle = titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim() : undefined;
+    // 1. Extração robusta do Título (Múltiplas opções de tags)
+    const ogTitleRegexes = [
+      /<meta\s+[^>]*property\s*=\s*["']og:title["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["']\s+[^>]*property\s*=\s*["']og:title["']/i,
+      /<meta\s+[^>]*name\s*=\s*["']twitter:title["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
+    ];
+    let scrapedTitle: string | undefined = undefined;
+    for (const regex of ogTitleRegexes) {
+      const match = html.match(regex);
+      if (match && match[1]) {
+        scrapedTitle = match[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim();
+        break;
+      }
+    }
+    if (!scrapedTitle) {
+      const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+      scrapedTitle = titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim() : undefined;
+    }
 
-    // 2. og:image
-    const imgMatch = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
-                     html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
-    const scrapedCover = imgMatch ? imgMatch[1].trim() : undefined;
+    // 2. Extração robusta da Imagem de Capa (OG, Twitter, Itemprop, Fallback tag <img>)
+    const ogImageRegexes = [
+      /<meta\s+[^>]*property\s*=\s*["']og:image["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["']\s+[^>]*property\s*=\s*["']og:image["']/i,
+      /<meta\s+[^>]*name\s*=\s*["']twitter:image["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
+      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["']\s+[^>]*name\s*=\s*["']twitter:image["']/i,
+      /<meta\s+[^>]*itemprop\s*=\s*["']image["']\s+[^>]*content\s*=\s*["']([^"']+)["']/i,
+    ];
+    let scrapedCover: string | undefined = undefined;
+    for (const regex of ogImageRegexes) {
+      const match = html.match(regex);
+      if (match && match[1]) {
+        scrapedCover = match[1].trim();
+        break;
+      }
+    }
+    // Fallback: Busca a primeira tag <img> com URL absoluta que represente uma foto real
+    if (!scrapedCover) {
+      const imgTagRegex = /<img\s+[^>]*src\s*=\s*["'](https?:\/\/[^"']+\.(?:png|jpg|jpeg|webp|gif)(?:\?[^"']+)?)["']/gi;
+      let imgMatch;
+      while ((imgMatch = imgTagRegex.exec(html)) !== null) {
+        const urlCandidate = imgMatch[1];
+        if (!urlCandidate.includes('logo') && !urlCandidate.includes('icon') && !urlCandidate.includes('avatar') && !urlCandidate.includes('pixel')) {
+          scrapedCover = urlCandidate;
+          break;
+        }
+      }
+    }
 
     // 3. Parágrafos
     const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;

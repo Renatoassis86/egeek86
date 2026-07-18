@@ -155,41 +155,76 @@ export default async function NoticiasPage({
 
               {/* Feed de Opiniões */}
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all">
-                  <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
-                    Arthur Pendragon · Mestre
-                  </span>
-                  <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[13px]">
-                    O Futuro do Retro Gaming e a Preservação Digital
-                  </Text>
-                  <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
-                    Por que as mídias físicas antigas estão morrendo e o que podemos fazer para salvar os clássicos.
-                  </span>
+                
+                {/* Colunista 1 */}
+                <div className="flex gap-3.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all items-start">
+                  <div className="relative size-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
+                    <Image
+                      src="/images/colunistas/arthur.png"
+                      alt="Arthur Pendragon"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                    <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
+                      Arthur Pendragon · Mestre
+                    </span>
+                    <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[12px] md:text-[13px]">
+                      O Futuro do Retro Gaming e a Preservação Digital
+                    </Text>
+                    <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                      Por que as mídias físicas antigas estão morrendo e o que podemos fazer para salvar os clássicos.
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all">
-                  <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
-                    Jéssica Ramos · Hunter Pro
-                  </span>
-                  <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[13px]">
-                    O Impacto do Pro Controller na Competitividade
-                  </Text>
-                  <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
-                    Análise tática dos analógicos mecânicos e botões traseiros nos consoles atuais.
-                  </span>
+                {/* Colunista 2 */}
+                <div className="flex gap-3.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all items-start">
+                  <div className="relative size-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
+                    <Image
+                      src="/images/colunistas/jessica.png"
+                      alt="Jéssica Ramos"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                    <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
+                      Jéssica Ramos · Hunter Pro
+                    </span>
+                    <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[12px] md:text-[13px]">
+                      O Impacto do Pro Controller na Competitividade
+                    </Text>
+                    <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                      Análise tática dos analógicos mecânicos e botões traseiros nos consoles atuais.
+                    </span>
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-1.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all">
-                  <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
-                    Renato Assis · Renato86
-                  </span>
-                  <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[13px]">
-                    Por que Colecionar Funko Virou Cultura de Massa?
-                  </Text>
-                  <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
-                    O fenômeno do design minimalista cabeçudo que conquistou prateleiras no mundo inteiro.
-                  </span>
+                {/* Colunista 3 */}
+                <div className="flex gap-3.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all items-start">
+                  <div className="relative size-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
+                    <Image
+                      src="/images/colunistas/renato.png"
+                      alt="Renato Assis"
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                    <span className="text-[9px] font-mono text-[var(--color-accent-primary)] uppercase tracking-wider block">
+                      Renato Assis · Renato86
+                    </span>
+                    <Text variant="body-sm" className="font-semibold leading-tight hover:underline text-[12px] md:text-[13px]">
+                      Por que Colecionar Funko Virou Cultura de Massa?
+                    </Text>
+                    <span className="text-[10px] text-[var(--color-text-secondary)] line-clamp-2 leading-relaxed">
+                      O fenômeno do design minimalista cabeçudo que conquistou prateleiras no mundo inteiro.
+                    </span>
+                  </div>
                 </div>
+
               </div>
 
               {/* Call-to-Action */}
