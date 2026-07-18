@@ -243,6 +243,21 @@ export default async function HypeZonePage() {
         </div>
       </Reveal>
 
+      {/* Divisor Visual & Título da Seção de Drops */}
+      <Reveal delay={0.15}>
+        <div className="flex flex-col gap-1 border-t border-[var(--color-border-subtle)] pt-12 mb-8 z-10 relative">
+          <Badge variant="hype" size="sm" className="w-fit">
+            Vitrine de Lançamentos
+          </Badge>
+          <Text as="h2" variant="heading-lg" className="font-black text-2xl mt-1">
+            Drops e Ofertas da Comunidade
+          </Text>
+          <Text variant="body-sm" color="secondary" className="max-w-[60ch] text-xs">
+            Explore abaixo as raridades ativas no mercado, lotes agendados e o histórico de negociações concluídas.
+          </Text>
+        </div>
+      </Reveal>
+
       {/* Tabs com os Drops e Lógica de negócio interativa */}
       <Reveal delay={0.15}>
         <div className="z-10 relative">
