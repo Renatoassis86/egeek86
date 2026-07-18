@@ -16,14 +16,16 @@ const REFRESH_INTERVAL = sql`interval '15 minutes'`;
 const WATCHED_REFRESH_INTERVAL = sql`interval '5 minutes'`;
 /**
  * Protege contra timeout se o backlog crescer — o que sobrar pega no próximo
- * tick do cron (a cada 5min). Calibrado com dado real: um teste ao vivo com
- * 200 ofertas "due" (agrupadas por vendedor, cada uma podendo gerar várias
- * chamadas de banco — o pool roda com max:1, sem ganho de paralelismo)
- * levou ~4.7min, muito acima do limite de 60s do Vercel (maxDuration da
- * rota). 30 é conservador o bastante pra caber com folga mesmo no pior caso
- * (vendedor novo, que ainda dispara a chamada extra de reputação).
+ * tick do cron (a cada 5min). Reduzido de 30 pra 12 depois de bater o
+ * timeout de 60s (maxDuration) na reativação do cron após dias sem rodar:
+ * com tudo atrasado ao mesmo tempo, cada oferta "due" tende a cair num
+ * external_ref diferente — cada grupo distinto é uma chamada de API externa
+ * ao Mercado Livre, sequencial (não paralela), e isso domina o tempo total
+ * mais que a query em si. Uma vez com o backlog em dia (rodando a cada 5min
+ * de verdade), a maioria das ofertas não estará mais "due" a cada execução,
+ * então o lote real por rodada tende a ficar bem menor que o teto.
  */
-const MAX_OFFERS_PER_RUN = 30;
+const MAX_OFFERS_PER_RUN = 12;
 
 const isWatchedExpr = sql`EXISTS (
   SELECT 1 FROM affiliate_price_watches w
