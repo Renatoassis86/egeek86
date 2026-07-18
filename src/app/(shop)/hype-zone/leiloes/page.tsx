@@ -267,7 +267,7 @@ export default async function AuctionsPage({
                 <CardContent className="p-5 flex flex-col gap-3 justify-between h-full">
                   <div>
                     <div className="flex justify-between items-center mb-2">
-                      <Badge variant="secondary" size="sm">Encerrado</Badge>
+                      <Badge variant="outline" size="sm">Encerrado</Badge>
                       <Badge variant={auc.status === 'completed' ? 'success' : 'danger'} size="sm">
                         {auc.status === 'completed' ? 'Vendido' : auc.status === 'failed_reserve' ? 'Reserva não Atingida' : 'Inadimplente'}
                       </Badge>
