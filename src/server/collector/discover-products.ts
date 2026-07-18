@@ -105,8 +105,14 @@ function isNonProductAccessory(title: string): boolean {
  */
 const SEARCH_TERMS: SearchTerm[] = [...GAME_SEARCH_TERMS, ...CONSOLE_SEARCH_TERMS, ...ACCESSORY_SEARCH_TERMS];
 
-/** Quantos termos por execução — ajustado pra caber com folga no limite de 60s do Vercel mesmo com latência real de rede. */
-const TERMS_PER_RUN = 10;
+/**
+ * Quantos termos por execução. Reduzido de 10 pra 5 depois de bater o
+ * timeout de 60s (maxDuration) num teste real — cada termo é uma chamada de
+ * busca na API do Mercado Livre mais uma consulta por resultado novo
+ * (classificação/dedup), tudo sequencial; 10 não cabia com folga na
+ * latência real de produção.
+ */
+const TERMS_PER_RUN = 5;
 
 /** Cap por termo — defensivo, rate limit da API do Mercado Livre não é documentado publicamente. */
 const MAX_RESULTS_PER_TERM = 20;

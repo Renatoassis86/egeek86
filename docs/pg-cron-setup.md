@@ -71,10 +71,8 @@ select cron.schedule(
 -- Descoberta de produto novo no catálogo do Mercado Livre: a cada 30min.
 -- discoverNewProducts() processa só uma fatia da lista de termos por
 -- execução (rotação por cursor em system_config, ver discover-products.ts)
--- — com 72 termos no total e 10 por execução, uma volta completa leva ~6
--- execuções (~3h), várias voltas por dia. Frequência maior que antes (era
--- 6h) de propósito: cobertura de catálogo real exige passar pelos termos
--- todos várias vezes ao dia, não só uma vez a cada 6h.
+-- — com 72 termos no total e 5 por execução (reduzido de 10 depois de bater
+-- timeout de 60s em produção), uma volta completa leva ~15 execuções (~7h).
 select cron.schedule(
   'geek-deals-discover-products',
   '*/30 * * * *',
