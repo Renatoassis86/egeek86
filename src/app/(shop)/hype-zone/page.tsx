@@ -168,6 +168,81 @@ export default async function HypeZonePage() {
         </div>
       </Reveal>
 
+      {/* Sistema de Pontuação e Reputação Consensual (Trust Protocol) */}
+      <Reveal delay={0.14}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-16 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/10 rounded-[var(--radius-xl)] p-6 lg:p-10 relative overflow-hidden">
+          {/* Background Glow */}
+          <Glow color="gold" size="md" className="-bottom-20 -right-20" intensity={0.06} />
+
+          {/* Coluna da Imagem */}
+          <div className="lg:col-span-5 relative aspect-[4/3] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
+            <Image
+              src="/images/hype-zone/reputation-guide.png"
+              alt="Sistema de Reputação e Consenso"
+              fill
+              className="object-cover"
+            />
+          </div>
+
+          {/* Coluna de Conteúdo Técnico */}
+          <div className="lg:col-span-7 flex flex-col gap-5">
+            <div>
+              <Badge variant="hype" size="sm" className="mb-2">
+                Protocolo de Confiança C2C
+              </Badge>
+              <Text as="h2" variant="heading-lg" className="font-black text-2xl">
+                Pontuação, Classificação e Positivação do Colecionador
+              </Text>
+              <Text variant="body-sm" color="secondary" className="mt-2 leading-relaxed text-xs">
+                Nossa rede de curadoria funciona de forma descentralizada. Para garantir que todas as trocas 
+                sejam seguras e autênticas, cada colecionador acumula reputação e responde à comunidade.
+              </Text>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
+                <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  ⭐ Positivação por Auditoria
+                </span>
+                <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
+                  As notas dadas por compradores passam por auditoria do conselho antes de ir a público. 
+                  Isso evita reclamações de má-fé e valida provas (fotos do item entregue).
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
+                <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  📈 Acúmulo de Geek Points (XP)
+                </span>
+                <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
+                  Ganhe <strong className="font-bold text-[var(--color-text-primary)]">+10 XP</strong> ao votar em drops e reviews, e <strong className="font-bold text-[var(--color-text-primary)]">+50 Geek Points</strong> por acerto. Seus pontos determinam seu nível e liberam benefícios exclusivos.
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
+                <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  🎖️ Classificação por Níveis
+                </span>
+                <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
+                  De <strong className="font-bold text-[var(--color-text-primary)]">Iniciante</strong> a <strong className="font-bold text-[var(--color-text-primary)]">Lendário (5000+ XP)</strong>. Níveis altos liberam taxas de venda reduzidas, 
+                  drops exclusivos e maior peso de voto no conselho.
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
+                <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+                  🛡️ Penalização por Infração
+                </span>
+                <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
+                  Vender itens falsos ou votar contra provas claras resulta em perda drástica de Geek Points, 
+                  redução de nível ou banimento da Hype Zone.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
       {/* Tabs com os Drops e Lógica de negócio interativa */}
       <Reveal delay={0.15}>
         <div className="z-10 relative">
