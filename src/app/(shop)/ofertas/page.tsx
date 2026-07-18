@@ -76,12 +76,12 @@ export default async function OffersPage({
 
   // Separados por plataforma de jogos por padrão
   const playstation = pool.filter((o) => o.masterProduct.gamePlatformGen === 'ps5' || o.masterProduct.gamePlatformGen === 'ps4');
-  const nintendo = pool.filter((o) => o.masterProduct.gamePlatformGen === 'switch' || o.masterProduct.gamePlatformGen === 'switch_2');
+  const nintendo = pool.filter((o) => o.masterProduct.gamePlatformGen === 'switch_1' || o.masterProduct.gamePlatformGen === 'switch_2');
   const xbox = pool.filter((o) => o.masterProduct.gamePlatformGen === 'xbox_series' || o.masterProduct.gamePlatformGen === 'xbox_one');
   const other = pool.filter((o) => 
     o.masterProduct.gamePlatformGen !== 'ps5' && 
     o.masterProduct.gamePlatformGen !== 'ps4' && 
-    o.masterProduct.gamePlatformGen !== 'switch' && 
+    o.masterProduct.gamePlatformGen !== 'switch_1' && 
     o.masterProduct.gamePlatformGen !== 'switch_2' && 
     o.masterProduct.gamePlatformGen !== 'xbox_series' && 
     o.masterProduct.gamePlatformGen !== 'xbox_one'
