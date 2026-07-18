@@ -100,14 +100,20 @@ export default async function OffersPage({
         <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.28} />
         <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.14} />
 
-        {/* "8" — número da marca, na mesma fonte do logotipo. Fica só em
-            xl+, onde sobra folga real ao lado do texto (que já é limitado
-            a max-w-2xl/60ch, então nunca disputa espaço com o glifo). */}
-        <TextImageMask
-          text="8"
-          src="/images/ofertas/header-collage.png"
-          className="pointer-events-none absolute -right-2 top-1/2 hidden -translate-y-1/2 text-[190px] xl:block"
-        />
+        {/* EG86 — marca completa na mesma fonte do logotipo, mesma imagem
+            recortada dentro de cada letra. Fica só em xl+, onde sobra folga
+            real ao lado do texto (que já é limitado a max-w-2xl/60ch, então
+            nunca disputa espaço com o glifo). */}
+        <div className="pointer-events-none absolute -right-2 top-1/2 hidden -translate-y-1/2 items-center gap-0.5 xl:flex">
+          {['E', 'G', '8', '6'].map((letter) => (
+            <TextImageMask
+              key={letter}
+              text={letter}
+              src="/images/ofertas/header-collage.png"
+              className="text-[80px]"
+            />
+          ))}
+        </div>
 
         <div className="relative xl:max-w-[65%]">
           <Reveal>
