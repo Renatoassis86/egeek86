@@ -93,10 +93,12 @@ function Origem() {
               alugar outro. Essa é a memória que o Espaço Geek 86 quer manter viva.
             </Text>
             <Text variant="body-md" color="secondary">
-              Mas nostalgia sozinha não paga boleto nem evita compra ruim. O outro lado da história é
-              mais recente: anos comprando, pesquisando preço em cinco abas ao mesmo tempo, comparando
-              vendedor, ajudando gente próxima a não errar na hora de trocar de console ou fechar
-              negócio num jogo usado. O site é o ponto onde essas duas histórias se encontram.
+              Só que entretenimento também é decisão. Anos comprando, pesquisando preço em cinco abas
+              ao mesmo tempo, comparando vendedor, ajudando gente próxima a escolher certo na hora de
+              trocar de console ou fechar negócio num jogo usado. Isso virou uma habilidade real, e
+              habilidade real pode virar oportunidade. O Espaço Geek 86 nasce dessa ideia: transformar
+              o hobby que a gente já ama num caminho de negócio pra quem quiser, não só num lugar de
+              compra.
             </Text>
           </div>
         </div>
@@ -161,11 +163,12 @@ function MissaoVisaoValores() {
             Missão
           </Text>
           <Text as="h2" variant="heading-xl" className="mt-3 lg:text-display-md">
-            Ajudar colecionadores e jogadores a comprar cultura geek com informação real.
+            Ajudar quem compra e quem indica cultura geek a decidir com informação real.
           </Text>
           <Text variant="body-md" color="secondary" className="mt-4 max-w-[52ch]">
             Unimos preço monitorado em tempo real, histórico verificável e curadoria humana em um único
-            lugar, para que cada decisão de compra seja baseada em dado, não em impulso.
+            lugar, para que toda decisão, seja de compra ou de indicação, seja baseada em dado, não em
+            impulso.
           </Text>
         </Reveal>
 
@@ -178,7 +181,8 @@ function MissaoVisaoValores() {
           </Text>
           <Text variant="body-md" color="secondary" className="mt-4 max-w-[52ch]">
             Reconhecida tanto por quem cresceu jogando nos anos 80 e 90 quanto por quem começa sua
-            coleção hoje.
+            coleção hoje, e usada por afiliados de grandes plataformas de venda para monitorar preço e
+            fazer a melhor indicação para o próprio público.
           </Text>
         </Reveal>
       </div>
