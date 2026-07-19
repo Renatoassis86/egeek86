@@ -787,6 +787,9 @@ export async function getFeaturedOffers(
     createdAt: new Date(row.created_at),
     updatedAt: new Date(row.updated_at),
     status: row.offer_status,
+    currency: row.currency ?? 'BRL',
+    createdBy: row.created_by ?? null,
+    highlightNote: row.highlight_note ?? null,
     masterProduct: {
       id: row.master_product_id,
       name: row.mp_name,
