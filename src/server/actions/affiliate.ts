@@ -18,6 +18,7 @@ import { requireAdmin } from '@/lib/auth/require-admin';
 import { slugify } from '@/lib/slugify';
 import { recordPriceSnapshot } from '@/server/collector/record-price-snapshot';
 import { classifyMeliCatalogProduct } from '@/server/collector/sources/mercado-livre-classify';
+import { isNonProductAccessory } from '@/server/collector/discover-products';
 
 /**
  * Normaliza número em formato brasileiro ("1.999,90") ou já com ponto decimal
@@ -177,6 +178,10 @@ export async function createAffiliateOffer(formData: FormData) {
     highlightNote: formData.get('highlightNote') || undefined,
     externalRef: formData.get('externalRef') || undefined,
   });
+
+  if (isNonProductAccessory(parsed.productName) || isNonProductAccessory(parsed.title)) {
+    throw new Error('Este tipo de item (chaveiro, caneca, camiseta, funko, miniatura, etc.) não é permitido em nosso inventário. Apenas itens de jogo ou para melhorar a experiência de jogo são aceitos.');
+  }
 
   const priceCents = reaisToCents(formData.get('priceReais'));
   const listPriceCents = optionalReaisToCents(formData.get('listPriceReais'));

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Tags, Network, Ticket, MessageSquareText, Newspaper, ShieldCheck, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, Tags, Network, Ticket, MessageSquareText, Newspaper, ShieldCheck, Users, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 export interface AdminNavItem {
@@ -14,6 +14,7 @@ export interface AdminNavItem {
 
 export const adminNavItems: AdminNavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/usuarios', label: 'Usuários', icon: Users },
   { href: '/admin/ofertas', label: 'Ofertas', icon: Tags },
   { href: '/admin/redes', label: 'Redes', icon: Network },
   { href: '/admin/cupons', label: 'Cupons', icon: Ticket },

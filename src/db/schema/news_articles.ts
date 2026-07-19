@@ -27,6 +27,7 @@ export const newsArticles = pgTable(
     category: articleCategory('category').notNull(),
     sourceName: text('source_name'),
     sourceUrl: text('source_url'),
+    keywords: text('keywords'),
     status: articleStatus('status').notNull().default('draft'),
     authorId: uuid('author_id')
       .notNull()

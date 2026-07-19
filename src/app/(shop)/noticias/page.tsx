@@ -30,6 +30,7 @@ const CATEGORY_LABELS: Record<ArticleCategory, string> = {
   criticas: 'Críticas 🎭',
   listas: 'Listas 📺',
   colunistas: 'Colunistas ✍️',
+  ccxp: 'CCXP 🎪',
 };
 
 const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS) as [ArticleCategory, string][];
@@ -40,13 +41,18 @@ function parseCategoryParam(value?: string): ArticleCategory | undefined {
 
 // Executa migrações dinâmicas de enums de notícias para garantir consistência
 async function ensureDbEnums() {
-  const newCategories = ['filmes', 'series_tv', 'animes', 'games', 'korea', 'criticas', 'listas', 'colunistas'];
+  const newCategories = ['filmes', 'series_tv', 'animes', 'games', 'korea', 'criticas', 'listas', 'colunistas', 'ccxp'];
   for (const cat of newCategories) {
     try {
       await db.execute(sql.raw(`ALTER TYPE article_category ADD VALUE '${cat}'`));
     } catch (e) {
       // Ignora se o valor já existir no enum do Postgres
     }
+  }
+  try {
+    await db.execute(sql.raw(`ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS keywords text`));
+  } catch (e) {
+    // Ignora se já existe
   }
 }
 

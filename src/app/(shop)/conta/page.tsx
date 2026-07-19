@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { TrendingDown, TrendingUp, Minus, Flame, Bell } from 'lucide-react';
+import { TrendingDown, TrendingUp, Minus, Flame, Bell, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -40,12 +40,22 @@ export default async function ContaPage() {
               normal.
             </Text>
           </div>
-          <Button asChild variant="outline" size="md">
-            <Link href="/conta/notificacoes">
-              <Bell className="size-4" />
-              Notificações
-            </Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            {profile?.role === 'seller' && (
+              <Button asChild variant="hype" size="md">
+                <Link href="/conta/vendedor">
+                  <ShieldCheck className="size-4" />
+                  Painel do Colecionador
+                </Link>
+              </Button>
+            )}
+            <Button asChild variant="outline" size="md">
+              <Link href="/conta/notificacoes">
+                <Bell className="size-4" />
+                Notificações
+              </Link>
+            </Button>
+          </div>
         </div>
       </Reveal>
 

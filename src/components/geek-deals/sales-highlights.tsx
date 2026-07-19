@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { OfferCard } from '@/components/affiliate/offer-card';
-import { listRankedOffers, getOfferListingMetrics, type RankedOffersFilter } from '@/server/queries/affiliate';
+import { listRankedOffers, getFeaturedOffers, getOfferListingMetrics, type RankedOffersFilter } from '@/server/queries/affiliate';
 
 async function fetchRow(title: string, href: string, filter: RankedOffersFilter) {
   const offers = await listRankedOffers({ ...filter, limit: 6, sortBy: filter.sortBy ?? 'price_asc' });
@@ -20,8 +20,8 @@ async function fetchRow(title: string, href: string, filter: RankedOffersFilter)
  * popular catálogo real pra eles, sem precisar mexer neste componente.
  */
 export async function SalesHighlights() {
-  const [cheapest, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne] = await Promise.all([
-    fetchRow('Menor preço agora', '/ofertas?ordenar=price_asc&formato=physical', { sortBy: 'price_asc', gameFormat: 'physical' }),
+  const [featuredOffers, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne] = await Promise.all([
+    getFeaturedOffers({ gameFormat: 'physical' }, 6),
     // Consoles (hardware) — productType='console' cruza todas as plataformas
     // na mesma linha, não segmenta por geração como as linhas de jogo abaixo.
     fetchRow('Consoles', '/ofertas', { productType: 'console' }),
@@ -33,7 +33,13 @@ export async function SalesHighlights() {
     fetchRow('Xbox One', '/ofertas?geracao=xbox_one&formato=physical', { gamePlatformGen: 'xbox_one', gameFormat: 'physical' }),
   ]);
 
-  const rows = [cheapest, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne].filter((r) => r.offers.length > 0);
+  const featuredRow = {
+    title: 'Melhores ofertas agora',
+    href: '/ofertas',
+    offers: featuredOffers,
+  };
+
+  const rows = [featuredRow, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne].filter((r) => r.offers.length > 0);
   if (rows.length === 0) return null;
 
   const allOfferIds = rows.flatMap((r) => r.offers.map((o) => o.id));

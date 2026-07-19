@@ -627,3 +627,167 @@ export async function getDailyClicks(days = 14): Promise<DailyClicksPoint[]> {
 
   return rows.map((row) => ({ date: row.day, clicks: Number(row.clicks) }));
 }
+
+/**
+ * Retorna as melhores ofertas em destaque com base no desconto real (menor preço histórico ou
+ * percentual abaixo da média de 30 dias), em vez do preço nominal mais baixo.
+ */
+export async function getFeaturedOffers(
+  filter: RankedOffersFilter = {},
+  limit = 6
+): Promise<OfferWithRelations[]> {
+  const conditions: SQL[] = [
+    sql`o.status = 'active'`,
+    sql`o.current_price_cents > 0`
+  ];
+
+  if (filter.productType) {
+    conditions.push(sql`mp.product_type = ${filter.productType}`);
+  }
+  if (filter.gameFormat) {
+    conditions.push(sql`mp.game_format = ${filter.gameFormat}`);
+  }
+  if (filter.gamePlatformGen) {
+    if (Array.isArray(filter.gamePlatformGen)) {
+      if (filter.gamePlatformGen.length > 0) {
+        const inConditions = filter.gamePlatformGen.map((g) => sql`${g}`);
+        conditions.push(sql`mp.game_platform_gen IN (${sql.join(inConditions, sql`, `)})`);
+      }
+    } else {
+      conditions.push(sql`mp.game_platform_gen = ${filter.gamePlatformGen}`);
+    }
+  }
+  if (filter.gameEditionType) {
+    conditions.push(sql`mp.game_edition_type = ${filter.gameEditionType}`);
+  }
+  if (filter.networkId) {
+    conditions.push(sql`o.network_id = ${filter.networkId}`);
+  }
+  if (filter.minSellerSales != null) {
+    conditions.push(sql`sel.total_sales >= ${filter.minSellerSales}`);
+  }
+
+  const whereClause = sql.join(conditions, sql` AND `);
+
+  const query = sql`
+    WITH active_offers AS (
+      SELECT id AS offer_id, master_product_id, current_price_cents
+      FROM affiliate_offers
+      WHERE status = 'active' AND current_price_cents > 0
+    ),
+    lowest_by_product AS (
+      SELECT ao.master_product_id, MIN(s.price_cents)::bigint AS lowest_price_cents
+      FROM affiliate_price_snapshots s
+      INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
+      GROUP BY ao.master_product_id
+    ),
+    avg30d_by_product AS (
+      SELECT ao.master_product_id, AVG(s.price_cents)::numeric AS avg_price_30d
+      FROM affiliate_price_snapshots s
+      INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
+      WHERE s.collected_at >= now() - interval '30 days'
+      GROUP BY ao.master_product_id
+    )
+    SELECT
+      o.id AS offer_id,
+      o.master_product_id,
+      o.network_id,
+      o.title AS offer_title,
+      o.slug AS offer_slug,
+      o.affiliate_url,
+      o.affiliate_link_pending,
+      o.image_url AS offer_image_url,
+      o.store_name,
+      o.external_ref,
+      o.last_checked_at,
+      o.seller_id,
+      o.current_price_cents,
+      o.last_price_change_at,
+      o.previous_price_cents,
+      o.published_at,
+      o.created_at,
+      o.updated_at,
+      o.status AS offer_status,
+      mp.name AS mp_name,
+      mp.slug AS mp_slug,
+      mp.default_images,
+      mp.game_format,
+      mp.game_platform_gen,
+      mp.game_edition_type,
+      mp.game_edition_source,
+      mp.game_collection,
+      mp.meli_catalog_id,
+      n.name AS network_name,
+      n.slug AS network_slug,
+      n.color_hex AS network_color_hex,
+      sel.id AS seller_id,
+      sel.nickname AS seller_nickname,
+      sel.reputation_level AS seller_reputation_level,
+      sel.power_seller_status AS seller_power_seller_status,
+      sel.total_sales AS seller_total_sales,
+      sel.positive_rating_percent AS seller_positive_rating_percent
+    FROM affiliate_offers o
+    INNER JOIN master_products mp ON mp.id = o.master_product_id
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
+    LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+    LEFT JOIN lowest_by_product lp ON lp.master_product_id = o.master_product_id
+    LEFT JOIN avg30d_by_product ap ON ap.master_product_id = o.master_product_id
+    WHERE ${whereClause}
+    ORDER BY
+      (CASE WHEN COALESCE(ap.avg_price_30d, 0) > o.current_price_cents 
+            THEN (ap.avg_price_30d - o.current_price_cents)::float / ap.avg_price_30d 
+            ELSE 0 END) DESC,
+      o.published_at DESC
+    LIMIT ${limit}
+  `;
+
+  const rows = await db.execute<any>(query);
+
+  return rows.map((row): OfferWithRelations => ({
+    id: row.offer_id,
+    masterProductId: row.master_product_id,
+    networkId: row.network_id,
+    title: row.offer_title,
+    slug: row.offer_slug,
+    affiliateUrl: row.affiliate_url,
+    affiliateLinkPending: row.affiliate_link_pending,
+    imageUrl: row.offer_image_url,
+    storeName: row.store_name,
+    externalRef: row.external_ref,
+    lastCheckedAt: row.last_checked_at ? new Date(row.last_checked_at) : null,
+    sellerId: row.seller_id,
+    currentPriceCents: Number(row.current_price_cents),
+    lastPriceChangeAt: row.last_price_change_at ? new Date(row.last_price_change_at) : null,
+    previousPriceCents: row.previous_price_cents ? Number(row.previous_price_cents) : null,
+    publishedAt: row.published_at ? new Date(row.published_at) : null,
+    createdAt: new Date(row.created_at),
+    updatedAt: new Date(row.updated_at),
+    status: row.offer_status,
+    masterProduct: {
+      id: row.master_product_id,
+      name: row.mp_name,
+      slug: row.mp_slug,
+      defaultImages: row.default_images ?? [],
+      gameFormat: row.game_format,
+      gamePlatformGen: row.game_platform_gen,
+      gameEditionType: row.game_edition_type,
+      gameEditionSource: row.game_edition_source,
+      gameCollection: row.game_collection,
+      meliCatalogId: row.meli_catalog_id,
+    },
+    network: {
+      id: row.network_id,
+      name: row.network_name,
+      slug: row.network_slug,
+      colorHex: row.network_color_hex,
+    },
+    seller: row.seller_id ? {
+      id: row.seller_id,
+      nickname: row.seller_nickname,
+      reputationLevel: row.seller_reputation_level,
+      powerSellerStatus: row.seller_power_seller_status,
+      totalSales: Number(row.seller_total_sales),
+      positiveRatingPercent: row.seller_positive_rating_percent,
+    } : null,
+  }));
+}

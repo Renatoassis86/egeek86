@@ -11,6 +11,7 @@ export const userRole = pgEnum('user_role', [
   'moderator',
   'admin',
   'super_admin',
+  'affiliate',
 ]);
 
 export const userStatus = pgEnum('user_status', ['active', 'suspended', 'deleted']);
@@ -289,6 +290,7 @@ export const articleCategory = pgEnum('article_category', [
   'criticas',
   'listas',
   'colunistas',
+  'ccxp',
 ]);
 
 export const articleStatus = pgEnum('article_status', ['draft', 'published', 'archived']);

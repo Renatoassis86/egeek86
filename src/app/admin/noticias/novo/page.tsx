@@ -24,6 +24,7 @@ const CATEGORIES = [
   { value: 'criticas', label: 'Críticas' },
   { value: 'listas', label: 'Listas' },
   { value: 'colunistas', label: 'Colunistas' },
+  { value: 'ccxp', label: 'CCXP' },
 ] as const;
 
 export default function NewArticlePage() {
@@ -45,21 +46,7 @@ export default function NewArticlePage() {
         <CardContent className="p-4 sm:p-6">
           <form action={createArticle} className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <FieldGroupTitle>Conteúdo</FieldGroupTitle>
-              <Field label="Título" htmlFor="title" required>
-                <Input id="title" name="title" placeholder="Novo jogo anunciado pra Switch 2" required />
-              </Field>
-              <Field
-                label="Resumo"
-                htmlFor="excerpt"
-                required
-                hint="Aparece no card da listagem. Pra destaque de outro portal, é o texto próprio que descreve a matéria (nunca copiar o texto original)."
-              >
-                <Textarea id="excerpt" name="excerpt" rows={3} placeholder="Um resumo curto e direto..." required />
-              </Field>
-              <Field label="Imagem de capa (URL, opcional)" htmlFor="coverImageUrl">
-                <Input id="coverImageUrl" name="coverImageUrl" type="url" placeholder="https://..." />
-              </Field>
+              <FieldGroupTitle>Informações Gerais</FieldGroupTitle>
               <Field label="Categoria" htmlFor="category" required>
                 <Select name="category" required defaultValue="cultura_pop">
                   <SelectTrigger id="category">

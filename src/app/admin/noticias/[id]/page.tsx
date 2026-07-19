@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { ArticleKindFields } from '@/components/admin/article-kind-fields';
+import { ToastNotification } from '@/components/admin/toast-notification';
 import { getArticleByIdForAdmin } from '@/server/queries/news';
 import { updateArticle, publishArticle, archiveArticle } from '@/server/actions/news';
 
@@ -27,15 +28,29 @@ const CATEGORIES = [
   { value: 'criticas', label: 'Críticas' },
   { value: 'listas', label: 'Listas' },
   { value: 'colunistas', label: 'Colunistas' },
+  { value: 'ccxp', label: 'CCXP' },
 ] as const;
 
-export default async function AdminArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminArticleDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ created?: string; updated?: string; published?: string; archived?: string }>;
+}) {
   const { id } = await params;
+  const { created, updated, published, archived } = await searchParams;
   const article = await getArticleByIdForAdmin(id);
   if (!article) notFound();
 
   return (
     <div className="flex flex-col gap-6">
+      <ToastNotification
+        created={created === 'true'}
+        updated={updated === 'true'}
+        published={published === 'true'}
+        archived={archived === 'true'}
+      />
       <div className="flex flex-col gap-1">
         <Button asChild variant="ghost" size="sm" className="w-fit -ml-2 text-[var(--color-text-secondary)]">
           <Link href="/admin/noticias">
@@ -81,16 +96,7 @@ export default async function AdminArticleDetailPage({ params }: { params: Promi
             <input type="hidden" name="id" value={article.id} />
 
             <div className="flex flex-col gap-4">
-              <FieldGroupTitle>Conteúdo</FieldGroupTitle>
-              <Field label="Título" htmlFor="title" required>
-                <Input id="title" name="title" defaultValue={article.title} required />
-              </Field>
-              <Field label="Resumo" htmlFor="excerpt" required>
-                <Textarea id="excerpt" name="excerpt" rows={3} defaultValue={article.excerpt} required />
-              </Field>
-              <Field label="Imagem de capa (URL, opcional)" htmlFor="coverImageUrl">
-                <Input id="coverImageUrl" name="coverImageUrl" type="url" defaultValue={article.coverImageUrl ?? ''} />
-              </Field>
+              <FieldGroupTitle>Informações Gerais</FieldGroupTitle>
               <Field label="Categoria" htmlFor="category" required>
                 <Select name="category" required defaultValue={article.category}>
                   <SelectTrigger id="category">
@@ -111,9 +117,13 @@ export default async function AdminArticleDetailPage({ params }: { params: Promi
 
             <ArticleKindFields
               defaultKind={article.kind}
+              defaultTitle={article.title}
+              defaultExcerpt={article.excerpt}
+              defaultCoverImageUrl={article.coverImageUrl}
               defaultBodyMarkdown={article.bodyMarkdown}
               defaultSourceName={article.sourceName}
               defaultSourceUrl={article.sourceUrl}
+              defaultKeywords={article.keywords}
             />
 
             <Button type="submit" size="lg" fullWidth className="sm:w-fit">

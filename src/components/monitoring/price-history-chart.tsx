@@ -14,6 +14,7 @@ import {
   type UTCTimestamp,
 } from 'lightweight-charts';
 import { Text } from '@/components/ui/text';
+import { Badge } from '@/components/ui/badge';
 import { useThemeStore } from '@/lib/stores/theme-store';
 import { CHART_PALETTES } from '@/lib/chart-colors';
 import { formatBRL } from '@/lib/format';
@@ -25,6 +26,7 @@ import type {
   PriceHistoryResult,
   PriceHistoryPointOffer,
   PriceHistoryStats,
+  PriceQuotePoint,
 } from '@/server/queries/price-history';
 
 const POLL_INTERVAL_MS = 45_000;
@@ -34,6 +36,7 @@ interface TooltipState {
   y: number;
   priceCents: number;
   offer: PriceHistoryPointOffer | null;
+  quotes?: PriceQuotePoint[];
 }
 
 /**
@@ -57,9 +60,12 @@ export function PriceHistoryChart({
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const maSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const quotesSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const skipNextFetch = useRef(true);
   const requestIdRef = useRef(0);
   const pointOffersRef = useRef<Record<number, PriceHistoryPointOffer>>(initialHistory.pointOffers);
+  const quotesRef = useRef<PriceQuotePoint[]>(initialHistory.quotes);
+  const globalMaxPriceCentsRef = useRef<number | null>(initialHistory.stats.globalMaxPriceCents);
 
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
   const [timeframe, setTimeframe] = useState<PriceHistoryTimeframe>(initialTimeframe);
@@ -68,6 +74,8 @@ export function PriceHistoryChart({
   const [fetchFailed, setFetchFailed] = useState(false);
 
   pointOffersRef.current = history.pointOffers;
+  quotesRef.current = history.quotes;
+  globalMaxPriceCentsRef.current = history.stats.globalMaxPriceCents;
 
   // Monta o gráfico uma única vez.
   useEffect(() => {
@@ -83,6 +91,18 @@ export function PriceHistoryChart({
       autoSize: true,
     });
 
+    const autoscaleProvider = (original: any) => {
+      const res = original();
+      if (res !== null) {
+        res.priceRange.minValue = 0;
+        const gMax = globalMaxPriceCentsRef.current;
+        if (gMax && gMax > 0) {
+          res.priceRange.maxValue = gMax / 100;
+        }
+      }
+      return res;
+    };
+
     const series = chart.addSeries(AreaSeries, {
       lineColor: palette.line,
       topColor: palette.areaTop,
@@ -93,6 +113,7 @@ export function PriceHistoryChart({
         formatter: (v: number) => formatBRL(Math.round(v * 100)),
         minMove: 0.01,
       },
+      autoscaleInfoProvider: autoscaleProvider,
     });
 
     // Média móvel (janela escalada pelo período selecionado) — acompanha a
@@ -111,6 +132,20 @@ export function PriceHistoryChart({
         formatter: (v: number) => formatBRL(Math.round(v * 100)),
         minMove: 0.01,
       },
+      autoscaleInfoProvider: autoscaleProvider,
+    });
+
+    const quotesSeries = chart.addSeries(LineSeries, {
+      lineWidth: 0,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      crosshairMarkerVisible: false,
+      priceFormat: {
+        type: 'custom',
+        formatter: (v: number) => formatBRL(Math.round(v * 100)),
+        minMove: 0.01,
+      },
+      autoscaleInfoProvider: autoscaleProvider,
     });
 
     chart.subscribeCrosshairMove((param: MouseEventParams) => {
@@ -125,31 +160,37 @@ export function PriceHistoryChart({
         return;
       }
       // Tamanho estimado do card do tooltip (w-60 = 240px; altura varia com o
-      // conteúdo, 220px cobre o pior caso) — usado só pra decidir de que lado
+      // conteúdo, 260px cobre o pior caso) — usado só pra decidir de que lado
       // do cursor abrir, pra nunca cortar fora do container do gráfico.
       const containerWidth = containerRef.current?.clientWidth ?? 0;
       const containerHeight = containerRef.current?.clientHeight ?? 0;
       const TOOLTIP_WIDTH = 240;
-      const TOOLTIP_HEIGHT = 220;
+      const TOOLTIP_HEIGHT = 260;
       const x = param.point.x + 12 + TOOLTIP_WIDTH > containerWidth ? param.point.x - TOOLTIP_WIDTH - 12 : param.point.x + 12;
       const y = Math.min(Math.max(param.point.y - 12, 8), Math.max(containerHeight - TOOLTIP_HEIGHT - 8, 8));
+      
+      const pointQuotes = quotesRef.current.filter((q) => q.time === param.time);
+
       setTooltip({
         x: Math.max(x, 8),
         y,
         priceCents: Math.round(value * 100),
         offer: pointOffersRef.current[param.time as number] ?? null,
+        quotes: pointQuotes,
       });
     });
 
     chartRef.current = chart;
     seriesRef.current = series;
     maSeriesRef.current = maSeries;
+    quotesSeriesRef.current = quotesSeries;
 
     return () => {
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
       maSeriesRef.current = null;
+      quotesSeriesRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- monta uma vez só, tema é aplicado à parte no efeito abaixo
   }, []);
@@ -174,10 +215,23 @@ export function PriceHistoryChart({
 
   // Empurra os dados atuais pra série sempre que mudarem.
   useEffect(() => {
-    if (!seriesRef.current || !maSeriesRef.current) return;
+    if (!seriesRef.current || !maSeriesRef.current || !quotesSeriesRef.current) return;
     seriesRef.current.setData(history.points.map((p) => ({ time: p.time as UTCTimestamp, value: p.value })));
     maSeriesRef.current.setData(
       history.movingAveragePoints.map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
+    );
+    quotesSeriesRef.current.setData(
+      history.quotes.map((q) => ({ time: q.time as UTCTimestamp, value: q.value }))
+    );
+    quotesSeriesRef.current.setMarkers(
+      history.quotes.map((q, idx) => ({
+        time: q.time as UTCTimestamp,
+        position: 'inBar',
+        shape: 'circle',
+        color: q.networkColorHex || '#D4AF37',
+        size: q.size,
+        id: `q-${idx}`,
+      }))
     );
     chartRef.current?.timeScale().fitContent();
   }, [history]);
@@ -220,7 +274,15 @@ export function PriceHistoryChart({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <TimeframeSelector value={timeframe} onChange={setTimeframe} />
+        <div className="flex items-center gap-2.5">
+          <TimeframeSelector value={timeframe} onChange={setTimeframe} />
+          <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
+            🛍️ {history.totalOffersCount || 0} ofertas integradas (todas as plataformas)
+          </Badge>
+          <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
+            📊 {history.totalQuoteCount || 0} cotações históricas coletadas desde o início
+          </Badge>
+        </div>
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center gap-1.5 text-caption text-[var(--color-text-tertiary)]">
             <span className="h-0.5 w-3 rounded-full bg-[var(--color-accent-primary)]" /> Menor preço
@@ -271,7 +333,7 @@ function ChartTooltip({
   stats: PriceHistoryStats;
   variationVsAvgPercent: number | null;
 }) {
-  const { offer } = tooltip;
+  const { offer, quotes } = tooltip;
   // Preço de compra: abaixo da média é bom (verde), acima é ruim (vermelho) — mesma convenção do resto do app.
   const variationColor =
     variationVsAvgPercent == null
@@ -309,6 +371,27 @@ function ChartTooltip({
         <Text variant="caption" color="tertiary" className="mt-2">
           Vendedor não identificado nesse ponto
         </Text>
+      )}
+
+      {quotes && quotes.length > 0 && (
+        <div className="mt-2 border-t border-[var(--color-border-subtle)] pt-2 flex flex-col gap-1">
+          <Text variant="caption" color="tertiary" className="font-semibold uppercase tracking-wider text-[9px] block">
+            Cotações concorrentes ({quotes.length})
+          </Text>
+          <div className="max-h-24 overflow-y-auto custom-scrollbar flex flex-col gap-1 pr-1">
+            {quotes.map((q, i) => (
+              <div key={i} className="flex justify-between items-center text-[10px] gap-2">
+                <span className="text-[var(--color-text-secondary)] truncate max-w-[15ch] flex items-center gap-1">
+                  <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: q.networkColorHex || '#D4AF37' }} />
+                  {q.networkName} {q.sellerNickname ? `(${q.sellerNickname})` : ''}
+                </span>
+                <span className="font-mono font-semibold text-[var(--color-text-primary)] shrink-0">
+                  {formatBRL(q.value * 100)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       <div className="mt-2 flex flex-col gap-0.5 border-t border-[var(--color-border-subtle)] pt-2">

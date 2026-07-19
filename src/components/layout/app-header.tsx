@@ -74,40 +74,164 @@ export function AppHeader() {
                   </Link>
 
                   {/* Dropdown de Temas */}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1.5 w-52 opacity-0 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:pointer-events-auto transition-all duration-200 z-50">
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1.5 w-56 opacity-0 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:pointer-events-auto transition-all duration-200 z-50">
                     <div className="flex flex-col p-1.5 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)]">
-                      <Link href="/noticias?categoria=filmes" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Filmes</span>
-                        <span>🎥</span>
+                      <Link 
+                        href="/noticias?categoria=filmes" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>🎥</span>
+                          <span>Filmes</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
-                      <Link href="/noticias?categoria=series_tv" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Séries e TV</span>
-                        <span>📺</span>
+                      <Link 
+                        href="/noticias?categoria=series_tv" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>📺</span>
+                          <span>Séries e TV</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
-                      <Link href="/noticias?categoria=animes" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Animes</span>
-                        <span>◓</span>
+                      <Link 
+                        href="/noticias?categoria=animes" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>◓</span>
+                          <span>Animes</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
-                      <Link href="/noticias?categoria=games" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Games</span>
-                        <span>🎮</span>
+                      <Link 
+                        href="/noticias?categoria=games" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>🎮</span>
+                          <span>Games</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
-                      <Link href="/noticias?categoria=korea" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Korea</span>
-                        <span>🫰</span>
+                      <Link 
+                        href="/noticias?categoria=sinopse_jogo" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>📖</span>
+                          <span>Sinopse de Jogo</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
-                      <Link href="/noticias?categoria=criticas" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Críticas</span>
-                        <span>🎭</span>
+                      <Link 
+                        href="/noticias?categoria=korea" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>🫰</span>
+                          <span>Korea</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
-                      <Link href="/noticias?categoria=listas" className="flex items-center justify-between px-3 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Listas</span>
-                        <span>📺</span>
+                      <Link 
+                        href="/noticias?categoria=criticas" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>🎭</span>
+                          <span>Críticas</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                      </Link>
+                      <Link 
+                        href="/noticias?categoria=listas" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>📋</span>
+                          <span>Listas</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                      </Link>
+                      <Link 
+                        href="/noticias?categoria=ccxp" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>🎪</span>
+                          <span>CCXP</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                      </Link>
+                      <Link 
+                        href="/noticias?categoria=cultura_pop" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>🍿</span>
+                          <span>Cultura Pop</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                      </Link>
+                      <Link 
+                        href="/noticias?categoria=lancamentos" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>🚀</span>
+                          <span>Lançamentos</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                      </Link>
+                      <Link 
+                        href="/noticias?categoria=tecnologia" 
+                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>💻</span>
+                          <span>Tecnologia</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
                       <div className="h-px bg-[var(--color-border-subtle)] my-1" />
-                      <Link href="/noticias?categoria=colunistas" className="flex items-center justify-between px-3 py-2 text-xs font-bold text-[var(--color-accent-hype)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                        <span>Colunistas</span>
-                        <span>✍️</span>
+                      <Link 
+                        href="/noticias?categoria=colunistas" 
+                        className="flex items-center justify-between px-3 py-2 text-xs font-bold text-[var(--color-accent-hype)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span>✍️</span>
+                          <span>Colunistas</span>
+                        </span>
+                        <svg className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[var(--color-accent-hype)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="m9 18 6-6-6-6"/>
+                        </svg>
                       </Link>
                     </div>
                   </div>

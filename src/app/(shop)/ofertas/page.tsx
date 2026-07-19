@@ -13,6 +13,7 @@ import {
   listRankedOffers,
   listNetworks,
   getOfferListingMetrics,
+  getFeaturedOffers,
   type OfferWithRelations,
   type OfferListingMetrics,
 } from '@/server/queries/affiliate';
@@ -85,51 +86,43 @@ export default async function OffersPage({
   // Pool amplo (sem filtro de geração) só pra achar promoção real e contar
   // estatística — nunca usado pra render direto quando a vitrine está
   // dividida por plataforma (ver platformSections abaixo).
-  const [networks, broadPool] = await Promise.all([
+  const [networks, broadPool, featured] = await Promise.all([
     listNetworks(),
     listRankedOffers({ ...baseFilter, gamePlatformGen, limit: 200 }),
+    getFeaturedOffers({ ...baseFilter, gamePlatformGen }, 6),
   ]);
 
-  // Quando nenhuma geração específica está filtrada, cada plataforma vira uma
-  // consulta própria e independente (nunca um recorte do pool amplo) — assim
-  // toda seção mostra profundidade real, não sobra desigual de um limit
-  // compartilhado. Quando uma geração já está filtrada (inclusive via lista,
-  // ex: ?geracao=ps4,ps5 do card da home), a vitrine já está no contexto
-  // daquela plataforma, então mostra o pool amplo direto numa seção só.
-  const platformSections = gamePlatformGen
-    ? []
-    : await Promise.all(
-        PLATFORM_ORDER.map(async (gen) => ({
-          gen,
-          title: GAME_PLATFORM_GEN_LABELS[gen],
-          offers: await listRankedOffers({ ...baseFilter, gamePlatformGen: gen, limit: 12 }),
-        }))
-      );
-  const visiblePlatformSections = platformSections.filter((s) => s.offers.length > 0);
+  const isSinglePlatform = gamePlatformGen && gamePlatformGen.length === 1;
+
+  let sections: { gen: GamePlatformGen; title: string; offers: OfferWithRelations[] }[] = [];
+
+  if (isSinglePlatform) {
+    const singleGen = gamePlatformGen[0];
+    sections = [
+      {
+        gen: singleGen,
+        title: GAME_PLATFORM_GEN_LABELS[singleGen],
+        offers: broadPool,
+      },
+    ];
+  } else {
+    const targetPlatforms = gamePlatformGen ? gamePlatformGen : PLATFORM_ORDER;
+    const platformSections = await Promise.all(
+      targetPlatforms.map(async (gen) => ({
+        gen,
+        title: GAME_PLATFORM_GEN_LABELS[gen],
+        offers: await listRankedOffers({ ...baseFilter, gamePlatformGen: gen, limit: 12 }),
+      }))
+    );
+    sections = platformSections.filter((s) => s.offers.length > 0);
+  }
 
   const allOfferIds = [
     ...broadPool.map((o) => o.id),
-    ...visiblePlatformSections.flatMap((s) => s.offers.map((o) => o.id)),
+    ...featured.map((o) => o.id),
+    ...sections.flatMap((s) => s.offers.map((o) => o.id)),
   ];
   const metricsMap = await getOfferListingMetrics(allOfferIds);
-
-  // Destaque = promoção real confirmada pelo NOSSO monitoramento (média
-  // móvel de 30 dias e menor preço já visto), nunca o desconto que a própria
-  // loja afirma ter (discountPercent, sem verificação nossa) nem preço
-  // nominal mais baixo sozinho.
-  const featured = [...broadPool]
-    .filter((o) => {
-      const m = metricsMap.get(o.id);
-      return m ? m.isLowestEver || (m.avgDiscountPercent ?? 0) > 0 : false;
-    })
-    .sort((a, b) => {
-      const ma = metricsMap.get(a.id);
-      const mb = metricsMap.get(b.id);
-      const scoreA = (ma?.isLowestEver ? 1000 : 0) + (ma?.avgDiscountPercent ?? 0);
-      const scoreB = (mb?.isLowestEver ? 1000 : 0) + (mb?.avgDiscountPercent ?? 0);
-      return scoreB - scoreA;
-    })
-    .slice(0, 6);
 
   const lowestEverCount = broadPool.filter((o) => metricsMap.get(o.id)?.isLowestEver).length;
 
@@ -207,13 +200,9 @@ export default async function OffersPage({
             />
           )}
 
-          {gamePlatformGen ? (
-            <OfferSection title="Resultado da busca" offers={broadPool} metricsMap={metricsMap} />
-          ) : (
-            visiblePlatformSections.map(({ gen, title, offers }) => (
-              <OfferSection key={gen} title={title} offers={offers} metricsMap={metricsMap} />
-            ))
-          )}
+          {sections.map(({ gen, title, offers }) => (
+            <OfferSection key={gen} title={title} offers={offers} metricsMap={metricsMap} />
+          ))}
         </div>
       )}
     </section>

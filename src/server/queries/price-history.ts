@@ -70,6 +70,16 @@ export interface PricePoint {
   value: number;
 }
 
+/** Detalhes de cada cotação individual coletada — para o gráfico de dispersão/concentração. */
+export interface PriceQuotePoint {
+  time: number;
+  value: number;
+  networkName: string;
+  networkColorHex: string | null;
+  sellerNickname: string | null;
+  size: number; // tamanho correspondente à concentração de preço (1 a 4)
+}
+
 /** Credenciais do vendedor que detinha o menor preço num ponto do tempo — pro tooltip do gráfico. */
 export interface PriceHistoryPointOffer {
   offerId: string;
@@ -87,6 +97,7 @@ export interface PriceHistoryStats {
   avgPriceCents: number | null;
   minPriceCents: number | null;
   maxPriceCents: number | null;
+  globalMaxPriceCents: number | null;
 }
 
 export interface PriceHistoryResult {
@@ -97,6 +108,12 @@ export interface PriceHistoryResult {
   pointOffers: Record<number, PriceHistoryPointOffer>;
   /** Média/máximo somam TODA cotação de TODO vendedor ativo do produto no período (não só a série de menor preço do gráfico); mínimo coincide com o ponto mais baixo do gráfico de qualquer forma. */
   stats: PriceHistoryStats;
+  /** Lista de todas as cotações individuais de todas as lojas integradas no período. */
+  quotes: PriceQuotePoint[];
+  /** Contagem total de cotações históricas registradas desde o início do Espaço Geek 86. */
+  totalQuoteCount: number;
+  /** Contagem total de ofertas (lojas/itens) cadastrados para este jogo em todas as plataformas. */
+  totalOffersCount: number;
 }
 
 /**
@@ -117,38 +134,87 @@ export interface PriceHistoryResult {
  * gráfico inteiro, não só do ponto em diante. Corrigir com rastreio de
  * status histórico se/quando isso passar a importar.
  */
+function cleanGameName(name: string): string {
+  // Remove termos de plataformas e pontuações do nome do produto para agrupamento cross-plataforma
+  let cleaned = name
+    .replace(/\b(nintendo switch 2|nintendo switch|switch 2|switch 1|switch|playstation 5|playstation 4|playstation 3|ps5|ps4|ps3|xbox series x\|s|xbox series x|xbox series s|xbox series|xbox one|xbox 360|pc|console|jogo)\b/gi, '')
+    .replace(/[\(\)\[\]\-\:\+\/]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  
+  return cleaned.length >= 3 ? cleaned : name.trim();
+}
+
 export async function getMasterProductPriceHistory(
   masterProductId: string,
   timeframe: PriceHistoryTimeframe
 ): Promise<PriceHistoryResult> {
   const interval = timeframe === 'Tudo' ? null : TIMEFRAME_INTERVALS[timeframe];
 
+  // Carrega o nome e plataforma do produto selecionado
+  const [masterProduct] = await db
+    .select({ name: masterProducts.name, gamePlatformGen: masterProducts.gamePlatformGen })
+    .from(masterProducts)
+    .where(eq(masterProducts.id, masterProductId))
+    .limit(1);
+
+  if (!masterProduct) {
+    throw new Error('Produto master não encontrado');
+  }
+
+  const cleanName = cleanGameName(masterProduct.name);
+
+  // Busca todos os produtos masters do mesmo jogo para o mesmo console
+  const relatedProducts = await db
+    .select({ id: masterProducts.id })
+    .from(masterProducts)
+    .where(
+      and(
+        sql`name ILIKE ${'%' + cleanName + '%'}`,
+        eq(masterProducts.gamePlatformGen, masterProduct.gamePlatformGen)
+      )
+    );
+
+  const masterProductIds = relatedProducts.map((p) => p.id);
+  const idsSql = sql.join(masterProductIds.map((id) => sql`${id}`), sql`, `);
+
   const baselineRows = interval
     ? await db.execute<{ offer_id: string; price_cents: string }>(sql`
         SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
         FROM affiliate_price_snapshots s
         INNER JOIN affiliate_offers o ON o.id = s.offer_id
-        WHERE o.master_product_id = ${masterProductId} AND o.status = 'active'
+        WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
           AND s.collected_at < now() - (${interval})::interval
         ORDER BY s.offer_id, s.collected_at DESC
       `)
     : [];
 
-  const rows = await db.execute<{ offer_id: string; collected_at: string; price_cents: string }>(
+  const rows = await db.execute<{
+    offer_id: string;
+    collected_at: string;
+    price_cents: string;
+    network_name: string;
+    network_color_hex: string | null;
+    seller_nickname: string | null;
+  }>(
     interval
       ? sql`
-        SELECT s.offer_id, s.collected_at, s.price_cents
+        SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
         FROM affiliate_price_snapshots s
         INNER JOIN affiliate_offers o ON o.id = s.offer_id
-        WHERE o.master_product_id = ${masterProductId} AND o.status = 'active'
+        INNER JOIN affiliate_networks n ON n.id = o.network_id
+        LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+        WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
           AND s.collected_at >= now() - (${interval})::interval
         ORDER BY s.collected_at ASC
       `
       : sql`
-        SELECT s.offer_id, s.collected_at, s.price_cents
+        SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
         FROM affiliate_price_snapshots s
         INNER JOIN affiliate_offers o ON o.id = s.offer_id
-        WHERE o.master_product_id = ${masterProductId} AND o.status = 'active'
+        INNER JOIN affiliate_networks n ON n.id = o.network_id
+        LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+        WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
         ORDER BY s.collected_at ASC
       `
   );
@@ -225,15 +291,84 @@ export async function getMasterProductPriceHistory(
   // dá o mesmo valor nos dois cálculos, então fica como estava.
   const rawPrices = rows.map((r) => Number(r.price_cents) / 100);
   const values = points.map((p) => p.value);
+
+  // Busca o preço máximo global daquele produto desde o início da plataforma
+  const globalMaxRow = await db.execute<{ max_price: string }>(sql`
+    SELECT MAX(s.price_cents)::bigint AS max_price
+    FROM affiliate_price_snapshots s
+    INNER JOIN affiliate_offers o ON o.id = s.offer_id
+    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+  `);
+  const globalMaxPriceCents = globalMaxRow[0]?.max_price ? Number(globalMaxRow[0].max_price) : null;
+
   const stats: PriceHistoryStats = {
     avgPriceCents: rawPrices.length ? Math.round((rawPrices.reduce((a, b) => a + b, 0) / rawPrices.length) * 100) : null,
     minPriceCents: values.length ? Math.round(Math.min(...values) * 100) : null,
     maxPriceCents: rawPrices.length ? Math.round(Math.max(...rawPrices) * 100) : null,
+    globalMaxPriceCents,
   };
+
+  const countRow = await db.execute<{ total: string }>(sql`
+    SELECT count(*)::bigint AS total
+    FROM affiliate_price_snapshots s
+    INNER JOIN affiliate_offers o ON o.id = s.offer_id
+    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+  `);
+  const totalQuoteCount = Number(countRow[0]?.total || 0);
+
+  // Conta a quantidade única de ofertas (lojas/itens) em todas as plataformas
+  const offersCountRow = await db.execute<{ total: string }>(sql`
+    SELECT COUNT(*)::bigint AS total
+    FROM affiliate_offers o
+    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+  `);
+  const totalOffersCount = Number(offersCountRow[0]?.total || 0);
+
+  const countMap = new Map<number, number>();
+  for (const row of rows) {
+    const priceBrl = Math.round(Number(row.price_cents) / 100);
+    countMap.set(priceBrl, (countMap.get(priceBrl) || 0) + 1);
+  }
+  let maxFreq = 0;
+  for (const count of countMap.values()) {
+    if (count > maxFreq) maxFreq = count;
+  }
+
+  const quotes: PriceQuotePoint[] = rows.map((row) => {
+    const time = Math.floor(new Date(row.collected_at).getTime() / 1000);
+    const val = Number(row.price_cents) / 100;
+    const priceBrl = Math.round(val);
+    const f = countMap.get(priceBrl) || 1;
+    // Tamanho proporcional de 5 a 13 para melhor visibilidade
+    const size = maxFreq > 1 ? 5 + ((f - 1) / (maxFreq - 1)) * 8 : 6;
+
+    return {
+      time,
+      value: val,
+      networkName: row.network_name,
+      networkColorHex: row.network_color_hex,
+      sellerNickname: row.seller_nickname,
+      size: Math.round(size),
+    };
+  });
+
+  // Ajusta timestamps das cotações para garantir que sejam estritamente crescentes
+  // (exigência do lightweight-charts para evitar que cotações colidentes sumam)
+  const sortedQuotes = [...quotes].sort((a, b) => a.time - b.time);
+  const adjustedQuotes: PriceQuotePoint[] = [];
+  let lastTime = 0;
+  for (const q of sortedQuotes) {
+    let qTime = q.time;
+    if (qTime <= lastTime) {
+      qTime = lastTime + 1;
+    }
+    adjustedQuotes.push({ ...q, time: qTime });
+    lastTime = qTime;
+  }
 
   const movingAveragePoints = computeMovingAverage(points, MOVING_AVERAGE_WINDOW_MS[timeframe]);
 
-  return { points, movingAveragePoints, pointOffers, stats };
+  return { points, movingAveragePoints, pointOffers, stats, quotes: adjustedQuotes, totalQuoteCount, totalOffersCount };
 }
 
 export type MoverPeriod = '24h' | '7d' | '30d';

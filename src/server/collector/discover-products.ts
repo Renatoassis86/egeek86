@@ -1,6 +1,6 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts, systemConfig } from '@/db/schema';
 import type { GamePlatformGen } from '@/db/schema';
@@ -105,9 +105,28 @@ const NON_PRODUCT_KEYWORDS = [
   /\br[eé]plica\b/i,
   /pel[uú]cia/i,
   /\bboneco\b/i,
+  /caneca/i,
+  /camiseta/i,
+  /moletom/i,
+  /\bquadro\b/i,
+  /lumin[aá]ria/i,
+  /almofada/i,
+  /copo/i,
+  /garrafa/i,
+  /action.?figure/i,
+  /funko/i,
+  /est[aá]tua/i,
+  /busto/i,
+  /luminoso/i,
+  /poster/i,
+  /cartaz/i,
+  /caneta/i,
+  /caderno/i,
+  /agenda/i,
+  /estojo/i,
 ];
 
-function isNonProductAccessory(title: string): boolean {
+export function isNonProductAccessory(title: string): boolean {
   return NON_PRODUCT_KEYWORDS.some((re) => re.test(title));
 }
 
@@ -255,7 +274,7 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
         if (searchTerm.kind !== 'game' && /^jogo\b/i.test(result.name)) {
           continue;
         }
-        if (searchTerm.kind !== 'game' && isNonProductAccessory(result.name)) {
+        if (isNonProductAccessory(result.name)) {
           continue;
         }
 
@@ -342,4 +361,57 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
   await saveCursor((cursorStart + TERMS_PER_RUN) % SEARCH_TERMS.length);
 
   return summary;
+}
+
+/**
+ * Poda/limpa do banco de dados itens legados que não sejam jogos em si
+ * nem melhorem a experiência de jogo (ex: chaveiros, porta-chaves, copos, camisetas, etc.)
+ */
+export async function pruneMerchandiseProducts(): Promise<{ prunedCount: number }> {
+  const keywords = [
+    'chaveiro', 'porta-chave', 'porta chave', 'porta_chave',
+    'caneca', 'camiseta', 'moletom', 'quadro', 'luminaria', 'luminária',
+    'almofada', 'copo', 'garrafa', 'action figure', 'action_figure',
+    'funko', 'estatua', 'estátua', 'busto', 'luminoso', 'poster',
+    'cartaz', 'caneta', 'caderno', 'agenda', 'estojo', 'miniatura',
+    'replica', 'réplica', 'pelucia', 'pelúcia', 'boneco'
+  ];
+
+  let prunedCount = 0;
+  for (const kw of keywords) {
+    try {
+      // 1. Apaga snapshots das ofertas que pertencem a produtos contendo o termo
+      await db.execute(sql`
+        DELETE FROM affiliate_price_snapshots
+        WHERE offer_id IN (
+          SELECT id FROM affiliate_offers
+          WHERE master_product_id IN (
+            SELECT id FROM master_products
+            WHERE name ILIKE ${'%' + kw + '%'}
+          )
+        )
+      `);
+
+      // 2. Apaga ofertas vinculadas aos produtos contendo o termo
+      await db.execute(sql`
+        DELETE FROM affiliate_offers
+        WHERE master_product_id IN (
+          SELECT id FROM master_products
+          WHERE name ILIKE ${'%' + kw + '%'}
+        )
+      `);
+
+      // 3. Apaga os produtos master que contêm o termo no nome
+      const res = await db.execute(sql`
+        DELETE FROM master_products
+        WHERE name ILIKE ${'%' + kw + '%'}
+      `);
+      
+      prunedCount += res.rowCount ?? 0;
+    } catch (e) {
+      console.error(`Erro ao podar produtos com termo ${kw}:`, e);
+    }
+  }
+
+  return { prunedCount };
 }

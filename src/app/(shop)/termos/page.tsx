@@ -121,11 +121,36 @@ export default function TermosPage() {
           </div>
         </Reveal>
 
-        {/* Section 5 */}
+        {/* Section 5 - Isenção de Responsabilidade */}
         <Reveal delay={0.27}>
           <div className="flex flex-col gap-3">
             <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
-              5. Foro e Contato
+              5. Isenção de Responsabilidade sobre Itens Negociados
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              O portal Espaço Geek 86 atua exclusivamente como intermediador tecnológico e vitrine de inteligência, disponibilizando a infraestrutura para aproximação de compradores, parceiros afiliados e colecionadores vendedores (C2C e B2C).
+            </Text>
+            <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)]/40 border border-amber-500/30 flex flex-col gap-2 my-1">
+              <Text variant="body-sm" className="font-bold text-amber-400">
+                ⚠️ Limitação de Responsabilidade da Administração
+              </Text>
+              <Text variant="caption" color="secondary" className="leading-relaxed">
+                A administração do Espaço Geek 86 <strong>não assume qualquer responsabilidade civil, criminal, financeira ou operacional</strong> por problemas, defeitos, vícios ocultos, avarias de transporte, atrasos na entrega, falsificações, divergências de estado de conservação ou descumprimentos contratuais em itens vendidos por terceiros ou colecionadores através dos módulos Geek Deals, Hype Zone ou Geek Hammer.
+              </Text>
+            </div>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+              <li><strong>Responsabilidade do Vendedor:</strong> A veracidade das informações, a qualidade, a autenticidade, o envio e a garantia dos itens anunciados ou leiloados são de responsabilidade integral e exclusiva do vendedor/colecionador que efetuou o anúncio.</li>
+              <li><strong>Resolução de Disputas:</strong> Reclamações, trocas, devoluções ou desacordos comerciais referentes a produtos transacionados deverão ser tratados e resolvidos diretamente entre o comprador e o respectivo vendedor titular da oferta.</li>
+              <li><strong>Links de Afiliados:</strong> Para produtos adquiridos via links da vitrine Geek Deals em lojas parceiras terceiras (Amazon, Shopee, Mercado Livre, etc.), aplicam-se exclusivamente as políticas de troca, devolução e garantia do e-commerce de destino.</li>
+            </ul>
+          </div>
+        </Reveal>
+
+        {/* Section 6 */}
+        <Reveal delay={0.30}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              6. Foro e Contato
             </Text>
             <Text variant="body-sm" color="secondary" className="leading-relaxed">
               Fica eleito o foro da comarca de Natal/RN para dirimir quaisquer controvérsias decorrentes do presente termo.

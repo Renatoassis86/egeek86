@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { db } from '@/lib/db';
 import { newsArticles } from '@/db/schema';
@@ -12,8 +12,8 @@ import { slugify } from '@/lib/slugify';
 
 const articleSchema = z
   .object({
-    title: z.string().min(2),
-    excerpt: z.string().min(2),
+    title: z.string().optional(),
+    excerpt: z.string().optional(),
     coverImageUrl: z.string().url().optional().or(z.literal('')),
     kind: z.enum(['original', 'curated_link']),
     bodyMarkdown: z.string().optional(),
@@ -30,27 +30,38 @@ const articleSchema = z
       'criticas',
       'listas',
       'colunistas',
+      'ccxp',
     ]),
+    keywords: z.string().optional(),
     sourceName: z.string().optional(),
     sourceUrl: z.string().url().optional().or(z.literal('')),
   })
   .superRefine((data, ctx) => {
-    if (data.kind === 'original' && !data.bodyMarkdown?.trim()) {
-      ctx.addIssue({ code: 'custom', message: 'Corpo do artigo é obrigatório pra matéria original', path: ['bodyMarkdown'] });
+    if (data.kind === 'original') {
+      if (!data.title?.trim()) {
+        ctx.addIssue({ code: 'custom', message: 'Título é obrigatório para conteúdo autoral', path: ['title'] });
+      }
+      if (!data.excerpt?.trim()) {
+        ctx.addIssue({ code: 'custom', message: 'Resumo é obrigatório para conteúdo autoral', path: ['excerpt'] });
+      }
+      if (!data.bodyMarkdown?.trim()) {
+        ctx.addIssue({ code: 'custom', message: 'Corpo do artigo é obrigatório para conteúdo autoral', path: ['bodyMarkdown'] });
+      }
     }
     if (data.kind === 'curated_link' && !data.sourceUrl?.trim()) {
-      ctx.addIssue({ code: 'custom', message: 'Link de origem é obrigatório pra destaque de outro portal', path: ['sourceUrl'] });
+      ctx.addIssue({ code: 'custom', message: 'Link da matéria original é obrigatório para importação', path: ['sourceUrl'] });
     }
   });
 
 function parseArticleForm(formData: FormData) {
   return articleSchema.parse({
-    title: formData.get('title'),
-    excerpt: formData.get('excerpt'),
+    title: formData.get('title') || undefined,
+    excerpt: formData.get('excerpt') || undefined,
     coverImageUrl: formData.get('coverImageUrl') || undefined,
     kind: formData.get('kind'),
     bodyMarkdown: formData.get('bodyMarkdown') || undefined,
     category: formData.get('category'),
+    keywords: formData.get('keywords') || undefined,
     sourceName: formData.get('sourceName') || undefined,
     sourceUrl: formData.get('sourceUrl') || undefined,
   });
@@ -64,23 +75,55 @@ async function uniqueArticleSlug(base: string): Promise<string> {
 }
 
 export async function createArticle(formData: FormData) {
+  // Garante a coluna keywords no banco
+  try {
+    await db.execute(sql`ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS keywords text`);
+  } catch (e) {}
+
   const profile = await requireAdmin();
   const parsed = parseArticleForm(formData);
   const status = formData.get('status') === 'published' ? 'published' : 'draft';
 
   let finalTitle = parsed.title;
+  let finalExcerpt = parsed.excerpt;
+  const coverImageBase64 = formData.get('coverImageBase64') as string | null;
   let finalCoverImage = parsed.coverImageUrl || null;
+  if (coverImageBase64 !== null) {
+    finalCoverImage = coverImageBase64.trim() || null;
+  }
   let finalBodyMarkdown = parsed.bodyMarkdown || null;
+  let finalKeywords = parsed.keywords || null;
   let finalKind = parsed.kind;
 
-  // Se for curated_link, transcrevemos e persistimos como original
+  // Se for curated_link, transcrevemos e persistimos como original com citação
   if (parsed.kind === 'curated_link' && parsed.sourceUrl) {
     const scraped = await scrapeNewsArticle(parsed.sourceUrl, parsed.sourceName);
     finalKind = 'original';
-    finalBodyMarkdown = scraped.bodyMarkdown;
-    if (!finalCoverImage && scraped.coverImageUrl) {
+    
+    if (scraped.title) {
+      finalTitle = scraped.title;
+    }
+    // Sobrescreve com a raspada apenas se o usuário não fez upload de imagem local
+    if (scraped.coverImageUrl && (!finalCoverImage || !finalCoverImage.startsWith('data:'))) {
       finalCoverImage = scraped.coverImageUrl;
     }
+    if (scraped.keywords && !finalKeywords) {
+      finalKeywords = scraped.keywords;
+    }
+    finalBodyMarkdown = scraped.bodyMarkdown;
+
+    const cleanBodyText = scraped.bodyMarkdown
+      .replace(/<[^>]+>/g, '')
+      .replace(/\n+/g, ' ')
+      .trim();
+    finalExcerpt = cleanBodyText.slice(0, 150) + (cleanBodyText.length > 150 ? '...' : '');
+  }
+
+  if (!finalTitle?.trim()) {
+    throw new Error('Não foi possível obter o título da notícia.');
+  }
+  if (!finalExcerpt?.trim()) {
+    throw new Error('Não foi possível obter o resumo da notícia.');
   }
 
   const slug = await uniqueArticleSlug(slugify(finalTitle));
@@ -90,11 +133,12 @@ export async function createArticle(formData: FormData) {
     .values({
       slug,
       title: finalTitle,
-      excerpt: parsed.excerpt,
+      excerpt: finalExcerpt,
       coverImageUrl: finalCoverImage,
       kind: finalKind,
       bodyMarkdown: finalBodyMarkdown,
       category: parsed.category,
+      keywords: finalKeywords,
       sourceName: null,
       sourceUrl: null, // assegura conformidade com o check constraint do DB
       status,
@@ -105,39 +149,72 @@ export async function createArticle(formData: FormData) {
 
   revalidatePath('/admin/noticias');
   revalidatePath('/noticias');
-  redirect(`/admin/noticias/${created.id}`);
+  redirect(`/admin/noticias/${created.id}?created=true`);
 }
 
 /** Slug é imutável após criado (mesmo princípio de affiliate_offers.slug). */
 export async function updateArticle(formData: FormData) {
+  // Garante a coluna keywords no banco
+  try {
+    await db.execute(sql`ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS keywords text`);
+  } catch (e) {}
+
   await requireAdmin();
   const id = String(formData.get('id'));
   const parsed = parseArticleForm(formData);
 
   let finalTitle = parsed.title;
+  let finalExcerpt = parsed.excerpt;
+  const coverImageBase64 = formData.get('coverImageBase64') as string | null;
   let finalCoverImage = parsed.coverImageUrl || null;
+  if (coverImageBase64 !== null) {
+    finalCoverImage = coverImageBase64.trim() || null;
+  }
   let finalBodyMarkdown = parsed.bodyMarkdown || null;
+  let finalKeywords = parsed.keywords || null;
   let finalKind = parsed.kind;
 
-  // Se for curated_link, transcrevemos e persistimos como original
+  // Se for curated_link, transcrevemos e persistimos como original com citação
   if (parsed.kind === 'curated_link' && parsed.sourceUrl) {
     const scraped = await scrapeNewsArticle(parsed.sourceUrl, parsed.sourceName);
     finalKind = 'original';
-    finalBodyMarkdown = scraped.bodyMarkdown;
-    if (!finalCoverImage && scraped.coverImageUrl) {
+    
+    if (scraped.title) {
+      finalTitle = scraped.title;
+    }
+    // Sobrescreve com a raspada apenas se o usuário não fez upload de imagem local
+    if (scraped.coverImageUrl && (!finalCoverImage || !finalCoverImage.startsWith('data:'))) {
       finalCoverImage = scraped.coverImageUrl;
     }
+    if (scraped.keywords && !finalKeywords) {
+      finalKeywords = scraped.keywords;
+    }
+    finalBodyMarkdown = scraped.bodyMarkdown;
+
+    const cleanBodyText = scraped.bodyMarkdown
+      .replace(/<[^>]+>/g, '')
+      .replace(/\n+/g, ' ')
+      .trim();
+    finalExcerpt = cleanBodyText.slice(0, 150) + (cleanBodyText.length > 150 ? '...' : '');
+  }
+
+  if (!finalTitle?.trim()) {
+    throw new Error('Não foi possível obter o título da notícia.');
+  }
+  if (!finalExcerpt?.trim()) {
+    throw new Error('Não foi possível obter o resumo da notícia.');
   }
 
   await db
     .update(newsArticles)
     .set({
       title: finalTitle,
-      excerpt: parsed.excerpt,
+      excerpt: finalExcerpt,
       coverImageUrl: finalCoverImage,
       kind: finalKind,
       bodyMarkdown: finalBodyMarkdown,
       category: parsed.category,
+      keywords: finalKeywords,
       sourceName: null,
       sourceUrl: null, // assegura conformidade com o check constraint do DB
       updatedAt: new Date(),
@@ -147,13 +224,16 @@ export async function updateArticle(formData: FormData) {
   revalidatePath('/admin/noticias');
   revalidatePath(`/admin/noticias/${id}`);
   revalidatePath('/noticias');
+  redirect(`/admin/noticias/${id}?updated=true`);
+}s/${id}`);
+  revalidatePath('/noticias');
   redirect(`/admin/noticias/${id}`);
 }
 
 /**
  * Raspador de notícias automático a partir de matérias de terceiros.
  */
-export async function scrapeNewsArticle(url: string, sourceName?: string): Promise<{ title?: string; coverImageUrl?: string; bodyMarkdown: string }> {
+export async function scrapeNewsArticle(url: string, sourceName?: string): Promise<{ title?: string; coverImageUrl?: string; keywords?: string; bodyMarkdown: string }> {
   try {
     const res = await fetch(url, {
       headers: {
@@ -166,42 +246,58 @@ export async function scrapeNewsArticle(url: string, sourceName?: string): Promi
 
     const html = await res.text();
 
-    // 1. Extração robusta do Título (Múltiplas opções de tags com suporte a atributos intermediários)
-    const ogTitleRegexes = [
-      /<meta\s+[^>]*property\s*=\s*["']og:title["'][^>]*content\s*=\s*["']([^"']+)["']/i,
-      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*property\s*=\s*["']og:title["']/i,
-      /<meta\s+[^>]*name\s*=\s*["']twitter:title["'][^>]*content\s*=\s*["']([^"']+)["']/i,
-    ];
+    // 1. Extração robusta de metadados via varredura de tags <meta>
+    const metaRegex = /<meta\s+([^>]+)>/gi;
     let scrapedTitle: string | undefined = undefined;
-    for (const regex of ogTitleRegexes) {
-      const match = html.match(regex);
-      if (match && match[1]) {
-        scrapedTitle = match[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim();
-        break;
+    let scrapedCover: string | undefined = undefined;
+    let scrapedKeywords: string | undefined = undefined;
+    
+    let m;
+    while ((m = metaRegex.exec(html)) !== null) {
+      const attributes = m[1];
+      
+      // Título
+      if (!scrapedTitle) {
+        const isTitle = /property\s*=\s*["'](og:title|twitter:title)["']/i.test(attributes) ||
+                        /name\s*=\s*["'](og:title|twitter:title)["']/i.test(attributes);
+        if (isTitle) {
+          const contentMatch = /content\s*=\s*["']([^"']+)["']/i.exec(attributes);
+          if (contentMatch && contentMatch[1]) {
+            scrapedTitle = contentMatch[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim();
+          }
+        }
+      }
+      
+      // Imagem
+      if (!scrapedCover) {
+        const isImage = /property\s*=\s*["'](og:image|og:image:secure_url|twitter:image|vk:image)["']/i.test(attributes) ||
+                        /name\s*=\s*["'](og:image|twitter:image)["']/i.test(attributes);
+        if (isImage) {
+          const contentMatch = /content\s*=\s*["']([^"']+)["']/i.exec(attributes);
+          if (contentMatch && contentMatch[1]) {
+            scrapedCover = contentMatch[1].trim();
+          }
+        }
+      }
+      
+      // Keywords
+      if (!scrapedKeywords) {
+        const isKeywords = /name\s*=\s*["']keywords["']/i.test(attributes);
+        if (isKeywords) {
+          const contentMatch = /content\s*=\s*["']([^"']+)["']/i.exec(attributes);
+          if (contentMatch && contentMatch[1]) {
+            scrapedKeywords = contentMatch[1].trim();
+          }
+        }
       }
     }
+
+    // Fallbacks
     if (!scrapedTitle) {
       const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
       scrapedTitle = titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim() : undefined;
     }
 
-    // 2. Extração robusta da Imagem de Capa (OG, Twitter, Itemprop, Fallback tag <img>)
-    const ogImageRegexes = [
-      /<meta\s+[^>]*property\s*=\s*["']og:image["'][^>]*content\s*=\s*["']([^"']+)["']/i,
-      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*property\s*=\s*["']og:image["']/i,
-      /<meta\s+[^>]*name\s*=\s*["']twitter:image["'][^>]*content\s*=\s*["']([^"']+)["']/i,
-      /<meta\s+[^>]*content\s*=\s*["']([^"']+)["'][^>]*name\s*=\s*["']twitter:image["']/i,
-      /<meta\s+[^>]*itemprop\s*=\s*["']image["'][^>]*content\s*=\s*["']([^"']+)["']/i,
-    ];
-    let scrapedCover: string | undefined = undefined;
-    for (const regex of ogImageRegexes) {
-      const match = html.match(regex);
-      if (match && match[1]) {
-        scrapedCover = match[1].trim();
-        break;
-      }
-    }
-    // Fallback: Busca a primeira tag <img> com URL absoluta que represente uma foto real
     if (!scrapedCover) {
       const imgTagRegex = /<img\s+[^>]*src\s*=\s*["'](https?:\/\/[^"']+\.(?:png|jpg|jpeg|webp|gif)(?:\?[^"']+)?)["']/gi;
       let imgMatch;
@@ -276,6 +372,7 @@ export async function scrapeNewsArticle(url: string, sourceName?: string): Promi
     return {
       title: scrapedTitle,
       coverImageUrl: scrapedCover,
+      keywords: scrapedKeywords,
       bodyMarkdown: bodyContent + footerCitation,
     };
   } catch (error) {
@@ -306,6 +403,7 @@ export async function publishArticle(formData: FormData) {
   revalidatePath('/admin/noticias');
   revalidatePath(`/admin/noticias/${id}`);
   revalidatePath('/noticias');
+  redirect(`/admin/noticias/${id}?published=true`);
 }
 
 export async function archiveArticle(formData: FormData) {
@@ -317,4 +415,5 @@ export async function archiveArticle(formData: FormData) {
   revalidatePath('/admin/noticias');
   revalidatePath(`/admin/noticias/${id}`);
   revalidatePath('/noticias');
+  redirect(`/admin/noticias/${id}?archived=true`);
 }

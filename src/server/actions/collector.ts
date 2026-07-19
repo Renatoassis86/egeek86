@@ -7,6 +7,7 @@ import { db } from '@/lib/db';
 import { sellers, sellerMetrics, profiles, products, productVariants, productMedia, drops, categories } from '@/db/schema';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { slugify } from '@/lib/slugify';
+import { isNonProductAccessory } from '@/server/collector/discover-products';
 
 /**
  * Conclui o questionário de qualificação do colecionador e o registra como vendedor ativo.
@@ -146,6 +147,11 @@ export async function createCollectorDrop(data: {
     }
     if (imageList.length > 10) {
       return { error: 'O limite máximo permitido é de 10 imagens.' };
+    }
+
+    // Validação de tipo de item proibido (merchandising/decorativos)
+    if (isNonProductAccessory(data.title)) {
+      return { error: 'Este tipo de item (chaveiro, caneca, camiseta, funko, miniatura, etc.) não é permitido em nosso inventário. Apenas itens de jogo ou para melhorar a experiência de jogo são aceitos.' };
     }
 
     // Obter ou criar uma categoria padrão para o catálogo

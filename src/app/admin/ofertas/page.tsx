@@ -9,6 +9,7 @@ import { AdminOfferFilters } from '@/components/admin/admin-offer-filters';
 import { GAME_FORMAT_LABELS, GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { formatBRL } from '@/lib/format';
 import { listOffersForAdminFiltered, listNetworks, type AdminOffersFilter } from '@/server/queries/affiliate';
+import { pruneMerchandiseProducts } from '@/server/collector/discover-products';
 import type { AffiliateOffer, GameFormat, GamePlatformGen, GameEditionType } from '@/db/schema';
 
 const STATUS_VALUES: readonly AffiliateOffer['status'][] = ['draft', 'active', 'paused', 'expired', 'archived'];
@@ -51,6 +52,9 @@ export default async function AdminOffersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  // Limpa souvenirs e chaveiros legados do catálogo
+  await pruneMerchandiseProducts();
+
   const sp = await searchParams;
 
   const filter: AdminOffersFilter = {

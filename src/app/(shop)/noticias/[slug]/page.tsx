@@ -24,6 +24,7 @@ const CATEGORY_LABELS: Record<ArticleCategory, string> = {
   criticas: 'Críticas 🎭',
   listas: 'Listas 📺',
   colunistas: 'Colunistas ✍️',
+  ccxp: 'CCXP 🎪',
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
@@ -144,6 +145,20 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
           {bodyMarkdown ?? ''}
         </MarkdownAsync>
       </div>
+
+      {article.keywords && (
+        <div className="mt-8 pt-6 border-t border-[var(--color-border-subtle)] flex flex-wrap gap-2">
+          {article.keywords.split(',').map((kw) => {
+            const cleanKw = kw.trim();
+            if (!cleanKw) return null;
+            return (
+              <Badge key={cleanKw} variant="outline" className="text-xs bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
+                🏷️ {cleanKw}
+              </Badge>
+            );
+          })}
+        </div>
+      )}
     </article>
   );
 }

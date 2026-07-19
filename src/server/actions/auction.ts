@@ -25,6 +25,16 @@ export async function createCollectorAuction(data: {
       return { error: 'Você precisa estar logado para cadastrar um leilão.' };
     }
 
+    const [seller] = await db
+      .select()
+      .from(sellers)
+      .where(and(eq(sellers.userId, profile.id), eq(sellers.status, 'active')))
+      .limit(1);
+
+    if (!seller) {
+      return { error: 'Seu cadastro de Colecionador/Leiloeiro precisa ser validado e liberado pelo administrador no painel admin antes de cadastrar um leilão.' };
+    }
+
     if (!data.title.trim() || !data.description.trim()) {
       return { error: 'Título e descrição são campos obrigatórios.' };
     }
