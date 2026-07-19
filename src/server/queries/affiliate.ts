@@ -694,24 +694,6 @@ export async function getFeaturedOffers(
   const whereClause = sql.join(conditions, sql` AND `);
 
   const query = sql`
-    WITH active_offers AS (
-      SELECT id AS offer_id, master_product_id, current_price_cents
-      FROM affiliate_offers
-      WHERE status = 'active' AND current_price_cents > 0
-    ),
-    lowest_by_product AS (
-      SELECT ao.master_product_id, MIN(s.price_cents)::bigint AS lowest_price_cents
-      FROM affiliate_price_snapshots s
-      INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
-      GROUP BY ao.master_product_id
-    ),
-    avg30d_by_product AS (
-      SELECT ao.master_product_id, AVG(s.price_cents)::numeric AS avg_price_30d
-      FROM affiliate_price_snapshots s
-      INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
-      WHERE s.collected_at >= now() - interval '30 days'
-      GROUP BY ao.master_product_id
-    )
     SELECT
       o.id AS offer_id,
       o.master_product_id,
@@ -754,14 +736,8 @@ export async function getFeaturedOffers(
     INNER JOIN master_products mp ON mp.id = o.master_product_id
     INNER JOIN affiliate_networks n ON n.id = o.network_id
     LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-    LEFT JOIN lowest_by_product lp ON lp.master_product_id = o.master_product_id
-    LEFT JOIN avg30d_by_product ap ON ap.master_product_id = o.master_product_id
     WHERE ${whereClause}
-    ORDER BY
-      (CASE WHEN COALESCE(ap.avg_price_30d, 0) > o.current_price_cents 
-            THEN (ap.avg_price_30d - o.current_price_cents)::float / ap.avg_price_30d 
-            ELSE 0 END) DESC,
-      o.published_at DESC
+    ORDER BY o.published_at DESC, o.current_price_cents ASC
     LIMIT ${limit}
   `;
 
