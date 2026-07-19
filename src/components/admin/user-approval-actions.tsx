@@ -73,7 +73,7 @@ export function PhotoPreviewModal({ photoBase64, title }: { photoBase64: string;
 
   return (
     <>
-      <Button size="xs" variant="outline" onClick={() => setIsOpen(true)}>
+      <Button size="sm" variant="outline" onClick={() => setIsOpen(true)}>
         🖼️ Ver Foto da Coleção + Rosto
       </Button>
 
