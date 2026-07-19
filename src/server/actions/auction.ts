@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { eq, and, gt, desc } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { auctions, auctionBids, profiles } from '@/db/schema';
+import { auctions, auctionBids, profiles, sellers } from '@/db/schema';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 /**
