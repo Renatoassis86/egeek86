@@ -41,7 +41,13 @@ export const metadata: Metadata = {
   },
   description:
     'Marketplace premium de cultura geek: action figures, TCG, colecionáveis, hype drops e raridades. Coleção, curadoria e comunidade.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL
+      ? process.env.NEXT_PUBLIC_APP_URL.startsWith('http')
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : `https://${process.env.NEXT_PUBLIC_APP_URL}`
+      : 'https://egeek86.vercel.app'
+  ),
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
@@ -78,14 +84,21 @@ export const viewport: Viewport = {
 // Root layout
 // ============================================================
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const headerStore = await headers();
+  let themeCookie: Theme = 'dark';
+  let resolvedTheme: ResolvedTheme = 'dark';
 
-  const themeCookie = (cookieStore.get('theme')?.value ?? 'dark') as Theme;
-  const prefersDark = headerStore.get('sec-ch-prefers-color-scheme') !== 'light';
+  try {
+    const cookieStore = await cookies();
+    const headerStore = await headers();
 
-  const resolvedTheme: ResolvedTheme =
-    themeCookie === 'auto' ? (prefersDark ? 'dark' : 'light') : themeCookie;
+    themeCookie = (cookieStore.get('theme')?.value ?? 'dark') as Theme;
+    const prefersDark = headerStore.get('sec-ch-prefers-color-scheme') !== 'light';
+
+    resolvedTheme =
+      themeCookie === 'auto' ? (prefersDark ? 'dark' : 'light') : themeCookie;
+  } catch (e) {
+    // Fallback para tema escuro se houver qualquer problema de leitura no SSR
+  }
 
   return (
     <html
