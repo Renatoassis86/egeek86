@@ -1,3 +1,5 @@
+'use server';
+
 import { z } from 'zod';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';

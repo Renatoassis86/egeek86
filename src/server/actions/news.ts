@@ -338,9 +338,9 @@ export async function scrapeNewsArticle(url: string, sourceName?: string): Promi
     // 3. Parágrafos
     const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
     const paragraphs: string[] = [];
-    let m;
-    while ((m = pRegex.exec(articleHtml)) !== null) {
-      const clean = m[1]
+    let pMatch;
+    while ((pMatch = pRegex.exec(articleHtml)) !== null) {
+      const clean = pMatch[1]
         .replace(/<[^>]+>/g, '')
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&')
