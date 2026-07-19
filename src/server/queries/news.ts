@@ -26,7 +26,7 @@ export async function getPublishedArticles({
   if (category) conditions.push(eq(newsArticles.category, category));
   const where = and(...conditions);
 
-  const [items, [{ total }]] = await Promise.all([
+  const [items, countResult] = await Promise.all([
     db
       .select()
       .from(newsArticles)
@@ -36,6 +36,8 @@ export async function getPublishedArticles({
       .offset((page - 1) * pageSize),
     db.select({ total: count() }).from(newsArticles).where(where),
   ]);
+
+  const total = Number(countResult?.[0]?.total ?? 0);
 
   return { items, totalCount: total, totalPages: Math.max(1, Math.ceil(total / pageSize)) };
 }
