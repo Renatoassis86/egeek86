@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Search, ShoppingBag, Heart, User } from 'lucide-react';
+import { Search, ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { cn } from '@/lib/cn';
@@ -227,11 +227,71 @@ export function AppHeader() {
           <Button variant="ghost" size="icon" aria-label="Wishlist" className="hidden sm:inline-flex">
             <Heart className="size-5" />
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Conta" className="hidden sm:inline-flex" asChild>
-            <Link href="/conta">
-              <User className="size-5" />
-            </Link>
-          </Button>
+          {/* User Icon Dropdown */}
+          <div className="relative group/user hidden sm:block">
+            <Button variant="ghost" size="icon" aria-label="Conta / Perfil" asChild>
+              <Link href="/conta">
+                <User className="size-5" />
+              </Link>
+            </Button>
+
+            {/* Dropdown Menu do Perfil */}
+            <div className="absolute right-0 top-full pt-1.5 w-64 opacity-0 pointer-events-none group-hover/user:opacity-100 group-hover/user:pointer-events-auto transition-all duration-200 z-50">
+              <div className="flex flex-col p-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-xl)] backdrop-blur-md">
+                
+                {/* Cabeçalho do Perfil */}
+                <div className="p-3 border-b border-[var(--color-border-subtle)] flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[var(--color-text-primary)]">Perfil do Colecionador</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)]">Nível 12</span>
+                  </div>
+                  <span className="text-[11px] text-[var(--color-text-secondary)]">Acesse seus dados, drops e leilões</span>
+                </div>
+
+                {/* Links Principais */}
+                <div className="flex flex-col py-1">
+                  <Link href="/conta" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                    <User className="size-3.5 text-[var(--color-accent-primary)]" />
+                    <span>Meu Perfil & Gamificação</span>
+                  </Link>
+
+                  <Link href="/conta?aba=dados" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                    <Sliders className="size-3.5 text-[var(--color-accent-primary)]" />
+                    <span>Dados Cadastrais & Editar</span>
+                  </Link>
+
+                  <Link href="/conta?aba=compras" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                    <ShoppingBag className="size-3.5 text-[var(--color-accent-primary)]" />
+                    <span>Minhas Compras</span>
+                  </Link>
+
+                  <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                    <ShieldCheck className="size-3.5 text-[var(--color-accent-hype)]" />
+                    <span>Meus Drops & Vendas</span>
+                  </Link>
+
+                  <Link href="/conta?aba=leiloes" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                    <Gavel className="size-3.5 text-[var(--color-accent-gold)]" />
+                    <span>Meus Leilões & Lances</span>
+                  </Link>
+                </div>
+
+                <div className="h-px bg-[var(--color-border-subtle)] my-1" />
+
+                {/* Opções de Cadastro / Login */}
+                <div className="flex flex-col gap-1 p-1">
+                  <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[var(--color-accent-hype)] hover:bg-[var(--color-accent-hype)]/10 rounded-[var(--radius-xs)] transition-colors">
+                    <span>🚀 Cadastrar Colecionador / Leiloeiro</span>
+                  </Link>
+                  <Link href="/entrar" className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                    <LogIn className="size-3.5" />
+                    <span>Entrar / Fazer Login</span>
+                  </Link>
+                </div>
+
+              </div>
+            </div>
+          </div>
           <ThemeToggle className="hidden lg:inline-flex" />
           <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative">
             <ShoppingBag className="size-5" />

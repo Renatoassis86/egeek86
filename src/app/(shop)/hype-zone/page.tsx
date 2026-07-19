@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Flame, ShieldCheck, ShoppingBag, Users, Award, ChevronRight, Gavel } from 'lucide-react';
+import { Flame, ShieldCheck, ShoppingBag, Users, Award, ChevronRight, Gavel, Sparkles, Clock } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
