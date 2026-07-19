@@ -37,12 +37,7 @@ interface ProfileHubTabsProps {
     avatarUrl?: string | null;
     role?: string | null;
   } | null;
-  seller: {
-    id: string;
-    nickname: string;
-    status: string;
-    reputationLevel?: string | null;
-  } | null;
+  seller: any;
   watches: any[];
 }
 
