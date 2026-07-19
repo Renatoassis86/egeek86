@@ -1,4 +1,5 @@
-import AuctionsPage, { metadata, dynamic } from '../hype-zone/leiloes/page';
+import AuctionsPage, { metadata } from '../hype-zone/leiloes/page';
 
-export { metadata, dynamic };
+export const dynamic = 'force-dynamic';
+export { metadata };
 export default AuctionsPage;

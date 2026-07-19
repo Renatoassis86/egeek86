@@ -225,9 +225,6 @@ export async function updateArticle(formData: FormData) {
   revalidatePath(`/admin/noticias/${id}`);
   revalidatePath('/noticias');
   redirect(`/admin/noticias/${id}?updated=true`);
-}s/${id}`);
-  revalidatePath('/noticias');
-  redirect(`/admin/noticias/${id}`);
 }
 
 /**
