@@ -224,16 +224,18 @@ export function PriceHistoryChart({
     quotesSeriesRef.current.setData(
       history.quotes.map((q) => ({ time: q.time as UTCTimestamp, value: q.value }))
     );
-    quotesSeriesRef.current.setMarkers(
-      history.quotes.map((q, idx) => ({
-        time: q.time as UTCTimestamp,
-        position: 'inBar',
-        shape: 'circle',
-        color: q.networkColorHex || '#D4AF37',
-        size: q.size,
-        id: `q-${idx}`,
-      }))
-    );
+    if (typeof (quotesSeriesRef.current as any).setMarkers === 'function') {
+      (quotesSeriesRef.current as any).setMarkers(
+        history.quotes.map((q, idx) => ({
+          time: q.time as UTCTimestamp,
+          position: 'inBar',
+          shape: 'circle',
+          color: q.networkColorHex || '#D4AF37',
+          size: q.size,
+          id: `q-${idx}`,
+        }))
+      );
+    }
     chartRef.current?.timeScale().fitContent();
   }, [history]);
 
