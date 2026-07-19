@@ -3,11 +3,8 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from '@/db/schema';
 
-const connectionString = process.env.DATABASE_URL;
-
-if (!connectionString) {
-  throw new Error('DATABASE_URL is not set');
-}
+const connectionString =
+  process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/postgres';
 
 // Cliente Postgres com pooling adequado para serverless.
 // Em runtime usamos o transaction pooler (porta 6543) → prepare:false obrigatório.
