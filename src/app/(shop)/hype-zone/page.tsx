@@ -13,6 +13,10 @@ import { HypeZoneTabs } from '@/components/hype/hype-zone-tabs';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { getLiveDrops, getUpcomingDrops, getPastDrops, getUserWaitlist } from '@/server/queries/hype';
 
+import { eq } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import { sellers } from '@/db/schema';
+
 export const metadata: Metadata = {
   title: 'Hype Zone',
   description: 'Drops de colecionadores. O portal de lançamentos de itens raros e edições limitadas do Espaço Geek 86.',
@@ -23,6 +27,18 @@ export const dynamic = 'force-dynamic';
 export default async function HypeZonePage() {
   const profile = await getCurrentProfile();
   const isAuthenticated = !!profile;
+
+  let seller = null;
+  if (profile) {
+    try {
+      const [existingSeller] = await db
+        .select()
+        .from(sellers)
+        .where(eq(sellers.userId, profile.id))
+        .limit(1);
+      seller = existingSeller;
+    } catch (e) {}
+  }
 
   const [liveDrops, upcomingDrops, pastDrops, userWaitlistIds] = await Promise.all([
     getLiveDrops(),
@@ -153,9 +169,23 @@ export default async function HypeZonePage() {
                 de interessados em minutos.
               </Text>
               <div className="flex flex-col gap-3 border-t border-[var(--color-border-subtle)] pt-3">
-                <Button asChild size="sm" variant="outline" className="w-full text-[11px]" rightIcon={<ChevronRight className="size-3" />}>
-                  <Link href="/conta/vendedor/onboarding">Seja um Vendedor</Link>
-                </Button>
+                {!profile ? (
+                  <Button asChild size="sm" variant="hype" className="w-full text-[11px]" rightIcon={<ChevronRight className="size-3" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Colecionador</Link>
+                  </Button>
+                ) : seller?.status === 'pending_kyc' ? (
+                  <Button asChild size="sm" variant="outline" className="w-full text-[11px] border-amber-500/50 text-amber-400">
+                    <Link href="/conta/vendedor">Cadastro em Análise Admin</Link>
+                  </Button>
+                ) : seller?.status === 'active' ? (
+                  <Button asChild size="sm" variant="hype" className="w-full text-[11px]" rightIcon={<ChevronRight className="size-3" />}>
+                    <Link href="/conta/vendedor/novo-drop">Cadastrar Novo Drop</Link>
+                  </Button>
+                ) : (
+                  <Button asChild size="sm" variant="outline" className="w-full text-[11px]" rightIcon={<ChevronRight className="size-3" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Colecionador</Link>
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>

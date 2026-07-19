@@ -41,6 +41,8 @@ import { cn } from '@/lib/cn';
 // Mostra dado ao vivo (preço/destaques) sem searchParams pra disparar isso
 // sozinho — sem isso, o build tenta pré-renderizar como estática e trava
 // buscando no banco no ambiente de build (visto ao vivo no primeiro deploy).
+import { getPublishedArticles } from '@/server/queries/news';
+
 export const dynamic = 'force-dynamic';
 
 export default function HomePage() {
@@ -55,6 +57,7 @@ export default function HomePage() {
       <UniversesSection />
       <DividerEmblem />
       <HypeTeaser />
+      <HomeNewsSection />
       <Benefits />
       <NewsletterCTA />
     </>
@@ -512,6 +515,75 @@ function HypeStat({ icon, label }: { icon: ReactNode; label: string }) {
         {label}
       </Text>
     </div>
+  );
+}
+
+// ----- Home News Section ------------------------------------
+async function HomeNewsSection() {
+  const { items: articles } = await getPublishedArticles({ pageSize: 3 });
+  if (articles.length === 0) return null;
+
+  return (
+    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24">
+      <Reveal>
+        <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Text variant="label" color="tertiary">
+              Portal de Notícias Geek
+            </Text>
+            <Text as="h2" variant="display-lg" className="mt-2">
+              Últimas novidades do ecossistema.
+            </Text>
+          </div>
+          <Link
+            href="/noticias"
+            className="inline-flex items-center gap-1 text-body-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
+          >
+            Ver todas as notícias
+            <ArrowRight className="size-4" />
+          </Link>
+        </div>
+      </Reveal>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {articles.map((article, i) => (
+          <Reveal key={article.id} delay={i * 0.06}>
+            <Link href={`/noticias/${article.slug}`} className="group block h-full">
+              <Card interactive className="h-full flex flex-col overflow-hidden">
+                <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
+                  {article.coverImageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={article.coverImageUrl}
+                      alt={article.title}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-[var(--color-text-tertiary)] font-mono text-xs">
+                      Espaço Geek 86
+                    </div>
+                  )}
+                  <Badge variant="hype" size="sm" className="absolute top-3 left-3 capitalize">
+                    {article.category.replace('_', ' ')}
+                  </Badge>
+                </div>
+                <CardContent className="p-5 flex flex-col gap-2 flex-1">
+                  <Text variant="heading-sm" className="line-clamp-2 font-bold group-hover:text-[var(--color-accent-primary)] transition-colors">
+                    {article.title}
+                  </Text>
+                  <Text variant="body-sm" color="secondary" className="line-clamp-3 text-xs leading-relaxed">
+                    {article.excerpt}
+                  </Text>
+                  <Text variant="caption" color="tertiary" className="mt-auto pt-3 border-t border-[var(--color-border-subtle)]">
+                    {new Date(article.publishedAt ?? article.createdAt).toLocaleDateString('pt-BR')}
+                  </Text>
+                </CardContent>
+              </Card>
+            </Link>
+          </Reveal>
+        ))}
+      </div>
+    </section>
   );
 }
 

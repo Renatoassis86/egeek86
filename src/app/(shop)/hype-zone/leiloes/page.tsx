@@ -312,34 +312,49 @@ export default async function AuctionsPage({
                 <User className="size-8" />
               </div>
               <div className="flex flex-col gap-2">
-                <Text variant="heading-md">Área Restrita a Colecionadores</Text>
+                <Text variant="heading-md">Área Restrita a Leiloeiros</Text>
                 <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
-                  Para cadastrar lotes de leilão e vender em nosso portal, você precisa entrar em sua conta ou criar uma nova.
+                  Para cadastrar lotes de leilão e vender em nosso portal, faça seu cadastro como Leiloeiro/Colecionador e aguarde a aprovação da administração.
                 </Text>
               </div>
               <div className="flex flex-col gap-3">
-                <Button asChild size="lg" className="w-full">
-                  <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Acessar Minha Conta</Link>
+                <Button asChild size="lg" variant="hype" className="w-full">
+                  <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline" className="w-full">
-                  <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Criar Nova Conta</Link>
+                  <Link href="/entrar?next=/leiloes?aba=novo">Fazer Login</Link>
                 </Button>
               </div>
             </Card>
-          ) : !seller ? (
+          ) : seller?.status === 'pending_kyc' ? (
+            <Card className="border-amber-500/30 bg-amber-500/5 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
+              <div className="flex size-14 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mx-auto">
+                <Clock className="size-8" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Badge variant="outline" className="w-fit mx-auto border-amber-500/40 text-amber-400">
+                  Em Análise pela Administração
+                </Badge>
+                <Text variant="heading-md">Aguardando Liberação</Text>
+                <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
+                  Seu cadastro de Leiloeiro/Colecionador foi recebido e está em análise. Assim que o administrador aprovar seu credenciamento no painel admin, a publicação de leilões será ativada automaticamente aqui.
+                </Text>
+              </div>
+            </Card>
+          ) : !seller || seller.status !== 'active' ? (
             <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
               <div className="flex size-14 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)] mx-auto">
                 <ShieldCheck className="size-8" />
               </div>
               <div className="flex flex-col gap-2">
-                <Text variant="heading-md">Torne-se um Vendedor Oficial</Text>
+                <Text variant="heading-md">Torne-se um Leiloeiro Credenciado</Text>
                 <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
-                  Sua conta está autenticada, mas ainda não possui qualificação de Vendedor. Complete o Onboarding de Colecionador para ativar seu perfil e começar a postar seus itens.
+                  Sua conta está autenticada como Comprador. Faça o cadastro como Leiloeiro/Colecionador para ativar seu perfil e enviar seus lotes.
                 </Text>
               </div>
               <div className="flex flex-col gap-3">
                 <Button asChild size="lg" variant="hype" className="w-full">
-                  <Link href="/conta/vendedor/onboarding">Fazer Cadastro de Vendedor</Link>
+                  <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
                 </Button>
               </div>
             </Card>

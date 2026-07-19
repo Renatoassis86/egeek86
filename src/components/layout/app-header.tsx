@@ -9,14 +9,13 @@ import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { cn } from '@/lib/cn';
 
 const navLinks = [
-  { href: '/sobre', label: 'Quem somos' },
   { href: '/categorias', label: 'Categorias' },
-  { href: '/hype-zone', label: 'Hype Zone', highlight: true },
-  { href: '/hype-zone/leiloes', label: 'Leilões', highlight: true },
   { href: '/ofertas', label: 'Ofertas' },
   { href: '/monitoramento', label: 'Monitoramento' },
+  { href: '/hype-zone', label: 'Hype Zone', highlight: true },
+  { href: '/leiloes', label: 'Leilões', highlight: true },
   { href: '/noticias', label: 'Notícias' },
-  { href: '/sellers', label: 'Sellers' },
+  { href: '/contatos', label: 'Contatos' },
 ];
 
 export function AppHeader() {
