@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { TrendingUp, TrendingDown, Minus, Plus, Search, Check, Gamepad2 } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { TrendingUp, TrendingDown, Minus, Plus, Search, Check, Gamepad2, Lock } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
@@ -33,28 +35,26 @@ interface WatchlistPanelItem {
   changePercent: number | null;
 }
 
-/**
- * Painel lateral "Lista" (Símbolo/Preço/Var%), estilo watchlist de tela de
- * bolsa. Clique troca o jogo selecionado via ?jogo= na URL (compartilhável),
- * não estado local — mesmo padrão de filtro já usado em /ofertas.
- */
 export function WatchlistPanel({
   initialItems,
   selectedMasterProductId,
   onSelect,
+  isGuest = false,
 }: {
   initialItems: WatchlistPanelItem[];
   selectedMasterProductId: string | null;
-  /** Chamado ANTES do router.push, pra quem estiver ouvindo (ex: o gráfico) reagir na hora, sem esperar o round-trip de navegação. */
   onSelect?: (masterProductId: string) => void;
+  isGuest?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [items, setItems] = useState(initialItems);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
 
   async function refreshWatchlist() {
+    if (isGuest) return;
     const res = await fetch('/api/monitoramento/watchlist');
     if (!res.ok) return;
     const json = (await res.json()) as { items: WatchlistPanelItem[] };
@@ -63,7 +63,19 @@ export function WatchlistPanel({
 
   usePollingRefresh(refreshWatchlist, POLL_INTERVAL_MS);
 
-  function selectProduct(masterProductId: string) {
+  function handleAddClick() {
+    if (isGuest) {
+      setUnlockModalOpen(true);
+    } else {
+      setSearchOpen(true);
+    }
+  }
+
+  function selectProduct(masterProductId: string, index: number) {
+    if (isGuest && index >= 1) {
+      setUnlockModalOpen(true);
+      return;
+    }
     onSelect?.(masterProductId);
     const params = new URLSearchParams(searchParams.toString());
     params.set('jogo', masterProductId);
@@ -82,13 +94,44 @@ export function WatchlistPanel({
           size="icon"
           className="size-6"
           aria-label="Adicionar jogo à lista"
-          onClick={() => setSearchOpen(true)}
+          onClick={handleAddClick}
         >
           <Plus className="size-4" />
         </Button>
       </div>
 
       <AddToWatchlistDialog open={searchOpen} onOpenChange={setSearchOpen} onAdded={refreshWatchlist} />
+
+      {/* Modal de Desbloqueio para Visitantes */}
+      <Dialog open={unlockModalOpen} onOpenChange={setUnlockModalOpen}>
+        <DialogContent className="max-w-md bg-[var(--color-bg-elevated)] border-[var(--color-border-default)]">
+          <DialogHeader className="flex flex-col items-center text-center gap-3">
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-subtle)]">
+              <Image
+                src="/images/monitoramento/unlock-account.png"
+                alt="Desbloqueie o Monitoramento Ilimitado"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <DialogTitle className="text-xl font-black text-[var(--color-accent-gold)] flex items-center gap-2 mt-2">
+              <Lock className="size-5" />
+              Desbloqueie o Monitoramento Ilimitado
+            </DialogTitle>
+            <DialogDescription className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
+              No <strong>Modo de Demonstração</strong>, você pode explorar 1 item como amostra. Crie sua conta grátis para adicionar quantos jogos quiser à sua lista e receber avisos automáticos no e-mail e Telegram quando o preço cair de verdade!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 mt-3">
+            <Button asChild variant="primary" size="lg" className="w-full font-bold">
+              <Link href="/entrar?next=/monitoramento">Criar Minha Conta Grátis / Entrar</Link>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setUnlockModalOpen(false)}>
+              Continuar com 1 Item de Demonstração
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {items.length === 0 ? (
         <div className="p-6 text-center">
@@ -110,13 +153,10 @@ export function WatchlistPanel({
             </Text>
           </div>
           <ul>
-            {items.map((item) => {
+            {items.map((item, i) => {
               const isSelected = item.masterProductId === selectedMasterProductId;
               const change = item.changePercent;
               const Icon = change == null || change === 0 ? Minus : change > 0 ? TrendingUp : TrendingDown;
-              // Aqui é rastreamento de preço de COMPRA, não valor de ação: queda é a
-              // notícia boa (verde), alta é a notícia ruim (vermelho) — invertido do
-              // convencional de bolsa de propósito, igual CamelCamelCamel.
               const changeColor =
                 change == null || change === 0
                   ? 'text-[var(--color-text-tertiary)]'
@@ -128,7 +168,7 @@ export function WatchlistPanel({
                 <li key={item.masterProductId}>
                   <button
                     type="button"
-                    onClick={() => selectProduct(item.masterProductId)}
+                    onClick={() => selectProduct(item.masterProductId, i)}
                     className={cn(
                       'grid w-full grid-cols-[auto_1fr_auto_auto] items-center gap-2 px-3 py-2.5 text-left transition-colors',
                       isSelected ? 'bg-[var(--color-bg-elevated)]' : 'hover:bg-[var(--color-bg-surface)]'

@@ -34,10 +34,12 @@ export function MonitoringBoard({
   watchlistItems,
   initialSelectedId,
   initialHistory,
+  isGuest = false,
 }: {
   watchlistItems: WatchlistPanelItem[];
   initialSelectedId: string;
   initialHistory: PriceHistoryResult;
+  isGuest?: boolean;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -55,7 +57,7 @@ export function MonitoringBoard({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <WatchlistPanel initialItems={watchlistItems} selectedMasterProductId={selectedId} onSelect={handleSelect} />
+      <WatchlistPanel initialItems={watchlistItems} selectedMasterProductId={selectedId} onSelect={handleSelect} isGuest={isGuest} />
 
       <Card>
         <CardContent className="p-5">
