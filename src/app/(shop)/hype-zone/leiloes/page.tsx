@@ -175,6 +175,67 @@ export default async function AuctionsPage({
         </div>
       </div>
 
+      {/* BANNER DE ACESSO DO LEILOEIRO (DESTACADO: CADASTRO OU LOGIN) */}
+      <Reveal delay={0.12}>
+        <div className="mb-10 p-6 md:p-8 rounded-[var(--radius-xl)] border-2 border-[var(--color-accent-primary)]/40 bg-gradient-to-r from-[var(--color-accent-primary)]/10 via-[var(--color-bg-surface)] to-[var(--color-bg-inset)] shadow-[var(--shadow-xl)] relative overflow-hidden backdrop-blur-md">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+            <div className="flex flex-col gap-2 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="primary" size="md">
+                  <Gavel className="size-3.5" /> Credenciamento de Leiloeiro
+                </Badge>
+                {seller?.status === 'pending_kyc' && (
+                  <Badge variant="outline" className="border-amber-500/50 text-amber-400">
+                    <Clock className="size-3 mr-1" /> Cadastro em Análise Admin
+                  </Badge>
+                )}
+                {seller?.status === 'active' && (
+                  <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">
+                    <ShieldCheck className="size-3 mr-1" /> Credenciado Ativo
+                  </Badge>
+                )}
+              </div>
+              <Text variant="heading-md" className="text-xl md:text-2xl font-black">
+                Quer Cadastrar Lotes de Leilão no Geek Hammer?
+              </Text>
+              <Text variant="body-sm" color="secondary" className="text-xs md:text-sm leading-relaxed">
+                Para cadastrar e abrir leilões ao vivo, é necessário realizar o cadastro de leiloeiro e efetuar o login. O envio de novos lotes é exclusivo para membros autenticados e validados.
+              </Text>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+              {!profile ? (
+                <>
+                  <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-[var(--color-accent-primary)]/50 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Fazer Login</Link>
+                  </Button>
+                </>
+              ) : seller?.status === 'pending_kyc' ? (
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-amber-500/50 text-amber-400 font-bold">
+                  <Link href="/conta/vendedor">Ver Status da Análise</Link>
+                </Button>
+              ) : seller?.status === 'active' ? (
+                <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<Plus className="size-4" />}>
+                  <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote de Leilão</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-[var(--color-accent-primary)]/50 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Fazer Login</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
       {/* Sub-Abas do Painel */}
       <div className="flex flex-wrap border-b border-[var(--color-border-subtle)] pb-px gap-4 mb-8">
         <Link
