@@ -15,7 +15,10 @@ export async function getCurrentProfile(): Promise<Profile | null> {
 
     const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
     return profile ?? null;
-  } catch (e) {
+  } catch (e: any) {
+    if (e?.digest === 'DYNAMIC_SERVER_USAGE' || e?.message?.includes('DYNAMIC_SERVER_USAGE')) {
+      throw e;
+    }
     console.error('Erro ao recuperar perfil do usuário:', e);
     return null;
   }
