@@ -66,14 +66,36 @@ export function OfferCard({
             </div>
           )}
 
-          {metrics?.avgDiscountPercent ? (
-            <span
-              className="absolute left-2 top-2 z-10 inline-flex items-center rounded-[var(--radius-sm)] bg-[#10B981] px-2 py-1 text-[13px] font-bold leading-none text-white shadow-[var(--shadow-md)]"
-              title="Desconto em relação à média de preço dos últimos 30 dias — preço abaixo da média, sinal de compra"
-            >
-              -{metrics.avgDiscountPercent}%
-            </span>
-          ) : null}
+          {/* Tag de Variação de Preço (Positiva = Vermelha, Negativa = Verde) */}
+          {(() => {
+            let varPercent: number | null = null;
+            if (offer.currentPriceCents > 0) {
+              if (metrics?.avgDiscountPercent) {
+                varPercent = -metrics.avgDiscountPercent;
+              } else if (metrics?.avgPriceCents30d && metrics.avgPriceCents30d > 0) {
+                const diff = offer.currentPriceCents - metrics.avgPriceCents30d;
+                varPercent = Math.round((diff / metrics.avgPriceCents30d) * 100);
+              } else if (metrics?.lowestPriceCents && metrics.lowestPriceCents > 0 && offer.currentPriceCents !== metrics.lowestPriceCents) {
+                const diff = offer.currentPriceCents - metrics.lowestPriceCents;
+                varPercent = Math.round((diff / metrics.lowestPriceCents) * 100);
+              }
+            }
+
+            if (varPercent === null || varPercent === 0) return null;
+
+            const isPositive = varPercent > 0;
+            return (
+              <span
+                className={cn(
+                  "absolute left-2 top-2 z-10 inline-flex items-center rounded-[var(--radius-sm)] px-2 py-1 text-[12px] font-black leading-none text-white shadow-[var(--shadow-md)]",
+                  isPositive ? "bg-red-600" : "bg-emerald-600"
+                )}
+                title={isPositive ? "Preço acima da média (Variação Positiva)" : "Preço abaixo da média (Desconto)"}
+              >
+                {isPositive ? `+${varPercent}%` : `${varPercent}%`}
+              </span>
+            );
+          })()}
 
           <Badge
             variant="outline"

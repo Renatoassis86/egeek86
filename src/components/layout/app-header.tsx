@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { Search, ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
+import { HeaderSearchModal } from '@/components/layout/header-search-modal';
 import { cn } from '@/lib/cn';
 
 const navLinks = [
@@ -221,9 +222,7 @@ export function AppHeader() {
 
         {/* Right actions */}
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" aria-label="Buscar">
-            <Search className="size-5" />
-          </Button>
+          <HeaderSearchModal />
           <Button variant="ghost" size="icon" aria-label="Wishlist" className="hidden sm:inline-flex">
             <Heart className="size-5" />
           </Button>

@@ -177,7 +177,7 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
             name ILIKE '%midia%'
           )
         `);
-      } catch (e) {}
+      } catch (e) { }
 
       conditions.push(
         sql`NOT (${masterProducts.name} ILIKE '%jogo%' OR ${masterProducts.name} ILIKE '%game%' OR ${masterProducts.name} ILIKE '%físico%' OR ${masterProducts.name} ILIKE '%fisico%' OR ${masterProducts.name} ILIKE '%mídia%' OR ${masterProducts.name} ILIKE '%midia%' OR ${masterProducts.name} ILIKE '%resident evil%' OR ${masterProducts.name} ILIKE '%madden%' OR ${masterProducts.name} ILIKE '%zelda%' OR ${masterProducts.name} ILIKE '%mario%' OR ${masterProducts.name} ILIKE '%gta%' OR ${masterProducts.name} ILIKE '%fifa%' OR ${masterProducts.name} ILIKE '%call of duty%' OR ${masterProducts.name} ILIKE '%god of war%' OR ${masterProducts.name} ILIKE '%cyberpunk%' OR ${masterProducts.name} ILIKE '%elden ring%')`
