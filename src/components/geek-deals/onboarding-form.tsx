@@ -69,7 +69,7 @@ export function OnboardingForm() {
       if (res.error) {
         toast.error(res.error);
       } else {
-        toast.success(res.message);
+        toast.success('Cadastro enviado com sucesso! A análise será concluída em até 48h e notificaremos você por e-mail.');
         router.push('/conta/vendedor/novo-drop');
       }
     });

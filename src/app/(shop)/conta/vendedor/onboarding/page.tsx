@@ -24,12 +24,28 @@ export default async function CollectorOnboardingPage() {
       <Reveal>
         <div className="text-center mb-8">
           <Text as="h1" variant="heading-xl">
-            Qualificação do Colecionador
+            Qualificação do Colecionador / Leiloeiro
           </Text>
           <Text variant="body-sm" color="secondary" className="mt-2 max-w-lg mx-auto">
-            Ao se tornar um Colecionador Vendedor, você poderá agendar seus próprios lançamentos de itens 
-            raros. Responda às perguntas abaixo de forma sincera e clara para construir sua reputação.
+            Ao se tornar um Colecionador Vendedor ou Leiloeiro, você poderá agendar seus próprios lançamentos de itens 
+            raros. Responda às perguntas abaixo para enviar seu perfil à validação.
           </Text>
+
+          {/* Banner Explicativo de Validação em até 48h */}
+          <div className="mt-6 p-5 rounded-[var(--radius-lg)] border border-[var(--color-accent-gold)]/40 bg-[var(--color-accent-gold)]/5 text-left flex flex-col gap-3 max-w-2xl mx-auto">
+            <div className="flex items-center gap-2 text-[var(--color-accent-gold)] font-bold text-sm">
+              <span className="flex size-6 items-center justify-center rounded-full bg-[var(--color-accent-gold)]/20 text-xs">⏱️</span>
+              <span>Como funciona o processo de validação e aprovação (Prazo de até 48h)</span>
+            </div>
+            <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+              Para garantir a máxima segurança, transparência e autenticidade da nossa comunidade, todas as solicitações de credenciamento passam por um processo interno de auditoria:
+            </Text>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-1.5 leading-relaxed">
+              <li><strong>1. Análise de Dados e Perfil:</strong> Nossa moderação analisa a biografia e o histórico informado sobre sua coleção.</li>
+              <li><strong>2. Validação de Autenticidade:</strong> Conferimos a documentação básica e as referências da sua atuação no mercado geek.</li>
+              <li><strong>3. Retorno da Análise em até 48 horas:</strong> Em <strong>até 48 horas</strong>, enviaremos o resultado por e-mail e liberaremos a criação de Drops na Hype Zone e Lotes no Geek Hammer!</li>
+            </ul>
+          </div>
         </div>
       </Reveal>
 
