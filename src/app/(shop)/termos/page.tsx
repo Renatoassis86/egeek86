@@ -153,7 +153,7 @@ export default function TermosPage() {
               6. Foro e Contato
             </Text>
             <Text variant="body-sm" color="secondary" className="leading-relaxed">
-              Fica eleito o foro da comarca de Natal/RN para dirimir quaisquer controvérsias decorrentes do presente termo.
+              Fica eleito o foro da comarca de João Pessoa/PB para dirimir quaisquer controvérsias decorrentes do presente termo.
             </Text>
             <Text variant="body-sm" color="secondary" className="leading-relaxed">
               Dúvidas ou solicitações sobre estes termos podem ser enviadas diretamente para a equipe administrativa através da nossa página de suporte ou pelo e-mail oficial listado em nosso portal.

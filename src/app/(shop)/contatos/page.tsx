@@ -57,9 +57,9 @@ export default function ContatosPage() {
                   </div>
                   <div className="flex flex-col">
                     <Text variant="caption" color="tertiary">E-mail de Suporte</Text>
-                    <Text variant="body-sm" className="font-semibold text-[var(--color-text-primary)]">
-                      suporte@espacogeek86.com.br
-                    </Text>
+                    <a href="mailto:egeek86@arkosintelligence.com" className="font-semibold text-[var(--color-text-primary)] hover:underline text-sm">
+                      egeek86@arkosintelligence.com
+                    </a>
                     <Text variant="caption" color="secondary" className="text-[11px] mt-0.5">
                       Atendimento de Segunda a Sexta, das 09h às 18h
                     </Text>
@@ -70,13 +70,13 @@ export default function ContatosPage() {
                   <div className="flex size-10 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)] shrink-0">
                     <Phone className="size-5" />
                   </div>
-                  <div className="flex flex-col">
-                    <Text variant="caption" color="tertiary">WhatsApp & Comunidade</Text>
-                    <Text variant="body-sm" className="font-semibold text-[var(--color-text-primary)]">
-                      +55 (84) 99886-8686
-                    </Text>
-                    <Text variant="caption" color="secondary" className="text-[11px] mt-0.5">
-                      Suporte rápido e avisos de drops
+                  <div className="flex flex-col gap-0.5">
+                    <Text variant="caption" color="tertiary">WhatsApp & Telefones</Text>
+                    <a href="https://wa.me/5583981957737" target="_blank" rel="noopener noreferrer" className="font-semibold text-[var(--color-text-primary)] hover:underline text-sm">
+                      +55 (83) 98195-7737 (WhatsApp Principal)
+                    </a>
+                    <Text variant="caption" color="secondary" className="text-[11px]">
+                      Celular: (83) 98604-8784 / (85) 99915-4987
                     </Text>
                   </div>
                 </div>
@@ -87,11 +87,11 @@ export default function ContatosPage() {
                   </div>
                   <div className="flex flex-col">
                     <Text variant="caption" color="tertiary">Sede Administrativa</Text>
-                    <Text variant="body-sm" className="font-semibold text-[var(--color-text-primary)]">
-                      Natal / RN - Brasil
+                    <Text variant="body-sm" className="font-semibold text-[var(--color-text-primary)] leading-snug">
+                      Avenida João Machado, nº: 849, Sala 801, Caixa Postal-035, Centro
                     </Text>
                     <Text variant="caption" color="secondary" className="text-[11px] mt-0.5">
-                      Foro da Comarca de Natal/RN
+                      CEP: 58013-522, João Pessoa - PB (Foro da Comarca de João Pessoa/PB)
                     </Text>
                   </div>
                 </div>
