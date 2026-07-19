@@ -6,14 +6,19 @@ import { profiles, type Profile } from '@/db/schema';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export async function getCurrentProfile(): Promise<Profile | null> {
-  const supabase = await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return null;
 
-  const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
-  return profile ?? null;
+    const [profile] = await db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1);
+    return profile ?? null;
+  } catch (e) {
+    console.error('Erro ao recuperar perfil do usuário:', e);
+    return null;
+  }
 }
 
 /**
