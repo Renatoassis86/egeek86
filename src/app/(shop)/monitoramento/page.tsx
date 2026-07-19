@@ -24,7 +24,8 @@ function EmptyStateIllustration() {
   );
 }
 
-export const metadata = { title: 'Monitoramento' };
+export const metadata = { title: 'Monitoramento de Preços | Espaço Geek 86' };
+export const dynamic = 'force-dynamic';
 
 /**
  * Dashboard estilo tela de bolsa pros jogos que o usuário acompanha. O preço

@@ -97,7 +97,10 @@ export function PriceHistoryChart({
         res.priceRange.minValue = 0;
         const gMax = globalMaxPriceCentsRef.current;
         if (gMax && gMax > 0) {
-          res.priceRange.maxValue = gMax / 100;
+          const maxInReais = gMax / 100;
+          // Eixo Y partindo de 0 até algumas dezenas acima do preço máximo (ex: + R$ 35 ou 15% a mais)
+          const margin = Math.max(35, Math.ceil(maxInReais * 0.15));
+          res.priceRange.maxValue = Math.ceil(maxInReais + margin);
         }
       }
       return res;
