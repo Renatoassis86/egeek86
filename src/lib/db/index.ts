@@ -17,6 +17,9 @@ const connectionString =
 const queryClient = postgres(connectionString, {
   prepare: false,
   max: 5,
+  idle_timeout: 10,
+  connect_timeout: 10,
+  ssl: connectionString.includes('supabase') || process.env.NODE_ENV === 'production' ? 'require' : false,
 });
 
 export const db = drizzle(queryClient, { schema });
