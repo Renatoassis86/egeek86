@@ -172,6 +172,39 @@ export default async function AuctionsPage({
               de caução contra inadimplência, prorrogação inteligente de tempo e integridade auditada.
             </Text>
           </Reveal>
+
+          {/* Botões de Ação Diretos no Hero */}
+          <Reveal delay={0.12}>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              {!profile ? (
+                <>
+                  <Button asChild size="lg" variant="primary" className="font-bold shadow-lg" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="border-[var(--color-accent-primary)]/60 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Entrar / Fazer Login</Link>
+                  </Button>
+                </>
+              ) : seller?.status === 'active' || profile?.role === 'admin' ? (
+                <Button asChild size="lg" variant="primary" className="font-bold shadow-lg" rightIcon={<Plus className="size-4" />}>
+                  <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote de Leilão</Link>
+                </Button>
+              ) : seller?.status === 'pending_kyc' ? (
+                <Button asChild size="lg" variant="outline" className="border-amber-500/60 text-amber-400 font-bold">
+                  <Link href="/conta/vendedor">⏳ Credenciamento em Análise</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" variant="primary" className="font-bold shadow-lg" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="border-[var(--color-accent-primary)]/60 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Entrar / Fazer Login</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </Reveal>
         </div>
       </div>
 
@@ -217,7 +250,7 @@ export default async function AuctionsPage({
                 <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-amber-500/50 text-amber-400 font-bold">
                   <Link href="/conta/vendedor">Ver Status da Análise</Link>
                 </Button>
-              ) : seller?.status === 'active' ? (
+              ) : seller?.status === 'active' || profile?.role === 'admin' ? (
                 <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<Plus className="size-4" />}>
                   <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote de Leilão</Link>
                 </Button>

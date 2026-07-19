@@ -125,6 +125,39 @@ export default async function HypeZonePage() {
               Lançamentos com hora marcada, disputas justas e proteção total contra robôs e cambistas.
             </Text>
           </Reveal>
+
+          {/* Botões de Ação Diretos no Hero */}
+          <Reveal delay={0.12}>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              {!profile ? (
+                <>
+                  <Button asChild size="lg" variant="hype" className="font-bold shadow-lg" rightIcon={<ChevronRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Colecionador</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="border-[var(--color-accent-hype)]/60 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-hype)]/10 font-bold">
+                    <Link href="/entrar?next=/conta/vendedor/novo-drop">Entrar / Fazer Login</Link>
+                  </Button>
+                </>
+              ) : seller?.status === 'active' || profile?.role === 'admin' ? (
+                <Button asChild size="lg" variant="hype" className="font-bold shadow-lg" rightIcon={<Sparkles className="size-4" />}>
+                  <Link href="/conta/vendedor/novo-drop">✨ Cadastrar Novo Produto / Drop</Link>
+                </Button>
+              ) : seller?.status === 'pending_kyc' ? (
+                <Button asChild size="lg" variant="outline" className="border-amber-500/60 text-amber-400 font-bold">
+                  <Link href="/conta/vendedor">⏳ Cadastro em Análise Admin</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" variant="hype" className="font-bold shadow-lg" rightIcon={<ChevronRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Colecionador</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="border-[var(--color-accent-hype)]/60 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-hype)]/10 font-bold">
+                    <Link href="/entrar?next=/conta/vendedor/novo-drop">Entrar / Fazer Login</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </Reveal>
         </div>
       </div>
 
@@ -170,7 +203,7 @@ export default async function HypeZonePage() {
                 <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-amber-500/50 text-amber-400 font-bold">
                   <Link href="/conta/vendedor">Ver Status da Análise</Link>
                 </Button>
-              ) : seller?.status === 'active' ? (
+              ) : seller?.status === 'active' || profile?.role === 'admin' ? (
                 <Button asChild size="lg" variant="hype" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<ChevronRight className="size-4" />}>
                   <Link href="/conta/vendedor/novo-drop">✨ Cadastrar Novo Drop</Link>
                 </Button>
@@ -238,7 +271,7 @@ export default async function HypeZonePage() {
                   <Button asChild size="sm" variant="outline" className="w-full text-[11px] border-amber-500/50 text-amber-400">
                     <Link href="/conta/vendedor">Cadastro em Análise Admin</Link>
                   </Button>
-                ) : seller?.status === 'active' ? (
+                ) : seller?.status === 'active' || profile?.role === 'admin' ? (
                   <Button asChild size="sm" variant="hype" className="w-full text-[11px]" rightIcon={<ChevronRight className="size-3" />}>
                     <Link href="/conta/vendedor/novo-drop">Cadastrar Novo Drop</Link>
                   </Button>
