@@ -136,7 +136,8 @@ export function PriceHistoryChart({
     });
 
     const quotesSeries = chart.addSeries(LineSeries, {
-      lineWidth: 0,
+      lineWidth: 1,
+      color: 'transparent',
       priceLineVisible: false,
       lastValueVisible: false,
       crosshairMarkerVisible: false,
