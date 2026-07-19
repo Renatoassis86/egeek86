@@ -68,7 +68,7 @@ export function OfferCard({
 
           {metrics?.avgDiscountPercent ? (
             <span
-              className="absolute left-2 top-2 z-10 inline-flex items-center rounded-[var(--radius-sm)] bg-[var(--color-accent-success)] px-2 py-1 text-[13px] font-bold leading-none text-white shadow-[var(--shadow-md)]"
+              className="absolute left-2 top-2 z-10 inline-flex items-center rounded-[var(--radius-sm)] bg-[#10B981] px-2 py-1 text-[13px] font-bold leading-none text-white shadow-[var(--shadow-md)]"
               title="Desconto em relação à média de preço dos últimos 30 dias — preço abaixo da média, sinal de compra"
             >
               -{metrics.avgDiscountPercent}%

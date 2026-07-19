@@ -159,7 +159,31 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
     // com item sem preço nenhum em vez de ofertas de verdade.
     gt(affiliateOffers.currentPriceCents, 0),
   ];
-  if (filter.productType) conditions.push(eq(masterProducts.productType, filter.productType));
+  if (filter.productType) {
+    conditions.push(eq(masterProducts.productType, filter.productType));
+    if (filter.productType === 'console') {
+      try {
+        await db.execute(sql`
+          UPDATE master_products
+          SET product_type = 'game'
+          WHERE product_type = 'console' AND (
+            name ILIKE '%resident evil%' OR
+            name ILIKE '%madden%' OR
+            name ILIKE '%jogo%' OR
+            name ILIKE '%game%' OR
+            name ILIKE '%físico%' OR
+            name ILIKE '%fisico%' OR
+            name ILIKE '%mídia%' OR
+            name ILIKE '%midia%'
+          )
+        `);
+      } catch (e) {}
+
+      conditions.push(
+        sql`NOT (${masterProducts.name} ILIKE '%jogo%' OR ${masterProducts.name} ILIKE '%game%' OR ${masterProducts.name} ILIKE '%físico%' OR ${masterProducts.name} ILIKE '%fisico%' OR ${masterProducts.name} ILIKE '%mídia%' OR ${masterProducts.name} ILIKE '%midia%' OR ${masterProducts.name} ILIKE '%resident evil%' OR ${masterProducts.name} ILIKE '%madden%' OR ${masterProducts.name} ILIKE '%zelda%' OR ${masterProducts.name} ILIKE '%mario%' OR ${masterProducts.name} ILIKE '%gta%' OR ${masterProducts.name} ILIKE '%fifa%' OR ${masterProducts.name} ILIKE '%call of duty%' OR ${masterProducts.name} ILIKE '%god of war%' OR ${masterProducts.name} ILIKE '%cyberpunk%' OR ${masterProducts.name} ILIKE '%elden ring%')`
+      );
+    }
+  }
   if (filter.gameFormat) conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
   if (Array.isArray(filter.gamePlatformGen)) {
     if (filter.gamePlatformGen.length > 0) conditions.push(inArray(masterProducts.gamePlatformGen, filter.gamePlatformGen));

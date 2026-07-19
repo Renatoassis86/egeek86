@@ -149,7 +149,7 @@ function PromoCard({ slide }: { slide: CarouselSlide }) {
             {formatBRL(slide.currentPriceCents)}
           </Text>
           {slide.avgDiscountPercent ? (
-            <Badge variant="danger" size="sm">
+            <Badge variant="success" size="sm">
               -{slide.avgDiscountPercent}%
             </Badge>
           ) : null}

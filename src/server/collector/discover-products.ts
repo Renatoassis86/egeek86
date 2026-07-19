@@ -126,6 +126,38 @@ const NON_PRODUCT_KEYWORDS = [
   /estojo/i,
 ];
 
+const GAME_TITLE_PATTERNS = [
+  /\bjogo\b/i,
+  /\bgames?\b/i,
+  /f[ií]sico/i,
+  /m[ií]dia/i,
+  /resident evil/i,
+  /madden/i,
+  /zelda/i,
+  /mario/i,
+  /gta/i,
+  /fifa/i,
+  /call of duty/i,
+  /god of war/i,
+  /cyberpunk/i,
+  /elden ring/i,
+  /final fantasy/i,
+  /red dead/i,
+  /pok[eé]mon/i,
+  /assassin/i,
+  /halo/i,
+  /forza/i,
+  /gran turismo/i,
+  /spider-?man/i,
+  /batman/i,
+  /the last of us/i,
+  /uncharted/i,
+];
+
+export function isGameTitleOrMedia(title: string): boolean {
+  return GAME_TITLE_PATTERNS.some((re) => re.test(title));
+}
+
 export function isNonProductAccessory(title: string): boolean {
   return NON_PRODUCT_KEYWORDS.some((re) => re.test(title));
 }
@@ -290,8 +322,9 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
         }
 
         const detectedPlatform = normalizeGamePlatformGen(null, result.name);
+        const isGameMedia = isGameTitleOrMedia(result.name);
         const classification =
-          searchTerm.kind === 'console'
+          searchTerm.kind === 'console' && !isGameMedia
             ? {
                 productType: 'console' as const,
                 gameFormat: 'unknown' as const,
