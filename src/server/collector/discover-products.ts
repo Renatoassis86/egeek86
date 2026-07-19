@@ -440,7 +440,7 @@ export async function pruneMerchandiseProducts(): Promise<{ prunedCount: number 
         WHERE name ILIKE ${'%' + kw + '%'}
       `);
       
-      prunedCount += res.rowCount ?? 0;
+      prunedCount += (res as any).count ?? (res as any).rowCount ?? (Array.isArray(res) ? res.length : 0);
     } catch (e) {
       console.error(`Erro ao podar produtos com termo ${kw}:`, e);
     }
