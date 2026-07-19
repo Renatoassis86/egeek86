@@ -12,19 +12,19 @@ import { getArticleBySlug } from '@/server/queries/news';
 import type { ArticleCategory } from '@/db/schema';
 
 const CATEGORY_LABELS: Record<ArticleCategory, string> = {
-  cultura_pop: 'Cultura pop 🍿',
-  sinopse_jogo: 'Sinopse de jogo 📖',
-  tecnologia: 'Tecnologia 💻',
-  lancamentos: 'Lançamentos 🚀',
-  filmes: 'Filmes 🎥',
-  series_tv: 'Séries e TV 📺',
-  animes: 'Animes ◓',
-  games: 'Games 🎮',
-  korea: 'Korea 🫰',
-  criticas: 'Críticas 🎭',
-  listas: 'Listas 📺',
-  colunistas: 'Colunistas ✍️',
-  ccxp: 'CCXP 🎪',
+  cultura_pop: 'Cultura Pop',
+  sinopse_jogo: 'Sinopse de Jogo',
+  tecnologia: 'Tecnologia',
+  lancamentos: 'Lançamentos',
+  filmes: 'Filmes',
+  series_tv: 'Séries e TV',
+  animes: 'Animes',
+  games: 'Games',
+  korea: 'Korea',
+  criticas: 'Críticas',
+  listas: 'Listas',
+  colunistas: 'Colunistas',
+  ccxp: 'CCXP',
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

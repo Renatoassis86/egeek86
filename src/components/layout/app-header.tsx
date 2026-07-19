@@ -79,10 +79,7 @@ export function AppHeader() {
                         href="/noticias?categoria=filmes" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>🎥</span>
-                          <span>Filmes</span>
-                        </span>
+                        <span>Filmes</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -91,10 +88,7 @@ export function AppHeader() {
                         href="/noticias?categoria=series_tv" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>📺</span>
-                          <span>Séries e TV</span>
-                        </span>
+                        <span>Séries e TV</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -103,10 +97,7 @@ export function AppHeader() {
                         href="/noticias?categoria=animes" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>◓</span>
-                          <span>Animes</span>
-                        </span>
+                        <span>Animes</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -115,10 +106,7 @@ export function AppHeader() {
                         href="/noticias?categoria=games" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>🎮</span>
-                          <span>Games</span>
-                        </span>
+                        <span>Games</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -127,10 +115,7 @@ export function AppHeader() {
                         href="/noticias?categoria=sinopse_jogo" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>📖</span>
-                          <span>Sinopse de Jogo</span>
-                        </span>
+                        <span>Sinopse de Jogo</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -139,10 +124,7 @@ export function AppHeader() {
                         href="/noticias?categoria=korea" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>🫰</span>
-                          <span>Korea</span>
-                        </span>
+                        <span>Korea</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -151,10 +133,7 @@ export function AppHeader() {
                         href="/noticias?categoria=criticas" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>🎭</span>
-                          <span>Críticas</span>
-                        </span>
+                        <span>Críticas</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -163,10 +142,7 @@ export function AppHeader() {
                         href="/noticias?categoria=listas" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>📋</span>
-                          <span>Listas</span>
-                        </span>
+                        <span>Listas</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -175,10 +151,7 @@ export function AppHeader() {
                         href="/noticias?categoria=ccxp" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>🎪</span>
-                          <span>CCXP</span>
-                        </span>
+                        <span>CCXP</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -187,10 +160,7 @@ export function AppHeader() {
                         href="/noticias?categoria=cultura_pop" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>🍿</span>
-                          <span>Cultura Pop</span>
-                        </span>
+                        <span>Cultura Pop</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -199,10 +169,7 @@ export function AppHeader() {
                         href="/noticias?categoria=lancamentos" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>🚀</span>
-                          <span>Lançamentos</span>
-                        </span>
+                        <span>Lançamentos</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -211,10 +178,7 @@ export function AppHeader() {
                         href="/noticias?categoria=tecnologia" 
                         className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>💻</span>
-                          <span>Tecnologia</span>
-                        </span>
+                        <span>Tecnologia</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
@@ -224,10 +188,7 @@ export function AppHeader() {
                         href="/noticias?categoria=colunistas" 
                         className="flex items-center justify-between px-3 py-2 text-xs font-bold text-[var(--color-accent-hype)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
                       >
-                        <span className="flex items-center gap-2">
-                          <span>✍️</span>
-                          <span>Colunistas</span>
-                        </span>
+                        <span>Colunistas</span>
                         <svg className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[var(--color-accent-hype)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="m9 18 6-6-6-6"/>
                         </svg>
