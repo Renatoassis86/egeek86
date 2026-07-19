@@ -67,7 +67,7 @@ export default async function ContaPage({
         <div className="flex flex-col gap-4 relative z-10 max-w-2xl">
           <Reveal>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="gold" size="lg" className="animate-pulse">
+              <Badge variant="legend" size="lg" className="animate-pulse">
                 <Sparkles className="size-3.5" />
                 Cofre do Colecionador
               </Badge>

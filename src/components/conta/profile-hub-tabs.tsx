@@ -167,7 +167,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
             <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
               <div className="flex items-center justify-between mb-3">
                 <Text variant="caption" color="tertiary">Progresso de Nível</Text>
-                <Badge variant="gold" size="sm">Nível 12</Badge>
+                <Badge variant="legend" size="sm">Nível 12</Badge>
               </div>
               <Text variant="heading-lg" className="font-black text-2xl">2.840 XP</Text>
               <div className="w-full bg-[var(--color-bg-inset)] h-2 rounded-full mt-3 overflow-hidden border border-[var(--color-border-subtle)]">
@@ -383,7 +383,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
                   <div>
                     <Text variant="body-md" className="font-bold">Nintendo Virtual Boy CIB (Completo na Caixa)</Text>
                     <Text variant="caption" color="secondary">Seu Lance: R$ 2.450,00 • Lance Atual Vencedor</Text>
-                    <Badge variant="gold" size="sm" className="mt-1">Leilão Ativo • Encerra em 4h</Badge>
+                    <Badge variant="legend" size="sm" className="mt-1">Leilão Ativo • Encerra em 4h</Badge>
                   </div>
                 </div>
                 <Button asChild variant="outline" size="sm">
