@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/text';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { getUserWatches } from '@/server/queries/price-watches';
 import { getMasterProductPriceHistory, getMasterProductChangePercent } from '@/server/queries/price-history';
-import { getOffers } from '@/server/queries/affiliate';
+import { getPublicOffers } from '@/server/queries/affiliate';
 import { MonitoringBoard } from '@/components/monitoring/monitoring-board';
 
 export const metadata = { title: 'Monitoramento de Preços | Espaço Geek 86' };
@@ -23,7 +23,8 @@ export default async function MonitoramentoPage({
 
   // Se o usuário é visitante ou ainda não tem itens favoritados, carrega as principais ofertas ativas para o painel de cotações
   if (userWatches.length === 0) {
-    const popularOffers = await getOffers({ limit: 8 });
+    const popularData = await getPublicOffers({ limit: 8 });
+    const popularOffers = popularData.offers;
     userWatches = popularOffers.map((item) => ({
       watchId: item.id,
       masterProductId: item.masterProduct.id,
