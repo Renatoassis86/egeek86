@@ -150,19 +150,19 @@ export default function RankingPage() {
             </div>
           </Reveal>
 
-          <Reveal delayMs={100}>
+          <Reveal delay={0.1}>
             <Text as="h1" variant="heading-xl" className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
               Ranking de Gamificação & Positivação
             </Text>
           </Reveal>
 
-          <Reveal delayMs={200}>
+          <Reveal delay={0.2}>
             <Text variant="body-md" color="secondary" className="leading-relaxed">
               Confira os membros mais engajados e bem avaliados da nossa comunidade. Quanto maior a sua pontuação de XP e positividade nas negociações, maior o seu nível e destaque nas buscas e leilões da plataforma!
             </Text>
           </Reveal>
 
-          <Reveal delayMs={300}>
+          <Reveal delay={0.3}>
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Button asChild size="lg" variant="primary" className="font-bold">
                 <Link href="/conta?aba=visao-geral">
