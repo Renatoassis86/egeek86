@@ -5,24 +5,57 @@ import { Reveal } from '@/components/motion/reveal';
 import { OfferCard } from '@/components/affiliate/offer-card';
 import { listRankedOffers, getFeaturedOffers, getOfferListingMetrics, type RankedOffersFilter } from '@/server/queries/affiliate';
 
+function deduplicateAndFilterOffers(
+  offers: OfferWithRelations[],
+  metricsMap: Map<string, any>,
+  limit = 6
+): OfferWithRelations[] {
+  const seenMasterProductIds = new Set<string>();
+  const filtered: OfferWithRelations[] = [];
+
+  for (const offer of offers) {
+    // Evita repetir o mesmo item/produto no carrossel de destaques
+    if (seenMasterProductIds.has(offer.masterProductId)) {
+      continue;
+    }
+
+    const metrics = metricsMap.get(offer.id);
+    // Em destaques/melhores ofertas, desconsiderar ofertas com aumento de preço em relação à média
+    if (metrics?.avgPriceCents30d && offer.currentPriceCents > metrics.avgPriceCents30d) {
+      continue;
+    }
+
+    seenMasterProductIds.add(offer.masterProductId);
+    filtered.push(offer);
+
+    if (filtered.length >= limit) break;
+  }
+
+  // Se a filtragem estrita de desconto deixou a lista muito pequena, aceita os únicos por produto
+  if (filtered.length < limit) {
+    for (const offer of offers) {
+      if (filtered.some((f) => f.masterProductId === offer.masterProductId)) continue;
+      filtered.push(offer);
+      if (filtered.length >= limit) break;
+    }
+  }
+
+  return filtered;
+}
+
 async function fetchRow(title: string, href: string, filter: RankedOffersFilter) {
-  const offers = await listRankedOffers({ ...filter, limit: 6, sortBy: filter.sortBy ?? 'price_asc' });
-  return { title, href, offers };
+  const offers = await listRankedOffers({ ...filter, limit: 30, sortBy: filter.sortBy ?? 'price_asc' });
+  return { title, href, rawOffers: offers };
 }
 
 /**
  * Módulo de vendas em destaque — dado real (listRankedOffers), não mockup.
- * Segmentado por preço e por geração de console. Só físico aqui de propósito
- * (decisão do produto): digital fica reservado pro filtro em /ofertas, não
- * disputa espaço de destaque na home. Cada linha só aparece quando existe
- * pelo menos 1 oferta real daquela geração — PS4/PS5/Xbox somem sozinhos até
- * a descoberta automática (discover-products.ts, já busca esses termos)
- * popular catálogo real pra eles, sem precisar mexer neste componente.
+ * Desduplicado por produto e filtrado para mostrar apenas a melhor cotação.
  */
 export async function SalesHighlights() {
   try {
-    const [featuredOffers, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne] = await Promise.all([
-      getFeaturedOffers({ gameFormat: 'physical' }, 6),
+    const [featuredOffersRaw, consolesRaw, switch2Raw, switch1Raw, ps5Raw, ps4Raw, xboxSeriesRaw, xboxOneRaw] = await Promise.all([
+      getFeaturedOffers({ gameFormat: 'physical' }, 30),
       fetchRow('Consoles', '/ofertas', { productType: 'console' }),
       fetchRow('Switch 2', '/ofertas?geracao=switch_2&formato=physical', { gamePlatformGen: 'switch_2', gameFormat: 'physical' }),
       fetchRow('Switch 1', '/ofertas?geracao=switch_1&formato=physical', { gamePlatformGen: 'switch_1', gameFormat: 'physical' }),
@@ -32,17 +65,29 @@ export async function SalesHighlights() {
       fetchRow('Xbox One', '/ofertas?geracao=xbox_one&formato=physical', { gamePlatformGen: 'xbox_one', gameFormat: 'physical' }),
     ]);
 
-    const featuredRow = {
-      title: 'Melhores ofertas agora',
-      href: '/ofertas',
-      offers: featuredOffers,
-    };
+    const rawRows = [
+      { title: 'Melhores ofertas agora', href: '/ofertas', rawOffers: featuredOffersRaw },
+      consolesRaw,
+      switch2Raw,
+      switch1Raw,
+      ps5Raw,
+      ps4Raw,
+      xboxSeriesRaw,
+      xboxOneRaw,
+    ];
 
-    const rows = [featuredRow, consoles, switch2, switch1, ps5, ps4, xboxSeries, xboxOne].filter((r) => r.offers.length > 0);
-    if (rows.length === 0) return null;
-
-    const allOfferIds = rows.flatMap((r) => r.offers.map((o) => o.id));
+    const allOfferIds = rawRows.flatMap((r) => r.rawOffers.map((o) => o.id));
     const metricsMap = await getOfferListingMetrics(allOfferIds);
+
+    const rows = rawRows
+      .map((r) => ({
+        title: r.title,
+        href: r.href,
+        offers: deduplicateAndFilterOffers(r.rawOffers, metricsMap, 6),
+      }))
+      .filter((r) => r.offers.length > 0);
+
+    if (rows.length === 0) return null;
 
     return (
       <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-20 lg:py-28">
