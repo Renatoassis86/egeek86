@@ -91,7 +91,7 @@ export default async function MonitoramentoPage({
   }> = [];
 
   let selectedProductId = jogo ?? 'demo-1';
-  let initialHistory = DEMO_FALLBACK_HISTORY;
+  let initialHistory: any = DEMO_FALLBACK_HISTORY;
 
   try {
     let userWatches = profile ? await getUserWatches(profile.id) : [];
