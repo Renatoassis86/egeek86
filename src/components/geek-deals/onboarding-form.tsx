@@ -10,10 +10,16 @@ import { toast } from '@/components/ui/toast';
 import { cn } from '@/lib/cn';
 import { saveCollectorOnboarding } from '@/server/actions/collector';
 
+import { Input } from '@/components/ui/input';
+
 export function OnboardingForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
+  const [fullName, setFullName] = useState('');
+  const [documentId, setDocumentId] = useState('');
+  const [phone, setPhone] = useState('');
+  const [cityState, setCityState] = useState('');
   const [bio, setBio] = useState('');
   const [experienceYears, setExperienceYears] = useState(1);
   const [selectedFranchises, setSelectedFranchises] = useState<string[]>([]);
@@ -43,6 +49,21 @@ export function OnboardingForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!fullName.trim() || fullName.trim().length < 3) {
+      toast.error('Informe seu Nome Completo.');
+      return;
+    }
+
+    if (!documentId.trim() || documentId.trim().length < 11) {
+      toast.error('Informe um CPF ou CNPJ válido para a verificação.');
+      return;
+    }
+
+    if (!phone.trim() || phone.trim().length < 8) {
+      toast.error('Informe seu número de Telefone / WhatsApp com DDD.');
+      return;
+    }
+
     if (!bio.trim()) {
       toast.error('Preencha sua biografia de colecionador.');
       return;
@@ -54,12 +75,16 @@ export function OnboardingForm() {
     }
 
     if (!guaranteesAuthentic) {
-      toast.error('Você deve concordar com a garantia de autenticidade.');
+      toast.error('Você deve concordar com o termo de autenticidade.');
       return;
     }
 
     startTransition(async () => {
       const res = await saveCollectorOnboarding({
+        fullName,
+        documentId,
+        phone,
+        cityState,
         bio,
         experienceYears,
         focusFranchises: selectedFranchises,
@@ -84,14 +109,64 @@ export function OnboardingForm() {
               <Award className="size-5" />
             </div>
             <div>
-              <Text variant="heading-md">Perfil de Colecionador Vendedor</Text>
+              <Text variant="heading-md">Cadastro & Qualificação do Colecionador</Text>
               <Text variant="caption" color="tertiary">
-                Responda estas perguntas para se qualificar e liberar a criação de Drops.
+                Preencha seus dados cadastrais e perfil para liberar a criação de Drops.
               </Text>
             </div>
           </div>
 
           <div className="border-t border-[var(--color-border-subtle)] pt-4 flex flex-col gap-4">
+            
+            {/* Bloco de Dados Cadastrais Básicos */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2 border-b border-[var(--color-border-subtle)]">
+              <div className="sm:col-span-2 flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[var(--color-text-primary)]">
+                  Nome Completo do Responsável *
+                </label>
+                <Input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Ex: Renato de Assis"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[var(--color-text-primary)]">
+                  CPF ou CNPJ *
+                </label>
+                <Input
+                  value={documentId}
+                  onChange={(e) => setDocumentId(e.target.value)}
+                  placeholder="000.000.000-00"
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[var(--color-text-primary)]">
+                  Telefone / WhatsApp *
+                </label>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="(83) 99999-9999"
+                  required
+                />
+              </div>
+
+              <div className="sm:col-span-2 flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-[var(--color-text-primary)]">
+                  Cidade / Estado (Localização)
+                </label>
+                <Input
+                  value={cityState}
+                  onChange={(e) => setCityState(e.target.value)}
+                  placeholder="Ex: João Pessoa / PB"
+                />
+              </div>
+            </div>
             
             {/* Anos de Experiência */}
             <div className="flex flex-col gap-1.5">

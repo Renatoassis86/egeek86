@@ -172,7 +172,7 @@ export default async function MonitoramentoPage({
           <div className="flex flex-col gap-3 relative z-10 max-w-xl">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)] border border-[var(--color-accent-gold)]/30 animate-pulse">
-                ⚡ Modo Demonstração (1 Item Liberado)
+                Modo Demonstração (1 Item Liberado)
               </span>
             </div>
             <Text as="h1" variant="heading-lg" className="text-2xl md:text-3xl font-black">

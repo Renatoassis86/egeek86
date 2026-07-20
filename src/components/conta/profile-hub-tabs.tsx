@@ -9,6 +9,7 @@ import {
   ShoppingBag, 
   ShieldCheck, 
   Gavel, 
+  Crown,
   Flame, 
   Award, 
   Coins, 
@@ -17,6 +18,7 @@ import {
   Plus, 
   Trash2, 
   Save,
+  Upload,
   ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,7 +47,8 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
   const [activeTab, setActiveTab] = useState(initialTab);
 
   // Form states de edição de dados cadastrais
-  const [name, setName] = useState(profile?.name || 'Colecionador Geek');
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatarUrl || '');
+  const [name, setName] = useState(profile?.name || 'Renato Assis');
   const [phone, setPhone] = useState('(83) 98195-7737');
   const [city, setCity] = useState('João Pessoa');
   const [state, setState] = useState('PB');
@@ -54,12 +57,30 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
 
   const isSellerActive = seller?.status === 'active' || profile?.role === 'admin';
 
+  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('A imagem deve ter no máximo 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setAvatarUrl(base64);
+      toast.success('Foto carregada do PC com sucesso! Clique em "Salvar Alterações" para aplicar.');
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSaveData = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setTimeout(() => {
       setIsSaving(false);
-      toast.success('Dados cadastrais atualizados com sucesso!');
+      toast.success('Foto e dados cadastrais atualizados com sucesso!');
     }, 600);
   };
 
@@ -214,13 +235,17 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
               </div>
 
               <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-[var(--color-accent-primary)]/30 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] font-black text-xl">🔨</div>
+                <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] font-black">
+                  <Gavel className="size-5" />
+                </div>
                 <Text variant="body-sm" className="font-bold text-[var(--color-accent-primary)]">Martelo de Ouro</Text>
                 <Text variant="caption" color="secondary" className="text-[10px]">Participou de 3 leilões com lance vencedor</Text>
               </div>
 
               <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-[var(--color-border-subtle)] text-center opacity-60">
-                <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-bg-surface)] text-[var(--color-text-tertiary)] font-black text-xl">👑</div>
+                <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-bg-surface)] text-[var(--color-text-tertiary)] font-black">
+                  <Crown className="size-5" />
+                </div>
                 <Text variant="body-sm" className="font-bold">Lenda Retro</Text>
                 <Text variant="caption" color="tertiary" className="text-[10px]">Bloqueado (Alcance 5.000 XP)</Text>
               </div>
@@ -244,6 +269,47 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Campo de Upload da Foto do Perfil diretamente do PC */}
+              <div className="md:col-span-2 flex flex-col sm:flex-row items-center gap-4 p-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
+                <div className="relative size-20 rounded-full overflow-hidden border-2 border-[var(--color-accent-gold)] shrink-0 shadow-md">
+                  <Image
+                    src={avatarUrl || profile?.avatarUrl || '/images/home/tile-1.png'}
+                    alt="Foto do Perfil"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5 min-w-0 text-center sm:text-left">
+                  <Text variant="body-sm" className="font-bold">Foto do Perfil / Avatar do Colecionador</Text>
+                  <Text variant="caption" color="tertiary" className="text-xs">
+                    Envie uma foto diretamente do seu computador (PNG, JPG ou WEBP de até 5MB).
+                  </Text>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
+                    <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--color-accent-primary)] text-black text-xs font-bold hover:opacity-90 transition-opacity">
+                      <Upload className="size-3.5" />
+                      Escolher Foto do PC
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarFileUpload}
+                      />
+                    </label>
+                    {avatarUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setAvatarUrl('')}
+                        className="text-xs text-[var(--color-text-tertiary)]"
+                      >
+                        Restaurar Padrão
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Nome de Exibição</label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} required />

@@ -13,6 +13,10 @@ import { isNonProductAccessory } from '@/server/collector/discover-products';
  * Conclui o questionário de qualificação do colecionador e o registra como vendedor ativo.
  */
 export async function saveCollectorOnboarding(answers: {
+  fullName: string;
+  documentId: string;
+  phone: string;
+  cityState: string;
   bio: string;
   experienceYears: number;
   focusFranchises: string[];
@@ -24,12 +28,25 @@ export async function saveCollectorOnboarding(answers: {
       return { error: 'Você precisa estar logado para realizar o onboarding.' };
     }
 
+    if (!answers.fullName || answers.fullName.trim().length < 3) {
+      return { error: 'Informe seu Nome Completo para o cadastro.' };
+    }
+
+    if (!answers.documentId || answers.documentId.trim().length < 11) {
+      return { error: 'Informe um CPF ou CNPJ válido.' };
+    }
+
+    if (!answers.phone || answers.phone.trim().length < 8) {
+      return { error: 'Informe um número de Telefone / WhatsApp válido.' };
+    }
+
     if (!answers.guaranteesAuthentic) {
       return { error: 'Você precisa concordar em garantir a autenticidade e qualidade dos seus itens.' };
     }
 
     // Cria ou atualiza o perfil do vendedor (seller)
-    const sellerSlug = slugify(`${profile.name}-${randomUUID().slice(0, 4)}`);
+    const displayName = answers.fullName.trim();
+    const sellerSlug = slugify(`${displayName}-${randomUUID().slice(0, 4)}`);
     
     // Verifica se já existe vendedor
     const [existingSeller] = await db
@@ -45,6 +62,10 @@ export async function saveCollectorOnboarding(answers: {
       await db
         .update(sellers)
         .set({
+          companyName: displayName,
+          displayName: displayName,
+          cnpj: answers.documentId.trim(),
+          phone: answers.phone.trim(),
           description: answers.bio,
           status: 'active',
           updatedAt: new Date(),
@@ -55,10 +76,11 @@ export async function saveCollectorOnboarding(answers: {
         .insert(sellers)
         .values({
           userId: profile.id,
-          companyName: profile.name,
-          displayName: profile.name,
+          companyName: displayName,
+          displayName: displayName,
           slug: sellerSlug,
-          cnpj: `MOCK-${randomUUID().slice(0, 8).toUpperCase()}`, // CNPJ fictício para C2C
+          cnpj: answers.documentId.trim(),
+          phone: answers.phone.trim(),
           emailBusiness: profile.email,
           description: answers.bio,
           status: 'active',

@@ -63,6 +63,18 @@ export function WatchlistPanel({
 
   usePollingRefresh(refreshWatchlist, POLL_INTERVAL_MS);
 
+  async function handleRemoveItem(masterProductId: string, title: string) {
+    try {
+      setItems((prev) => prev.filter((i) => i.masterProductId !== masterProductId));
+      if (!isGuest) {
+        await toggleWatch(masterProductId, false);
+      }
+      toast.success(`${title} removido da lista de monitoramento.`);
+    } catch {
+      toast.error('Erro ao remover o item do monitoramento.');
+    }
+  }
+
   function handleAddClick() {
     if (isGuest) {
       setUnlockModalOpen(true);
@@ -141,7 +153,7 @@ export function WatchlistPanel({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-[1fr_auto_auto] gap-2 border-b border-[var(--color-border-subtle)] px-3 py-2">
+          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 border-b border-[var(--color-border-subtle)] px-3 py-2">
             <Text variant="caption" color="tertiary">
               Jogo
             </Text>
@@ -150,6 +162,9 @@ export function WatchlistPanel({
             </Text>
             <Text variant="caption" color="tertiary" className="text-right">
               Var%
+            </Text>
+            <Text variant="caption" color="tertiary" className="text-right">
+              Ação
             </Text>
           </div>
           <ul>
@@ -165,12 +180,11 @@ export function WatchlistPanel({
                     : 'text-[var(--color-accent-success)]';
 
               return (
-                <li key={item.masterProductId}>
-                  <button
-                    type="button"
+                <li key={item.masterProductId} className="group/item relative">
+                  <div
                     onClick={() => selectProduct(item.masterProductId, i)}
                     className={cn(
-                      'grid w-full grid-cols-[auto_1fr_auto_auto] items-center gap-2 px-3 py-2.5 text-left transition-colors',
+                      'grid w-full grid-cols-[auto_1fr_auto_auto_auto] items-center gap-2 px-3 py-2.5 text-left transition-colors cursor-pointer',
                       isSelected ? 'bg-[var(--color-bg-elevated)]' : 'hover:bg-[var(--color-bg-surface)]'
                     )}
                   >
@@ -193,7 +207,18 @@ export function WatchlistPanel({
                       <Icon className="size-3" aria-hidden />
                       {change != null ? `${change > 0 ? '+' : ''}${change}%` : 'N/D'}
                     </span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveItem(item.masterProductId, item.title);
+                      }}
+                      className="p-1.5 rounded text-[var(--color-text-tertiary)] hover:text-red-400 hover:bg-red-500/10 transition-colors ml-1"
+                      title="Excluir item do monitoramento"
+                    >
+                      <Trash2 className="size-3.5" />
+                    </button>
+                  </div>
                 </li>
               );
             })}

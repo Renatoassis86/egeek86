@@ -36,7 +36,7 @@ const TOP_USERS: LeaderboardUser[] = [
     xpPoints: 48500,
     positivityRate: 100,
     totalDeals: 342,
-    badgeTitle: 'Lenda Geek 👑',
+    badgeTitle: 'Lenda Geek',
     badgeVariant: 'legend',
     verified: true,
     role: 'Colecionador Master',
@@ -50,7 +50,7 @@ const TOP_USERS: LeaderboardUser[] = [
     xpPoints: 39200,
     positivityRate: 99.5,
     totalDeals: 289,
-    badgeTitle: 'Mestre Collector 🏆',
+    badgeTitle: 'Mestre Collector',
     badgeVariant: 'hype',
     verified: true,
     role: 'Leiloeiro Hype',
@@ -64,7 +64,7 @@ const TOP_USERS: LeaderboardUser[] = [
     xpPoints: 31400,
     positivityRate: 99.1,
     totalDeals: 215,
-    badgeTitle: 'Pro Trader ⚡',
+    badgeTitle: 'Pro Trader',
     badgeVariant: 'success',
     verified: true,
     role: 'Caçador de Raridades',
@@ -78,7 +78,7 @@ const TOP_USERS: LeaderboardUser[] = [
     xpPoints: 24800,
     positivityRate: 98.7,
     totalDeals: 178,
-    badgeTitle: 'Caçador Hype 🎯',
+    badgeTitle: 'Caçador Hype',
     badgeVariant: 'primary',
     verified: true,
     role: 'Comprador Ativo',
@@ -92,7 +92,7 @@ const TOP_USERS: LeaderboardUser[] = [
     xpPoints: 21300,
     positivityRate: 98.2,
     totalDeals: 142,
-    badgeTitle: 'Colecionador Gold ⭐',
+    badgeTitle: 'Colecionador Gold',
     badgeVariant: 'primary',
     verified: true,
     role: 'Vendedor Verificado',
@@ -106,7 +106,7 @@ const TOP_USERS: LeaderboardUser[] = [
     xpPoints: 18400,
     positivityRate: 97.9,
     totalDeals: 119,
-    badgeTitle: 'Trader Geek 🚀',
+    badgeTitle: 'Trader Geek',
     badgeVariant: 'primary',
     verified: false,
     role: 'Membro Comunidade',
@@ -142,10 +142,10 @@ export default function RankingPage() {
           <Reveal>
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="legend" size="lg" className="animate-pulse">
-                👑 Hall da Fama Espaço Geek 86
+                Hall da Fama Espaço Geek 86
               </Badge>
               <Badge variant="outline" size="sm" className="bg-[var(--color-bg-inset)] text-[var(--color-accent-gold)]">
-                ⭐ Atualizado em Tempo Real
+                Atualizado em Tempo Real
               </Badge>
             </div>
           </Reveal>
@@ -201,7 +201,7 @@ export default function RankingPage() {
                   <Image src={TOP_USERS[1].avatarUrl} alt={TOP_USERS[1].name} fill className="object-cover" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-slate-400 text-slate-950 font-black text-xs px-2 py-0.5 rounded-full shadow-md">
-                  🥈 2º
+                  2º
                 </div>
               </div>
               <div>
@@ -230,8 +230,8 @@ export default function RankingPage() {
                 <div className="size-full rounded-full overflow-hidden relative">
                   <Image src={TOP_USERS[0].avatarUrl} alt={TOP_USERS[0].name} fill className="object-cover" />
                 </div>
-                <div className="absolute -bottom-3 -right-2 bg-[var(--color-accent-gold)] text-black font-black text-sm px-2.5 py-0.5 rounded-full shadow-lg animate-bounce">
-                  🥇 1º LUGAR
+                <div className="absolute -bottom-3 -right-2 bg-[var(--color-accent-gold)] text-black font-black text-sm px-2.5 py-0.5 rounded-full shadow-lg">
+                  1º LUGAR
                 </div>
               </div>
               <div>
@@ -248,7 +248,7 @@ export default function RankingPage() {
                 </div>
                 <div className="bg-[var(--color-bg-inset)] p-2.5 rounded border border-emerald-500/30">
                   <Text variant="caption" color="tertiary">Positivação</Text>
-                  <Text variant="body-md" className="font-black font-mono text-emerald-400">{TOP_USERS[0].positivityRate}% 👍</Text>
+                  <Text variant="body-md" className="font-black font-mono text-emerald-400">{TOP_USERS[0].positivityRate}%</Text>
                 </div>
               </div>
             </CardContent>
@@ -263,7 +263,7 @@ export default function RankingPage() {
                   <Image src={TOP_USERS[2].avatarUrl} alt={TOP_USERS[2].name} fill className="object-cover" />
                 </div>
                 <div className="absolute -bottom-2 -right-2 bg-amber-600 text-white font-black text-xs px-2 py-0.5 rounded-full shadow-md">
-                  🥉 3º
+                  3º
                 </div>
               </div>
               <div>
@@ -300,10 +300,10 @@ export default function RankingPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button size="sm" variant="primary" className="text-xs">
-              🔥 Todos os Membros
+              Todos os Membros
             </Button>
             <Button size="sm" variant="outline" className="text-xs">
-              👍 Maior Positivação
+              Maior Positivação
             </Button>
           </div>
         </div>
@@ -325,7 +325,7 @@ export default function RankingPage() {
                 {TOP_USERS.map((user) => (
                   <tr key={user.id} className="hover:bg-[var(--color-bg-inset)]/50 transition-colors">
                     <td className="py-4 px-4 text-center font-mono font-black text-base">
-                      {user.rank === 1 ? '🥇 #1' : user.rank === 2 ? '🥈 #2' : user.rank === 3 ? '🥉 #3' : `#${user.rank}`}
+                      #{user.rank}
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
@@ -348,7 +348,7 @@ export default function RankingPage() {
                     </td>
                     <td className="py-4 px-4 text-center">
                       <div className="inline-flex items-center gap-1 font-mono font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20 text-xs">
-                        👍 {user.positivityRate}%
+                        {user.positivityRate}%
                       </div>
                     </td>
                     <td className="py-4 px-4 text-center font-mono font-medium text-[var(--color-text-secondary)]">

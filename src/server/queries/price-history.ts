@@ -309,7 +309,7 @@ export async function getMasterProductPriceHistory(
   };
 
   const countRow = await db.execute<{ total: string }>(sql`
-    SELECT count(*)::bigint AS total
+    SELECT COUNT(DISTINCT (s.offer_id, s.price_cents))::bigint AS total
     FROM affiliate_price_snapshots s
     INNER JOIN affiliate_offers o ON o.id = s.offer_id
     WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'

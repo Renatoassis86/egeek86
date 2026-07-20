@@ -261,14 +261,10 @@ export function PriceHistoryChart({
     }
   }, [masterProductId, timeframe]);
 
-  // Refetch ao trocar de período — pula a primeira vez (initialHistory já veio do server).
+  // Refetch ao trocar de produto ou de período.
   useEffect(() => {
-    if (skipNextFetch.current) {
-      skipNextFetch.current = false;
-      return;
-    }
     fetchData();
-  }, [fetchData]);
+  }, [masterProductId, timeframe, fetchData]);
 
   usePollingRefresh(fetchData, POLL_INTERVAL_MS);
 
@@ -283,10 +279,10 @@ export function PriceHistoryChart({
         <div className="flex items-center gap-2.5">
           <TimeframeSelector value={timeframe} onChange={setTimeframe} />
           <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
-            🛍️ {history.totalOffersCount || 0} ofertas integradas (todas as plataformas)
+            {history.totalOffersCount || 0} ofertas integradas (todas as plataformas)
           </Badge>
           <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
-            📊 {history.totalQuoteCount || 0} cotações históricas coletadas desde o início
+            {history.totalQuoteCount || 0} cotações registradas
           </Badge>
         </div>
         <div className="flex items-center gap-3">

@@ -45,15 +45,22 @@ export function MonitoringBoard({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [selectedId, setSelectedId] = useState(initialSelectedId);
-
-  const selected = watchlistItems.find((item) => item.masterProductId === selectedId) ?? watchlistItems[0];
+  const [selectedItem, setSelectedItem] = useState<WatchlistPanelItem>(() => {
+    return watchlistItems.find((item) => item.masterProductId === initialSelectedId) ?? watchlistItems[0];
+  });
 
   function handleSelect(masterProductId: string) {
     setSelectedId(masterProductId);
+    const found = watchlistItems.find((item) => item.masterProductId === masterProductId);
+    if (found) {
+      setSelectedItem(found);
+    }
     const params = new URLSearchParams(searchParams.toString());
     params.set('jogo', masterProductId);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
+
+  const active = selectedItem || watchlistItems[0];
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -63,26 +70,26 @@ export function MonitoringBoard({
         <CardContent className="p-5">
           <div className="mb-4 flex items-baseline justify-between gap-4">
             <div>
-              <Text variant="heading-md">{selected.title}</Text>
+              <Text variant="heading-md">{active.title}</Text>
               <Text variant="caption" color="tertiary">
-                Menor preço entre todas as lojas · atualmente em {selected.networkName}
+                Menor preço entre todas as lojas · atualmente em {active.networkName}
               </Text>
             </div>
             <Link
-              href={`/monitoramento/comparar/${selected.masterProductId}`}
+              href={`/monitoramento/comparar/${active.masterProductId}`}
               className="group inline-flex items-center gap-1 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
             >
-              <AnimatedPrice cents={selected.currentPriceCents} className="text-mono-lg" />
+              <AnimatedPrice cents={active.currentPriceCents} className="text-mono-lg" />
               <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
             </Link>
           </div>
           <PriceHistoryChart
-            masterProductId={selected.masterProductId}
+            masterProductId={active.masterProductId}
             initialHistory={initialHistory}
             initialTimeframe="1M"
           />
           <Text variant="caption" color="tertiary" className="mt-3">
-            <Link href={`/monitoramento/comparar/${selected.masterProductId}`} className="underline">
+            <Link href={`/monitoramento/comparar/${active.masterProductId}`} className="underline">
               Comparar preço entre vendedores
             </Link>
           </Text>

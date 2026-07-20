@@ -343,7 +343,7 @@ export default async function HypeZonePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  ⭐ Positivação por Auditoria
+                  Positivação por Auditoria
                 </span>
                 <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
                   As notas dadas por compradores passam por auditoria do conselho antes de ir a público. 
@@ -353,7 +353,7 @@ export default async function HypeZonePage() {
 
               <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  📈 Acúmulo de Geek Points (XP)
+                  Acúmulo de Geek Points (XP)
                 </span>
                 <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
                   Ganhe <strong className="font-bold text-[var(--color-text-primary)]">+10 XP</strong> ao votar em drops e reviews, e <strong className="font-bold text-[var(--color-text-primary)]">+50 Geek Points</strong> por acerto. Seus pontos determinam seu nível e liberam benefícios exclusivos.
@@ -362,7 +362,7 @@ export default async function HypeZonePage() {
 
               <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  🎖️ Classificação por Níveis
+                  Classificação por Níveis
                 </span>
                 <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
                   De <strong className="font-bold text-[var(--color-text-primary)]">Iniciante</strong> a <strong className="font-bold text-[var(--color-text-primary)]">Lendário (5000+ XP)</strong>. Níveis altos liberam taxas de venda reduzidas, 
@@ -372,7 +372,7 @@ export default async function HypeZonePage() {
 
               <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  🛡️ Penalização por Infração
+                  Penalização por Infração
                 </span>
                 <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
                   Vender itens falsos ou votar contra provas claras resulta em perda drástica de Geek Points, 
