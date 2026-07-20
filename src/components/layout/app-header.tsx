@@ -13,6 +13,7 @@ const navLinks = [
   { href: '/categorias', label: 'Categorias' },
   { href: '/ofertas', label: 'Ofertas' },
   { href: '/monitoramento', label: 'Monitoramento' },
+  { href: '/ranking', label: 'Ranking', highlight: true },
   { href: '/hype-zone', label: 'Hype Zone', highlight: true },
   { href: '/leiloes', label: 'Leilões', highlight: true },
   { href: '/noticias', label: 'Notícias' },

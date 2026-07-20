@@ -51,7 +51,17 @@ function EntrarForm() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center px-4 py-10">
+      <div className="flex flex-col items-center justify-center px-4 py-10 relative">
+        <div className="w-full max-w-sm mb-4">
+          <Link
+            href={next.startsWith('/') ? next : '/'}
+            className="inline-flex items-center gap-2 text-xs font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-accent-gold)] transition-colors border border-[var(--color-border-subtle)] px-3.5 py-1.5 rounded-full bg-[var(--color-bg-inset)]/80 hover:bg-[var(--color-bg-surface)]"
+          >
+            <ArrowLeft className="size-3.5 text-[var(--color-accent-gold)]" />
+            Voltar para {next.includes('monitoramento') ? 'o Monitoramento' : 'o Espaço Geek 86'}
+          </Link>
+        </div>
+
         <Card className="w-full max-w-sm">
           <CardContent className="flex flex-col gap-5 p-8">
             <div>

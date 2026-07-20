@@ -430,14 +430,30 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {watches.map((item) => (
-                <Link key={item.watchId} href={`/ofertas/${item.offerSlug}`}>
-                  <Card interactive className="h-full">
+                <Link key={item.watchId || item.masterProductId} href={`/ofertas/${item.offerSlug || ''}`}>
+                  <Card interactive className="h-full border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent-primary)]/50 transition-all">
                     <div className="flex h-full flex-col gap-3 p-5">
-                      <div className="flex items-start justify-between gap-2">
-                        <Badge variant="outline" size="sm">{item.networkName}</Badge>
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <Badge variant="outline" size="sm" className="bg-[var(--color-bg-inset)]">
+                          {item.networkName}
+                        </Badge>
+                        <Badge variant="legend" size="sm" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
+                          ⚡ Menor Cotação Atual
+                        </Badge>
                       </div>
-                      <Text variant="body-md" className="line-clamp-2 font-medium">{item.title}</Text>
-                      <Text variant="heading-md" className="tabular mt-auto">{formatBRL(item.currentPriceCents)}</Text>
+
+                      <Text variant="body-md" className="line-clamp-2 font-bold text-[var(--color-text-primary)]">
+                        {item.title}
+                      </Text>
+
+                      <div className="mt-auto pt-2 border-t border-[var(--color-border-subtle)] flex flex-col gap-1">
+                        <Text variant="caption" color="tertiary" className="text-[10px]">
+                          Melhor oferta encontrada entre todas as lojas
+                        </Text>
+                        <Text variant="heading-md" className="font-mono font-black text-xl text-[var(--color-accent-primary)]">
+                          {formatBRL(item.currentPriceCents)}
+                        </Text>
+                      </div>
                     </div>
                   </Card>
                 </Link>

@@ -57,7 +57,7 @@ export default async function ContaPage({
               src="/images/conta/profile-hero.png"
               alt="Geek Collector Artwork"
               fill
-              className="object-cover object-center"
+              className="object-cover object-[center_top]"
               priority
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-transparent to-transparent opacity-80 pointer-events-none" />

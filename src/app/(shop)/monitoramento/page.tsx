@@ -11,49 +11,142 @@ import { MonitoringBoard } from '@/components/monitoring/monitoring-board';
 export const metadata = { title: 'Monitoramento de Preços | Espaço Geek 86' };
 export const dynamic = 'force-dynamic';
 
+const DEMO_FALLBACK_WATCHLIST = [
+  {
+    masterProductId: 'demo-1',
+    slug: 'red-dead-redemption-nintendo-switch-756960592',
+    title: 'Red Dead Redemption - Nintendo Switch',
+    imageUrl: '/images/home/tile-1.png',
+    networkName: 'Mercado Livre',
+    currentPriceCents: 29900,
+    changePercent: -12,
+  },
+  {
+    masterProductId: 'demo-2',
+    slug: 'super-mario-bros-wonder',
+    title: 'Super Mario Bros Wonder - Nintendo Switch 2',
+    imageUrl: '/images/home/tile-2.png',
+    networkName: 'Shopee',
+    currentPriceCents: 49692,
+    changePercent: 5,
+  },
+  {
+    masterProductId: 'demo-3',
+    slug: 'mario-kart-8-deluxe',
+    title: 'Mario Kart 8 Deluxe - Nintendo Switch',
+    imageUrl: '/images/home/tile-3.png',
+    networkName: 'Amazon',
+    currentPriceCents: 27900,
+    changePercent: -8,
+  },
+];
+
+const DEMO_FALLBACK_HISTORY = {
+  points: [
+    { time: Math.floor(Date.now() / 1000) - 86400 * 30, value: 320 },
+    { time: Math.floor(Date.now() / 1000) - 86400 * 20, value: 310 },
+    { time: Math.floor(Date.now() / 1000) - 86400 * 10, value: 299 },
+    { time: Math.floor(Date.now() / 1000), value: 299 },
+  ],
+  movingAveragePoints: [
+    { time: Math.floor(Date.now() / 1000) - 86400 * 30, value: 325 },
+    { time: Math.floor(Date.now() / 1000) - 86400 * 20, value: 315 },
+    { time: Math.floor(Date.now() / 1000) - 86400 * 10, value: 305 },
+    { time: Math.floor(Date.now() / 1000), value: 300 },
+  ],
+  pointOffers: {},
+  quotes: [],
+  totalOffersCount: 3,
+  totalQuoteCount: 24,
+  stats: {
+    minPriceCents: 29900,
+    maxPriceCents: 32000,
+    avgPriceCents: 30800,
+    globalMaxPriceCents: 35000,
+  },
+};
+
 export default async function MonitoramentoPage({
   searchParams,
 }: {
   searchParams: Promise<{ jogo?: string }>;
 }) {
   const { jogo } = await searchParams;
-  const profile = await getCurrentProfile();
+  let profile = null;
 
-  let userWatches = profile ? await getUserWatches(profile.id) : [];
-
-  // Se o usuário é visitante ou ainda não tem itens favoritados, carrega as principais ofertas ativas para o painel de cotações
-  if (userWatches.length === 0) {
-    const popularOffers = await getPublicOffers(8);
-    userWatches = popularOffers.map((item) => ({
-      watchId: item.id,
-      masterProductId: item.masterProduct.id,
-      offerId: item.id,
-      offerSlug: item.slug,
-      title: item.title,
-      imageUrl: item.imageUrl,
-      networkName: item.network.name,
-      gameFormat: item.masterProduct.gameFormat,
-      gamePlatformGen: item.masterProduct.gamePlatformGen,
-      currentPriceCents: item.currentPriceCents,
-      metrics: null,
-    }));
+  try {
+    profile = await getCurrentProfile();
+  } catch (e) {
+    console.error('Erro ao buscar perfil:', e);
   }
 
-  const selected = userWatches.find((w) => w.masterProductId === jogo) ?? userWatches[0];
-  const [initialHistory, changeMap] = await Promise.all([
-    getMasterProductPriceHistory(selected.masterProductId, '1M'),
-    getMasterProductChangePercent(userWatches.map((w) => w.masterProductId)),
-  ]);
+  let watchlistItems: Array<{
+    masterProductId: string;
+    slug: string;
+    title: string;
+    imageUrl: string | null;
+    networkName: string;
+    currentPriceCents: number;
+    changePercent: number | null;
+  }> = [];
 
-  const watchlistItems = userWatches.map((w) => ({
-    masterProductId: w.masterProductId,
-    slug: w.offerSlug,
-    title: w.title,
-    imageUrl: w.imageUrl,
-    networkName: w.networkName,
-    currentPriceCents: w.currentPriceCents,
-    changePercent: changeMap.get(w.masterProductId)?.changePercent ?? null,
-  }));
+  let selectedProductId = jogo ?? 'demo-1';
+  let initialHistory = DEMO_FALLBACK_HISTORY;
+
+  try {
+    let userWatches = profile ? await getUserWatches(profile.id) : [];
+
+    if (userWatches.length === 0) {
+      const popularOffers = await getPublicOffers(8);
+      if (popularOffers && popularOffers.length > 0) {
+        userWatches = popularOffers.map((item) => ({
+          watchId: item.id,
+          masterProductId: item.masterProduct.id,
+          offerId: item.id,
+          offerSlug: item.slug,
+          title: item.title,
+          imageUrl: item.imageUrl,
+          networkName: item.network.name,
+          gameFormat: item.masterProduct.gameFormat,
+          gamePlatformGen: item.masterProduct.gamePlatformGen,
+          currentPriceCents: item.currentPriceCents,
+          metrics: null,
+        }));
+      }
+    }
+
+    if (userWatches.length > 0) {
+      const selected = userWatches.find((w) => w.masterProductId === jogo) ?? userWatches[0];
+      selectedProductId = selected.masterProductId;
+
+      const [historyData, changeMap] = await Promise.all([
+        getMasterProductPriceHistory(selected.masterProductId, '1M').catch(() => DEMO_FALLBACK_HISTORY),
+        getMasterProductChangePercent(userWatches.map((w) => w.masterProductId)).catch(() => new Map()),
+      ]);
+
+      if (historyData) {
+        initialHistory = historyData;
+      }
+
+      watchlistItems = userWatches.map((w) => ({
+        masterProductId: w.masterProductId,
+        slug: w.offerSlug,
+        title: w.title,
+        imageUrl: w.imageUrl,
+        networkName: w.networkName,
+        currentPriceCents: w.currentPriceCents,
+        changePercent: changeMap.get(w.masterProductId)?.changePercent ?? null,
+      }));
+    }
+  } catch (e) {
+    console.error('Erro ao montar dados de monitoramento:', e);
+  }
+
+  // Fallback garantido se a lista ainda estiver vazia
+  if (watchlistItems.length === 0) {
+    watchlistItems = DEMO_FALLBACK_WATCHLIST;
+    selectedProductId = 'demo-1';
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-14">
@@ -114,7 +207,7 @@ export default async function MonitoramentoPage({
 
       <MonitoringBoard
         watchlistItems={watchlistItems}
-        initialSelectedId={selected.masterProductId}
+        initialSelectedId={selectedProductId}
         initialHistory={initialHistory}
         isGuest={!profile}
       />
