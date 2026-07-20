@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
-import { Mail, Lock, User, Phone, Sparkles } from 'lucide-react';
+import { Mail, Lock, User, Phone, Sparkles, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { createSupabaseBrowserClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
