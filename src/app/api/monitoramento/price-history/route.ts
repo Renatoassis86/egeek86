@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
-import { getMasterProductPriceHistory } from '@/server/queries/price-history';
+import { getMasterProductPriceHistory, type PriceHistoryTimeframe } from '@/server/queries/price-history';
 
 export const dynamic = 'force-dynamic';
 
