@@ -239,8 +239,16 @@ export function PriceHistoryChart({
         }))
       );
     }
-    chartRef.current?.timeScale().fitContent();
-  }, [history]);
+    if (chartRef.current) {
+      chartRef.current.applyOptions({
+        timeScale: {
+          timeVisible: timeframe === '1D',
+          secondsVisible: false,
+        },
+      });
+      chartRef.current.timeScale().fitContent();
+    }
+  }, [history, timeframe]);
 
   const fetchData = useCallback(async () => {
     const requestId = ++requestIdRef.current;
