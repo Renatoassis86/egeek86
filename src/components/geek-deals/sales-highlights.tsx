@@ -3,7 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { OfferCard } from '@/components/affiliate/offer-card';
-import { listRankedOffers, getFeaturedOffers, getOfferListingMetrics, type RankedOffersFilter } from '@/server/queries/affiliate';
+import { listRankedOffers, getFeaturedOffers, getOfferListingMetrics, type RankedOffersFilter, type OfferWithRelations } from '@/server/queries/affiliate';
 
 function deduplicateAndFilterOffers(
   offers: OfferWithRelations[],

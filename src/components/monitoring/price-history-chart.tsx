@@ -172,7 +172,7 @@ export function PriceHistoryChart({
       const TOOLTIP_HEIGHT = 260;
       const x = param.point.x + 12 + TOOLTIP_WIDTH > containerWidth ? param.point.x - TOOLTIP_WIDTH - 12 : param.point.x + 12;
       const y = Math.min(Math.max(param.point.y - 12, 8), Math.max(containerHeight - TOOLTIP_HEIGHT - 8, 8));
-      
+
       const pointQuotes = quotesRef.current.filter((q) => q.time === param.time);
 
       setTooltip({
