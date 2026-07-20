@@ -23,8 +23,7 @@ export default async function MonitoramentoPage({
 
   // Se o usuário é visitante ou ainda não tem itens favoritados, carrega as principais ofertas ativas para o painel de cotações
   if (userWatches.length === 0) {
-    const popularData = await getPublicOffers({ limit: 8 });
-    const popularOffers = popularData.offers;
+    const popularOffers = await getPublicOffers(8);
     userWatches = popularOffers.map((item) => ({
       watchId: item.id,
       masterProductId: item.masterProduct.id,
