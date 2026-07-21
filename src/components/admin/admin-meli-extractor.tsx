@@ -42,9 +42,9 @@ export function AdminMeliExtractor() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(result.message);
+        toast.success(result.message || 'Extração concluída com sucesso!');
         setLastResult({
-          message: result.message,
+          message: result.message || 'Extração concluída com sucesso!',
           created: result.discoverySummary?.created,
           updated: result.priceSummary?.updatedOffers,
         });
@@ -66,9 +66,9 @@ export function AdminMeliExtractor() {
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(result.message);
+        toast.success(result.message || 'Varredura geral concluída com sucesso!');
         setLastResult({
-          message: result.message,
+          message: result.message || 'Varredura geral concluída com sucesso!',
           created: result.discoverySummary?.created,
           updated: result.priceSummary?.updatedOffers,
         });
