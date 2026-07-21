@@ -369,7 +369,7 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
 
     return {
       success: true,
-      message: `Extração concluída com sucesso! ${itemsIngested > 0 ? `1 novo produto catalogado diretamente.` : ''} ${discoverySummary.created} novos produtos descobertos e ${priceSummary.updatedOffers} preços atualizados.`,
+      message: `Extração concluída com sucesso! ${itemsIngested > 0 ? `1 novo produto catalogado diretamente.` : ''} ${discoverySummary.created} novos produtos descobertos e ${priceSummary.updated} preços atualizados.`,
       discoverySummary,
       priceSummary,
     };
@@ -407,7 +407,7 @@ export async function triggerFullDiscoveryRun() {
 
     return {
       success: true,
-      message: `Varredura completa Mercado Livre + Shopee + Magalu executada! ${totalNew} novos produtos catalogados de todas as lojas e ${priceSummary.updatedOffers} preços atualizados.`,
+      message: `Varredura completa Mercado Livre + Shopee + Magalu executada! ${totalNew} novos produtos catalogados de todas as lojas e ${priceSummary.updated} preços atualizados.`,
       categorySummary,
       discoverySummary,
       shopeeSummary,
