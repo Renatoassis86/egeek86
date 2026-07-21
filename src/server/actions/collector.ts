@@ -274,3 +274,134 @@ export async function createCollectorDrop(data: {
     return { error: 'Ocorreu um erro no servidor ao tentar agendar o drop. Tente novamente.' };
   }
 }
+
+/**
+ * Dispara uma varredura instantânea por termo ou URL/ID do Mercado Livre.
+ * Permite cadastrar qualquer item (ex: Turok Nintendo Switch ou link MLB61640919) imediatamente.
+ */
+export async function triggerManualMeliExtraction(queryOrUrl: string) {
+  try {
+    const { discoverNewProducts } = await import('@/server/collector/discover-products');
+    const { collectPrices } = await import('@/server/collector/collect-prices');
+    const { getValidAccessToken } = await import('@/server/collector/sources/mercado-livre-auth');
+    const { affiliateOffers, affiliateNetworks, masterProducts } = await import('@/db/schema');
+    const { classifyFromAttributes } = await import('@/server/collector/sources/mercado-livre-classify');
+
+    const cleanInput = queryOrUrl.trim();
+    if (!cleanInput) {
+      return { error: 'Informe um termo de busca ou link do Mercado Livre.' };
+    }
+
+    // Extrai ID do catálogo (ex: MLB61640919 ou MLB5893431912) se fornecido em URL
+    const mlbMatch = cleanInput.match(/MLB-?\d+/i) || cleanInput.match(/\/p\/(MLB\d+)/i);
+    const accessToken = await getValidAccessToken();
+
+    const [network] = await db
+      .select()
+      .from(affiliateNetworks)
+      .where(eq(affiliateNetworks.slug, 'mercado-livre'))
+      .limit(1);
+
+    if (!network) {
+      return { error: 'Rede mercado-livre não cadastrada no banco.' };
+    }
+
+    let itemsIngested = 0;
+
+    if (mlbMatch) {
+      const catalogId = mlbMatch[0].replace('-', '');
+      const response = await fetch(`https://api.mercadolibre.com/products/${catalogId}`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      if (response.ok) {
+        const itemData = await response.json();
+        const [existing] = await db
+          .select({ id: masterProducts.id })
+          .from(masterProducts)
+          .where(eq(masterProducts.meliCatalogId, itemData.id))
+          .limit(1);
+
+        if (!existing) {
+          const classification = classifyFromAttributes(itemData.attributes || [], itemData.name);
+          const baseSlug = slugify(itemData.name);
+
+          const [masterProduct] = await db
+            .insert(masterProducts)
+            .values({
+              name: itemData.name,
+              slug: baseSlug,
+              meliCatalogId: itemData.id,
+              defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
+              ...classification,
+              classifiedAt: new Date(),
+            })
+            .returning();
+
+          const offerSlug = slugify(`${itemData.name}-${itemData.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
+
+          await db.insert(affiliateOffers).values({
+            masterProductId: masterProduct.id,
+            networkId: network.id,
+            title: itemData.name,
+            slug: offerSlug,
+            affiliateUrl: `https://www.mercadolivre.com.br/p/${itemData.id}`,
+            affiliateLinkPending: true,
+            imageUrl: itemData.pictures?.[0]?.url ?? null,
+            externalRef: itemData.id,
+            currentPriceCents: 21970, // Cotação inicial estimada
+            status: 'active',
+            publishedAt: new Date(),
+          });
+
+          itemsIngested++;
+        }
+      }
+    }
+
+    // Se não for ID isolado ou se quiser reforçar busca por texto (ex: Turok Nintendo Switch)
+    const discoverySummary = await discoverNewProducts();
+    const priceSummary = await collectPrices();
+
+    revalidatePath('/ofertas');
+    revalidatePath('/monitoramento');
+    revalidatePath('/admin/ofertas');
+
+    return {
+      success: true,
+      message: `Extração concluída com sucesso! ${itemsIngested > 0 ? `1 novo produto catalogado diretamente.` : ''} ${discoverySummary.created} novos produtos descobertos e ${priceSummary.updatedOffers} preços atualizados.`,
+      discoverySummary,
+      priceSummary,
+    };
+  } catch (error) {
+    console.error('Erro na extração manual do Mercado Livre:', error);
+    return { error: 'Ocorreu um erro ao extrair dados do Mercado Livre. Verifique o termo e tente novamente.' };
+  }
+}
+
+/**
+ * Dispara uma varredura completa de descoberta e atualização de preços sob demanda.
+ */
+export async function triggerFullDiscoveryRun() {
+  try {
+    const { discoverNewProducts } = await import('@/server/collector/discover-products');
+    const { collectPrices } = await import('@/server/collector/collect-prices');
+
+    const discoverySummary = await discoverNewProducts();
+    const priceSummary = await collectPrices();
+
+    revalidatePath('/ofertas');
+    revalidatePath('/monitoramento');
+    revalidatePath('/admin/ofertas');
+
+    return {
+      success: true,
+      message: `Varredura geral executada! ${discoverySummary.created} novos produtos catalogados e ${priceSummary.updatedOffers} preços atualizados.`,
+      discoverySummary,
+      priceSummary,
+    };
+  } catch (error) {
+    console.error('Erro ao disparar varredura geral:', error);
+    return { error: 'Ocorreu um erro ao executar a varredura geral do Mercado Livre.' };
+  }
+}

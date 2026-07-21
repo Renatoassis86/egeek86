@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Search, ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { Search, ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { HeaderSearchModal } from '@/components/layout/header-search-modal';
+import { MobileNavDrawer } from '@/components/layout/mobile-nav-drawer';
 import { cn } from '@/lib/cn';
 
 const navLinks = [
@@ -22,24 +24,38 @@ const navLinks = [
 
 export function AppHeader() {
   const pathname = usePathname();
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-30 w-full',
-        'h-[var(--header-mobile)] lg:h-[var(--header-desktop)]',
-        'bg-[var(--color-bg-canvas)]/80 backdrop-blur-xl backdrop-saturate-150',
-        'border-b border-[var(--color-border-subtle)]',
-        'pt-safe'
-      )}
-    >
-      <div className="mx-auto h-full max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] rounded-[var(--radius-xs)]"
-          aria-label="Espaço Geek 86, início"
-        >
+    <>
+      <header
+        className={cn(
+          'sticky top-0 z-30 w-full',
+          'h-[var(--header-mobile)] lg:h-[var(--header-desktop)]',
+          'bg-[var(--color-bg-canvas)]/80 backdrop-blur-xl backdrop-saturate-150',
+          'border-b border-[var(--color-border-subtle)]',
+          'pt-safe'
+        )}
+      >
+        <div className="mx-auto h-full max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            {/* Botão de Menu Hambúrguer (Três traços no mobile) */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden flex shrink-0"
+              onClick={() => setIsMobileDrawerOpen(true)}
+              aria-label="Abrir menu de módulos"
+            >
+              <Menu className="size-5 text-[var(--color-text-primary)]" />
+            </Button>
+
+            {/* Logo */}
+            <Link
+              href="/"
+              className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] rounded-[var(--radius-xs)]"
+              aria-label="Espaço Geek 86, início"
+            >
           <Image
             src="/geek 86.webp"
             alt="Espaço Geek 86"
@@ -295,10 +311,11 @@ export function AppHeader() {
           <ThemeToggle className="hidden lg:inline-flex" />
           <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative">
             <ShoppingBag className="size-5" />
-            {/* Badge de quantidade — futuro */}
           </Button>
         </div>
       </div>
     </header>
+    <MobileNavDrawer isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
+    </>
   );
 }

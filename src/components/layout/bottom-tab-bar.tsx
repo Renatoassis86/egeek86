@@ -3,15 +3,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, Search, Zap, Heart, User } from 'lucide-react';
+import { Home, Tag, BarChart3, Flame, User } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const tabs = [
-  { href: '/', label: 'Home', Icon: Home },
-  { href: '/busca', label: 'Buscar', Icon: Search },
-  { href: '/hype-zone', label: 'Hype', Icon: Zap, highlight: true },
-  { href: '/conta/wishlist', label: 'Coleção', Icon: Heart },
-  { href: '/conta', label: 'Conta', Icon: User },
+  { href: '/', label: 'Início', Icon: Home },
+  { href: '/ofertas', label: 'Ofertas', Icon: Tag },
+  { href: '/monitoramento', label: 'Monitorar', Icon: BarChart3 },
+  { href: '/hype-zone', label: 'Hype', Icon: Flame, highlight: true },
+  { href: '/conta', label: 'Perfil', Icon: User },
 ];
 
 /**

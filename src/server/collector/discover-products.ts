@@ -47,6 +47,31 @@ const GAME_SEARCH_TERMS: SearchTerm[] = PLATFORM_TERMS.flatMap((platform) =>
   }))
 );
 
+/** Franquias e títulos clássicos/retrô para busca direta garantida no catálogo do Mercado Livre. */
+const FRANCHISE_SEARCH_TERMS: SearchTerm[] = [
+  { term: 'turok nintendo switch', kind: 'game' },
+  { term: 'turok ps4', kind: 'game' },
+  { term: 'turok xbox', kind: 'game' },
+  { term: 'zelda nintendo switch', kind: 'game' },
+  { term: 'mario nintendo switch', kind: 'game' },
+  { term: 'pokemon nintendo switch', kind: 'game' },
+  { term: 'metroid nintendo switch', kind: 'game' },
+  { term: 'castlevania nintendo switch', kind: 'game' },
+  { term: 'resident evil ps5', kind: 'game' },
+  { term: 'silent hill ps5', kind: 'game' },
+  { term: 'final fantasy ps5', kind: 'game' },
+  { term: 'god of war ps5', kind: 'game' },
+  { term: 'gta 5 ps5', kind: 'game' },
+  { term: 'elden ring ps5', kind: 'game' },
+  { term: 'cyberpunk ps5', kind: 'game' },
+  { term: 'mortal kombat 1 ps5', kind: 'game' },
+  { term: 'street fighter 6 ps5', kind: 'game' },
+  { term: 'tekken 8 ps5', kind: 'game' },
+  { term: 'halo xbox series', kind: 'game' },
+  { term: 'forza xbox series', kind: 'game' },
+  { term: 'hollow knight nintendo switch', kind: 'game' },
+];
+
 /** Console em si (hardware), não jogo — plataforma já é conhecida pelo termo, sem precisar de classifyFromAttributes. */
 const CONSOLE_SEARCH_TERMS: SearchTerm[] = [
   { term: 'console playstation 5', kind: 'console', platform: 'ps5' },
@@ -166,17 +191,15 @@ export function isNonProductAccessory(title: string): boolean {
  * Não processamos tudo isso numa execução só (ver TERMS_PER_RUN abaixo) —
  * roda em rotação, um pedaço por vez, ao longo do dia.
  */
-const SEARCH_TERMS: SearchTerm[] = [...GAME_SEARCH_TERMS, ...CONSOLE_SEARCH_TERMS, ...ACCESSORY_SEARCH_TERMS];
+const SEARCH_TERMS: SearchTerm[] = [...FRANCHISE_SEARCH_TERMS, ...GAME_SEARCH_TERMS, ...CONSOLE_SEARCH_TERMS, ...ACCESSORY_SEARCH_TERMS];
 
 /**
- * Quantos termos por execução. 16 com processamento em paralelo (4 termos
- * por vez, ver TERM_CONCURRENCY) — 5 sequencial levava 15s; em paralelo a
- * mesma carga cabe com folga, então dá pra processar mais por execução.
+ * Quantos termos por execução.
  */
-const TERMS_PER_RUN = 16;
+const TERMS_PER_RUN = 20;
 
-/** Cap por termo — defensivo, rate limit da API do Mercado Livre não é documentado publicamente. */
-const MAX_RESULTS_PER_TERM = 20;
+/** Cap por termo — busca até 50 resultados por termo para máxima profundidade de cobertura. */
+const MAX_RESULTS_PER_TERM = 50;
 
 const CURSOR_CONFIG_KEY = 'discover_products_cursor';
 

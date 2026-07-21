@@ -73,7 +73,7 @@ export default async function AdminOffersPage({
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <Text as="h1" variant="heading-xl">
-            Ofertas
+            Ofertas & Extração Mercado Livre
           </Text>
           <Text variant="body-sm" color="secondary" className="mt-1">
             {offers.length} {offers.length === 1 ? 'oferta encontrada' : 'ofertas encontradas'}
@@ -83,6 +83,8 @@ export default async function AdminOffersPage({
           <Link href="/admin/ofertas/novo">Nova oferta</Link>
         </Button>
       </div>
+
+      <AdminMeliExtractor />
 
       <Suspense fallback={null}>
         <AdminOfferFilters networks={networks} />
