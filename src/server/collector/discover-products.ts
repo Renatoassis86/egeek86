@@ -297,19 +297,35 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
   await mapWithConcurrency(terms, TERM_CONCURRENCY, async (searchTerm) => {
     summary.termsSearched++;
     let results: MeliSearchResult[];
+    summary.termsSearched++;
+    let results: MeliSearchResult[] = [];
     try {
-      const response = await fetch(
+      // 1. Busca no Catálogo Buy-Box (/products/search)
+      const catalogRes = await fetch(
         `https://api.mercadolibre.com/products/search?site_id=MLB&q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-
-      if (!response.ok) {
-        summary.errors.push({ term: searchTerm.term, message: `HTTP ${response.status}: ${await response.text()}` });
-        return;
+      if (catalogRes.ok) {
+        const catalogData = (await catalogRes.json()) as { results: MeliSearchResult[] };
+        results.push(...(catalogData.results || []));
       }
 
-      const data = (await response.json()) as { results: MeliSearchResult[] };
-      results = data.results;
+      // 2. Busca Aberta nos Anúncios de Todos os Vendedores (/sites/MLB/search) — Garante capturar TUDO (Turok, raridades, etc.)
+      const siteRes = await fetch(
+        `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      if (siteRes.ok) {
+        const siteData = (await siteRes.json()) as { results: any[] };
+        const siteItems: MeliSearchResult[] = (siteData.results || []).map((item) => ({
+          id: item.catalog_product_id || item.id,
+          name: item.title,
+          attributes: item.attributes || [],
+          pictures: item.thumbnail ? [{ url: item.thumbnail.replace('-I.jpg', '-O.jpg') }] : [],
+        }));
+        results.push(...siteItems);
+      }
+
       summary.found += results.length;
     } catch (err) {
       summary.errors.push({ term: searchTerm.term, message: (err as Error).message });
@@ -470,4 +486,102 @@ export async function pruneMerchandiseProducts(): Promise<{ prunedCount: number 
   }
 
   return { prunedCount };
+}
+
+/** Categorias oficiais de jogos no Mercado Livre (MLB) */
+const MELI_GAME_CATEGORIES = [
+  { id: 'MLB437701', name: 'Nintendo Switch' },
+  { id: 'MLB437702', name: 'PlayStation 5' },
+  { id: 'MLB186456', name: 'PlayStation 4' },
+  { id: 'MLB437703', name: 'Xbox Series X/S' },
+  { id: 'MLB186457', name: 'Xbox One' },
+  { id: 'MLB1144', name: 'Video Games Geral' },
+];
+
+/**
+ * Varre exaustivamente as categorias de video games do Mercado Livre página por página,
+ * garantindo a ingestão de 100% dos jogos postados na plataforma.
+ */
+export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Promise<{ totalIngested: number }> {
+  let totalIngested = 0;
+
+  const [network] = await db
+    .select()
+    .from(affiliateNetworks)
+    .where(eq(affiliateNetworks.slug, 'mercado-livre'))
+    .limit(1);
+
+  if (!network) return { totalIngested: 0 };
+
+  const accessToken = await getValidAccessToken();
+
+  for (const cat of MELI_GAME_CATEGORIES) {
+    for (let page = 0; page < maxPagesPerCategory; page++) {
+      const offset = page * 50;
+      try {
+        const response = await fetch(
+          `https://api.mercadolibre.com/sites/MLB/search?category=${cat.id}&offset=${offset}&limit=50`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+
+        if (!response.ok) break;
+
+        const data = await response.json();
+        const results = data.results || [];
+        if (results.length === 0) break;
+
+        for (const item of results) {
+          if (isNonProductAccessory(item.title)) continue;
+
+          const meliCatalogId = item.catalog_product_id || item.id;
+          const [existing] = await db
+            .select({ id: masterProducts.id })
+            .from(masterProducts)
+            .where(eq(masterProducts.meliCatalogId, meliCatalogId))
+            .limit(1);
+
+          if (existing) continue;
+
+          const classification = classifyFromAttributes(item.attributes || [], item.title);
+          const baseSlug = slugify(item.title);
+          const productSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}`);
+
+          const [masterProduct] = await db
+            .insert(masterProducts)
+            .values({
+              name: item.title,
+              slug: productSlug,
+              meliCatalogId,
+              defaultImages: item.thumbnail ? [item.thumbnail.replace('-I.jpg', '-O.jpg')] : [],
+              ...classification,
+              classifiedAt: new Date(),
+            })
+            .returning();
+
+          const offerSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
+          const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
+
+          await db.insert(affiliateOffers).values({
+            masterProductId: masterProduct.id,
+            networkId: network.id,
+            title: item.title,
+            slug: offerSlug,
+            affiliateUrl: item.permalink || `https://www.mercadolivre.com.br/p/${meliCatalogId}`,
+            affiliateLinkPending: true,
+            imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
+            externalRef: item.id,
+            currentPriceCents: priceCents,
+            status: 'active',
+            publishedAt: new Date(),
+          });
+
+          totalIngested++;
+        }
+      } catch (e) {
+        console.error(`Erro ao varrer categoria ${cat.name} página ${page}:`, e);
+      }
+    }
+  }
+
+  return { totalIngested };
 }

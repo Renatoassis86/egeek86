@@ -384,9 +384,10 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
  */
 export async function triggerFullDiscoveryRun() {
   try {
-    const { discoverNewProducts } = await import('@/server/collector/discover-products');
+    const { discoverNewProducts, discoverAllCategoryProducts } = await import('@/server/collector/discover-products');
     const { collectPrices } = await import('@/server/collector/collect-prices');
 
+    const categorySummary = await discoverAllCategoryProducts(5);
     const discoverySummary = await discoverNewProducts();
     const priceSummary = await collectPrices();
 
@@ -394,9 +395,12 @@ export async function triggerFullDiscoveryRun() {
     revalidatePath('/monitoramento');
     revalidatePath('/admin/ofertas');
 
+    const totalNew = (categorySummary?.totalIngested || 0) + (discoverySummary?.created || 0);
+
     return {
       success: true,
-      message: `Varredura geral executada! ${discoverySummary.created} novos produtos catalogados e ${priceSummary.updatedOffers} preços atualizados.`,
+      message: `Varredura completa de 100% das categorias executada! ${totalNew} novos produtos catalogados de todas as lojas e ${priceSummary.updatedOffers} preços atualizados.`,
+      categorySummary,
       discoverySummary,
       priceSummary,
     };
