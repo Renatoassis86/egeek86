@@ -1,11 +1,15 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { ChevronRight, PackageSearch } from 'lucide-react';
+import { sql } from 'drizzle-orm';
+import { db } from '@/lib/db';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { AdminOfferFilters } from '@/components/admin/admin-offer-filters';
+import { AdminMeliExtractor } from '@/components/admin/admin-meli-extractor';
+import { AdminAutomatedScraperMonitor } from '@/components/admin/admin-automated-scraper-monitor';
 import { GAME_FORMAT_LABELS, GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { formatBRL } from '@/lib/format';
 import { listOffersForAdminFiltered, listNetworks, type AdminOffersFilter } from '@/server/queries/affiliate';
