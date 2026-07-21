@@ -27,16 +27,15 @@ export function AppHeader() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   return (
-    <>
-      <header
-        className={cn(
-          'sticky top-0 z-30 w-full',
-          'h-[var(--header-mobile)] lg:h-[var(--header-desktop)]',
-          'bg-[var(--color-bg-canvas)]/80 backdrop-blur-xl backdrop-saturate-150',
-          'border-b border-[var(--color-border-subtle)]',
-          'pt-safe'
-        )}
-      >
+    <header
+      className={cn(
+        'sticky top-0 z-30 w-full',
+        'h-[var(--header-mobile)] lg:h-[var(--header-desktop)]',
+        'bg-[var(--color-bg-canvas)]/80 backdrop-blur-xl backdrop-saturate-150',
+        'border-b border-[var(--color-border-subtle)]',
+        'pt-safe'
+      )}
+    >
         <div className="mx-auto h-full max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             {/* Botão de Menu Hambúrguer (Três traços no mobile) */}
@@ -313,8 +312,8 @@ export function AppHeader() {
             <ShoppingBag className="size-5" />
           </Button>
         </div>
-      </header>
+      </div>
       <MobileNavDrawer isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
-    </>
+    </header>
   );
 }

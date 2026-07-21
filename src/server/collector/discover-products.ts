@@ -409,7 +409,7 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
           // de verdade, priorizando vitrine sempre cheia sobre garantir
           // comissão em 100% dos cliques. Admin ainda pode trocar pelo link
           // real a qualquer momento em /admin/ofertas/[id].
-          affiliateUrl: `https://www.mercadolivre.com.br/p/${result.id}`,
+          affiliateUrl: `https://www.mercadolivre.com.br/p/${result.id}?matt_tool_id=${process.env.MELI_TOOL_ID || '32740986'}`,
           affiliateLinkPending: false,
           imageUrl: result.pictures?.[0]?.url ?? null,
           externalRef: result.id,
@@ -557,13 +557,17 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
           const offerSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
           const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
 
+          const rawPermalink = item.permalink || `https://www.mercadolivre.com.br/p/${meliCatalogId}`;
+          const toolId = process.env.MELI_TOOL_ID || '32740986';
+          const trackedUrl = rawPermalink.includes('?') ? `${rawPermalink}&matt_tool_id=${toolId}` : `${rawPermalink}?matt_tool_id=${toolId}`;
+
           await db.insert(affiliateOffers).values({
             masterProductId: masterProduct.id,
             networkId: network.id,
             title: item.title,
             slug: offerSlug,
-            affiliateUrl: item.permalink || `https://www.mercadolivre.com.br/p/${meliCatalogId}`,
-            affiliateLinkPending: true,
+            affiliateUrl: trackedUrl,
+            affiliateLinkPending: false,
             imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
             externalRef: item.id,
             currentPriceCents: priceCents,
