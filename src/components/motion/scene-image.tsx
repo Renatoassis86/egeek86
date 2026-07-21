@@ -65,15 +65,12 @@ export function SceneImage({
   return (
     <div className={cn('relative size-full overflow-hidden', className)}>
       {!showFallback && src && (
-        <Image
+        <img
           src={src}
           alt={alt}
-          fill
-          priority={priority}
-          quality={88}
-          sizes="(min-width: 1280px) 96vw, 100vw"
+          referrerPolicy="no-referrer"
           onError={() => setErrored(true)}
-          className={cn(fit === 'contain' ? 'object-contain p-4' : 'object-cover', focalMap[focal])}
+          className={cn('size-full', fit === 'contain' ? 'object-contain p-4' : 'object-cover', focalMap[focal])}
         />
       )}
 
