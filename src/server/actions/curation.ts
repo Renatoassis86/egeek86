@@ -335,3 +335,29 @@ export async function resolveReviewCuration(reviewId: string, correctVerdict: 'a
     return { error: 'Ocorreu um erro no servidor ao tentar finalizar a auditoria.' };
   }
 }
+
+/**
+ * Exclui/desativa permanentemente um vendedor colecionador do banco de dados (Ação Administrativa).
+ */
+export async function deleteSellerAction(sellerId: string) {
+  try {
+    const profile = await getCurrentProfile();
+    if (!profile || profile.role !== 'admin') {
+      return { error: 'Apenas administradores podem excluir colecionadores.' };
+    }
+
+    const { sellers, sellerMetrics } = await import('@/db/schema');
+
+    // 1. Apaga métricas do vendedor
+    await db.delete(sellerMetrics).where(eq(sellerMetrics.sellerId, sellerId));
+
+    // 2. Apaga registro do vendedor
+    await db.delete(sellers).where(eq(sellers.id, sellerId));
+
+    revalidatePath('/admin/colecionadores');
+    return { success: true, message: 'Colecionador removido com sucesso.' };
+  } catch (error) {
+    console.error('Erro ao excluir colecionador:', error);
+    return { error: 'Ocorreu um erro ao excluir o colecionador.' };
+  }
+}

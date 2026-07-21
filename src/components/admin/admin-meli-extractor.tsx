@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Search, RefreshCw, Zap, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, RefreshCw, Zap, CheckCircle2, AlertCircle, Bot } from 'lucide-react';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
@@ -13,11 +13,20 @@ export function AdminMeliExtractor() {
   const [queryInput, setQueryInput] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
   const [isScanningAll, setIsScanningAll] = useState(false);
+  const [autoPilot, setAutoPilot] = useState(false);
   const [lastResult, setLastResult] = useState<{
     message: string;
     created?: number;
     updated?: number;
   } | null>(null);
+
+  useEffect(() => {
+    if (!autoPilot) return;
+    const interval = setInterval(() => {
+      handleFullScan();
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [autoPilot]);
 
   async function handleManualExtract() {
     if (!queryInput.trim()) {
@@ -89,16 +98,31 @@ export function AdminMeliExtractor() {
             </div>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleFullScan}
-            disabled={isScanningAll || isExtracting}
-            className="shrink-0 gap-2 border-[var(--color-border-strong)] hover:border-[var(--color-accent-gold)]"
-          >
-            <RefreshCw className={`size-3.5 ${isScanningAll ? 'animate-spin' : ''}`} />
-            <span>{isScanningAll ? 'Executando Varredura...' : 'Varredura Geral Agora'}</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={autoPilot ? 'hype' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setAutoPilot(!autoPilot);
+                toast(autoPilot ? 'Piloto Automático desativado.' : 'Piloto Automático ativado! Atualizando dados a cada 60s.');
+              }}
+              className="gap-2 text-xs font-bold"
+            >
+              <Bot className={`size-4 ${autoPilot ? 'animate-bounce text-emerald-400' : ''}`} />
+              <span>{autoPilot ? 'Piloto Automático: LIGADO (60s)' : 'Ativar Piloto Automático'}</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFullScan}
+              disabled={isScanningAll || isExtracting}
+              className="shrink-0 gap-2 border-[var(--color-border-strong)] hover:border-[var(--color-accent-gold)]"
+            >
+              <RefreshCw className={`size-3.5 ${isScanningAll ? 'animate-spin' : ''}`} />
+              <span>{isScanningAll ? 'Executando Varredura...' : 'Varredura Geral Agora'}</span>
+            </Button>
+          </div>
         </div>
 
         {/* Input de Busca / Link Manual */}

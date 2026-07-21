@@ -414,3 +414,20 @@ export async function archiveArticle(formData: FormData) {
   revalidatePath('/noticias');
   redirect(`/admin/noticias/${id}?archived=true`);
 }
+
+/**
+ * Exclui permanentemente uma matéria do banco de dados.
+ */
+export async function deleteArticle(articleId: string) {
+  try {
+    await requireAdmin();
+    await db.delete(newsArticles).where(eq(newsArticles.id, articleId));
+
+    revalidatePath('/admin/noticias');
+    revalidatePath('/noticias');
+    return { success: true, message: 'Matéria excluída com sucesso.' };
+  } catch (error) {
+    console.error('Erro ao excluir matéria:', error);
+    return { error: 'Ocorreu um erro ao tentar excluir a matéria.' };
+  }
+}

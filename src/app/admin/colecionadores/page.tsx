@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { getUpcomingDrops, getBadgeName } from '@/server/queries/hype';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
+import { DeleteSellerButton } from '@/components/admin/delete-seller-button';
 
 export const metadata: Metadata = {
   title: 'Admin: Colecionadores e Curadoria',
@@ -133,12 +134,13 @@ export default async function AdminCollectorsPage() {
                   <th className="px-4">XP / Nível</th>
                   <th className="px-4">Nota Média</th>
                   <th className="px-4">Vendas</th>
+                  <th className="px-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border-subtle)] text-[var(--color-text-secondary)] font-mono">
                 {collectorsList.length === 0 ? (
                   <tr className="h-12">
-                    <td colSpan={5} className="px-4 text-center italic text-[var(--color-text-tertiary)]">
+                    <td colSpan={6} className="px-4 text-center italic text-[var(--color-text-tertiary)]">
                       Nenhum colecionador cadastrado no momento.
                     </td>
                   </tr>
@@ -163,6 +165,9 @@ export default async function AdminCollectorsPage() {
                         <span className="text-[10px] text-[var(--color-text-tertiary)] font-normal block">({col.totalReviews || 0} reviews)</span>
                       </td>
                       <td className="px-4">{col.totalOrders || 0} pedidos</td>
+                      <td className="px-4 text-right">
+                        <DeleteSellerButton sellerId={col.id} displayName={col.displayName} />
+                      </td>
                     </tr>
                   ))
                 )}

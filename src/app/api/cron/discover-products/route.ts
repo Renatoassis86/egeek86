@@ -1,24 +1,26 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { discoverNewProducts } from '@/server/collector/discover-products';
+import { discoverNewProducts, discoverAllCategoryProducts } from '@/server/collector/discover-products';
 
 export const dynamic = 'force-dynamic';
-// 120s (era 60s) — mesmo motivo de collect-prices/route.ts (plano Pro,
-// processamento em paralelo por TERM_CONCURRENCY, lote maior por execução).
 export const maxDuration = 120;
 
-/**
- * Disparado periodicamente por um agendador externo (Supabase pg_cron +
- * pg_net), não por um usuário — mesmo padrão de autenticação de
- * /api/cron/collect-prices/route.ts. Frequência recomendada bem menor que a
- * de preço (ex: a cada 6h) — descoberta de produto novo não tem a mesma
- * urgência.
- */
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    // Permite chamadas internas ou com chave
+    const secretParam = request.nextUrl.searchParams.get('key');
+    if (secretParam !== process.env.CRON_SECRET) {
+      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    }
   }
 
-  const summary = await discoverNewProducts();
-  return NextResponse.json(summary);
+  const categorySummary = await discoverAllCategoryProducts(3);
+  const discoverySummary = await discoverNewProducts();
+
+  return NextResponse.json({
+    categorySummary,
+    discoverySummary,
+    status: 'success',
+    timestamp: new Date().toISOString(),
+  });
 }
