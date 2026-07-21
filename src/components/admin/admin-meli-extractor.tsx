@@ -46,7 +46,7 @@ export function AdminMeliExtractor() {
         setLastResult({
           message: result.message || 'Extração concluída com sucesso!',
           created: result.discoverySummary?.created,
-          updated: result.priceSummary?.updatedOffers,
+          updated: result.priceSummary?.updated,
         });
         setQueryInput('');
       }
@@ -70,7 +70,7 @@ export function AdminMeliExtractor() {
         setLastResult({
           message: result.message || 'Varredura geral concluída com sucesso!',
           created: result.discoverySummary?.created,
-          updated: result.priceSummary?.updatedOffers,
+          updated: result.priceSummary?.updated,
         });
       }
     } catch {
