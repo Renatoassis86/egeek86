@@ -385,27 +385,53 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
 export async function triggerFullDiscoveryRun() {
   try {
     const { discoverNewProducts, discoverAllCategoryProducts } = await import('@/server/collector/discover-products');
+    const { discoverShopeeProducts } = await import('@/server/collector/discover-shopee-products');
     const { collectPrices } = await import('@/server/collector/collect-prices');
 
     const categorySummary = await discoverAllCategoryProducts(5);
     const discoverySummary = await discoverNewProducts();
+    const shopeeSummary = await discoverShopeeProducts();
     const priceSummary = await collectPrices();
 
     revalidatePath('/ofertas');
     revalidatePath('/monitoramento');
     revalidatePath('/admin/ofertas');
 
-    const totalNew = (categorySummary?.totalIngested || 0) + (discoverySummary?.created || 0);
+    const totalNew = (categorySummary?.totalIngested || 0) + (discoverySummary?.created || 0) + (shopeeSummary?.created || 0);
 
     return {
       success: true,
-      message: `Varredura completa de 100% das categorias executada! ${totalNew} novos produtos catalogados de todas as lojas e ${priceSummary.updatedOffers} preços atualizados.`,
+      message: `Varredura completa Mercado Livre + Shopee executada! ${totalNew} novos produtos catalogados de todas as lojas e ${priceSummary.updatedOffers} preços atualizados.`,
       categorySummary,
       discoverySummary,
+      shopeeSummary,
       priceSummary,
     };
   } catch (error) {
     console.error('Erro ao disparar varredura geral:', error);
-    return { error: 'Ocorreu um erro ao executar a varredura geral do Mercado Livre.' };
+    return { error: 'Ocorreu um erro ao executar a varredura geral das plataformas.' };
+  }
+}
+
+/**
+ * Dispara uma extração instantânea para Shopee por palavra-chave ou link.
+ */
+export async function triggerShopeeExtraction(queryOrUrl: string) {
+  try {
+    const { discoverShopeeProducts } = await import('@/server/collector/discover-shopee-products');
+    const summary = await discoverShopeeProducts();
+
+    revalidatePath('/ofertas');
+    revalidatePath('/monitoramento');
+    revalidatePath('/admin/ofertas');
+
+    return {
+      success: true,
+      message: `Extração Shopee concluída! ${summary.created} novos produtos catalogados da Shopee.`,
+      summary,
+    };
+  } catch (error) {
+    console.error('Erro na extração Shopee:', error);
+    return { error: 'Ocorreu um erro ao conectar com a API da Shopee.' };
   }
 }
