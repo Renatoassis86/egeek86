@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts, systemConfig } from '@/db/schema';
-import { fetchShopeeGraphQL } from './sources/shopee-auth';
+import { fetchShopeeGraphQL, generateShopeeAffiliateLink } from './sources/shopee-auth';
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
 import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
@@ -167,14 +167,16 @@ export async function discoverShopeeProducts(): Promise<{
 
           const offerSlug = slugify(`${item.productName}-shopee-${randomUUID().slice(0, 6)}`);
           const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
+          const rawUrl = item.offerLink || item.productLink || `https://shopee.com.br`;
+          const finalAffiliateUrl = item.offerLink || (await generateShopeeAffiliateLink(rawUrl));
 
           await db.insert(affiliateOffers).values({
             masterProductId: masterProduct.id,
             networkId: network.id,
             title: item.productName,
             slug: offerSlug,
-            affiliateUrl: item.offerLink || item.productLink || `https://shopee.com.br`,
-            affiliateLinkPending: !item.offerLink,
+            affiliateUrl: finalAffiliateUrl,
+            affiliateLinkPending: false, // Ativo automaticamente com link de comissão
             imageUrl: item.imageUrl || null,
             externalRef: shopeeRef,
             currentPriceCents: priceCents,

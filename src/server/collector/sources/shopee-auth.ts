@@ -47,3 +47,27 @@ export async function fetchShopeeGraphQL<T = any>(query: string, variables: Reco
 
   return json.data as T;
 }
+
+/**
+ * Gera um link de afiliado rastreável oficial da Shopee a partir de qualquer URL original de produto.
+ */
+export async function generateShopeeAffiliateLink(originUrl: string): Promise<string> {
+  try {
+    const mutation = `
+      mutation GenerateCustomLink($originUrl: String!) {
+        generateCustomLink(input: { originUrl: $originUrl }) {
+          shortLink
+          longLink
+        }
+      }
+    `;
+    const data = await fetchShopeeGraphQL(mutation, { originUrl });
+    const link = data?.generateCustomLink?.shortLink || data?.generateCustomLink?.longLink;
+    if (link) return link;
+  } catch (e) {
+    console.error('Erro ao gerar link customizado Shopee via GraphQL:', e);
+  }
+
+  // Fallback: anexa o parâmetro oficial de rastreio de comissão de afiliado
+  return `https://s.shopee.com.br/redirect?url=${encodeURIComponent(originUrl)}&app_id=${SHOPEE_APP_ID}`;
+}
