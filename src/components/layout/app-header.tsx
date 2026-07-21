@@ -64,6 +64,7 @@ export function AppHeader() {
             className="theme-logo h-6 lg:h-7 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
+      </div>
 
         {/* Nav desktop */}
         <nav className="hidden lg:flex items-center gap-1" aria-label="Navegação principal">
