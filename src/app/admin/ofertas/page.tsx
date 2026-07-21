@@ -66,7 +66,34 @@ export default async function AdminOffersPage({
     sortBy: sp.ordenar === 'price_asc' || sp.ordenar === 'price_desc' ? sp.ordenar : 'recent',
   };
 
-  const [offers, networks] = await Promise.all([listOffersForAdminFiltered(filter), listNetworks()]);
+  const [offers, networks, masterRes, offersRes, snapshotsRes, recentRes] = await Promise.all([
+    listOffersForAdminFiltered(filter),
+    listNetworks(),
+    db.execute<{ count: number }>(sql`SELECT COUNT(*)::int as count FROM master_products`),
+    db.execute<{ count: number }>(sql`SELECT COUNT(*)::int as count FROM affiliate_offers WHERE status = 'active'`),
+    db.execute<{ count: number }>(sql`SELECT COUNT(*)::int as count FROM affiliate_price_snapshots`),
+    db.execute<any>(sql`
+      SELECT o.id, o.title, o.current_price_cents, o.image_url, o.published_at, n.name as network_name
+      FROM affiliate_offers o
+      INNER JOIN affiliate_networks n ON n.id = o.network_id
+      ORDER BY o.published_at DESC
+      LIMIT 5
+    `),
+  ]);
+
+  const stats = {
+    totalMasterProducts: masterRes[0]?.count ?? 0,
+    totalActiveOffers: offersRes[0]?.count ?? 0,
+    totalPriceSnapshots: snapshotsRes[0]?.count ?? 0,
+    lastIngestedItems: recentRes.map((r) => ({
+      id: r.id,
+      title: r.title,
+      priceCents: Number(r.current_price_cents || 0),
+      imageUrl: r.image_url,
+      networkName: r.network_name,
+      publishedAt: r.published_at ? new Date(r.published_at).toLocaleTimeString('pt-BR') : 'Hoje',
+    })),
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -83,6 +110,8 @@ export default async function AdminOffersPage({
           <Link href="/admin/ofertas/novo">Nova oferta</Link>
         </Button>
       </div>
+
+      <AdminAutomatedScraperMonitor stats={stats} />
 
       <AdminMeliExtractor />
 

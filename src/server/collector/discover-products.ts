@@ -296,8 +296,6 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
   const TERM_CONCURRENCY = 4;
   await mapWithConcurrency(terms, TERM_CONCURRENCY, async (searchTerm) => {
     summary.termsSearched++;
-    let results: MeliSearchResult[];
-    summary.termsSearched++;
     let results: MeliSearchResult[] = [];
     try {
       // 1. Busca no Catálogo Buy-Box (/products/search)

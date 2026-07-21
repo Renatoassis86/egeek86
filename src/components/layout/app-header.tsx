@@ -313,9 +313,8 @@ export function AppHeader() {
             <ShoppingBag className="size-5" />
           </Button>
         </div>
-      </div>
-    </header>
-    <MobileNavDrawer isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
+      </header>
+      <MobileNavDrawer isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
     </>
   );
 }
