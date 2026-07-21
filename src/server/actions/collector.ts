@@ -386,25 +386,32 @@ export async function triggerFullDiscoveryRun() {
   try {
     const { discoverNewProducts, discoverAllCategoryProducts } = await import('@/server/collector/discover-products');
     const { discoverShopeeProducts } = await import('@/server/collector/discover-shopee-products');
+    const { discoverMagaluProducts } = await import('@/server/collector/discover-magalu-products');
     const { collectPrices } = await import('@/server/collector/collect-prices');
 
     const categorySummary = await discoverAllCategoryProducts(5);
     const discoverySummary = await discoverNewProducts();
     const shopeeSummary = await discoverShopeeProducts();
+    const magaluSummary = await discoverMagaluProducts();
     const priceSummary = await collectPrices();
 
     revalidatePath('/ofertas');
     revalidatePath('/monitoramento');
     revalidatePath('/admin/ofertas');
 
-    const totalNew = (categorySummary?.totalIngested || 0) + (discoverySummary?.created || 0) + (shopeeSummary?.created || 0);
+    const totalNew =
+      (categorySummary?.totalIngested || 0) +
+      (discoverySummary?.created || 0) +
+      (shopeeSummary?.created || 0) +
+      (magaluSummary?.created || 0);
 
     return {
       success: true,
-      message: `Varredura completa Mercado Livre + Shopee executada! ${totalNew} novos produtos catalogados de todas as lojas e ${priceSummary.updatedOffers} preços atualizados.`,
+      message: `Varredura completa Mercado Livre + Shopee + Magalu executada! ${totalNew} novos produtos catalogados de todas as lojas e ${priceSummary.updatedOffers} preços atualizados.`,
       categorySummary,
       discoverySummary,
       shopeeSummary,
+      magaluSummary,
       priceSummary,
     };
   } catch (error) {
@@ -433,5 +440,28 @@ export async function triggerShopeeExtraction(queryOrUrl: string) {
   } catch (error) {
     console.error('Erro na extração Shopee:', error);
     return { error: 'Ocorreu um erro ao conectar com a API da Shopee.' };
+  }
+}
+
+/**
+ * Dispara uma extração instantânea para Magazine Luiza (Magalu).
+ */
+export async function triggerMagaluExtraction(queryOrUrl?: string) {
+  try {
+    const { discoverMagaluProducts } = await import('@/server/collector/discover-magalu-products');
+    const summary = await discoverMagaluProducts();
+
+    revalidatePath('/ofertas');
+    revalidatePath('/monitoramento');
+    revalidatePath('/admin/ofertas');
+
+    return {
+      success: true,
+      message: `Extração Magalu concluída! ${summary.created} novos produtos catalogados do Magazine Luiza.`,
+      summary,
+    };
+  } catch (error) {
+    console.error('Erro na extração Magalu:', error);
+    return { error: 'Ocorreu um erro ao conectar com a API do Magalu.' };
   }
 }
