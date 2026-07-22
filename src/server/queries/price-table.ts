@@ -74,13 +74,16 @@ export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<
 
   const whereClause = sql.join(conditions, sql` AND `);
 
-  let orderByClause = sql`mp.name ASC, o.current_price_cents ASC`;
+  // Referencia as colunas como saem da CTE distinct_products (mp_name,
+  // current_price_cents sem alias de tabela) — não os nomes originais de
+  // master_products/affiliate_offers, que só existem dentro da CTE.
+  let orderByClause = sql`mp.mp_name ASC, mp.current_price_cents ASC`;
   if (filter.sortBy === 'name_desc') {
-    orderByClause = sql`mp.name DESC, o.current_price_cents ASC`;
+    orderByClause = sql`mp.mp_name DESC, mp.current_price_cents ASC`;
   } else if (filter.sortBy === 'price_asc') {
-    orderByClause = sql`o.current_price_cents ASC, mp.name ASC`;
+    orderByClause = sql`mp.current_price_cents ASC, mp.mp_name ASC`;
   } else if (filter.sortBy === 'price_desc') {
-    orderByClause = sql`o.current_price_cents DESC, mp.name ASC`;
+    orderByClause = sql`mp.current_price_cents DESC, mp.mp_name ASC`;
   }
 
   const countQuery = sql`
