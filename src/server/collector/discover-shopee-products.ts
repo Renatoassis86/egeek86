@@ -1,11 +1,10 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { affiliateOffers, affiliateNetworks, masterProducts, systemConfig } from '@/db/schema';
-import { fetchShopeeGraphQL, generateShopeeAffiliateLink } from './sources/shopee-auth';
+import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema';
+import { fetchShopeeGraphQL, generateShopeeAffiliateLink, hasShopeeAffiliateCredentials } from './sources/shopee-auth';
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
-import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory } from './discover-products';
 
@@ -29,13 +28,14 @@ const SHOPEE_SEARCH_TERMS = [
   'controle xbox series',
 ];
 
-interface ShopeeItemNode {
-  itemId: string | number;
+interface ShopeeItem {
+  itemId: string;
   productName: string;
-  price: number | string;
-  offerLink?: string;
-  imageUrl?: string;
-  productLink?: string;
+  price: number;
+  imageUrl: string | null;
+  productLink: string;
+  /** Só vem preenchido quando a API oficial de afiliados (com credencial aprovada) devolveu link de comissão de verdade. */
+  offerLink?: string | null;
 }
 
 export async function ensureShopeeNetwork() {
@@ -61,6 +61,75 @@ export async function ensureShopeeNetwork() {
   return created;
 }
 
+/** Só chamada quando hasShopeeAffiliateCredentials() — evita gastar uma chamada de rede fadada a falhar sem credencial real. */
+async function fetchViaOfficialGraphQL(term: string): Promise<ShopeeItem[]> {
+  const gqlQuery = `
+    query ProductOffer($keyword: String, $page: Int, $limit: Int) {
+      productOfferV2(keyword: $keyword, page: $page, limit: $limit) {
+        nodes { itemId productName price offerLink imageUrl productLink }
+      }
+    }
+  `;
+  const gqlData = await fetchShopeeGraphQL(gqlQuery, { keyword: term, page: 1, limit: 30 });
+  const nodes = gqlData?.productOfferV2?.nodes || [];
+
+  const items: ShopeeItem[] = [];
+  for (const n of nodes) {
+    const price = Number(n?.price ?? NaN);
+    if (!n?.itemId || !n?.productName || !n?.offerLink || !Number.isFinite(price) || price <= 0) continue;
+    items.push({
+      itemId: String(n.itemId),
+      productName: n.productName,
+      price,
+      imageUrl: n.imageUrl || null,
+      productLink: n.productLink || n.offerLink,
+      offerLink: n.offerLink,
+    });
+  }
+  return items;
+}
+
+/** Endpoint público de busca (sem autenticação) — plano B enquanto não há aprovação de afiliado Shopee. */
+async function fetchViaPublicSearch(term: string): Promise<ShopeeItem[]> {
+  const res = await fetch(
+    `https://shopee.com.br/api/v4/search/search_items?by=relevancy&keyword=${encodeURIComponent(term)}&limit=30&newest=0&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2`,
+    {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Referer': `https://shopee.com.br/search?keyword=${encodeURIComponent(term)}`,
+      },
+      signal: AbortSignal.timeout(10_000),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`endpoint público HTTP ${res.status} — provável bloqueio anti-bot`);
+  }
+
+  const data = await res.json();
+  const rawItems = data?.items || [];
+
+  const items: ShopeeItem[] = [];
+  for (const ri of rawItems) {
+    const b = ri?.item_basic;
+    const id = b?.itemid ?? b?.item_id;
+    const shopId = b?.shopid;
+    const price = typeof b?.price === 'number' ? b.price / 100000 : NaN;
+    if (!id || !shopId || !b?.name || !Number.isFinite(price) || price <= 0) continue;
+
+    items.push({
+      itemId: String(id),
+      productName: b.name,
+      price,
+      imageUrl: b.image ? `https://down-br.img.susercontent.com/file/${b.image}` : null,
+      productLink: `https://shopee.com.br/product/${shopId}/${id}`,
+      offerLink: null,
+    });
+  }
+  return items;
+}
+
 export async function discoverShopeeProducts(): Promise<{
   termsSearched: number;
   found: number;
@@ -76,60 +145,19 @@ export async function discoverShopeeProducts(): Promise<{
     errors: [] as string[],
   };
 
+  const useOfficialApi = hasShopeeAffiliateCredentials();
+
   try {
     const network = await ensureShopeeNetwork();
 
     for (const term of SHOPEE_SEARCH_TERMS) {
       summary.termsSearched++;
-      let items: ShopeeItemNode[] = [];
+      let items: ShopeeItem[] = [];
 
-      // 1. Tenta via API GraphQL Oficial da Shopee
       try {
-        const gqlQuery = `
-          query ProductOffer($keyword: String, $page: Int, $limit: Int) {
-            productOfferV2(keyword: $keyword, page: $page, limit: $limit) {
-              nodes {
-                itemId
-                productName
-                price
-                offerLink
-                imageUrl
-                productLink
-              }
-            }
-          }
-        `;
-        const gqlData = await fetchShopeeGraphQL(gqlQuery, { keyword: term, page: 1, limit: 30 });
-        items = gqlData?.productOfferV2?.nodes || [];
+        items = useOfficialApi ? await fetchViaOfficialGraphQL(term) : await fetchViaPublicSearch(term);
       } catch (err) {
-        // Fallback: Busca via Endpoint Público de Busca Shopee Brasil
-        try {
-          const publicRes = await fetch(
-            `https://shopee.com.br/api/v4/search/search_items?by=relevancy&keyword=${encodeURIComponent(term)}&limit=30&newest=0&order=desc&page_type=search&scenario=PAGE_GLOBAL_SEARCH&version=2`,
-            {
-              headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Accept': 'application/json',
-              },
-            }
-          );
-          if (publicRes.ok) {
-            const publicData = await publicRes.json();
-            const rawItems = publicData?.items || [];
-            items = rawItems.map((ri: any) => {
-              const b = ri.item_basic || {};
-              return {
-                itemId: String(b.itemid || b.item_id || Math.random()),
-                productName: b.name || term,
-                price: b.price ? b.price / 100000 : 0,
-                imageUrl: b.image ? `https://down-br.img.susercontent.com/file/${b.image}` : null,
-                productLink: `https://shopee.com.br/product/${b.shopid || '0'}/${b.itemid || '0'}`,
-              };
-            });
-          }
-        } catch (fallbackErr) {
-          summary.errors.push(`Erro ao buscar Shopee (${term}): ${(err as Error).message}`);
-        }
+        summary.errors.push(`Erro ao buscar Shopee (${term}): ${(err as Error).message}`);
       }
 
       summary.found += items.length;
@@ -151,7 +179,6 @@ export async function discoverShopeeProducts(): Promise<{
           }
 
           const classification = classifyFromAttributes([], item.productName);
-          const baseSlug = slugify(item.productName);
           const productSlug = slugify(`${item.productName}-shopee-${String(item.itemId).slice(-6)}`);
 
           const [masterProduct] = await db
@@ -166,18 +193,22 @@ export async function discoverShopeeProducts(): Promise<{
             .returning();
 
           const offerSlug = slugify(`${item.productName}-shopee-${randomUUID().slice(0, 6)}`);
-          const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
-          const rawUrl = item.offerLink || item.productLink || `https://shopee.com.br`;
-          const finalAffiliateUrl = item.offerLink || (await generateShopeeAffiliateLink(rawUrl));
+          const priceCents = Math.round(item.price * 100);
+
+          // offerLink real só existe quando veio da API oficial com credencial
+          // aprovada; caso contrário usa a URL pública genuína e marca como
+          // pendente — mesma convenção usada no resto do coletor (ver
+          // affiliateLinkPending em src/server/actions/affiliate.ts).
+          const realAffiliateUrl = item.offerLink || (await generateShopeeAffiliateLink(item.productLink));
 
           await db.insert(affiliateOffers).values({
             masterProductId: masterProduct.id,
             networkId: network.id,
             title: item.productName,
             slug: offerSlug,
-            affiliateUrl: finalAffiliateUrl,
-            affiliateLinkPending: false, // Ativo automaticamente com link de comissão
-            imageUrl: item.imageUrl || null,
+            affiliateUrl: realAffiliateUrl || item.productLink,
+            affiliateLinkPending: !realAffiliateUrl,
+            imageUrl: item.imageUrl,
             externalRef: shopeeRef,
             currentPriceCents: priceCents,
             status: 'active',

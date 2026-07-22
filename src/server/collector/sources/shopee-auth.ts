@@ -1,28 +1,39 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
 
-export const SHOPEE_APP_ID = process.env.SHOPEE_APP_ID || '18366231139';
-export const SHOPEE_SECRET = process.env.SHOPEE_SECRET || '7MLEHQMQVUNF2GTSEUKIDGEGDX3SECUV';
+/**
+ * Mesmos nomes de env var documentados em .env.example/.env.local — sem
+ * fallback hardcoded. As credenciais antigas hardcoded aqui foram testadas
+ * ao vivo contra o endpoint oficial em 2026-07-21 e voltaram "Invalid
+ * Signature" (código 10020): não são uma conta de afiliado aprovada.
+ */
+export const SHOPEE_AFFILIATE_APP_ID = process.env.SHOPEE_AFFILIATE_APP_ID || '';
+export const SHOPEE_AFFILIATE_APP_SECRET = process.env.SHOPEE_AFFILIATE_APP_SECRET || '';
 export const SHOPEE_GRAPHQL_ENDPOINT = 'https://open-api.affiliate.shopee.com.br/graphql';
+
+export function hasShopeeAffiliateCredentials(): boolean {
+  return Boolean(SHOPEE_AFFILIATE_APP_ID && SHOPEE_AFFILIATE_APP_SECRET);
+}
 
 /**
  * Gera os cabeçalhos de autenticação oficial da Shopee Affiliate Open API (GraphQL).
  * A assinatura SHA256 é calculada com: AppID + Timestamp + Payload + Secret.
  */
-export function generateShopeeAuthHeaders(payloadString: string) {
+function generateShopeeAuthHeaders(payloadString: string) {
   const timestamp = Math.floor(Date.now() / 1000);
-  const factor = `${SHOPEE_APP_ID}${timestamp}${payloadString}${SHOPEE_SECRET}`;
+  const factor = `${SHOPEE_AFFILIATE_APP_ID}${timestamp}${payloadString}${SHOPEE_AFFILIATE_APP_SECRET}`;
   const signature = createHash('sha256').update(factor).digest('hex');
 
   return {
     'Content-Type': 'application/json',
-    'Authorization': `SHA256 Credential=${SHOPEE_APP_ID}, Timestamp=${timestamp}, Signature=${signature}`,
+    'Authorization': `SHA256 Credential=${SHOPEE_AFFILIATE_APP_ID}, Timestamp=${timestamp}, Signature=${signature}`,
     'User-Agent': 'EspacoGeek86-Scraper/1.0',
   };
 }
 
 /**
  * Executa uma requisição GraphQL autenticada para a API oficial da Shopee.
+ * Só chamar depois de checar hasShopeeAffiliateCredentials().
  */
 export async function fetchShopeeGraphQL<T = any>(query: string, variables: Record<string, any> = {}): Promise<T> {
   const body = JSON.stringify({ query, variables });
@@ -33,6 +44,7 @@ export async function fetchShopeeGraphQL<T = any>(query: string, variables: Reco
     headers,
     body,
     cache: 'no-store',
+    signal: AbortSignal.timeout(10_000),
   });
 
   if (!res.ok) {
@@ -49,9 +61,15 @@ export async function fetchShopeeGraphQL<T = any>(query: string, variables: Reco
 }
 
 /**
- * Gera um link de afiliado rastreável oficial da Shopee a partir de qualquer URL original de produto.
+ * Gera um link de afiliado rastreável oficial da Shopee a partir de uma URL
+ * de produto. Retorna null (nunca um link fabricado) quando não há
+ * credencial de afiliado aprovada configurada, ou quando a mutation falha —
+ * o chamador deve usar a URL pública original e marcar `affiliateLinkPending:
+ * true` nesse caso, nunca fingir comissão que não existe.
  */
-export async function generateShopeeAffiliateLink(originUrl: string): Promise<string> {
+export async function generateShopeeAffiliateLink(originUrl: string): Promise<string | null> {
+  if (!hasShopeeAffiliateCredentials()) return null;
+
   try {
     const mutation = `
       mutation GenerateCustomLink($originUrl: String!) {
@@ -62,12 +80,9 @@ export async function generateShopeeAffiliateLink(originUrl: string): Promise<st
       }
     `;
     const data = await fetchShopeeGraphQL(mutation, { originUrl });
-    const link = data?.generateCustomLink?.shortLink || data?.generateCustomLink?.longLink;
-    if (link) return link;
+    return data?.generateCustomLink?.shortLink || data?.generateCustomLink?.longLink || null;
   } catch (e) {
     console.error('Erro ao gerar link customizado Shopee via GraphQL:', e);
+    return null;
   }
-
-  // Fallback: anexa o parâmetro oficial de rastreio de comissão de afiliado
-  return `https://s.shopee.com.br/redirect?url=${encodeURIComponent(originUrl)}&app_id=${SHOPEE_APP_ID}`;
 }
