@@ -48,7 +48,7 @@ const DEMO_FALLBACK_HISTORY = {
     { time: Math.floor(Date.now() / 1000) - 86400 * 10, value: 299 },
     { time: Math.floor(Date.now() / 1000), value: 299 },
   ],
-  movingAveragePoints: [
+  avgPoints: [
     { time: Math.floor(Date.now() / 1000) - 86400 * 30, value: 325 },
     { time: Math.floor(Date.now() / 1000) - 86400 * 20, value: 315 },
     { time: Math.floor(Date.now() / 1000) - 86400 * 10, value: 305 },

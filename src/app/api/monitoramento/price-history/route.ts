@@ -49,21 +49,21 @@ export function generateTimeframeHistory(timeframe: PriceHistoryTimeframe = '1M'
   const startTime = now - durationSeconds;
 
   const points = [];
-  const movingAveragePoints = [];
+  const avgPoints = [];
 
   for (let i = 0; i < steps; i++) {
     const time = startTime + i * stepSeconds;
     const factor = 1 + Math.sin(i / 1.5) * 0.03 + (steps - 1 - i) * 0.004;
     const value = Math.round(basePrice * factor * 100) / 100;
-    const maValue = Math.round((value + 2.5) * 100) / 100;
+    const avgValue = Math.round((value + 2.5) * 100) / 100;
 
     points.push({ time, value });
-    movingAveragePoints.push({ time, value: maValue });
+    avgPoints.push({ time, value: avgValue });
   }
 
   return {
     points,
-    movingAveragePoints,
+    avgPoints,
     pointOffers: {},
     quotes: [],
     totalOffersCount: 3,
@@ -78,23 +78,23 @@ export function generateTimeframeHistory(timeframe: PriceHistoryTimeframe = '1M'
 }
 
 export async function GET(request: NextRequest) {
+  const masterProductId = request.nextUrl.searchParams.get('masterProductId') ?? 'demo-1';
+  const timeframe = (request.nextUrl.searchParams.get('timeframe') as PriceHistoryTimeframe) ?? '1M';
+
+  // Dado sintético só pro modo demonstração (visitante sem conta) — nunca
+  // como fallback pra um produto real com pouco histórico. Esse último caso
+  // já é tratado honestamente no front (PriceHistoryChart mostra "ainda não
+  // há histórico suficiente" quando points.length < 2), em vez de fingir uma
+  // tendência de preço que não existe.
+  if (masterProductId.startsWith('demo-')) {
+    return NextResponse.json(generateTimeframeHistory(timeframe, 299));
+  }
+
   try {
-    const masterProductId = request.nextUrl.searchParams.get('masterProductId') ?? 'demo-1';
-    const timeframe = (request.nextUrl.searchParams.get('timeframe') as PriceHistoryTimeframe) ?? '1M';
-
-    if (masterProductId.startsWith('demo-')) {
-      return NextResponse.json(generateTimeframeHistory(timeframe, 299));
-    }
-
     const result = await getMasterProductPriceHistory(masterProductId, timeframe);
-    if (!result || !result.points || result.points.length < 2) {
-      return NextResponse.json(generateTimeframeHistory(timeframe, 299));
-    }
-
     return NextResponse.json(result);
   } catch (error) {
     console.error('Erro na API de histórico de preços:', error);
-    const timeframe = (request.nextUrl.searchParams.get('timeframe') as PriceHistoryTimeframe) ?? '1M';
-    return NextResponse.json(generateTimeframeHistory(timeframe, 299));
+    return NextResponse.json({ error: 'Falha ao carregar histórico de preço' }, { status: 500 });
   }
 }

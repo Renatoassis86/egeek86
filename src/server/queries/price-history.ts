@@ -26,14 +26,12 @@ const TIMEFRAME_MS: Record<Exclude<PriceHistoryTimeframe, 'Tudo'>, number> = {
 };
 
 /**
- * Janela da média móvel, por período exibido — mesmo espírito de MA7/MA25 de
- * gráfico de bolsa, mas escalada pelo próprio período em vez de fixa: no "1D"
- * uma janela de dias ficaria achatada num ponto só; no "1A" uma janela de
- * horas seria ruído puro. É por TEMPO (não por quantidade de pontos), porque
- * os eventos de coleta são irregulares — dia com muito vendedor postando
- * preço tem mais pontos que dia parado, e isso não pode distorcer a média.
+ * Tamanho do "balde" de tempo pra agregar o preço médio entre todas as lojas,
+ * por período exibido — escalado pelo período (não por contagem de pontos):
+ * no "1D" um balde de 4h ainda mostra a variação dentro do dia; no "1A" um
+ * balde de hora seria ruído puro.
  */
-const MOVING_AVERAGE_WINDOW_MS: Record<PriceHistoryTimeframe, number> = {
+const AVG_BUCKET_MS: Record<PriceHistoryTimeframe, number> = {
   '1D': 4 * 60 * 60 * 1000,
   '1S': 24 * 60 * 60 * 1000,
   '1M': 3 * 24 * 60 * 60 * 1000,
@@ -43,24 +41,35 @@ const MOVING_AVERAGE_WINDOW_MS: Record<PriceHistoryTimeframe, number> = {
   Tudo: 30 * 24 * 60 * 60 * 1000,
 };
 
-/** Média móvel por janela de tempo (não por contagem de pontos) — two-pointer, O(n), assume `points` já ordenado por time. */
-function computeMovingAverage(points: PricePoint[], windowMs: number): PricePoint[] {
-  const windowSeconds = windowMs / 1000;
-  const result: PricePoint[] = [];
-  let sum = 0;
-  let start = 0;
+/**
+ * Preço médio real de TODA cotação (toda loja, toda plataforma) dentro de
+ * cada balde de tempo — soma de todo price_cents coletado no balde, dividido
+ * pela quantidade. Diferente de `points` (menor preço vigente): aqui um
+ * vendedor mais caro que nunca chegou a ganhar o "menor preço" ainda pesa na
+ * média — é o preço médio de mercado do produto, não só o mais barato de
+ * cada instante. Nunca fabrica ponto pra balde sem cotação nenhuma (ao
+ * contrário de `points`, que precisa de linha contínua).
+ */
+function computeBucketedAverage(rows: { collected_at: string; price_cents: string }[], bucketMs: number): PricePoint[] {
+  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
+  const buckets = new Map<number, { sum: number; count: number }>();
 
-  for (let i = 0; i < points.length; i++) {
-    sum += points[i].value;
-    while (points[start].time < points[i].time - windowSeconds) {
-      sum -= points[start].value;
-      start++;
+  for (const row of rows) {
+    const timeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
+    const bucketTime = Math.floor(timeSeconds / bucketSeconds) * bucketSeconds;
+    const priceReais = Number(row.price_cents) / 100;
+    const bucket = buckets.get(bucketTime);
+    if (bucket) {
+      bucket.sum += priceReais;
+      bucket.count += 1;
+    } else {
+      buckets.set(bucketTime, { sum: priceReais, count: 1 });
     }
-    const count = i - start + 1;
-    result.push({ time: points[i].time, value: sum / count });
   }
 
-  return result;
+  return [...buckets.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([time, { sum, count }]) => ({ time, value: sum / count }));
 }
 
 export interface PricePoint {
@@ -102,8 +111,8 @@ export interface PriceHistoryStats {
 
 export interface PriceHistoryResult {
   points: PricePoint[];
-  /** Média móvel (janela de tempo escalada pelo timeframe) sobre `points` — acompanha a tendência sem saltar a cada evento isolado. */
-  movingAveragePoints: PricePoint[];
+  /** Preço médio real entre TODAS as lojas/plataformas, em baldes de tempo escalados pelo timeframe — não é média móvel de `points`, é a média de mercado do produto. */
+  avgPoints: PricePoint[];
   /** Metadados do vendedor vencedor em cada ponto — chave é o mesmo `time` do PricePoint correspondente. */
   pointOffers: Record<number, PriceHistoryPointOffer>;
   /** Média/máximo somam TODA cotação de TODO vendedor ativo do produto no período (não só a série de menor preço do gráfico); mínimo coincide com o ponto mais baixo do gráfico de qualquer forma. */
@@ -385,9 +394,9 @@ export async function getMasterProductPriceHistory(
     lastTime = qTime;
   }
 
-  const movingAveragePoints = computeMovingAverage(points, MOVING_AVERAGE_WINDOW_MS[timeframe]);
+  const avgPoints = computeBucketedAverage(rows, AVG_BUCKET_MS[timeframe]);
 
-  return { points, movingAveragePoints, pointOffers, stats, quotes: adjustedQuotes, totalQuoteCount, totalOffersCount };
+  return { points, avgPoints, pointOffers, stats, quotes: adjustedQuotes, totalQuoteCount, totalOffersCount };
 }
 
 export type MoverPeriod = '24h' | '7d' | '30d';

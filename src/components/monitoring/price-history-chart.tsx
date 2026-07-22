@@ -59,7 +59,7 @@ export function PriceHistoryChart({
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
-  const maSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const avgSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const quotesSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const skipNextFetch = useRef(true);
   const requestIdRef = useRef(0);
@@ -119,11 +119,10 @@ export function PriceHistoryChart({
       autoscaleInfoProvider: autoscaleProvider,
     });
 
-    // Média móvel (janela escalada pelo período selecionado) — acompanha a
-    // tendência da série de menor preço sem saltar a cada evento isolado de
-    // coleta. Linha fina tracejada de propósito: nunca deve competir
-    // visualmente com a série principal, é só contexto de tendência.
-    const maSeries = chart.addSeries(LineSeries, {
+    // Preço médio real entre todas as lojas/plataformas (não é média móvel
+    // do menor preço) — linha fina tracejada de propósito: nunca deve
+    // competir visualmente com a série principal, é só contexto de mercado.
+    const avgSeries = chart.addSeries(LineSeries, {
       color: palette.movingAverage,
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
@@ -186,14 +185,14 @@ export function PriceHistoryChart({
 
     chartRef.current = chart;
     seriesRef.current = series;
-    maSeriesRef.current = maSeries;
+    avgSeriesRef.current = avgSeries;
     quotesSeriesRef.current = quotesSeries;
 
     return () => {
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
-      maSeriesRef.current = null;
+      avgSeriesRef.current = null;
       quotesSeriesRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- monta uma vez só, tema é aplicado à parte no efeito abaixo
@@ -201,7 +200,7 @@ export function PriceHistoryChart({
 
   // Recolore o gráfico quando o tema (dark/light) muda.
   useEffect(() => {
-    if (!chartRef.current || !seriesRef.current || !maSeriesRef.current) return;
+    if (!chartRef.current || !seriesRef.current || !avgSeriesRef.current) return;
     const palette = CHART_PALETTES[resolvedTheme];
     chartRef.current.applyOptions({
       layout: { textColor: palette.text },
@@ -214,15 +213,15 @@ export function PriceHistoryChart({
       topColor: palette.areaTop,
       bottomColor: palette.areaBottom,
     });
-    maSeriesRef.current.applyOptions({ color: palette.movingAverage });
+    avgSeriesRef.current.applyOptions({ color: palette.movingAverage });
   }, [resolvedTheme]);
 
   // Empurra os dados atuais pra série sempre que mudarem.
   useEffect(() => {
-    if (!seriesRef.current || !maSeriesRef.current || !quotesSeriesRef.current) return;
+    if (!seriesRef.current || !avgSeriesRef.current || !quotesSeriesRef.current) return;
     seriesRef.current.setData(history.points.map((p) => ({ time: p.time as UTCTimestamp, value: p.value })));
-    maSeriesRef.current.setData(
-      history.movingAveragePoints.map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
+    avgSeriesRef.current.setData(
+      history.avgPoints.map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
     );
     quotesSeriesRef.current.setData(
       history.quotes.map((q) => ({ time: q.time as UTCTimestamp, value: q.value }))
@@ -302,7 +301,7 @@ export function PriceHistoryChart({
               className="h-0 w-3 border-t border-dashed"
               style={{ borderColor: CHART_PALETTES[resolvedTheme].movingAverage }}
             />
-            Média móvel
+            Preço médio (todas as lojas)
           </span>
         </div>
       </div>
