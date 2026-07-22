@@ -96,10 +96,24 @@ function baseOfferQuery() {
     .leftJoin(affiliateSellers, eq(affiliateOffers.sellerId, affiliateSellers.id));
 }
 
-/** Vitrine pública — só ofertas ativas, mais recentes primeiro. */
+/**
+ * Vitrine pública — só ofertas ativas, mais recentes primeiro. Deduplicada
+ * por master_product (só a oferta mais barata daquele produto entra): sem
+ * isso, o mesmo jogo vendido em 3 lojas diferentes ocupa 3 vagas da vitrine
+ * em vez de outros 3 produtos distintos.
+ */
 export async function getPublicOffers(limit = 24): Promise<OfferWithRelations[]> {
+  const dedupRows = await db.execute<{ id: string }>(sql`
+    SELECT DISTINCT ON (${affiliateOffers.masterProductId}) ${affiliateOffers.id} AS id
+    FROM ${affiliateOffers}
+    WHERE ${affiliateOffers.status} = 'active' AND ${affiliateOffers.currentPriceCents} > 0
+    ORDER BY ${affiliateOffers.masterProductId}, ${affiliateOffers.currentPriceCents} ASC
+  `);
+  const dedupedIds = dedupRows.map((r) => r.id);
+  if (dedupedIds.length === 0) return [];
+
   const rows = await baseOfferQuery()
-    .where(eq(affiliateOffers.status, 'active'))
+    .where(inArray(affiliateOffers.id, dedupedIds))
     .orderBy(desc(affiliateOffers.publishedAt))
     .limit(limit);
 
@@ -194,10 +208,28 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   if (filter.networkId) conditions.push(eq(affiliateOffers.networkId, filter.networkId));
   if (filter.minSellerSales != null) conditions.push(sql`${affiliateSellers.totalSales} >= ${filter.minSellerSales}`);
 
+  const whereClause = and(...conditions);
+
+  // Dedup por master_product — só a oferta mais barata daquele produto
+  // (dentro dos filtros já aplicados) representa o produto na lista. Sem
+  // isso o mesmo jogo, vendido em N lojas/redes diferentes, ocupa N vagas
+  // da seção em vez de N produtos distintos (era o motivo do mesmo item
+  // repetir várias vezes nos destaques/seções por plataforma).
+  const dedupRows = await db.execute<{ id: string }>(sql`
+    SELECT DISTINCT ON (${affiliateOffers.masterProductId}) ${affiliateOffers.id} AS id
+    FROM ${affiliateOffers}
+    INNER JOIN ${masterProducts} ON ${eq(affiliateOffers.masterProductId, masterProducts.id)}
+    LEFT JOIN ${affiliateSellers} ON ${eq(affiliateOffers.sellerId, affiliateSellers.id)}
+    WHERE ${whereClause}
+    ORDER BY ${affiliateOffers.masterProductId}, ${affiliateOffers.currentPriceCents} ASC
+  `);
+  const dedupedIds = dedupRows.map((r) => r.id);
+  if (dedupedIds.length === 0) return [];
+
   const orderColumn = filter.sortBy === 'price_desc' ? desc(affiliateOffers.currentPriceCents) : asc(affiliateOffers.currentPriceCents);
 
   const rows = await baseOfferQuery()
-    .where(and(...conditions))
+    .where(inArray(affiliateOffers.id, dedupedIds))
     .orderBy(orderColumn)
     .limit(filter.limit ?? 50)
     .offset(filter.offset ?? 0);
@@ -693,104 +725,52 @@ export async function getFeaturedOffers(
 
   const whereClause = sql.join(conditions, sql` AND `);
 
-  const query = sql`
-    SELECT
-      o.id AS offer_id,
-      o.master_product_id,
-      o.network_id,
-      o.title AS offer_title,
-      o.slug AS offer_slug,
-      o.affiliate_url,
-      o.affiliate_link_pending,
-      o.image_url AS offer_image_url,
-      o.store_name,
-      o.external_ref,
-      o.last_checked_at,
-      o.seller_id,
-      o.current_price_cents,
-      o.last_price_change_at,
-      o.previous_price_cents,
-      o.published_at,
-      o.created_at,
-      o.updated_at,
-      o.status AS offer_status,
-      mp.name AS mp_name,
-      mp.slug AS mp_slug,
-      mp.default_images,
-      mp.game_format,
-      mp.game_platform_gen,
-      mp.game_edition_type,
-      mp.game_edition_source,
-      mp.game_collection,
-      mp.meli_catalog_id,
-      n.name AS network_name,
-      n.slug AS network_slug,
-      n.color_hex AS network_color_hex,
-      sel.id AS seller_id,
-      sel.nickname AS seller_nickname,
-      sel.reputation_level AS seller_reputation_level,
-      sel.power_seller_status AS seller_power_seller_status,
-      sel.total_sales AS seller_total_sales,
-      sel.positive_rating_percent AS seller_positive_rating_percent
-    FROM affiliate_offers o
-    INNER JOIN master_products mp ON mp.id = o.master_product_id
-    INNER JOIN affiliate_networks n ON n.id = o.network_id
-    LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-    WHERE ${whereClause}
-    ORDER BY o.published_at DESC, o.current_price_cents ASC
+  // 1) Dedup por master_product: só a oferta mais barata daquele produto
+  //    entra na corrida por uma vaga de destaque.
+  // 2) Rankeia por desconto REAL — primeiro quem está no menor preço já
+  //    visto (isLowestEver), depois por % abaixo da média de 30 dias —
+  //    nunca pelo preço nominal/recência, que sempre favoreceria os mesmos
+  //    jogos baratos e nunca capturaria uma promoção de verdade num item caro.
+  const rankedRows = await db.execute<{ offer_id: string }>(sql`
+    WITH candidates AS (
+      SELECT DISTINCT ON (o.master_product_id)
+        o.id AS offer_id, o.master_product_id, o.current_price_cents
+      FROM affiliate_offers o
+      INNER JOIN master_products mp ON mp.id = o.master_product_id
+      LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+      WHERE ${whereClause}
+      ORDER BY o.master_product_id, o.current_price_cents ASC
+    ),
+    history AS (
+      SELECT so.master_product_id,
+        MIN(s.price_cents)::bigint AS lowest_price_cents,
+        AVG(s.price_cents) FILTER (WHERE s.collected_at >= now() - interval '30 days')::numeric AS avg_price_30d
+      FROM affiliate_price_snapshots s
+      INNER JOIN affiliate_offers so ON so.id = s.offer_id
+      WHERE so.master_product_id IN (SELECT master_product_id FROM candidates) AND so.status = 'active'
+      GROUP BY so.master_product_id
+    )
+    SELECT c.offer_id
+    FROM candidates c
+    LEFT JOIN history h ON h.master_product_id = c.master_product_id
+    ORDER BY
+      (c.current_price_cents <= COALESCE(h.lowest_price_cents, c.current_price_cents)) DESC,
+      CASE WHEN h.avg_price_30d IS NOT NULL AND h.avg_price_30d > c.current_price_cents
+           THEN (h.avg_price_30d - c.current_price_cents) / h.avg_price_30d
+           ELSE 0 END DESC,
+      c.current_price_cents ASC
     LIMIT ${limit}
-  `;
+  `);
 
-  const rows = await db.execute<any>(query);
+  const offerIds = rankedRows.map((r) => r.offer_id);
+  if (offerIds.length === 0) return [];
 
-  return rows.map((row): OfferWithRelations => ({
-    id: row.offer_id,
-    masterProductId: row.master_product_id,
-    networkId: row.network_id,
-    title: row.offer_title,
-    slug: row.offer_slug,
-    affiliateUrl: row.affiliate_url,
-    affiliateLinkPending: row.affiliate_link_pending,
-    imageUrl: row.offer_image_url,
-    storeName: row.store_name,
-    externalRef: row.external_ref,
-    lastCheckedAt: row.last_checked_at ? new Date(row.last_checked_at) : null,
-    sellerId: row.seller_id,
-    currentPriceCents: Number(row.current_price_cents),
-    lastPriceChangeAt: row.last_price_change_at ? new Date(row.last_price_change_at) : null,
-    previousPriceCents: row.previous_price_cents ? Number(row.previous_price_cents) : null,
-    publishedAt: row.published_at ? new Date(row.published_at) : null,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
-    status: row.offer_status,
-    currency: row.currency ?? 'BRL',
-    createdBy: row.created_by ?? null,
-    highlightNote: row.highlight_note ?? null,
-    masterProduct: {
-      id: row.master_product_id,
-      name: row.mp_name,
-      slug: row.mp_slug,
-      defaultImages: row.default_images ?? [],
-      gameFormat: row.game_format,
-      gamePlatformGen: row.game_platform_gen,
-      gameEditionType: row.game_edition_type,
-      gameEditionSource: row.game_edition_source,
-      gameCollection: row.game_collection,
-      meliCatalogId: row.meli_catalog_id,
-    },
-    network: {
-      id: row.network_id,
-      name: row.network_name,
-      slug: row.network_slug,
-      colorHex: row.network_color_hex,
-    },
-    seller: row.seller_id ? {
-      id: row.seller_id,
-      nickname: row.seller_nickname,
-      reputationLevel: row.seller_reputation_level,
-      powerSellerStatus: row.seller_power_seller_status,
-      totalSales: Number(row.seller_total_sales),
-      positiveRatingPercent: row.seller_positive_rating_percent,
-    } : null,
-  }));
+  const rows = await baseOfferQuery().where(inArray(affiliateOffers.id, offerIds));
+  const rowById = new Map(rows.map((r) => [r.offer.id, r]));
+
+  // Preserva a ordem de ranking calculada acima (IN não garante ordem).
+  return offerIds
+    .map((id) => rowById.get(id))
+    .filter((row): row is OfferRow => row != null)
+    .map(toOfferWithRelations);
 }
