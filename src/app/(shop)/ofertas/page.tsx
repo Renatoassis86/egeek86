@@ -169,7 +169,7 @@ export default async function OffersPage({
 
           <Reveal delay={0.06}>
             <div className="mt-7 flex flex-wrap gap-x-10 gap-y-4">
-              <StatBlock value={broadPool.length} label="ofertas monitoradas" />
+              <StatBlock value={broadPool.length} label="produtos monitorados" />
               <StatBlock value={lowestEverCount} label="no menor preço histórico" accent="hype" />
               <StatBlock value={networks.length} label="lojas parceiras" />
             </div>
