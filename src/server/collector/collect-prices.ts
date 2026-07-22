@@ -170,6 +170,27 @@ async function applySnapshotsToGroup(
   let created = 0;
   let masterProduct: { name: string; defaultImages: string[] } | null = null;
 
+  // O placeholder de catálogo criado por discover-products.ts (sellerId
+  // nulo, affiliateLinkPending: false, link genérico com matt_tool_id) nunca
+  // bate no filtro `eq(sellerId, ...)` abaixo — cada resultado por vendedor
+  // sempre criava uma oferta IRMÃ nova em vez de atualizar esse placeholder,
+  // que ficava com current_price_cents preso em 0 para sempre (e por isso
+  // nunca aparecia nas listagens, que filtram price > 0). Corrige aqui:
+  // mantém esse placeholder com o melhor preço encontrado entre os
+  // vendedores, sem mexer no link nem no status dele.
+  const bestPriceCents = Math.min(...results.map((r) => r.priceCents));
+  await db
+    .update(affiliateOffers)
+    .set({ currentPriceCents: bestPriceCents, lastCheckedAt: new Date() })
+    .where(
+      and(
+        eq(affiliateOffers.masterProductId, group.masterProductId),
+        eq(affiliateOffers.networkId, group.networkId),
+        isNull(affiliateOffers.sellerId),
+        eq(affiliateOffers.affiliateLinkPending, false)
+      )
+    );
+
   for (const result of results) {
     let sellerId: string;
     try {
