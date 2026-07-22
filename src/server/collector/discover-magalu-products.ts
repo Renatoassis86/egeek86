@@ -203,16 +203,19 @@ export async function discoverMagaluProducts(): Promise<{
             .returning();
 
           const offerSlug = slugify(`${item.title}-magalu-${randomUUID().slice(0, 6)}`);
-          const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
-          const trackedUrl = `${item.permalink}?parceiro=egeek86&subid=marketplace`;
+          const priceCents = Math.round(item.price * 100);
 
+          // Sem programa de afiliados Magalu real disponível ainda (ver
+          // relatorio-api-magalu-developers.md) — usa a URL pública genuína
+          // e marca como pendente, mesma convenção do resto do coletor
+          // (affiliateLinkPending, ver src/server/actions/affiliate.ts).
           await db.insert(affiliateOffers).values({
             masterProductId: masterProduct.id,
             networkId: network.id,
             title: item.title,
             slug: offerSlug,
-            affiliateUrl: trackedUrl,
-            affiliateLinkPending: false,
+            affiliateUrl: item.permalink,
+            affiliateLinkPending: true,
             imageUrl: item.imageUrl,
             externalRef: magaluRef,
             currentPriceCents: priceCents,
