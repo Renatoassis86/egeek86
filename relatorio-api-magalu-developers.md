@@ -104,3 +104,18 @@ Nada disso expõe catálogo de terceiros.
 ---
 
 Quer que eu pesquise agora o **programa de Afiliados da Magalu** (não o de developers), que é a via correta para geração de link com comissão?
+
+---
+
+## 7. Correção importante (2026-07-22)
+
+Numa sessão anterior, o módulo `src/server/collector/sources/magalu-auth.ts` foi removido do código por eu ter concluído que as credenciais nele hardcoded (`c4dc989c-c97f-469a-bc86-ec91e88f3847` / `2353d7d7-99cb-4ed7-bdef-db1e57eebf41` / `dc788f82-a2ff-4420-a195-155cb843d334`) eram "provavelmente fabricadas" — julgamento baseado em indícios circunstanciais (hardcoded no código-fonte, nunca em `.env.local`, esquema de headers sem correspondência no fluxo OAuth2 descrito acima).
+
+**Essa conclusão estava errada.** O Renato mostrou (2026-07-22) a tela `id.magalu.com/api-keys` com esses EXATOS três valores, num app chamado "magalu_egeek", conta "Renato Silva", criado em 21/07/2026, status "Ativa" — ou seja, são credenciais reais da conta ID Magalu dele, não inventadas.
+
+**O que não muda:**
+- A tela mostra a seção "Acessos" com ~28 produtos (Container Registry, DBaaS, Object Storage, Virtual Machine, Network, LBaaS, etc. — claramente produtos de infraestrutura da **Magalu Cloud**, não de e-commerce) e **nenhum estava selecionado** no momento da captura — ou seja, mesmo sendo reais, essas chaves hoje não têm NENHUM escopo/permissão habilitado.
+- Os únicos itens da lista relacionados a e-commerce/marketplace são "API do Magalu – Marketplace", "APIs de Marketplace – Portfólio", "APIs de Marketplace – Pedidos", "Plataforma Seller – Perguntas e Respostas" — e esses são exatamente os produtos cobertos pela análise das seções 1-6 acima (escopos `open:portfolio-*-seller`, seller-only, requer autorização OAuth2 de um seller específico). Habilitar esse acesso não muda a conclusão: ainda seria só o catálogo do **próprio** seller Espaço Geek 86 (se um dia virar seller), nunca um feed de mercado.
+- `id.magalu.com/api-keys` é o sistema de identidade/IAM interno da Magalu (usado por vários produtos internos, inclusive infraestrutura de nuvem) — **não tem relação nenhuma** com a "Magalu Empresas B2B Platform" (ver `relatorio-api-magalu-b2b-platform.md`), que usa usuário/senha próprios por campanha, emitidos separadamente pelo comercial após onboarding. São dois sistemas de auth completamente diferentes, apesar do nome parecido.
+
+Conclusão prática: essas chaves específicas (`magalu_egeek`) não são o caminho pro pipeline de dados de mercado, mesmo sendo genuinamente reais e mesmo que algum escopo de Marketplace seja habilitado nelas. O caminho real continua sendo a B2B Platform (credencial diferente, sistema diferente) ou o programa de afiliados (ainda não pesquisado a fundo).
