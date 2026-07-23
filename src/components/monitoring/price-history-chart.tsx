@@ -9,6 +9,7 @@ import {
   ColorType,
   CrosshairMode,
   LineStyle,
+  LineType,
   type IChartApi,
   type ISeriesApi,
   type ISeriesMarkersPluginApi,
@@ -69,7 +70,6 @@ export function PriceHistoryChart({
   const requestIdRef = useRef(0);
   const pointOffersRef = useRef<Record<number, PriceHistoryPointOffer>>(initialHistory.pointOffers);
   const quotesRef = useRef<PriceQuotePoint[]>(initialHistory.quotes);
-  const globalMaxPriceCentsRef = useRef<number | null>(initialHistory.stats.globalMaxPriceCents);
 
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
   const [timeframe, setTimeframe] = useState<PriceHistoryTimeframe>(initialTimeframe);
@@ -79,7 +79,6 @@ export function PriceHistoryChart({
 
   pointOffersRef.current = history.pointOffers;
   quotesRef.current = history.quotes;
-  globalMaxPriceCentsRef.current = history.stats.globalMaxPriceCents;
 
   // Monta o gráfico uma única vez.
   useEffect(() => {
@@ -95,26 +94,36 @@ export function PriceHistoryChart({
       autoSize: true,
     });
 
+    // Zoom no intervalo onde o preço realmente circula, com uma margem
+    // confortável — não força a régua a começar em zero. Preço de jogo
+    // costuma variar numa faixa estreita (ex: R$300-450); baseline em zero
+    // + teto no maior preço JÁ visto historicamente (às vezes um pico de
+    // meses atrás) espremia a linha real numa faixinha, e com poucos pontos
+    // reais (preço muda raramente) isso virava um bloco sólido sem leitura
+    // nenhuma em vez de uma linha/degrau visível.
     const autoscaleProvider = (original: any) => {
       const res = original();
-      if (res !== null) {
-        res.priceRange.minValue = 0;
-        const gMax = globalMaxPriceCentsRef.current;
-        if (gMax && gMax > 0) {
-          const maxInReais = gMax / 100;
-          // Eixo Y partindo de 0 até algumas dezenas acima do preço máximo (ex: + R$ 35 ou 15% a mais)
-          const margin = Math.max(35, Math.ceil(maxInReais * 0.15));
-          res.priceRange.maxValue = Math.ceil(maxInReais + margin);
-        }
-      }
+      if (res === null) return res;
+      const { minValue, maxValue } = res.priceRange;
+      const span = Math.max(maxValue - minValue, 1);
+      const padding = Math.max(span * 0.12, 5);
+      res.priceRange.minValue = Math.max(0, minValue - padding);
+      res.priceRange.maxValue = maxValue + padding;
       return res;
     };
 
+    // Degrau (não linear) porque o preço não "desliza" continuamente entre
+    // duas cotações — ele fica parado num valor e pula pro próximo só
+    // quando alguém muda de verdade. Interpolação linear entre pontos
+    // esparsos (o normal aqui, já que só registramos mudança real de
+    // preço) sugeria uma variação gradual que nunca aconteceu.
     const series = chart.addSeries(AreaSeries, {
       lineColor: palette.line,
       topColor: palette.areaTop,
       bottomColor: palette.areaBottom,
       lineWidth: 2,
+      lineType: LineType.WithSteps,
+      pointMarkersVisible: true,
       priceFormat: {
         type: 'custom',
         formatter: (v: number) => formatBRL(Math.round(v * 100)),
@@ -130,6 +139,7 @@ export function PriceHistoryChart({
       color: palette.movingAverage,
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
+      lineType: LineType.WithSteps,
       priceLineVisible: false,
       lastValueVisible: false,
       crosshairMarkerVisible: false,
