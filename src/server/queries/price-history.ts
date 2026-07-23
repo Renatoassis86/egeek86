@@ -184,56 +184,90 @@ export async function getMasterProductPriceHistory(
       )
     );
 
-  const masterProductIds = relatedProducts.map((p) => p.id);
+  // O produto selecionado sempre entra, mesmo que o match fuzzy acima não o
+  // encontre — o ILIKE roda sobre o nome JÁ limpo (sem termo de plataforma),
+  // que pode nunca bater com o nome ORIGINAL na coluna quando o termo de
+  // plataforma aparece no meio do nome (ex: "Minecraft Nintendo Switch Mídia
+  // Física" vira "Minecraft Mídia Física" pra busca, que não é substring do
+  // nome original). Sem essa garantia, masterProductIds podia vir vazio e o
+  // `IN ()` resultante quebrava a query com erro de sintaxe.
+  const masterProductIds = Array.from(new Set([masterProductId, ...relatedProducts.map((p) => p.id)]));
   const idsSql = sql.join(masterProductIds.map((id) => sql`${id}`), sql`, `);
 
-  const baselineRows = interval
-    ? await db.execute<{ offer_id: string; price_cents: string }>(sql`
-        SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
-        FROM affiliate_price_snapshots s
-        INNER JOIN affiliate_offers o ON o.id = s.offer_id
-        WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
-          AND s.collected_at < now() - (${interval})::interval
-        ORDER BY s.offer_id, s.collected_at DESC
-      `)
-    : [];
-
-  const rows = await db.execute<{
-    offer_id: string;
-    collected_at: string;
-    price_cents: string;
-    network_name: string;
-    network_color_hex: string | null;
-    seller_nickname: string | null;
-  }>(
+  // As 5 consultas abaixo são independentes entre si (todas só dependem de
+  // idsSql/interval, nenhuma do resultado da outra) — rodavam uma atrás da
+  // outra antes, cada uma pagando a latência de rede até o Supabase de novo;
+  // em paralelo, o tempo total cai pra próximo do da consulta mais lenta em
+  // vez da soma de todas (chegava a 8-9s sequencial pra um produto só).
+  const [baselineRows, rows, globalMaxRow, countRow, offersCountRow] = await Promise.all([
     interval
-      ? sql`
-        SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
-        FROM affiliate_price_snapshots s
-        INNER JOIN affiliate_offers o ON o.id = s.offer_id
-        INNER JOIN affiliate_networks n ON n.id = o.network_id
-        LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-        WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
-          AND s.collected_at >= now() - (${interval})::interval
-        ORDER BY s.collected_at ASC
-      `
-      : sql`
-        SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
-        FROM affiliate_price_snapshots s
-        INNER JOIN affiliate_offers o ON o.id = s.offer_id
-        INNER JOIN affiliate_networks n ON n.id = o.network_id
-        LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-        WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
-        ORDER BY s.collected_at ASC
-      `
-  );
+      ? db.execute<{ offer_id: string; price_cents: string }>(sql`
+          SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
+          FROM affiliate_price_snapshots s
+          INNER JOIN affiliate_offers o ON o.id = s.offer_id
+          WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+            AND s.collected_at < now() - (${interval})::interval
+          ORDER BY s.offer_id, s.collected_at DESC
+        `)
+      : Promise.resolve([] as { offer_id: string; price_cents: string }[]),
+
+    db.execute<{
+      offer_id: string;
+      collected_at: string;
+      price_cents: string;
+      network_name: string;
+      network_color_hex: string | null;
+      seller_nickname: string | null;
+    }>(
+      interval
+        ? sql`
+          SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
+          FROM affiliate_price_snapshots s
+          INNER JOIN affiliate_offers o ON o.id = s.offer_id
+          INNER JOIN affiliate_networks n ON n.id = o.network_id
+          LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+          WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+            AND s.collected_at >= now() - (${interval})::interval
+          ORDER BY s.collected_at ASC
+        `
+        : sql`
+          SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
+          FROM affiliate_price_snapshots s
+          INNER JOIN affiliate_offers o ON o.id = s.offer_id
+          INNER JOIN affiliate_networks n ON n.id = o.network_id
+          LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+          WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+          ORDER BY s.collected_at ASC
+        `
+    ),
+
+    db.execute<{ max_price: string }>(sql`
+      SELECT MAX(s.price_cents)::bigint AS max_price
+      FROM affiliate_price_snapshots s
+      INNER JOIN affiliate_offers o ON o.id = s.offer_id
+      WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+    `),
+
+    db.execute<{ total: string }>(sql`
+      SELECT COUNT(DISTINCT (s.offer_id, s.price_cents))::bigint AS total
+      FROM affiliate_price_snapshots s
+      INNER JOIN affiliate_offers o ON o.id = s.offer_id
+      WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+    `),
+
+    db.execute<{ total: string }>(sql`
+      SELECT COUNT(*)::bigint AS total
+      FROM affiliate_offers o
+      WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+    `),
+  ]);
 
   const lastKnownByOffer = new Map<string, number>();
   for (const row of baselineRows) {
     lastKnownByOffer.set(row.offer_id, Number(row.price_cents) / 100);
   }
 
-  function currentMin(): { value: number; offerId: string } {
+  function currentMin(): { value: number; offerId: string } | null {
     let minValue = Infinity;
     let minOfferId = '';
     for (const [offerId, price] of lastKnownByOffer) {
@@ -242,10 +276,12 @@ export async function getMasterProductPriceHistory(
         minOfferId = offerId;
       }
     }
-    return { value: minValue, offerId: minOfferId };
+    // null (não Infinity) quando nenhum vendedor tem preço conhecido ainda —
+    // Infinity vira `null` silenciosamente ao serializar em JSON, e um ponto
+    // fantasma no início da série distorcia a linha inteira antes de existir
+    // dado de verdade.
+    return minOfferId ? { value: minValue, offerId: minOfferId } : null;
   }
-
-  const byTime = new Map<number, { value: number; offerId: string }>();
 
   const windowStart = interval
     ? Math.floor((Date.now() - TIMEFRAME_MS[timeframe as Exclude<PriceHistoryTimeframe, 'Tudo'>]) / 1000)
@@ -253,35 +289,43 @@ export async function getMasterProductPriceHistory(
 
   const nowTime = Math.floor(Date.now() / 1000);
 
-  // Garante que o ponto inicial da janela exista com a menor cotação conhecida
-  if (!byTime.has(windowStart)) {
-    byTime.set(windowStart, currentMin());
-  }
-  if (!byTime.has(nowTime)) {
-    byTime.set(nowTime, currentMin());
+  // Funde os eventos reais numa série contínua do menor preço vigente — a
+  // cada evento de QUALQUER vendedor (em ordem cronológica), atualiza o
+  // preço conhecido daquele vendedor e recalcula o menor preço entre todos
+  // os vendedores conhecidos até aquele instante. Antes esta função só
+  // desenhava dois pontos estáticos (início/fim da janela, ambos com o
+  // mesmo valor de baseline) e nunca processava `rows` — por isso a linha
+  // do gráfico saía quase reta, sem refletir nenhuma mudança de preço real
+  // ao longo do período.
+  const byTime = new Map<number, { value: number; offerId: string }>();
+  let lastRecordedValue: number | null = null;
+
+  const initialMin = currentMin();
+  if (initialMin) {
+    byTime.set(windowStart, initialMin);
+    lastRecordedValue = initialMin.value;
   }
 
-  let points: PricePoint[] = [...byTime.entries()]
+  // Só grava um ponto novo quando o MENOR preço muda de verdade — histórico
+  // com muita checagem repetida no mesmo preço (comum antes da correção em
+  // record-price-snapshot.ts) não deve virar milhares de pontos idênticos
+  // no gráfico, só a transição importa pra um gráfico de linha/degrau.
+  for (const row of rows) {
+    lastKnownByOffer.set(row.offer_id, Number(row.price_cents) / 100);
+    const min = currentMin();
+    if (min && min.value !== lastRecordedValue) {
+      const time = Math.floor(new Date(row.collected_at).getTime() / 1000);
+      byTime.set(time, min);
+      lastRecordedValue = min.value;
+    }
+  }
+
+  const finalMin = currentMin();
+  if (finalMin) byTime.set(nowTime, finalMin);
+
+  const points: PricePoint[] = [...byTime.entries()]
     .sort((a, b) => a[0] - b[0])
     .map(([time, { value }]) => ({ time, value }));
-
-  // Se houver poucos pontos na janela temporal (ex: apenas 1 ou 2), gera pontos intermediários
-  // interpolados para que o eixo X do gráfico TradingView mostre a escala real da unidade selecionada.
-  if (points.length < 5) {
-    const totalDuration = nowTime - windowStart;
-    const numSteps = timeframe === '1D' ? 7 : timeframe === '1S' ? 7 : 10;
-    const stepSize = Math.floor(totalDuration / (numSteps - 1));
-    const baseVal = points[points.length - 1]?.value || 299;
-
-    const filledPoints: PricePoint[] = [];
-    for (let i = 0; i < numSteps; i++) {
-      const stepTime = windowStart + i * stepSize;
-      const factor = 1 + Math.sin(i / 1.5) * 0.02 + (numSteps - 1 - i) * 0.003;
-      const val = Math.round(baseVal * factor * 100) / 100;
-      filledPoints.push({ time: stepTime, value: val });
-    }
-    points = filledPoints;
-  }
 
   const winningOfferIds = [...new Set([...byTime.values()].map((v) => v.offerId))].filter(Boolean);
 
@@ -319,14 +363,6 @@ export async function getMasterProductPriceHistory(
   // dá o mesmo valor nos dois cálculos, então fica como estava.
   const rawPrices = rows.map((r) => Number(r.price_cents) / 100);
   const values = points.map((p) => p.value);
-
-  // Busca o preço máximo global daquele produto desde o início da plataforma
-  const globalMaxRow = await db.execute<{ max_price: string }>(sql`
-    SELECT MAX(s.price_cents)::bigint AS max_price
-    FROM affiliate_price_snapshots s
-    INNER JOIN affiliate_offers o ON o.id = s.offer_id
-    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
-  `);
   const globalMaxPriceCents = globalMaxRow[0]?.max_price ? Number(globalMaxRow[0].max_price) : null;
 
   const stats: PriceHistoryStats = {
@@ -336,20 +372,7 @@ export async function getMasterProductPriceHistory(
     globalMaxPriceCents,
   };
 
-  const countRow = await db.execute<{ total: string }>(sql`
-    SELECT COUNT(DISTINCT (s.offer_id, s.price_cents))::bigint AS total
-    FROM affiliate_price_snapshots s
-    INNER JOIN affiliate_offers o ON o.id = s.offer_id
-    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
-  `);
   const totalQuoteCount = Number(countRow[0]?.total || 0);
-
-  // Conta a quantidade única de ofertas (lojas/itens) em todas as plataformas
-  const offersCountRow = await db.execute<{ total: string }>(sql`
-    SELECT COUNT(*)::bigint AS total
-    FROM affiliate_offers o
-    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
-  `);
   const totalOffersCount = Number(offersCountRow[0]?.total || 0);
 
   const countMap = new Map<number, number>();
@@ -362,7 +385,20 @@ export async function getMasterProductPriceHistory(
     if (count > maxFreq) maxFreq = count;
   }
 
-  const quotes: PriceQuotePoint[] = rows.map((row) => {
+  // Defesa contra histórico já inflado por checagens redundantes anteriores
+  // (produtos monitorados há tempo podem ter dezenas de milhares de linhas
+  // repetidas) — nunca manda mais que isso pro gráfico de dispersão, mesmo
+  // que `rows` tenha muito mais; amostragem uniforme ao longo do período
+  // pra não perder a forma da distribuição no tempo. stats/avgPoints acima já
+  // foram calculados sobre `rows` completo, então essa amostragem não afeta
+  // média/mínimo/máximo — só a quantidade de pontinhos desenhados.
+  const MAX_QUOTES = 500;
+  const sampledRows =
+    rows.length > MAX_QUOTES
+      ? rows.filter((_, i) => i % Math.ceil(rows.length / MAX_QUOTES) === 0)
+      : rows;
+
+  const quotes: PriceQuotePoint[] = sampledRows.map((row) => {
     const time = Math.floor(new Date(row.collected_at).getTime() / 1000);
     const val = Number(row.price_cents) / 100;
     const priceBrl = Math.round(val);
