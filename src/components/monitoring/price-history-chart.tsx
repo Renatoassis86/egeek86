@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   createChart,
+  createSeriesMarkers,
   AreaSeries,
   LineSeries,
   ColorType,
@@ -10,7 +11,9 @@ import {
   LineStyle,
   type IChartApi,
   type ISeriesApi,
+  type ISeriesMarkersPluginApi,
   type MouseEventParams,
+  type Time,
   type UTCTimestamp,
 } from 'lightweight-charts';
 import { Text } from '@/components/ui/text';
@@ -61,6 +64,7 @@ export function PriceHistoryChart({
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const avgSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const quotesSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const quotesMarkersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
   const skipNextFetch = useRef(true);
   const requestIdRef = useRef(0);
   const pointOffersRef = useRef<Record<number, PriceHistoryPointOffer>>(initialHistory.pointOffers);
@@ -187,13 +191,18 @@ export function PriceHistoryChart({
     seriesRef.current = series;
     avgSeriesRef.current = avgSeries;
     quotesSeriesRef.current = quotesSeries;
+    // API mudou no lightweight-charts v5: markers não são mais um método da
+    // série (series.setMarkers não existe) — agora é um plugin separado.
+    quotesMarkersRef.current = createSeriesMarkers(quotesSeries, []);
 
     return () => {
+      quotesMarkersRef.current?.detach();
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
       avgSeriesRef.current = null;
       quotesSeriesRef.current = null;
+      quotesMarkersRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- monta uma vez só, tema é aplicado à parte no efeito abaixo
   }, []);
@@ -226,18 +235,16 @@ export function PriceHistoryChart({
     quotesSeriesRef.current.setData(
       history.quotes.map((q) => ({ time: q.time as UTCTimestamp, value: q.value }))
     );
-    if (typeof (quotesSeriesRef.current as any).setMarkers === 'function') {
-      (quotesSeriesRef.current as any).setMarkers(
-        history.quotes.map((q, idx) => ({
-          time: q.time as UTCTimestamp,
-          position: 'inBar',
-          shape: 'circle',
-          color: q.networkColorHex || '#D4AF37',
-          size: q.size,
-          id: `q-${idx}`,
-        }))
-      );
-    }
+    quotesMarkersRef.current?.setMarkers(
+      history.quotes.map((q, idx) => ({
+        time: q.time as UTCTimestamp,
+        position: 'inBar',
+        shape: 'circle',
+        color: q.networkColorHex || '#D4AF37',
+        size: q.size,
+        id: `q-${idx}`,
+      }))
+    );
     if (chartRef.current) {
       chartRef.current.applyOptions({
         timeScale: {
