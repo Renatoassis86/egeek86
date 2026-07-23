@@ -68,6 +68,7 @@ export function generateTimeframeHistory(timeframe: PriceHistoryTimeframe = '1M'
     quotes: [],
     totalOffersCount: 3,
     totalQuoteCount: steps * 2,
+    bucketSeconds: stepSeconds,
     stats: {
       minPriceCents: Math.round(Math.min(...points.map((p) => p.value)) * 100),
       maxPriceCents: Math.round(Math.max(...points.map((p) => p.value)) * 100),

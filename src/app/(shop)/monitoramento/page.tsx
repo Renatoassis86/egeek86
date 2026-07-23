@@ -58,6 +58,7 @@ const DEMO_FALLBACK_HISTORY = {
   quotes: [],
   totalOffersCount: 3,
   totalQuoteCount: 24,
+  bucketSeconds: 86400 * 3,
   stats: {
     minPriceCents: 29900,
     maxPriceCents: 32000,

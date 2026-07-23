@@ -72,6 +72,78 @@ function computeBucketedAverage(rows: { collected_at: string; price_cents: strin
     .map(([time, { sum, count }]) => ({ time, value: sum / count }));
 }
 
+/**
+ * Um ponto por balde de tempo: o MENOR preço batido entre todos os
+ * vendedores/plataformas conhecidos durante aquele balde (herdando o preço
+ * de quem já estava "rodando" desde antes do balde começar). Difere de um
+ * gráfico por evento (um ponto a cada mudança de preço de qualquer
+ * vendedor): aqui N mudanças de preço dentro do mesmo balde colapsam num
+ * único ponto — a cada "ingestão" (balde de tempo), marca o menor preço
+ * batido naquele intervalo, não uma corrente de pontos por cada pequena
+ * oscilação entre vendedores concorrendo entre si (isso virava dezenas de
+ * marcadores sobrepostos formando um bloco ilegível em vez de uma linha).
+ */
+function computeBucketedMinSeries(
+  rows: { offer_id: string; collected_at: string; price_cents: string }[],
+  baselineByOffer: Map<string, number>,
+  bucketMs: number,
+  windowStart: number,
+  nowTime: number
+): { points: PricePoint[]; offerByTime: Record<number, string> } {
+  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
+  const lastKnown = new Map(baselineByOffer);
+
+  function currentMin(): { value: number; offerId: string } | null {
+    let minValue = Infinity;
+    let minOfferId = '';
+    for (const [offerId, price] of lastKnown) {
+      if (price < minValue) {
+        minValue = price;
+        minOfferId = offerId;
+      }
+    }
+    return minOfferId ? { value: minValue, offerId: minOfferId } : null;
+  }
+
+  const points: PricePoint[] = [];
+  const offerByTime: Record<number, string> = {};
+  const firstBucket = Math.floor(windowStart / bucketSeconds) * bucketSeconds;
+  let rowIndex = 0;
+
+  for (let bucketStart = firstBucket; bucketStart <= nowTime; bucketStart += bucketSeconds) {
+    const bucketEnd = bucketStart + bucketSeconds;
+    // Começa com o estado herdado de antes do balde (ninguém mudou de preço
+    // não significa que o preço não existia) e vai descendo se algum evento
+    // DENTRO do balde bater um preço ainda menor — assim o ponto reflete o
+    // menor preço realmente vigente em algum instante daquele intervalo.
+    let bucketMin = currentMin();
+
+    while (rowIndex < rows.length) {
+      const rowTime = Math.floor(new Date(rows[rowIndex].collected_at).getTime() / 1000);
+      if (rowTime >= bucketEnd) break;
+      lastKnown.set(rows[rowIndex].offer_id, Number(rows[rowIndex].price_cents) / 100);
+      const min = currentMin();
+      if (min && (!bucketMin || min.value < bucketMin.value)) bucketMin = min;
+      rowIndex++;
+    }
+
+    if (bucketMin) {
+      points.push({ time: bucketStart, value: bucketMin.value });
+      offerByTime[bucketStart] = bucketMin.offerId;
+    }
+  }
+
+  // Garante que o ponto mais recente reflita o estado atual mesmo que o
+  // balde corrente ainda não tenha se fechado.
+  const finalMin = currentMin();
+  if (finalMin && (points.length === 0 || points[points.length - 1].time < nowTime)) {
+    points.push({ time: nowTime, value: finalMin.value });
+    offerByTime[nowTime] = finalMin.offerId;
+  }
+
+  return { points, offerByTime };
+}
+
 export interface PricePoint {
   /** Segundos desde epoch (UTCTimestamp), formato exigido pelo lightweight-charts. */
   time: number;
@@ -79,14 +151,15 @@ export interface PricePoint {
   value: number;
 }
 
-/** Detalhes de cada cotação individual coletada — para o gráfico de dispersão/concentração. */
+/** Detalhes de cada cotação individual coletada — usada pro tooltip do balde, agrupada por `bucketTime`. */
 export interface PriceQuotePoint {
   time: number;
+  /** Início do balde de tempo (mesmo grid de `points`/`avgPoints`) — chave de agrupamento no tooltip. */
+  bucketTime: number;
   value: number;
   networkName: string;
   networkColorHex: string | null;
   sellerNickname: string | null;
-  size: number; // tamanho correspondente à concentração de preço (1 a 4)
 }
 
 /** Credenciais do vendedor que detinha o menor preço num ponto do tempo — pro tooltip do gráfico. */
@@ -110,19 +183,22 @@ export interface PriceHistoryStats {
 }
 
 export interface PriceHistoryResult {
+  /** Um ponto por balde de tempo — o menor preço batido entre todas as lojas/plataformas naquele intervalo (não um ponto por evento de mudança de preço). */
   points: PricePoint[];
-  /** Preço médio real entre TODAS as lojas/plataformas, em baldes de tempo escalados pelo timeframe — não é média móvel de `points`, é a média de mercado do produto. */
+  /** Preço médio real entre TODAS as lojas/plataformas, no MESMO balde de tempo de `points` — não é média móvel de `points`, é a média de mercado do produto. */
   avgPoints: PricePoint[];
-  /** Metadados do vendedor vencedor em cada ponto — chave é o mesmo `time` do PricePoint correspondente. */
+  /** Metadados do vendedor vencedor em cada ponto — chave é o mesmo `time` (início do balde) do PricePoint correspondente. */
   pointOffers: Record<number, PriceHistoryPointOffer>;
   /** Média/máximo somam TODA cotação de TODO vendedor ativo do produto no período (não só a série de menor preço do gráfico); mínimo coincide com o ponto mais baixo do gráfico de qualquer forma. */
   stats: PriceHistoryStats;
-  /** Lista de todas as cotações individuais de todas as lojas integradas no período. */
+  /** Todas as cotações individuais do período, agrupáveis por `bucketTime` — alimenta o tooltip do ponto, não é mais plotada como camada própria no gráfico. */
   quotes: PriceQuotePoint[];
-  /** Contagem total de cotações históricas registradas desde o início do Espaço Geek 86. */
+  /** Contagem de cotações DENTRO do período/timeframe selecionado (não histórico vitalício) — os marcadores de diário/semanal/mensal/trimestral/etc no topo do gráfico refletem o período marcado no seletor. */
   totalQuoteCount: number;
   /** Contagem total de ofertas (lojas/itens) cadastrados para este jogo em todas as plataformas. */
   totalOffersCount: number;
+  /** Tamanho do balde de tempo (em segundos) usado em `points`/`avgPoints`/`bucketTime` — o client agrupa cotações por balde no tooltip com isso. */
+  bucketSeconds: number;
 }
 
 /**
@@ -199,7 +275,7 @@ export async function getMasterProductPriceHistory(
   // outra antes, cada uma pagando a latência de rede até o Supabase de novo;
   // em paralelo, o tempo total cai pra próximo do da consulta mais lenta em
   // vez da soma de todas (chegava a 8-9s sequencial pra um produto só).
-  const [baselineRows, rows, globalMaxRow, countRow, offersCountRow] = await Promise.all([
+  const [baselineRows, rows, globalMaxRow, offersCountRow] = await Promise.all([
     interval
       ? db.execute<{ offer_id: string; price_cents: string }>(sql`
           SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
@@ -249,38 +325,15 @@ export async function getMasterProductPriceHistory(
     `),
 
     db.execute<{ total: string }>(sql`
-      SELECT COUNT(DISTINCT (s.offer_id, s.price_cents))::bigint AS total
-      FROM affiliate_price_snapshots s
-      INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
-    `),
-
-    db.execute<{ total: string }>(sql`
       SELECT COUNT(*)::bigint AS total
       FROM affiliate_offers o
       WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
     `),
   ]);
 
-  const lastKnownByOffer = new Map<string, number>();
+  const baselineByOffer = new Map<string, number>();
   for (const row of baselineRows) {
-    lastKnownByOffer.set(row.offer_id, Number(row.price_cents) / 100);
-  }
-
-  function currentMin(): { value: number; offerId: string } | null {
-    let minValue = Infinity;
-    let minOfferId = '';
-    for (const [offerId, price] of lastKnownByOffer) {
-      if (price < minValue) {
-        minValue = price;
-        minOfferId = offerId;
-      }
-    }
-    // null (não Infinity) quando nenhum vendedor tem preço conhecido ainda —
-    // Infinity vira `null` silenciosamente ao serializar em JSON, e um ponto
-    // fantasma no início da série distorcia a linha inteira antes de existir
-    // dado de verdade.
-    return minOfferId ? { value: minValue, offerId: minOfferId } : null;
+    baselineByOffer.set(row.offer_id, Number(row.price_cents) / 100);
   }
 
   const windowStart = interval
@@ -288,46 +341,13 @@ export async function getMasterProductPriceHistory(
     : Math.floor((Date.now() - 730 * 86400 * 1000) / 1000);
 
   const nowTime = Math.floor(Date.now() / 1000);
+  // Mesmo balde de tempo usado pra média — assim as duas linhas ficam no
+  // mesmo grid e são diretamente comparáveis ponto a ponto no tooltip.
+  const bucketMs = AVG_BUCKET_MS[timeframe];
 
-  // Funde os eventos reais numa série contínua do menor preço vigente — a
-  // cada evento de QUALQUER vendedor (em ordem cronológica), atualiza o
-  // preço conhecido daquele vendedor e recalcula o menor preço entre todos
-  // os vendedores conhecidos até aquele instante. Antes esta função só
-  // desenhava dois pontos estáticos (início/fim da janela, ambos com o
-  // mesmo valor de baseline) e nunca processava `rows` — por isso a linha
-  // do gráfico saía quase reta, sem refletir nenhuma mudança de preço real
-  // ao longo do período.
-  const byTime = new Map<number, { value: number; offerId: string }>();
-  let lastRecordedValue: number | null = null;
+  const { points, offerByTime } = computeBucketedMinSeries(rows, baselineByOffer, bucketMs, windowStart, nowTime);
 
-  const initialMin = currentMin();
-  if (initialMin) {
-    byTime.set(windowStart, initialMin);
-    lastRecordedValue = initialMin.value;
-  }
-
-  // Só grava um ponto novo quando o MENOR preço muda de verdade — histórico
-  // com muita checagem repetida no mesmo preço (comum antes da correção em
-  // record-price-snapshot.ts) não deve virar milhares de pontos idênticos
-  // no gráfico, só a transição importa pra um gráfico de linha/degrau.
-  for (const row of rows) {
-    lastKnownByOffer.set(row.offer_id, Number(row.price_cents) / 100);
-    const min = currentMin();
-    if (min && min.value !== lastRecordedValue) {
-      const time = Math.floor(new Date(row.collected_at).getTime() / 1000);
-      byTime.set(time, min);
-      lastRecordedValue = min.value;
-    }
-  }
-
-  const finalMin = currentMin();
-  if (finalMin) byTime.set(nowTime, finalMin);
-
-  const points: PricePoint[] = [...byTime.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([time, { value }]) => ({ time, value }));
-
-  const winningOfferIds = [...new Set([...byTime.values()].map((v) => v.offerId))].filter(Boolean);
+  const winningOfferIds = [...new Set(Object.values(offerByTime))].filter(Boolean);
 
   const pointOffers: Record<number, PriceHistoryPointOffer> = {};
   if (winningOfferIds.length > 0) {
@@ -349,9 +369,9 @@ export async function getMasterProductPriceHistory(
       .where(inArray(affiliateOffers.id, winningOfferIds));
 
     const offerById = new Map(offerRows.map((o) => [o.offerId, o]));
-    for (const [time, { offerId }] of byTime) {
+    for (const [time, offerId] of Object.entries(offerByTime)) {
       const offer = offerById.get(offerId);
-      if (offer) pointOffers[time] = offer;
+      if (offer) pointOffers[Number(time)] = offer;
     }
   }
 
@@ -372,67 +392,46 @@ export async function getMasterProductPriceHistory(
     globalMaxPriceCents,
   };
 
-  const totalQuoteCount = Number(countRow[0]?.total || 0);
+  // Escopado ao período/timeframe selecionado (não histórico vitalício) —
+  // os marcadores de contagem no topo do gráfico precisam refletir
+  // diário/semanal/mensal/trimestral/etc conforme o período marcado.
+  const totalQuoteCount = rows.length;
   const totalOffersCount = Number(offersCountRow[0]?.total || 0);
 
-  const countMap = new Map<number, number>();
-  for (const row of rows) {
-    const priceBrl = Math.round(Number(row.price_cents) / 100);
-    countMap.set(priceBrl, (countMap.get(priceBrl) || 0) + 1);
-  }
-  let maxFreq = 0;
-  for (const count of countMap.values()) {
-    if (count > maxFreq) maxFreq = count;
-  }
+  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
 
   // Defesa contra histórico já inflado por checagens redundantes anteriores
   // (produtos monitorados há tempo podem ter dezenas de milhares de linhas
-  // repetidas) — nunca manda mais que isso pro gráfico de dispersão, mesmo
-  // que `rows` tenha muito mais; amostragem uniforme ao longo do período
-  // pra não perder a forma da distribuição no tempo. stats/avgPoints acima já
+  // repetidas) — nunca manda mais que isso pro tooltip, mesmo que `rows`
+  // tenha muito mais; amostragem uniforme ao longo do período pra não
+  // perder a forma da distribuição no tempo. stats/avgPoints/points acima já
   // foram calculados sobre `rows` completo, então essa amostragem não afeta
-  // média/mínimo/máximo — só a quantidade de pontinhos desenhados.
-  const MAX_QUOTES = 500;
+  // média/mínimo/máximo — só a quantidade de cotações listadas no tooltip.
+  const MAX_QUOTES = 2000;
   const sampledRows =
     rows.length > MAX_QUOTES
       ? rows.filter((_, i) => i % Math.ceil(rows.length / MAX_QUOTES) === 0)
       : rows;
 
+  // Cada cotação carrega o `bucketTime` do mesmo grid de `points`/`avgPoints`
+  // — o tooltip agrupa por esse valor pra mostrar "quem cotou o quê" dentro
+  // do intervalo do ponto sob o cursor, sem depender de bater timestamp
+  // exato (quase nunca bate entre uma cotação individual e o ponto do balde).
   const quotes: PriceQuotePoint[] = sampledRows.map((row) => {
     const time = Math.floor(new Date(row.collected_at).getTime() / 1000);
-    const val = Number(row.price_cents) / 100;
-    const priceBrl = Math.round(val);
-    const f = countMap.get(priceBrl) || 1;
-    // Tamanho proporcional de 5 a 13 para melhor visibilidade
-    const size = maxFreq > 1 ? 5 + ((f - 1) / (maxFreq - 1)) * 8 : 6;
-
     return {
       time,
-      value: val,
+      bucketTime: Math.floor(time / bucketSeconds) * bucketSeconds,
+      value: Number(row.price_cents) / 100,
       networkName: row.network_name,
       networkColorHex: row.network_color_hex,
       sellerNickname: row.seller_nickname,
-      size: Math.round(size),
     };
   });
 
-  // Ajusta timestamps das cotações para garantir que sejam estritamente crescentes
-  // (exigência do lightweight-charts para evitar que cotações colidentes sumam)
-  const sortedQuotes = [...quotes].sort((a, b) => a.time - b.time);
-  const adjustedQuotes: PriceQuotePoint[] = [];
-  let lastTime = 0;
-  for (const q of sortedQuotes) {
-    let qTime = q.time;
-    if (qTime <= lastTime) {
-      qTime = lastTime + 1;
-    }
-    adjustedQuotes.push({ ...q, time: qTime });
-    lastTime = qTime;
-  }
+  const avgPoints = computeBucketedAverage(rows, bucketMs);
 
-  const avgPoints = computeBucketedAverage(rows, AVG_BUCKET_MS[timeframe]);
-
-  return { points, avgPoints, pointOffers, stats, quotes: adjustedQuotes, totalQuoteCount, totalOffersCount };
+  return { points, avgPoints, pointOffers, stats, quotes, totalQuoteCount, totalOffersCount, bucketSeconds };
 }
 
 export type MoverPeriod = '24h' | '7d' | '30d';
