@@ -29,15 +29,27 @@ interface MobileNavDrawerProps {
   onClose: () => void;
 }
 
-const mainModules = [
+const topModules = [
   { href: '/', label: 'Início / Home', icon: Home },
   { href: '/ofertas', label: 'Todas as Ofertas', icon: Tag },
-  { href: '/monitoramento', label: 'Monitoramento de Preços', icon: BarChart3 },
-  { href: '/hype-zone', label: 'Hype Zone & Drops', icon: Flame, highlight: true },
-  { href: '/ranking', label: 'Ranking de Vendedores', icon: Trophy, highlight: true },
-  { href: '/leiloes', label: 'Leilões Geek', icon: Gavel, highlight: true },
-  { href: '/noticias', label: 'Notícias & Matérias', icon: Newspaper },
 ];
+
+// Mesmo agrupamento por jornada usado no nav desktop (comparar preço / hype-zone
+// / notícias) — na gaveta mobile o espaço vertical já comporta lista longa, então
+// aqui só ganha sub-cabeçalho em vez de virar mega-menu.
+const comparePriceModules = [
+  { href: '/categorias', label: 'Categorias', icon: Tag },
+  { href: '/tabela-de-precos', label: 'Tabela de Preços', icon: BarChart3 },
+  { href: '/ranking', label: 'Ranking de Vendedores', icon: Trophy },
+  { href: '/monitoramento', label: 'Monitoramento de Preços', icon: BarChart3 },
+];
+
+const hypeZoneModules = [
+  { href: '/hype-zone', label: 'Hype Zone & Drops', icon: Flame, highlight: true },
+  { href: '/leiloes', label: 'Leilões Geek', icon: Gavel, highlight: true },
+];
+
+const newsModules = [{ href: '/noticias', label: 'Notícias & Matérias', icon: Newspaper }];
 
 const userModules = [
   { href: '/conta', label: 'Meu Perfil & Gamificação', icon: User },
@@ -45,6 +57,49 @@ const userModules = [
   { href: '/conta?aba=compras', label: 'Minhas Compras', icon: ShoppingBag },
   { href: '/conta?aba=dados', label: 'Dados Cadastrais', icon: Sliders },
 ];
+
+function NavGroup({
+  items,
+  onClose,
+  pathname,
+  subheading,
+}: {
+  items: { href: string; label: string; icon: React.ComponentType<{ className?: string }>; highlight?: boolean }[];
+  onClose: () => void;
+  pathname: string;
+  subheading?: string;
+}) {
+  return (
+    <>
+      {subheading && (
+        <span className="px-2 pt-2 text-[9px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+          {subheading}
+        </span>
+      )}
+      {items.map((item) => {
+        const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+        const Icon = item.icon;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onClose}
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-semibold transition-colors',
+              isActive
+                ? 'bg-[var(--color-accent-primary)]/15 text-[var(--color-accent-primary)] font-bold'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
+              item.highlight && !isActive && 'text-[var(--color-accent-hype)]'
+            )}
+          >
+            <Icon className="size-4 shrink-0" />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </>
+  );
+}
 
 export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
   const pathname = usePathname();
@@ -107,27 +162,10 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
               Módulos da Plataforma
             </span>
             <nav className="mt-2 flex flex-col gap-1">
-              {mainModules.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      'flex items-center gap-3 px-3 py-2.5 rounded-[var(--radius-sm)] text-xs font-semibold transition-colors',
-                      isActive
-                        ? 'bg-[var(--color-accent-primary)]/15 text-[var(--color-accent-primary)] font-bold'
-                        : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
-                      item.highlight && !isActive && 'text-[var(--color-accent-hype)]'
-                    )}
-                  >
-                    <Icon className="size-4 shrink-0" />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
+              <NavGroup items={topModules} onClose={onClose} pathname={pathname} />
+              <NavGroup items={comparePriceModules} onClose={onClose} pathname={pathname} subheading="Comparar Preços" />
+              <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone" />
+              <NavGroup items={newsModules} onClose={onClose} pathname={pathname} subheading="Notícias" />
             </nav>
           </div>
 

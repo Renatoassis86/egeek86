@@ -4,23 +4,144 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { Search, ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu } from 'lucide-react';
+import { ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { HeaderSearchModal } from '@/components/layout/header-search-modal';
 import { MobileNavDrawer } from '@/components/layout/mobile-nav-drawer';
 import { cn } from '@/lib/cn';
 
-const navLinks = [
-  { href: '/categorias', label: 'Categorias' },
+interface NavChild {
+  href: string;
+  label: string;
+}
+
+interface NavItem {
+  href: string;
+  label: string;
+  highlight?: boolean;
+  /** Presente = vira mega-menu (mesmo padrão visual, item raiz continua clicável direto). */
+  children?: NavChild[];
+}
+
+/**
+ * Nível superior enxuto (4 itens) — os 7 destinos originais continuam todos
+ * acessíveis, só agrupados por jornada (comparar preço / módulo hype-zone /
+ * notícias) em vez de listados um a um. Reduz a carga cognitiva do nav sem
+ * remover nenhuma página.
+ */
+const navLinks: NavItem[] = [
   { href: '/ofertas', label: 'Ofertas' },
-  { href: '/monitoramento', label: 'Monitoramento' },
-  { href: '/tabela-de-precos', label: 'Tabela de Preços' },
-  { href: '/ranking', label: 'Ranking', highlight: true },
-  { href: '/hype-zone', label: 'Hype Zone', highlight: true },
-  { href: '/leiloes', label: 'Leilões', highlight: true },
-  { href: '/noticias', label: 'Notícias' },
+  {
+    href: '/tabela-de-precos',
+    label: 'Comparar Preços',
+    children: [
+      { href: '/categorias', label: 'Categorias' },
+      { href: '/tabela-de-precos', label: 'Tabela de Preços' },
+      { href: '/ranking', label: 'Ranking' },
+      { href: '/monitoramento', label: 'Monitoramento' },
+    ],
+  },
+  {
+    href: '/hype-zone',
+    label: 'Hype Zone',
+    highlight: true,
+    children: [
+      { href: '/hype-zone', label: 'Hype Zone' },
+      { href: '/leiloes', label: 'Leilões' },
+    ],
+  },
+  {
+    href: '/noticias',
+    label: 'Notícias',
+    children: [
+      { href: '/noticias?categoria=filmes', label: 'Filmes' },
+      { href: '/noticias?categoria=series_tv', label: 'Séries e TV' },
+      { href: '/noticias?categoria=animes', label: 'Animes' },
+      { href: '/noticias?categoria=games', label: 'Games' },
+      { href: '/noticias?categoria=sinopse_jogo', label: 'Sinopse de Jogo' },
+      { href: '/noticias?categoria=korea', label: 'Korea' },
+      { href: '/noticias?categoria=criticas', label: 'Críticas' },
+      { href: '/noticias?categoria=listas', label: 'Listas' },
+      { href: '/noticias?categoria=ccxp', label: 'CCXP' },
+      { href: '/noticias?categoria=cultura_pop', label: 'Cultura Pop' },
+      { href: '/noticias?categoria=lancamentos', label: 'Lançamentos' },
+      { href: '/noticias?categoria=tecnologia', label: 'Tecnologia' },
+      { href: '/noticias?categoria=colunistas', label: 'Colunistas' },
+    ],
+  },
 ];
+
+function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  if (!item.children) {
+    return (
+      <Link
+        href={item.href}
+        aria-current={isActive ? 'page' : undefined}
+        className={cn(
+          'px-3 h-9 inline-flex items-center rounded-[var(--radius-sm)]',
+          'text-body-sm font-medium text-[var(--color-text-secondary)]',
+          'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
+          'transition-colors duration-[var(--duration-fast)]',
+          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]',
+          isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
+        )}
+      >
+        {item.label}
+      </Link>
+    );
+  }
+
+  return (
+    <div className="relative group/nav">
+      <Link
+        href={item.href}
+        aria-current={isActive ? 'page' : undefined}
+        className={cn(
+          'px-3 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all',
+          'text-body-sm font-medium text-[var(--color-text-secondary)]',
+          'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
+          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]',
+          isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
+        )}
+      >
+        {item.label}
+        <svg
+          className="size-3.5 opacity-60 transition-transform duration-200 group-hover/nav:rotate-180"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </Link>
+
+      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1.5 w-56 opacity-0 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:pointer-events-auto transition-all duration-200 z-50">
+        <div className="flex flex-col p-1.5 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)]">
+          {item.children.map((child) => (
+            <Link
+              key={child.href}
+              href={child.href}
+              className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+            >
+              <span>{child.label}</span>
+              <svg
+                className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+              >
+                <path d="m9 18 6-6-6-6" />
+              </svg>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
   const pathname = usePathname();
@@ -68,172 +189,12 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
 
         {/* Nav desktop */}
         <nav className="hidden lg:flex items-center gap-1" aria-label="Navegação principal">
-          {navLinks.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(`${link.href}/`);
-
-            if (link.href === '/noticias') {
-              return (
-                <div key={link.href} className="relative group/nav">
-                  <Link
-                    href={link.href}
-                    aria-current={isActive ? 'page' : undefined}
-                    className={cn(
-                      'px-3 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all',
-                      'text-body-sm font-medium text-[var(--color-text-secondary)]',
-                      'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
-                      isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
-                    )}
-                  >
-                    {link.label}
-                    <svg className="size-3.5 opacity-60 transition-transform duration-200 group-hover/nav:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="m6 9 6 6 6-6"/>
-                    </svg>
-                  </Link>
-
-                  {/* Dropdown de Temas */}
-                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1.5 w-56 opacity-0 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:pointer-events-auto transition-all duration-200 z-50">
-                    <div className="flex flex-col p-1.5 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)]">
-                      <Link 
-                        href="/noticias?categoria=filmes" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Filmes</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=series_tv" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Séries e TV</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=animes" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Animes</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=games" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Games</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=sinopse_jogo" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Sinopse de Jogo</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=korea" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Korea</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=criticas" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Críticas</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=listas" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Listas</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=ccxp" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>CCXP</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=cultura_pop" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Cultura Pop</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=lancamentos" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Lançamentos</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <Link 
-                        href="/noticias?categoria=tecnologia" 
-                        className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Tecnologia</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                      <div className="h-px bg-[var(--color-border-subtle)] my-1" />
-                      <Link 
-                        href="/noticias?categoria=colunistas" 
-                        className="flex items-center justify-between px-3 py-2 text-xs font-bold text-[var(--color-accent-hype)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-                      >
-                        <span>Colunistas</span>
-                        <svg className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[var(--color-accent-hype)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
-
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={isActive ? 'page' : undefined}
-                className={cn(
-                  'px-3 h-9 inline-flex items-center rounded-[var(--radius-sm)]',
-                  'text-body-sm font-medium text-[var(--color-text-secondary)]',
-                  'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
-                  'transition-colors duration-[var(--duration-fast)]',
-                  link.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]',
-                  isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
-                )}
-              >
-                {link.label}
-              </Link>
-            );
+          {navLinks.map((item) => {
+            const isActive =
+              pathname === item.href ||
+              pathname.startsWith(`${item.href}/`) ||
+              item.children?.some((c) => pathname === c.href.split('?')[0]);
+            return <NavLink key={item.href} item={item} isActive={Boolean(isActive)} />;
           })}
         </nav>
 
@@ -254,7 +215,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
             {/* Dropdown Menu do Perfil */}
             <div className="absolute right-0 top-full pt-1.5 w-64 opacity-0 pointer-events-none group-hover/user:opacity-100 group-hover/user:pointer-events-auto transition-all duration-200 z-50">
               <div className="flex flex-col p-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-xl)] backdrop-blur-md">
-                
+
                 {/* Cabeçalho do Perfil */}
                 <div className="p-3 border-b border-[var(--color-border-subtle)] flex flex-col gap-1">
                   <div className="flex items-center justify-between">
