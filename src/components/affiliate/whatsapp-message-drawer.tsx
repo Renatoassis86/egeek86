@@ -23,10 +23,13 @@ export interface WhatsappMessageDrawerProps {
   networkName: string;
   currentPriceCents: number;
   listPriceCents?: number | null;
-  lowestPriceCents: number;
-  lowestPriceAt: Date;
+  avgPriceCents?: number | null;
+  lowestEverCents: number;
+  lowestEverAt: Date;
   coupon?: { code: string; discountType: string; discountValue: string } | null;
   shortLink: string;
+  siteUrl: string;
+  affiliateLinkPending: boolean;
 }
 
 export function WhatsappMessageDrawer(props: WhatsappMessageDrawerProps) {
@@ -37,10 +40,13 @@ export function WhatsappMessageDrawer(props: WhatsappMessageDrawerProps) {
         networkName: props.networkName,
         currentPriceCents: props.currentPriceCents,
         listPriceCents: props.listPriceCents,
-        lowestPriceCents: props.lowestPriceCents,
-        lowestPriceAt: props.lowestPriceAt,
+        avgPriceCents: props.avgPriceCents,
+        lowestEverCents: props.lowestEverCents,
+        lowestEverAt: props.lowestEverAt,
         coupon: props.coupon,
         shortLink: props.shortLink,
+        siteUrl: props.siteUrl,
+        affiliateLinkPending: props.affiliateLinkPending,
       }),
     [props]
   );

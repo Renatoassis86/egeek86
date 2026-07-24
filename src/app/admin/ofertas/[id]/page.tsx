@@ -11,6 +11,7 @@ import { Text } from '@/components/ui/text';
 import { WhatsappMessageDrawer } from '@/components/affiliate/whatsapp-message-drawer';
 import { formatBRL } from '@/lib/format';
 import { getOfferByIdForAdmin, getOfferMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
+import { getMasterProductPriceHistory } from '@/server/queries/price-history';
 import {
   logNewPrice,
   updateOfferStatus,
@@ -27,14 +28,21 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
   const offer = await getOfferByIdForAdmin(id);
   if (!offer) notFound();
 
-  const [metrics, coupons] = await Promise.all([
+  const [metrics, coupons, priceHistory] = await Promise.all([
     getOfferMetrics(id),
     listActiveCouponsByNetwork(offer.networkId),
+    getMasterProductPriceHistory(offer.masterProduct.id, 'Tudo'),
   ]);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   const shortLink = `${appUrl}/go/${offer.slug}`;
   const coupon = coupons[0] ?? null;
+  // Menor preço já visto em QUALQUER loja/plataforma rastreada pra esse
+  // jogo (não só nessa oferta/vendedor) — mais correto pra afirmar "menor
+  // preço histórico" numa mensagem promocional do que o histórico de um
+  // vendedor só.
+  const lowestEverCents = priceHistory.stats.minPriceCents ?? metrics?.lowestPriceCents ?? offer.currentPriceCents;
+  const lowestEverAt = metrics?.lowestPriceAt ?? offer.createdAt;
 
   return (
     <div className="flex flex-col gap-6">
@@ -204,14 +212,17 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
           title={offer.title}
           networkName={offer.network.name}
           currentPriceCents={offer.currentPriceCents}
-          lowestPriceCents={metrics?.lowestPriceCents ?? offer.currentPriceCents}
-          lowestPriceAt={metrics?.lowestPriceAt ?? offer.createdAt}
+          avgPriceCents={priceHistory.stats.avgPriceCents}
+          lowestEverCents={lowestEverCents}
+          lowestEverAt={lowestEverAt}
           coupon={
             coupon
               ? { code: coupon.code, discountType: coupon.discountType, discountValue: coupon.discountValue }
               : null
           }
           shortLink={shortLink}
+          siteUrl={appUrl}
+          affiliateLinkPending={offer.affiliateLinkPending}
         />
       </div>
 
@@ -223,12 +234,22 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
             </Badge>
           )}
           <Text variant="caption" color="tertiary" className="block mb-1">
-            Link de afiliado (não exposto publicamente)
+            {offer.affiliateLinkPending ? 'Link do produto no Mercado Livre (ainda sem rastreio de comissão)' : 'Link de afiliado (não exposto publicamente)'}
           </Text>
-          <Text variant="body-sm" className="break-all">
+          <a
+            href={offer.affiliateUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block break-all text-body-sm text-[var(--color-accent-primary)] hover:underline"
+          >
             {offer.affiliateUrl}
-          </Text>
-          <Badge variant="outline" className="mt-2">
+          </a>
+          <Button asChild variant="secondary" size="sm" className="mt-2">
+            <a href={offer.affiliateUrl} target="_blank" rel="noopener noreferrer">
+              Abrir no Mercado Livre → pegar link de afiliado
+            </a>
+          </Button>
+          <Badge variant="outline" className="mt-2 block w-fit">
             Link de rastreio público: {shortLink}
           </Badge>
 
