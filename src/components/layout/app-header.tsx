@@ -201,8 +201,10 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
         {/* Right actions */}
         <div className="flex items-center gap-1">
           <HeaderSearchModal />
-          <Button variant="ghost" size="icon" aria-label="Wishlist" className="hidden sm:inline-flex">
-            <Heart className="size-5" />
+          <Button variant="ghost" size="icon" aria-label="Jogos acompanhados" className="hidden sm:inline-flex" asChild>
+            <Link href="/conta?aba=jogos">
+              <Heart className="size-5" />
+            </Link>
           </Button>
           {/* User Icon Dropdown */}
           <div className="relative group/user hidden sm:block">
