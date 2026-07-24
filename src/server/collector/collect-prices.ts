@@ -171,13 +171,16 @@ async function applySnapshotsToGroup(
   let masterProduct: { name: string; defaultImages: string[] } | null = null;
 
   // O placeholder de catálogo criado por discover-products.ts (sellerId
-  // nulo, affiliateLinkPending: false, link genérico com matt_tool_id) nunca
-  // bate no filtro `eq(sellerId, ...)` abaixo — cada resultado por vendedor
-  // sempre criava uma oferta IRMÃ nova em vez de atualizar esse placeholder,
-  // que ficava com current_price_cents preso em 0 para sempre (e por isso
-  // nunca aparecia nas listagens, que filtram price > 0). Corrige aqui:
-  // mantém esse placeholder com o melhor preço encontrado entre os
-  // vendedores, sem mexer no link nem no status dele.
+  // nulo) nunca bate no filtro `eq(sellerId, ...)` abaixo — cada resultado
+  // por vendedor sempre criava uma oferta IRMÃ nova em vez de atualizar esse
+  // placeholder, que ficava com current_price_cents preso em 0 para sempre
+  // (e por isso nunca aparecia nas listagens, que filtram price > 0).
+  // Corrige aqui: mantém esse placeholder com o melhor preço encontrado
+  // entre os vendedores, sem mexer no link nem no status dele. `sellerId
+  // IS NULL` já identifica exclusivamente essa linha (não filtra por
+  // affiliateLinkPending — isso é ortogonal a ter preço atualizado: um
+  // placeholder pendente de link real ainda deve mostrar o preço correto,
+  // só o botão de compra fica desabilitado até o link real ser colado).
   const bestPriceCents = Math.min(...results.map((r) => r.priceCents));
   await db
     .update(affiliateOffers)
@@ -186,8 +189,7 @@ async function applySnapshotsToGroup(
       and(
         eq(affiliateOffers.masterProductId, group.masterProductId),
         eq(affiliateOffers.networkId, group.networkId),
-        isNull(affiliateOffers.sellerId),
-        eq(affiliateOffers.affiliateLinkPending, false)
+        isNull(affiliateOffers.sellerId)
       )
     );
 

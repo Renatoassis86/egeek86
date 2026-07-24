@@ -108,17 +108,23 @@ const ACCESSORY_SEARCH_TERMS: SearchTerm[] = [
  * console/acessório: monte/proteção/capa não é o produto em si, é algo QUE
  * VESTE o produto — nunca deve virar item de catálogo aqui.
  */
+// `\bpalavra\b` (fronteira de palavra nos dois lados) nunca bate com o
+// plural em português — "quadro" != "quadros" pro regex, porque não existe
+// fronteira de palavra entre o "o" e o "s". Bug real que deixou "Quadros
+// Decorativos..." passar pelo filtro, já que título de anúncio real quase
+// sempre vem no plural. Todo termo que plausivelmente aparece no plural usa
+// `s?` antes do `\b` final.
 const NON_PRODUCT_KEYWORDS = [
   /suporte/i,
-  /\bparede\b/i,
-  /\bcapa\b/i,
-  /\bcase\b/i,
-  /\bskin\b/i,
+  /\bparedes?\b/i,
+  /\bcapas?\b/i,
+  /\bcases?\b/i,
+  /\bskins?\b/i,
   /prote[cç][aã]o/i,
   /pel[ií]cula/i,
-  /\badesivo\b/i,
-  /\bbolsa\b/i,
-  /\bmochila\b/i,
+  /\badesivos?\b/i,
+  /\bbolsas?\b/i,
+  /\bmochilas?\b/i,
   /base de carregamento/i,
   // Item de merchandising/novidade que só referencia o produto de jogo, mas
   // não é usado pra jogar (chaveiro, miniatura, réplica de exibição, pelúcia,
@@ -127,13 +133,13 @@ const NON_PRODUCT_KEYWORDS = [
   /chaveiro/i,
   /porta.?chaves/i,
   /\bminiatura/i,
-  /\br[eé]plica\b/i,
+  /\br[eé]plicas?\b/i,
   /pel[uú]cia/i,
-  /\bboneco\b/i,
+  /\bbonecos?\b/i,
   /caneca/i,
   /camiseta/i,
   /moletom/i,
-  /\bquadro\b/i,
+  /\bquadros?\b/i,
   /lumin[aá]ria/i,
   /almofada/i,
   /copo/i,
@@ -150,6 +156,31 @@ const NON_PRODUCT_KEYWORDS = [
   /agenda/i,
   /estojo/i,
 ];
+
+/**
+ * Marcador de item usado/seminovo NO TÍTULO — pedido explícito do cliente
+ * (2026-07-24, reforçando a decisão de 2026-07-18 em mercado-livre.ts):
+ * Geek Deals só cataloga item NOVO, nunca usado/seminovo/recondicionado.
+ * O Mercado Livre expõe `condition` estruturado (checado à parte, mais
+ * confiável), mas a Shopee (busca pública, sem API oficial aprovada ainda)
+ * não tem esse campo — o único sinal disponível é o próprio título do
+ * anúncio (ex: "Jogo Elden Ring - PS5 (Usado)"), por isso o filtro textual
+ * aqui serve tanto de sinal único (Shopee) quanto de reforço (Mercado
+ * Livre, caso o campo estruturado venha ausente nalgum resultado).
+ */
+const USED_CONDITION_PATTERNS = [
+  /\busados?\b/i,
+  /\busadas?\b/i,
+  /semi.?novos?\b/i,
+  /semi.?novas?\b/i,
+  /recondicionados?\b/i,
+  /recondicionadas?\b/i,
+  /\bsegunda.?m[aã]o\b/i,
+];
+
+export function isUsedCondition(title: string): boolean {
+  return USED_CONDITION_PATTERNS.some((re) => re.test(title));
+}
 
 const GAME_TITLE_PATTERNS = [
   /\bjogo\b/i,
@@ -208,6 +239,8 @@ interface MeliSearchResult {
   name: string;
   attributes: MeliAttribute[];
   pictures?: { url: string }[];
+  /** "new" | "used" — Mercado Livre retorna isso por resultado de busca. Ausente (undefined) = resultado do catálogo buy-box, que por definição já é sempre item novo. */
+  condition?: string | null;
 }
 
 export interface DiscoverProductsSummary {
@@ -259,6 +292,200 @@ async function saveCursor(index: number): Promise<void> {
  * necessária aqui, já que Mercado Livre sempre retorna o mesmo ID pro mesmo
  * produto canônico, tanto na busca quanto na consulta individual.
  */
+interface TermIngestResult {
+  found: number;
+  created: number;
+  alreadyExisted: number;
+  createdTitles: string[];
+  errors: { term: string; message: string }[];
+}
+
+/**
+ * Busca um termo no Mercado Livre (catálogo buy-box + anúncios abertos) e
+ * cadastra o que for produto novo válido — núcleo compartilhado entre a
+ * rotação automática (discoverNewProducts, roda vários termos fixos por
+ * execução) e a busca manual do admin (triggerManualMeliExtraction, um
+ * termo livre digitado na hora). Extraído pra não duplicar a lógica de
+ * classificação/link honesto/dedup em dois lugares.
+ */
+async function searchAndIngestTerm(
+  searchTerm: SearchTerm,
+  network: { id: string },
+  accessToken: string
+): Promise<TermIngestResult> {
+  const result: TermIngestResult = { found: 0, created: 0, alreadyExisted: 0, createdTitles: [], errors: [] };
+  let results: MeliSearchResult[] = [];
+
+  try {
+    // 1. Busca no Catálogo Buy-Box (/products/search)
+    const catalogRes = await fetch(
+      `https://api.mercadolibre.com/products/search?site_id=MLB&q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (catalogRes.ok) {
+      const catalogData = (await catalogRes.json()) as { results: MeliSearchResult[] };
+      results.push(...(catalogData.results || []));
+    }
+
+    // 2. Busca Aberta nos Anúncios de Todos os Vendedores (/sites/MLB/search) — Garante capturar TUDO (Turok, raridades, etc.)
+    const siteRes = await fetch(
+      `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (siteRes.ok) {
+      const siteData = (await siteRes.json()) as { results: any[] };
+      const siteItems: MeliSearchResult[] = (siteData.results || []).map((item) => ({
+        id: item.catalog_product_id || item.id,
+        name: item.title,
+        attributes: item.attributes || [],
+        pictures: item.thumbnail ? [{ url: item.thumbnail.replace('-I.jpg', '-O.jpg') }] : [],
+        condition: item.condition ?? null,
+      }));
+      results.push(...siteItems);
+    }
+
+    result.found = results.length;
+  } catch (err) {
+    result.errors.push({ term: searchTerm.term, message: (err as Error).message });
+    return result;
+  }
+
+  // Try/catch por item: um produto com dado inesperado (ex: hierarquia de
+  // variação do catálogo) não deve derrubar o resto dos resultados desse termo.
+  for (const item of results) {
+    try {
+      // Busca textual do Mercado Livre pra termo de console/acessório não é
+      // filtro exato — às vezes devolve jogo junto ("Jogo X Para Console
+      // Switch"), ou acessório de montagem/proteção que não é o produto em
+      // si (suporte de parede, capa, skin). Descarta os dois casos aqui —
+      // fora do escopo pedido: jogo, console, joystick/controle avulso,
+      // tecnologia de experiência de jogo.
+      if (searchTerm.kind !== 'game' && /^jogo\b/i.test(item.name)) {
+        continue;
+      }
+      if (isNonProductAccessory(item.name)) {
+        continue;
+      }
+      // Só item NOVO — decisão explícita do cliente (2026-07-18, ver
+      // mercado-livre.ts), reforçada (2026-07-24): Geek Deals nunca cataloga
+      // usado/seminovo, isso fica pra um módulo de segunda-mão futuro à
+      // parte. O filtro em mercado-livre.ts só cobre o ciclo de preço de
+      // produtos JÁ catalogados — aqui é onde o produto entra no catálogo
+      // pela primeira vez, então precisa do mesmo corte. `condition`
+      // ausente (resultado do catálogo buy-box) passa — catálogo buy-box é
+      // por definição sempre item novo.
+      if (item.condition === 'used' || isUsedCondition(item.name)) {
+        continue;
+      }
+
+      const [existing] = await db
+        .select({ id: masterProducts.id })
+        .from(masterProducts)
+        .where(eq(masterProducts.meliCatalogId, item.id))
+        .limit(1);
+
+      if (existing) {
+        result.alreadyExisted++;
+        continue;
+      }
+
+      const detectedPlatform = normalizeGamePlatformGen(null, item.name);
+      const isGameMedia = isGameTitleOrMedia(item.name);
+      const classification =
+        searchTerm.kind === 'console' && !isGameMedia
+          ? {
+              productType: 'console' as const,
+              gameFormat: 'unknown' as const,
+              // Busca textual do Mercado Livre pra "console nintendo switch 2"
+              // também retorna Switch/Lite (busca solta, não filtro exato) —
+              // não dá pra confiar cegamente no termo de busca. Deriva a
+              // plataforma de verdade a partir do título de cada resultado;
+              // só cai pro termo de busca se o título não deixar claro.
+              gamePlatformGen: detectedPlatform !== 'unknown' ? detectedPlatform : searchTerm.platform!,
+              gameEditionType: 'unknown' as const,
+              gameEditionSource: null,
+              gameCollection: null,
+            }
+          : { productType: 'game' as const, ...classifyFromAttributes(item.attributes, item.name) };
+      const baseSlug = slugify(item.name);
+      const [collision] = await db
+        .select({ id: masterProducts.id })
+        .from(masterProducts)
+        .where(eq(masterProducts.slug, baseSlug))
+        .limit(1);
+      const productSlug = collision ? slugify(`${item.name}-${item.id.slice(-6)}`) : baseSlug;
+
+      const [masterProduct] = await db
+        .insert(masterProducts)
+        .values({
+          name: item.name,
+          slug: productSlug,
+          meliCatalogId: item.id,
+          defaultImages: item.pictures?.map((p) => p.url) ?? [],
+          ...classification,
+          classifiedAt: new Date(),
+        })
+        .returning();
+
+      const offerSlug = slugify(`${item.name}-${item.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
+
+      // Só marca link como definitivo (não pendente) quando MELI_TOOL_ID
+      // está de fato configurado com o ID real de afiliado do usuário —
+      // "32740986" era um valor fixo no código, nunca configurado via env,
+      // e NÃO é o ID de afiliado do usuário (confirmado 2026-07-24). Usar
+      // esse ID em todo link publicado arriscava rastrear a comissão pra
+      // conta de outra pessoa, não gerar zero comissão. Sem ID real
+      // configurado, publica a página normal do produto (sem matt_tool_id)
+      // e marca pendente — mesmo padrão honesto já usado pra Shopee/Magalu
+      // e pela extração manual do admin.
+      const realToolId = process.env.MELI_TOOL_ID;
+      const meliUrl = `https://www.mercadolivre.com.br/p/${item.id}`;
+
+      await db.insert(affiliateOffers).values({
+        masterProductId: masterProduct.id,
+        networkId: network.id,
+        title: item.name,
+        slug: offerSlug,
+        affiliateUrl: realToolId ? `${meliUrl}?matt_tool_id=${realToolId}` : meliUrl,
+        affiliateLinkPending: !realToolId,
+        imageUrl: item.pictures?.[0]?.url ?? null,
+        externalRef: item.id,
+        // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.
+        currentPriceCents: 0,
+        status: 'active',
+        publishedAt: new Date(),
+      });
+
+      result.created++;
+      result.createdTitles.push(item.name);
+    } catch (err) {
+      result.errors.push({ term: searchTerm.term, message: `${item.id}: ${(err as Error).message}` });
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Busca um termo livre digitado pelo admin (não precisa ser MLB ID/URL) —
+ * mesma lógica de classificação/dedup/link honesto de discoverNewProducts,
+ * só que pra um termo só, sob demanda, em vez da rotação automática.
+ */
+export async function searchAndIngestMeliTerm(term: string): Promise<TermIngestResult> {
+  const [network] = await db
+    .select()
+    .from(affiliateNetworks)
+    .where(eq(affiliateNetworks.slug, 'mercado-livre'))
+    .limit(1);
+
+  if (!network) {
+    return { found: 0, created: 0, alreadyExisted: 0, createdTitles: [], errors: [{ term, message: 'Rede mercado-livre não cadastrada em affiliate_networks' }] };
+  }
+
+  const accessToken = await getValidAccessToken();
+  return searchAndIngestTerm({ term, kind: 'game' }, network, accessToken);
+}
+
 export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
   const cursorStart = await getCursor();
   const terms = Array.from(
@@ -296,134 +523,11 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
   const TERM_CONCURRENCY = 4;
   await mapWithConcurrency(terms, TERM_CONCURRENCY, async (searchTerm) => {
     summary.termsSearched++;
-    let results: MeliSearchResult[] = [];
-    try {
-      // 1. Busca no Catálogo Buy-Box (/products/search)
-      const catalogRes = await fetch(
-        `https://api.mercadolibre.com/products/search?site_id=MLB&q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      if (catalogRes.ok) {
-        const catalogData = (await catalogRes.json()) as { results: MeliSearchResult[] };
-        results.push(...(catalogData.results || []));
-      }
-
-      // 2. Busca Aberta nos Anúncios de Todos os Vendedores (/sites/MLB/search) — Garante capturar TUDO (Turok, raridades, etc.)
-      const siteRes = await fetch(
-        `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      if (siteRes.ok) {
-        const siteData = (await siteRes.json()) as { results: any[] };
-        const siteItems: MeliSearchResult[] = (siteData.results || []).map((item) => ({
-          id: item.catalog_product_id || item.id,
-          name: item.title,
-          attributes: item.attributes || [],
-          pictures: item.thumbnail ? [{ url: item.thumbnail.replace('-I.jpg', '-O.jpg') }] : [],
-        }));
-        results.push(...siteItems);
-      }
-
-      summary.found += results.length;
-    } catch (err) {
-      summary.errors.push({ term: searchTerm.term, message: (err as Error).message });
-      return;
-    }
-
-    // Try/catch por item: um produto com dado inesperado (ex: hierarquia de
-    // variação do catálogo) não deve derrubar o resto dos resultados desse termo.
-    for (const result of results) {
-      try {
-        // Busca textual do Mercado Livre pra termo de console/acessório não é
-        // filtro exato — às vezes devolve jogo junto ("Jogo X Para Console
-        // Switch"), ou acessório de montagem/proteção que não é o produto em
-        // si (suporte de parede, capa, skin). Descarta os dois casos aqui —
-        // fora do escopo pedido: jogo, console, joystick/controle avulso,
-        // tecnologia de experiência de jogo.
-        if (searchTerm.kind !== 'game' && /^jogo\b/i.test(result.name)) {
-          continue;
-        }
-        if (isNonProductAccessory(result.name)) {
-          continue;
-        }
-
-        const [existing] = await db
-          .select({ id: masterProducts.id })
-          .from(masterProducts)
-          .where(eq(masterProducts.meliCatalogId, result.id))
-          .limit(1);
-
-        if (existing) {
-          summary.alreadyExisted++;
-          continue;
-        }
-
-        const detectedPlatform = normalizeGamePlatformGen(null, result.name);
-        const isGameMedia = isGameTitleOrMedia(result.name);
-        const classification =
-          searchTerm.kind === 'console' && !isGameMedia
-            ? {
-                productType: 'console' as const,
-                gameFormat: 'unknown' as const,
-                // Busca textual do Mercado Livre pra "console nintendo switch 2"
-                // também retorna Switch/Lite (busca solta, não filtro exato) —
-                // não dá pra confiar cegamente no termo de busca. Deriva a
-                // plataforma de verdade a partir do título de cada resultado;
-                // só cai pro termo de busca se o título não deixar claro.
-                gamePlatformGen: detectedPlatform !== 'unknown' ? detectedPlatform : searchTerm.platform!,
-                gameEditionType: 'unknown' as const,
-                gameEditionSource: null,
-                gameCollection: null,
-              }
-            : { productType: 'game' as const, ...classifyFromAttributes(result.attributes, result.name) };
-        const baseSlug = slugify(result.name);
-        const [collision] = await db
-          .select({ id: masterProducts.id })
-          .from(masterProducts)
-          .where(eq(masterProducts.slug, baseSlug))
-          .limit(1);
-        const productSlug = collision ? slugify(`${result.name}-${result.id.slice(-6)}`) : baseSlug;
-
-        const [masterProduct] = await db
-          .insert(masterProducts)
-          .values({
-            name: result.name,
-            slug: productSlug,
-            meliCatalogId: result.id,
-            defaultImages: result.pictures?.map((p) => p.url) ?? [],
-            ...classification,
-            classifiedAt: new Date(),
-          })
-          .returning();
-
-        const offerSlug = slugify(`${result.name}-${result.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
-
-        await db.insert(affiliateOffers).values({
-          masterProductId: masterProduct.id,
-          networkId: network.id,
-          title: result.name,
-          slug: offerSlug,
-          // Placeholder honesto (página pública real do produto, sem
-          // rastreio de comissão) — decisão explícita do usuário (2026-07-17):
-          // publica direto em vez de esperar o admin colar o link de afiliado
-          // de verdade, priorizando vitrine sempre cheia sobre garantir
-          // comissão em 100% dos cliques. Admin ainda pode trocar pelo link
-          // real a qualquer momento em /admin/ofertas/[id].
-          affiliateUrl: `https://www.mercadolivre.com.br/p/${result.id}?matt_tool_id=${process.env.MELI_TOOL_ID || '32740986'}`,
-          affiliateLinkPending: false,
-          imageUrl: result.pictures?.[0]?.url ?? null,
-          externalRef: result.id,
-          // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.
-          currentPriceCents: 0,
-          status: 'active',
-          publishedAt: new Date(),
-        });
-
-        summary.created++;
-      } catch (err) {
-        summary.errors.push({ term: searchTerm.term, message: `${result.id}: ${(err as Error).message}` });
-      }
-    }
+    const termResult = await searchAndIngestTerm(searchTerm, network, accessToken);
+    summary.found += termResult.found;
+    summary.created += termResult.created;
+    summary.alreadyExisted += termResult.alreadyExisted;
+    summary.errors.push(...termResult.errors);
   });
 
   await saveCursor((cursorStart + TERMS_PER_RUN) % SEARCH_TERMS.length);
@@ -528,6 +632,8 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
 
         for (const item of results) {
           if (isNonProductAccessory(item.title)) continue;
+          // Ver nota em searchAndIngestTerm — nunca cataloga usado/seminovo.
+          if (item.condition === 'used' || isUsedCondition(item.title)) continue;
 
           const meliCatalogId = item.catalog_product_id || item.id;
           const [existing] = await db
@@ -557,9 +663,16 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
           const offerSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
           const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
 
+          // Ver nota em discoverNewProducts: só usa matt_tool_id quando
+          // MELI_TOOL_ID é o ID real do usuário, configurado via env — nunca
+          // um valor fixo no código.
           const rawPermalink = item.permalink || `https://www.mercadolivre.com.br/p/${meliCatalogId}`;
-          const toolId = process.env.MELI_TOOL_ID || '32740986';
-          const trackedUrl = rawPermalink.includes('?') ? `${rawPermalink}&matt_tool_id=${toolId}` : `${rawPermalink}?matt_tool_id=${toolId}`;
+          const realToolId = process.env.MELI_TOOL_ID;
+          const trackedUrl = realToolId
+            ? rawPermalink.includes('?')
+              ? `${rawPermalink}&matt_tool_id=${realToolId}`
+              : `${rawPermalink}?matt_tool_id=${realToolId}`
+            : rawPermalink;
 
           await db.insert(affiliateOffers).values({
             masterProductId: masterProduct.id,
@@ -567,7 +680,7 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
             title: item.title,
             slug: offerSlug,
             affiliateUrl: trackedUrl,
-            affiliateLinkPending: false,
+            affiliateLinkPending: !realToolId,
             imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
             externalRef: item.id,
             currentPriceCents: priceCents,
