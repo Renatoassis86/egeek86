@@ -311,6 +311,46 @@ export async function listOffersForAdminFiltered(filter: AdminOffersFilter = {})
   };
 }
 
+export interface AdminOfferSearchResult {
+  offerId: string;
+  title: string;
+  imageUrl: string | null;
+  networkName: string;
+  currentPriceCents: number;
+  affiliateLinkPending: boolean;
+}
+
+/**
+ * Autocomplete do campo de busca/extração do admin — mostra o que JÁ está
+ * catalogado enquanto digita (ex: "turok" já lista os Turok existentes),
+ * antes mesmo de disparar uma extração nova no Mercado Livre. Só título/nome
+ * do produto, sem paginação — é uma prévia rápida, não a listagem completa
+ * (essa já existe em /admin/ofertas com o filtro de busca).
+ */
+export async function searchOffersForAdmin(query: string, limit = 8): Promise<AdminOfferSearchResult[]> {
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return [];
+
+  const term = `%${trimmed}%`;
+  const rows = await db
+    .select({
+      offerId: affiliateOffers.id,
+      title: affiliateOffers.title,
+      imageUrl: affiliateOffers.imageUrl,
+      networkName: affiliateNetworks.name,
+      currentPriceCents: affiliateOffers.currentPriceCents,
+      affiliateLinkPending: affiliateOffers.affiliateLinkPending,
+    })
+    .from(affiliateOffers)
+    .innerJoin(masterProducts, eq(affiliateOffers.masterProductId, masterProducts.id))
+    .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
+    .where(and(or(ilike(affiliateOffers.title, term), ilike(masterProducts.name, term))!, eq(affiliateOffers.status, 'active')))
+    .orderBy(asc(affiliateOffers.currentPriceCents))
+    .limit(limit);
+
+  return rows;
+}
+
 export async function listNetworks(): Promise<AffiliateNetwork[]> {
   return db.select().from(affiliateNetworks).orderBy(affiliateNetworks.name);
 }
