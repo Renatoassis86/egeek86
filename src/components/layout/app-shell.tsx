@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { AppHeader } from './app-header';
+import { TopUtilityBar } from './top-utility-bar';
 import { BottomTabBar } from './bottom-tab-bar';
 import { SiteFooter } from './site-footer';
 
@@ -31,7 +32,12 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)]">
-      {!hideHeader && <AppHeader cartCount={cartCount} />}
+      {!hideHeader && (
+        <>
+          <TopUtilityBar />
+          <AppHeader cartCount={cartCount} />
+        </>
+      )}
 
       {/* items-stretch explícito: "normal" (o default do navegador) não estava
           resolvendo como stretch nessa combinação Tailwind v4/Turbopack —

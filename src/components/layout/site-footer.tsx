@@ -133,15 +133,6 @@ export function SiteFooter() {
           >
             <Text variant="caption" color="tertiary" className="flex items-center gap-1.5 select-none font-medium">
               Criado por
-              <span className="relative h-5 w-5 overflow-hidden inline-block align-middle rounded-sm">
-                <Image
-                  src="/arkos.png"
-                  alt="Arkos Logo"
-                  fill
-                  sizes="20px"
-                  className="object-cover object-[50%_16%]"
-                />
-              </span>
               <span className="font-bold text-[var(--color-text-primary)] hover:underline">Arkos Intelligence</span>
             </Text>
           </a>
