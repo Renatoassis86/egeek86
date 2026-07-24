@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema';
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
 import { slugify } from '@/lib/slugify';
-import { isNonProductAccessory } from './discover-products';
+import { isNonProductAccessory, isUsedCondition } from './discover-products';
 
 const MAGALU_SEARCH_TERMS = [
   'turok nintendo switch',
@@ -175,6 +175,7 @@ export async function discoverMagaluProducts(): Promise<{
       for (const item of items) {
         try {
           if (!item.title || isNonProductAccessory(item.title)) continue;
+          if (isUsedCondition(item.title)) continue;
 
           const magaluRef = `magalu-${item.id}`;
           const [existingOffer] = await db

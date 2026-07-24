@@ -6,7 +6,7 @@ import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema'
 import { fetchShopeeGraphQL, generateShopeeAffiliateLink, hasShopeeAffiliateCredentials } from './sources/shopee-auth';
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
 import { slugify } from '@/lib/slugify';
-import { isNonProductAccessory } from './discover-products';
+import { isNonProductAccessory, isUsedCondition } from './discover-products';
 
 const SHOPEE_SEARCH_TERMS = [
   'turok nintendo switch',
@@ -165,6 +165,9 @@ export async function discoverShopeeProducts(): Promise<{
       for (const item of items) {
         try {
           if (!item.productName || isNonProductAccessory(item.productName)) continue;
+          // Shopee (busca pública) não expõe condition estruturado — o
+          // título é o único sinal disponível pra excluir usado/seminovo.
+          if (isUsedCondition(item.productName)) continue;
 
           const shopeeRef = `shopee-${item.itemId}`;
           const [existingOffer] = await db
