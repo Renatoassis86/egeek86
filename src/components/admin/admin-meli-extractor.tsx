@@ -149,15 +149,16 @@ export function AdminMeliExtractor() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant={autoPilot ? 'hype' : 'outline'}
               size="sm"
+              fullWidth
               onClick={() => {
                 setAutoPilot(!autoPilot);
                 toast(autoPilot ? 'Piloto Automático desativado.' : 'Piloto Automático ativado! Atualizando dados a cada 60s.');
               }}
-              className="gap-2 text-xs font-bold"
+              className="gap-2 text-xs font-bold sm:w-fit"
             >
               <Bot className={`size-4 ${autoPilot ? 'animate-bounce text-emerald-400' : ''}`} />
               <span>{autoPilot ? 'Piloto Automático: LIGADO (60s)' : 'Ativar Piloto Automático'}</span>
@@ -166,9 +167,10 @@ export function AdminMeliExtractor() {
             <Button
               variant="outline"
               size="sm"
+              fullWidth
               onClick={handleFullScan}
               disabled={isScanningAll || isExtracting}
-              className="shrink-0 gap-2 border-[var(--color-border-strong)] hover:border-[var(--color-accent-gold)]"
+              className="gap-2 border-[var(--color-border-strong)] hover:border-[var(--color-accent-gold)] sm:w-fit"
             >
               <RefreshCw className={`size-3.5 ${isScanningAll ? 'animate-spin' : ''}`} />
               <span>{isScanningAll ? 'Executando Varredura...' : 'Varredura Geral Agora'}</span>

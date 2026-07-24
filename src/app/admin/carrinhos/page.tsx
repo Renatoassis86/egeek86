@@ -70,7 +70,7 @@ export default async function AdminCartsPage() {
                       key={item.cartItemId}
                       className="flex items-center justify-between gap-3 rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)] p-3"
                     >
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <Text variant="body-sm" className="line-clamp-1">
                           {item.title}
                         </Text>
