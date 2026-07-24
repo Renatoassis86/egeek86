@@ -54,11 +54,8 @@ function buildPendingLinkReminder(input: WhatsappMessageInput): string {
   ].join('\n');
 }
 
-export function buildWhatsappMessage(input: WhatsappMessageInput): string {
-  if (input.affiliateLinkPending) {
-    return buildPendingLinkReminder(input);
-  }
-
+/** Bloco de um item só (título + preço + histórico + cupom) — sem o fechamento de marca, reaproveitado tanto pela mensagem de 1 item quanto pela do carrinho (N itens). */
+function buildOfferBlock(input: WhatsappMessageInput): string[] {
   const isLowestEver = input.currentPriceCents <= input.lowestEverCents;
 
   // Prioridade: preço "de" manual (o vendedor anunciou de/por explicitamente)
@@ -82,20 +79,42 @@ export function buildWhatsappMessage(input: WhatsappMessageInput): string {
     ? `🎟️ Use o cupom *${input.coupon.code}* — ${formatDiscountLabel(input.coupon.discountType, input.coupon.discountValue)}`
     : null;
 
-  const lines = [
-    `🔥 *${input.title}*`,
-    '',
-    priceLine,
-    historyLine,
-    couponLine,
-    '',
-    `👉 Garanta o seu: ${input.shortLink}`,
-    '',
-    '━━━━━━━━━━━━━━',
-    `🎮 *${BRAND_NAME}* — ${BRAND_SLOGAN}`,
-    'Comparamos o preço em várias lojas pra você nunca pagar mais caro por um jogo.',
-    `🔗 ${input.siteUrl}`,
-  ];
+  return [`🔥 *${input.title}*`, '', priceLine, historyLine, couponLine, '', `👉 Garanta o seu: ${input.shortLink}`].filter(
+    (line): line is string => line != null
+  );
+}
 
-  return lines.filter((line): line is string => line != null).join('\n');
+const BRAND_CLOSING = [
+  '━━━━━━━━━━━━━━',
+  `🎮 *${BRAND_NAME}* — ${BRAND_SLOGAN}`,
+  'Comparamos o preço em várias lojas pra você nunca pagar mais caro por um jogo.',
+];
+
+export function buildWhatsappMessage(input: WhatsappMessageInput): string {
+  if (input.affiliateLinkPending) {
+    return buildPendingLinkReminder(input);
+  }
+
+  return [...buildOfferBlock(input), '', ...BRAND_CLOSING, `🔗 ${input.siteUrl}`].join('\n');
+}
+
+/**
+ * Mensagem única cobrindo TODOS os itens do carrinho de um comprador — um
+ * bloco por item (mesmo formato de buildOfferBlock) + um fechamento de marca
+ * só no final. Assume que todo item já tem link de afiliado real (quem chama
+ * já filtrou por affiliateLinkPending=false antes de montar a lista).
+ */
+export function buildCartWhatsappMessage(
+  buyerName: string,
+  items: Omit<WhatsappMessageInput, 'affiliateLinkPending' | 'siteUrl'>[],
+  siteUrl: string
+): string {
+  const intro = [`Oi, ${buyerName}! 👋`, '', `Os links dos ${items.length} ${items.length === 1 ? 'item' : 'itens'} do seu carrinho estão prontos:`];
+
+  const itemBlocks = items.flatMap((item, i) => [
+    ...buildOfferBlock({ ...item, affiliateLinkPending: false, siteUrl }),
+    ...(i < items.length - 1 ? ['', '· · ·', ''] : []),
+  ]);
+
+  return [...intro, '', ...itemBlocks, '', ...BRAND_CLOSING, `🔗 ${siteUrl}`].join('\n');
 }

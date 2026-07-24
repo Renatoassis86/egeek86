@@ -27,3 +27,20 @@ export async function updatePriceAlertPreference(channel: PriceAlertChannel, ena
       });
   }
 }
+
+/**
+ * Consentimento explícito pra receber pelo WhatsApp os links de afiliado dos
+ * itens do carrinho — exigência da Meta pra mensagem business-initiated
+ * (não é só boa prática). Reaproveita whatsappOrders (já existia na tabela,
+ * nunca tinha UI pra setar).
+ */
+export async function updateWhatsappCartConsent(enabled: boolean): Promise<void> {
+  const profile = await requireCustomer();
+  await db
+    .insert(notificationPreferences)
+    .values({ userId: profile.id, whatsappOrders: enabled })
+    .onConflictDoUpdate({
+      target: notificationPreferences.userId,
+      set: { whatsappOrders: enabled, updatedAt: new Date() },
+    });
+}

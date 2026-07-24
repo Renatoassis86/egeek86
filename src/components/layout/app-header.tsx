@@ -22,7 +22,7 @@ const navLinks = [
   { href: '/noticias', label: 'Notícias' },
 ];
 
-export function AppHeader() {
+export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
   const pathname = usePathname();
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
@@ -309,8 +309,15 @@ export function AppHeader() {
             </div>
           </div>
           <ThemeToggle className="hidden lg:inline-flex" />
-          <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative">
-            <ShoppingBag className="size-5" />
+          <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative" asChild>
+            <Link href="/carrinho">
+              <ShoppingBag className="size-5" />
+              {cartCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[var(--color-accent-primary)] text-[10px] font-bold text-[var(--color-text-inverse)]">
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+            </Link>
           </Button>
         </div>
       </div>

@@ -1,10 +1,11 @@
 import { eq } from 'drizzle-orm';
-import { Mail, Send, CheckCircle2 } from 'lucide-react';
+import { Mail, Send, CheckCircle2, MessageCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { NotificationPreferenceToggle } from '@/components/geek-deals/notification-preference-toggle';
 import { TelegramLinkButton } from '@/components/geek-deals/telegram-link-button';
+import { WhatsappCartConsentToggle } from '@/components/geek-deals/whatsapp-cart-consent-toggle';
 import { db } from '@/lib/db';
 import { notificationPreferences } from '@/db/schema';
 import { requireCustomer } from '@/lib/auth/require-customer';
@@ -24,6 +25,7 @@ export default async function NotificacoesPage() {
   const emailEnabled = prefs?.emailPriceAlerts ?? true;
   const telegramEnabled = prefs?.telegramPriceAlerts ?? true;
   const telegramLinked = !!prefs?.telegramChatId;
+  const whatsappCartEnabled = prefs?.whatsappOrders ?? false;
 
   return (
     <section className="mx-auto max-w-2xl px-4 lg:px-8 py-10 lg:py-14">
@@ -84,12 +86,21 @@ export default async function NotificacoesPage() {
             </CardContent>
           </Card>
 
-          <Card variant="outline">
-            <CardContent className="p-5">
-              <Text variant="caption" color="tertiary">
-                WhatsApp automático ainda não está disponível. Em breve. Por enquanto, as ofertas
-                continuam sendo compartilhadas manualmente nos grupos.
-              </Text>
+          <Card>
+            <CardContent className="flex items-center justify-between gap-4 p-5">
+              <div className="flex items-start gap-3">
+                <MessageCircle className="size-5 mt-0.5 text-[var(--color-text-tertiary)]" aria-hidden />
+                <div>
+                  <Text variant="body-md" className="font-medium">
+                    WhatsApp — links do carrinho
+                  </Text>
+                  <Text variant="caption" color="tertiary">
+                    Enviado pra {profile.phone ?? 'o número cadastrado'} quando os links de afiliado dos itens do
+                    seu carrinho estiverem prontos.
+                  </Text>
+                </div>
+              </div>
+              <WhatsappCartConsentToggle initialEnabled={whatsappCartEnabled} />
             </CardContent>
           </Card>
         </div>

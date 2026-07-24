@@ -11,6 +11,8 @@ interface AppShellProps {
   hideBottomBar?: boolean;
   /** Esconde footer (ex: app-like rotas). */
   hideFooter?: boolean;
+  /** Contagem de itens no carrinho — buscada no servidor pelo layout, repassada pro badge do ícone. */
+  cartCount?: number;
 }
 
 /**
@@ -25,10 +27,11 @@ export function AppShell({
   hideHeader,
   hideBottomBar,
   hideFooter,
+  cartCount,
 }: AppShellProps) {
   return (
     <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)]">
-      {!hideHeader && <AppHeader />}
+      {!hideHeader && <AppHeader cartCount={cartCount} />}
 
       {/* items-stretch explícito: "normal" (o default do navegador) não estava
           resolvendo como stretch nessa combinação Tailwind v4/Turbopack —

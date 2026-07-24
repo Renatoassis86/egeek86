@@ -22,6 +22,7 @@ import { Glow } from '@/components/motion/glow';
 import { SceneImage } from '@/components/motion/scene-image';
 import { PriceRangeBar } from '@/components/geek-deals/price-range-bar';
 import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
+import { CartToggleButton } from '@/components/affiliate/cart-toggle-button';
 import { formatBRL, formatDiscountLabel } from '@/lib/format';
 import { isLowestPrice } from '@/lib/affiliate/message-template';
 import {
@@ -33,6 +34,7 @@ import {
 } from '@/lib/affiliate/labels';
 import { getOfferBySlug, getOfferMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
 import { getWatchedMasterProductIds } from '@/server/queries/price-watches';
+import { getCartOfferIds } from '@/server/queries/cart';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 export async function generateMetadata({
@@ -69,6 +71,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const isWatching = profile
     ? (await getWatchedMasterProductIds(profile.id)).has(offer.masterProductId)
     : false;
+  const isInCart = profile ? (await getCartOfferIds(profile.id)).has(offer.id) : false;
 
   const images = offer.masterProduct.defaultImages as unknown as string[];
   const image = offer.imageUrl ?? images?.[0] ?? null;
@@ -225,7 +228,10 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                 </Button>
               )}
               {profile ? (
-                <WatchToggleButton masterProductId={offer.masterProductId} initialWatching={isWatching} />
+                <>
+                  <WatchToggleButton masterProductId={offer.masterProductId} initialWatching={isWatching} />
+                  <CartToggleButton offerId={offer.id} initialInCart={isInCart} />
+                </>
               ) : (
                 <Button asChild variant="outline" size="lg">
                   <a href={`/entrar?next=/ofertas/${offer.slug}`}>Acompanhar preço</a>

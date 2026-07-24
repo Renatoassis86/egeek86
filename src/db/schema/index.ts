@@ -54,6 +54,7 @@ export * from './affiliate_offers';
 export * from './affiliate_pricing';
 export * from './affiliate_messages';
 export * from './affiliate_watches';
+export * from './affiliate_cart';
 
 // Loyalty / Gamificação
 export * from './loyalty';
