@@ -13,7 +13,6 @@ import { AdminAutomatedScraperMonitor } from '@/components/admin/admin-automated
 import { GAME_FORMAT_LABELS, GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { formatBRL } from '@/lib/format';
 import { listOffersForAdminFiltered, listNetworks, type AdminOffersFilter } from '@/server/queries/affiliate';
-import { pruneMerchandiseProducts } from '@/server/collector/discover-products';
 import type { AffiliateOffer, GameFormat, GamePlatformGen, GameEditionType } from '@/db/schema';
 
 const STATUS_VALUES: readonly AffiliateOffer['status'][] = ['draft', 'active', 'paused', 'expired', 'archived'];
@@ -56,10 +55,8 @@ export default async function AdminOffersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Limpa souvenirs e chaveiros legados do catálogo
-  await pruneMerchandiseProducts();
-
   const sp = await searchParams;
+  const page = Math.max(1, Number(sp.pagina) || 1);
 
   const filter: AdminOffersFilter = {
     status: parseEnumParam(sp.status, STATUS_VALUES),
@@ -68,9 +65,10 @@ export default async function AdminOffersPage({
     gameEditionType: parseEnumParam(sp.edicao, EDITION_VALUES),
     networkId: typeof sp.rede === 'string' && sp.rede ? sp.rede : undefined,
     sortBy: sp.ordenar === 'price_asc' || sp.ordenar === 'price_desc' ? sp.ordenar : 'recent',
+    page,
   };
 
-  const [offers, networks, masterRes, offersRes, snapshotsRes, recentRes] = await Promise.all([
+  const [offersPage, networks, masterRes, offersRes, snapshotsRes, recentRes] = await Promise.all([
     listOffersForAdminFiltered(filter),
     listNetworks(),
     db.execute<{ count: number }>(sql`SELECT COUNT(*)::int as count FROM master_products`),
@@ -84,6 +82,23 @@ export default async function AdminOffersPage({
       LIMIT 5
     `),
   ]);
+
+  const offers = offersPage.items;
+
+  const paginationParams = new URLSearchParams();
+  if (filter.status) paginationParams.set('status', filter.status);
+  if (filter.gameFormat) paginationParams.set('formato', filter.gameFormat);
+  if (filter.gamePlatformGen) paginationParams.set('geracao', filter.gamePlatformGen);
+  if (filter.gameEditionType) paginationParams.set('edicao', filter.gameEditionType);
+  if (filter.networkId) paginationParams.set('rede', filter.networkId);
+  if (filter.sortBy && filter.sortBy !== 'recent') paginationParams.set('ordenar', filter.sortBy);
+
+  function pageHref(targetPage: number) {
+    const params = new URLSearchParams(paginationParams);
+    if (targetPage > 1) params.set('pagina', String(targetPage));
+    const qs = params.toString();
+    return `/admin/ofertas${qs ? `?${qs}` : ''}`;
+  }
 
   const stats = {
     totalMasterProducts: masterRes[0]?.count ?? 0,
@@ -107,7 +122,8 @@ export default async function AdminOffersPage({
             Ofertas & Extração Mercado Livre
           </Text>
           <Text variant="body-sm" color="secondary" className="mt-1">
-            {offers.length} {offers.length === 1 ? 'oferta encontrada' : 'ofertas encontradas'}
+            {offersPage.totalCount} {offersPage.totalCount === 1 ? 'oferta encontrada' : 'ofertas encontradas'}
+            {offersPage.totalPages > 1 && ` · página ${offersPage.page} de ${offersPage.totalPages}`}
           </Text>
         </div>
         <Button asChild fullWidth className="sm:w-fit">
@@ -255,6 +271,32 @@ export default async function AdminOffersPage({
               </Link>
             ))}
           </div>
+
+          {offersPage.totalPages > 1 && (
+            <div className="flex items-center justify-between gap-3">
+              {offersPage.page <= 1 ? (
+                <Button variant="outline" size="sm" disabled>
+                  Anterior
+                </Button>
+              ) : (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={pageHref(offersPage.page - 1)}>Anterior</Link>
+                </Button>
+              )}
+              <Text variant="caption" color="tertiary">
+                Página {offersPage.page} de {offersPage.totalPages}
+              </Text>
+              {offersPage.page >= offersPage.totalPages ? (
+                <Button variant="outline" size="sm" disabled>
+                  Próxima
+                </Button>
+              ) : (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={pageHref(offersPage.page + 1)}>Próxima</Link>
+                </Button>
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

@@ -244,6 +244,15 @@ export interface AdminOffersFilter {
   networkId?: string;
   status?: AffiliateOffer['status'];
   sortBy?: 'recent' | 'price_asc' | 'price_desc';
+  page?: number;
+  pageSize?: number;
+}
+
+export interface PaginatedOffers {
+  items: OfferWithRelations[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
 }
 
 /**
@@ -251,8 +260,13 @@ export interface AdminOffersFilter {
  * tipo de edição/rede), mas SEM travar status='active': a tela de gestão
  * precisa mostrar rascunho/pausada/expirada/arquivada também, não só o que já
  * está na vitrine. Status vira só mais um filtro opcional (nenhum = todas).
+ *
+ * Paginada (page/pageSize) — sem isso essa query (join com master_products +
+ * networks + sellers) trazia o catálogo inteiro de uma vez (4400+ ofertas) e
+ * a página tentava renderizar todas as linhas numa tabela só, levando o
+ * carregamento a estourar o timeout da função serverless em produção.
  */
-export async function listOffersForAdminFiltered(filter: AdminOffersFilter = {}): Promise<OfferWithRelations[]> {
+export async function listOffersForAdminFiltered(filter: AdminOffersFilter = {}): Promise<PaginatedOffers> {
   const conditions: SQL[] = [];
   if (filter.status) conditions.push(eq(affiliateOffers.status, filter.status));
   if (filter.gameFormat) conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
@@ -267,11 +281,28 @@ export async function listOffersForAdminFiltered(filter: AdminOffersFilter = {})
         ? desc(affiliateOffers.currentPriceCents)
         : desc(affiliateOffers.createdAt);
 
-  const rows = await baseOfferQuery()
-    .where(and(...conditions))
-    .orderBy(orderColumn);
+  const page = Math.max(1, filter.page ?? 1);
+  const pageSize = filter.pageSize ?? 50;
 
-  return rows.map(toOfferWithRelations);
+  const [rows, [{ total }]] = await Promise.all([
+    baseOfferQuery()
+      .where(and(...conditions))
+      .orderBy(orderColumn)
+      .limit(pageSize)
+      .offset((page - 1) * pageSize),
+    db
+      .select({ total: count() })
+      .from(affiliateOffers)
+      .innerJoin(masterProducts, eq(affiliateOffers.masterProductId, masterProducts.id))
+      .where(and(...conditions)),
+  ]);
+
+  return {
+    items: rows.map(toOfferWithRelations),
+    totalCount: total,
+    totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    page,
+  };
 }
 
 export async function listNetworks(): Promise<AffiliateNetwork[]> {
