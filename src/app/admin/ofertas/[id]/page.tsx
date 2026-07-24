@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { WhatsappMessageDrawer } from '@/components/affiliate/whatsapp-message-d
 import { formatBRL } from '@/lib/format';
 import { getOfferByIdForAdmin, getOfferMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
 import { getMasterProductPriceHistory } from '@/server/queries/price-history';
+import { getMeliCatalogDetails } from '@/server/collector/sources/mercado-livre-details';
 import {
   logNewPrice,
   updateOfferStatus,
@@ -28,11 +30,18 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
   const offer = await getOfferByIdForAdmin(id);
   if (!offer) notFound();
 
-  const [metrics, coupons, priceHistory] = await Promise.all([
+  const [metrics, coupons, priceHistory, meliDetails] = await Promise.all([
     getOfferMetrics(id),
     listActiveCouponsByNetwork(offer.networkId),
     getMasterProductPriceHistory(offer.masterProduct.id, 'Tudo'),
+    offer.masterProduct.meliCatalogId ? getMeliCatalogDetails(offer.masterProduct.meliCatalogId) : Promise.resolve(null),
   ]);
+
+  const defaultImages = (offer.masterProduct.defaultImages as unknown as string[] | null) ?? [];
+  const coverImage = meliDetails?.pictures[0] ?? offer.imageUrl ?? defaultImages[0] ?? null;
+  const galleryImages = (meliDetails?.pictures.length ? meliDetails.pictures : defaultImages).filter(
+    (url) => url !== coverImage
+  );
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
   const shortLink = `${appUrl}/go/${offer.slug}`;
@@ -60,6 +69,60 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
           {offer.network.name} · {offer.masterProduct.name}
         </Text>
       </div>
+
+      <Card>
+        <CardContent className="flex flex-col gap-5 p-5 sm:flex-row">
+          <div className="flex shrink-0 flex-col gap-2">
+            <div className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] sm:size-48">
+              {coverImage ? (
+                <Image src={coverImage} alt={offer.title} fill className="object-contain" sizes="192px" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[10px] text-[var(--color-text-tertiary)]">
+                  Sem imagem
+                </div>
+              )}
+            </div>
+            {galleryImages.length > 0 && (
+              <div className="flex gap-1.5 overflow-x-auto sm:w-48 sm:flex-wrap">
+                {galleryImages.slice(0, 4).map((url) => (
+                  <div key={url} className="relative size-11 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)]">
+                    <Image src={url} alt="" fill className="object-cover" sizes="44px" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <Text variant="heading-sm" className="mb-2">
+              Sobre o jogo
+            </Text>
+            {meliDetails?.shortDescription && (
+              <Text variant="body-sm" color="secondary" className="mb-3">
+                {meliDetails.shortDescription}
+              </Text>
+            )}
+            {meliDetails?.features.length ? (
+              <ul className="flex flex-col gap-1.5">
+                {meliDetails.features.map((feature, i) => (
+                  <li key={i} className="flex gap-2 text-body-sm text-[var(--color-text-secondary)]">
+                    <span className="mt-1 size-1 shrink-0 rounded-full bg-[var(--color-accent-primary)]" aria-hidden />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              !meliDetails?.shortDescription && (
+                <Text variant="body-sm" color="tertiary">
+                  {offer.masterProduct.meliCatalogId
+                    ? 'Sem descrição detalhada disponível no catálogo do Mercado Livre pra esse produto.'
+                    : 'Sem produto de catálogo vinculado — descrição rica só existe pra itens com ID de catálogo do Mercado Livre.'}
+                </Text>
+              )
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
