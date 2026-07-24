@@ -281,7 +281,7 @@ export async function createCollectorDrop(data: {
  */
 export async function triggerManualMeliExtraction(queryOrUrl: string) {
   try {
-    const { discoverNewProducts } = await import('@/server/collector/discover-products');
+    const { searchAndIngestMeliTerm } = await import('@/server/collector/discover-products');
     const { collectPrices } = await import('@/server/collector/collect-prices');
     const { getValidAccessToken } = await import('@/server/collector/sources/mercado-livre-auth');
     const { affiliateOffers, affiliateNetworks, masterProducts } = await import('@/db/schema');
@@ -294,83 +294,117 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
 
     // Extrai ID do catálogo (ex: MLB61640919 ou MLB5893431912) se fornecido em URL
     const mlbMatch = cleanInput.match(/MLB-?\d+/i) || cleanInput.match(/\/p\/(MLB\d+)/i);
-    const accessToken = await getValidAccessToken();
-
-    const [network] = await db
-      .select()
-      .from(affiliateNetworks)
-      .where(eq(affiliateNetworks.slug, 'mercado-livre'))
-      .limit(1);
-
-    if (!network) {
-      return { error: 'Rede mercado-livre não cadastrada no banco.' };
-    }
-
-    let itemsIngested = 0;
 
     if (mlbMatch) {
+      const accessToken = await getValidAccessToken();
+      const [network] = await db
+        .select()
+        .from(affiliateNetworks)
+        .where(eq(affiliateNetworks.slug, 'mercado-livre'))
+        .limit(1);
+
+      if (!network) {
+        return { error: 'Rede mercado-livre não cadastrada no banco.' };
+      }
+
       const catalogId = mlbMatch[0].replace('-', '');
       const response = await fetch(`https://api.mercadolibre.com/products/${catalogId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 
-      if (response.ok) {
-        const itemData = await response.json();
-        const [existing] = await db
-          .select({ id: masterProducts.id })
-          .from(masterProducts)
-          .where(eq(masterProducts.meliCatalogId, itemData.id))
-          .limit(1);
-
-        if (!existing) {
-          const classification = classifyFromAttributes(itemData.attributes || [], itemData.name);
-          const baseSlug = slugify(itemData.name);
-
-          const [masterProduct] = await db
-            .insert(masterProducts)
-            .values({
-              name: itemData.name,
-              slug: baseSlug,
-              meliCatalogId: itemData.id,
-              defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
-              ...classification,
-              classifiedAt: new Date(),
-            })
-            .returning();
-
-          const offerSlug = slugify(`${itemData.name}-${itemData.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
-
-          await db.insert(affiliateOffers).values({
-            masterProductId: masterProduct.id,
-            networkId: network.id,
-            title: itemData.name,
-            slug: offerSlug,
-            affiliateUrl: `https://www.mercadolivre.com.br/p/${itemData.id}`,
-            affiliateLinkPending: true,
-            imageUrl: itemData.pictures?.[0]?.url ?? null,
-            externalRef: itemData.id,
-            currentPriceCents: 21970, // Cotação inicial estimada
-            status: 'active',
-            publishedAt: new Date(),
-          });
-
-          itemsIngested++;
-        }
+      if (!response.ok) {
+        return { error: `Mercado Livre não encontrou o produto ${catalogId}. Confira o link/ID.` };
       }
+
+      const itemData = await response.json();
+      const [existing] = await db
+        .select({ id: masterProducts.id })
+        .from(masterProducts)
+        .where(eq(masterProducts.meliCatalogId, itemData.id))
+        .limit(1);
+
+      if (existing) {
+        return { error: `"${itemData.name}" já está catalogado — veja em Ofertas.` };
+      }
+
+      const classification = classifyFromAttributes(itemData.attributes || [], itemData.name);
+      const baseSlug = slugify(itemData.name);
+
+      const [masterProduct] = await db
+        .insert(masterProducts)
+        .values({
+          name: itemData.name,
+          slug: baseSlug,
+          meliCatalogId: itemData.id,
+          defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
+          ...classification,
+          classifiedAt: new Date(),
+        })
+        .returning();
+
+      const offerSlug = slugify(`${itemData.name}-${itemData.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
+
+      await db.insert(affiliateOffers).values({
+        masterProductId: masterProduct.id,
+        networkId: network.id,
+        title: itemData.name,
+        slug: offerSlug,
+        affiliateUrl: `https://www.mercadolivre.com.br/p/${itemData.id}`,
+        affiliateLinkPending: true,
+        imageUrl: itemData.pictures?.[0]?.url ?? null,
+        externalRef: itemData.id,
+        // Sem preço coletado ainda (endpoint de catálogo não garante preço
+        // confiável de buy-box) — nunca inventa um valor; collectPrices()
+        // logo abaixo já busca o preço real antes da action retornar.
+        currentPriceCents: 0,
+        status: 'active',
+        publishedAt: new Date(),
+      });
+
+      const priceSummary = await collectPrices();
+      revalidatePath('/ofertas');
+      revalidatePath('/monitoramento');
+      revalidatePath('/admin/ofertas');
+
+      return {
+        success: true,
+        message: `"${itemData.name}" catalogado! ${priceSummary.updated} preços atualizados.`,
+        discoverySummary: { created: 1 },
+        priceSummary,
+      };
     }
 
-    // Se não for ID isolado ou se quiser reforçar busca por texto (ex: Turok Nintendo Switch)
-    const discoverySummary = await discoverNewProducts();
+    // Termo de texto livre (ex: "Turok Nintendo Switch") — busca de verdade
+    // por ESSE termo específico, não uma redescoberta genérica que ignora o
+    // que foi digitado.
+    const termResult = await searchAndIngestMeliTerm(cleanInput);
     const priceSummary = await collectPrices();
 
     revalidatePath('/ofertas');
     revalidatePath('/monitoramento');
     revalidatePath('/admin/ofertas');
 
+    if (termResult.errors.length > 0 && termResult.found === 0) {
+      return { error: `Erro ao buscar "${cleanInput}" no Mercado Livre: ${termResult.errors[0].message}` };
+    }
+
+    if (termResult.created === 0) {
+      const reason =
+        termResult.found === 0
+          ? `Mercado Livre não retornou nenhum resultado pra "${cleanInput}".`
+          : `Encontrado ${termResult.found} resultado(s) pra "${cleanInput}", mas todos já estavam catalogados ou fora do escopo (jogo/console/acessório de jogo).`;
+      return {
+        success: true,
+        message: reason,
+        discoverySummary: { created: 0 },
+        priceSummary,
+      };
+    }
+
     return {
       success: true,
-      message: `Extração concluída com sucesso! ${itemsIngested > 0 ? `1 novo produto catalogado diretamente.` : ''} ${discoverySummary.created} novos produtos descobertos e ${priceSummary.updated} preços atualizados.`,
-      discoverySummary,
+      message: `${termResult.created} novo(s) produto(s) catalogado(s) pra "${cleanInput}": ${termResult.createdTitles.slice(0, 3).join(', ')}${termResult.createdTitles.length > 3 ? '...' : ''}. ${priceSummary.updated} preços atualizados.`,
+      discoverySummary: { created: termResult.created },
       priceSummary,
     };
   } catch (error) {
