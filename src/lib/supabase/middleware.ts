@@ -24,9 +24,20 @@ export async function updateSession(request: NextRequest) {
       },
     });
 
-    await supabase.auth.getUser();
+    // Timeout curto e explícito: sem isso, uma resposta lenta/travada da API
+    // de auth do Supabase (rede, incidente pontual, etc) segurava TODA
+    // requisição de TODA página do site indefinidamente — o middleware roda
+    // em toda rota não-estática, então um travamento aqui é um travamento
+    // do site inteiro, não só da página que o usuário tentou abrir.
+    await Promise.race([
+      supabase.auth.getUser(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('auth check timeout')), 5000)),
+    ]);
   } catch (e) {
-    // Ignora silenciosamente e deixa a requisição passar normalmente
+    // Trata timeout/erro da checagem de auth como "segue sem sessão
+    // confirmada" — as rotas protegidas (requireAdmin etc) fazem sua própria
+    // checagem completa depois; esse middleware é só um refresh de cookie
+    // best-effort, nunca deveria ser o motivo da página não carregar.
   }
 
   return supabaseResponse;
