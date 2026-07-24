@@ -26,7 +26,9 @@ export interface PriceTableRow {
   gamePlatformGen: GamePlatformGen;
   defaultImages: string[];
   currentPriceCents: number;
+  /** Menor preço já visto (todas as lojas/plataformas do produto), não só o all-time-low dessa oferta específica. */
   lowestPriceCents: number;
+  /** Apesar do nome (mantido pra não quebrar os 8 lugares que já leem esse campo), é a média de TODA cotação de TODA loja/plataforma desde que o produto existe no catálogo — não uma janela de 30 dias. */
   avgPriceCents30d: number | null;
   highestPriceCents: number | null;
   totalQuoteCount: number;
@@ -125,12 +127,62 @@ export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<
 
   const rows = await db.execute<any>(query);
 
+  // Estatísticas de verdade (média/mínimo/máximo/contagem de TODA cotação de
+  // TODO vendedor/plataforma do produto, não só da oferta mais barata
+  // exibida) — calculadas só pros produtos desta página (não a tabela
+  // inteira), via IN() nos master_product_id já paginados. Antes esses 4
+  // campos eram fabricados a partir de multiplicadores fixos do preço atual
+  // (avg = preço×1.12, máximo = preço×1.35, isLowestEver sempre true,
+  // totalQuoteCount = tamanho do nome do produto) — daí TODO produto mostrar
+  // exatamente 11% de desconto (constante matemática de (1.12x−x)/1.12x),
+  // não uma leitura real de mercado.
+  const masterProductIds = rows.map((row) => row.mp_id as string);
+  const statsMap = new Map<
+    string,
+    { avgPriceCents: number; minPriceCents: number; maxPriceCents: number; quoteCount: number }
+  >();
+
+  if (masterProductIds.length > 0) {
+    const idsSql = sql.join(masterProductIds.map((id) => sql`${id}`), sql`, `);
+    const statsRows = await db.execute<{
+      master_product_id: string;
+      avg_price_cents: string;
+      min_price_cents: string;
+      max_price_cents: string;
+      quote_count: string;
+    }>(sql`
+      SELECT
+        o.master_product_id,
+        AVG(s.price_cents)::numeric AS avg_price_cents,
+        MIN(s.price_cents)::bigint AS min_price_cents,
+        MAX(s.price_cents)::bigint AS max_price_cents,
+        COUNT(*)::int AS quote_count
+      FROM affiliate_price_snapshots s
+      INNER JOIN affiliate_offers o ON o.id = s.offer_id
+      WHERE o.master_product_id IN (${idsSql})
+      GROUP BY o.master_product_id
+    `);
+
+    for (const row of statsRows) {
+      statsMap.set(row.master_product_id, {
+        avgPriceCents: Math.round(Number(row.avg_price_cents)),
+        minPriceCents: Number(row.min_price_cents),
+        maxPriceCents: Number(row.max_price_cents),
+        quoteCount: Number(row.quote_count),
+      });
+    }
+  }
+
   const items: PriceTableRow[] = rows.map((row) => {
     const currentPrice = Number(row.current_price_cents);
-    const lowest = currentPrice;
-    const avg30d = Math.round(currentPrice * 1.12);
-    const highest = Math.round(currentPrice * 1.35);
-    const avgDiscountPercent = Math.round(((avg30d - currentPrice) / avg30d) * 100);
+    // Sem cotação histórica ainda (produto recém-descoberto, coletor não
+    // rodou o primeiro ciclo) — nunca inventa média/mínimo, mostra só o
+    // preço atual como referência única.
+    const stats = statsMap.get(row.mp_id);
+    const avg = stats?.avgPriceCents ?? currentPrice;
+    const lowest = stats?.minPriceCents ?? currentPrice;
+    const highest = stats?.maxPriceCents ?? currentPrice;
+    const avgDiscountPercent = avg > currentPrice ? Math.round(((avg - currentPrice) / avg) * 100) : null;
 
     return {
       masterProductId: row.mp_id,
@@ -142,15 +194,15 @@ export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<
       defaultImages: row.default_images ?? [],
       currentPriceCents: currentPrice,
       lowestPriceCents: lowest,
-      avgPriceCents30d: avg30d,
+      avgPriceCents30d: avg,
       highestPriceCents: highest,
-      totalQuoteCount: 12 + (row.mp_name.length % 15),
+      totalQuoteCount: stats?.quoteCount ?? 0,
       offerId: row.offer_id,
       offerSlug: row.offer_slug,
       networkName: row.network_name,
       networkColorHex: row.network_color_hex,
-      isLowestEver: true,
-      avgDiscountPercent: avgDiscountPercent > 0 ? avgDiscountPercent : null,
+      isLowestEver: currentPrice <= lowest,
+      avgDiscountPercent,
     };
   });
 
