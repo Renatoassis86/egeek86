@@ -6,6 +6,7 @@ import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema'
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory, isUsedCondition } from './discover-products';
+import { recordPriceSnapshot } from './record-price-snapshot';
 
 const MAGALU_SEARCH_TERMS = [
   'turok nintendo switch',
@@ -210,19 +211,28 @@ export async function discoverMagaluProducts(): Promise<{
           // relatorio-api-magalu-developers.md) — usa a URL pública genuína
           // e marca como pendente, mesma convenção do resto do coletor
           // (affiliateLinkPending, ver src/server/actions/affiliate.ts).
-          await db.insert(affiliateOffers).values({
-            masterProductId: masterProduct.id,
-            networkId: network.id,
-            title: item.title,
-            slug: offerSlug,
-            affiliateUrl: item.permalink,
-            affiliateLinkPending: true,
-            imageUrl: item.imageUrl,
-            externalRef: magaluRef,
-            currentPriceCents: priceCents,
-            status: 'active',
-            publishedAt: new Date(),
-          });
+          const [newOffer] = await db
+            .insert(affiliateOffers)
+            .values({
+              masterProductId: masterProduct.id,
+              networkId: network.id,
+              title: item.title,
+              slug: offerSlug,
+              affiliateUrl: item.permalink,
+              affiliateLinkPending: true,
+              imageUrl: item.imageUrl,
+              externalRef: magaluRef,
+              // Sem preço no INSERT — recordPriceSnapshot logo abaixo grava o
+              // snapshot inicial de verdade (ver nota em discover-products.ts).
+              currentPriceCents: 0,
+              status: 'active',
+              publishedAt: new Date(),
+            })
+            .returning({ id: affiliateOffers.id });
+
+          if (priceCents > 0) {
+            await recordPriceSnapshot({ offerId: newOffer.id, priceCents, source: 'api' });
+          }
 
           summary.created++;
         } catch (e) {

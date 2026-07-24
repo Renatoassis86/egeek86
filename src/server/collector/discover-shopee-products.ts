@@ -7,6 +7,7 @@ import { fetchShopeeGraphQL, generateShopeeAffiliateLink, hasShopeeAffiliateCred
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory, isUsedCondition } from './discover-products';
+import { recordPriceSnapshot } from './record-price-snapshot';
 
 const SHOPEE_SEARCH_TERMS = [
   'turok nintendo switch',
@@ -204,19 +205,30 @@ export async function discoverShopeeProducts(): Promise<{
           // affiliateLinkPending em src/server/actions/affiliate.ts).
           const realAffiliateUrl = item.offerLink || (await generateShopeeAffiliateLink(item.productLink));
 
-          await db.insert(affiliateOffers).values({
-            masterProductId: masterProduct.id,
-            networkId: network.id,
-            title: item.productName,
-            slug: offerSlug,
-            affiliateUrl: realAffiliateUrl || item.productLink,
-            affiliateLinkPending: !realAffiliateUrl,
-            imageUrl: item.imageUrl,
-            externalRef: shopeeRef,
-            currentPriceCents: priceCents,
-            status: 'active',
-            publishedAt: new Date(),
-          });
+          const [newOffer] = await db
+            .insert(affiliateOffers)
+            .values({
+              masterProductId: masterProduct.id,
+              networkId: network.id,
+              title: item.productName,
+              slug: offerSlug,
+              affiliateUrl: realAffiliateUrl || item.productLink,
+              affiliateLinkPending: !realAffiliateUrl,
+              imageUrl: item.imageUrl,
+              externalRef: shopeeRef,
+              // Sem preço no INSERT — recordPriceSnapshot logo abaixo grava o
+              // snapshot inicial de verdade (ver nota em discover-products.ts:
+              // inserir já com o preço real e nunca chamar recordPriceSnapshot
+              // deixava a oferta sem NENHUMA linha em affiliate_price_snapshots).
+              currentPriceCents: 0,
+              status: 'active',
+              publishedAt: new Date(),
+            })
+            .returning({ id: affiliateOffers.id });
+
+          if (priceCents > 0) {
+            await recordPriceSnapshot({ offerId: newOffer.id, priceCents, source: 'api' });
+          }
 
           summary.created++;
         } catch (e) {

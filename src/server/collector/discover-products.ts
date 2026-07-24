@@ -9,6 +9,7 @@ import { classifyFromAttributes, type MeliAttribute } from './sources/mercado-li
 import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
 import { mapWithConcurrency } from '@/lib/concurrency';
+import { recordPriceSnapshot } from './record-price-snapshot';
 
 const PLATFORM_TERMS = ['nintendo switch', 'nintendo switch 2', 'ps4', 'ps5', 'xbox one', 'xbox series', 'xbox 360'];
 
@@ -674,19 +675,35 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
               : `${rawPermalink}?matt_tool_id=${realToolId}`
             : rawPermalink;
 
-          await db.insert(affiliateOffers).values({
-            masterProductId: masterProduct.id,
-            networkId: network.id,
-            title: item.title,
-            slug: offerSlug,
-            affiliateUrl: trackedUrl,
-            affiliateLinkPending: !realToolId,
-            imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
-            externalRef: item.id,
-            currentPriceCents: priceCents,
-            status: 'active',
-            publishedAt: new Date(),
-          });
+          const [newOffer] = await db
+            .insert(affiliateOffers)
+            .values({
+              masterProductId: masterProduct.id,
+              networkId: network.id,
+              title: item.title,
+              slug: offerSlug,
+              affiliateUrl: trackedUrl,
+              affiliateLinkPending: !realToolId,
+              imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
+              externalRef: item.id,
+              // Sem preço ainda no INSERT (mesmo padrão de searchAndIngestTerm)
+              // — recordPriceSnapshot logo abaixo é quem grava o snapshot
+              // inicial E atualiza o cache. Inserir já com o preço real aqui
+              // e nunca chamar recordPriceSnapshot deixava a oferta com
+              // current_price_cents preenchido mas ZERO linha em
+              // affiliate_price_snapshots (bug real, achado 2026-07-24:
+              // gráfico/cotações concorrentes nunca mostravam esse preço,
+              // já que os dois só leem de affiliate_price_snapshots — 403
+              // ofertas afetadas até aqui).
+              currentPriceCents: 0,
+              status: 'active',
+              publishedAt: new Date(),
+            })
+            .returning({ id: affiliateOffers.id });
+
+          if (priceCents > 0) {
+            await recordPriceSnapshot({ offerId: newOffer.id, priceCents, source: 'api' });
+          }
 
           totalIngested++;
         }
