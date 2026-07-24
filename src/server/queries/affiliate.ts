@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, count, desc, asc, eq, gt, gte, inArray, sql, type SQL } from 'drizzle-orm';
+import { and, count, desc, asc, eq, gt, gte, inArray, or, ilike, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import {
   affiliateOffers,
@@ -244,6 +244,8 @@ export interface AdminOffersFilter {
   networkId?: string;
   status?: AffiliateOffer['status'];
   sortBy?: 'recent' | 'price_asc' | 'price_desc';
+  /** Busca livre por nome — casa contra o título da oferta OU o nome do produto master. */
+  search?: string;
   page?: number;
   pageSize?: number;
 }
@@ -273,6 +275,10 @@ export async function listOffersForAdminFiltered(filter: AdminOffersFilter = {})
   if (filter.gamePlatformGen) conditions.push(eq(masterProducts.gamePlatformGen, filter.gamePlatformGen));
   if (filter.gameEditionType) conditions.push(eq(masterProducts.gameEditionType, filter.gameEditionType));
   if (filter.networkId) conditions.push(eq(affiliateOffers.networkId, filter.networkId));
+  if (filter.search?.trim()) {
+    const term = `%${filter.search.trim()}%`;
+    conditions.push(or(ilike(affiliateOffers.title, term), ilike(masterProducts.name, term))!);
+  }
 
   const orderColumn =
     filter.sortBy === 'price_asc'

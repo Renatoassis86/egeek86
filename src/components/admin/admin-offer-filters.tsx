@@ -2,8 +2,9 @@
 
 import * as React from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   GAME_FORMAT_LABELS,
@@ -50,8 +51,18 @@ export function AdminOfferFilters({ networks }: AdminOfferFiltersProps) {
   const edition = searchParams.get('edicao') ?? ALL;
   const rede = searchParams.get('rede') ?? ALL;
   const sort = searchParams.get('ordenar') ?? 'recent';
+  const busca = searchParams.get('busca') ?? '';
 
-  const hasFilters = [status, format, gen, edition, rede].some((v) => v !== ALL) || sort !== 'recent';
+  const [searchInput, setSearchInput] = React.useState(busca);
+
+  // Mantém o campo em sincronia se a URL mudar por outra via (voltar/avançar,
+  // "Limpar filtros") sem sobrescrever o que a pessoa está digitando agora.
+  React.useEffect(() => {
+    setSearchInput(busca);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só quando a URL muda, não a cada tecla
+  }, [busca]);
+
+  const hasFilters = [status, format, gen, edition, rede].some((v) => v !== ALL) || sort !== 'recent' || busca !== '';
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -60,15 +71,31 @@ export function AdminOfferFilters({ networks }: AdminOfferFiltersProps) {
     } else {
       params.set(key, value);
     }
+    // Muda o filtro sempre volta pra página 1 — sem isso, filtrar enquanto
+    // navegado numa página 3+ podia cair numa página que não existe mais no
+    // resultado filtrado (lista vazia, parecendo que o filtro "não funcionou").
+    params.delete('pagina');
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
   }
 
   function clearAll() {
+    setSearchInput('');
     router.push(pathname, { scroll: false });
   }
 
   return (
     <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center">
+      <Input
+        size="sm"
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        onKeyDown={(e) => e.key === 'Enter' && setParam('busca', searchInput)}
+        onBlur={() => setParam('busca', searchInput)}
+        leftAddon={<Search className="size-3.5" />}
+        placeholder="Buscar por nome do jogo..."
+        className="w-full sm:w-56"
+      />
+
       <Select value={status} onValueChange={(v) => setParam('status', v)}>
         <SelectTrigger size="sm" className="w-full sm:w-[9.5rem]">
           <SelectValue placeholder="Status" />

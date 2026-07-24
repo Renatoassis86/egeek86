@@ -65,6 +65,7 @@ export default async function AdminOffersPage({
     gameEditionType: parseEnumParam(sp.edicao, EDITION_VALUES),
     networkId: typeof sp.rede === 'string' && sp.rede ? sp.rede : undefined,
     sortBy: sp.ordenar === 'price_asc' || sp.ordenar === 'price_desc' ? sp.ordenar : 'recent',
+    search: typeof sp.busca === 'string' && sp.busca ? sp.busca : undefined,
     page,
   };
 
@@ -92,6 +93,7 @@ export default async function AdminOffersPage({
   if (filter.gameEditionType) paginationParams.set('edicao', filter.gameEditionType);
   if (filter.networkId) paginationParams.set('rede', filter.networkId);
   if (filter.sortBy && filter.sortBy !== 'recent') paginationParams.set('ordenar', filter.sortBy);
+  if (filter.search) paginationParams.set('busca', filter.search);
 
   function pageHref(targetPage: number) {
     const params = new URLSearchParams(paginationParams);
