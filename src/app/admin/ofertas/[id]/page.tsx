@@ -134,9 +134,13 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
             <Text variant="mono-lg" className="tabular">
               {formatBRL(masterMetrics?.currentPriceCents ?? offer.currentPriceCents)}
             </Text>
-            {offer.status === 'expired' && (
+            {offer.status !== 'active' && (
               <Text variant="caption" color="tertiary" className="italic mt-1 block">
-                Valor desta oferta expirada: {formatBRL(offer.currentPriceCents)}
+                Valor desta oferta {
+                  offer.status === 'paused' ? 'pausada' :
+                  offer.status === 'expired' ? 'expirada' :
+                  offer.status === 'draft' ? 'em rascunho' : 'arquivada'
+                }: {formatBRL(offer.currentPriceCents)}
               </Text>
             )}
           </CardContent>
