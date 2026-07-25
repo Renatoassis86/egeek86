@@ -20,7 +20,7 @@ const connectionString =
 // conexões no total) — onde um max mais generoso seria arriscado.
 const queryClient = postgres(connectionString, {
   prepare: false,
-  max: 10,
+  max: 2,
   idle_timeout: 10,
   connect_timeout: 10,
 });
