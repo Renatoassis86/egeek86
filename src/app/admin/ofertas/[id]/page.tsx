@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Text } from '@/components/ui/text';
 import { WhatsappMessageDrawer } from '@/components/affiliate/whatsapp-message-drawer';
 import { formatBRL } from '@/lib/format';
-import { getOfferByIdForAdmin, getOfferMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
+import { getOfferByIdForAdmin, getOfferMetrics, listActiveCouponsByNetwork, getMasterProductMetrics } from '@/server/queries/affiliate';
 import { getMasterProductPriceHistory } from '@/server/queries/price-history';
 import { getMeliCatalogDetails } from '@/server/collector/sources/mercado-livre-details';
 import {
@@ -30,11 +30,12 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
   const offer = await getOfferByIdForAdmin(id);
   if (!offer) notFound();
 
-  const [metrics, coupons, priceHistory, meliDetails] = await Promise.all([
+  const [metrics, coupons, priceHistory, meliDetails, masterMetrics] = await Promise.all([
     getOfferMetrics(id),
     listActiveCouponsByNetwork(offer.networkId),
     getMasterProductPriceHistory(offer.masterProduct.id, 'Tudo'),
     offer.masterProduct.meliCatalogId ? getMeliCatalogDetails(offer.masterProduct.meliCatalogId) : Promise.resolve(null),
+    getMasterProductMetrics(offer.masterProduct.id),
   ]);
 
   const defaultImages = (offer.masterProduct.defaultImages as unknown as string[] | null) ?? [];
@@ -128,11 +129,16 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
         <Card>
           <CardContent className="p-5">
             <Text variant="caption" color="tertiary">
-              Preço atual
+              Preço atual (Menor ativo)
             </Text>
             <Text variant="mono-lg" className="tabular">
-              {formatBRL(offer.currentPriceCents)}
+              {formatBRL(masterMetrics?.currentPriceCents ?? offer.currentPriceCents)}
             </Text>
+            {offer.status === 'expired' && (
+              <Text variant="caption" color="tertiary" className="italic mt-1 block">
+                Valor desta oferta expirada: {formatBRL(offer.currentPriceCents)}
+              </Text>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -141,13 +147,11 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
               Menor histórico
             </Text>
             <Text variant="mono-lg" className="tabular">
-              {metrics ? formatBRL(metrics.lowestPriceCents) : 'N/D'}
+              {formatBRL(lowestEverCents)}
             </Text>
-            {metrics && (
-              <Text variant="caption" color="tertiary">
-                em {metrics.lowestPriceAt.toLocaleDateString('pt-BR')}
-              </Text>
-            )}
+            <Text variant="caption" color="tertiary">
+              em {new Date(lowestEverAt).toLocaleDateString('pt-BR')}
+            </Text>
           </CardContent>
         </Card>
         <Card>

@@ -40,7 +40,6 @@ const topModules = [
 // / notícias) — na gaveta mobile o espaço vertical já comporta lista longa, então
 // aqui só ganha sub-cabeçalho em vez de virar mega-menu.
 const comparePriceModules = [
-  { href: '/categorias', label: 'Categorias', icon: Tag },
   { href: '/tabela-de-precos', label: 'Tabela de Preços', icon: BarChart3 },
   { href: '/ranking', label: 'Ranking de Vendedores', icon: Trophy },
   { href: '/monitoramento', label: 'Monitoramento de Preços', icon: BarChart3 },

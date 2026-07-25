@@ -25,6 +25,8 @@ import { Glow } from '@/components/motion/glow';
 import { SceneImage, type SceneTone } from '@/components/motion/scene-image';
 import { TextImageMask } from '@/components/motion/text-image-mask';
 import { CornerBrackets } from '@/components/motion/corner-brackets';
+import { CircuitLines } from '@/components/motion/circuit-lines';
+import type { CategoryCard } from '@/lib/categories-showcase';
 import { WeeklyPromosSection } from '@/components/geek-deals/weekly-promos-section';
 import { PlatformShowcase } from '@/components/geek-deals/platform-showcase';
 import { SalesHighlights } from '@/components/geek-deals/sales-highlights';
@@ -79,52 +81,89 @@ export default async function HomePage() {
   );
 }
 
-function CategoriesSection() {
-  const allCards = [...gamerCards, ...geekCards];
+function Cluster({
+  word,
+  src,
+  label,
+  heading,
+  text,
+  cards,
+}: {
+  word: string;
+  src: string;
+  label: string;
+  heading: string;
+  text: string;
+  cards: CategoryCard[];
+}) {
   return (
-    <section data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-10">
+    <section className="relative w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24 overflow-hidden border-b border-[var(--color-border-subtle)]">
+      <CircuitLines className="opacity-50" />
+
+      <div className="relative grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
         <Reveal>
-          <div className="max-w-[48ch]">
-            <Text variant="label" color="tertiary">
-              Nossos Universos
-            </Text>
-            <Text as="h2" variant="display-lg" className="mt-2">
-              Onde navegar no catálogo.
-            </Text>
-            <Text variant="body-md" color="secondary" className="mt-3">
-              Explore itens divididos entre o lado Gamer (jogos, consoles e acessórios) e o lado Geek (franquias, drops e colunas de notícias).
-            </Text>
-          </div>
+          <TextImageMask text={word} src={src} className="text-[90px] leading-none sm:text-[130px] lg:text-[150px]" />
         </Reveal>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {allCards.map(({ href, label, description, Icon }, i) => (
-            <Reveal key={href} delay={0.05 + i * 0.05}>
-              <Link
-                href={href}
-                className="group flex h-full flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 transition-colors hover:border-[var(--color-border-strong)]"
-              >
-                <div className="flex size-10 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] shrink-0">
-                  <Icon className="size-5" />
-                </div>
-                <div>
-                  <Text as="h3" variant="heading-sm" className="font-bold">
-                    {label}
-                  </Text>
-                  <Text variant="body-sm" color="secondary" className="mt-1.5 leading-relaxed text-xs">
-                    {description}
-                  </Text>
-                </div>
-                <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] transition-colors group-hover:text-[var(--color-text-primary)]">
-                  Entrar <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
-                </span>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
+        <Reveal delay={0.08}>
+          <Text variant="label" color="tertiary">
+            {label}
+          </Text>
+          <Text as="h2" variant="display-md" className="mt-2 max-w-[22ch]">
+            {heading}
+          </Text>
+          <Text variant="body-md" color="secondary" className="mt-4 max-w-[52ch]">
+            {text}
+          </Text>
+        </Reveal>
+      </div>
+
+      <div className="relative mt-12 grid gap-4 sm:grid-cols-3">
+        {cards.map(({ href, label: cardLabel, description, Icon }, i) => (
+          <Reveal key={href} delay={0.06 + i * 0.06}>
+            <Link
+              href={href}
+              className="group flex h-full flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 transition-colors hover:border-[var(--color-border-strong)]"
+            >
+              <Icon className="size-6 text-[var(--color-accent-primary)]" aria-hidden />
+              <Text as="h3" variant="heading-sm">
+                {cardLabel}
+              </Text>
+              <Text variant="body-sm" color="secondary">
+                {description}
+              </Text>
+              <span className="mt-auto inline-flex items-center gap-1 text-body-sm font-medium text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-text-primary)]">
+                Ver ofertas
+                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
+              </span>
+            </Link>
+          </Reveal>
+        ))}
       </div>
     </section>
+  );
+}
+
+function CategoriesSection() {
+  return (
+    <div data-theme="dark" className="w-full bg-[var(--color-bg-canvas)]">
+      <Cluster
+        word="GAMER"
+        src="/images/categorias/gamer-collage.png"
+        label="O lado do jogo"
+        heading="Jogo, console e o que equipa a experiência."
+        text="Tudo que é produto de verdade, com preço monitorado e histórico real por trás de cada item."
+        cards={gamerCards}
+      />
+      <Cluster
+        word="GEEK"
+        src="/images/categorias/geek-collage.png"
+        label="O lado da cultura"
+        heading="Franquia, lançamento e o que move a comunidade."
+        text="A parte do site que não é sobre comprar, é sobre acompanhar o que importa pra quem vive cultura geek."
+        cards={geekCards}
+      />
+    </div>
   );
 }
 

@@ -38,7 +38,6 @@ const navLinks: NavItem[] = [
     href: '/tabela-de-precos',
     label: 'Comparar Preços',
     children: [
-      { href: '/categorias', label: 'Categorias' },
       { href: '/tabela-de-precos', label: 'Tabela de Preços' },
       { href: '/ranking', label: 'Ranking' },
       { href: '/monitoramento', label: 'Monitoramento' },
