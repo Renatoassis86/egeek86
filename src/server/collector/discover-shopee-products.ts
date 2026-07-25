@@ -183,18 +183,28 @@ export async function discoverShopeeProducts(): Promise<{
           }
 
           const classification = classifyFromAttributes([], item.productName);
-          const productSlug = slugify(`${item.productName}-shopee-${String(item.itemId).slice(-6)}`);
 
-          const [masterProduct] = await db
-            .insert(masterProducts)
-            .values({
-              name: item.productName,
-              slug: productSlug,
-              defaultImages: item.imageUrl ? [item.imageUrl] : [],
-              ...classification,
-              classifiedAt: new Date(),
-            })
-            .returning();
+          // Dedup por similaridade de título e plataforma
+          const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
+          const existingBySimilarity = await findExistingMasterProduct(item.productName, classification.gamePlatformGen);
+
+          let masterProduct;
+          if (existingBySimilarity) {
+            masterProduct = existingBySimilarity;
+          } else {
+            const productSlug = slugify(`${item.productName}-shopee-${String(item.itemId).slice(-6)}`);
+            const [created] = await db
+              .insert(masterProducts)
+              .values({
+                name: item.productName,
+                slug: productSlug,
+                defaultImages: item.imageUrl ? [item.imageUrl] : [],
+                ...classification,
+                classifiedAt: new Date(),
+              })
+              .returning();
+            masterProduct = created;
+          }
 
           const offerSlug = slugify(`${item.productName}-shopee-${randomUUID().slice(0, 6)}`);
           const priceCents = Math.round(item.price * 100);

@@ -181,17 +181,40 @@ async function applySnapshotsToGroup(
   // affiliateLinkPending — isso é ortogonal a ter preço atualizado: um
   // placeholder pendente de link real ainda deve mostrar o preço correto,
   // só o botão de compra fica desabilitado até o link real ser colado).
-  const bestPriceCents = Math.min(...results.map((r) => r.priceCents));
-  await db
-    .update(affiliateOffers)
-    .set({ currentPriceCents: bestPriceCents, lastCheckedAt: new Date() })
+  //
+  // IMPORTANTE: passa por recordPriceSnapshot (não um .update() direto) —
+  // achado real (2026-07-24): esse placeholder é escolhido como "melhor
+  // oferta" do produto (getBestActiveOfferIdsForMasterProducts empata nele
+  // sempre que seu preço bate com o do vendedor mais barato, que é o caso
+  // aqui por construção) em boa parte das checagens, mas nunca tinha uma
+  // linha própria em affiliate_price_snapshots — o preço "atual" exibido
+  // pro cliente vinha desse placeholder, enquanto o gráfico (que só lê
+  // affiliate_price_snapshots) nunca sabia que esse preço existiu.
+  const [placeholderOffer] = await db
+    .select({ id: affiliateOffers.id })
+    .from(affiliateOffers)
     .where(
       and(
         eq(affiliateOffers.masterProductId, group.masterProductId),
         eq(affiliateOffers.networkId, group.networkId),
         isNull(affiliateOffers.sellerId)
       )
-    );
+    )
+    .limit(1);
+
+  if (placeholderOffer) {
+    const bestResult = results.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
+    await recordPriceSnapshot({
+      offerId: placeholderOffer.id,
+      priceCents: bestResult.priceCents,
+      listPriceCents: bestResult.listPriceCents,
+      source: 'api',
+    });
+    await db
+      .update(affiliateOffers)
+      .set({ lastCheckedAt: new Date() })
+      .where(eq(affiliateOffers.id, placeholderOffer.id));
+  }
 
   for (const result of results) {
     let sellerId: string;

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
@@ -11,6 +12,8 @@ import {
   Star,
   BadgeCheck,
   LineChart,
+  Info,
+  CheckCircle2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +39,7 @@ import { getOfferBySlug, getOfferMetrics, listActiveCouponsByNetwork } from '@/s
 import { getWatchedMasterProductIds } from '@/server/queries/price-watches';
 import { getCartOfferIds } from '@/server/queries/cart';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
+import { getMeliCatalogDetails } from '@/server/collector/sources/mercado-livre-details';
 
 export async function generateMetadata({
   params,
@@ -63,10 +67,11 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const offer = await getOfferBySlug(slug);
   if (!offer) notFound();
 
-  const [metrics, coupons, profile] = await Promise.all([
+  const [metrics, coupons, profile, meliDetails] = await Promise.all([
     getOfferMetrics(offer.id),
     listActiveCouponsByNetwork(offer.networkId),
     getCurrentProfile(),
+    offer.masterProduct.meliCatalogId ? getMeliCatalogDetails(offer.masterProduct.meliCatalogId) : Promise.resolve(null),
   ]);
   const isWatching = profile
     ? (await getWatchedMasterProductIds(profile.id)).has(offer.masterProductId)
@@ -75,6 +80,11 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
 
   const images = offer.masterProduct.defaultImages as unknown as string[];
   const image = offer.imageUrl ?? images?.[0] ?? null;
+  // Galeria/sinopse real do catálogo do Mercado Livre (nunca fabricada) — só
+  // aparece quando meliDetails traz conteúdo de verdade; sem isso, a seção
+  // inteira fica oculta em vez de mostrar um "sem descrição" pro cliente.
+  const galleryImages = (meliDetails?.pictures.length ? meliDetails.pictures : images ?? []).filter((url) => url !== image);
+  const hasAboutSection = Boolean(meliDetails?.shortDescription) || Boolean(meliDetails?.features.length) || galleryImages.length > 0;
   const isLowest = metrics ? isLowestPrice(offer.currentPriceCents, metrics.lowestPriceCents) : false;
   const trend = metrics ? TREND_META[metrics.trend] : null;
   const trustInfo = getSellerTrustInfo(offer.seller);
@@ -285,6 +295,51 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
           </div>
         </Reveal>
       </div>
+
+      {hasAboutSection && (
+        <Reveal delay={0.1}>
+          <div className="mt-12 lg:mt-16 border-t border-[var(--color-border-subtle)] pt-10">
+            <div className="grid gap-8 lg:grid-cols-[1fr_auto]">
+              <div className="min-w-0">
+                <Text as="h2" variant="heading-lg" className="mb-4 flex items-center gap-2">
+                  <Info className="size-5 text-[var(--color-accent-primary)]" aria-hidden />
+                  Sobre o jogo
+                </Text>
+
+                {meliDetails?.shortDescription && (
+                  <Text variant="body-md" color="secondary" className="leading-relaxed mb-4 max-w-[70ch]">
+                    {meliDetails.shortDescription}
+                  </Text>
+                )}
+
+                {meliDetails?.features.length ? (
+                  <ul className="grid gap-2.5 sm:grid-cols-2">
+                    {meliDetails.features.map((feature, i) => (
+                      <li key={i} className="flex gap-2 text-body-sm text-[var(--color-text-secondary)]">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--color-accent-primary)]" aria-hidden />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
+
+              {galleryImages.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 sm:w-72 lg:grid-cols-2">
+                  {galleryImages.slice(0, 4).map((url) => (
+                    <div
+                      key={url}
+                      className="relative aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]"
+                    >
+                      <Image src={url} alt="" fill className="object-cover" sizes="140px" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </Reveal>
+      )}
     </section>
   );
 }

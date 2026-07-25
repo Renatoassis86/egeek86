@@ -10,16 +10,17 @@ import {
   ShieldCheck, 
   Gavel, 
   Crown,
-  Flame, 
-  Award, 
-  Coins, 
-  Zap, 
-  Star, 
-  Plus, 
-  Trash2, 
+  Flame,
+  Award,
+  Coins,
+  Zap,
+  Star,
+  Plus,
+  Trash2,
   Save,
   Upload,
-  ArrowRight
+  ArrowRight,
+  Gamepad2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -497,7 +498,21 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {watches.map((item) => (
                 <Link key={item.watchId || item.masterProductId} href={`/ofertas/${item.offerSlug || ''}`}>
-                  <Card interactive className="h-full border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent-primary)]/50 transition-all">
+                  <Card interactive className="h-full overflow-hidden border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-[var(--color-accent-primary)]/50 transition-all">
+                    <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-[var(--color-bg-inset)]">
+                      {item.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- miniatura de CDN externa (mesmo padrão de offer-card.tsx)
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="h-full w-full object-contain p-4"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <Gamepad2 className="size-10 text-[var(--color-text-tertiary)]" aria-hidden />
+                        </div>
+                      )}
+                    </div>
                     <div className="flex h-full flex-col gap-3 p-5">
                       <div className="flex items-center justify-between gap-2 flex-wrap">
                         <Badge variant="outline" size="sm" className="bg-[var(--color-bg-inset)]">

@@ -19,6 +19,7 @@ import { slugify } from '@/lib/slugify';
 import { recordPriceSnapshot } from '@/server/collector/record-price-snapshot';
 import { classifyMeliCatalogProduct } from '@/server/collector/sources/mercado-livre-classify';
 import { isNonProductAccessory } from '@/server/collector/discover-products';
+import { findExistingMasterProduct } from '@/lib/affiliate/dedup';
 
 /**
  * Normaliza número em formato brasileiro ("1.999,90") ou já com ponto decimal
@@ -144,6 +145,10 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
       console.error(`Falha ao classificar ${externalRef}, seguindo com 'unknown':`, (err as Error).message);
     }
 
+    // Tenta achar por similaridade de título/plataforma antes de inserir um novo
+    const existingBySimilarity = await findExistingMasterProduct(name, classification?.gamePlatformGen || 'unknown');
+    if (existingBySimilarity) return existingBySimilarity;
+
     const baseSlug = slugify(name);
     const [collision] = await db.select().from(masterProducts).where(eq(masterProducts.slug, baseSlug)).limit(1);
     const slug = collision ? slugify(`${name}-${externalRef.slice(-6)}`) : baseSlug;
@@ -160,6 +165,10 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
       .returning();
     return created;
   }
+
+  // Tenta similaridade textual para outras plataformas
+  const existingBySimilarity = await findExistingMasterProduct(name, 'unknown');
+  if (existingBySimilarity) return existingBySimilarity;
 
   return findOrCreateMasterProduct(name);
 }

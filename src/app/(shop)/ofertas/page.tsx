@@ -128,7 +128,7 @@ export default async function OffersPage({
 
   return (
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
-      <div className="relative overflow-hidden rounded-[var(--radius-xl)]">
+      <div className="relative overflow-hidden rounded-[var(--radius-xl)] p-6 md:p-10">
         <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.28} />
         <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.14} />
 

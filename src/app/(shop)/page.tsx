@@ -42,27 +42,327 @@ import { cn } from '@/lib/cn';
 // sozinho — sem isso, o build tenta pré-renderizar como estática e trava
 // buscando no banco no ambiente de build (visto ao vivo no primeiro deploy).
 import { getPublishedArticles } from '@/server/queries/news';
+import { getPlatformStats, type PlatformStats } from '@/server/queries/affiliate';
+import { gamerCards, geekCards } from '@/lib/categories-showcase';
+import { PriceChartsShowcase } from '@/components/home/price-charts-showcase';
+import { GamerSurvey } from '@/components/home/gamer-survey';
+import { Package, Store, Layers, LineChart } from 'lucide-react';
+import { StatTile } from '@/components/ui/stat-tile';
 
 export const dynamic = 'force-dynamic';
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ aba?: string }>;
+}) {
+  const sp = await searchParams;
+  const activeTab = sp.aba === 'vitrine' ? 'vitrine' : 'institucional';
+
+  if (activeTab === 'vitrine') {
+    return (
+      <>
+        <TabSwitcher activeTab={activeTab} />
+        <Hero />
+        <StatementBand />
+        <WeeklyPromosSection />
+        <PlatformShowcase />
+        <SalesHighlights />
+        <PriceIntelligence />
+        <UniversesSection />
+        <DividerEmblem />
+        <HypeTeaser />
+        <HomeNewsSection />
+        <Benefits />
+        <NewsletterCTA />
+      </>
+    );
+  }
+
+  const stats = await getPlatformStats();
+
   return (
     <>
-      <Hero />
-      <StatementBand />
-      <WeeklyPromosSection />
-      <PlatformShowcase />
-      <SalesHighlights />
-      <PriceIntelligence />
-      <UniversesSection />
-      <DividerEmblem />
-      <HypeTeaser />
+      <TabSwitcher activeTab={activeTab} />
+      <InstitutionalHero />
+      <ManifestoSection />
+      <CategoriesSection />
+      <MarketStatsSection />
       <HomeNewsSection />
-      <Benefits />
+      <SurveySection />
+      <IndicatorsSection stats={stats} />
       <NewsletterCTA />
     </>
   );
 }
+
+function TabSwitcher({ activeTab }: { activeTab: 'institucional' | 'vitrine' }) {
+  return (
+    <div className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] sticky top-[var(--header-height)] z-40 backdrop-blur-md bg-opacity-80">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 flex justify-center gap-6 py-3">
+        <Link
+          href="/?aba=institucional"
+          className={cn(
+            'text-xs font-mono uppercase tracking-widest transition-all pb-1 border-b-2',
+            activeTab === 'institucional'
+              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)] font-bold'
+              : 'border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
+          )}
+          scroll={false}
+        >
+          Institucional
+        </Link>
+        <Link
+          href="/?aba=vitrine"
+          className={cn(
+            'text-xs font-mono uppercase tracking-widest transition-all pb-1 border-b-2',
+            activeTab === 'vitrine'
+              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)] font-bold'
+              : 'border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
+          )}
+          scroll={false}
+        >
+          Vitrine de Ofertas
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function InstitutionalHero() {
+  return (
+    <section className="relative overflow-hidden border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)]">
+      <Glow color="gold" size="xl" intensity={0.25} className="-top-64 -left-48" />
+      <div className="relative mx-auto max-w-7xl px-4 lg:px-8 pt-16 pb-20 lg:pt-24 lg:pb-28">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8 items-center">
+          <div className="lg:col-span-7 flex flex-col gap-6">
+            <Reveal>
+              <Badge variant="primary" size="lg">
+                Central de Inteligência Geek
+              </Badge>
+            </Reveal>
+            <Reveal delay={0.05}>
+              <Text as="h1" variant="display-xl" className="tracking-tight lg:text-display-2xl">
+                O hub de dados e curadoria da
+                <br />
+                <span className="bg-gradient-to-r from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] bg-clip-text text-transparent">
+                  Cultura Geek & Gamer.
+                </span>
+              </Text>
+            </Reveal>
+            <Reveal delay={0.12}>
+              <Text variant="body-lg" color="secondary" className="max-w-[48ch]">
+                Unimos inteligência de preços, dados reais de mercado e curadoria de colecionador para que você tome a melhor decisão, sem pressa.
+              </Text>
+            </Reveal>
+            <Reveal delay={0.18}>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button asChild size="lg">
+                  <Link href="/?aba=vitrine">Explorar Vitrine</Link>
+                </Button>
+                <Button asChild variant="secondary" size="lg">
+                  <Link href="/tabela-de-precos">Tabela de Preços</Link>
+                </Button>
+              </div>
+            </Reveal>
+          </div>
+          <div className="lg:col-span-5">
+            <Reveal delay={0.1}>
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-default)] shadow-[var(--shadow-xl)]">
+                <SceneImage
+                  src="/images/sobre/hero-geracoes.png"
+                  alt="Evolução de controles clássicos e modernos lado a lado"
+                  tone="gold"
+                  caption="Curadoria Estratégica"
+                  priority
+                  className="absolute inset-0"
+                />
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ManifestoSection() {
+  return (
+    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-12">
+        <Reveal>
+          <div className="max-w-[62ch]">
+            <Text variant="label" color="hype">
+              Nosso Posicionamento
+            </Text>
+            <Text as="h2" variant="display-lg" className="mt-4 text-[var(--color-text-primary)]">
+              Não somos um marketplace. Não somos um comparador de preços.
+            </Text>
+            <Text variant="body-lg" color="secondary" className="mt-6 leading-relaxed font-medium">
+              Somos o hub que une o universo gamer e a inteligência de dados para que descobrir, aprender, comparar e colecionar sejam parte da experiência de compra — não um obstáculo a ela.
+            </Text>
+          </div>
+        </Reveal>
+
+        <div className="grid gap-10 border-t border-[var(--color-border-subtle)] pt-12 lg:grid-cols-2 lg:gap-16">
+          <Reveal>
+            <Text variant="label" color="tertiary" className="font-mono text-xs uppercase tracking-widest">
+              Missão
+            </Text>
+            <Text as="h3" variant="heading-lg" className="mt-3 font-bold">
+              Curadoria e transparência para a melhor decisão.
+            </Text>
+            <Text variant="body-md" color="secondary" className="mt-4 leading-relaxed">
+              Ajudar quem compra e quem indica cultura geek a decidir com informação real. Unimos preço monitorado, histórico verificável e curadoria humana em um único lugar.
+            </Text>
+          </Reveal>
+
+          <Reveal delay={0.08}>
+            <Text variant="label" color="tertiary" className="font-mono text-xs uppercase tracking-widest">
+              Visão
+            </Text>
+            <Text as="h3" variant="heading-lg" className="mt-3 font-bold">
+              Referência em inteligência gamer no país.
+            </Text>
+            <Text variant="body-md" color="secondary" className="mt-4 leading-relaxed">
+              Ser reconhecido como o lugar onde colecionadores, jogadores e afiliados buscam primeiro para entender preço, tendência e comportamento no universo de consoles e cultura geek.
+            </Text>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CategoriesSection() {
+  const allCards = [...gamerCards, ...geekCards];
+  return (
+    <section data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-10">
+        <Reveal>
+          <div className="max-w-[48ch]">
+            <Text variant="label" color="tertiary">
+              Nossos Universos
+            </Text>
+            <Text as="h2" variant="display-lg" className="mt-2">
+              Onde navegar no catálogo.
+            </Text>
+            <Text variant="body-md" color="secondary" className="mt-3">
+              Explore itens divididos entre o lado Gamer (jogos, consoles e acessórios) e o lado Geek (franquias, drops e colunas de notícias).
+            </Text>
+          </div>
+        </Reveal>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {allCards.map(({ href, label, description, Icon }, i) => (
+            <Reveal key={href} delay={0.05 + i * 0.05}>
+              <Link
+                href={href}
+                className="group flex h-full flex-col gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 transition-colors hover:border-[var(--color-border-strong)]"
+              >
+                <div className="flex size-10 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] shrink-0">
+                  <Icon className="size-5" />
+                </div>
+                <div>
+                  <Text as="h3" variant="heading-sm" className="font-bold">
+                    {label}
+                  </Text>
+                  <Text variant="body-sm" color="secondary" className="mt-1.5 leading-relaxed text-xs">
+                    {description}
+                  </Text>
+                </div>
+                <span className="mt-auto inline-flex items-center gap-1 text-[11px] font-mono font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] transition-colors group-hover:text-[var(--color-text-primary)]">
+                  Entrar <ArrowRight className="size-3 transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MarketStatsSection() {
+  return (
+    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-14 lg:items-center">
+        <Reveal>
+          <div className="flex flex-col gap-4">
+            <Text variant="label" color="hype">
+              Painel Analítico
+            </Text>
+            <Text as="h2" variant="display-lg">
+              Estatísticas reais da indústria de games.
+            </Text>
+            <Text variant="body-lg" color="secondary" className="leading-relaxed">
+              Navegue pelos dados consolidados do nosso Relatório de Inteligência de Mercado. Métricas oficiais de comportamento e receita do mercado nacional e internacional.
+            </Text>
+          </div>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <PriceChartsShowcase />
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function SurveySection() {
+  return (
+    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:gap-14 lg:items-center">
+        <Reveal>
+          <GamerSurvey />
+        </Reveal>
+        <Reveal delay={0.08}>
+          <div className="flex flex-col gap-4">
+            <Text variant="label" color="hype">
+              Voz da Comunidade
+            </Text>
+            <Text as="h2" variant="display-lg">
+              Participe das enquetes de mercado gamer.
+            </Text>
+            <Text variant="body-lg" color="secondary" className="leading-relaxed">
+              Queremos ouvir suas preferências. Seus votos alimentam nossos estudos de comportamento de consumo e ajudam micro-estúdios brasileiros a precificar e distribuir seus jogos de forma justa.
+            </Text>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function IndicatorsSection({ stats }: { stats: PlatformStats }) {
+  return (
+    <section data-theme="dark" className="w-full bg-brand-orange-depth border-y border-[var(--color-border-subtle)] py-20 lg:py-28 relative overflow-hidden bg-brand-orange-glow">
+      <Glow color="hype" size="xl" intensity={0.15} className="-top-64 -right-48" />
+      <div className="relative mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-10 text-center items-center">
+        <Reveal>
+          <Text variant="label" color="tertiary">
+            Métricas da nossa plataforma
+          </Text>
+          <Text as="h2" variant="display-lg" className="mt-2">
+            Dados reais e transparentes, em tempo real.
+          </Text>
+          <Text variant="body-md" color="secondary" className="mt-3 max-w-[48ch] mx-auto">
+            Sem aproximações matemáticas. Estes são os números reais agregados do nosso banco de dados no exato momento da sua visita.
+          </Text>
+        </Reveal>
+
+        <Reveal delay={0.08} className="w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
+            <StatTile icon={<Package className="size-5" />} value={stats.totalProducts} label="Produtos Catalogados" />
+            <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Lojas & Vendedores" />
+            <StatTile icon={<Layers className="size-5" />} value={stats.totalNetworks} label="Plataformas Parceiras" />
+            <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de Preço" />
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 
 // ----- Statement band ------------------------------------------
 // Banda em formato "cartela" (cartão contido, não full-bleed de ponta a
@@ -657,8 +957,8 @@ function Benefits() {
 function NewsletterCTA() {
   return (
     <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 pb-20 lg:pb-28">
-      <Card variant="elevated" className="relative overflow-hidden">
-        <Glow color="gold" size="lg" intensity={0.26} className="-bottom-32 -left-24" />
+      <Card variant="elevated" className="relative overflow-hidden bg-brand-orange-depth border bg-brand-orange-glow">
+        <Glow color="hype" size="lg" intensity={0.35} className="-bottom-32 -left-24" />
 
         <div className="relative grid items-center gap-8 p-8 lg:grid-cols-12 lg:gap-12 lg:p-14">
           <div className="lg:col-span-8">

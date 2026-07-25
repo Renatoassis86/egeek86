@@ -194,18 +194,18 @@ export function WatchlistPanel({
                       <Text variant="body-sm" className="truncate font-medium">
                         {item.title}
                       </Text>
-                      <Text variant="caption" color="tertiary">
+                      <Text variant="caption" color="tertiary" className="truncate">
                         {item.networkName}
                       </Text>
                     </div>
-                    <AnimatedPrice cents={item.currentPriceCents} className="text-body-sm" />
+                    <AnimatedPrice cents={item.currentPriceCents} className="text-body-sm whitespace-nowrap" />
                     <span
                       className={cn(
-                        'inline-flex items-center justify-end gap-1 text-caption font-medium tabular',
+                        'inline-flex shrink-0 items-center justify-end gap-1 whitespace-nowrap text-caption font-medium tabular',
                         changeColor
                       )}
                     >
-                      <Icon className="size-3" aria-hidden />
+                      <Icon className="size-3 shrink-0" aria-hidden />
                       {change != null ? `${change > 0 ? '+' : ''}${change}%` : 'N/D'}
                     </span>
                     <button
@@ -214,7 +214,7 @@ export function WatchlistPanel({
                         e.stopPropagation();
                         handleRemoveItem(item.masterProductId, item.title);
                       }}
-                      className="p-1.5 rounded text-[var(--color-text-tertiary)] hover:text-red-400 hover:bg-red-500/10 transition-colors ml-1"
+                      className="shrink-0 p-1.5 rounded text-[var(--color-text-tertiary)] hover:text-red-400 hover:bg-red-500/10 transition-colors ml-1"
                       title="Excluir item do monitoramento"
                     >
                       <Trash2 className="size-3.5" />

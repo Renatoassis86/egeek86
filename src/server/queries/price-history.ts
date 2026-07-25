@@ -385,8 +385,19 @@ export async function getMasterProductPriceHistory(
   const values = points.map((p) => p.value);
   const globalMaxPriceCents = globalMaxRow[0]?.max_price ? Number(globalMaxRow[0].max_price) : null;
 
+  // Uma cotação isolada muito acima do padrão do item (erro de captura, frete
+  // embutido, câmbio errado) não pode inflar a média de mercado exibida —
+  // descarta o que passa de 2x a média bruta do período antes de recalcular.
+  // O mesmo corte de linhas alimenta avgPoints logo abaixo, pra linha e
+  // número da média nunca divergirem por um outlier ficar num só e não no
+  // outro.
+  const rawMean = rawPrices.length ? rawPrices.reduce((a, b) => a + b, 0) / rawPrices.length : 0;
+  const outlierThreshold = rawMean > 0 ? rawMean * 2 : Infinity;
+  const cleanRows = rows.filter((r) => Number(r.price_cents) / 100 <= outlierThreshold);
+  const cleanPrices = cleanRows.length > 0 ? cleanRows.map((r) => Number(r.price_cents) / 100) : rawPrices;
+
   const stats: PriceHistoryStats = {
-    avgPriceCents: rawPrices.length ? Math.round((rawPrices.reduce((a, b) => a + b, 0) / rawPrices.length) * 100) : null,
+    avgPriceCents: cleanPrices.length ? Math.round((cleanPrices.reduce((a, b) => a + b, 0) / cleanPrices.length) * 100) : null,
     minPriceCents: values.length ? Math.round(Math.min(...values) * 100) : null,
     maxPriceCents: rawPrices.length ? Math.round(Math.max(...rawPrices) * 100) : null,
     globalMaxPriceCents,
@@ -405,8 +416,9 @@ export async function getMasterProductPriceHistory(
   // repetidas) — nunca manda mais que isso pro tooltip, mesmo que `rows`
   // tenha muito mais; amostragem uniforme ao longo do período pra não
   // perder a forma da distribuição no tempo. stats/avgPoints/points acima já
-  // foram calculados sobre `rows` completo, então essa amostragem não afeta
-  // média/mínimo/máximo — só a quantidade de cotações listadas no tooltip.
+  // foram calculados sobre `rows`/`cleanRows` completos, então essa
+  // amostragem não afeta média/mínimo/máximo — só a quantidade de cotações
+  // listadas no tooltip.
   const MAX_QUOTES = 2000;
   const sampledRows =
     rows.length > MAX_QUOTES
@@ -429,7 +441,7 @@ export async function getMasterProductPriceHistory(
     };
   });
 
-  const avgPoints = computeBucketedAverage(rows, bucketMs);
+  const avgPoints = computeBucketedAverage(cleanRows, bucketMs);
 
   return { points, avgPoints, pointOffers, stats, quotes, totalQuoteCount, totalOffersCount, bucketSeconds };
 }

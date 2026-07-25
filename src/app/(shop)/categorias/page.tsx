@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ArrowRight, Boxes, Gamepad2, Joystick, LibraryBig, Newspaper, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { SceneImage } from '@/components/motion/scene-image';
 import { TextImageMask } from '@/components/motion/text-image-mask';
 import { CircuitLines } from '@/components/motion/circuit-lines';
+import { gamerCards, geekCards, type CategoryCard } from '@/lib/categories-showcase';
 
 export const metadata: Metadata = {
   title: 'Categorias',
@@ -84,25 +85,6 @@ function Hero() {
     </section>
   );
 }
-
-interface CategoryCard {
-  href: string;
-  label: string;
-  description: string;
-  Icon: React.ComponentType<{ className?: string }>;
-}
-
-const gamerCards: CategoryCard[] = [
-  { href: '/ofertas?tipo=game', label: 'Jogos', description: 'Físico e digital, todas as plataformas.', Icon: Gamepad2 },
-  { href: '/ofertas?tipo=console', label: 'Consoles', description: 'Hardware novo e usado, com histórico de preço.', Icon: Joystick },
-  { href: '/ofertas?tipo=accessory', label: 'Acessórios', description: 'Controle, headset, cadeira e mais.', Icon: Boxes },
-];
-
-const geekCards: CategoryCard[] = [
-  { href: '/universos', label: 'Universos', description: 'Navegue por franquia: Naruto, One Piece, Marvel e mais.', Icon: LibraryBig },
-  { href: '/hype-zone', label: 'Hype Zone', description: 'Drop e lançamento em contagem regressiva real.', Icon: Zap },
-  { href: '/noticias', label: 'Notícias', description: 'Cultura pop, sinopse de jogo e tecnologia geek.', Icon: Newspaper },
-];
 
 function Cluster({
   word,

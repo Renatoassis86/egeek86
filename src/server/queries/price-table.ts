@@ -1,7 +1,7 @@
 import 'server-only';
-import { sql, eq, and, asc, desc, gte, lte, inArray, type SQL } from 'drizzle-orm';
+import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { masterProducts, affiliateOffers, affiliateNetworks, affiliateSellers, type ProductType, type GameFormat, type GamePlatformGen } from '@/db/schema';
+import { type ProductType, type GameFormat, type GamePlatformGen } from '@/db/schema';
 
 export interface PriceTableFilter {
   productType?: ProductType;
@@ -40,14 +40,81 @@ export interface PriceTableRow {
   avgDiscountPercent: number | null;
 }
 
-export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<{ items: PriceTableRow[]; totalCount: number }> {
+/**
+ * CTE compartilhada entre a query de dados e a de contagem: acha o produto +
+ * oferta mais barata (distinct_products), depois estatísticas reais de TODA
+ * cotação de TODO vendedor/plataforma do produto (não só da oferta exibida),
+ * com outliers (>2x a média bruta — ver getOfferMetrics em affiliate.ts)
+ * excluídos do cálculo da média final. `combined` já carrega
+ * discount_percent_raw (não arredondado, pra ordenar/filtrar com precisão;
+ * arredondar só na hora de exibir).
+ */
+function buildCtes(whereClause: SQL) {
+  return sql`
+    distinct_products AS (
+      SELECT DISTINCT ON (mp.id)
+        mp.id AS mp_id,
+        mp.name AS mp_name,
+        mp.slug AS mp_slug,
+        mp.product_type,
+        mp.game_format,
+        mp.game_platform_gen,
+        mp.default_images,
+        o.id AS offer_id,
+        o.slug AS offer_slug,
+        o.current_price_cents,
+        n.name AS network_name,
+        n.color_hex AS network_color_hex
+      FROM master_products mp
+      INNER JOIN affiliate_offers o ON o.master_product_id = mp.id
+      INNER JOIN affiliate_networks n ON n.id = o.network_id
+      WHERE ${whereClause}
+      ORDER BY mp.id, o.current_price_cents ASC
+    ),
+    raw_avg AS (
+      SELECT o.master_product_id, AVG(s.price_cents) AS raw_avg
+      FROM affiliate_price_snapshots s
+      INNER JOIN affiliate_offers o ON o.id = s.offer_id
+      WHERE o.master_product_id IN (SELECT mp_id FROM distinct_products)
+      GROUP BY o.master_product_id
+    ),
+    stats AS (
+      SELECT
+        o.master_product_id,
+        AVG(s.price_cents) FILTER (WHERE s.price_cents <= ra.raw_avg * 2)::numeric AS avg_price_cents,
+        MIN(s.price_cents)::bigint AS min_price_cents,
+        MAX(s.price_cents)::bigint AS max_price_cents,
+        COUNT(*)::int AS quote_count
+      FROM affiliate_price_snapshots s
+      INNER JOIN affiliate_offers o ON o.id = s.offer_id
+      INNER JOIN raw_avg ra ON ra.master_product_id = o.master_product_id
+      WHERE o.master_product_id IN (SELECT mp_id FROM distinct_products)
+      GROUP BY o.master_product_id
+    ),
+    combined AS (
+      SELECT
+        dp.mp_id, dp.mp_name, dp.mp_slug, dp.product_type, dp.game_format, dp.game_platform_gen,
+        dp.default_images, dp.offer_id, dp.offer_slug, dp.current_price_cents,
+        dp.network_name, dp.network_color_hex,
+        st.avg_price_cents, st.min_price_cents, st.max_price_cents, st.quote_count,
+        CASE
+          WHEN st.avg_price_cents IS NOT NULL AND st.avg_price_cents > dp.current_price_cents
+          THEN (st.avg_price_cents - dp.current_price_cents) / st.avg_price_cents * 100
+          ELSE NULL
+        END AS discount_percent_raw
+      FROM distinct_products dp
+      LEFT JOIN stats st ON st.master_product_id = dp.mp_id
+    )
+  `;
+}
+
+import { unstable_cache } from 'next/cache';
+
+async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ items: PriceTableRow[]; totalCount: number }> {
   const limit = filter.limit ?? 40;
   const offset = filter.offset ?? 0;
 
-  const conditions: SQL[] = [
-    sql`o.status = 'active'`,
-    sql`o.current_price_cents > 0`
-  ];
+  const conditions: SQL[] = [sql`o.status = 'active'`, sql`o.current_price_cents > 0`];
 
   if (filter.productType) {
     conditions.push(sql`mp.product_type = ${filter.productType}`);
@@ -75,113 +142,56 @@ export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<
   }
 
   const whereClause = sql.join(conditions, sql` AND `);
+  const ctes = buildCtes(whereClause);
 
-  // Referencia as colunas como saem da CTE distinct_products (mp_name,
-  // current_price_cents sem alias de tabela) — não os nomes originais de
-  // master_products/affiliate_offers, que só existem dentro da CTE.
-  let orderByClause = sql`mp.mp_name ASC, mp.current_price_cents ASC`;
+  // "Apenas Itens Abaixo da Média" filtra por desconto real (já livre de
+  // outliers) vs. inventar um corte arbitrário de preço.
+  const belowAvgClause = filter.onlyBelowAvg
+    ? sql`AND discount_percent_raw IS NOT NULL AND discount_percent_raw > 0`
+    : sql``;
+
+  let orderByClause = sql`mp_name ASC, current_price_cents ASC`;
   if (filter.sortBy === 'name_desc') {
-    orderByClause = sql`mp.mp_name DESC, mp.current_price_cents ASC`;
+    orderByClause = sql`mp_name DESC, current_price_cents ASC`;
   } else if (filter.sortBy === 'price_asc') {
-    orderByClause = sql`mp.current_price_cents ASC, mp.mp_name ASC`;
+    orderByClause = sql`current_price_cents ASC, mp_name ASC`;
   } else if (filter.sortBy === 'price_desc') {
-    orderByClause = sql`mp.current_price_cents DESC, mp.mp_name ASC`;
+    orderByClause = sql`current_price_cents DESC, mp_name ASC`;
+  } else if (filter.sortBy === 'quotes_desc') {
+    orderByClause = sql`quote_count DESC NULLS LAST, mp_name ASC`;
+  }
+  // Maior desconto primeiro é o padrão sempre que "Apenas Itens Abaixo da
+  // Média" está ativo — nesse contexto, o pedido nunca é "veja em ordem
+  // alfabética" e sim "veja quem caiu mais vs. a própria média histórica".
+  if (filter.sortBy === 'discount_desc' || filter.onlyBelowAvg) {
+    orderByClause = sql`discount_percent_raw DESC NULLS LAST, current_price_cents ASC`;
   }
 
-  const countQuery = sql`
-    SELECT COUNT(DISTINCT mp.id)::int AS total
-    FROM master_products mp
-    INNER JOIN affiliate_offers o ON o.master_product_id = mp.id
-    WHERE ${whereClause}
-  `;
+  const countRows = await db.execute<{ total: string }>(sql`
+    WITH ${ctes}
+    SELECT COUNT(*)::int AS total FROM combined WHERE TRUE ${belowAvgClause}
+  `);
+  const totalCount = Number(countRows[0]?.total ?? 0);
 
-  const countRows = await db.execute<{ total: number }>(countQuery);
-  const totalCount = countRows[0]?.total ?? 0;
-
-  const query = sql`
-    WITH distinct_products AS (
-      SELECT DISTINCT ON (mp.id)
-        mp.id AS mp_id,
-        mp.name AS mp_name,
-        mp.slug AS mp_slug,
-        mp.product_type,
-        mp.game_format,
-        mp.game_platform_gen,
-        mp.default_images,
-        o.id AS offer_id,
-        o.slug AS offer_slug,
-        o.current_price_cents,
-        n.name AS network_name,
-        n.color_hex AS network_color_hex
-      FROM master_products mp
-      INNER JOIN affiliate_offers o ON o.master_product_id = mp.id
-      INNER JOIN affiliate_networks n ON n.id = o.network_id
-      WHERE ${whereClause}
-      ORDER BY mp.id, o.current_price_cents ASC
-    )
-    SELECT *
-    FROM distinct_products mp
+  const rows = await db.execute<any>(sql`
+    WITH ${ctes}
+    SELECT * FROM combined
+    WHERE TRUE ${belowAvgClause}
     ORDER BY ${orderByClause}
     LIMIT ${limit} OFFSET ${offset}
-  `;
-
-  const rows = await db.execute<any>(query);
-
-  // Estatísticas de verdade (média/mínimo/máximo/contagem de TODA cotação de
-  // TODO vendedor/plataforma do produto, não só da oferta mais barata
-  // exibida) — calculadas só pros produtos desta página (não a tabela
-  // inteira), via IN() nos master_product_id já paginados. Antes esses 4
-  // campos eram fabricados a partir de multiplicadores fixos do preço atual
-  // (avg = preço×1.12, máximo = preço×1.35, isLowestEver sempre true,
-  // totalQuoteCount = tamanho do nome do produto) — daí TODO produto mostrar
-  // exatamente 11% de desconto (constante matemática de (1.12x−x)/1.12x),
-  // não uma leitura real de mercado.
-  const masterProductIds = rows.map((row) => row.mp_id as string);
-  const statsMap = new Map<
-    string,
-    { avgPriceCents: number; minPriceCents: number; maxPriceCents: number; quoteCount: number }
-  >();
-
-  if (masterProductIds.length > 0) {
-    const idsSql = sql.join(masterProductIds.map((id) => sql`${id}`), sql`, `);
-    const statsRows = await db.execute<{
-      master_product_id: string;
-      avg_price_cents: string;
-      min_price_cents: string;
-      max_price_cents: string;
-      quote_count: string;
-    }>(sql`
-      SELECT
-        o.master_product_id,
-        AVG(s.price_cents)::numeric AS avg_price_cents,
-        MIN(s.price_cents)::bigint AS min_price_cents,
-        MAX(s.price_cents)::bigint AS max_price_cents,
-        COUNT(*)::int AS quote_count
-      FROM affiliate_price_snapshots s
-      INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      WHERE o.master_product_id IN (${idsSql})
-      GROUP BY o.master_product_id
-    `);
-
-    for (const row of statsRows) {
-      statsMap.set(row.master_product_id, {
-        avgPriceCents: Math.round(Number(row.avg_price_cents)),
-        minPriceCents: Number(row.min_price_cents),
-        maxPriceCents: Number(row.max_price_cents),
-        quoteCount: Number(row.quote_count),
-      });
-    }
-  }
+  `);
 
   const items: PriceTableRow[] = rows.map((row) => {
     const currentPrice = Number(row.current_price_cents);
     // Sem cotação histórica ainda (produto recém-descoberto, coletor não
     // rodou o primeiro ciclo) — nunca inventa média/mínimo, mostra só o
     // preço atual como referência única.
-    const stats = statsMap.get(row.mp_id);
-    const avg = stats?.avgPriceCents ?? currentPrice;
-    const lowest = stats?.minPriceCents ?? currentPrice;
-    const highest = stats?.maxPriceCents ?? currentPrice;
+    const minPriceCents = row.min_price_cents != null ? Number(row.min_price_cents) : null;
+    const maxPriceCents = row.max_price_cents != null ? Number(row.max_price_cents) : null;
+    const avgRaw = row.avg_price_cents != null ? Number(row.avg_price_cents) : null;
+    const avg = avgRaw ?? minPriceCents ?? currentPrice;
+    const lowest = minPriceCents ?? currentPrice;
+    const highest = maxPriceCents ?? currentPrice;
     const avgDiscountPercent = avg > currentPrice ? Math.round(((avg - currentPrice) / avg) * 100) : null;
 
     return {
@@ -194,9 +204,9 @@ export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<
       defaultImages: row.default_images ?? [],
       currentPriceCents: currentPrice,
       lowestPriceCents: lowest,
-      avgPriceCents30d: avg,
+      avgPriceCents30d: Math.round(avg),
       highestPriceCents: highest,
-      totalQuoteCount: stats?.quoteCount ?? 0,
+      totalQuoteCount: row.quote_count != null ? Number(row.quote_count) : 0,
       offerId: row.offer_id,
       offerSlug: row.offer_slug,
       networkName: row.network_name,
@@ -207,4 +217,17 @@ export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<
   });
 
   return { items, totalCount };
+}
+
+export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<{ items: PriceTableRow[]; totalCount: number }> {
+  const cacheKey = JSON.stringify(filter);
+  const getCachedData = unstable_cache(
+    async () => fetchPriceTableData(filter),
+    ['price-table-data', cacheKey],
+    {
+      revalidate: 60, // Cache de 1 minuto para manter dados aquecidos mas atualizados
+      tags: ['price-table'],
+    }
+  );
+  return getCachedData();
 }

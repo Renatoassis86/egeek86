@@ -1,20 +1,26 @@
 import type { Metadata } from 'next';
-import { Mail, Phone, MapPin, Send, MessageSquare, ShieldCheck, Sparkles } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageSquare, ShieldCheck, Package, Store, Layers, LineChart } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { StatTile } from '@/components/ui/stat-tile';
 import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
+import { getPlatformStats } from '@/server/queries/affiliate';
 
 export const metadata: Metadata = {
   title: 'Contatos & Suporte',
   description: 'Fale com a equipe do Espaço Geek 86. Suporte a colecionadores, parcerias e curadoria.',
 };
 
-export default function ContatosPage() {
+export const dynamic = 'force-dynamic';
+
+export default async function ContatosPage() {
+  const stats = await getPlatformStats();
+
   return (
     <section className="relative mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16 overflow-hidden">
       {/* Background Glows */}
@@ -43,6 +49,16 @@ export default function ContatosPage() {
         </div>
       </div>
 
+      {/* Indicadores Reais da Plataforma — sempre COUNT direto do banco, nunca um número redondo estimado. */}
+      <Reveal delay={0.08}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
+          <StatTile icon={<Package className="size-5" />} value={stats.totalProducts} label="Produtos Catalogados" />
+          <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Lojas & Vendedores" />
+          <StatTile icon={<Layers className="size-5" />} value={stats.totalNetworks} label="Plataformas Parceiras" />
+          <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de Preço" />
+        </div>
+      </Reveal>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Informações Oficiais de Contato */}
         <div className="lg:col-span-5 flex flex-col gap-6">
@@ -57,8 +73,8 @@ export default function ContatosPage() {
                   </div>
                   <div className="flex flex-col">
                     <Text variant="caption" color="tertiary">E-mail de Suporte</Text>
-                    <a href="mailto:egeek86@arkosintelligence.com" className="font-semibold text-[var(--color-text-primary)] hover:underline text-sm">
-                      egeek86@arkosintelligence.com
+                    <a href="mailto:contato@egeek86.com" className="font-semibold text-[var(--color-text-primary)] hover:underline text-sm">
+                      contato@egeek86.com
                     </a>
                     <Text variant="caption" color="secondary" className="text-[11px] mt-0.5">
                       Atendimento de Segunda a Sexta, das 09h às 18h

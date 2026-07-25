@@ -347,6 +347,15 @@
 
   /* No-scroll quando drawer/modal aberto */
   .no-scroll { overflow: hidden; }
+
+  /* Gradiente Laranja Escuro Premium para seções e cards de destaque */
+  .bg-brand-orange-depth {
+    background: linear-gradient(135deg, #0e0704 0%, #1a0b06 100%);
+    border-color: #3b170c;
+  }
+  .bg-brand-orange-glow {
+    box-shadow: 0 0 40px rgb(232 114 28 / 0.08);
+  }
 }
 
 /* ===========================================================

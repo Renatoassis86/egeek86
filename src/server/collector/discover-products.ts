@@ -408,25 +408,36 @@ async function searchAndIngestTerm(
               gameCollection: null,
             }
           : { productType: 'game' as const, ...classifyFromAttributes(item.attributes, item.name) };
-      const baseSlug = slugify(item.name);
-      const [collision] = await db
-        .select({ id: masterProducts.id })
-        .from(masterProducts)
-        .where(eq(masterProducts.slug, baseSlug))
-        .limit(1);
-      const productSlug = collision ? slugify(`${item.name}-${item.id.slice(-6)}`) : baseSlug;
 
-      const [masterProduct] = await db
-        .insert(masterProducts)
-        .values({
-          name: item.name,
-          slug: productSlug,
-          meliCatalogId: item.id,
-          defaultImages: item.pictures?.map((p) => p.url) ?? [],
-          ...classification,
-          classifiedAt: new Date(),
-        })
-        .returning();
+      // Dedup por similaridade de título e plataforma
+      const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
+      const existingBySimilarity = await findExistingMasterProduct(item.name, classification.gamePlatformGen);
+
+      let masterProduct;
+      if (existingBySimilarity) {
+        masterProduct = existingBySimilarity;
+      } else {
+        const baseSlug = slugify(item.name);
+        const [collision] = await db
+          .select({ id: masterProducts.id })
+          .from(masterProducts)
+          .where(eq(masterProducts.slug, baseSlug))
+          .limit(1);
+        const productSlug = collision ? slugify(`${item.name}-${item.id.slice(-6)}`) : baseSlug;
+
+        const [created] = await db
+          .insert(masterProducts)
+          .values({
+            name: item.name,
+            slug: productSlug,
+            meliCatalogId: item.id,
+            defaultImages: item.pictures?.map((p) => p.url) ?? [],
+            ...classification,
+            classifiedAt: new Date(),
+          })
+          .returning();
+        masterProduct = created;
+      }
 
       const offerSlug = slugify(`${item.name}-${item.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
 

@@ -1,22 +1,18 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Search,
-  SlidersHorizontal,
   Gamepad2,
   Tv2,
   Headphones,
-  TrendingDown,
   Flame,
-  ArrowUpDown,
   Tag,
   ArrowUpRight,
   Sparkles,
-  CheckCircle2,
-  RefreshCcw,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
@@ -29,56 +25,62 @@ import { cn } from '@/lib/cn';
 import type { PriceTableRow } from '@/server/queries/price-table';
 import type { ProductType, GameFormat, GamePlatformGen } from '@/db/schema';
 
-interface PriceTableBoardProps {
-  initialItems: PriceTableRow[];
-  initialTotalCount: number;
+type SortBy = 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'discount_desc';
+
+interface PriceTableFilters {
+  area: ProductType;
+  format: GameFormat | 'all';
+  gen: GamePlatformGen | 'all';
+  sortBy: SortBy;
+  search: string;
+  onlyBelowAvg: boolean;
 }
 
-export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableBoardProps) {
-  const [activeArea, setActiveArea] = useState<ProductType>('game');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
-  const [selectedFormat, setSelectedFormat] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'name_asc' | 'name_desc' | 'price_asc' | 'price_desc'>('name_asc');
-  const [onlyDiscounted, setOnlyDiscounted] = useState(false);
+interface PriceTableBoardProps {
+  items: PriceTableRow[];
+  totalCount: number;
+  filters: PriceTableFilters;
+}
 
-  // Filtragem dinâmica no cliente
-  const filteredItems = initialItems.filter((item) => {
-    // Área (Game, Console, Accessory)
-    if (item.productType !== activeArea) return false;
+const SEARCH_DEBOUNCE_MS = 400;
 
-    // Busca por Nome
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      if (!item.name.toLowerCase().includes(q)) return false;
+export function PriceTableBoard({ items, totalCount, filters }: PriceTableBoardProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const [searchInput, setSearchInput] = useState(filters.search);
+
+  // Mantém o campo em sincronia se a URL mudar por outra via (voltar/avançar)
+  // sem sobrescrever o que a pessoa está digitando agora.
+  useEffect(() => {
+    setSearchInput(filters.search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só quando a URL muda, não a cada tecla
+  }, [filters.search]);
+
+  function setParams(updates: Record<string, string | null>) {
+    const params = new URLSearchParams(searchParams.toString());
+    for (const [key, value] of Object.entries(updates)) {
+      if (value == null || value === '') params.delete(key);
+      else params.set(key, value);
     }
+    // Qualquer mudança de filtro sempre volta pra página 1 e sai do modo
+    // "ver todos" — sem isso, filtrar enquanto navegado numa página 3+ podia
+    // cair numa página que não existe mais no resultado filtrado.
+    params.delete('pagina');
+    params.delete('todos');
+    startTransition(() => {
+      router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
+    });
+  }
 
-    // Plataforma
-    if (selectedPlatform !== 'all' && item.gamePlatformGen !== selectedPlatform) {
-      return false;
-    }
-
-    // Formato
-    if (selectedFormat !== 'all' && item.gameFormat !== selectedFormat) {
-      return false;
-    }
-
-    // Filtro de Desconto
-    if (onlyDiscounted && (!item.avgDiscountPercent || item.avgDiscountPercent <= 0)) {
-      return false;
-    }
-
-    return true;
-  });
-
-  // Ordenação
-  const sortedItems = [...filteredItems].sort((a, b) => {
-    if (sortBy === 'name_asc') return a.name.localeCompare(b.name);
-    if (sortBy === 'name_desc') return b.name.localeCompare(a.name);
-    if (sortBy === 'price_asc') return a.currentPriceCents - b.currentPriceCents;
-    if (sortBy === 'price_desc') return b.currentPriceCents - a.currentPriceCents;
-    return 0;
-  });
+  // Busca com debounce — evita 1 requisição ao servidor por tecla digitada.
+  useEffect(() => {
+    if (searchInput === filters.search) return;
+    const timer = setTimeout(() => setParams({ busca: searchInput || null }), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só depende do texto digitado
+  }, [searchInput]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,8 +88,8 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
       <div className="flex flex-wrap items-center justify-between gap-4 p-2 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded-[var(--radius-lg)]">
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Button
-            variant={activeArea === 'game' ? 'primary' : 'ghost'}
-            onClick={() => setActiveArea('game')}
+            variant={filters.area === 'game' ? 'primary' : 'ghost'}
+            onClick={() => setParams({ area: null })}
             className="flex-1 sm:flex-none gap-2 font-bold"
           >
             <Gamepad2 className="size-4" />
@@ -95,8 +97,8 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
           </Button>
 
           <Button
-            variant={activeArea === 'console' ? 'primary' : 'ghost'}
-            onClick={() => setActiveArea('console')}
+            variant={filters.area === 'console' ? 'primary' : 'ghost'}
+            onClick={() => setParams({ area: 'console' })}
             className="flex-1 sm:flex-none gap-2 font-bold"
           >
             <Tv2 className="size-4" />
@@ -104,8 +106,8 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
           </Button>
 
           <Button
-            variant={activeArea === 'accessory' ? 'primary' : 'ghost'}
-            onClick={() => setActiveArea('accessory')}
+            variant={filters.area === 'accessory' ? 'primary' : 'ghost'}
+            onClick={() => setParams({ area: 'accessory' })}
             className="flex-1 sm:flex-none gap-2 font-bold"
           >
             <Headphones className="size-4" />
@@ -114,8 +116,8 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
         </div>
 
         <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)] px-3 py-1 bg-[var(--color-bg-elevated)] rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)]">
-          <Sparkles className="size-3.5 text-[var(--color-accent-gold)]" />
-          <span>{sortedItems.length} cotações monitoradas nesta área</span>
+          {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5 text-[var(--color-accent-gold)]" />}
+          <span>{totalCount} cotações monitoradas nesta área</span>
         </div>
       </div>
 
@@ -127,8 +129,8 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--color-text-tertiary)]" />
               <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Pesquisar por nome..."
                 className="pl-9 bg-[var(--color-bg-elevated)]"
               />
@@ -136,8 +138,8 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
 
             {/* Plataforma */}
             <select
-              value={selectedPlatform}
-              onChange={(e) => setSelectedPlatform(e.target.value)}
+              value={filters.gen}
+              onChange={(e) => setParams({ geracao: e.target.value === 'all' ? null : e.target.value })}
               className="px-3 py-2 text-xs font-semibold rounded-[var(--radius-sm)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]"
             >
               <option value="all">Todas as Plataformas</option>
@@ -151,8 +153,8 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
 
             {/* Formato */}
             <select
-              value={selectedFormat}
-              onChange={(e) => setSelectedFormat(e.target.value)}
+              value={filters.format}
+              onChange={(e) => setParams({ formato: e.target.value === 'all' ? null : e.target.value })}
               className="px-3 py-2 text-xs font-semibold rounded-[var(--radius-sm)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]"
             >
               <option value="all">Todos os Formatos</option>
@@ -160,36 +162,44 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
               <option value="digital">Mídia Digital</option>
             </select>
 
-            {/* Ordenação */}
+            {/* Ordenação — travada em "maior desconto" enquanto o filtro de
+                oportunidades estiver ativo (é o que esse modo significa). */}
             <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-2 text-xs font-semibold rounded-[var(--radius-sm)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] font-bold text-[var(--color-accent-gold)]"
+              value={filters.onlyBelowAvg ? 'discount_desc' : filters.sortBy}
+              disabled={filters.onlyBelowAvg}
+              onChange={(e) => setParams({ ordenar: e.target.value })}
+              className="px-3 py-2 text-xs font-semibold rounded-[var(--radius-sm)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] font-bold text-[var(--color-accent-gold)] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <option value="name_asc">Ordem Alfabética (A-Z)</option>
               <option value="name_desc">Ordem Alfabética (Z-A)</option>
               <option value="price_asc">Menor Preço (R$)</option>
               <option value="price_desc">Maior Preço (R$)</option>
+              <option value="discount_desc">Maior Desconto vs. Média</option>
             </select>
           </div>
 
           {/* Toggle de Apenas Oportunidades / Descontos */}
-          <div className="flex items-center gap-3 pt-2 border-t border-[var(--color-border-subtle)]">
+          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-[var(--color-border-subtle)]">
             <Button
-              variant={onlyDiscounted ? 'hype' : 'outline'}
+              variant={filters.onlyBelowAvg ? 'hype' : 'outline'}
               size="sm"
-              onClick={() => setOnlyDiscounted(!onlyDiscounted)}
+              onClick={() => setParams({ desconto: filters.onlyBelowAvg ? null : '1' })}
               className="gap-2 text-xs font-bold"
             >
               <Flame className="size-3.5" />
               <span>Apenas Itens Abaixo da Média de Preço</span>
             </Button>
+            {filters.onlyBelowAvg && (
+              <Text variant="caption" color="tertiary" className="text-[11px]">
+                Ordenado automaticamente por maior desconto (%) em relação à média histórica
+              </Text>
+            )}
           </div>
         </CardContent>
       </Card>
 
       {/* 3. Tabela Geral de Preços Contínua */}
-      {sortedItems.length === 0 ? (
+      {items.length === 0 ? (
         <Card className="bg-[var(--color-bg-surface)] p-12 text-center">
           <Text variant="heading-sm">Nenhum produto encontrado para estes filtros.</Text>
           <Text variant="body-sm" color="secondary" className="mt-1">
@@ -202,13 +212,13 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
             <thead>
               <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
                 <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                  Título do Produto (A-Z)
+                  Título do Produto
                 </th>
                 <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
                   Preço Atual
                 </th>
                 <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
-                  Média 30 Dias
+                  Média Histórica
                 </th>
                 <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
                   Menor Histórico
@@ -225,7 +235,7 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
               </tr>
             </thead>
             <tbody>
-              {sortedItems.map((item) => {
+              {items.map((item) => {
                 const img = item.defaultImages[0] || null;
                 const specLine = [
                   item.gameFormat !== 'unknown' ? GAME_FORMAT_LABELS[item.gameFormat] : null,
@@ -275,7 +285,7 @@ export function PriceTableBoard({ initialItems, initialTotalCount }: PriceTableB
                       </Text>
                     </td>
 
-                    {/* Média 30 Dias */}
+                    {/* Média Histórica */}
                     <td className="px-4 py-3 text-right">
                       {item.avgPriceCents30d ? (
                         <div className="flex flex-col items-end">

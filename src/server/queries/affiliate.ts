@@ -198,7 +198,13 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
       );
     }
   }
-  if (filter.gameFormat) conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
+  // Se for jogo e o formato não foi especificado, força 'physical' por padrão (destaques apenas físicos)
+  const isGame = !filter.productType || filter.productType === 'game';
+  if (isGame && !filter.gameFormat) {
+    conditions.push(eq(masterProducts.gameFormat, 'physical'));
+  } else if (filter.gameFormat) {
+    conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
+  }
   if (Array.isArray(filter.gamePlatformGen)) {
     if (filter.gamePlatformGen.length > 0) conditions.push(inArray(masterProducts.gamePlatformGen, filter.gamePlatformGen));
   } else if (filter.gamePlatformGen) {
@@ -351,6 +357,38 @@ export async function searchOffersForAdmin(query: string, limit = 8): Promise<Ad
   return rows;
 }
 
+export interface PlatformStats {
+  totalProducts: number;
+  totalSellers: number;
+  totalNetworks: number;
+  totalQuotes: number;
+}
+
+/**
+ * Indicadores institucionais reais (página de Contatos etc) — nunca um
+ * número redondo estimado, sempre COUNT direto do banco no momento do
+ * carregamento da página.
+ */
+export async function getPlatformStats(): Promise<PlatformStats> {
+  const [products, sellers, networks, quotes] = await Promise.all([
+    db.execute<{ count: string }>(sql`
+      SELECT COUNT(DISTINCT master_product_id)::bigint AS count
+      FROM affiliate_offers
+      WHERE status = 'active' AND current_price_cents > 0
+    `),
+    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_sellers`),
+    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_networks`),
+    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_price_snapshots`),
+  ]);
+
+  return {
+    totalProducts: Number(products[0]?.count ?? 0),
+    totalSellers: Number(sellers[0]?.count ?? 0),
+    totalNetworks: Number(networks[0]?.count ?? 0),
+    totalQuotes: Number(quotes[0]?.count ?? 0),
+  };
+}
+
 export async function listNetworks(): Promise<AffiliateNetwork[]> {
   return db.select().from(affiliateNetworks).orderBy(affiliateNetworks.name);
 }
@@ -445,13 +483,26 @@ export async function getOfferMetrics(offerId: string): Promise<OfferMetrics | n
     avg_price_30d: string | null;
     snapshot_count: string;
   }>(sql`
+    -- raw_avg_30d é só um degrau intermediário pra achar outliers — uma
+    -- cotação isolada mais que 2x acima da média bruta do período (erro de
+    -- captura, frete embutido, câmbio errado) é excluída do avg_price_30d
+    -- final, sem afetar mínimo/contagem.
+    WITH raw_avg_30d AS (
+      SELECT AVG(price_cents) AS raw_avg
+      FROM affiliate_price_snapshots
+      WHERE offer_id = ${offerId} AND collected_at >= now() - interval '30 days'
+    )
     SELECT
-      MIN(price_cents)::bigint AS lowest_price_cents,
+      MIN(s.price_cents)::bigint AS lowest_price_cents,
       (SELECT collected_at FROM affiliate_price_snapshots
         WHERE offer_id = ${offerId} ORDER BY price_cents ASC, collected_at ASC LIMIT 1) AS lowest_price_at,
-      AVG(price_cents) FILTER (WHERE collected_at >= now() - interval '30 days')::numeric AS avg_price_30d,
+      AVG(s.price_cents) FILTER (
+        WHERE s.collected_at >= now() - interval '30 days'
+          AND s.price_cents <= (SELECT raw_avg FROM raw_avg_30d) * 2
+      )::numeric AS avg_price_30d,
       COUNT(*)::int AS snapshot_count
-    FROM affiliate_price_snapshots WHERE offer_id = ${offerId}
+    FROM affiliate_price_snapshots s
+    WHERE s.offer_id = ${offerId}
   `);
   const agg = aggRows[0];
   if (!agg || Number(agg.snapshot_count) === 0 || !agg.lowest_price_cents) return null;
@@ -508,10 +559,17 @@ export async function getMasterProductMetrics(masterProductId: string): Promise<
       FROM affiliate_price_snapshots s
       WHERE s.offer_id IN (SELECT offer_id FROM sibling_offers)
     ),
+    -- degrau intermediário pra achar outliers — ver getOfferMetrics acima.
+    raw_avg_30d AS (
+      SELECT AVG(price_cents) AS raw_avg FROM ranked WHERE collected_at >= now() - interval '30 days'
+    ),
     agg AS (
       SELECT
         MIN(price_cents)::bigint AS lowest_price_cents,
-        AVG(price_cents) FILTER (WHERE collected_at >= now() - interval '30 days')::numeric AS avg_price_30d,
+        AVG(price_cents) FILTER (
+          WHERE collected_at >= now() - interval '30 days'
+            AND price_cents <= (SELECT raw_avg FROM raw_avg_30d) * 2
+        )::numeric AS avg_price_30d,
         COUNT(*)::int AS snapshot_count
       FROM ranked
     ),
@@ -621,10 +679,20 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
       INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
       GROUP BY so.master_product_id
     ),
-    avg30d_by_product AS (
-      SELECT so.master_product_id, AVG(s.price_cents)::numeric AS avg_price_30d
+    -- degrau intermediário pra achar outliers — ver getOfferMetrics acima.
+    raw_avg30d_by_product AS (
+      SELECT so.master_product_id, AVG(s.price_cents) AS raw_avg
       FROM affiliate_price_snapshots s
       INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
+      WHERE s.collected_at >= now() - interval '30 days'
+      GROUP BY so.master_product_id
+    ),
+    avg30d_by_product AS (
+      SELECT so.master_product_id,
+        AVG(s.price_cents) FILTER (WHERE s.price_cents <= ra.raw_avg * 2)::numeric AS avg_price_30d
+      FROM affiliate_price_snapshots s
+      INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
+      INNER JOIN raw_avg30d_by_product ra ON ra.master_product_id = so.master_product_id
       WHERE s.collected_at >= now() - interval '30 days'
       GROUP BY so.master_product_id
     )
@@ -777,9 +845,15 @@ export async function getFeaturedOffers(
   if (filter.productType) {
     conditions.push(sql`mp.product_type = ${filter.productType}`);
   }
-  if (filter.gameFormat) {
+  
+  // Se for jogo e o formato não foi especificado, força 'physical' por padrão (destaques apenas físicos)
+  const isGameFeatured = !filter.productType || filter.productType === 'game';
+  if (isGameFeatured && !filter.gameFormat) {
+    conditions.push(sql`mp.game_format = 'physical'`);
+  } else if (filter.gameFormat) {
     conditions.push(sql`mp.game_format = ${filter.gameFormat}`);
   }
+
   if (filter.gamePlatformGen) {
     if (Array.isArray(filter.gamePlatformGen)) {
       if (filter.gamePlatformGen.length > 0) {
@@ -818,12 +892,27 @@ export async function getFeaturedOffers(
       WHERE ${whereClause}
       ORDER BY o.master_product_id, o.current_price_cents ASC
     ),
+    -- degrau intermediário pra achar outliers — ver getOfferMetrics em cima
+    -- deste arquivo (mesma regra: >2x a média bruta do período é excluído).
+    raw_history_avg AS (
+      SELECT so.master_product_id, AVG(s.price_cents) AS raw_avg
+      FROM affiliate_price_snapshots s
+      INNER JOIN affiliate_offers so ON so.id = s.offer_id
+      WHERE so.master_product_id IN (SELECT master_product_id FROM candidates)
+        AND so.status = 'active'
+        AND s.collected_at >= now() - interval '30 days'
+      GROUP BY so.master_product_id
+    ),
     history AS (
       SELECT so.master_product_id,
         MIN(s.price_cents)::bigint AS lowest_price_cents,
-        AVG(s.price_cents) FILTER (WHERE s.collected_at >= now() - interval '30 days')::numeric AS avg_price_30d
+        AVG(s.price_cents) FILTER (
+          WHERE s.collected_at >= now() - interval '30 days'
+            AND s.price_cents <= rha.raw_avg * 2
+        )::numeric AS avg_price_30d
       FROM affiliate_price_snapshots s
       INNER JOIN affiliate_offers so ON so.id = s.offer_id
+      LEFT JOIN raw_history_avg rha ON rha.master_product_id = so.master_product_id
       WHERE so.master_product_id IN (SELECT master_product_id FROM candidates) AND so.status = 'active'
       GROUP BY so.master_product_id
     )
