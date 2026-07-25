@@ -216,6 +216,8 @@ async function applySnapshotsToGroup(
       .where(eq(affiliateOffers.id, placeholderOffer.id));
   }
 
+  const updatedOfferIds = new Set<string>();
+
   for (const result of results) {
     let sellerId: string;
     try {
@@ -294,6 +296,8 @@ async function applySnapshotsToGroup(
       created++;
     }
 
+    updatedOfferIds.add(offerId);
+
     await recordPriceSnapshot({
       offerId,
       priceCents: result.priceCents,
@@ -319,6 +323,19 @@ async function applySnapshotsToGroup(
       await db.update(affiliateOffers).set(updateData).where(eq(affiliateOffers.id, offerId));
     }
     updated++;
+  }
+
+  // Identifica ofertas do grupo que não foram retornadas nesta coleta
+  // (vendedores que ficaram sem estoque ou removeram o anúncio).
+  // Desconsideramos o placeholderOffer (que tem sellerId nulo) dessa desativação.
+  const expiredOfferIds = group.offerIds.filter(
+    (id) => !updatedOfferIds.has(id) && id !== placeholderOffer?.id
+  );
+  if (expiredOfferIds.length > 0) {
+    await db
+      .update(affiliateOffers)
+      .set({ status: 'expired', updatedAt: new Date() })
+      .where(inArray(affiliateOffers.id, expiredOfferIds));
   }
 
   return { updated, created };
