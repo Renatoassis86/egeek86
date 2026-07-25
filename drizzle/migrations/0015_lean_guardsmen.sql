@@ -1,0 +1,1 @@
+ALTER TYPE "public"."article_category" ADD VALUE 'pesquisa_mercado';

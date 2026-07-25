@@ -12,36 +12,77 @@ import { TextImageMask } from '@/components/motion/text-image-mask';
 import { cn } from '@/lib/cn';
 import { getPublishedArticles } from '@/server/queries/news';
 import type { ArticleCategory, NewsArticle } from '@/db/schema';
+import { ARTICLE_CATEGORY_LABELS, ARTICLE_CATEGORY_OPTIONS } from '@/lib/news/labels';
+import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated-stat-bars';
+import { FeaturedArticlesCarousel } from '@/components/news/featured-articles-carousel';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
 
+// Estatísticas reais do mercado gamer, sempre com fonte citada — nunca
+// inventadas nem projetadas sem dizer a origem. Atualizar quando houver
+// relatório mais recente (Newzoo publica novo Global Games Market Report
+// anualmente, geralmente entre jun-set; Pesquisa Game Brasil, anualmente).
+const MARKET_STATS: StatBarItem[] = [
+  {
+    label: 'Mercado global de games em 2025',
+    fillPercent: 75,
+    displayValue: 'US$ 197 bi (+7,5%)',
+    source: 'Newzoo, Global Games Market Report 2025',
+  },
+  {
+    label: 'Mercado de games no Brasil em 2025',
+    fillPercent: 80,
+    displayValue: 'R$ 12,7 bi (+8%)',
+    source: 'Newzoo / Statista / Abragames',
+  },
+  {
+    label: 'Jogadores ativos no mundo',
+    fillPercent: 61.5,
+    displayValue: '3,6 bi (61,5% da população online)',
+    source: 'Newzoo, 2025',
+  },
+  {
+    label: 'Brasileiros que jogam games',
+    fillPercent: 73.4,
+    displayValue: '73,4%',
+    source: 'Pesquisa Game Brasil',
+  },
+];
+
 export const metadata = { title: 'Notícias' };
 
-const CATEGORY_LABELS: Record<ArticleCategory, string> = {
-  cultura_pop: 'Cultura Pop',
-  sinopse_jogo: 'Sinopse de Jogo',
-  tecnologia: 'Tecnologia',
-  lancamentos: 'Lançamentos',
-  filmes: 'Filmes',
-  series_tv: 'Séries e TV',
-  animes: 'Animes',
-  games: 'Games',
-  korea: 'Korea',
-  criticas: 'Críticas',
-  listas: 'Listas',
-  colunistas: 'Colunistas',
-  ccxp: 'CCXP',
-};
+const CATEGORY_LABELS = ARTICLE_CATEGORY_LABELS;
+const CATEGORY_OPTIONS = ARTICLE_CATEGORY_OPTIONS;
 
-const CATEGORY_OPTIONS = Object.entries(CATEGORY_LABELS) as [ArticleCategory, string][];
+// Imagens reais (documental + tecnologia/negócio) pro mosaico do hub — ver
+// lista de prompts de geração entregue ao cliente pra criar cada arquivo.
+const marketScenes: { src: string; alt: string; tone: 'gold' | 'ember' | 'ink' }[] = [
+  {
+    src: '/images/noticias-hub/gamer-setup.jpg',
+    alt: 'Pessoa jogando em um setup gamer completo, tela e periféricos iluminados',
+    tone: 'gold',
+  },
+  {
+    src: '/images/noticias-hub/esports-event.jpg',
+    alt: 'Público acompanhando um evento de esports ao vivo',
+    tone: 'ember',
+  },
+  {
+    src: '/images/noticias-hub/data-analysis.jpg',
+    alt: 'Equipe analisando gráficos e dados de mercado em tela grande',
+    tone: 'ink',
+  },
+];
 
 function parseCategoryParam(value?: string): ArticleCategory | undefined {
   return value && value in CATEGORY_LABELS ? (value as ArticleCategory) : undefined;
 }
 
 // Executa migrações dinâmicas de enums de notícias para garantir consistência
+// (rede de segurança — a fonte real dessas categorias agora é a migration
+// drizzle + o enum article_category; ver src/db/schema/_enums.ts).
 async function ensureDbEnums() {
-  const newCategories = ['filmes', 'series_tv', 'animes', 'games', 'korea', 'criticas', 'listas', 'colunistas', 'ccxp'];
+  const newCategories = ['filmes', 'series_tv', 'animes', 'games', 'korea', 'criticas', 'listas', 'colunistas', 'ccxp', 'pesquisa_mercado'];
   for (const cat of newCategories) {
     try {
       await db.execute(sql.raw(`ALTER TYPE article_category ADD VALUE '${cat}'`));
@@ -68,10 +109,52 @@ export default async function NoticiasPage({
   // Garante os enums no banco antes de buscar
   await ensureDbEnums();
 
-  const { items, totalPages } = await getPublishedArticles({ category, page });
+  const [{ items, totalPages }, { items: featured }] = await Promise.all([
+    getPublishedArticles({ category, page }),
+    getPublishedArticles({ pageSize: 5 }),
+  ]);
 
   return (
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-14">
+      {/* Hub de dados: posicionamento sobre o mercado gamer + estatísticas reais citadas */}
+      <Reveal>
+        <Text variant="label" color="hype">
+          O mercado gamer em números
+        </Text>
+        <Text as="h1" variant="display-md" className="mt-2 max-w-[26ch] text-[28px] md:text-[38px] font-black leading-tight tracking-tight">
+          Games já é a maior indústria de entretenimento do mundo, e o Brasil lidera a América Latina.
+        </Text>
+        <Text variant="body-md" color="secondary" className="mt-4 max-w-[70ch] leading-relaxed">
+          Mais gente joga do que assiste streaming ou vai ao cinema — e o Brasil é o maior mercado
+          consumidor da América Latina desde 2021. Esse hub reúne notícias, sinopses e as pesquisas
+          de mercado que acompanhamos, sempre com fonte citada. Nunca projeção sem dizer de onde
+          veio.
+        </Text>
+      </Reveal>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-center">
+        <Reveal delay={0.06}>
+          <AnimatedStatBars items={MARKET_STATS} />
+        </Reveal>
+        <Reveal delay={0.1}>
+          <FeaturedArticlesCarousel articles={featured} />
+        </Reveal>
+      </div>
+
+      {/* Mosaico documental/promocional — imagens reais (não geradas por IA
+          sem revisão humana antes de publicar); enquanto o arquivo não
+          existir em public/images/noticias-hub/, SceneImage cai no
+          fallback "em produção" (nunca quebra, nunca imagem cinza genérica). */}
+      <div className="mt-10 grid gap-4 sm:grid-cols-3">
+        {marketScenes.map(({ src, alt, tone }, i) => (
+          <Reveal key={src} delay={0.06 + i * 0.06}>
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]">
+              <SceneImage src={src} alt={alt} tone={tone} caption="Em curadoria" className="absolute inset-0" />
+            </div>
+          </Reveal>
+        ))}
+      </div>
+
       {/* Header Banner Visual */}
       <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-14 overflow-hidden mb-10 z-10">
         
@@ -102,7 +185,7 @@ export default async function NoticiasPage({
             </Badge>
           </Reveal>
           <Reveal delay={0.05}>
-            <Text as="h1" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+            <Text as="h2" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
               Notícias
             </Text>
           </Reveal>

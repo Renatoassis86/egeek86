@@ -291,6 +291,7 @@ export const articleCategory = pgEnum('article_category', [
   'listas',
   'colunistas',
   'ccxp',
+  'pesquisa_mercado',
 ]);
 
 export const articleStatus = pgEnum('article_status', ['draft', 'published', 'archived']);

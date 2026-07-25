@@ -9,23 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/text';
 import { SceneImage } from '@/components/motion/scene-image';
 import { getArticleBySlug } from '@/server/queries/news';
-import type { ArticleCategory } from '@/db/schema';
-
-const CATEGORY_LABELS: Record<ArticleCategory, string> = {
-  cultura_pop: 'Cultura Pop',
-  sinopse_jogo: 'Sinopse de Jogo',
-  tecnologia: 'Tecnologia',
-  lancamentos: 'Lançamentos',
-  filmes: 'Filmes',
-  series_tv: 'Séries e TV',
-  animes: 'Animes',
-  games: 'Games',
-  korea: 'Korea',
-  criticas: 'Críticas',
-  listas: 'Listas',
-  colunistas: 'Colunistas',
-  ccxp: 'CCXP',
-};
+import { ARTICLE_CATEGORY_LABELS as CATEGORY_LABELS } from '@/lib/news/labels';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

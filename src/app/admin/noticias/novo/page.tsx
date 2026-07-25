@@ -10,22 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Text } from '@/components/ui/text';
 import { ArticleKindFields } from '@/components/admin/article-kind-fields';
 import { createArticle } from '@/server/actions/news';
-
-const CATEGORIES = [
-  { value: 'cultura_pop', label: 'Cultura pop' },
-  { value: 'sinopse_jogo', label: 'Sinopse de jogo' },
-  { value: 'tecnologia', label: 'Tecnologia' },
-  { value: 'lancamentos', label: 'Lançamentos' },
-  { value: 'filmes', label: 'Filmes' },
-  { value: 'series_tv', label: 'Séries e TV' },
-  { value: 'animes', label: 'Animes' },
-  { value: 'games', label: 'Games' },
-  { value: 'korea', label: 'Korea' },
-  { value: 'criticas', label: 'Críticas' },
-  { value: 'listas', label: 'Listas' },
-  { value: 'colunistas', label: 'Colunistas' },
-  { value: 'ccxp', label: 'CCXP' },
-] as const;
+import { ARTICLE_CATEGORY_OPTIONS } from '@/lib/news/labels';
 
 export default function NewArticlePage() {
   return (
@@ -53,9 +38,9 @@ export default function NewArticlePage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
+                    {ARTICLE_CATEGORY_OPTIONS.map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>

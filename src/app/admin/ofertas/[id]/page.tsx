@@ -256,7 +256,7 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
         <Card>
           <CardContent className="p-5">
             <Text variant="heading-sm" className="mb-2">
-              Vendedor atual (buy-box)
+              Vendedor desta oferta
             </Text>
             <Text variant="body-sm">{offer.seller.nickname ?? 'N/D'}</Text>
             <Text variant="caption" color="tertiary">
@@ -296,6 +296,26 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
               Link pendente — item está no ar, mas o botão de compra fica desabilitado pro público até você colar o link real aqui embaixo
             </Badge>
           )}
+
+          {offer.affiliateUrl.includes('/p/') && (
+            <div className="mb-3 rounded-[var(--radius-md)] border border-amber-500/30 bg-amber-500/5 p-3">
+              <Text variant="body-sm" className="font-semibold text-amber-400">
+                Atenção: link de catálogo compartilhado, não desse vendedor específico
+              </Text>
+              <Text variant="caption" color="secondary" className="mt-1 block leading-relaxed">
+                Esse é um produto de catálogo do Mercado Livre — vários vendedores disputam a
+                mesma página, cada um com seu próprio preço real. A página mostra por padrão o
+                preço de quem estiver ganhando o buy-box{' '}
+                <strong>no momento em que você abrir o link</strong>, que pode ser diferente do
+                preço de {offer.seller?.nickname ?? 'um vendedor'} registrado aqui (
+                {formatBRL(offer.currentPriceCents)}). Procure por{' '}
+                <strong>{offer.seller?.nickname ?? 'esse vendedor'}</strong> na seção "Outras
+                opções de compra" da página antes de colar o link de afiliado — se colar o link
+                genérico da página, o afiliado pode acabar não sendo esse vendedor.
+              </Text>
+            </div>
+          )}
+
           <Text variant="caption" color="tertiary" className="block mb-1">
             {offer.affiliateLinkPending ? 'Link do produto no Mercado Livre (ainda sem rastreio de comissão)' : 'Link de afiliado (não exposto publicamente)'}
           </Text>

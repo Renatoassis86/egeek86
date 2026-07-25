@@ -31,6 +31,8 @@ interface NavItem {
  * remover nenhuma página.
  */
 const navLinks: NavItem[] = [
+  { href: '/', label: 'Home' },
+  { href: '/sobre', label: 'Quem Somos' },
   { href: '/ofertas', label: 'Ofertas' },
   {
     href: '/tabela-de-precos',

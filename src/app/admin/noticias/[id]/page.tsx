@@ -14,22 +14,7 @@ import { ArticleKindFields } from '@/components/admin/article-kind-fields';
 import { ToastNotification } from '@/components/admin/toast-notification';
 import { getArticleByIdForAdmin } from '@/server/queries/news';
 import { updateArticle, publishArticle, archiveArticle } from '@/server/actions/news';
-
-const CATEGORIES = [
-  { value: 'cultura_pop', label: 'Cultura pop' },
-  { value: 'sinopse_jogo', label: 'Sinopse de jogo' },
-  { value: 'tecnologia', label: 'Tecnologia' },
-  { value: 'lancamentos', label: 'Lançamentos' },
-  { value: 'filmes', label: 'Filmes' },
-  { value: 'series_tv', label: 'Séries e TV' },
-  { value: 'animes', label: 'Animes' },
-  { value: 'games', label: 'Games' },
-  { value: 'korea', label: 'Korea' },
-  { value: 'criticas', label: 'Críticas' },
-  { value: 'listas', label: 'Listas' },
-  { value: 'colunistas', label: 'Colunistas' },
-  { value: 'ccxp', label: 'CCXP' },
-] as const;
+import { ARTICLE_CATEGORY_OPTIONS } from '@/lib/news/labels';
 
 export default async function AdminArticleDetailPage({
   params,
@@ -103,9 +88,9 @@ export default async function AdminArticleDetailPage({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
+                    {ARTICLE_CATEGORY_OPTIONS.map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
                       </SelectItem>
                     ))}
                   </SelectContent>

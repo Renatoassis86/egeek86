@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { getAdminArticles } from '@/server/queries/news';
+import { ARTICLE_CATEGORY_LABELS } from '@/lib/news/labels';
 import type { ArticleStatus, ArticleKind } from '@/db/schema';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
@@ -86,7 +87,7 @@ export default async function AdminNoticiasPage() {
                     </td>
                     <td className="px-4 py-3">
                       <Text variant="body-sm" color="secondary">
-                        {article.category}
+                        {ARTICLE_CATEGORY_LABELS[article.category]}
                       </Text>
                     </td>
                     <td className="px-4 py-3">

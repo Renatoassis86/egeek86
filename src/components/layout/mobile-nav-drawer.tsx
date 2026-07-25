@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Home,
+  Info,
   Tag,
   BarChart3,
   Flame,
@@ -31,6 +32,7 @@ interface MobileNavDrawerProps {
 
 const topModules = [
   { href: '/', label: 'Início / Home', icon: Home },
+  { href: '/sobre', label: 'Quem Somos', icon: Info },
   { href: '/ofertas', label: 'Todas as Ofertas', icon: Tag },
 ];
 

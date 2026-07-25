@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
@@ -13,7 +12,6 @@ import {
   BadgeCheck,
   LineChart,
   Info,
-  CheckCircle2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,6 +24,7 @@ import { SceneImage } from '@/components/motion/scene-image';
 import { PriceRangeBar } from '@/components/geek-deals/price-range-bar';
 import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
 import { CartToggleButton } from '@/components/affiliate/cart-toggle-button';
+import { GameAboutSection } from '@/components/affiliate/game-about-section';
 import { formatBRL, formatDiscountLabel } from '@/lib/format';
 import { isLowestPrice } from '@/lib/affiliate/message-template';
 import {
@@ -299,44 +298,16 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
       {hasAboutSection && (
         <Reveal delay={0.1}>
           <div className="mt-12 lg:mt-16 border-t border-[var(--color-border-subtle)] pt-10">
-            <div className="grid gap-8 lg:grid-cols-[1fr_auto]">
-              <div className="min-w-0">
-                <Text as="h2" variant="heading-lg" className="mb-4 flex items-center gap-2">
-                  <Info className="size-5 text-[var(--color-accent-primary)]" aria-hidden />
-                  Sobre o jogo
-                </Text>
+            <Text as="h2" variant="heading-lg" className="mb-6 flex items-center gap-2">
+              <Info className="size-5 text-[var(--color-accent-primary)]" aria-hidden />
+              Sobre o jogo
+            </Text>
 
-                {meliDetails?.shortDescription && (
-                  <Text variant="body-md" color="secondary" className="leading-relaxed mb-4 max-w-[70ch]">
-                    {meliDetails.shortDescription}
-                  </Text>
-                )}
-
-                {meliDetails?.features.length ? (
-                  <ul className="grid gap-2.5 sm:grid-cols-2">
-                    {meliDetails.features.map((feature, i) => (
-                      <li key={i} className="flex gap-2 text-body-sm text-[var(--color-text-secondary)]">
-                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[var(--color-accent-primary)]" aria-hidden />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-              </div>
-
-              {galleryImages.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 sm:w-72 lg:grid-cols-2">
-                  {galleryImages.slice(0, 4).map((url) => (
-                    <div
-                      key={url}
-                      className="relative aspect-square overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]"
-                    >
-                      <Image src={url} alt="" fill className="object-cover" sizes="140px" />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <GameAboutSection
+              shortDescription={meliDetails?.shortDescription ?? null}
+              features={meliDetails?.features ?? []}
+              galleryImages={galleryImages}
+            />
           </div>
         </Reveal>
       )}

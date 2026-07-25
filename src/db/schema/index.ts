@@ -71,6 +71,9 @@ export * from './notification';
 // Notícias
 export * from './news_articles';
 
+// Pesquisas de satisfação/mercado
+export * from './survey_responses';
+
 // Analytics
 export * from './analytics';
 
