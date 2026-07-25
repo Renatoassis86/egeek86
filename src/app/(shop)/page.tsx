@@ -43,6 +43,7 @@ import { cn } from '@/lib/cn';
 // buscando no banco no ambiente de build (visto ao vivo no primeiro deploy).
 import { getPublishedArticles } from '@/server/queries/news';
 import { getPlatformStats, type PlatformStats } from '@/server/queries/affiliate';
+import { getSurveyAggregation, type SurveyAggregation } from '@/server/queries/survey';
 import { gamerCards, geekCards } from '@/lib/categories-showcase';
 import { PriceChartsShowcase } from '@/components/home/price-charts-showcase';
 import { GamerSurvey } from '@/components/home/gamer-survey';
@@ -51,186 +52,25 @@ import { StatTile } from '@/components/ui/stat-tile';
 
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ aba?: string }>;
-}) {
-  const sp = await searchParams;
-  const activeTab = sp.aba === 'vitrine' ? 'vitrine' : 'institucional';
-
-  if (activeTab === 'vitrine') {
-    return (
-      <>
-        <TabSwitcher activeTab={activeTab} />
-        <Hero />
-        <StatementBand />
-        <WeeklyPromosSection />
-        <PlatformShowcase />
-        <SalesHighlights />
-        <PriceIntelligence />
-        <UniversesSection />
-        <DividerEmblem />
-        <HypeTeaser />
-        <HomeNewsSection />
-        <Benefits />
-        <NewsletterCTA />
-      </>
-    );
-  }
-
+export default async function HomePage() {
   const stats = await getPlatformStats();
+  const surveyData = await getSurveyAggregation();
 
   return (
     <>
-      <TabSwitcher activeTab={activeTab} />
-      <InstitutionalHero />
-      <ManifestoSection />
+      <Hero />
+      <StatementBand />
+      <WeeklyPromosSection />
       <CategoriesSection />
       <MarketStatsSection />
-      <HomeNewsSection />
-      <SurveySection />
+      <PlatformShowcase />
+      <SalesHighlights />
+      <SurveySection surveyData={surveyData} />
       <IndicatorsSection stats={stats} />
+      <HomeNewsSection />
+      <Benefits />
       <NewsletterCTA />
     </>
-  );
-}
-
-function TabSwitcher({ activeTab }: { activeTab: 'institucional' | 'vitrine' }) {
-  return (
-    <div className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] sticky top-[var(--header-height)] z-40 backdrop-blur-md bg-opacity-80">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8 flex justify-center gap-6 py-3">
-        <Link
-          href="/?aba=institucional"
-          className={cn(
-            'text-xs font-mono uppercase tracking-widest transition-all pb-1 border-b-2',
-            activeTab === 'institucional'
-              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)] font-bold'
-              : 'border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
-          )}
-          scroll={false}
-        >
-          Institucional
-        </Link>
-        <Link
-          href="/?aba=vitrine"
-          className={cn(
-            'text-xs font-mono uppercase tracking-widest transition-all pb-1 border-b-2',
-            activeTab === 'vitrine'
-              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)] font-bold'
-              : 'border-transparent text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
-          )}
-          scroll={false}
-        >
-          Vitrine de Ofertas
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function InstitutionalHero() {
-  return (
-    <section className="relative overflow-hidden border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)]">
-      <Glow color="gold" size="xl" intensity={0.25} className="-top-64 -left-48" />
-      <div className="relative mx-auto max-w-7xl px-4 lg:px-8 pt-16 pb-20 lg:pt-24 lg:pb-28">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8 items-center">
-          <div className="lg:col-span-7 flex flex-col gap-6">
-            <Reveal>
-              <Badge variant="primary" size="lg">
-                Central de Inteligência Geek
-              </Badge>
-            </Reveal>
-            <Reveal delay={0.05}>
-              <Text as="h1" variant="display-xl" className="tracking-tight lg:text-display-2xl">
-                O hub de dados e curadoria da
-                <br />
-                <span className="bg-gradient-to-r from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] bg-clip-text text-transparent">
-                  Cultura Geek & Gamer.
-                </span>
-              </Text>
-            </Reveal>
-            <Reveal delay={0.12}>
-              <Text variant="body-lg" color="secondary" className="max-w-[48ch]">
-                Unimos inteligência de preços, dados reais de mercado e curadoria de colecionador para que você tome a melhor decisão, sem pressa.
-              </Text>
-            </Reveal>
-            <Reveal delay={0.18}>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button asChild size="lg">
-                  <Link href="/?aba=vitrine">Explorar Vitrine</Link>
-                </Button>
-                <Button asChild variant="secondary" size="lg">
-                  <Link href="/tabela-de-precos">Tabela de Preços</Link>
-                </Button>
-              </div>
-            </Reveal>
-          </div>
-          <div className="lg:col-span-5">
-            <Reveal delay={0.1}>
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-default)] shadow-[var(--shadow-xl)]">
-                <SceneImage
-                  src="/images/sobre/hero-geracoes.png"
-                  alt="Evolução de controles clássicos e modernos lado a lado"
-                  tone="gold"
-                  caption="Curadoria Estratégica"
-                  priority
-                  className="absolute inset-0"
-                />
-              </div>
-            </Reveal>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function ManifestoSection() {
-  return (
-    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-12">
-        <Reveal>
-          <div className="max-w-[62ch]">
-            <Text variant="label" color="hype">
-              Nosso Posicionamento
-            </Text>
-            <Text as="h2" variant="display-lg" className="mt-4 text-[var(--color-text-primary)]">
-              Não somos um marketplace. Não somos um comparador de preços.
-            </Text>
-            <Text variant="body-lg" color="secondary" className="mt-6 leading-relaxed font-medium">
-              Somos o hub que une o universo gamer e a inteligência de dados para que descobrir, aprender, comparar e colecionar sejam parte da experiência de compra — não um obstáculo a ela.
-            </Text>
-          </div>
-        </Reveal>
-
-        <div className="grid gap-10 border-t border-[var(--color-border-subtle)] pt-12 lg:grid-cols-2 lg:gap-16">
-          <Reveal>
-            <Text variant="label" color="tertiary" className="font-mono text-xs uppercase tracking-widest">
-              Missão
-            </Text>
-            <Text as="h3" variant="heading-lg" className="mt-3 font-bold">
-              Curadoria e transparência para a melhor decisão.
-            </Text>
-            <Text variant="body-md" color="secondary" className="mt-4 leading-relaxed">
-              Ajudar quem compra e quem indica cultura geek a decidir com informação real. Unimos preço monitorado, histórico verificável e curadoria humana em um único lugar.
-            </Text>
-          </Reveal>
-
-          <Reveal delay={0.08}>
-            <Text variant="label" color="tertiary" className="font-mono text-xs uppercase tracking-widest">
-              Visão
-            </Text>
-            <Text as="h3" variant="heading-lg" className="mt-3 font-bold">
-              Referência em inteligência gamer no país.
-            </Text>
-            <Text variant="body-md" color="secondary" className="mt-4 leading-relaxed">
-              Ser reconhecido como o lugar onde colecionadores, jogadores e afiliados buscam primeiro para entender preço, tendência e comportamento no universo de consoles e cultura geek.
-            </Text>
-          </Reveal>
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -308,12 +148,19 @@ function MarketStatsSection() {
   );
 }
 
-function SurveySection() {
+function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
+  const platformQuestion = surveyData.questions.find((q) => q.key === 'platform');
+  const initialOptions = (platformQuestion?.options ?? []).map((opt) => ({
+    id: opt.value,
+    label: opt.label,
+    votes: opt.count,
+  }));
+
   return (
     <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:gap-14 lg:items-center">
         <Reveal>
-          <GamerSurvey />
+          <GamerSurvey initialOptions={initialOptions} />
         </Reveal>
         <Reveal delay={0.08}>
           <div className="flex flex-col gap-4">

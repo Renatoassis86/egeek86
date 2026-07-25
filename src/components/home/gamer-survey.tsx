@@ -1,11 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Check, Vote, RefreshCw } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
+import { toast } from '@/components/ui/toast';
+import { submitSurveyResponse } from '@/server/actions/survey';
 
 interface SurveyOption {
   id: string;
@@ -13,50 +16,63 @@ interface SurveyOption {
   votes: number;
 }
 
-const INITIAL_OPTIONS: SurveyOption[] = [
-  { id: 'switch', label: 'Nintendo Switch', votes: 1420 },
-  { id: 'ps5', label: 'PlayStation 5', votes: 1105 },
-  { id: 'pc', label: 'Computador (PC / Steam)', votes: 945 },
-  { id: 'xbox', label: 'Xbox Series X/S', votes: 532 },
-  { id: 'mobile', label: 'Smartphone (Mobile)', votes: 418 },
-];
-
-export function GamerSurvey() {
+export function GamerSurvey({
+  initialOptions,
+}: {
+  initialOptions: SurveyOption[];
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [hasVoted, setHasVoted] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [options, setOptions] = useState<SurveyOption[]>(INITIAL_OPTIONS);
+  const [options, setOptions] = useState<SurveyOption[]>(initialOptions);
+
+  useEffect(() => {
+    setOptions(initialOptions);
+  }, [initialOptions]);
 
   useEffect(() => {
     const savedVote = localStorage.getItem('eg86_gamer_survey_vote');
     if (savedVote) {
       setHasVoted(true);
       setSelectedOption(savedVote);
-      
-      // Simula a adição do voto do usuário
-      setOptions((prev) =>
-        prev.map((opt) => (opt.id === savedVote ? { ...opt, votes: opt.votes + 1 } : opt))
-      );
     }
   }, []);
 
   function handleVote(optionId: string) {
-    if (hasVoted) return;
-    
+    if (hasVoted || isPending) return;
+
     localStorage.setItem('eg86_gamer_survey_vote', optionId);
     setSelectedOption(optionId);
     setHasVoted(true);
-    
+
+    // Atualização otimista
     setOptions((prev) =>
       prev.map((opt) => (opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt))
     );
+
+    startTransition(async () => {
+      const res = await submitSurveyResponse({ answers: { platform: optionId } });
+      if (!res.ok) {
+        localStorage.removeItem('eg86_gamer_survey_vote');
+        setSelectedOption(null);
+        setHasVoted(false);
+        setOptions(initialOptions);
+        toast.error(res.error ?? 'Erro ao registrar voto. Tente novamente.');
+      } else {
+        toast.success('Voto registrado! Obrigado por participar.');
+        router.refresh();
+      }
+    });
   }
 
   function handleReset() {
     localStorage.removeItem('eg86_gamer_survey_vote');
     setHasVoted(false);
     setSelectedOption(null);
-    setOptions(INITIAL_OPTIONS);
+    setOptions(initialOptions);
   }
+
 
   const totalVotes = options.reduce((sum, opt) => sum + opt.votes, 0);
 

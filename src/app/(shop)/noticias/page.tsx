@@ -58,17 +58,17 @@ const CATEGORY_OPTIONS = ARTICLE_CATEGORY_OPTIONS;
 // lista de prompts de geração entregue ao cliente pra criar cada arquivo.
 const marketScenes: { src: string; alt: string; tone: 'gold' | 'ember' | 'ink' }[] = [
   {
-    src: '/images/noticias-hub/gamer-setup.jpg',
+    src: '/images/noticias-hub/gamer-setup.png',
     alt: 'Pessoa jogando em um setup gamer completo, tela e periféricos iluminados',
     tone: 'gold',
   },
   {
-    src: '/images/noticias-hub/esports-event.jpg',
+    src: '/images/noticias-hub/esports-event.png',
     alt: 'Público acompanhando um evento de esports ao vivo',
     tone: 'ember',
   },
   {
-    src: '/images/noticias-hub/data-analysis.jpg',
+    src: '/images/noticias-hub/data-analysis.png',
     alt: 'Equipe analisando gráficos e dados de mercado em tela grande',
     tone: 'ink',
   },

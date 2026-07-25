@@ -49,7 +49,7 @@ export function OfferCard({
       >
         <div
           className={cn(
-            'relative shrink-0 bg-[var(--color-bg-inset)] overflow-hidden',
+            'relative shrink-0 bg-white overflow-hidden',
             isFeature ? 'aspect-[4/3] sm:aspect-square sm:w-[42%]' : 'aspect-[4/5]'
           )}
         >
@@ -58,10 +58,10 @@ export function OfferCard({
             <img
               src={image}
               alt={offer.title}
-              className="h-full w-full object-contain p-3 transition-transform duration-[var(--duration-medium)] group-hover:scale-[1.05]"
+              className="absolute inset-0 m-auto max-h-[92%] max-w-[92%] object-contain transition-transform duration-[var(--duration-medium)] group-hover:scale-[1.05]"
             />
           ) : (
-            <div className="flex h-full items-center justify-center">
+            <div className="flex h-full items-center justify-center bg-[var(--color-bg-inset)]">
               <Tag className="size-10 text-[var(--color-text-tertiary)]" aria-hidden />
             </div>
           )}
