@@ -378,7 +378,12 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     `),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_sellers`),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_networks`),
-    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_price_snapshots`),
+    db.execute<{ count: string }>(sql`
+      SELECT COALESCE(
+        (SELECT reltuples::bigint FROM pg_class WHERE relname = 'affiliate_price_snapshots'),
+        (SELECT COUNT(*)::bigint FROM affiliate_price_snapshots)
+      ) AS count
+    `),
   ]);
 
   return {
