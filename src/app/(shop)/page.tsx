@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -65,18 +66,42 @@ export default async function HomePage() {
     <>
       <Hero />
       <StatementBand />
-      <WeeklyPromosSection />
+      <Suspense fallback={<SectionFallback />}>
+        <WeeklyPromosSection />
+      </Suspense>
       <CategoriesSection />
       <MarketStatsSection />
       <PlatformShowcase />
-      <SalesHighlights />
+      <Suspense fallback={<SectionFallback />}>
+        <SalesHighlights />
+      </Suspense>
       <SurveySection surveyData={surveyData} />
       <IndicatorsSection stats={stats} />
       <InteligenciaGamerTeaserSection />
-      <HomeNewsSection />
+      <Suspense fallback={<SectionFallback />}>
+        <HomeNewsSection />
+      </Suspense>
       <Benefits />
       <NewsletterCTA />
     </>
+  );
+}
+
+// Cada seção com busca própria no banco (WeeklyPromosSection, SalesHighlights,
+// HomeNewsSection) fica isolada num Suspense — sem isso, componentes async
+// irmãos renderizam em SEQUÊNCIA (não em paralelo), somando o tempo de cada
+// um; com Suspense, o React consegue disparar a busca das três ao mesmo
+// tempo e ir liberando cada bloco assim que os dados chegam. Achado real
+// (2026-07-25): era essa soma sequencial, não o pool de conexão, que fazia
+// a Home travar 25s+ mesmo com o banco respondendo rápido (/api/health
+// respondia em ~1s no mesmo instante em que a Home travava).
+function SectionFallback() {
+  return (
+    <div className="w-full py-16 lg:py-20">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <div className="h-48 w-full animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-bg-inset)]" />
+      </div>
+    </div>
   );
 }
 
