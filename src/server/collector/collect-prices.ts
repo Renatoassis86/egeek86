@@ -226,7 +226,10 @@ async function applySnapshotsToGroup(
     }
 
     const [existingOffer] = await db
-      .select({ id: affiliateOffers.id })
+      .select({
+        id: affiliateOffers.id,
+        affiliateLinkPending: affiliateOffers.affiliateLinkPending,
+      })
       .from(affiliateOffers)
       .where(
         and(
@@ -262,6 +265,11 @@ async function applySnapshotsToGroup(
         .limit(1);
       const slug = collision ? slugify(`${baseSlug}-${randomUUID().slice(0, 6)}`) : baseSlug;
 
+      // Se for Mercado Livre, gera link direto pro anúncio específico do vendedor
+      const initialUrl = (group.networkSlug === 'mercado-livre' && result.externalItemId)
+        ? `https://produto.mercadolivre.com.br/${result.externalItemId}`
+        : `https://www.mercadolivre.com.br/p/${group.externalRef}`;
+
       const [createdRow] = await db
         .insert(affiliateOffers)
         .values({
@@ -269,13 +277,7 @@ async function applySnapshotsToGroup(
           networkId: group.networkId,
           title: masterProduct.name,
           slug,
-          // Placeholder honesto (página de catálogo pública, deixa o
-          // visitante escolher o vendedor) — publica direto (decisão
-          // explícita do usuário, 2026-07-17: vitrine sempre cheia importa
-          // mais que garantir link de afiliado real em 100% dos itens).
-          // Admin ainda pode trocar pelo link real do vendedor específico
-          // a qualquer momento em /admin/ofertas/[id].
-          affiliateUrl: `https://www.mercadolivre.com.br/p/${group.externalRef}`,
+          affiliateUrl: initialUrl,
           // Aparece publicado, mas o CTA de compra fica desabilitado (ver
           // /go/[slug]/route.ts) até o admin colar o link de afiliado real.
           affiliateLinkPending: true,
@@ -303,7 +305,12 @@ async function applySnapshotsToGroup(
     // a mais aqui seria puro desperdício (o pool de conexão roda com max:1,
     // cada round-trip a menos importa de verdade pro tempo total da execução).
     if (!isNewOffer) {
-      await db.update(affiliateOffers).set({ sellerId }).where(eq(affiliateOffers.id, offerId));
+      const updateData: Partial<typeof affiliateOffers.$inferInsert> = { sellerId };
+      // Se o link de afiliado ainda está pendente, atualiza o placeholder com a URL do anúncio específico
+      if (existingOffer.affiliateLinkPending && result.externalItemId && group.networkSlug === 'mercado-livre') {
+        updateData.affiliateUrl = `https://produto.mercadolivre.com.br/${result.externalItemId}`;
+      }
+      await db.update(affiliateOffers).set(updateData).where(eq(affiliateOffers.id, offerId));
     }
     updated++;
   }
