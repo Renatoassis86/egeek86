@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { Boxes, Gamepad2, Joystick, LibraryBig, Newspaper, Zap } from 'lucide-react';
+import { Boxes, Gamepad2, Joystick, LibraryBig, Newspaper, Zap, Sparkles } from 'lucide-react';
 
 export interface CategoryCard {
   href: string;
@@ -20,4 +20,5 @@ export const geekCards: CategoryCard[] = [
   { href: '/universos', label: 'Universos', description: 'Navegue por franquia: Naruto, One Piece, Marvel e mais.', Icon: LibraryBig },
   { href: '/hype-zone', label: 'Hype Zone', description: 'Drop e lançamento em contagem regressiva real.', Icon: Zap },
   { href: '/noticias', label: 'Notícias', description: 'Cultura pop, sinopse de jogo e tecnologia geek.', Icon: Newspaper },
+  { href: '/inteligencia-gamer', label: 'Inteligência Gamer', description: 'Notícias, artigos opinativos e pesquisas teóricas, empíricas e descritivas sobre o mercado.', Icon: Sparkles },
 ];

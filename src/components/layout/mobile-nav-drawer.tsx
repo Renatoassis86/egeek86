@@ -51,7 +51,10 @@ const hypeZoneModules = [
   { href: '/leiloes', label: 'Leilões Geek', icon: Gavel, highlight: true },
 ];
 
-const newsModules = [{ href: '/noticias', label: 'Notícias & Matérias', icon: Newspaper }];
+const newsModules = [
+  { href: '/noticias', label: 'Notícias e Matérias', icon: Newspaper },
+  { href: '/inteligencia-gamer', label: 'Inteligência Gamer', icon: Sparkles }
+];
 
 const userModules = [
   { href: '/conta', label: 'Meu Perfil & Gamificação', icon: User },

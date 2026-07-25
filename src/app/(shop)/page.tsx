@@ -11,6 +11,10 @@ import {
   History,
   TrendingDown,
   Tag,
+  BookOpen,
+  Newspaper,
+  FileText,
+  TrendingUp,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -67,6 +71,7 @@ export default async function HomePage() {
       <SalesHighlights />
       <SurveySection surveyData={surveyData} />
       <IndicatorsSection stats={stats} />
+      <InteligenciaGamerTeaserSection />
       <HomeNewsSection />
       <Benefits />
       <NewsletterCTA />
@@ -662,6 +667,98 @@ function HypeStat({ icon, label }: { icon: ReactNode; label: string }) {
         {label}
       </Text>
     </div>
+  );
+}
+
+// ----- Inteligência Gamer Teaser Section --------------------
+function InteligenciaGamerTeaserSection() {
+  return (
+    <section data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28 relative overflow-hidden">
+      <Glow color="gold" size="lg" intensity={0.12} className="-top-32 left-0" />
+      <div className="relative mx-auto max-w-7xl px-4 lg:px-8">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-center lg:gap-14">
+          {/* Lado Esquerdo: Conteúdo Principal */}
+          <div className="lg:col-span-6 flex flex-col gap-4">
+            <Reveal>
+              <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
+                <Sparkles className="size-3.5" aria-hidden />
+                Arkos Intelligence
+              </Text>
+              <Text as="h2" variant="display-lg" className="mt-2">
+                Inteligência Gamer: Dados, Análises e Notícias.
+              </Text>
+              <Text variant="body-lg" color="secondary" className="leading-relaxed mt-2">
+                Conheça o nosso portal de pesquisa econômica e comportamental aplicada à indústria de jogos. Análises empíricas, estudos descritivos e colunas opinativas para apoiar suas decisões de mercado.
+              </Text>
+              <div className="mt-6 flex flex-wrap gap-4">
+                <Button asChild size="lg" rightIcon={<ArrowRight className="size-4" />}>
+                  <Link href="/inteligencia-gamer">Acessar Portal Inteligência</Link>
+                </Button>
+              </div>
+            </Reveal>
+          </div>
+
+          {/* Lado Direito: Grid de Categorias/Artigos */}
+          <div className="lg:col-span-6 grid gap-4 sm:grid-cols-2">
+            <Reveal delay={0.06}>
+              <Card className="h-full">
+                <CardContent className="p-5 flex flex-col gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                    <TrendingUp className="size-4" />
+                  </div>
+                  <Text variant="heading-sm" className="font-bold">Pesquisas Empíricas</Text>
+                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                    Modelagem econométrica, regressão estatística e oscilação histórica de preços reais de mercado.
+                  </Text>
+                </CardContent>
+              </Card>
+            </Reveal>
+
+            <Reveal delay={0.12}>
+              <Card className="h-full">
+                <CardContent className="p-5 flex flex-col gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                    <FileText className="size-4" />
+                  </div>
+                  <Text variant="heading-sm" className="font-bold">Pesquisas Teóricas</Text>
+                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                    Ensaios conceituais abordando gamificação, comportamento social e história das gerações de consoles.
+                  </Text>
+                </CardContent>
+              </Card>
+            </Reveal>
+
+            <Reveal delay={0.18}>
+              <Card className="h-full">
+                <CardContent className="p-5 flex flex-col gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
+                    <Layers className="size-4" />
+                  </div>
+                  <Text variant="heading-sm" className="font-bold">Pesquisas Descritivas</Text>
+                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                    Relatórios populacionais e segmentações demográficas sobre o público gamer regional e nacional.
+                  </Text>
+                </CardContent>
+              </Card>
+            </Reveal>
+
+            <Reveal delay={0.24}>
+              <Card className="h-full">
+                <CardContent className="p-5 flex flex-col gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-purple-500/10 text-purple-500">
+                    <Newspaper className="size-4" />
+                  </div>
+                  <Text variant="heading-sm" className="font-bold">Notícias e Artigos</Text>
+                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                    As principais novidades corporativas da indústria global de jogos e colunas semanais dos idealizadores.
+                  </Text>
+                </CardContent>
+              </Card>
+            </Reveal>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
