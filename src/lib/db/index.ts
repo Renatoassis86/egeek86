@@ -6,22 +6,44 @@ import * as schema from '@/db/schema';
 const connectionString =
   process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/postgres';
 
-// Cliente Postgres com pooling adequado para serverless.
-// Em runtime usamos o transaction pooler (porta 6543) → prepare:false obrigatório.
-// max:10 (não 1, não 5): várias páginas disparam queries em paralelo via
-// Promise.all — SalesHighlights faz 8 de uma vez, admin/ofertas faz 6. Com
-// max:5 essas duas já estouravam o pool sozinhas (a 6ª/7ª query ficava na
-// fila esperando uma conexão liberar), o que incluía a checagem de sessão
-// do admin (requireAdmin -> getCurrentProfile, mesmo pool) — achado real
-// (2026-07-24): /admin/ofertas por vezes levava 20-25s só pra REDIRECIONAR
-// um visitante sem login, porque a checagem de auth ficava atrás das 6
-// queries da página na fila do pool. O pooler de transação (6543) aguenta
-// bem mais que isso, diferente do pooler de sessão (5432, teto de 15
-// conexões no total) — onde um max mais generoso seria arriscado.
+// Achado real (2026-07-25): em produção (Vercel), cada instância serverless
+// morna mantém seu próprio pool — com N instâncias concorrentes, o total de
+// conexões é N × max. Na porta 5432 (pooler de SESSÃO do Supabase) o projeto
+// inteiro tem um teto FIXO de 15 conexões simultâneas, não importa o quanto
+// max seja reduzido por instância: um pico de tráfego com só 8 instâncias
+// mornas e max:2 já bate no teto (16 > 15) e vira EMAXCONNSESSION,
+// derrubando a Home pra todo mundo (504). Reduzir max de 10 pra 2 (commit
+// afe0d99) foi um paliativo, não resolve — só atrasa o estouro.
+// A correção de verdade é usar o pooler de TRANSAÇÃO do Supabase (porta
+// 6543): ele multiplexa muito mais conexões de cliente sobre poucas
+// conexões reais do Postgres, então não tem esse teto baixo. Detectamos
+// isso pela própria connection string pra nunca mais regredir sem querer:
+// com 5432 (ainda não migrado), max fica baixo e seguro; assim que
+// DATABASE_URL apontar pro pooler de transação, max sobe sozinho, sem
+// precisar de outro deploy.
+const isTransactionPooler = connectionString.includes(':6543');
+
+if (!isTransactionPooler) {
+  console.error(
+    '[db] DATABASE_URL não está apontando pro Transaction Pooler do Supabase (porta 6543) — ' +
+      'está usando o pooler de sessão (5432), que tem teto de 15 conexões no projeto inteiro. ' +
+      'Sob tráfego concorrente na Vercel isso estoura (EMAXCONNSESSION) e derruba a Home. ' +
+      'Troque a env var DATABASE_URL na Vercel pela connection string "Transaction" do Supabase ' +
+      '(Project Settings → Database → Connection Pooling → Transaction, porta 6543) — ' +
+      'mantenha DIRECT_URL apontando pra 5432, só as migrações usam essa.'
+  );
+}
+
+// prepare:false é OBRIGATÓRIO com o pooler de transação — em modo
+// transaction o pgbouncer pode rotear cada query pra uma conexão real
+// diferente por baixo, então um prepared statement de uma query anterior
+// não existe mais na conexão que atende a próxima; sem prepare:false isso
+// falha e cancela a query quase instantaneamente (foi o sintoma exato de
+// uma tentativa anterior de usar a porta 6543 sem esse ajuste).
 const queryClient = postgres(connectionString, {
   prepare: false,
-  max: 2,
-  idle_timeout: 10,
+  max: isTransactionPooler ? 10 : 2,
+  idle_timeout: 20,
   connect_timeout: 10,
 });
 

@@ -59,8 +59,7 @@ import { StatTile } from '@/components/ui/stat-tile';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const stats = await getPlatformStats();
-  const surveyData = await getSurveyAggregation();
+  const [stats, surveyData] = await Promise.all([getPlatformStats(), getSurveyAggregation()]);
 
   return (
     <>
