@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu } from 'lucide-react';
+import { ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { HeaderSearchModal } from '@/components/layout/header-search-modal';
@@ -31,16 +31,13 @@ interface NavItem {
  * remover nenhuma página.
  */
 const navLinks: NavItem[] = [
-  { href: '/', label: 'Home' },
-  { href: '/sobre', label: 'Quem Somos' },
-  { href: '/ofertas', label: 'Ofertas' },
   {
-    href: '/tabela-de-precos',
-    label: 'Comparar Preços',
+    href: '/ofertas',
+    label: 'Ofertas & Preços',
     children: [
+      { href: '/ofertas', label: 'Vitrine de Ofertas' },
       { href: '/tabela-de-precos', label: 'Tabela de Preços' },
-      { href: '/ranking', label: 'Ranking' },
-      { href: '/monitoramento', label: 'Monitoramento' },
+      { href: '/monitoramento', label: 'Bolsa Gamer (Monitoramento)' },
     ],
   },
   {
@@ -48,15 +45,15 @@ const navLinks: NavItem[] = [
     label: 'Hype Zone',
     highlight: true,
     children: [
-      { href: '/hype-zone', label: 'Hype Zone' },
-      { href: '/leiloes', label: 'Leilões' },
+      { href: '/hype-zone', label: 'Hype Zone & Drops' },
+      { href: '/leiloes', label: 'Leilões Geek' },
     ],
   },
   {
     href: '/inteligencia-gamer',
     label: 'Inteligência Gamer',
     children: [
-      { href: '/inteligencia-gamer?categoria=noticias', label: 'Notícias e Artigos' },
+      { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos e Ensaios' },
       { href: '/inteligencia-gamer?categoria=teoricas', label: 'Pesquisas Teóricas' },
       { href: '/inteligencia-gamer?categoria=empiricas', label: 'Pesquisas Empíricas' },
       { href: '/inteligencia-gamer?categoria=descritivas', label: 'Pesquisas Descritivas' },
@@ -65,21 +62,6 @@ const navLinks: NavItem[] = [
   {
     href: '/noticias',
     label: 'Notícias',
-    children: [
-      { href: '/noticias?categoria=filmes', label: 'Filmes' },
-      { href: '/noticias?categoria=series_tv', label: 'Séries e TV' },
-      { href: '/noticias?categoria=animes', label: 'Animes' },
-      { href: '/noticias?categoria=games', label: 'Games' },
-      { href: '/noticias?categoria=sinopse_jogo', label: 'Sinopse de Jogo' },
-      { href: '/noticias?categoria=korea', label: 'Korea' },
-      { href: '/noticias?categoria=criticas', label: 'Críticas' },
-      { href: '/noticias?categoria=listas', label: 'Listas' },
-      { href: '/noticias?categoria=ccxp', label: 'CCXP' },
-      { href: '/noticias?categoria=cultura_pop', label: 'Cultura Pop' },
-      { href: '/noticias?categoria=lancamentos', label: 'Lançamentos' },
-      { href: '/noticias?categoria=tecnologia', label: 'Tecnologia' },
-      { href: '/noticias?categoria=colunistas', label: 'Colunistas' },
-    ],
   },
 ];
 
@@ -212,6 +194,11 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
         {/* Right actions */}
         <div className="flex items-center gap-1">
           <HeaderSearchModal />
+          <Button variant="ghost" size="icon" aria-label="Ranking de Vendedores" className="hidden sm:inline-flex" asChild>
+            <Link href="/ranking">
+              <Trophy className="size-5 text-[var(--color-accent-gold)]" />
+            </Link>
+          </Button>
           <Button variant="ghost" size="icon" aria-label="Jogos acompanhados" className="hidden sm:inline-flex" asChild>
             <Link href="/conta?aba=jogos">
               <Heart className="size-5" />

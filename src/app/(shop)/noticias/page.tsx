@@ -197,7 +197,7 @@ export default async function NoticiasPage({
         </div>
       </div>
 
-      <div className="mb-8 flex flex-wrap gap-2">
+      <div className="mb-8 flex flex-wrap gap-2 lg:hidden">
         <Link
           href="/noticias"
           className={cn(
@@ -225,11 +225,47 @@ export default async function NoticiasPage({
         ))}
       </div>
 
-      {/* Grid Duas Colunas: Matérias vs Coluna Editorial */}
+      {/* Grid Três Colunas: Menu Lateral vs Matérias vs Coluna Editorial */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Lado Esquerdo: Grid de Artigos */}
-        <div className="lg:col-span-8">
+        {/* Lado Esquerdo (Desktop): Menu Lateral de Categorias */}
+        <div className="hidden lg:flex lg:col-span-3 flex-col gap-4">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/15 p-4 shadow-[var(--shadow-sm)]">
+            <Text variant="heading-sm" className="mb-3 border-b border-[var(--color-border-subtle)] pb-2 uppercase tracking-wider text-[11px] font-bold text-[var(--color-text-secondary)]">
+              Filtrar por Área
+            </Text>
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/noticias"
+                className={cn(
+                  'flex items-center justify-between px-3 py-2 rounded text-xs font-semibold transition-all hover:bg-[var(--color-bg-surface)]',
+                  !category
+                    ? 'bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] font-bold border-l-2 border-[var(--color-accent-primary)] pl-2.5'
+                    : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                )}
+              >
+                <span>Todas as Áreas</span>
+              </Link>
+              {CATEGORY_OPTIONS.map(([value, label]) => (
+                <Link
+                  key={value}
+                  href={`/noticias?categoria=${value}`}
+                  className={cn(
+                    'flex items-center justify-between px-3 py-2 rounded text-xs font-semibold transition-all hover:bg-[var(--color-bg-surface)]',
+                    category === value
+                      ? 'bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] font-bold border-l-2 border-[var(--color-accent-primary)] pl-2.5'
+                      : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                  )}
+                >
+                  <span>{label}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Centro: Grid de Artigos */}
+        <div className="lg:col-span-6">
           {items.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
@@ -248,7 +284,7 @@ export default async function NoticiasPage({
         </div>
 
         {/* Lado Direito: Colunistas & Coluna Editorial */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
+        <div className="lg:col-span-3 flex flex-col gap-6">
           <Card className="border-[var(--color-border-default)] bg-[var(--color-bg-inset)]/20">
             <CardContent className="p-5 flex flex-col gap-4">
               

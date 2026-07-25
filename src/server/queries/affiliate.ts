@@ -903,8 +903,7 @@ export async function getFeaturedOffers(
       SELECT so.master_product_id, AVG(s.price_cents) AS raw_avg
       FROM affiliate_price_snapshots s
       INNER JOIN affiliate_offers so ON so.id = s.offer_id
-      WHERE so.master_product_id IN (SELECT master_product_id FROM candidates)
-        AND so.status = 'active'
+      WHERE s.offer_id IN (SELECT offer_id FROM candidates)
         AND s.collected_at >= now() - interval '30 days'
       GROUP BY so.master_product_id
     ),
@@ -918,7 +917,7 @@ export async function getFeaturedOffers(
       FROM affiliate_price_snapshots s
       INNER JOIN affiliate_offers so ON so.id = s.offer_id
       LEFT JOIN raw_history_avg rha ON rha.master_product_id = so.master_product_id
-      WHERE so.master_product_id IN (SELECT master_product_id FROM candidates) AND so.status = 'active'
+      WHERE s.offer_id IN (SELECT offer_id FROM candidates)
       GROUP BY so.master_product_id
     )
     SELECT c.offer_id

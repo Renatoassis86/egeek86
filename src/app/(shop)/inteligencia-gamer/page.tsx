@@ -14,7 +14,7 @@ interface IntelItem {
   id: string;
   title: string;
   excerpt: string;
-  category: 'noticias' | 'artigos' | 'teoricas' | 'empiricas' | 'descritivas';
+  category: 'artigos' | 'teoricas' | 'empiricas' | 'descritivas';
   categoryLabel: string;
   author: string;
   date: string;
@@ -64,9 +64,9 @@ const INTEL_ITEMS: IntelItem[] = [
   {
     id: '4',
     title: 'Fusões no Setor de Games: O que Muda no Acesso a Títulos Exclusivos?',
-    excerpt: 'Acompanhe as últimas notícias do mercado corporativo internacional e o impacto das aquisições na assinatura de catálogos digitais.',
-    category: 'noticias',
-    categoryLabel: 'Notícias',
+    excerpt: 'Análise aprofundada sobre as aquisições corporativas internacionais e seu impacto na distribuição de jogos digitais.',
+    category: 'artigos',
+    categoryLabel: 'Artigos',
     author: 'Felipe Santos',
     date: '25 Jul 2026',
     readTime: '4 min',
@@ -113,7 +113,6 @@ export default function InteligenciaGamerPage() {
 
   const categories = useMemo(() => [
     { value: 'todos', label: 'Tudo', icon: Layers },
-    { value: 'noticias', label: 'Notícias', icon: Newspaper },
     { value: 'artigos', label: 'Artigos', icon: BookOpen },
     { value: 'teoricas', label: 'P. Teóricas', icon: FileText },
     { value: 'empiricas', label: 'P. Empíricas', icon: TrendingUp },
@@ -155,7 +154,7 @@ export default function InteligenciaGamerPage() {
             Inteligência Gamer
           </h1>
           <p className="text-body-md text-[var(--color-text-secondary)] max-w-3xl">
-            O hub central de análise, pesquisa e notícias do Espaço Geek 86. Dados teóricos, descritivos e empíricos aplicados ao mercado e cultura dos jogos.
+            O hub central de análise acadêmica e pesquisas do Espaço Geek 86. Dados teóricos, descritivos e empíricos aplicados ao mercado e cultura dos jogos.
           </p>
         </div>
 
@@ -271,8 +270,8 @@ export default function InteligenciaGamerPage() {
           {/* Coluna da Esquerda: Lista Geral de Notícias e Estudos */}
           <div className="flex flex-col gap-6">
             <h2 className="text-xl font-bold tracking-tight text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2 mb-2 flex items-center gap-2">
-              <Newspaper className="size-5 text-[var(--color-accent-primary)]" />
-              Notícias Gerais e Pesquisas do Dia
+              <BookOpen className="size-5 text-[var(--color-accent-primary)]" />
+              Artigos de Inteligência e Pesquisas
             </h2>
 
             {filteredItems.length === 0 ? (
@@ -330,9 +329,9 @@ export default function InteligenciaGamerPage() {
                 </Text>
                 <div className="flex flex-col gap-2.5">
                   <div className="flex flex-col">
-                    <span className="text-[11px] font-bold text-[var(--color-text-secondary)]">Notícias e Artigos</span>
+                    <span className="text-[11px] font-bold text-[var(--color-text-secondary)]">Artigos e Ensaios</span>
                     <span className="text-xs text-[var(--color-text-tertiary)] mt-0.5 leading-relaxed">
-                      Acontecimentos diários, análises corporativas e colunas opinativas sobre a cultura gamer.
+                      Ensaios críticos, análises corporativas aprofundadas e colunas opinativas sobre a cultura gamer.
                     </span>
                   </div>
                   <hr className="border-[var(--color-border-subtle)]" />

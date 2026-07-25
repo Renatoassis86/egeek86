@@ -87,7 +87,7 @@ export function OfferCard({
             return (
               <span
                 className={cn(
-                  "absolute left-2 top-2 z-10 inline-flex items-center rounded-[var(--radius-sm)] px-2 py-1 text-[12px] font-black leading-none text-white shadow-[var(--shadow-md)]",
+                  "absolute left-3.5 top-3.5 z-10 inline-flex items-center rounded-[var(--radius-sm)] px-2 py-1 text-[12px] font-black leading-none text-white shadow-[var(--shadow-md)]",
                   isPositive ? "bg-red-600" : "bg-emerald-600"
                 )}
                 title={isPositive ? "Preço acima da média (Variação Positiva)" : "Preço abaixo da média (Desconto)"}
@@ -100,7 +100,7 @@ export function OfferCard({
           <Badge
             variant="outline"
             size="sm"
-            className="absolute right-2 top-2 z-10 max-w-[55%] truncate bg-[var(--color-bg-canvas)]/80 backdrop-blur-sm"
+            className="absolute right-3.5 bottom-3.5 z-10 max-w-[70%] truncate bg-[var(--color-bg-canvas)]/90 backdrop-blur-sm shadow-[var(--shadow-sm)]"
             style={offer.network.colorHex ? { borderColor: offer.network.colorHex } : undefined}
           >
             {offer.network.name}
@@ -109,14 +109,14 @@ export function OfferCard({
         </div>
 
         <CardContent className={cn('flex flex-1 flex-col gap-2', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-4')}>
-          <div className="flex items-center justify-between gap-2 w-full min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 w-full min-w-0">
             {specLine && (
-              <Text variant="caption" color="tertiary" className="flex-1 min-w-0 truncate uppercase tracking-[0.04em]">
+              <Text variant="caption" color="tertiary" className="truncate uppercase tracking-[0.04em] flex-1">
                 {specLine}
               </Text>
             )}
             {metrics?.isLowestEver && (
-              <Badge variant="hype" size="sm" className="flex-shrink-0 shrink-0 whitespace-nowrap">
+              <Badge variant="hype" size="sm" className="flex-shrink-0 shrink-0 whitespace-nowrap w-fit">
                 <Flame className="size-3" />
                 Menor já visto
               </Badge>

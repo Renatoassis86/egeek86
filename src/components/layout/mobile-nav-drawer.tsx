@@ -42,7 +42,7 @@ const topModules = [
 const comparePriceModules = [
   { href: '/tabela-de-precos', label: 'Tabela de Preços', icon: BarChart3 },
   { href: '/ranking', label: 'Ranking de Vendedores', icon: Trophy },
-  { href: '/monitoramento', label: 'Monitoramento de Preços', icon: BarChart3 },
+  { href: '/monitoramento', label: 'Bolsa Gamer (Monitoramento)', icon: BarChart3 },
 ];
 
 const hypeZoneModules = [
