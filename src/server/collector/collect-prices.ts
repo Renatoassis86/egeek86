@@ -265,9 +265,10 @@ async function applySnapshotsToGroup(
         .limit(1);
       const slug = collision ? slugify(`${baseSlug}-${randomUUID().slice(0, 6)}`) : baseSlug;
 
+      const realToolId = process.env.MELI_TOOL_ID;
       // Se for Mercado Livre, gera link direto pro anúncio específico do vendedor
       const initialUrl = (group.networkSlug === 'mercado-livre' && result.externalItemId)
-        ? `https://produto.mercadolivre.com.br/${result.externalItemId}`
+        ? (realToolId ? `https://produto.mercadolivre.com.br/${result.externalItemId}?matt_tool_id=${realToolId}` : `https://produto.mercadolivre.com.br/${result.externalItemId}`)
         : `https://www.mercadolivre.com.br/p/${group.externalRef}`;
 
       const [createdRow] = await db
@@ -278,9 +279,8 @@ async function applySnapshotsToGroup(
           title: masterProduct.name,
           slug,
           affiliateUrl: initialUrl,
-          // Aparece publicado, mas o CTA de compra fica desabilitado (ver
-          // /go/[slug]/route.ts) até o admin colar o link de afiliado real.
-          affiliateLinkPending: true,
+          // Se tivermos o ID de afiliado configurado, a oferta já entra ativa e clicável pro público
+          affiliateLinkPending: !realToolId,
           imageUrl: masterProduct.defaultImages[0] ?? null,
           externalRef: group.externalRef,
           sellerId,
@@ -308,7 +308,13 @@ async function applySnapshotsToGroup(
       const updateData: Partial<typeof affiliateOffers.$inferInsert> = { sellerId };
       // Se o link de afiliado ainda está pendente, atualiza o placeholder com a URL do anúncio específico
       if (existingOffer.affiliateLinkPending && result.externalItemId && group.networkSlug === 'mercado-livre') {
-        updateData.affiliateUrl = `https://produto.mercadolivre.com.br/${result.externalItemId}`;
+        const realToolId = process.env.MELI_TOOL_ID;
+        updateData.affiliateUrl = realToolId
+          ? `https://produto.mercadolivre.com.br/${result.externalItemId}?matt_tool_id=${realToolId}`
+          : `https://produto.mercadolivre.com.br/${result.externalItemId}`;
+        if (realToolId) {
+          updateData.affiliateLinkPending = false; // Ativa automaticamente o link!
+        }
       }
       await db.update(affiliateOffers).set(updateData).where(eq(affiliateOffers.id, offerId));
     }
