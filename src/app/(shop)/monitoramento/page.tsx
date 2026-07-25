@@ -8,7 +8,7 @@ import { getMasterProductPriceHistory, getMasterProductChangePercent } from '@/s
 import { getPublicOffers } from '@/server/queries/affiliate';
 import { MonitoringBoard } from '@/components/monitoring/monitoring-board';
 
-export const metadata = { title: 'Monitoramento de Preços | Espaço Geek 86' };
+export const metadata = { title: 'Bolsa Gamer | Espaço Geek 86' };
 export const dynamic = 'force-dynamic';
 
 const DEMO_FALLBACK_WATCHLIST = [
@@ -177,10 +177,10 @@ export default async function MonitoramentoPage({
               </span>
             </div>
             <Text as="h1" variant="heading-lg" className="text-2xl md:text-3xl font-black">
-              Monitoramento de Preço em Tempo Real
+              Bolsa Gamer: Monitoramento em Tempo Real
             </Text>
             <Text variant="body-sm" color="secondary" className="text-xs md:text-sm leading-relaxed">
-              Você está visualizando o painel em modo de demonstração. Como visitante, você pode explorar o gráfico e acompanhar <strong>1 item por vez</strong>. Faça seu cadastro gratuito para liberar o monitoramento ilimitado e receber alertas por e-mail e Telegram!
+              Você está visualizando o painel em modo de demonstração. Como visitante, você pode explorar os gráficos da Bolsa Gamer e acompanhar <strong>1 item por vez</strong>. Faça seu cadastro gratuito para liberar o monitoramento ilimitado e receber alertas por e-mail e Telegram!
             </Text>
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Button asChild size="sm" variant="primary" className="font-bold">
@@ -197,11 +197,10 @@ export default async function MonitoramentoPage({
       {profile && (
         <div className="mb-8">
           <Text as="h1" variant="heading-xl">
-            Monitoramento de preço
+            Bolsa Gamer
           </Text>
           <Text variant="body-md" color="secondary" className="mt-1">
-            Acompanhe o menor preço entre todos os vendedores dos jogos que você monitora, do dia a dia até o
-            histórico completo.
+            Acompanhe o menor preço e a flutuação diária dos jogos que você monitora, como em uma verdadeira Bolsa de Valores.
           </Text>
         </div>
       )}
