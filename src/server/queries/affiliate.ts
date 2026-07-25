@@ -682,6 +682,7 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
       SELECT so.master_product_id, MIN(s.price_cents)::bigint AS lowest_price_cents
       FROM affiliate_price_snapshots s
       INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
+      WHERE s.offer_id IN (SELECT offer_id FROM sibling_offers)
       GROUP BY so.master_product_id
     ),
     -- degrau intermediário pra achar outliers — ver getOfferMetrics acima.
@@ -690,6 +691,7 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
       FROM affiliate_price_snapshots s
       INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
       WHERE s.collected_at >= now() - interval '30 days'
+        AND s.offer_id IN (SELECT offer_id FROM sibling_offers)
       GROUP BY so.master_product_id
     ),
     avg30d_by_product AS (
@@ -699,6 +701,7 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
       INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
       INNER JOIN raw_avg30d_by_product ra ON ra.master_product_id = so.master_product_id
       WHERE s.collected_at >= now() - interval '30 days'
+        AND s.offer_id IN (SELECT offer_id FROM sibling_offers)
       GROUP BY so.master_product_id
     )
     SELECT
