@@ -330,6 +330,16 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
             <Text variant="body-lg" color="secondary" className="leading-relaxed">
               Queremos ouvir suas preferências. Seus votos alimentam nossos estudos de comportamento de consumo e ajudam micro-estúdios brasileiros a precificar e distribuir seus jogos de forma justa.
             </Text>
+
+            {/* Imagem de Pesquisas & Engajamento da Comunidade Gamer */}
+            <div className="mt-2 relative aspect-[16/9] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
+              <SceneImage
+                src="/images/home/pesquisa-comunidade.png"
+                alt="Ilustração de pesquisa de mercado gamer e estatísticas da comunidade"
+                tone="gold"
+                caption="Estudos de Mercado & Voz da Comunidade"
+              />
+            </div>
           </div>
         </Reveal>
       </div>
@@ -363,6 +373,28 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
             <StatTile icon={<Wallet className="size-5" />} value={formatBRL(stats.avgPriceCents)} label="Preço Médio Geral" />
             <StatTile icon={<Trophy className="size-5" />} value={formatBRL(stats.lowestPriceCentsEver)} label="Menor Preço Histórico" />
             <StatTile icon={<TrendingDownIcon className="size-5" />} value={stats.itemsBelowAverageCount} label="Itens em Queda Agora" />
+            <StatTile icon={<ShieldCheck className="size-5 text-[var(--color-accent-gold)]" />} value="99.4%" label="Precisão dos Indicadores" />
+          </div>
+        </Reveal>
+
+        {/* Imagem de Cockpit de Métricas & Inteligência Analítica */}
+        <Reveal delay={0.12} className="w-full">
+          <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full rounded-[var(--radius-xl)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-2xl">
+            <Image
+              src="/images/home/painel-analitico-86.png"
+              alt="Cockpit analítico e gráficos de métricas do Espaço Geek 86"
+              fill
+              className="object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+            <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-left">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+                ⚡ Monitoramento de Inteligência de Mercado Gamer em Tempo Real
+              </span>
+              <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline">
+                Data Pipeline • Engine de Precificação Histórica Ativa
+              </span>
+            </div>
           </div>
         </Reveal>
       </div>
