@@ -2,6 +2,7 @@ import 'server-only';
 import { and, count, desc, asc, eq, gt, gte, inArray, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
+import { createCachedQuery } from '@/lib/cache/server-cache';
 import {
   affiliateOffers,
   affiliateNetworks,
@@ -384,7 +385,7 @@ export interface PlatformStats {
  * número redondo estimado, sempre COUNT direto do banco no momento do
  * carregamento da página.
  */
-export async function getPlatformStats(): Promise<PlatformStats> {
+async function getPlatformStatsUncached(): Promise<PlatformStats> {
   const [products, sellers, networks, quotes, avgPrice, lowestEver, belowAverage] = await Promise.all([
     db.execute<{ count: string }>(sql`
       SELECT COUNT(DISTINCT master_product_id)::bigint AS count
@@ -452,6 +453,12 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     itemsBelowAverageCount: Number(belowAverage[0]?.count ?? 0),
   };
 }
+
+export const getPlatformStats = createCachedQuery(
+  getPlatformStatsUncached,
+  ['platform-stats'],
+  { revalidate: 120 }
+);
 
 export async function listNetworks(): Promise<AffiliateNetwork[]> {
   return db.select().from(affiliateNetworks).orderBy(affiliateNetworks.name);
