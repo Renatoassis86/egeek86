@@ -857,62 +857,76 @@ function InteligenciaGamerTeaserSection() {
             </Reveal>
           </div>
 
-          {/* Lado Direito: Grid de Categorias/Artigos */}
-          <div className="lg:col-span-6 grid gap-4 sm:grid-cols-2">
-            <Reveal delay={0.06}>
-              <Card className="h-full">
-                <CardContent className="p-5 flex flex-col gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
-                    <TrendingUp className="size-4" />
-                  </div>
-                  <Text variant="heading-sm" className="font-bold">Pesquisas Empíricas</Text>
-                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                    Modelagem econométrica, regressão estatística e oscilação histórica de preços reais de mercado.
-                  </Text>
-                </CardContent>
-              </Card>
-            </Reveal>
+          {/* Lado Direito: Grid de Categorias/Artigos + Imagem Estratégica */}
+          <div className="lg:col-span-6 flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Reveal delay={0.06}>
+                <Card className="h-full">
+                  <CardContent className="p-5 flex flex-col gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500">
+                      <TrendingUp className="size-4" />
+                    </div>
+                    <Text variant="heading-sm" className="font-bold">Pesquisas Empíricas</Text>
+                    <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                      Modelagem econométrica, regressão estatística e oscilação histórica de preços reais de mercado.
+                    </Text>
+                  </CardContent>
+                </Card>
+              </Reveal>
 
-            <Reveal delay={0.12}>
-              <Card className="h-full">
-                <CardContent className="p-5 flex flex-col gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
-                    <FileText className="size-4" />
-                  </div>
-                  <Text variant="heading-sm" className="font-bold">Pesquisas Teóricas</Text>
-                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                    Ensaios conceituais abordando gamificação, comportamento social e história das gerações de consoles.
-                  </Text>
-                </CardContent>
-              </Card>
-            </Reveal>
+              <Reveal delay={0.12}>
+                <Card className="h-full">
+                  <CardContent className="p-5 flex flex-col gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
+                      <FileText className="size-4" />
+                    </div>
+                    <Text variant="heading-sm" className="font-bold">Pesquisas Teóricas</Text>
+                    <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                      Ensaios conceituais abordando gamificação, comportamento social e história das gerações de consoles.
+                    </Text>
+                  </CardContent>
+                </Card>
+              </Reveal>
 
-            <Reveal delay={0.18}>
-              <Card className="h-full">
-                <CardContent className="p-5 flex flex-col gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
-                    <Layers className="size-4" />
-                  </div>
-                  <Text variant="heading-sm" className="font-bold">Pesquisas Descritivas</Text>
-                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                    Relatórios populacionais e segmentações demográficas sobre o público gamer regional e nacional.
-                  </Text>
-                </CardContent>
-              </Card>
-            </Reveal>
+              <Reveal delay={0.18}>
+                <Card className="h-full">
+                  <CardContent className="p-5 flex flex-col gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
+                      <Layers className="size-4" />
+                    </div>
+                    <Text variant="heading-sm" className="font-bold">Pesquisas Descritivas</Text>
+                    <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                      Relatórios populacionais e segmentações demográficas sobre o público gamer regional e nacional.
+                    </Text>
+                  </CardContent>
+                </Card>
+              </Reveal>
 
-            <Reveal delay={0.24}>
-              <Card className="h-full">
-                <CardContent className="p-5 flex flex-col gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-purple-500/10 text-purple-500">
-                    <Newspaper className="size-4" />
-                  </div>
-                  <Text variant="heading-sm" className="font-bold">Notícias e Artigos</Text>
-                  <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                    As principais novidades corporativas da indústria global de jogos e colunas semanais dos idealizadores.
-                  </Text>
-                </CardContent>
-              </Card>
+              <Reveal delay={0.24}>
+                <Card className="h-full">
+                  <CardContent className="p-5 flex flex-col gap-3">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-purple-500/10 text-purple-500">
+                      <Newspaper className="size-4" />
+                    </div>
+                    <Text variant="heading-sm" className="font-bold">Notícias e Artigos</Text>
+                    <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
+                      As principais novidades corporativas da indústria global de jogos e colunas semanais dos idealizadores.
+                    </Text>
+                  </CardContent>
+                </Card>
+              </Reveal>
+            </div>
+
+            {/* Imagem Ilustrativa Estratégica do Observatório Gamer */}
+            <Reveal delay={0.28}>
+              <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-xl">
+                <Image
+                  src="/images/home/observatorio-cards-bg.png"
+                  alt="Pesquisa Acadêmica e Análise de Mercado Gamer"
+                  fill
+                  className="object-cover object-center"
+                />
+              </div>
             </Reveal>
           </div>
         </div>
@@ -1052,6 +1066,24 @@ function Benefits() {
           </Reveal>
         ))}
       </div>
+
+      {/* Imagem Estratégica de Curadoria & Autenticidade */}
+      <Reveal delay={0.2} className="mt-8">
+        <div className="relative aspect-[21/7] sm:aspect-[24/7] w-full rounded-[var(--radius-xl)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-2xl">
+          <Image
+            src="/images/home/por-que-geek86.png"
+            alt="Curadoria de Verdade e Cofre de Autenticidade Espaço Geek 86"
+            fill
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+          <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-left">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
+              🛡️ Curadoria de Especialistas & Selo de Autenticidade Verificado
+            </span>
+          </div>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -1064,25 +1096,35 @@ function NewsletterCTA() {
         <Glow color="hype" size="lg" intensity={0.35} className="-bottom-32 -left-24" />
 
         <div className="relative grid items-center gap-8 p-8 lg:grid-cols-12 lg:gap-12 lg:p-14">
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-7 flex flex-col justify-center">
             <Reveal>
-              <Badge variant="outline" size="md" className="mb-5">
-                Comunidade
+              <Badge variant="outline" size="md" className="mb-5 border-amber-500/40 text-amber-400">
+                Comunidade & Clube VIP
               </Badge>
               <Text as="h2" variant="display-lg" className="max-w-[18ch]">
                 Receba drops antes de todo mundo.
               </Text>
               <Text variant="body-lg" color="secondary" className="mt-4 max-w-[48ch]">
-                Entre na newsletter e ganhe 50 Geek Points no seu primeiro cadastro.
+                Entre na newsletter e ganhe 50 Geek Points no seu primeiro cadastro para trocar por descontos exclusivos.
               </Text>
+              <div className="mt-8">
+                <Button asChild size="xl" rightIcon={<ArrowRight className="size-4" />}>
+                  <Link href="/cadastro">Quero entrar no Clube VIP</Link>
+                </Button>
+              </div>
             </Reveal>
           </div>
 
-          <div className="flex lg:col-span-4 lg:justify-end">
+          <div className="lg:col-span-5">
             <Reveal delay={0.1}>
-              <Button asChild size="xl" rightIcon={<ArrowRight className="size-4" />}>
-                <Link href="/cadastro">Quero entrar</Link>
-              </Button>
+              <div className="relative aspect-[4/3] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-2xl">
+                <Image
+                  src="/images/home/newsletter-vip-club.png"
+                  alt="Passe VIP da Comunidade e Geek Points"
+                  fill
+                  className="object-cover object-center"
+                />
+              </div>
             </Reveal>
           </div>
         </div>
