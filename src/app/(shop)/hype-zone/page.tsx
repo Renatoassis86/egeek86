@@ -114,7 +114,7 @@ export default async function HypeZonePage() {
           </Reveal>
 
           <Reveal delay={0.05}>
-            <Text as="h1" variant="display-md" className="max-w-2xl text-[32px] md:text-[48px] tracking-tight font-black leading-none">
+            <Text as="h1" variant="display-md" className="max-w-full sm:max-w-2xl text-[24px] sm:text-[32px] md:text-[48px] tracking-tight font-black leading-tight break-words">
               Drops de Colecionador
             </Text>
           </Reveal>

@@ -113,7 +113,7 @@ export function WatchlistPanel({
   }
 
   return (
-    <div className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] overflow-hidden">
+    <div className="rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] overflow-hidden w-full min-w-0 max-w-full">
       <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] px-3 py-2">
         <Text variant="caption" color="tertiary" className="font-medium">
           Sua lista

@@ -96,7 +96,7 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-center">
+    <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-center w-full max-w-full overflow-hidden">
       <Input
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}

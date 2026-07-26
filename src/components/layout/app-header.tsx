@@ -143,14 +143,14 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 w-full',
+        'sticky top-0 z-30 w-full max-w-[100vw] overflow-x-hidden',
         'h-[var(--header-mobile)] lg:h-[var(--header-desktop)]',
         'bg-[var(--color-bg-canvas)]/80 backdrop-blur-xl backdrop-saturate-150',
         'border-b border-[var(--color-border-subtle)]',
         'pt-safe'
       )}
     >
-        <div className="mx-auto h-full max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4">
+        <div className="mx-auto h-full max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-2">
             {/* Botão de Menu Hambúrguer (Três traços no mobile) */}
             <Button

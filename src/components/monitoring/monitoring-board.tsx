@@ -81,7 +81,7 @@ export function MonitoringBoard({
   const active = selectedItem;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[320px_1fr] w-full min-w-0 max-w-full overflow-hidden">
       <WatchlistPanel
         initialItems={watchlistItems}
         selectedMasterProductId={selectedId}
@@ -91,7 +91,7 @@ export function MonitoringBoard({
       />
 
       {active ? (
-        <Card>
+        <Card className="min-w-0 max-w-full overflow-hidden">
           <CardContent className="p-5">
             <div className="mb-4 flex items-baseline justify-between gap-4">
               <div>

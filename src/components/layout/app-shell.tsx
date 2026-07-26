@@ -31,7 +31,7 @@ export function AppShell({
   cartCount,
 }: AppShellProps) {
   return (
-    <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)]">
+    <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)] w-full max-w-[100vw] overflow-x-hidden">
       {!hideHeader && (
         <>
           <TopUtilityBar />
@@ -46,7 +46,7 @@ export function AppShell({
           usando mx-auto max-w-7xl. Bug real, achado via inspeção de layout
           computado, não só visual. */}
       <main
-        className="flex-1 flex flex-col items-stretch"
+        className="flex-1 flex flex-col items-stretch w-full max-w-[100vw] overflow-x-hidden"
         style={{
           paddingBottom: hideBottomBar
             ? 'env(safe-area-inset-bottom)'
