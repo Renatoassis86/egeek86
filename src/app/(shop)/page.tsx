@@ -293,10 +293,10 @@ function MarketNumbersSection() {
         </Reveal>
         <Reveal delay={0.08}>
           <SceneImage
-            src="/images/home/mercado-gamer-numeros.png"
+            src="/images/home/observatorio-gamer-hero.png"
             alt="Ilustração representando o crescimento do mercado gamer"
             tone="gold"
-            caption="Mercado Gamer em Números · em produção"
+            caption="Mercado Gamer em Números"
             className="aspect-[4/3] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]"
           />
         </Reveal>

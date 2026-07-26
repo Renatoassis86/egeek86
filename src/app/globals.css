@@ -52,6 +52,12 @@
   --color-accent-hype: #E8721C;
   --color-accent-hype-hover: #C75F13;
   --color-accent-hype-muted: rgb(232 114 28 / 0.14);
+  --color-accent-violet: #A855F7;
+  --color-accent-violet-hover: #9333EA;
+  --color-accent-violet-muted: rgb(168 85 247 / 0.15);
+  --color-accent-orange: #F97316;
+  --color-accent-orange-hover: #EA580C;
+  --color-accent-orange-muted: rgb(249 115 22 / 0.15);
   --color-accent-success: #10B981;
   --color-accent-danger: #EF4444;
   --color-accent-info: #3B82F6;
