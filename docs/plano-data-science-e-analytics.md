@@ -99,3 +99,29 @@ graph TD
 1. **Acesso Exclusivo**: O painel **NEXUS Data Science Lab** (`/admin/data-science`) é acessível **exclusivamente por Administradores autenticados** (`profile.role === 'admin'`).
 2. **Proteção por Middleware e Guardas de Rota**: A rota é protegida por `requireAdmin()`.
 3. **Isolamento de Carga (Read Replicas)**: Queries de Big Data e agregação temporal utilizam CTEs otimizadas ou réplicas de leitura para não afetar o desempenho da loja de varejo.
+
+---
+
+## 6. Histórico Completo de Validações & Tratamento de Dados (Desde o Início da Plataforma)
+
+1. **Filtro Matemático de Outliers (Anti-Ruído)**:
+   - Identifica cotações anômalas ou erros de digitação em marketplaces parceiros descartando valores $> 2 \times \text{média bruta}$.
+   - Equação SQL: `AVG(s.price_cents) FILTER (WHERE s.price_cents <= raw_hist_avg.raw_avg * 2)`.
+
+2. **Cálculo da Média Limpa (`cleanAveragePriceCents`)**:
+   - Média móvel histórica expurgada de outliers por `master_product_id`.
+
+3. **Indicador de Oportunidade Real (`discountPercent`)**:
+   - `discountPercent = ((cleanAveragePriceCents - currentPriceCents) / cleanAveragePriceCents) * 100`.
+   - Sinalização automática do distintivo `🔥 X% Abaixo da Média` quando o desconto excede a margem de erro estatístico.
+
+4. **Sinalização do Menor Histórico Já Visto (`lowestPriceCentsEver`)**:
+   - Comparação contínua da menor cotação ativa com todo o histórico armazenado em `affiliate_price_snapshots`.
+   - Exibição da badge `🔥 Menor Preço Já Visto` na vitrine e na Bolsa Gamer.
+
+5. **Tratamento de Performance e Cache Servidor (`unstable_cache`)**:
+   - Revalidação agendada a cada 120s para garantir respostas instantâneas (< 2ms) ao cliente sem sobrecarregar o banco relacional.
+
+6. **Higienização de Enums e Relacionamentos**:
+   - Normalização de categorias de produtos (`physical`, `digital`), mídias e gerações de plataformas (`switch_1`, `switch_2`, `ps5`, `xbox_series`).
+
