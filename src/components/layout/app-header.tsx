@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import * as React from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
@@ -66,6 +67,19 @@ const navLinks: NavItem[] = [
 ];
 
 function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (!item.children) {
     return (
       <Link
@@ -86,21 +100,27 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   }
 
   return (
-    <div className="relative group/nav">
-      <Link
-        href={item.href}
-        aria-current={isActive ? 'page' : undefined}
+    <div
+      ref={dropdownRef}
+      className="relative group/nav"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
         className={cn(
-          'px-3 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all',
+          'px-3 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all cursor-pointer',
           'text-body-sm font-medium text-[var(--color-text-secondary)]',
           'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
           item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]',
-          isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
+          (isActive || isOpen) && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
         )}
       >
-        {item.label}
+        <span>{item.label}</span>
         <svg
-          className="size-3.5 opacity-60 transition-transform duration-200 group-hover/nav:rotate-180"
+          className={cn('size-3.5 opacity-60 transition-transform duration-200', isOpen && 'rotate-180')}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -108,30 +128,33 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         >
           <path d="m6 9 6 6 6-6" />
         </svg>
-      </Link>
+      </button>
 
-      <div className="absolute left-1/2 -translate-x-1/2 top-full pt-1.5 w-56 opacity-0 pointer-events-none group-hover/nav:opacity-100 group-hover/nav:pointer-events-auto transition-all duration-200 z-50">
-        <div className="flex flex-col p-1.5 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-lg)]">
-          {item.children.map((child) => (
-            <Link
-              key={child.href}
-              href={child.href}
-              className="flex items-center justify-between px-3 py-1.5 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
-            >
-              <span>{child.label}</span>
-              <svg
-                className="size-3 opacity-0 group-hover/item:opacity-60 transition-opacity text-[var(--color-accent-primary)]"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
+      {isOpen && (
+        <div className="absolute left-0 top-full pt-1.5 w-60 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
+          <div className="flex flex-col p-1.5 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-xl">
+            {item.children.map((child) => (
+              <Link
+                key={child.href}
+                href={child.href}
+                onClick={() => setIsOpen(false)}
+                className="flex items-center justify-between px-3.5 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
               >
-                <path d="m9 18 6-6-6-6" />
-              </svg>
-            </Link>
-          ))}
+                <span>{child.label}</span>
+                <svg
+                  className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[var(--color-accent-primary)]"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -143,14 +166,13 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
   return (
     <header
       className={cn(
-        'sticky top-0 z-30 w-full max-w-[100vw] overflow-x-hidden',
-        'h-[var(--header-mobile)] lg:h-[var(--header-desktop)]',
+        'sticky top-0 z-30 w-full',
         'bg-[var(--color-bg-canvas)]/80 backdrop-blur-xl backdrop-saturate-150',
         'border-b border-[var(--color-border-subtle)]',
         'pt-safe'
       )}
     >
-        <div className="mx-auto h-full max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4 w-full">
+        <div className="mx-auto h-[var(--header-mobile)] lg:h-[var(--header-desktop)] max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4 w-full">
           <div className="flex items-center gap-2">
             {/* Botão de Menu Hambúrguer (Três traços no mobile) */}
             <Button
