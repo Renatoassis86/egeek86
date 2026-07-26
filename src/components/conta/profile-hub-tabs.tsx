@@ -408,17 +408,17 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
       {/* 4. MEUS LEILÕES & LANCES */}
       {activeTab === 'leiloes' && (
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 w-full max-w-full overflow-hidden">
             <div>
-              <Text variant="heading-lg" className="font-bold">Meus Leilões & Lances (Geek Hammer)</Text>
+              <Text variant="heading-lg" className="font-bold text-lg sm:text-xl">Meus Leilões & Lances (Geek Hammer)</Text>
               <Text variant="body-sm" color="secondary" className="text-xs">Acompanhe lotes que você cadastrou ou disputas que está participando.</Text>
             </div>
             {isSellerActive ? (
-              <Button asChild variant="primary" size="sm" rightIcon={<Plus className="size-4" />}>
-                <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote de Leilão</Link>
+              <Button asChild variant="primary" size="sm" className="w-full sm:w-auto font-bold text-xs" rightIcon={<Plus className="size-4" />}>
+                <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote</Link>
               </Button>
             ) : (
-              <Button asChild variant="primary" size="sm" rightIcon={<ArrowRight className="size-4" />}>
+              <Button asChild variant="primary" size="sm" className="w-full sm:w-auto font-bold text-xs" rightIcon={<ArrowRight className="size-4" />}>
                 <Link href="/entrar?role=colecionador">Solicitar Cadastro de Leiloeiro</Link>
               </Button>
             )}
