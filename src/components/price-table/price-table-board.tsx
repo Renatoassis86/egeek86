@@ -121,82 +121,73 @@ export function PriceTableBoard({ items, totalCount, filters }: PriceTableBoardP
         </div>
       </div>
 
-      {/* 2. Barra de Filtros de Indicadores do Consumidor */}
-      <Card className="bg-[var(--color-bg-surface)] border-[var(--color-border-subtle)]">
-        <CardContent className="p-4 flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Busca Instantânea */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[var(--color-text-tertiary)]" />
-              <Input
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Pesquisar por nome..."
-                className="pl-9 bg-[var(--color-bg-elevated)]"
-              />
-            </div>
+      {/* 2. Barra de Filtros Discreta & Compacta */}
+      <div className="flex flex-col gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 backdrop-blur-md p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 w-full max-w-full overflow-hidden shadow-sm">
+        {/* Busca por nome */}
+        <div className="relative w-full sm:w-56 shrink-0">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[var(--color-text-tertiary)]" />
+          <Input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Pesquisar..."
+            className="pl-8 h-8 text-xs font-medium bg-[var(--color-bg-inset)]"
+          />
+        </div>
 
-            {/* Plataforma */}
-            <select
-              value={filters.gen}
-              onChange={(e) => setParams({ geracao: e.target.value === 'all' ? null : e.target.value })}
-              className="px-3 py-2 text-xs font-semibold rounded-[var(--radius-sm)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]"
-            >
-              <option value="all">Todas as Plataformas</option>
-              <option value="switch_1">Nintendo Switch</option>
-              <option value="switch_2">Nintendo Switch 2</option>
-              <option value="ps5">PlayStation 5</option>
-              <option value="ps4">PlayStation 4</option>
-              <option value="xbox_series">Xbox Series X/S</option>
-              <option value="xbox_one">Xbox One</option>
-            </select>
+        {/* Linha de filtros deslizante no mobile */}
+        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar whitespace-nowrap w-full sm:w-auto sm:ml-auto">
+          {/* Plataforma */}
+          <select
+            value={filters.gen}
+            onChange={(e) => setParams({ geracao: e.target.value === 'all' ? null : e.target.value })}
+            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
+          >
+            <option value="all">Toda Plataforma</option>
+            <option value="switch_1">Nintendo Switch</option>
+            <option value="switch_2">Nintendo Switch 2</option>
+            <option value="ps5">PlayStation 5</option>
+            <option value="ps4">PlayStation 4</option>
+            <option value="xbox_series">Xbox Series X/S</option>
+            <option value="xbox_one">Xbox One</option>
+          </select>
 
-            {/* Formato */}
-            <select
-              value={filters.format}
-              onChange={(e) => setParams({ formato: e.target.value === 'all' ? null : e.target.value })}
-              className="px-3 py-2 text-xs font-semibold rounded-[var(--radius-sm)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)]"
-            >
-              <option value="all">Todos os Formatos</option>
-              <option value="physical">Mídia Física</option>
-              <option value="digital">Mídia Digital</option>
-            </select>
+          {/* Formato */}
+          <select
+            value={filters.format}
+            onChange={(e) => setParams({ formato: e.target.value === 'all' ? null : e.target.value })}
+            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
+          >
+            <option value="all">Todo Formato</option>
+            <option value="physical">Mídia Física</option>
+            <option value="digital">Mídia Digital</option>
+          </select>
 
-            {/* Ordenação — travada em "maior desconto" enquanto o filtro de
-                oportunidades estiver ativo (é o que esse modo significa). */}
-            <select
-              value={filters.onlyBelowAvg ? 'discount_desc' : filters.sortBy}
-              disabled={filters.onlyBelowAvg}
-              onChange={(e) => setParams({ ordenar: e.target.value })}
-              className="px-3 py-2 text-xs font-semibold rounded-[var(--radius-sm)] bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] font-bold text-[var(--color-accent-gold)] disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              <option value="name_asc">Ordem Alfabética (A-Z)</option>
-              <option value="name_desc">Ordem Alfabética (Z-A)</option>
-              <option value="price_asc">Menor Preço (R$)</option>
-              <option value="price_desc">Maior Preço (R$)</option>
-              <option value="discount_desc">Maior Desconto vs. Média</option>
-            </select>
-          </div>
+          {/* Ordenação */}
+          <select
+            value={filters.onlyBelowAvg ? 'discount_desc' : filters.sortBy}
+            disabled={filters.onlyBelowAvg}
+            onChange={(e) => setParams({ ordenar: e.target.value })}
+            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0 disabled:opacity-60"
+          >
+            <option value="name_asc">Ordem (A-Z)</option>
+            <option value="name_desc">Ordem (Z-A)</option>
+            <option value="price_asc">Menor Preço</option>
+            <option value="price_desc">Maior Preço</option>
+            <option value="discount_desc">Maior Desconto vs. Média</option>
+          </select>
 
           {/* Toggle de Apenas Oportunidades / Descontos */}
-          <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-[var(--color-border-subtle)]">
-            <Button
-              variant={filters.onlyBelowAvg ? 'hype' : 'outline'}
-              size="sm"
-              onClick={() => setParams({ desconto: filters.onlyBelowAvg ? null : '1' })}
-              className="gap-2 text-xs font-bold"
-            >
-              <Flame className="size-3.5" />
-              <span>Apenas Itens Abaixo da Média de Preço</span>
-            </Button>
-            {filters.onlyBelowAvg && (
-              <Text variant="caption" color="tertiary" className="text-[11px]">
-                Ordenado automaticamente por maior desconto (%) em relação à média histórica
-              </Text>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+          <Button
+            variant={filters.onlyBelowAvg ? 'hype' : 'outline'}
+            size="sm"
+            onClick={() => setParams({ desconto: filters.onlyBelowAvg ? null : '1' })}
+            className="h-8 px-2.5 text-[11px] font-bold gap-1.5 shrink-0 border-[var(--color-accent-hype)]/40"
+          >
+            <Flame className="size-3" />
+            <span>Abaixo da Média</span>
+          </Button>
+        </div>
+      </div>
 
       {/* 3. Tabela Geral de Preços Contínua */}
       {items.length === 0 ? (

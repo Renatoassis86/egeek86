@@ -38,6 +38,7 @@ const selectTriggerVariants = cva(
   {
     variants: {
       size: {
+        xs: 'h-8 px-2.5 text-xs font-medium',
         sm: 'h-9 px-3 text-[14px]',
         md: 'h-11 px-4 text-[15px]',
         lg: 'h-13 px-4 text-[16px] min-h-touch',

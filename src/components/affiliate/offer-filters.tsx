@@ -96,24 +96,28 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-center w-full max-w-full overflow-hidden">
-      <Input
-        value={searchInput}
-        onChange={(e) => setSearchInput(e.target.value)}
-        placeholder="Buscar por nome do jogo..."
-        leftAddon={<Search className="size-4" />}
-        className="w-full sm:w-56"
-      />
+    <div className="flex flex-col gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 backdrop-blur-md p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 w-full max-w-full overflow-hidden shadow-sm">
+      {/* 1. Busca compacta e contagem */}
+      <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <Input
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          placeholder="Buscar jogo..."
+          leftAddon={<Search className="size-3.5 text-[var(--color-text-tertiary)]" />}
+          className="h-8 text-xs font-medium w-full sm:w-56 bg-[var(--color-bg-inset)]"
+        />
 
-      {typeof resultCount === 'number' && (
-        <Text variant="caption" color="tertiary" className="shrink-0 whitespace-nowrap font-medium">
-          {resultCount} {resultCount === 1 ? 'oferta' : 'ofertas'}
-        </Text>
-      )}
+        {typeof resultCount === 'number' && (
+          <Text variant="caption" color="tertiary" className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1">
+            {resultCount} {resultCount === 1 ? 'oferta' : 'ofertas'}
+          </Text>
+        )}
+      </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+      {/* 2. Chips de Filtro em linha horizontal deslizante no mobile */}
+      <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar whitespace-nowrap w-full sm:w-auto sm:ml-auto">
         <Select value={format} onValueChange={(v) => setParam('formato', v)}>
-          <SelectTrigger size="sm" className="w-full sm:w-[9rem]">
+          <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[96px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
             <SelectValue placeholder="Formato" />
           </SelectTrigger>
           <SelectContent>
@@ -127,7 +131,7 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
         </Select>
 
         <Select value={gen} onValueChange={(v) => setParam('geracao', v)}>
-          <SelectTrigger size="sm" className="w-full sm:w-[9rem]">
+          <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[100px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
             <SelectValue placeholder="Geração" />
           </SelectTrigger>
           <SelectContent>
@@ -142,7 +146,7 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
 
         {networks.length > 0 && (
           <Select value={rede} onValueChange={(v) => setParam('rede', v)}>
-            <SelectTrigger size="sm" className="w-full sm:w-[9.5rem]">
+            <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[90px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
               <SelectValue placeholder="Loja" />
             </SelectTrigger>
             <SelectContent>
@@ -157,7 +161,7 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
         )}
 
         <Select value={sort} onValueChange={(v) => setParam('ordenar', v)}>
-          <SelectTrigger size="sm" className="w-full sm:w-[9.5rem]">
+          <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[105px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
             <SelectValue placeholder="Ordenar por" />
           </SelectTrigger>
           <SelectContent>
@@ -168,19 +172,19 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
             ))}
           </SelectContent>
         </Select>
-      </div>
 
-      {hasFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={clearAll}
-          className="w-full text-[var(--color-text-tertiary)] sm:ml-auto sm:w-fit"
-        >
-          <RotateCcw className="size-3.5" />
-          Limpar filtros
-        </Button>
-      )}
+        {hasFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearAll}
+            className="h-8 px-2 text-[11px] font-bold text-[var(--color-accent-hype)] hover:bg-[var(--color-accent-hype)]/10 shrink-0 border border-[var(--color-accent-hype)]/30 rounded-md"
+          >
+            <RotateCcw className="size-3" />
+            Limpar
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
