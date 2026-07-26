@@ -28,9 +28,9 @@ const INTEL_ITEMS: IntelItem[] = [
   {
     id: '1',
     title: 'Análise de Impacto Econômico das Plataformas de Jogos Digitais no Brasil',
-    excerpt: 'Um estudo empírico baseado em dados de mercado que analisa a expansão das vendas digitais e a consolidação do mercado nacional de games.',
+    excerpt: 'Um estudo de mercado baseado em dados de consumo que analisa a expansão das vendas digitais e a consolidação do mercado nacional de games.',
     category: 'empiricas',
-    categoryLabel: 'Pesquisa Empírica',
+    categoryLabel: 'Radar de Preços & Dados',
     author: 'Renato Silva de Assis',
     date: '25 Jul 2026',
     readTime: '12 min',
@@ -42,7 +42,7 @@ const INTEL_ITEMS: IntelItem[] = [
     title: 'A Economia da Nostalgia: O Retorno das Mídias Físicas e Consoles Clássicos',
     excerpt: 'Como o desejo por colecionismo e a nostalgia dos consoles de 16-bit e 32-bit estão moldando os novos modelos de negócios locais.',
     category: 'teoricas',
-    categoryLabel: 'Pesquisa Teórica',
+    categoryLabel: 'Dossiê de Mercado',
     author: 'Equipe Arkos',
     date: '24 Jul 2026',
     readTime: '8 min',
@@ -54,7 +54,7 @@ const INTEL_ITEMS: IntelItem[] = [
     title: 'Mercado de Consoles no Brasil: Custo-Benefício e Tendências para 2026/2027',
     excerpt: 'Relatório descritivo sobre o volume de vendas de consoles e a variação média de preços no varejo físico e digital brasileiro.',
     category: 'descritivas',
-    categoryLabel: 'Pesquisa Descritiva',
+    categoryLabel: 'Panorama & Tendências',
     author: 'Arkos Intelligence',
     date: '23 Jul 2026',
     readTime: '6 min',
@@ -66,7 +66,7 @@ const INTEL_ITEMS: IntelItem[] = [
     title: 'Fusões no Setor de Games: O que Muda no Acesso a Títulos Exclusivos?',
     excerpt: 'Análise aprofundada sobre as aquisições corporativas internacionais e seu impacto na distribuição de jogos digitais.',
     category: 'artigos',
-    categoryLabel: 'Artigos',
+    categoryLabel: 'Artigos & Opinião',
     author: 'Felipe Santos',
     date: '25 Jul 2026',
     readTime: '4 min',
@@ -77,7 +77,7 @@ const INTEL_ITEMS: IntelItem[] = [
     title: 'O Fenômeno Retro e os Espaços de Convivência Gamer nas Capitais',
     excerpt: 'Um artigo reflexivo abordando a ressurreição dos fliperamas e locadoras como centros sociais urbanos de entretenimento.',
     category: 'artigos',
-    categoryLabel: 'Artigos',
+    categoryLabel: 'Artigos & Opinião',
     author: 'Mariana Costa',
     date: '24 Jul 2026',
     readTime: '5 min',
@@ -86,9 +86,9 @@ const INTEL_ITEMS: IntelItem[] = [
   {
     id: '6',
     title: 'Comportamento do Consumidor de TCG e Jogos de Mesa no Nordeste',
-    excerpt: 'Uma pesquisa descritiva baseada em questionários locais de satisfação coletados com colecionadores de trading card games.',
+    excerpt: 'Um levantamento de consumo baseado em questionários locais de satisfação coletados com colecionadores de trading card games.',
     category: 'descritivas',
-    categoryLabel: 'Pesquisa Descritiva',
+    categoryLabel: 'Panorama & Tendências',
     author: 'Renato Silva de Assis',
     date: '22 Jul 2026',
     readTime: '10 min',
@@ -97,9 +97,9 @@ const INTEL_ITEMS: IntelItem[] = [
   {
     id: '7',
     title: 'Modelagem Estatística de Flutuação de Preços de Jogos Usados',
-    excerpt: 'Estudo empírico usando regressões de preço de mercado para entender a depreciação e valorização de jogos físicos seminovos.',
+    excerpt: 'Análise de mercado para entender a depreciação e valorização de jogos físicos seminovos.',
     category: 'empiricas',
-    categoryLabel: 'Pesquisa Empírica',
+    categoryLabel: 'Radar de Preços & Dados',
     author: 'Renato Silva de Assis',
     date: '20 Jul 2026',
     readTime: '15 min',
@@ -113,10 +113,10 @@ export default function InteligenciaGamerPage() {
 
   const categories = useMemo(() => [
     { value: 'todos', label: 'Tudo', icon: Layers },
-    { value: 'artigos', label: 'Artigos', icon: BookOpen },
-    { value: 'teoricas', label: 'P. Teóricas', icon: FileText },
-    { value: 'empiricas', label: 'P. Empíricas', icon: TrendingUp },
-    { value: 'descritivas', label: 'P. Descritivas', icon: Sparkles }
+    { value: 'artigos', label: 'Artigos & Opinião', icon: BookOpen },
+    { value: 'teoricas', label: 'Dossiês de Mercado', icon: FileText },
+    { value: 'empiricas', label: 'Radar de Preços', icon: TrendingUp },
+    { value: 'descritivas', label: 'Panorama & Tendências', icon: Sparkles }
   ], []);
 
   // Filtragem dos itens de inteligência
