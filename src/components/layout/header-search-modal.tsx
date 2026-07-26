@@ -8,33 +8,46 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { formatBRL } from '@/lib/format';
+import type { GlobalSearchResult } from '@/app/api/search/route';
 
-interface SearchResult {
-  id: string;
-  title: string;
-  type: 'jogo' | 'noticia' | 'hype' | 'leilao';
-  category?: string;
-  priceCents?: number;
-  url: string;
-}
+const SEARCH_DEBOUNCE_MS = 300;
 
-const DEMO_SEARCH_DATABASE: SearchResult[] = [
-  { id: '1', title: 'Red Dead Redemption - Nintendo Switch', type: 'jogo', category: 'Nintendo Switch', priceCents: 29900, url: '/ofertas/red-dead-redemption-nintendo-switch-756960592' },
-  { id: '2', title: 'Super Mario Bros Wonder - Nintendo Switch 2', type: 'jogo', category: 'Switch 2', priceCents: 49692, url: '/ofertas' },
-  { id: '3', title: 'Mario Kart 8 Deluxe - Nintendo Switch', type: 'jogo', category: 'Nintendo Switch', priceCents: 27900, url: '/ofertas' },
-  { id: '4', title: 'Jogo Xbox 360 Far Cry 2 Físico', type: 'jogo', category: 'Xbox 360', priceCents: 100000, url: '/ofertas' },
-  { id: '5', title: 'Guia Definitivo do Nintendo Switch 2: Preço e Especificações', type: 'noticia', category: 'Hardware', url: '/noticias' },
-  { id: '6', title: 'Top 10 Jogos Mais Baratos da Semana no Mercado Livre', type: 'noticia', category: 'Geek Deals', url: '/noticias' },
-  { id: '7', title: 'Statue Iron Studios Batman 1/10 Legacy Replica', type: 'hype', category: 'Drop Exclusivo', priceCents: 185000, url: '/hype-zone' },
-  { id: '8', title: 'Nintendo Virtual Boy CIB (Completo na Caixa)', type: 'leilao', category: 'Leilão Raro', priceCents: 245000, url: '/leiloes' },
-];
+// Hype Zone e Leilões ainda não entram na busca real (outro processo está
+// construindo esses módulos em paralelo) — essas abas só redirecionam no
+// Enter, sem prévia inline fabricada.
+const LIVE_SEARCH_TYPES: ReadonlySet<string> = new Set(['jogo', 'noticia']);
 
 export function HeaderSearchModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<'todos' | 'jogo' | 'noticia' | 'hype' | 'leilao'>('todos');
+  const [results, setResults] = useState<GlobalSearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Busca real no banco (ofertas + notícias) — nunca mais um array fixo de
+  // exemplo, que fazia qualquer termo fora dos 8 itens de demonstração
+  // sempre voltar "nenhum resultado", mesmo pra produto já catalogado.
+  useEffect(() => {
+    const isLiveFilter = filter === 'todos' || LIVE_SEARCH_TYPES.has(filter);
+    if (!isOpen || query.trim().length < 2 || !isLiveFilter) {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        if (!res.ok) return;
+        const json = (await res.json()) as { items: GlobalSearchResult[] };
+        setResults(json.items ?? []);
+      } finally {
+        setLoading(false);
+      }
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [query, isOpen, filter]);
 
   // Tecla de atalho Ctrl+K ou Cmd+K
   useEffect(() => {
@@ -59,12 +72,8 @@ export function HeaderSearchModal() {
     }
   }, [isOpen]);
 
-  const filteredResults = DEMO_SEARCH_DATABASE.filter((item) => {
-    const matchesQuery = item.title.toLowerCase().includes(query.toLowerCase()) || 
-                         (item.category && item.category.toLowerCase().includes(query.toLowerCase()));
-    const matchesFilter = filter === 'todos' || item.type === filter;
-    return matchesQuery && matchesFilter;
-  });
+  const filteredResults = filter === 'todos' ? results : results.filter((item) => item.type === filter);
+  const isLiveCategory = filter === 'todos' || LIVE_SEARCH_TYPES.has(filter);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,7 +173,13 @@ export function HeaderSearchModal() {
 
             {/* Lista de Resultados */}
             <div className="max-h-80 overflow-y-auto p-2 flex flex-col gap-1">
-              {filteredResults.length === 0 ? (
+              {!isLiveCategory ? (
+                <div className="p-8 text-center text-xs text-[var(--color-text-tertiary)]">
+                  Busca de {filter === 'hype' ? 'Hype Zone' : 'Leilões'} ainda não tem prévia aqui — pressione Enter pra buscar direto na seção.
+                </div>
+              ) : loading ? (
+                <div className="p-8 text-center text-xs text-[var(--color-text-tertiary)]">Buscando...</div>
+              ) : query.trim().length >= 2 && filteredResults.length === 0 ? (
                 <div className="p-8 text-center text-xs text-[var(--color-text-tertiary)]">
                   Nenhum resultado encontrado para &quot;{query}&quot;. Pressione Enter para buscar em todas as categorias.
                 </div>
@@ -180,8 +195,6 @@ export function HeaderSearchModal() {
                       <div className="flex size-9 items-center justify-center rounded-full bg-[var(--color-bg-inset)] text-[var(--color-accent-primary)] shrink-0">
                         {item.type === 'jogo' && <Gamepad2 className="size-4" />}
                         {item.type === 'noticia' && <Newspaper className="size-4 text-[var(--color-accent-hype)]" />}
-                        {item.type === 'hype' && <Flame className="size-4 text-amber-400" />}
-                        {item.type === 'leilao' && <Gavel className="size-4 text-[var(--color-accent-gold)]" />}
                       </div>
                       <div className="flex flex-col">
                         <span className="text-xs font-bold text-[var(--color-text-primary)] group-hover:text-[var(--color-accent-primary)] transition-colors line-clamp-1">

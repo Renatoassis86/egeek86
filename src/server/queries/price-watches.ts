@@ -1,8 +1,9 @@
 import 'server-only';
-import { eq, and, inArray, ilike, sql } from 'drizzle-orm';
+import { eq, and, inArray, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliatePriceWatches, masterProducts, affiliateOffers, affiliateNetworks } from '@/db/schema';
 import { getMasterProductMetrics, type OfferMetrics } from './affiliate';
+import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import type { GameFormat, GamePlatformGen } from '@/db/schema';
 
 /**
@@ -142,11 +143,14 @@ export async function searchMasterProductsToWatch(query: string, userId: string,
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
 
+  const fuzzy = fuzzyMatch([masterProducts.name], trimmed);
+  if (!fuzzy) return [];
+
   const [rows, watchedIds] = await Promise.all([
     db
       .select({ id: masterProducts.id, name: masterProducts.name, defaultImages: masterProducts.defaultImages })
       .from(masterProducts)
-      .where(ilike(masterProducts.name, `%${trimmed}%`))
+      .where(fuzzy)
       .limit(limit),
     getWatchedMasterProductIds(userId),
   ]);

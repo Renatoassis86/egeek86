@@ -1,6 +1,7 @@
 import 'server-only';
-import { and, count, desc, asc, eq, gt, gte, inArray, or, ilike, sql, type SQL } from 'drizzle-orm';
+import { and, count, desc, asc, eq, gt, gte, inArray, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import {
   affiliateOffers,
   affiliateNetworks,
@@ -153,6 +154,8 @@ export interface RankedOffersFilter {
   gameEditionType?: GameEditionType;
   networkId?: string;
   minSellerSales?: number;
+  /** Busca livre por nome — casa contra o título da oferta OU o nome do produto master. */
+  search?: string;
   sortBy?: 'price_asc' | 'price_desc';
   limit?: number;
   offset?: number;
@@ -213,6 +216,10 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   if (filter.gameEditionType) conditions.push(eq(masterProducts.gameEditionType, filter.gameEditionType));
   if (filter.networkId) conditions.push(eq(affiliateOffers.networkId, filter.networkId));
   if (filter.minSellerSales != null) conditions.push(sql`${affiliateSellers.totalSales} >= ${filter.minSellerSales}`);
+  if (filter.search?.trim()) {
+    const fuzzy = fuzzyMatch([masterProducts.name, affiliateOffers.title], filter.search);
+    if (fuzzy) conditions.push(fuzzy);
+  }
 
   const whereClause = and(...conditions);
 
@@ -282,8 +289,8 @@ export async function listOffersForAdminFiltered(filter: AdminOffersFilter = {})
   if (filter.gameEditionType) conditions.push(eq(masterProducts.gameEditionType, filter.gameEditionType));
   if (filter.networkId) conditions.push(eq(affiliateOffers.networkId, filter.networkId));
   if (filter.search?.trim()) {
-    const term = `%${filter.search.trim()}%`;
-    conditions.push(or(ilike(affiliateOffers.title, term), ilike(masterProducts.name, term))!);
+    const fuzzy = fuzzyMatch([affiliateOffers.title, masterProducts.name], filter.search);
+    if (fuzzy) conditions.push(fuzzy);
   }
 
   const orderColumn =
@@ -337,7 +344,9 @@ export async function searchOffersForAdmin(query: string, limit = 8): Promise<Ad
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
 
-  const term = `%${trimmed}%`;
+  const fuzzy = fuzzyMatch([affiliateOffers.title, masterProducts.name], trimmed);
+  if (!fuzzy) return [];
+
   const rows = await db
     .select({
       offerId: affiliateOffers.id,
@@ -350,7 +359,7 @@ export async function searchOffersForAdmin(query: string, limit = 8): Promise<Ad
     .from(affiliateOffers)
     .innerJoin(masterProducts, eq(affiliateOffers.masterProductId, masterProducts.id))
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-    .where(and(or(ilike(affiliateOffers.title, term), ilike(masterProducts.name, term))!, eq(affiliateOffers.status, 'active')))
+    .where(and(fuzzy, eq(affiliateOffers.status, 'active')))
     .orderBy(asc(affiliateOffers.currentPriceCents))
     .limit(limit);
 
@@ -362,6 +371,12 @@ export interface PlatformStats {
   totalSellers: number;
   totalNetworks: number;
   totalQuotes: number;
+  /** Preço médio entre todas as ofertas ativas, com o mesmo filtro de outlier (>2x a média bruta) usado em toda métrica de média do site. */
+  avgPriceCents: number;
+  /** Menor preço já cotado em qualquer oferta, de todo o histórico da plataforma (nunca filtrado — é um evento real que aconteceu). */
+  lowestPriceCentsEver: number;
+  /** Quantos produtos (master_product) estão com o menor preço ativo hoje abaixo da própria média histórica — "em queda" agora mesmo. */
+  itemsBelowAverageCount: number;
 }
 
 /**
@@ -370,7 +385,7 @@ export interface PlatformStats {
  * carregamento da página.
  */
 export async function getPlatformStats(): Promise<PlatformStats> {
-  const [products, sellers, networks, quotes] = await Promise.all([
+  const [products, sellers, networks, quotes, avgPrice, lowestEver, belowAverage] = await Promise.all([
     db.execute<{ count: string }>(sql`
       SELECT COUNT(DISTINCT master_product_id)::bigint AS count
       FROM affiliate_offers
@@ -384,6 +399,47 @@ export async function getPlatformStats(): Promise<PlatformStats> {
         (SELECT COUNT(*)::bigint FROM affiliate_price_snapshots)
       ) AS count
     `),
+    // Mesmo degrau de exclusão de outlier usado em getOfferMetrics/getMasterProductMetrics/etc:
+    // descarta oferta >2x a média bruta antes de calcular a média final exibida.
+    db.execute<{ avg_cents: string | null }>(sql`
+      WITH raw_avg AS (
+        SELECT AVG(current_price_cents) AS v FROM affiliate_offers WHERE status = 'active' AND current_price_cents > 0
+      )
+      SELECT AVG(current_price_cents)::bigint AS avg_cents
+      FROM affiliate_offers, raw_avg
+      WHERE status = 'active' AND current_price_cents > 0 AND current_price_cents <= raw_avg.v * 2
+    `),
+    db.execute<{ min_cents: string | null }>(sql`
+      SELECT MIN(price_cents)::bigint AS min_cents FROM affiliate_price_snapshots WHERE price_cents > 0
+    `),
+    db.execute<{ count: string }>(sql`
+      WITH active_offers AS (
+        SELECT id AS offer_id, master_product_id, current_price_cents
+        FROM affiliate_offers WHERE status = 'active' AND current_price_cents > 0
+      ),
+      current_lowest AS (
+        SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
+        FROM active_offers GROUP BY master_product_id
+      ),
+      raw_hist_avg AS (
+        SELECT ao.master_product_id, AVG(s.price_cents) AS raw_avg
+        FROM affiliate_price_snapshots s
+        INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
+        GROUP BY ao.master_product_id
+      ),
+      hist_avg AS (
+        SELECT ao.master_product_id,
+          AVG(s.price_cents) FILTER (WHERE s.price_cents <= rha.raw_avg * 2)::numeric AS avg_price
+        FROM affiliate_price_snapshots s
+        INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
+        INNER JOIN raw_hist_avg rha ON rha.master_product_id = ao.master_product_id
+        GROUP BY ao.master_product_id
+      )
+      SELECT COUNT(*)::bigint AS count
+      FROM current_lowest cl
+      INNER JOIN hist_avg ha ON ha.master_product_id = cl.master_product_id
+      WHERE ha.avg_price IS NOT NULL AND cl.current_price_cents < ha.avg_price
+    `),
   ]);
 
   return {
@@ -391,6 +447,9 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     totalSellers: Number(sellers[0]?.count ?? 0),
     totalNetworks: Number(networks[0]?.count ?? 0),
     totalQuotes: Number(quotes[0]?.count ?? 0),
+    avgPriceCents: Number(avgPrice[0]?.avg_cents ?? 0),
+    lowestPriceCentsEver: Number(lowestEver[0]?.min_cents ?? 0),
+    itemsBelowAverageCount: Number(belowAverage[0]?.count ?? 0),
   };
 }
 

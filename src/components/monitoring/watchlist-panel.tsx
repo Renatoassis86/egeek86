@@ -40,11 +40,17 @@ export function WatchlistPanel({
   initialItems,
   selectedMasterProductId,
   onSelect,
+  onItemsRefreshed,
   isGuest = false,
 }: {
   initialItems: WatchlistPanelItem[];
   selectedMasterProductId: string | null;
   onSelect?: (masterProductId: string) => void;
+  /** Avisa o pai (MonitoringBoard) sempre que o poll traz preço/Var% novos —
+   * sem isso, o preço "atual" do cabeçalho ficava congelado no estado inicial
+   * enquanto só essa lista e o gráfico se atualizavam sozinhos, cada um no
+   * seu próprio ritmo, e podiam divergir do que aparecia no topo. */
+  onItemsRefreshed?: (items: WatchlistPanelItem[]) => void;
   isGuest?: boolean;
 }) {
   const router = useRouter();
@@ -60,15 +66,26 @@ export function WatchlistPanel({
     if (!res.ok) return;
     const json = (await res.json()) as { items: WatchlistPanelItem[] };
     setItems(json.items ?? []);
+    onItemsRefreshed?.(json.items ?? []);
   }
 
   usePollingRefresh(refreshWatchlist, POLL_INTERVAL_MS);
 
   async function handleRemoveItem(masterProductId: string, title: string) {
     try {
-      setItems((prev) => prev.filter((i) => i.masterProductId !== masterProductId));
+      const remaining = items.filter((i) => i.masterProductId !== masterProductId);
+      setItems(remaining);
+      // Avisa o pai NA HORA (não só no próximo poll de até 45s) — senão o
+      // painel do gráfico ficava mostrando o jogo removido (ou, se era o
+      // último da lista, um card "fantasma" sem nenhum item selecionado).
+      onItemsRefreshed?.(remaining);
       if (!isGuest) {
         await toggleWatch(masterProductId, false);
+        // toggleWatch já revalida a rota no server (revalidatePath), mas essa
+        // aba já está montada com a árvore antiga em cache — sem isso, voltar
+        // pra essa página por um Link (navegação client-side) ou a checagem
+        // periódica podia servir a versão desatualizada ainda com o item.
+        router.refresh();
       }
       toast.success(`${title} removido da lista de monitoramento.`);
     } catch {

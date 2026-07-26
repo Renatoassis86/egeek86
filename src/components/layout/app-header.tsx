@@ -51,7 +51,7 @@ const navLinks: NavItem[] = [
   },
   {
     href: '/inteligencia-gamer',
-    label: 'Inteligência Gamer',
+    label: 'Observatório Gamer',
     children: [
       { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos e Ensaios' },
       { href: '/inteligencia-gamer?categoria=teoricas', label: 'Pesquisas Teóricas' },

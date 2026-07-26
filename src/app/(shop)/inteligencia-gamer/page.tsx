@@ -151,7 +151,7 @@ export default function InteligenciaGamerPage() {
       <div className="mx-auto max-w-7xl px-4 lg:px-8 py-8">
         <div className="flex flex-col gap-2 mb-8 border-b border-[var(--color-border-subtle)] pb-6">
           <h1 className="text-3xl font-extrabold lg:text-4xl tracking-tight text-[var(--color-text-primary)]">
-            Inteligência Gamer
+            Observatório Gamer
           </h1>
           <p className="text-body-md text-[var(--color-text-secondary)] max-w-3xl">
             O hub central de análise acadêmica e pesquisas do Espaço Geek 86. Dados teóricos, descritivos e empíricos aplicados ao mercado e cultura dos jogos.

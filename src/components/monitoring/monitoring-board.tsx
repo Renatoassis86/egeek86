@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, LineChart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { WatchlistPanel } from './watchlist-panel';
@@ -45,13 +45,18 @@ export function MonitoringBoard({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [selectedId, setSelectedId] = useState(initialSelectedId);
-  const [selectedItem, setSelectedItem] = useState<WatchlistPanelItem>(() => {
-    return watchlistItems.find((item) => item.masterProductId === initialSelectedId) ?? watchlistItems[0];
+  // Espelho local da lista, atualizado a cada poll do WatchlistPanel — é a
+  // fonte de verdade pro item ativo, pra "preço atual" do cabeçalho nunca
+  // ficar congelado no valor do carregamento inicial enquanto o gráfico (que
+  // tem seu próprio polling) segue avançando sozinho.
+  const [items, setItems] = useState(watchlistItems);
+  const [selectedItem, setSelectedItem] = useState<WatchlistPanelItem | null>(() => {
+    return watchlistItems.find((item) => item.masterProductId === initialSelectedId) ?? watchlistItems[0] ?? null;
   });
 
   function handleSelect(masterProductId: string) {
     setSelectedId(masterProductId);
-    const found = watchlistItems.find((item) => item.masterProductId === masterProductId);
+    const found = items.find((item) => item.masterProductId === masterProductId);
     if (found) {
       setSelectedItem(found);
     }
@@ -60,41 +65,76 @@ export function MonitoringBoard({
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
-  const active = selectedItem || watchlistItems[0];
+  function handleItemsRefreshed(freshItems: WatchlistPanelItem[]) {
+    setItems(freshItems);
+    // Lista zerada (ex: usuário apagou tudo) tem que limpar o painel do
+    // gráfico também — sem isso ficava mostrando o último jogo selecionado
+    // como se ainda estivesse sendo acompanhado.
+    if (freshItems.length === 0) {
+      setSelectedItem(null);
+      return;
+    }
+    const freshActive = freshItems.find((item) => item.masterProductId === selectedId);
+    setSelectedItem(freshActive ?? freshItems[0]);
+  }
+
+  const active = selectedItem;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <WatchlistPanel initialItems={watchlistItems} selectedMasterProductId={selectedId} onSelect={handleSelect} isGuest={isGuest} />
+      <WatchlistPanel
+        initialItems={watchlistItems}
+        selectedMasterProductId={selectedId}
+        onSelect={handleSelect}
+        onItemsRefreshed={handleItemsRefreshed}
+        isGuest={isGuest}
+      />
 
-      <Card>
-        <CardContent className="p-5">
-          <div className="mb-4 flex items-baseline justify-between gap-4">
-            <div>
-              <Text variant="heading-md">{active.title}</Text>
-              <Text variant="caption" color="tertiary">
-                Menor preço entre todas as lojas · atualmente em {active.networkName}
-              </Text>
+      {active ? (
+        <Card>
+          <CardContent className="p-5">
+            <div className="mb-4 flex items-baseline justify-between gap-4">
+              <div>
+                <Text variant="heading-md">{active.title}</Text>
+                <Text variant="caption" color="tertiary">
+                  Menor preço entre todas as lojas · atualmente em {active.networkName}
+                </Text>
+              </div>
+              <Link
+                href={`/monitoramento/comparar/${active.masterProductId}`}
+                className="group inline-flex items-center gap-1 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
+              >
+                <AnimatedPrice cents={active.currentPriceCents} className="text-mono-lg" />
+                <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+              </Link>
             </div>
-            <Link
-              href={`/monitoramento/comparar/${active.masterProductId}`}
-              className="group inline-flex items-center gap-1 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
-            >
-              <AnimatedPrice cents={active.currentPriceCents} className="text-mono-lg" />
-              <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-            </Link>
-          </div>
-          <PriceHistoryChart
-            masterProductId={active.masterProductId}
-            initialHistory={initialHistory}
-            initialTimeframe="1M"
-          />
-          <Text variant="caption" color="tertiary" className="mt-3">
-            <Link href={`/monitoramento/comparar/${active.masterProductId}`} className="underline">
-              Comparar preço entre vendedores
-            </Link>
-          </Text>
-        </CardContent>
-      </Card>
+            <PriceHistoryChart
+              masterProductId={active.masterProductId}
+              initialHistory={initialHistory}
+              initialTimeframe="1M"
+            />
+            <Text variant="caption" color="tertiary" className="mt-3">
+              <Link href={`/monitoramento/comparar/${active.masterProductId}`} className="underline">
+                Comparar preço entre vendedores
+              </Link>
+            </Text>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="flex min-h-[420px] flex-col items-center justify-center gap-3 p-5 text-center">
+            <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-bg-inset)] text-[var(--color-text-tertiary)]">
+              <LineChart className="size-6" aria-hidden />
+            </div>
+            <Text variant="body-md" className="font-semibold">
+              Selecione um produto para monitorarmos
+            </Text>
+            <Text variant="body-sm" color="tertiary" className="max-w-[36ch]">
+              Clique no + ao lado de &quot;Sua lista&quot; pra adicionar o primeiro jogo e acompanhar o gráfico de preço aqui.
+            </Text>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

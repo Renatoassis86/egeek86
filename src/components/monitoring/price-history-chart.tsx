@@ -190,17 +190,17 @@ export function PriceHistoryChart({
       return res;
     };
 
-    // Degrau (não linear) porque o preço não "desliza" continuamente entre
-    // duas cotações — ele fica parado num valor e pula pro próximo só
-    // quando alguém muda de verdade. Interpolação linear entre pontos
-    // esparsos (o normal aqui, já que só registramos mudança real de
-    // preço) sugeria uma variação gradual que nunca aconteceu.
+    // Curva suavizada (Catmull-Rom nativo do lightweight-charts) em vez de
+    // degrau — pedido explícito do cliente: o degrau lia como "quadrado"
+    // demais mesmo representando corretamente que o preço só muda por
+    // evento real (não desliza continuamente). A suavização é só visual, os
+    // PONTOS continuam exatamente nos mesmos baldes de tempo de antes.
     const series = chart.addSeries(AreaSeries, {
       lineColor: palette.line,
       topColor: palette.areaTop,
       bottomColor: palette.areaBottom,
       lineWidth: 2,
-      lineType: LineType.WithSteps,
+      lineType: LineType.Curved,
       // Um ponto por balde de tempo agora (não mais um por evento de
       // mudança de preço) — o volume de pontos é baixo o bastante pra um
       // raio pequeno e fixo marcar cada balde sem os círculos se fundirem
@@ -219,11 +219,15 @@ export function PriceHistoryChart({
     // Preço médio real entre todas as lojas/plataformas (não é média móvel
     // do menor preço) — linha fina tracejada de propósito: nunca deve
     // competir visualmente com a série principal, é só contexto de mercado.
+    // Também suavizada (mesmo motivo da série principal), com marcadores
+    // menores pra não competir visualmente com os da linha de menor preço.
     const avgSeries = chart.addSeries(LineSeries, {
       color: palette.movingAverage,
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
-      lineType: LineType.WithSteps,
+      lineType: LineType.Curved,
+      pointMarkersVisible: true,
+      pointMarkersRadius: 2,
       priceLineVisible: false,
       lastValueVisible: false,
       crosshairMarkerVisible: false,

@@ -52,7 +52,7 @@ const hypeZoneModules = [
 
 const newsModules = [
   { href: '/noticias', label: 'Notícias e Matérias', icon: Newspaper },
-  { href: '/inteligencia-gamer', label: 'Inteligência Gamer', icon: Sparkles }
+  { href: '/inteligencia-gamer', label: 'Observatório Gamer', icon: Sparkles }
 ];
 
 const userModules = [

@@ -1,6 +1,7 @@
 import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { fuzzyMatchRaw } from '@/lib/db/fuzzy-search';
 import { type ProductType, type GameFormat, type GamePlatformGen } from '@/db/schema';
 
 export interface PriceTableFilter {
@@ -131,8 +132,8 @@ async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ ite
     }
   }
   if (filter.searchQuery && filter.searchQuery.trim().length > 0) {
-    const q = `%${filter.searchQuery.trim()}%`;
-    conditions.push(sql`mp.name ILIKE ${q}`);
+    const fuzzy = fuzzyMatchRaw(['mp.name'], filter.searchQuery);
+    if (fuzzy) conditions.push(fuzzy);
   }
   if (filter.minPriceCents != null) {
     conditions.push(sql`o.current_price_cents >= ${filter.minPriceCents}`);

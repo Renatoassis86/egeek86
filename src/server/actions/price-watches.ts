@@ -17,4 +17,5 @@ export async function toggleWatch(masterProductId: string, active: boolean): Pro
     });
 
   revalidatePath('/conta');
+  revalidatePath('/monitoramento');
 }

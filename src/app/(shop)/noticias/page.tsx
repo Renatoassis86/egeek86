@@ -5,49 +5,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
-import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
 import { SceneImage } from '@/components/motion/scene-image';
-import { TextImageMask } from '@/components/motion/text-image-mask';
 import { cn } from '@/lib/cn';
 import { getPublishedArticles } from '@/server/queries/news';
 import type { ArticleCategory, NewsArticle } from '@/db/schema';
 import { ARTICLE_CATEGORY_LABELS, ARTICLE_CATEGORY_OPTIONS } from '@/lib/news/labels';
-import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated-stat-bars';
 import { FeaturedArticlesCarousel } from '@/components/news/featured-articles-carousel';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
-
-// Estatísticas reais do mercado gamer, sempre com fonte citada — nunca
-// inventadas nem projetadas sem dizer a origem. Atualizar quando houver
-// relatório mais recente (Newzoo publica novo Global Games Market Report
-// anualmente, geralmente entre jun-set; Pesquisa Game Brasil, anualmente).
-const MARKET_STATS: StatBarItem[] = [
-  {
-    label: 'Mercado global de games em 2025',
-    fillPercent: 75,
-    displayValue: 'US$ 197 bi (+7,5%)',
-    source: 'Newzoo, Global Games Market Report 2025',
-  },
-  {
-    label: 'Mercado de games no Brasil em 2025',
-    fillPercent: 80,
-    displayValue: 'R$ 12,7 bi (+8%)',
-    source: 'Newzoo / Statista / Abragames',
-  },
-  {
-    label: 'Jogadores ativos no mundo',
-    fillPercent: 61.5,
-    displayValue: '3,6 bi (61,5% da população online)',
-    source: 'Newzoo, 2025',
-  },
-  {
-    label: 'Brasileiros que jogam games',
-    fillPercent: 73.4,
-    displayValue: '73,4%',
-    source: 'Pesquisa Game Brasil',
-  },
-];
 
 export const metadata = { title: 'Notícias' };
 
@@ -114,53 +80,18 @@ export default async function NoticiasPage({
     getPublishedArticles({ pageSize: 5 }),
   ]);
 
+  const isDefaultView = !category && page === 1;
+  const secondaryItems = isDefaultView ? items.slice(1) : items;
+
   return (
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-14">
-      {/* Hub de dados: posicionamento sobre o mercado gamer + estatísticas reais citadas */}
-      <Reveal>
-        <Text variant="label" color="hype">
-          O mercado gamer em números
-        </Text>
-        <Text as="h1" variant="display-md" className="mt-2 max-w-[26ch] text-[28px] md:text-[38px] font-black leading-tight tracking-tight">
-          Games já é a maior indústria de entretenimento do mundo, e o Brasil lidera a América Latina.
-        </Text>
-        <Text variant="body-md" color="secondary" className="mt-4 max-w-[70ch] leading-relaxed">
-          Mais gente joga do que assiste streaming ou vai ao cinema — e o Brasil é o maior mercado
-          consumidor da América Latina desde 2021. Esse hub reúne notícias, sinopses e as pesquisas
-          de mercado que acompanhamos, sempre com fonte citada. Nunca projeção sem dizer de onde
-          veio.
-        </Text>
-      </Reveal>
+      {/* Banner "Mural Geek" — topo da página, pareado com o carrossel de
+          destaques logo abaixo (texto inicial + card de notícia juntos). */}
+      <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-14 overflow-hidden mb-8 z-10">
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:items-center">
-        <Reveal delay={0.06}>
-          <AnimatedStatBars items={MARKET_STATS} />
-        </Reveal>
-        <Reveal delay={0.1}>
-          <FeaturedArticlesCarousel articles={featured} />
-        </Reveal>
-      </div>
-
-      {/* Mosaico documental/promocional — imagens reais (não geradas por IA
-          sem revisão humana antes de publicar); enquanto o arquivo não
-          existir em public/images/noticias-hub/, SceneImage cai no
-          fallback "em produção" (nunca quebra, nunca imagem cinza genérica). */}
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
-        {marketScenes.map(({ src, alt, tone }, i) => (
-          <Reveal key={src} delay={0.06 + i * 0.06}>
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]">
-              <SceneImage src={src} alt={alt} tone={tone} caption="Em curadoria" className="absolute inset-0" />
-            </div>
-          </Reveal>
-        ))}
-      </div>
-
-      {/* Header Banner Visual */}
-      <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-14 overflow-hidden mb-10 z-10">
-        
         {/* Imagem do banner inteira com recorte diagonal na direita */}
         <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
-          <div 
+          <div
             className="relative w-full h-full"
             style={{
               clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
@@ -185,7 +116,7 @@ export default async function NoticiasPage({
             </Badge>
           </Reveal>
           <Reveal delay={0.05}>
-            <Text as="h2" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+            <Text as="h1" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
               Notícias
             </Text>
           </Reveal>
@@ -195,6 +126,28 @@ export default async function NoticiasPage({
             </Text>
           </Reveal>
         </div>
+      </div>
+
+      {/* Carrossel de destaques — as 5 matérias mais recentes, direto abaixo
+          do texto inicial acima (mesma seção de abertura da página). */}
+      <div className="mb-10">
+        <Reveal delay={0.06}>
+          <FeaturedArticlesCarousel articles={featured} />
+        </Reveal>
+      </div>
+
+      {/* Mosaico documental/promocional — imagens reais (não geradas por IA
+          sem revisão humana antes de publicar); enquanto o arquivo não
+          existir em public/images/noticias-hub/, SceneImage cai no
+          fallback "em produção" (nunca quebra, nunca imagem cinza genérica). */}
+      <div className="mb-10 grid gap-4 sm:grid-cols-3">
+        {marketScenes.map(({ src, alt, tone }, i) => (
+          <Reveal key={src} delay={0.06 + i * 0.06}>
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]">
+              <SceneImage src={src} alt={alt} tone={tone} caption="Em curadoria" className="absolute inset-0" />
+            </div>
+          </Reveal>
+        ))}
       </div>
 
       <div className="mb-8 flex flex-wrap gap-2 lg:hidden">
@@ -274,6 +227,21 @@ export default async function NoticiasPage({
                 </Text>
               </CardContent>
             </Card>
+          ) : isDefaultView ? (
+            <div className="flex flex-col gap-5">
+              {/* Manchete principal — só faz sentido na visão padrão (sem filtro,
+                  primeira página): destaque real pra matéria mais recente, no
+                  espírito de home de portal (Globo/UOL), não mais um card igual
+                  aos outros. */}
+              <LeadArticleCard article={items[0]} />
+              {secondaryItems.length > 0 && (
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {secondaryItems.map((article) => (
+                    <ArticleCard key={article.id} article={article} />
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
             <div className="grid gap-5 sm:grid-cols-2">
               {items.map((article) => (
@@ -426,6 +394,38 @@ export default async function NoticiasPage({
         </div>
       )}
     </section>
+  );
+}
+
+/** Manchete principal, estilo home de portal: imagem grande + título de destaque, não um card igual aos demais. */
+function LeadArticleCard({ article }: { article: NewsArticle }) {
+  const isCurated = article.kind === 'curated_link';
+
+  return (
+    <Link href={`/noticias/${article.slug}`} className="group block">
+      <Card interactive className="overflow-hidden">
+        <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
+          <SceneImage src={article.coverImageUrl} alt={article.title} tone="ember" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+          <div className="absolute left-0 right-0 bottom-0 p-4 sm:p-6 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Badge variant={isCurated ? 'outline' : 'primary'} size="sm" className={isCurated ? 'bg-black/50 backdrop-blur-sm text-white border-white/30' : undefined}>
+                {isCurated ? 'Também na mídia' : 'Manchete'}
+              </Badge>
+              <span className="text-[10px] uppercase tracking-[0.04em] text-white/70 font-medium">
+                {CATEGORY_LABELS[article.category]}
+              </span>
+            </div>
+            <Text as="h2" variant="heading-lg" className="text-white line-clamp-3 font-bold">
+              {article.title}
+            </Text>
+            <Text variant="body-sm" className="text-white/80 line-clamp-2 max-w-[70ch]">
+              {article.excerpt}
+            </Text>
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }
 

@@ -80,8 +80,47 @@ export default async function OffersPage({
   const productType = parseEnumParam(sp.tipo, TYPE_VALUES);
   const networkId = typeof sp.rede === 'string' && sp.rede ? sp.rede : undefined;
   const sortBy = sp.ordenar === 'price_desc' ? 'price_desc' : 'price_asc';
+  const search = typeof sp.q === 'string' ? sp.q.trim() : '';
 
   const baseFilter = { gameFormat, productType, networkId, sortBy: sortBy as 'price_asc' | 'price_desc' };
+
+  // Com busca por nome ativa, a vitrine deixa de ser dividida por plataforma
+  // (não faz sentido espalhar 2-3 resultados de uma busca específica em 8
+  // seções quase vazias) — vira uma lista única de resultados, igual
+  // /tabela-de-precos já faz.
+  if (search) {
+    const [networks, results] = await Promise.all([
+      listNetworks(),
+      listRankedOffers({ ...baseFilter, gamePlatformGen, search, limit: 60 }),
+    ]);
+    const metricsMap = await getOfferListingMetrics(results.map((o) => o.id));
+
+    return (
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
+        <Reveal>
+          <Text as="h1" variant="display-md">
+            Resultados para &quot;{search}&quot;
+          </Text>
+        </Reveal>
+
+        <div className="sticky top-[calc(var(--header-mobile)+8px)] lg:top-[calc(var(--header-desktop)+12px)] z-20 mt-8">
+          <Suspense fallback={null}>
+            <OfferFilters networks={networks} resultCount={results.length} />
+          </Suspense>
+        </div>
+
+        {results.length === 0 ? (
+          <Text variant="body-sm" color="secondary" className="mt-10">
+            Nenhuma oferta encontrada para &quot;{search}&quot;. Tente outro termo ou remova os filtros.
+          </Text>
+        ) : (
+          <div className="mt-10">
+            <OfferSection title={`Resultados para "${search}"`} offers={results} metricsMap={metricsMap} />
+          </div>
+        )}
+      </section>
+    );
+  }
 
   // Pool amplo (sem filtro de geração) só pra achar promoção real e contar
   // estatística — nunca usado pra render direto quando a vitrine está

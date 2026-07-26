@@ -1,7 +1,8 @@
 import 'server-only';
-import { eq, and, desc, count } from 'drizzle-orm';
+import { eq, and, desc, count, ne } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { newsArticles, type ArticleCategory, type ArticleStatus } from '@/db/schema';
+import { newsArticles, profiles, type ArticleCategory, type ArticleStatus } from '@/db/schema';
+import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 
 export interface PaginatedArticles<T> {
   items: T[];
@@ -42,6 +43,22 @@ export async function getPublishedArticles({
   return { items, totalCount: total, totalPages: Math.max(1, Math.ceil(total / pageSize)) };
 }
 
+/** Busca livre por título, só publicados — usada pela busca global do header. */
+export async function searchPublishedArticles(query: string, limit = 4) {
+  const trimmed = query.trim();
+  if (trimmed.length < 2) return [];
+
+  const fuzzy = fuzzyMatch([newsArticles.title], trimmed);
+  if (!fuzzy) return [];
+
+  return db
+    .select()
+    .from(newsArticles)
+    .where(and(eq(newsArticles.status, 'published'), fuzzy))
+    .orderBy(desc(newsArticles.publishedAt))
+    .limit(limit);
+}
+
 /** Artigo público por slug — só retorna se estiver publicado (draft/archived 404 pro público). */
 export async function getArticleBySlug(slug: string) {
   const [article] = await db
@@ -51,6 +68,31 @@ export async function getArticleBySlug(slug: string) {
     .limit(1);
 
   return article ?? null;
+}
+
+/** Nome real do autor (join simples) — pra assinatura da matéria, nunca um nome inventado. */
+export async function getArticleAuthorName(authorId: string): Promise<string | null> {
+  const [row] = await db.select({ name: profiles.name }).from(profiles).where(eq(profiles.id, authorId)).limit(1);
+  return row?.name ?? null;
+}
+
+/**
+ * Matérias relacionadas por categoria ("Leia também") — mesma categoria da
+ * atual, excluindo ela mesma, mais recentes primeiro. Retorna array vazio se
+ * não houver outra matéria publicada na categoria (nunca preenche com item
+ * de categoria diferente só pra completar um número redondo).
+ */
+export async function getRelatedArticles(
+  category: ArticleCategory,
+  excludeId: string,
+  limit = 3
+): Promise<(typeof newsArticles.$inferSelect)[]> {
+  return db
+    .select()
+    .from(newsArticles)
+    .where(and(eq(newsArticles.status, 'published'), eq(newsArticles.category, category), ne(newsArticles.id, excludeId)))
+    .orderBy(desc(newsArticles.publishedAt))
+    .limit(limit);
 }
 
 /**

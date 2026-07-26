@@ -116,6 +116,34 @@ NEGATIVE PROMPT: 3D render, CGI, matte plastic shader, photorealistic, real phot
 * **Prompt**:
   > `Detailed hand-drawn comic/graphic-novel illustration, bold black ink linework with cross-hatched shading, of an analyst at a cluttered desk at night studying glowing bar charts and line graphs on a monitor, warm desk lamp light mixing with cool chart-glow light, papers and coffee mug on the desk, cozy detailed home-office scene. Warm sunset-toned color grading (gold, orange, deep purple shadows), cinematic mood. No readable numbers, no text, no logos.`
 
+### 15. Observatório Gamer — Pesquisadores e Analistas (Home)
+* **Contexto**: Ilustração de destaque da seção "Observatório Gamer" na Home (teaser pro portal de
+  pesquisa/inteligência), ao lado do texto sobre pesquisas empíricas/teóricas/descritivas.
+* **Proporção**: `16:9`
+* **Salvar em**: `public/images/home/observatorio-gamer-hero.png`
+* **Prompt**:
+  > `Detailed hand-drawn comic/graphic-novel illustration, bold black ink linework with cross-hatched shading, of two researchers/data analysts in a modern office at night, studying floating holographic-style bar charts and line graphs projected above a cluttered desk full of papers, a laptop and a game controller resting nearby. Warm sunset-toned color grading (gold, orange, deep purple shadows), cinematic focused mood, richly detailed environment. No text, no logos, no readable numbers.`
+
+### 16. Painel Analítico "86" — Colagem para Máscara de Texto (Home)
+* **Contexto**: Preenche o glifo grande do número "86" (mesma técnica de `gamer-collage.png`/
+  `geek-collage.png` — a imagem vira o "recheio" do texto via `background-clip: text`, não uma foto
+  normal) na seção "Painel Analítico" da Home, ao lado do `PriceChartsShowcase`.
+* **Proporção**: `1:1` (quadrada — cobre bem qualquer glifo largo)
+* **Salvar em**: `public/images/home/painel-analitico-86.png`
+* **Técnica**: colagem densa (mesmo espírito de `gamer-collage.png`), não cena única — precisa ter
+  contraste e detalhe espalhados por toda a moldura pra ficar legível recortado dentro dos traços
+  grossos do número.
+* **Prompt**:
+  > `Detailed hand-drawn comic/graphic-novel collage illustration, bold black ink linework with cross-hatched shading, densely packed mosaic of market-research and data-engineering elements: a magnifying glass over a spreadsheet, a rising bar chart, a clipboard with a checklist, a desktop monitor showing a line graph, a game controller, a calculator, stacked research reports. Warm sunset-toned color grading (gold, orange, deep purple shadows), high contrast, richly detailed edge-to-edge composition with no empty space. No text, no logos, no readable numbers.`
+
+### 17. Mercado Gamer em Números (Home)
+* **Contexto**: Ilustração da seção "O mercado gamer em números" na Home (movida de `/noticias` pra
+  cá, ao lado do Painel Analítico) — acompanha as estatísticas reais de faturamento/jogadores.
+* **Proporção**: `4:3`
+* **Salvar em**: `public/images/home/mercado-gamer-numeros.png`
+* **Prompt**:
+  > `Detailed hand-drawn comic/graphic-novel illustration, bold black ink linework with cross-hatched shading, of a world map made of glowing gold and orange light points representing players connected worldwide, with a modern gaming controller and rising bar chart silhouette overlaid in the foreground. Warm sunset-toned color grading (gold, orange, deep purple shadows), cinematic global-scale mood, richly detailed environment. No text, no logos, no readable numbers.`
+
 ---
 
 ## Nota à parte — banners tipo colagem (mosaico com vários itens)

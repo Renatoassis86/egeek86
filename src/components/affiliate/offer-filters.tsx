@@ -1,12 +1,16 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import type { AffiliateNetwork } from '@/db/schema';
+
+const SEARCH_DEBOUNCE_MS = 400;
 
 const FORMAT_LABELS: Record<string, string> = {
   physical: 'Físico',
@@ -49,8 +53,18 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
   const gen = searchParams.get('geracao') ?? ALL;
   const rede = searchParams.get('rede') ?? ALL;
   const sort = searchParams.get('ordenar') ?? 'price_asc';
+  const q = searchParams.get('q') ?? '';
+  const [searchInput, setSearchInput] = useState(q);
 
-  const hasFilters = [format, gen, rede].some((v) => v !== ALL);
+  // Mantém o campo em sincronia se a URL mudar por fora (ex: link "Ver todos
+  // os resultados" da busca global do header) sem sobrescrever o que o
+  // usuário está digitando agora.
+  useEffect(() => {
+    setSearchInput(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  const hasFilters = [format, gen, rede].some((v) => v !== ALL) || q !== '';
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -62,16 +76,35 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
   }
 
+  // Debounce pra não refazer a query a cada tecla — mesmo padrão já usado no
+  // campo de busca de /tabela-de-precos.
+  useEffect(() => {
+    if (searchInput === q) return;
+    const timer = setTimeout(() => setParam('q', searchInput.trim()), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
   function clearAll() {
     const params = new URLSearchParams(searchParams.toString());
     params.delete('formato');
     params.delete('geracao');
     params.delete('rede');
+    params.delete('q');
+    setSearchInput('');
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
   }
 
   return (
     <div className="flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] px-4 py-3.5 sm:flex-row sm:flex-wrap sm:items-center">
+      <Input
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        placeholder="Buscar por nome do jogo..."
+        leftAddon={<Search className="size-4" />}
+        className="w-full sm:w-56"
+      />
+
       {typeof resultCount === 'number' && (
         <Text variant="caption" color="tertiary" className="shrink-0 whitespace-nowrap font-medium">
           {resultCount} {resultCount === 1 ? 'oferta' : 'ofertas'}

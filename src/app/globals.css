@@ -70,17 +70,17 @@
   --text-display-2xl: 72px;
   --text-display-2xl--line-height: 76px;
   --text-display-2xl--letter-spacing: -0.025em;
-  --text-display-2xl--font-weight: 700;
+  --text-display-2xl--font-weight: 800;
 
   --text-display-xl: 56px;
   --text-display-xl--line-height: 60px;
   --text-display-xl--letter-spacing: -0.022em;
-  --text-display-xl--font-weight: 700;
+  --text-display-xl--font-weight: 800;
 
   --text-display-lg: 40px;
   --text-display-lg--line-height: 44px;
   --text-display-lg--letter-spacing: -0.02em;
-  --text-display-lg--font-weight: 700;
+  --text-display-lg--font-weight: 800;
 
   --text-display-md: 32px;
   --text-display-md--line-height: 36px;

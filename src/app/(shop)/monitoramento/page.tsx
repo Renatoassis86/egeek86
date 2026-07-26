@@ -97,7 +97,13 @@ export default async function MonitoramentoPage({
   try {
     let userWatches = profile ? await getUserWatches(profile.id) : [];
 
-    if (userWatches.length === 0) {
+    // A vitrine de "populares" só serve de amostra pra VISITANTE (sem conta,
+    // sem watch nenhum possível ainda) — nunca pra um usuário logado com a
+    // lista genuinamente vazia (seja por nunca ter adicionado nada, seja por
+    // ter acabado de apagar tudo). Aplicar isso pra qualquer perfil fazia a
+    // lista "voltar" sozinha com itens que o usuário nunca escolheu
+    // acompanhar, só rotulados como "Sua lista".
+    if (!profile && userWatches.length === 0) {
       const popularOffers = await getPublicOffers(8);
       if (popularOffers && popularOffers.length > 0) {
         userWatches = popularOffers.map((item) => ({
@@ -143,8 +149,11 @@ export default async function MonitoramentoPage({
     console.error('Erro ao montar dados de monitoramento:', e);
   }
 
-  // Fallback garantido se a lista ainda estiver vazia
-  if (watchlistItems.length === 0) {
+  // Fallback de demonstração só pra visitante sem conta — pra um perfil
+  // logado com a lista genuinamente vazia, mantém vazia mesmo (o board
+  // mostra o estado "acompanhe seu primeiro jogo" de verdade, não uma
+  // amostra fixa disfarçada de "sua lista").
+  if (!profile && watchlistItems.length === 0) {
     watchlistItems = DEMO_FALLBACK_WATCHLIST;
     selectedProductId = 'demo-1';
   }

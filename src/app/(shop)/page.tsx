@@ -54,8 +54,10 @@ import { getSurveyAggregation, type SurveyAggregation } from '@/server/queries/s
 import { gamerCards, geekCards } from '@/lib/categories-showcase';
 import { PriceChartsShowcase } from '@/components/home/price-charts-showcase';
 import { GamerSurvey } from '@/components/home/gamer-survey';
-import { Package, Store, Layers, LineChart } from 'lucide-react';
+import { Package, Store, Layers, LineChart, Wallet, Trophy, TrendingDown as TrendingDownIcon } from 'lucide-react';
+import { formatBRL } from '@/lib/format';
 import { StatTile } from '@/components/ui/stat-tile';
+import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated-stat-bars';
 
 export const dynamic = 'force-dynamic';
 
@@ -71,6 +73,7 @@ export default async function HomePage() {
       </Suspense>
       <CategoriesSection />
       <MarketStatsSection />
+      <MarketNumbersSection />
       <PlatformShowcase />
       <Suspense fallback={<SectionFallback />}>
         <SalesHighlights />
@@ -95,11 +98,23 @@ export default async function HomePage() {
 // (2026-07-25): era essa soma sequencial, não o pool de conexão, que fazia
 // a Home travar 25s+ mesmo com o banco respondendo rápido (/api/health
 // respondia em ~1s no mesmo instante em que a Home travava).
+// Esqueleto de 3 cards (não um bloco cinza genérico) — cada seção streamada
+// por trás desse fallback (WeeklyPromos/SalesHighlights/HomeNews) renderiza
+// em grid de 3 colunas; um retângulo único no lugar deles lia como "espaço
+// vazio/quebrado" pro usuário durante o streaming SSR, em vez de "carregando".
 function SectionFallback() {
   return (
     <div className="w-full py-16 lg:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
-        <div className="h-48 w-full animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-bg-inset)]" />
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="flex flex-col gap-3 animate-pulse">
+              <div className="aspect-[16/9] w-full rounded-[var(--radius-lg)] bg-[var(--color-bg-inset)]" />
+              <div className="h-4 w-3/4 rounded bg-[var(--color-bg-inset)]" />
+              <div className="h-3 w-1/2 rounded bg-[var(--color-bg-inset)]" />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -197,6 +212,11 @@ function MarketStatsSection() {
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-14 lg:items-center">
         <Reveal>
           <div className="flex flex-col gap-4">
+            <TextImageMask
+              text="86"
+              src="/images/home/painel-analitico-86.png"
+              className="text-[90px] leading-none sm:text-[120px] lg:text-[140px]"
+            />
             <Text variant="label" color="hype">
               Painel Analítico
             </Text>
@@ -210,6 +230,75 @@ function MarketStatsSection() {
         </Reveal>
         <Reveal delay={0.08}>
           <PriceChartsShowcase />
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// Estatísticas reais do mercado gamer, sempre com fonte citada — nunca
+// inventadas nem projetadas sem dizer a origem. Atualizar quando houver
+// relatório mais recente (Newzoo publica novo Global Games Market Report
+// anualmente, geralmente entre jun-set; Pesquisa Game Brasil, anualmente).
+// Vivia em /noticias antes; mudou pra cá porque é contextualização/
+// monitoramento de mercado, o mesmo assunto do Painel Analítico logo acima.
+const MARKET_NUMBERS: StatBarItem[] = [
+  {
+    label: 'Mercado global de games em 2025',
+    fillPercent: 75,
+    displayValue: 'US$ 197 bi (+7,5%)',
+    source: 'Newzoo, Global Games Market Report 2025',
+  },
+  {
+    label: 'Mercado de games no Brasil em 2025',
+    fillPercent: 80,
+    displayValue: 'R$ 12,7 bi (+8%)',
+    source: 'Newzoo / Statista / Abragames',
+  },
+  {
+    label: 'Jogadores ativos no mundo',
+    fillPercent: 61.5,
+    displayValue: '3,6 bi (61,5% da população online)',
+    source: 'Newzoo, 2025',
+  },
+  {
+    label: 'Brasileiros que jogam games',
+    fillPercent: 73.4,
+    displayValue: '73,4%',
+    source: 'Pesquisa Game Brasil',
+  },
+];
+
+function MarketNumbersSection() {
+  return (
+    <section data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+        <Reveal>
+          <div className="flex flex-col gap-4">
+            <Text variant="label" color="hype">
+              O mercado gamer em números
+            </Text>
+            <Text as="h2" variant="display-lg" className="max-w-[20ch]">
+              Games já é a maior indústria de entretenimento do mundo, e o Brasil lidera a América Latina.
+            </Text>
+            <Text variant="body-md" color="secondary" className="leading-relaxed">
+              Mais gente joga do que assiste streaming ou vai ao cinema — e o Brasil é o maior mercado
+              consumidor da América Latina desde 2021. Sempre com fonte citada, nunca projeção sem
+              dizer de onde veio.
+            </Text>
+            <div className="mt-2">
+              <AnimatedStatBars items={MARKET_NUMBERS} />
+            </div>
+          </div>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <SceneImage
+            src="/images/home/mercado-gamer-numeros.png"
+            alt="Ilustração representando o crescimento do mercado gamer"
+            tone="gold"
+            caption="Mercado Gamer em Números · em produção"
+            className="aspect-[4/3] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]"
+          />
         </Reveal>
       </div>
     </section>
@@ -271,6 +360,9 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
             <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Lojas & Vendedores" />
             <StatTile icon={<Layers className="size-5" />} value={stats.totalNetworks} label="Plataformas Parceiras" />
             <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de Preço" />
+            <StatTile icon={<Wallet className="size-5" />} value={formatBRL(stats.avgPriceCents)} label="Preço Médio Geral" />
+            <StatTile icon={<Trophy className="size-5" />} value={formatBRL(stats.lowestPriceCentsEver)} label="Menor Preço Histórico" />
+            <StatTile icon={<TrendingDownIcon className="size-5" />} value={stats.itemsBelowAverageCount} label="Itens em Queda Agora" />
           </div>
         </Reveal>
       </div>
@@ -366,12 +458,6 @@ function DividerEmblem() {
 }
 
 // ----- Hero ---------------------------------------------------
-const heroStats = [
-  { label: 'Colecionadores', value: '10k+' },
-  { label: 'Drops/mês', value: '12' },
-  { label: 'Sellers verificados', value: '48' },
-];
-
 function Hero() {
   return (
     <section
@@ -430,22 +516,6 @@ function Hero() {
               </div>
             </Reveal>
 
-            {/* Ticker editorial — não mais um grid de 3 caixas isoladas */}
-            <Reveal delay={0.24}>
-              <dl className="mt-16 lg:mt-20 flex flex-wrap border-t border-[var(--color-border-subtle)] pt-8">
-                {heroStats.map((s, i) => (
-                  <div
-                    key={s.label}
-                    className={cn(
-                      'pr-8 lg:pr-12',
-                      i > 0 && 'border-l border-[var(--color-border-subtle)] pl-8 lg:pl-12'
-                    )}
-                  >
-                    <Stat label={s.label} value={s.value} />
-                  </div>
-                ))}
-              </dl>
-            </Reveal>
           </div>
 
           {/* Âncora visual — mosaico desconstruído (3 quadros levemente
@@ -492,19 +562,6 @@ function Hero() {
         </div>
       </div>
     </section>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <Text variant="mono-lg" className="tabular">
-        {value}
-      </Text>
-      <Text variant="caption" color="tertiary">
-        {label}
-      </Text>
-    </div>
   );
 }
 
@@ -743,12 +800,19 @@ function InteligenciaGamerTeaserSection() {
           {/* Lado Esquerdo: Conteúdo Principal */}
           <div className="lg:col-span-6 flex flex-col gap-4">
             <Reveal>
+              <SceneImage
+                src="/images/home/observatorio-gamer-hero.png"
+                alt="Pesquisadores e analistas do Observatório Gamer"
+                tone="ember"
+                caption="Observatório Gamer · em produção"
+                className="aspect-[16/9] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] mb-2"
+              />
               <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
                 <Sparkles className="size-3.5" aria-hidden />
                 Arkos Intelligence
               </Text>
               <Text as="h2" variant="display-lg" className="mt-2">
-                Inteligência Gamer: Dados, Análises e Notícias.
+                Observatório Gamer: Dados, Análises e Notícias.
               </Text>
               <Text variant="body-lg" color="secondary" className="leading-relaxed mt-2">
                 Conheça o nosso portal de pesquisa econômica e comportamental aplicada à indústria de jogos. Análises empíricas, estudos descritivos e colunas opinativas para apoiar suas decisões de mercado.
