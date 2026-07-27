@@ -75,7 +75,7 @@ const userModules = [
 ];
 
 const institutionalModules = [
-  { href: '/sobre', label: 'Quem Somos', icon: Info },
+  { href: '/sobre', label: 'Manifesto & Plataforma', icon: Info },
   { href: '/contatos', label: 'Contatos & Suporte', icon: HelpCircle },
   { href: '/termos', label: 'Termos de Uso', icon: FileCheck },
   { href: '/privacidade', label: 'Política de Privacidade', icon: Shield },
