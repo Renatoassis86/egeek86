@@ -941,11 +941,22 @@ function InteligenciaGamerTeaserSection() {
 // ----- Home News Section ------------------------------------
 async function HomeNewsSection() {
   try {
-    const { items: articles } = await getPublishedArticles({ pageSize: 3 });
+    const { items: articles } = await getPublishedArticles({ pageSize: 5 });
     if (articles.length === 0) return null;
 
+    function getMatchingCover(title: string, coverUrl?: string | null): string {
+      if (coverUrl && coverUrl.startsWith('/images/')) return coverUrl;
+      const lower = title.toLowerCase();
+      if (lower.includes('gta') || lower.includes('grand theft auto')) return '/images/noticias-hub/news-gta6.png';
+      if (lower.includes('x-men') || lower.includes('xmen') || lower.includes('mutantes')) return '/images/noticias-hub/news-xmen.png';
+      if (lower.includes('e-sports') || lower.includes('esports') || lower.includes('circuito')) return '/images/noticias-hub/news-esports.png';
+      if (lower.includes('setup') || lower.includes('periféricos') || lower.includes('performance')) return '/images/noticias-hub/news-gaming-setup.png';
+      if (lower.includes('retrô') || lower.includes('retro') || lower.includes('consoles')) return '/images/noticias-hub/news-retro-console.png';
+      return '/images/noticias-hub/news-gta6.png';
+    }
+
     return (
-      <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24">
+      <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
         <Reveal>
           <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
@@ -958,7 +969,7 @@ async function HomeNewsSection() {
             </div>
             <Link
               href="/noticias"
-              className="inline-flex items-center gap-1 text-body-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
+              className="inline-flex items-center gap-1 text-body-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)] font-bold"
             >
               Ver todas as notícias
               <ArrowRight className="size-4" />
@@ -966,22 +977,21 @@ async function HomeNewsSection() {
           </div>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((article, i) => {
-            const cleanCover = [
-              '/images/noticias-hub/news-gta6.png',
-              '/images/noticias-hub/news-xmen.png',
-              '/images/noticias-hub/news-esports.png',
-              '/images/noticias-hub/news-gaming-setup.png',
-              '/images/noticias-hub/news-retro-console.png',
-            ][i % 5];
+            const finalCover = getMatchingCover(article.title, article.coverImageUrl);
             return (
-              <Reveal key={article.id} delay={i * 0.06}>
+              <Reveal key={article.id} delay={i * 0.05}>
                 <Link href={`/noticias/${article.slug}`} className="group block h-full">
-                  <Card interactive className="h-full flex flex-col overflow-hidden">
-                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
-                      <SceneImage src={article.coverImageUrl?.startsWith('/images/') ? article.coverImageUrl : cleanCover} alt={article.title} tone="gold" />
-                      <Badge variant="hype" size="sm" className="absolute top-3 left-3 capitalize">
+                  <Card interactive className="h-full flex flex-col overflow-hidden border border-[var(--color-border-subtle)]">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
+                      <Image
+                        src={finalCover}
+                        alt={article.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <Badge variant="hype" size="sm" className="absolute top-3 left-3 capitalize z-10 shadow-md">
                         {article.category.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -992,7 +1002,7 @@ async function HomeNewsSection() {
                       <Text variant="body-sm" color="secondary" className="line-clamp-3 text-xs leading-relaxed">
                         {article.excerpt}
                       </Text>
-                      <Text variant="caption" color="tertiary" className="mt-auto pt-3 border-t border-[var(--color-border-subtle)]">
+                      <Text variant="caption" color="tertiary" className="mt-auto pt-3 border-t border-[var(--color-border-subtle)] font-mono text-[11px]">
                         {new Date(article.publishedAt ?? article.createdAt).toLocaleDateString('pt-BR')}
                       </Text>
                     </CardContent>

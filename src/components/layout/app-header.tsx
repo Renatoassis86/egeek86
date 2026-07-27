@@ -33,6 +33,17 @@ interface NavItem {
  */
 const navLinks: NavItem[] = [
   {
+    href: '/sobre',
+    label: 'Institucional',
+    children: [
+      { href: '/sobre#quem-somos', label: 'Quem Somos' },
+      { href: '/sobre#missao-visao-valores', label: 'Missão, Visão e Valores' },
+      { href: '/sobre#objetivos-justificativa', label: 'Objetivos e Justificativa' },
+      { href: '/sobre#ferramentas', label: 'Ferramentas da Plataforma' },
+      { href: '/sobre#idealizador', label: 'Idealizador e Direção Técnica' },
+    ],
+  },
+  {
     href: '/ofertas',
     label: 'Ofertas e Preços',
     children: [

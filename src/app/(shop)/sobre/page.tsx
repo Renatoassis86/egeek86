@@ -84,13 +84,13 @@ function HeroManifesto() {
         <Reveal>
           <div className="flex flex-col gap-3">
             <Badge variant="hype" size="md" className="w-fit font-black tracking-wider uppercase">
-              <Sparkles className="size-3.5 mr-1" /> Arkos Intelligence e Manifesto Geek 86
+              <Sparkles className="size-3.5 mr-1" /> Arkos Intelligence e Espaço Geek 86
             </Badge>
             <Text as="h1" variant="display-xl" className="font-black text-white tracking-tight lg:text-display-2xl max-w-[22ch]">
-              A Plataforma Inteligente de Econometria, Gestão e Decisão Gamer do Brasil.
+              Inteligência de Dados e Decisão para o Mercado Gamer.
             </Text>
             <Text variant="body-lg" className="mt-2 text-[var(--color-text-secondary)] font-medium max-w-[68ch] leading-relaxed">
-              O Espaço Geek 86 unifica cultura pop, nostalgia da era 16/32-bit e ciência de dados econométrica avançada. Um ecossistema completo desenhado para transformar a experiência de compra do consumidor final e impulsionar a gestão de afiliados e vendedores de jogos no país.
+              O Espaço Geek 86 unifica toda a história dos videogames — da nostalgia da era 8, 16 e 32-bit aos consoles de última geração — com os mais modernos modelos econométricos de inteligência de dados e decisão. Um ecossistema completo desenhado para transformar a experiência de compra do consumidor final e impulsionar a gestão de afiliados e vendedores no Brasil.
             </Text>
           </div>
         </Reveal>
@@ -102,7 +102,7 @@ function HeroManifesto() {
               alt="Duas gerações de consoles e jogos no Espaço Geek 86"
               fill
               priority
-              className="object-cover object-center opacity-90"
+              className="object-contain object-center p-2 opacity-95"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0F0C08] via-transparent to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-xs font-bold text-amber-400">
@@ -139,7 +139,7 @@ function PlatformMetricsSection({ stats }: { stats: any }) {
 // ----------------------------------------------------------------------
 function QuemSomosSection() {
   return (
-    <section data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
+    <section id="quem-somos" data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] py-16 lg:py-24 border-b border-[var(--color-border-subtle)] scroll-mt-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
           <div className="flex flex-col gap-4">
@@ -167,7 +167,7 @@ function QuemSomosSection() {
               src="/images/sobre/locadora.png"
               alt="Ilustração estilo anos 80 de locadora retro gamer"
               fill
-              className="object-cover"
+              className="object-contain object-center p-2"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-amber-400">
@@ -185,87 +185,100 @@ function QuemSomosSection() {
 // ----------------------------------------------------------------------
 function MissaoVisaoValoresSection() {
   return (
-    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-12">
+    <section id="missao-visao-valores" data-theme="dark" className="relative w-full bg-gradient-to-b from-[#0F0C08] via-[#15100A] to-[#0A0704] py-20 lg:py-28 border-b border-[var(--color-border-subtle)] scroll-mt-20 overflow-hidden">
+      <Glow color="gold" size="xl" intensity={0.15} className="-top-32 right-0" />
+      <Glow color="hype" size="md" intensity={0.12} className="bottom-0 left-10" />
+
+      <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-14">
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
-            <Badge variant="hype" size="md" className="w-fit uppercase">
-              Pilares Fundamentais
+            <Badge variant="hype" size="md" className="w-fit uppercase font-black tracking-widest bg-gradient-to-r from-amber-500 to-orange-500 text-black">
+              ✦ Pilares Fundamentais
             </Badge>
-            <Text as="h2" variant="display-lg" className="font-black text-[var(--color-text-primary)]">
+            <Text as="h2" variant="display-lg" className="font-black text-white tracking-tight">
               Missão, Visão e Valores do Espaço Geek 86
             </Text>
-            <Text variant="body-lg" color="secondary" className="max-w-[56ch]">
-              Os princípios que norteiam o desenvolvimento dos nossos algoritmos, das nossas pesquisas e das nossas relações com a comunidade.
+            <Text variant="body-lg" className="text-[var(--color-text-secondary)] max-w-[60ch] leading-relaxed">
+              Os princípios econométricos e culturais que norteiam nossos algoritmos de monitoramento e o nosso compromisso com a comunidade gamer.
             </Text>
           </div>
         </Reveal>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Missão */}
+        <div className="grid gap-8 md:grid-cols-3">
+          {/* Missão - Âmbar / Dourado */}
           <Reveal delay={0.04}>
-            <Card className="h-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-amber-500/50 transition-all">
-              <CardContent className="p-6 flex flex-col gap-4">
-                <div className="p-3 rounded-full bg-amber-500/10 text-amber-600 w-fit">
-                  <Target className="size-6" />
-                </div>
-                <Text variant="heading-md" className="font-bold text-[var(--color-text-primary)]">
-                  Nossa Missão
-                </Text>
-                <Text variant="body-sm" color="secondary" className="leading-relaxed">
-                  Eliminar a assimetria de informação no mercado de jogos do Brasil. Oferecer transparência econométrica em tempo real para que qualquer gamer compre pelo preço justo e qualquer afiliado gerencie suas indicações com inteligência e ética.
-                </Text>
-              </CardContent>
-            </Card>
+            <div className="group h-full rounded-[var(--radius-xl)] border border-amber-500/30 bg-gradient-to-b from-[#1C150B] to-[#120E07] p-7 flex flex-col gap-5 transition-all duration-500 transform hover:-translate-y-2 hover:border-amber-400 hover:shadow-[0_0_35px_rgba(245,158,11,0.25)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/25 transition-all" />
+              <div className="p-3.5 rounded-2xl bg-amber-500/20 text-amber-400 w-fit group-hover:scale-110 transition-transform duration-300">
+                <Target className="size-7" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-black uppercase tracking-wider text-amber-400">Objetivo Maior</span>
+                <h3 className="text-2xl font-black text-white tracking-tight">Nossa Missão</h3>
+              </div>
+              <p className="text-sm text-zinc-300 leading-relaxed font-medium">
+                Eliminar a assimetria de informação no mercado de jogos do Brasil. Oferecer transparência econométrica em tempo real para que qualquer gamer compre pelo preço justo e qualquer afiliado gerencie suas indicações com inteligência e ética.
+              </p>
+              <div className="mt-auto pt-4 border-t border-amber-500/20 flex items-center gap-2 text-xs font-bold text-amber-400">
+                <span>Transparência Econométrica 100%</span>
+              </div>
+            </div>
           </Reveal>
 
-          {/* Visão */}
+          {/* Visão - Ciano / Azul Neon */}
           <Reveal delay={0.08}>
-            <Card className="h-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-blue-500/50 transition-all">
-              <CardContent className="p-6 flex flex-col gap-4">
-                <div className="p-3 rounded-full bg-blue-500/10 text-blue-600 w-fit">
-                  <Compass className="size-6" />
-                </div>
-                <Text variant="heading-md" className="font-bold text-[var(--color-text-primary)]">
-                  Nossa Visão
-                </Text>
-                <Text variant="body-sm" color="secondary" className="leading-relaxed">
-                  Ser o hub central definitivo de precificação histórica, curadoria retro e análise de tendências gamer da América Latina. Uma referência onde dados quantitativos e paixão pela cultura pop se encontram.
-                </Text>
-              </CardContent>
-            </Card>
+            <div className="group h-full rounded-[var(--radius-xl)] border border-cyan-500/30 bg-gradient-to-b from-[#0A1926] to-[#061019] p-7 flex flex-col gap-5 transition-all duration-500 transform hover:-translate-y-2 hover:border-cyan-400 hover:shadow-[0_0_35px_rgba(6,182,212,0.25)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/25 transition-all" />
+              <div className="p-3.5 rounded-2xl bg-cyan-500/20 text-cyan-400 w-fit group-hover:scale-110 transition-transform duration-300">
+                <Compass className="size-7" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-black uppercase tracking-wider text-cyan-400">Horizonte Futuro</span>
+                <h3 className="text-2xl font-black text-white tracking-tight">Nossa Visão</h3>
+              </div>
+              <p className="text-sm text-zinc-300 leading-relaxed font-medium">
+                Ser o hub central definitivo de precificação histórica, curadoria retrô e análise de tendências gamer da América Latina. Uma referência onde dados quantitativos e paixão pela cultura pop se encontram.
+              </p>
+              <div className="mt-auto pt-4 border-t border-cyan-500/20 flex items-center gap-2 text-xs font-bold text-cyan-400">
+                <span>Autoridade em Dados Gamer</span>
+              </div>
+            </div>
           </Reveal>
 
-          {/* Valores */}
+          {/* Valores - Esmeralda / Verde Neon */}
           <Reveal delay={0.12}>
-            <Card className="h-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] hover:border-emerald-500/50 transition-all">
-              <CardContent className="p-6 flex flex-col gap-4">
-                <div className="p-3 rounded-full bg-emerald-500/10 text-emerald-600 w-fit">
-                  <Award className="size-6" />
-                </div>
-                <Text variant="heading-md" className="font-bold text-[var(--color-text-primary)]">
-                  Nossos Valores
-                </Text>
-                <Text variant="body-sm" color="secondary" className="leading-relaxed">
-                  100% Imparcialidade Econométrica, Preservação da Memória Retrogamer, Respeito à Comunidade, Rigor Científico na Coleta de Dados e Transparência Absoluta nos Links de Afiliados.
-                </Text>
-              </CardContent>
-            </Card>
+            <div className="group h-full rounded-[var(--radius-xl)] border border-emerald-500/30 bg-gradient-to-b from-[#0B1D14] to-[#06120D] p-7 flex flex-col gap-5 transition-all duration-500 transform hover:-translate-y-2 hover:border-emerald-400 hover:shadow-[0_0_35px_rgba(16,185,129,0.25)] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/25 transition-all" />
+              <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-400 w-fit group-hover:scale-110 transition-transform duration-300">
+                <Award className="size-7" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400">Código de Ética</span>
+                <h3 className="text-2xl font-black text-white tracking-tight">Nossos Valores</h3>
+              </div>
+              <p className="text-sm text-zinc-300 leading-relaxed font-medium">
+                100% Imparcialidade Econométrica, Preservação da Memória Retrogamer, Respeito à Comunidade, Rigor Científico na Coleta de Dados e Transparência Absoluta nos Links de Afiliados.
+              </p>
+              <div className="mt-auto pt-4 border-t border-emerald-500/20 flex items-center gap-2 text-xs font-bold text-emerald-400">
+                <span>Compromisso com o Colecionador</span>
+              </div>
+            </div>
           </Reveal>
         </div>
 
-        {/* Imagem Ilustrativa dos Valores & Fliperama */}
+        {/* Banner Ilustrativo com Brilho Neon */}
         <Reveal delay={0.16}>
-          <div className="relative aspect-[21/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-black">
+          <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/40 bg-[#0B0805] shadow-2xl group">
             <Image
               src="/images/sobre/fliperama.png"
               alt="Fliperama e cultura gamer retro"
               fill
-              className="object-cover"
+              className="object-contain object-center p-3 transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-            <div className="absolute bottom-4 left-6 right-6 text-xs text-amber-400 font-mono font-bold">
-              🕹️ A mesma energia dos arcades clássicos impulsionando a maior comunidade de inteligência gamer.
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+            <div className="absolute bottom-5 left-6 right-6 flex items-center justify-between text-xs text-amber-400 font-mono font-bold">
+              <span>🕹️ A mesma energia dos arcades clássicos impulsionando a maior comunidade de inteligência gamer.</span>
+              <span className="hidden sm:inline text-zinc-400">Arquitetura 100% Auditada</span>
             </div>
           </div>
         </Reveal>
@@ -279,7 +292,7 @@ function MissaoVisaoValoresSection() {
 // ----------------------------------------------------------------------
 function ObjetivosJustificativaSection() {
   return (
-    <section data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
+    <section id="objetivos-justificativa" data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] py-16 lg:py-24 border-b border-[var(--color-border-subtle)] scroll-mt-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[#0B0805] shadow-2xl">
@@ -287,7 +300,7 @@ function ObjetivosJustificativaSection() {
               src="/images/sobre/aluguel-tv.png"
               alt="Ilustração sobre justificativa econométrica no mercado gamer"
               fill
-              className="object-cover"
+              className="object-contain object-center p-2"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-amber-400">
