@@ -967,31 +967,40 @@ async function HomeNewsSection() {
         </Reveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {articles.map((article, i) => (
-            <Reveal key={article.id} delay={i * 0.06}>
-              <Link href={`/noticias/${article.slug}`} className="group block h-full">
-                <Card interactive className="h-full flex flex-col overflow-hidden">
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
-                    <SceneImage src={article.coverImageUrl} alt={article.title} tone="gold" />
-                    <Badge variant="hype" size="sm" className="absolute top-3 left-3 capitalize">
-                      {article.category.replace('_', ' ')}
-                    </Badge>
-                  </div>
-                  <CardContent className="p-5 flex flex-col gap-2 flex-1">
-                    <Text variant="heading-sm" className="line-clamp-2 font-bold group-hover:text-[var(--color-accent-primary)] transition-colors">
-                      {article.title}
-                    </Text>
-                    <Text variant="body-sm" color="secondary" className="line-clamp-3 text-xs leading-relaxed">
-                      {article.excerpt}
-                    </Text>
-                    <Text variant="caption" color="tertiary" className="mt-auto pt-3 border-t border-[var(--color-border-subtle)]">
-                      {new Date(article.publishedAt ?? article.createdAt).toLocaleDateString('pt-BR')}
-                    </Text>
-                  </CardContent>
-                </Card>
-              </Link>
-            </Reveal>
-          ))}
+          {articles.map((article, i) => {
+            const cleanCover = [
+              '/images/noticias-hub/news-gta6.png',
+              '/images/noticias-hub/news-xmen.png',
+              '/images/noticias-hub/news-esports.png',
+              '/images/noticias-hub/news-gaming-setup.png',
+              '/images/noticias-hub/news-retro-console.png',
+            ][i % 5];
+            return (
+              <Reveal key={article.id} delay={i * 0.06}>
+                <Link href={`/noticias/${article.slug}`} className="group block h-full">
+                  <Card interactive className="h-full flex flex-col overflow-hidden">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
+                      <SceneImage src={article.coverImageUrl?.startsWith('/images/') ? article.coverImageUrl : cleanCover} alt={article.title} tone="gold" />
+                      <Badge variant="hype" size="sm" className="absolute top-3 left-3 capitalize">
+                        {article.category.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <CardContent className="p-5 flex flex-col gap-2 flex-1">
+                      <Text variant="heading-sm" className="line-clamp-2 font-bold group-hover:text-[var(--color-accent-primary)] transition-colors">
+                        {article.title}
+                      </Text>
+                      <Text variant="body-sm" color="secondary" className="line-clamp-3 text-xs leading-relaxed">
+                        {article.excerpt}
+                      </Text>
+                      <Text variant="caption" color="tertiary" className="mt-auto pt-3 border-t border-[var(--color-border-subtle)]">
+                        {new Date(article.publishedAt ?? article.createdAt).toLocaleDateString('pt-BR')}
+                      </Text>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </Reveal>
+            );
+          })}
         </div>
       </section>
     );

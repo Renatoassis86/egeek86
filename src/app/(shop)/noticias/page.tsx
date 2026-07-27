@@ -397,6 +397,21 @@ export default async function NoticiasPage({
   );
 }
 
+const CLEAN_NEWS_IMAGES = [
+  '/images/noticias-hub/news-gta6.png',
+  '/images/noticias-hub/news-xmen.png',
+  '/images/noticias-hub/news-esports.png',
+  '/images/noticias-hub/news-gaming-setup.png',
+  '/images/noticias-hub/news-retro-console.png',
+];
+
+function getCleanNewsImage(coverUrl?: string | null, index = 0) {
+  if (coverUrl && coverUrl.startsWith('/images/noticias-hub/news-')) {
+    return coverUrl;
+  }
+  return CLEAN_NEWS_IMAGES[index % CLEAN_NEWS_IMAGES.length];
+}
+
 /** Manchete principal, estilo home de portal: imagem grande + título de destaque, não um card igual aos demais. */
 function LeadArticleCard({ article }: { article: NewsArticle }) {
   const isCurated = article.kind === 'curated_link';
@@ -405,7 +420,7 @@ function LeadArticleCard({ article }: { article: NewsArticle }) {
     <Link href={`/noticias/${article.slug}`} className="group block">
       <Card interactive className="overflow-hidden">
         <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
-          <SceneImage src={article.coverImageUrl} alt={article.title} tone="ember" />
+          <SceneImage src={getCleanNewsImage(article.coverImageUrl, 0)} alt={article.title} tone="ember" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
           <div className="absolute left-0 right-0 bottom-0 p-4 sm:p-6 flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -429,7 +444,7 @@ function LeadArticleCard({ article }: { article: NewsArticle }) {
   );
 }
 
-function ArticleCard({ article }: { article: NewsArticle }) {
+function ArticleCard({ article, index = 0 }: { article: NewsArticle; index?: number }) {
   const isCurated = article.kind === 'curated_link';
   const href = `/noticias/${article.slug}`;
 
@@ -437,7 +452,7 @@ function ArticleCard({ article }: { article: NewsArticle }) {
     <Link href={href} className="group block h-full">
       <Card interactive className="flex h-full flex-col overflow-hidden">
         <div className="relative aspect-[16/9] shrink-0 overflow-hidden bg-[var(--color-bg-inset)]">
-          <SceneImage src={article.coverImageUrl} alt={article.title} tone="gold" />
+          <SceneImage src={getCleanNewsImage(article.coverImageUrl, index + 1)} alt={article.title} tone="gold" />
           <div className="absolute left-3 top-3">
             <Badge
               variant={isCurated ? 'outline' : 'primary'}

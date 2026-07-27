@@ -197,9 +197,9 @@ export default function InteligenciaGamerPage() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
       {/* Faixa Superior - Arkos Intelligence */}
-      <div className="w-full bg-zinc-950 border-b border-zinc-900 py-3 px-4 lg:px-8 text-center">
-        <span className="text-[10px] tracking-[0.25em] font-bold text-zinc-400 uppercase">
-          Arkos Intelligence - Portal de Informação e Decisão Gamer
+      <div className="w-full bg-[#0F0C08] border-b border-[#262018] py-3 px-4 lg:px-8 text-center">
+        <span className="text-xs tracking-[0.25em] font-extrabold text-amber-400 uppercase">
+          Arkos Intelligence — Portal de Informação e Decisão Gamer
         </span>
       </div>
 
