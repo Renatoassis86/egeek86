@@ -341,19 +341,13 @@ export function PriceHistoryChart({
         setTooltip(null);
         return;
       }
-      // Tamanho estimado do card do tooltip (w-60 = 240px; altura varia com o
-      // conteúdo, 260px cobre o pior caso) — usado só pra decidir de que lado
-      // do cursor abrir, pra nunca cortar fora do container do gráfico.
       const containerWidth = containerRef.current?.clientWidth ?? 0;
       const containerHeight = containerRef.current?.clientHeight ?? 0;
       const TOOLTIP_WIDTH = 240;
-      const TOOLTIP_HEIGHT = 260;
+      const TOOLTIP_HEIGHT = 160;
       const x = param.point.x + 12 + TOOLTIP_WIDTH > containerWidth ? param.point.x - TOOLTIP_WIDTH - 12 : param.point.x + 12;
       const y = Math.min(Math.max(param.point.y - 12, 8), Math.max(containerHeight - TOOLTIP_HEIGHT - 8, 8));
 
-      // Cotações são agrupadas pelo mesmo balde de tempo do ponto (não por
-      // timestamp exato) — cada ponto do gráfico agora representa um
-      // intervalo inteiro (ex: 3 dias), não um instante único.
       const pointQuotes = quotesRef.current.filter((q) => q.bucketTime === param.time);
 
       setTooltip({
@@ -466,6 +460,7 @@ export function PriceHistoryChart({
           <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none font-bold">
             {(history.totalQuoteCount || 0).toLocaleString('pt-BR')} cotações de preços coletadas
           </Badge>
+        </div>
         {hasEnoughData && (
           <PriceSignalBadge
             signal={priceSignal}
@@ -531,7 +526,7 @@ function ChartTooltip({
   variationVsAvgPercent: number | null;
 }) {
   const { offer, quotes } = tooltip;
-  // Preço de compra: abaixo da média é bom (verde), acima é ruim (vermelho) — mesma convenção do resto do app.
+
   const variationColor =
     variationVsAvgPercent == null
       ? 'text-[var(--color-text-tertiary)]'
@@ -542,86 +537,43 @@ function ChartTooltip({
           : 'text-[var(--color-text-tertiary)]';
 
   const quotesCount = quotes && quotes.length > 0 ? quotes.length : 1;
-  const uniqueStoresCount = quotes && quotes.length > 0 ? new Set(quotes.map((q) => q.networkName)).size : 1;
 
   return (
     <div
-      className="pointer-events-none absolute z-10 w-64 rounded-[var(--radius-md)] border border-amber-500/40 bg-[var(--color-bg-elevated)] p-3.5 shadow-2xl backdrop-blur-xl"
+      className="pointer-events-none absolute z-30 w-60 rounded-[var(--radius-xl)] border border-amber-500/40 bg-[var(--color-bg-elevated)]/95 p-3.5 shadow-2xl backdrop-blur-xl transition-all"
       style={{ left: tooltip.x, top: tooltip.y }}
     >
+      {/* Cabeçalho de Preço */}
       <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] pb-2 mb-2">
-        <Text variant="mono-lg" className="leading-none font-black text-amber-400">
+        <Text variant="mono-lg" className="leading-none font-black text-amber-400 text-lg">
           {formatBRL(tooltip.priceCents)}
         </Text>
         <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
-          {quotesCount} {quotesCount === 1 ? 'cotação' : 'cotações'} ({uniqueStoresCount} {uniqueStoresCount === 1 ? 'loja' : 'lojas'})
+          {quotesCount} {quotesCount === 1 ? 'cotação' : 'cotações'}
         </span>
       </div>
 
-      <div className="text-[11px] font-bold text-[var(--color-accent-hype)] bg-[var(--color-accent-hype-muted)] px-2.5 py-1 rounded-sm mb-2 font-mono flex items-center justify-between">
-        <span>Frequência no Preço:</span>
-        <span>{quotesCount} cotações ativas</span>
-      </div>
-
+      {/* Vendedor e Loja */}
       {offer ? (
-        <div className="flex flex-col gap-1">
-          <Text variant="caption" color="secondary" className="font-semibold">
+        <div className="flex flex-col gap-0.5 mb-2">
+          <span className="text-xs font-bold text-[var(--color-text-primary)]">
             {offer.networkName}
-            {offer.sellerNickname && ` · ${offer.sellerNickname}`}
-          </Text>
-          {(offer.sellerReputationLevel || offer.sellerPositiveRatingPercent) && (
-            <Text variant="caption" color="tertiary" className="text-[10px]">
-              {offer.sellerReputationLevel ?? 'sem nível'}
-              {offer.sellerPositiveRatingPercent && ` · ${offer.sellerPositiveRatingPercent}% avaliações positivas`}
-              {offer.sellerPowerSellerStatus && ` · ${offer.sellerPowerSellerStatus}`}
-            </Text>
+          </span>
+          {offer.sellerNickname && (
+            <span className="text-[11px] font-medium text-[var(--color-text-secondary)]">
+              Vendedor: {offer.sellerNickname}
+            </span>
           )}
         </div>
       ) : (
-        <Text variant="caption" color="tertiary" className="mt-1">
-          Vendedor não identificado nesse ponto
-        </Text>
+        <span className="text-xs font-medium text-[var(--color-text-tertiary)] mb-2 block">
+          Oferta de mercado
+        </span>
       )}
 
-      {quotes && quotes.length > 0 && (
-        <div className="mt-2 border-t border-[var(--color-border-subtle)] pt-2 flex flex-col gap-1">
-          <Text variant="caption" color="tertiary" className="font-extrabold uppercase tracking-wider text-[9px] block text-amber-300">
-            Cotações em Lojas ({quotes.length})
-          </Text>
-          <div className="max-h-24 overflow-y-auto custom-scrollbar flex flex-col gap-1 pr-1">
-            {quotes.map((q, i) => (
-              <div key={i} className="flex justify-between items-center text-[10px] gap-2">
-                <span className="text-[var(--color-text-secondary)] truncate max-w-[15ch] flex items-center gap-1">
-                  <span className="size-1.5 rounded-full shrink-0" style={{ backgroundColor: q.networkColorHex || '#D4AF37' }} />
-                  {q.networkName} {q.sellerNickname ? `(${q.sellerNickname})` : ''}
-                </span>
-                <span className="font-mono font-semibold text-[var(--color-text-primary)] shrink-0">
-                  {formatBRL(q.value * 100)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="mt-2 flex flex-col gap-0.5 border-t border-[var(--color-border-subtle)] pt-2">
+      {/* Variação vs Média */}
+      <div className="border-t border-[var(--color-border-subtle)] pt-2 flex flex-col gap-1">
         {variationVsAvgPercent != null && (
-          <Text variant="caption" className={cn('font-medium', variationColor)}>
+          <span className={cn('text-xs font-bold font-mono', variationColor)}>
             {variationVsAvgPercent > 0 ? '+' : ''}
-            {variationVsAvgPercent}% vs. preço médio do período
-          </Text>
-        )}
-        {stats.minPriceCents != null && (
-          <Text variant="caption" color="tertiary">
-            Mínimo no período: {formatBRL(stats.minPriceCents)}
-          </Text>
-        )}
-        {stats.maxPriceCents != null && (
-          <Text variant="caption" color="tertiary">
-            Máximo no período: {formatBRL(stats.maxPriceCents)}
-          </Text>
-        )}
-      </div>
-    </div>
-  );
 }
