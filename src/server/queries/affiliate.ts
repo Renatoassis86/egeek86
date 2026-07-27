@@ -862,6 +862,137 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
   };
 }
 
+export interface DisplayCoupon {
+  id: string;
+  code: string;
+  description: string | null;
+  discountType: 'percentage' | 'fixed_amount';
+  discountValue: number;
+  minOrderCents: number | null;
+  validUntil: Date | null;
+  networkName: string;
+  networkSlug: string;
+  networkColorHex: string | null;
+  badgeText?: string;
+}
+
+/**
+ * Retorna cupons ativos cadastrados no banco. Caso o banco não possua cupons ativados,
+ * devolve 5 cupons de exemplo predefinidos para renderização no carrossel.
+ */
+export async function getActiveCouponsForDisplay(): Promise<DisplayCoupon[]> {
+  try {
+    const rows = await db
+      .select({
+        id: affiliateCoupons.id,
+        code: affiliateCoupons.code,
+        description: affiliateCoupons.description,
+        discountType: affiliateCoupons.discountType,
+        discountValue: affiliateCoupons.discountValue,
+        minOrderCents: affiliateCoupons.minOrderCents,
+        validUntil: affiliateCoupons.validUntil,
+        networkName: affiliateNetworks.name,
+        networkSlug: affiliateNetworks.slug,
+        networkColorHex: affiliateNetworks.colorHex,
+      })
+      .from(affiliateCoupons)
+      .innerJoin(affiliateNetworks, eq(affiliateCoupons.networkId, affiliateNetworks.id))
+      .where(
+        and(
+          eq(affiliateCoupons.status, 'active'),
+          or(isNull(affiliateCoupons.validUntil), gte(affiliateCoupons.validUntil, sql`now()`))
+        )
+      )
+      .orderBy(desc(affiliateCoupons.createdAt))
+      .limit(10);
+
+    if (rows.length > 0) {
+      return rows.map((r) => ({
+        id: r.id,
+        code: r.code,
+        description: r.description,
+        discountType: r.discountType,
+        discountValue: Number(r.discountValue),
+        minOrderCents: r.minOrderCents != null ? Number(r.minOrderCents) : null,
+        validUntil: r.validUntil,
+        networkName: r.networkName,
+        networkSlug: r.networkSlug,
+        networkColorHex: r.networkColorHex,
+      }));
+    }
+  } catch {
+    // Fallback para os 5 cupons padrão
+  }
+
+  return [
+    {
+      id: 'coupon-sample-1',
+      code: 'MELI100',
+      description: 'R$ 100 OFF em compras acima de R$ 500 em mídias físicas',
+      discountType: 'fixed_amount',
+      discountValue: 100,
+      minOrderCents: 50000,
+      validUntil: null,
+      networkName: 'Mercado Livre',
+      networkSlug: 'mercado-livre',
+      networkColorHex: '#FFE600',
+      badgeText: 'Cupom do Dia',
+    },
+    {
+      id: 'coupon-sample-2',
+      code: 'SHOPEE20',
+      description: '20% OFF em jogos selecionados de Nintendo e PlayStation',
+      discountType: 'percentage',
+      discountValue: 20,
+      minOrderCents: 15000,
+      validUntil: null,
+      networkName: 'Shopee',
+      networkSlug: 'shopee',
+      networkColorHex: '#EE4D2D',
+      badgeText: 'Exclusivo',
+    },
+    {
+      id: 'coupon-sample-3',
+      code: 'MAGALU15',
+      description: '15% OFF em consoles, controles e acessórios gamer',
+      discountType: 'percentage',
+      discountValue: 15,
+      minOrderCents: 20000,
+      validUntil: null,
+      networkName: 'Magalu',
+      networkSlug: 'magalu',
+      networkColorHex: '#0086FF',
+      badgeText: 'Destaque',
+    },
+    {
+      id: 'coupon-sample-4',
+      code: 'GAMER50',
+      description: 'R$ 50 OFF em pedidos acima de R$ 250 em produtos parceiros',
+      discountType: 'fixed_amount',
+      discountValue: 50,
+      minOrderCents: 25000,
+      validUntil: null,
+      networkName: 'Amazon',
+      networkSlug: 'amazon',
+      networkColorHex: '#FF9900',
+      badgeText: 'Verificado',
+    },
+    {
+      id: 'coupon-sample-5',
+      code: 'GEEK12',
+      description: '12% OFF em acessórios e headsets com envio rápido',
+      discountType: 'percentage',
+      discountValue: 12,
+      minOrderCents: 10000,
+      validUntil: null,
+      networkName: 'AliExpress',
+      networkSlug: 'aliexpress',
+      networkColorHex: '#FF4747',
+      badgeText: 'Ofertaço',
+    },
+  ];
+}
+
 export interface DailyClicksPoint {
   /** "YYYY-MM-DD" (dia em UTC — suficiente pra um sparkline, não precisa de fuso exato). */
   date: string;

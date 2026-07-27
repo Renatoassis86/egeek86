@@ -158,23 +158,16 @@ export function PriceHistoryChart({
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [fetchFailed, setFetchFailed] = useState(false);
 
-  // Garantia absoluta de alinhamento: o último ponto do gráfico (hoje) deve ser 100% igual ao preço anunciado
+  // Garantia de alinhamento: o último ponto do menor preço do gráfico (hoje) é sincronizado com o menor preço ativo anunciado
   const synchronizedHistory = useMemo(() => {
     if (!currentPriceCents || !history.points.length) return history;
     const targetValue = currentPriceCents / 100;
     const newPoints = [...history.points];
     newPoints[newPoints.length - 1] = { ...newPoints[newPoints.length - 1], value: targetValue };
 
-    const newAvgPoints = [...history.avgPoints];
-    if (newAvgPoints.length > 0) {
-      const avgTarget = Math.round((targetValue * 1.045) * 100) / 100;
-      newAvgPoints[newAvgPoints.length - 1] = { ...newAvgPoints[newAvgPoints.length - 1], value: avgTarget };
-    }
-
     return {
       ...history,
       points: newPoints,
-      avgPoints: newAvgPoints,
     };
   }, [history, currentPriceCents]);
 

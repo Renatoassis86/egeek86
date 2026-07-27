@@ -99,7 +99,7 @@ function HeroSection() {
               alt="Duas gerações de consoles e jogos no Espaço Geek 86"
               fill
               priority
-              className="object-contain object-center p-2 opacity-95"
+              className="object-cover object-center opacity-95"
             />
           </div>
         </Reveal>
@@ -159,7 +159,7 @@ function QuemSomosSection() {
               src="/images/sobre/locadora.png"
               alt="Ilustração de locadora retro gamer"
               fill
-              className="object-contain object-center p-2"
+              className="object-cover object-center"
             />
           </div>
         </Reveal>
@@ -259,7 +259,7 @@ function MissaoVisaoValoresSection() {
               src="/images/sobre/fliperama.png"
               alt="Fliperama e cultura gamer retro"
               fill
-              className="object-contain object-center p-3 transition-transform duration-700 group-hover:scale-105"
+              className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
             <div className="absolute bottom-5 left-6 right-6 flex items-center justify-between text-xs text-amber-400 font-mono font-bold">
@@ -286,7 +286,7 @@ function ObjetivosJustificativaSection() {
               src="/images/sobre/aluguel-tv.png"
               alt="Justificativa e inteligência de dados no mercado gamer"
               fill
-              className="object-contain object-center p-2"
+              className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-amber-400 font-bold">
@@ -506,7 +506,7 @@ function FerramentasShowcaseSection() {
                         src={tool.imageSrc}
                         alt={tool.title}
                         fill
-                        className="object-contain object-center p-3 transition-transform duration-500 group-hover:scale-105"
+                        className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                   </div>
@@ -528,13 +528,22 @@ function IdealizadorSection() {
     <section id="idealizador" data-theme="dark" className="w-full bg-[#0F0C08] py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
-          <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-amber-500/30 overflow-hidden shadow-2xl p-8 lg:p-12 grid gap-8 lg:grid-cols-[280px_1fr] lg:items-start">
-            <div className="relative aspect-square w-full max-w-[280px] mx-auto rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-black">
+          <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-amber-500/30 overflow-hidden shadow-2xl p-8 lg:p-12 grid gap-8 lg:grid-cols-[300px_1fr] lg:items-start">
+            <div className="relative aspect-[3/4] w-full max-w-[300px] mx-auto rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-[#0B0805]">
+              {/* Fundo desfocado para preenchimento atmosférico sem faixas pretas */}
+              <Image
+                src="/images/sobre/idealizador.png"
+                alt=""
+                fill
+                aria-hidden
+                className="object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+              />
+              {/* Imagem em primeiro plano sem cortes */}
               <Image
                 src="/images/sobre/idealizador.png"
                 alt="Renato Silva de Assis — Fundador e Idealizador"
                 fill
-                className="object-contain object-top p-1"
+                className="relative z-10 object-contain object-top"
               />
             </div>
 
@@ -546,23 +555,29 @@ function IdealizadorSection() {
                 <Text variant="heading-xl" className="font-extrabold text-white text-3xl sm:text-4xl">
                   Renato Silva de Assis
                 </Text>
-                <Text variant="caption" className="text-amber-400 font-mono font-bold text-sm">
-                  Fundador, Arquiteto de Software, Pesquisador e Colecionador Gamer
+                <Text variant="caption" className="text-amber-400 font-mono font-bold text-xs sm:text-sm leading-relaxed">
+                  Economista • Mestre em Economia Regional • Arquiteto de Software • Cientista de Dados • Pesquisador • Colecionador Gamer
                 </Text>
               </div>
 
               <div className="flex flex-col gap-4 text-zinc-300 font-medium leading-relaxed text-sm sm:text-base">
                 <p>
-                  Idealizado e desenvolvido por <strong>Renato Silva de Assis</strong> em Teresina-PI, o Espaço Geek 86 é fruto da convergência entre a paixão pela cultura pop retrogamer e a expertise em arquitetura de software e inteligência de dados.
+                  O Espaço Geek 86 nasceu da união entre duas paixões que acompanham <strong>Renato Silva de Assis</strong> desde a infância: o universo dos videogames e a construção de soluções tecnológicas capazes de transformar mercados.
                 </p>
                 <p>
-                  Com trajetória marcada por colecionismo rigoroso e desenvolvimento de soluções tecnológicas de alta complexidade, Renato criou a Arkos Intelligence e a estrutura do Espaço Geek 86 para sanar uma das maiores dores do mercado nacional: a assimetria de preços e a falta de transparência nas ofertas de videogames.
+                  Economista pela Universidade Federal da Paraíba (UFPB), Mestre em Economia Regional pela Universidade Federal do Rio Grande do Norte (UFRN) e especialista em Ciência de Dados aplicada aos negócios, Renato construiu sua carreira desenvolvendo plataformas, modelos analíticos e sistemas de inteligência para tomada de decisão. Ao longo de sua trajetória, sempre acreditou que dados bem utilizados têm o poder de reduzir incertezas, aumentar a transparência e gerar valor para as pessoas.
                 </p>
                 <p>
-                  Como idealizador e arquiteto chefe da plataforma, Renato lidera a concepção dos algoritmos de monitoramento 24/7, a engenharia da Bolsa Gamer, o desenvolvimento do Geek Hype Index e a aplicação de pesquisas qualitativas e de mercado para apoiar tanto o consumidor final quanto afiliados e grandes marcas da indústria.
+                  Paralelamente à vida profissional, cultivou por décadas outra grande paixão: o colecionismo gamer. Desde os consoles clássicos até as gerações atuais, acompanhou de perto a evolução da indústria, do mercado de colecionáveis e da cultura geek, vivenciando também as dificuldades enfrentadas diariamente por milhares de consumidores: preços inconsistentes, falsas promoções, pouca transparência e escassez de informação confiável para decidir uma compra.
                 </p>
-                <blockquote className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 italic text-amber-200 text-sm">
-                  "O Espaço Geek 86 é a materialização do respeito pela cultura dos games combinada com a inteligência de dados. Construímos uma plataforma onde o colecionador encontra nostalgia e o comprador encontra a verdade dos preços."
+                <p className="font-semibold text-white">
+                  Foi dessa realidade que surgiu o Espaço Geek 86.
+                </p>
+                <p>
+                  Mais do que um marketplace, o Espaço Geek 86 está sendo construído como uma plataforma de inteligência para o consumidor geek. O objetivo é reunir, em um único ambiente, monitoramento de preços em tempo real, histórico de valores, reputação de vendedores, pesquisas com a comunidade, conteúdo especializado e algoritmos próprios capazes de ajudar cada usuário a comprar melhor, pagar menos e colecionar com mais segurança.
+                </p>
+                <blockquote className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 italic text-amber-200 text-sm leading-relaxed">
+                  &quot;Por trás da plataforma existe uma filosofia simples: tecnologia deve servir às pessoas. A missão do Espaço Geek 86 não é vender produtos a qualquer custo, mas oferecer conhecimento, transparência e inteligência para que cada decisão de compra seja baseada em informações reais e não apenas em publicidade.&quot;
                 </blockquote>
               </div>
 

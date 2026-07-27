@@ -3,14 +3,15 @@ import Link from 'next/link';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
-import { Reveal } from '@/components/motion/reveal';
+import { MarketplaceHeroBanner } from '@/components/affiliate/marketplace-hero-banner';
 import { getPriceTableData, type PriceTableFilter } from '@/server/queries/price-table';
+import { getActiveCouponsForDisplay } from '@/server/queries/affiliate';
 import { PriceTableBoard } from '@/components/price-table/price-table-board';
 import type { ProductType, GameFormat, GamePlatformGen } from '@/db/schema';
 
 export const metadata: Metadata = {
   title: 'Tabela Geral de Preços | Espaço Geek 86',
-  description: 'Tabela dinâmica e contínua de preços para todos os jogos, consoles e acessórios em ordem alfabética com indicadores de decisão do consumidor.',
+  description: 'Tabela dinâmica e contínua de preços para todos os jogos, consoles e acessórios com indicadores de decisão do consumidor e cupons ativos.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +21,6 @@ const FORMAT_VALUES: readonly GameFormat[] = ['physical', 'digital'];
 const GEN_VALUES: readonly GamePlatformGen[] = ['switch_1', 'switch_2', 'ps5', 'ps4', 'xbox_series', 'xbox_one'];
 const SORT_VALUES = ['name_asc', 'name_desc', 'price_asc', 'price_desc', 'discount_desc'] as const;
 const PAGE_SIZE = 40;
-/** Teto de segurança pro "Ver todos" — bem acima de qualquer contagem realista filtrada hoje. */
 const SHOW_ALL_CAP = 1000;
 
 function parseEnumParam<T extends string>(value: string | string[] | undefined, allowed: readonly T[]): T | undefined {
@@ -55,7 +55,10 @@ export default async function TabelaDePrecosPage({
     offset: showAll ? 0 : (page - 1) * PAGE_SIZE,
   };
 
-  const { items, totalCount } = await getPriceTableData(filter);
+  const [{ items, totalCount }, coupons] = await Promise.all([
+    getPriceTableData(filter),
+    getActiveCouponsForDisplay(),
+  ]);
 
   const paginationParams = new URLSearchParams();
   if (area !== 'game') paginationParams.set('area', area);
@@ -81,20 +84,18 @@ export default async function TabelaDePrecosPage({
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
-    <div className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16 flex flex-col gap-8">
-      <Reveal>
-        <div className="flex flex-col gap-2 max-w-3xl">
-          <Text variant="label" color="tertiary" className="uppercase tracking-widest">
-            Monitoramento Abrangente
-          </Text>
-          <Text as="h1" variant="display-lg">
-            Tabela Geral de Preços
-          </Text>
-          <Text variant="body-md" color="secondary" className="mt-1">
-            Explore todo o catálogo monitorado em ordem alfabética. Filtre por área (Jogos, Consoles e Acessórios) e compare cotações, médias históricas e os principais indicadores para sua decisão de compra.
-          </Text>
-        </div>
-      </Reveal>
+    <div className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-8 lg:py-12 flex flex-col gap-8">
+      {/* Banner Principal com Carrossel de Cupons do Dia no Lado Direito */}
+      <MarketplaceHeroBanner
+        title="Tabela Geral de Preços"
+        subtitle="Explore todo o catálogo monitorado em ordem alfabética. Compare cotações ativas, médias históricas e os principais indicadores para sua decisão de compra."
+        categoryTag="Monitoramento Abrangente"
+        stats={{
+          monitoredProducts: totalCount,
+          partnerStores: 6,
+        }}
+        coupons={coupons}
+      />
 
       <PriceTableBoard
         items={items}

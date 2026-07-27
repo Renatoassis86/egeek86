@@ -65,13 +65,28 @@ export function SceneImage({
   return (
     <div className={cn('relative size-full overflow-hidden', className)}>
       {!showFallback && src && (
-        <img
-          src={src}
-          alt={alt}
-          referrerPolicy="no-referrer"
-          onError={() => setErrored(true)}
-          className={cn('size-full', fit === 'contain' ? 'object-contain p-4' : 'object-cover', focalMap[focal])}
-        />
+        <>
+          {/* Fundo ambiente desfocado para preenchimento harmônico sem faixas pretas */}
+          <img
+            src={src}
+            alt=""
+            aria-hidden
+            referrerPolicy="no-referrer"
+            className="absolute inset-0 size-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+          />
+          {/* Imagem em primeiro plano sem cortes */}
+          <img
+            src={src}
+            alt={alt}
+            referrerPolicy="no-referrer"
+            onError={() => setErrored(true)}
+            className={cn(
+              'relative z-10 size-full transition-all duration-300',
+              fit === 'contain' ? 'object-contain' : 'object-cover',
+              focalMap[focal]
+            )}
+          />
+        </>
       )}
 
       {showFallback && (

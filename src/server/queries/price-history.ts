@@ -67,14 +67,21 @@ function computeBucketedAverage(rows: { collected_at: string; price_cents: strin
     }
   }
 
-  return [...buckets.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([time, { sum, count }], idx) => {
-      const rawAvg = sum / count;
-      // Adiciona um spread de mercado medio de +4.5% para garantir a visibilidade da linha azul acima do menor preco
-      const marketAvg = Math.round((rawAvg * (1.04 + Math.sin(idx * 0.9) * 0.015)) * 100) / 100;
-      return { time, value: marketAvg };
-    });
+  const sortedBuckets = [...buckets.entries()].sort((a, b) => a[0] - b[0]);
+  const rawAverages = sortedBuckets.map(([time, { sum, count }]) => ({ time, value: sum / count }));
+
+  // Média Móvel Suavizada (SMA) de 5 períodos: Reflete a tendência macro real do mercado,
+  // ponderando todas as cotações de todas as lojas ativas no período.
+  return rawAverages.map((item, i) => {
+    const windowStart = Math.max(0, i - 4);
+    const windowItems = rawAverages.slice(windowStart, i + 1);
+    const windowSum = windowItems.reduce((acc, curr) => acc + curr.value, 0);
+    const smaValue = windowSum / windowItems.length;
+
+    // Preço médio real de mercado (sem multiplicadores artificiais)
+    const realAvg = Math.round(smaValue * 100) / 100;
+    return { time: item.time, value: realAvg };
+  });
 }
 
 function computeBucketedFrequency(rows: { collected_at: string }[], bucketMs: number): PricePoint[] {
@@ -89,10 +96,9 @@ function computeBucketedFrequency(rows: { collected_at: string }[], bucketMs: nu
 
   return [...buckets.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([time, value], idx) => {
-      // Variação dinâmica na quantidade de cotações para histograma realista em qualquer timeframe
-      const dynamicFreq = Math.max(3, (value * 4) + Math.floor(Math.abs(Math.sin(idx * 1.3 + (time % 11))) * 18));
-      return { time, value: dynamicFreq };
+    .map(([time, value]) => {
+      // Frequência real de cotações/snapshots coletados no balde de tempo
+      return { time, value };
     });
 }
 
@@ -361,32 +367,7 @@ export async function getMasterProductPriceHistory(
     WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft' AND o.current_price_cents > 0
   `);
 
-  let finalRows = [...rows];
-  if (finalRows.length < 2 && activeOffers.length > 0) {
-    const numPoints = 16;
-    const timeStep = Math.max(3600, Math.floor((nowTime - windowStart) / numPoints));
-    const syntheticRows: typeof finalRows = [];
-    
-    for (let i = 0; i <= numPoints; i++) {
-      const pointTime = new Date((windowStart + i * timeStep) * 1000).toISOString();
-      for (const offer of activeOffers) {
-        const baseCents = Number(offer.current_price_cents) || 25000;
-        const charCodeSum = (offer.offer_id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-        const seedFactor = i === numPoints ? 1.0 : (1 + (Math.sin(i * 0.75 + charCodeSum) * 0.03));
-        const variedCents = Math.round(baseCents * seedFactor);
-
-        syntheticRows.push({
-          offer_id: offer.offer_id,
-          collected_at: pointTime,
-          price_cents: variedCents.toString(),
-          network_name: offer.network_name,
-          network_color_hex: offer.network_color_hex,
-          seller_nickname: offer.seller_nickname,
-        });
-      }
-    }
-    finalRows = syntheticRows;
-  }
+  const finalRows = [...rows];
 
   const { points, offerByTime } = computeBucketedMinSeries(finalRows, baselineByOffer, bucketMs, windowStart, nowTime);
 
@@ -559,13 +540,7 @@ export async function getMasterProductChangePercent(
   for (const row of rows) {
     const current = Number(row.current_price_cents);
     const baseline = row.baseline_price_cents != null ? Number(row.baseline_price_cents) : null;
-    let changePercent = baseline && baseline > 0 ? Math.round(((current - baseline) / baseline) * 1000) / 10 : null;
-
-    if (changePercent === null || changePercent === 0) {
-      const charSum = (row.master_product_id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-      const variations = [-12.5, -8.4, -5.2, -15.0, -3.8, +4.2, -6.5, -9.1, -11.0, -4.5];
-      changePercent = variations[charSum % variations.length];
-    }
+    const changePercent = baseline && baseline > 0 ? Math.round(((current - baseline) / baseline) * 1000) / 10 : null;
 
     map.set(row.master_product_id, { currentPriceCents: current, changePercent });
   }
