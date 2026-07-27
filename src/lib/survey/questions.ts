@@ -32,7 +32,6 @@ export const SURVEY_QUESTIONS: SurveyQuestion[] = [
       { value: 'xbox', label: 'Xbox' },
       { value: 'pc', label: 'PC' },
       { value: 'mobile', label: 'Celular' },
-      { value: 'mais_de_uma', label: 'Mais de uma' },
     ],
   },
   {

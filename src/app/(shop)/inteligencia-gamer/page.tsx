@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+'use client';
+
+import { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Newspaper, FileText, TrendingUp, Sparkles, BookOpen, Layers, Filter, Search, ArrowRight, ChevronLeft, ChevronRight, Brain } from 'lucide-react';
@@ -225,16 +227,7 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
             aria-label={`Ir para slide ${idx + 1}`}
             className={
               'h-2 rounded-full transition-all duration-300 ' +
-              (currentIndex === idx ? 'w-8 bg-amber-400' : 'w-2 bg-zinc-600 hover:bg-zinc-400')
-            }
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export default function InteligenciaGamerPage() {
+              (currentIndex === idx ? 'w-8 bg-amber-400' : 'w-2 bg-zinc-600 hover:bg-zfunction InteligenciaGamerPageContent() {
   const searchParams = useSearchParams();
   const categoriaFromUrl = searchParams.get('categoria');
 
@@ -473,5 +466,14 @@ export default function InteligenciaGamerPage() {
         </div>
       </div>
     </div>
+    </div>
+  );
+}
+
+export default function InteligenciaGamerPage() {
+  return (
+    <Suspense fallback={null}>
+      <InteligenciaGamerPageContent />
+    </Suspense>
   );
 }

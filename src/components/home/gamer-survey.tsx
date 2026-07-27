@@ -22,7 +22,6 @@ const PLATFORM_LIST = [
   { id: 'xbox', label: 'Xbox' },
   { id: 'pc', label: 'PC' },
   { id: 'celular', label: 'Celular' },
-  { id: 'multi', label: 'Mais de uma' },
 ];
 
 export function GamerSurvey({
