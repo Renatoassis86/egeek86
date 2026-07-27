@@ -250,7 +250,7 @@ function getMockDrops(): DropWithRelations[] {
           'Chances aumentadas de cards numerados raros',
           'Selo oficial holográfico Wizards of the Coast'
         ],
-        story: 'Caixa guardada em caixa organizadora hermética protegida de umidade. Sem rasgos no plástico termoencolhível original da Wizards. Perfeito para colecionadores selados.'
+        story: 'Caixa selada direto do distribuidor oficial no Brasil. Armazenada sob temperatura controlada.'
       },
       createdBy: null,
       createdAt: new Date(),
@@ -260,11 +260,58 @@ function getMockDrops(): DropWithRelations[] {
       ],
       collector: {
         id: 'collector-5',
-        displayName: 'Card Kingdom BR',
+        displayName: 'TCG Master Vault',
+        avatarUrl: null,
+        geekPoints: 5200,
+        avgRating: 4.9,
+        totalReviews: 180,
+        badgeName: 'Veterano'
+      }
+    },
+    {
+      id: 'd6666666-6666-6666-6666-666666666666',
+      productId: null,
+      variantId: null,
+      title: 'Zelda Tears of the Kingdom - Replica Master Sword (Edição de Colecionador)',
+      slug: 'master-sword-zelda-totk-replica',
+      description: 'Réplica licenciada em tamanho real da lendária espada Master Sword com base iluminada por LEDs azul e dourado e acabamento metálico fundido.',
+      bannerUrl: '/images/home/statement-band.png',
+      startsAt: new Date(now.getTime() + 1000 * 60 * 60 * 72),
+      endsAt: new Date(now.getTime() + 1000 * 60 * 60 * 80),
+      stockLimit: 10,
+      stockSold: 0,
+      perUserLimit: 1,
+      priceCents: 189900,
+      accessType: 'public',
+      requiredLevelId: null,
+      requiredAccountAgeDays: 0,
+      status: 'scheduled',
+      metadata: {
+        rarityGrade: 'Legendary (Tier 1)',
+        collectorsWatching: 840,
+        antiBotCertified: true,
+        specs: [
+          'Réplica 1:1 em metal e liga de titânio (1,15m de comprimento)',
+          'Pedestal de exibição com iluminação LED inteligente',
+          'Selo oficial Nintendo & certificado de autenticidade numerado',
+          'Acompanha bainha artesanal revestida em couro sintético'
+        ],
+        story: 'Peça importada de exibição de colecionador. Nunca foi manuseada fora de luvas de algodão. Ideal para estantes de destaque e coleções lendárias.'
+      },
+      createdBy: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      images: [
+        '/images/home/statement-band.png',
+        '/images/home/observatorio-cards-bg.png'
+      ],
+      collector: {
+        id: 'collector-6',
+        displayName: 'Zelda Legacy Collector',
         avatarUrl: null,
         geekPoints: 8900,
-        avgRating: 4.95,
-        totalReviews: 615,
+        avgRating: 5.0,
+        totalReviews: 310,
         badgeName: 'Lendário'
       }
     }
