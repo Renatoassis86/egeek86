@@ -353,13 +353,13 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
       <Glow color="hype" size="xl" intensity={0.15} className="-top-64 -right-48" />
       <div className="relative mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-10 text-center items-center">
         <Reveal>
-          <Text variant="label" color="tertiary">
+          <Text variant="label" className="text-[var(--color-accent-hype)] font-extrabold uppercase tracking-widest text-xs">
             Métricas da nossa plataforma
           </Text>
-          <Text as="h2" variant="display-lg" className="mt-2">
+          <Text as="h2" variant="display-lg" className="mt-2 font-black text-[var(--color-text-primary)] tracking-tight">
             Dados reais e transparentes, em tempo real.
           </Text>
-          <Text variant="body-md" color="secondary" className="mt-3 max-w-[48ch] mx-auto">
+          <Text variant="body-lg" className="mt-3 max-w-[52ch] mx-auto text-[var(--color-text-secondary)] font-medium leading-relaxed">
             Sem aproximações matemáticas. Estes são os números reais agregados do nosso banco de dados no exato momento da sua visita.
           </Text>
         </Reveal>

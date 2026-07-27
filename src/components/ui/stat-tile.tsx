@@ -15,10 +15,10 @@ export function StatTile({ icon, value, label }: { icon: ReactNode; value: numbe
         <div className="flex size-9 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)]">
           {icon}
         </div>
-        <Text variant="heading-lg" className="font-black text-2xl tabular">
+        <Text variant="heading-lg" className="font-black text-2xl tabular text-[var(--color-text-primary)]">
           {typeof value === 'number' ? value.toLocaleString('pt-BR') : value}
         </Text>
-        <Text variant="caption" color="tertiary">
+        <Text variant="caption" color="secondary" className="font-semibold text-xs text-[var(--color-text-secondary)]">
           {label}
         </Text>
       </CardContent>
