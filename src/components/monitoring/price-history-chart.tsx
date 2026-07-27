@@ -97,7 +97,26 @@ function computePriceSignal(history: PriceHistoryResult): PriceSignal {
   };
 }
 
-function PriceSignalBadge({ signal }: { signal: PriceSignal }) {
+import Link from 'next/link';
+import { ShoppingCart, ShoppingBag, Check } from 'lucide-react';
+import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { toggleCartItem } from '@/server/actions/cart';
+
+function PriceSignalBadge({
+  signal,
+  winningOfferId,
+  masterProductId,
+}: {
+  signal: PriceSignal;
+  winningOfferId?: string | null;
+  masterProductId: string;
+}) {
+  const [isAdding, setIsAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const isBuyOpportunity = signal.level === 'great' || signal.level === 'good';
+
   const styles: Record<PriceSignalLevel, string> = {
     great: 'bg-[var(--color-accent-success)]/15 border-[var(--color-accent-success)]/40 text-[var(--color-accent-success)]',
     good: 'bg-[var(--color-accent-success)]/10 border-[var(--color-accent-success)]/25 text-[var(--color-accent-success)]',
@@ -105,13 +124,68 @@ function PriceSignalBadge({ signal }: { signal: PriceSignal }) {
     unknown: 'bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-tertiary)]',
   };
 
+  const handleAddToCart = async () => {
+    if (!winningOfferId) {
+      toast.info('Redirecionando para a oferta com o menor preço...');
+      window.location.href = `/monitoramento/comparar/${masterProductId}`;
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await toggleCartItem(winningOfferId, true);
+      setAdded(true);
+      toast.success('Produto adicionado ao seu carrinho!');
+      setTimeout(() => setAdded(false), 3000);
+    } catch {
+      toast.error('Faça login para salvar ofertas no seu carrinho.');
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   return (
-    <div className={cn('flex items-center gap-2 rounded-[var(--radius-md)] border px-3 py-1.5', styles[signal.level])}>
-      <span className="size-1.5 rounded-full bg-current shrink-0" />
-      <div className="flex flex-col leading-tight">
-        <span className="text-xs font-bold">{signal.label}</span>
-        <span className="text-[10px] font-normal opacity-80">{signal.detail}</span>
+    <div className="flex flex-wrap items-center gap-3">
+      <div className={cn('flex items-center gap-2 rounded-[var(--radius-md)] border px-3 py-1.5', styles[signal.level])}>
+        <span className="size-1.5 rounded-full bg-current shrink-0 animate-pulse" />
+        <div className="flex flex-col leading-tight">
+          <span className="text-xs font-bold">{signal.label}</span>
+          <span className="text-[10px] font-normal opacity-80">{signal.detail}</span>
+        </div>
       </div>
+
+      {isBuyOpportunity && (
+        <div className="flex items-center gap-2">
+          <Button
+            asChild
+            size="sm"
+            variant="hype"
+            className="h-8 text-xs font-bold gap-1.5 shadow-lg"
+          >
+            <Link href={`/monitoramento/comparar/${masterProductId}`}>
+              <ShoppingBag className="size-3.5" /> Comprar no Menor Preço
+            </Link>
+          </Button>
+
+          <Button
+            size="sm"
+            variant={added ? 'secondary' : 'outline'}
+            disabled={isAdding}
+            onClick={handleAddToCart}
+            className="h-8 text-xs font-bold gap-1.5 border-[var(--color-accent-primary)]/40 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10"
+          >
+            {added ? (
+              <>
+                <Check className="size-3.5 text-[var(--color-accent-success)]" /> No Carrinho
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="size-3.5 text-[var(--color-accent-primary)]" /> + Carrinho
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -392,8 +466,17 @@ export function PriceHistoryChart({
           <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none font-bold">
             {(history.totalQuoteCount || 0).toLocaleString('pt-BR')} cotações de preços coletadas
           </Badge>
-        </div>
-        {hasEnoughData && <PriceSignalBadge signal={priceSignal} />}
+        {hasEnoughData && (
+          <PriceSignalBadge
+            signal={priceSignal}
+            winningOfferId={
+              synchronizedHistory.points.length > 0
+                ? synchronizedHistory.pointOffers[synchronizedHistory.points[synchronizedHistory.points.length - 1].time]?.offerId
+                : null
+            }
+            masterProductId={masterProductId}
+          />
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-4 text-xs font-medium">
         <span className="inline-flex items-center gap-1.5 text-[var(--color-text-secondary)] font-bold">
