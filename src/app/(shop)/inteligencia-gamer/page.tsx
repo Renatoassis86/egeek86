@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Newspaper, FileText, TrendingUp, Sparkles, BookOpen, Layers, Filter, Search } from 'lucide-react';
@@ -162,9 +162,21 @@ const INTEL_ITEMS: IntelItem[] = [
   }
 ];
 
+import { useSearchParams } from 'next/navigation';
+
 export default function InteligenciaGamerPage() {
-  const [selectedCategory, setSelectedCategory] = useState<string>('todos');
+  const searchParams = useSearchParams();
+  const categoriaFromUrl = searchParams.get('categoria');
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(categoriaFromUrl || 'todos');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Sincroniza a categoria selecionada com os parametros de busca da URL
+  useEffect(() => {
+    if (categoriaFromUrl) {
+      setSelectedCategory(categoriaFromUrl);
+    }
+  }, [categoriaFromUrl]);
 
   const categories = useMemo(() => [
     { value: 'todos', label: 'Tudo', icon: Layers },
@@ -415,19 +427,19 @@ export default function InteligenciaGamerPage() {
             </Card>
 
             {/* Widget 2: Destaque de Economia Gamer por Renato Silva de Assis */}
-            <Card className="bg-zinc-950 border-zinc-900 text-white relative overflow-hidden">
+            <Card className="bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] relative overflow-hidden">
               <CardContent className="p-5 flex flex-col gap-3 relative z-10">
                 <Badge variant="primary" className="w-fit bg-amber-500 hover:bg-amber-600 text-black font-bold">
                   Arkos Insight
                 </Badge>
-                <Text variant="heading-sm" className="text-white">
+                <Text variant="heading-sm" className="text-[var(--color-text-primary)]">
                   Oportunidades de Arbitragem no Mercado de Jogos
                 </Text>
-                <Text variant="caption" className="text-zinc-300 leading-relaxed">
+                <Text variant="caption" color="secondary" className="leading-relaxed">
                   "A flutuação de preços em diferentes vendedores de catálogo no Brasil abre janelas diárias de arbitragem para consoles e mídias físicas raras."
                 </Text>
-                <div className="flex items-center gap-3 mt-2 border-t border-zinc-900 pt-3">
-                  <div className="relative size-8 rounded-full overflow-hidden border border-zinc-800">
+                <div className="flex items-center gap-3 mt-2 border-t border-[var(--color-border-subtle)] pt-3">
+                  <div className="relative size-8 rounded-full overflow-hidden border border-[var(--color-border-default)]">
                     <Image 
                       src="/images/sobre/idealizador.png" 
                       alt="Renato Silva de Assis"
@@ -436,8 +448,8 @@ export default function InteligenciaGamerPage() {
                     />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold text-white">Renato Silva de Assis</span>
-                    <span className="text-[10px] text-zinc-400">Diretor de Análise</span>
+                    <span className="text-xs font-bold text-[var(--color-text-primary)]">Renato Silva de Assis</span>
+                    <span className="text-[10px] text-[var(--color-text-tertiary)]">Diretor de Análise</span>
                   </div>
                 </div>
               </CardContent>
