@@ -372,11 +372,11 @@ export function PriceHistoryChart({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2.5">
           <TimeframeSelector value={timeframe} onChange={setTimeframe} />
-          <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
-            {history.totalOffersCount || 0} itens integrados (todas as plataformas)
+          <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none font-bold">
+            {history.totalOffersCount || 1} {(history.totalOffersCount || 1) === 1 ? 'loja parceira monitorada' : 'lojas parceiras monitoradas'}
           </Badge>
-          <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
-            {history.totalQuoteCount || 0} cotações {TIMEFRAME_LABELS[timeframe]}
+          <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none font-bold">
+            {(history.totalQuoteCount || 0).toLocaleString('pt-BR')} cotações de preços coletadas
           </Badge>
         </div>
         {hasEnoughData && <PriceSignalBadge signal={priceSignal} />}
