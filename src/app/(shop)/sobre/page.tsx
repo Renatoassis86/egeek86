@@ -412,17 +412,17 @@ function FerramentasShowcaseSection() {
     },
     {
       id: 'ferramenta-pesquisas-primarias',
-      badge: 'Dados Primários e Voz do Público',
-      title: '5. Pesquisas Primárias e Coleta de Voz da Comunidade',
+      badge: 'Pesquisas de Mercado e Voz do Consumidor',
+      title: '5. Pesquisas de Mercado, Qualitativas e Lançamento de Marcas',
       description:
-        'Módulo de enquetes vivas onde a comunidade opina sobre hábitos de consumo, consoles favoritos e expectativas de lançamento. Permite cadastrar, editar e gerenciar pesquisas ativas diretamente no painel admin.',
+        'Infraestrutura de inteligência de dados desenvolvida para realizar pesquisas de marketing de mercado, testes de aceitação no lançamento de marcas e pesquisas qualitativas gerais aplicadas diretamente a consumidores gerais e público gamer.',
       imageSrc: '/images/home/pesquisa-comunidade.png',
       badgeColor: 'bg-purple-500 text-white',
       borderHover: 'hover:border-purple-400 hover:shadow-[0_0_35px_rgba(168,85,247,0.25)]',
       bullets: [
-        'Coleta de respostas anônimas sem necessidade de login prévio',
-        'Gerenciador administrativo para criar e editar enquetes',
-        'Geração de estatísticas percentuais agregadas instantâneas',
+        'Pesquisas qualitativas e quantitativas aplicadas a consumidores gerais',
+        'Estudos de posicionamento estratégicos para lançamento de marcas',
+        'Relatórios de hábitos de consumo e percepção de marca em tempo real',
       ],
       reverse: false,
     },
