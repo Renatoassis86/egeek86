@@ -48,19 +48,16 @@ export default async function ContaPage({
       {/* Hero Header do Perfil do Colecionador com Arte Retro-Geek */}
       <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-12 overflow-hidden mb-10 z-10 backdrop-blur-md">
         {/* Arte Ilustrada Retro-Geek em destaque no lado direito */}
-        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[45%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
-          <div 
-            className="relative w-full h-full"
-            style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)' }}
-          >
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
+          <div className="relative w-full h-full">
             <Image
               src="/images/conta/profile-hero.png"
               alt="Geek Collector Artwork"
               fill
-              className="object-cover object-[center_top]"
+              className="object-cover object-center"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-transparent to-transparent opacity-80 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-[var(--color-bg-inset)]/30 to-transparent opacity-90 pointer-events-none" />
           </div>
         </div>
 
