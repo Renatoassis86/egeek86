@@ -199,13 +199,13 @@ export function PriceHistoryChart({
       return res;
     };
 
-    // 1. Linha Suavizada do Menor Preço Mínimo Ativo (Amarela/Vibrante)
+    // 1. Linha do Menor Preço Mínimo Ativo (Amarela/Vibrante - segmento autêntico de mercado)
     const series = chart.addSeries(AreaSeries, {
       lineColor: palette.line,
       topColor: palette.areaTop,
       bottomColor: palette.areaBottom,
       lineWidth: 2,
-      lineType: LineType.Curved,
+      lineType: LineType.Simple,
       pointMarkersVisible: true,
       pointMarkersRadius: 3,
       priceFormat: {
@@ -216,12 +216,12 @@ export function PriceHistoryChart({
       autoscaleInfoProvider: autoscaleProvider,
     });
 
-    // 2. Linha Suavizada Tracejada da Média Geral de Mercado (Azul/Branca)
+    // 2. Linha Tracejada da Média Geral de Mercado (Azul/Branca)
     const avgSeries = chart.addSeries(LineSeries, {
       color: palette.movingAverage,
       lineWidth: 1,
       lineStyle: LineStyle.Dashed,
-      lineType: LineType.Curved,
+      lineType: LineType.Simple,
       pointMarkersVisible: true,
       pointMarkersRadius: 2,
       priceLineVisible: false,
