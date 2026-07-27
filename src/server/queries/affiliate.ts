@@ -28,6 +28,7 @@ type MasterProductPick = Pick<
   | 'name'
   | 'slug'
   | 'defaultImages'
+  | 'productType'
   | 'gameFormat'
   | 'gamePlatformGen'
   | 'gameEditionType'
@@ -52,6 +53,7 @@ function offerSelection() {
       name: masterProducts.name,
       slug: masterProducts.slug,
       defaultImages: masterProducts.defaultImages,
+      productType: masterProducts.productType,
       gameFormat: masterProducts.gameFormat,
       gamePlatformGen: masterProducts.gamePlatformGen,
       gameEditionType: masterProducts.gameEditionType,
