@@ -969,18 +969,7 @@ async function HomeNewsSection() {
               <Link href={`/noticias/${article.slug}`} className="group block h-full">
                 <Card interactive className="h-full flex flex-col overflow-hidden">
                   <div className="relative aspect-[16/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
-                    {article.coverImageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={article.coverImageUrl}
-                        alt={article.title}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-[var(--color-text-tertiary)] font-mono text-xs">
-                        Espaço Geek 86
-                      </div>
-                    )}
+                    <SceneImage src={article.coverImageUrl} alt={article.title} tone="gold" />
                     <Badge variant="hype" size="sm" className="absolute top-3 left-3 capitalize">
                       {article.category.replace('_', ' ')}
                     </Badge>

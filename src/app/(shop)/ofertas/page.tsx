@@ -193,14 +193,14 @@ export default async function OffersPage({
 
         <div className="relative xl:max-w-[65%]">
           <Reveal>
-            <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
-              <LineChart className="size-3.5" aria-hidden />
+            <Text variant="label" color="hype" className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs">
+              <LineChart className="size-4 text-[var(--color-accent-hype)]" aria-hidden />
               Geek Deals · Inteligência de preço
             </Text>
-            <Text as="h1" variant="display-md" className="mt-3 max-w-2xl">
+            <Text as="h1" variant="display-lg" className="mt-2 max-w-2xl font-black tracking-tight text-[var(--color-text-primary)]">
               Ofertas
             </Text>
-            <Text variant="body-md" color="secondary" className="mt-3 max-w-[60ch]">
+            <Text variant="body-lg" color="secondary" className="mt-3 max-w-[60ch] font-medium leading-relaxed text-[var(--color-text-secondary)]">
               Preços monitorados nos principais marketplaces, com histórico e cupons, pra você
               comprar na hora certa.
             </Text>
@@ -262,13 +262,13 @@ function StatBlock({
       <Text
         variant="mono-lg"
         className={cn(
-          'text-[26px] leading-none tabular',
+          'text-[34px] font-black leading-none tabular tracking-tight',
           accent === 'hype' ? 'text-[var(--color-accent-hype)]' : 'text-[var(--color-accent-primary)]'
         )}
       >
         {value}
       </Text>
-      <Text variant="caption" color="tertiary" className="mt-1.5">
+      <Text variant="caption" className="mt-2 font-bold text-xs uppercase tracking-wider text-[var(--color-text-secondary)]">
         {label}
       </Text>
     </div>
