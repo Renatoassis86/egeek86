@@ -73,6 +73,7 @@ export * from './news_articles';
 
 // Pesquisas de satisfação/mercado
 export * from './survey_responses';
+export * from './gamer_surveys';
 
 // Analytics
 export * from './analytics';

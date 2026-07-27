@@ -2,24 +2,30 @@ import { ClipboardList, MessageSquare } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated-stat-bars';
-import { getSurveyAggregation } from '@/server/queries/survey';
+import { getSurveyAggregation, getGamerSurveysForAdmin } from '@/server/queries/survey';
+import { AdminSurveysManager } from '@/components/admin/admin-surveys-manager';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPesquisaPage() {
   const { totalResponses, questions } = await getSurveyAggregation();
+  const gamerSurveys = await getGamerSurveysForAdmin();
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <Text as="h1" variant="heading-xl">
-          Pesquisa de Satisfação
-        </Text>
-        <Text variant="body-sm" color="secondary" className="mt-1">
-          {totalResponses} {totalResponses === 1 ? 'resposta registrada' : 'respostas registradas'}
-        </Text>
-      </div>
+    <div className="flex flex-col gap-10">
+      {/* Gerenciador de Enquetes da Comunidade (Criar, Editar, Excluir) */}
+      <AdminSurveysManager initialSurveys={gamerSurveys} />
+
+      <div className="border-t border-[var(--color-border-subtle)] pt-8 flex flex-col gap-6">
+        <div>
+          <Text as="h2" variant="heading-lg" className="font-bold">
+            Respostas da Pesquisa de Satisfação
+          </Text>
+          <Text variant="body-sm" color="secondary" className="mt-1">
+            {totalResponses} {totalResponses === 1 ? 'resposta registrada' : 'respostas registradas'}
+          </Text>
+        </div>
 
       {totalResponses === 0 ? (
         <Card>
@@ -78,13 +84,13 @@ export default async function AdminPesquisaPage() {
                   <Text variant="heading-sm" className="mb-4 font-bold">
                     {q.label}
                   </Text>
-                  <AnimatedStatBars items={bars} />
                 </CardContent>
               </Card>
             );
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

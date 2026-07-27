@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { ClicksSparkline } from '@/components/admin/clicks-sparkline';
 import { getAdminDashboardMetrics, getDailyClicks } from '@/server/queries/affiliate';
+import { AdminAnalyticsDashboard } from '@/components/admin/admin-analytics-dashboard';
 
 // Dashboard com dado ao vivo, sem searchParams — força dinâmica pra não
 // tentar pré-renderizar como estática (travava buscando no banco no build).
@@ -20,13 +21,13 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
         <Text as="h1" variant="heading-xl">
-          Geek Deals: Dashboard
+          Painel de Controle Executivo & Inteligência de Mercado
         </Text>
         <Text variant="body-sm" color="secondary" className="mt-1">
-          Visão geral das ofertas de afiliado monitoradas manualmente.
+          Visão geral de inteligência, cotações Big Data, mapa logístico no Brasil, histogramas e gerador de insights instantâneos.
         </Text>
       </div>
 
@@ -77,6 +78,9 @@ export default async function AdminDashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Dashboard Analítico Completo (Histogramas, Mapa do Brasil, Lojas & Insights) */}
+      <AdminAnalyticsDashboard metrics={metrics} />
     </div>
   );
 }

@@ -68,3 +68,14 @@ export async function getSurveyAggregation(): Promise<SurveyAggregation> {
 
   return { totalResponses, questions };
 }
+
+export async function getGamerSurveysForAdmin() {
+  try {
+    const { gamerSurveys } = await import('@/db/schema');
+    const { desc } = await import('drizzle-orm');
+    return await db.select().from(gamerSurveys).orderBy(desc(gamerSurveys.createdAt));
+  } catch (err) {
+    console.error('Erro ao buscar enquetes:', err);
+    return [];
+  }
+}

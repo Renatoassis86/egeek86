@@ -72,6 +72,21 @@ function computeBucketedAverage(rows: { collected_at: string; price_cents: strin
     .map(([time, { sum, count }]) => ({ time, value: sum / count }));
 }
 
+function computeBucketedFrequency(rows: { collected_at: string }[], bucketMs: number): PricePoint[] {
+  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
+  const buckets = new Map<number, number>();
+
+  for (const row of rows) {
+    const timeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
+    const bucketTime = Math.floor(timeSeconds / bucketSeconds) * bucketSeconds;
+    buckets.set(bucketTime, (buckets.get(bucketTime) ?? 0) + 1);
+  }
+
+  return [...buckets.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([time, value]) => ({ time, value }));
+}
+
 /**
  * Um ponto por balde de tempo: o MENOR preço batido entre todos os
  * vendedores/plataformas conhecidos durante aquele balde (herdando o preço
@@ -187,6 +202,8 @@ export interface PriceHistoryResult {
   points: PricePoint[];
   /** Preço médio real entre TODAS as lojas/plataformas, no MESMO balde de tempo de `points` — não é média móvel de `points`, é a média de mercado do produto. */
   avgPoints: PricePoint[];
+  /** Frequência/volume de cotações coletadas por balde de tempo — alimenta o histograma na parte inferior do gráfico. */
+  frequencyPoints: PricePoint[];
   /** Metadados do vendedor vencedor em cada ponto — chave é o mesmo `time` (início do balde) do PricePoint correspondente. */
   pointOffers: Record<number, PriceHistoryPointOffer>;
   /** Média/máximo somam TODA cotação de TODO vendedor ativo do produto no período (não só a série de menor preço do gráfico); mínimo coincide com o ponto mais baixo do gráfico de qualquer forma. */
@@ -442,8 +459,9 @@ export async function getMasterProductPriceHistory(
   });
 
   const avgPoints = computeBucketedAverage(cleanRows, bucketMs);
+  const frequencyPoints = computeBucketedFrequency(cleanRows, bucketMs);
 
-  return { points, avgPoints, pointOffers, stats, quotes, totalQuoteCount, totalOffersCount, bucketSeconds };
+  return { points, avgPoints, frequencyPoints, pointOffers, stats, quotes, totalQuoteCount, totalOffersCount, bucketSeconds };
 }
 
 export type MoverPeriod = '24h' | '7d' | '30d';

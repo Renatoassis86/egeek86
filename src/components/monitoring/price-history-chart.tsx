@@ -5,6 +5,7 @@ import {
   createChart,
   AreaSeries,
   LineSeries,
+  HistogramSeries,
   ColorType,
   CrosshairMode,
   LineStyle,
@@ -144,6 +145,7 @@ export function PriceHistoryChart({
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const avgSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
+  const freqSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
   const skipNextFetch = useRef(true);
   const requestIdRef = useRef(0);
   const pointOffersRef = useRef<Record<number, PriceHistoryPointOffer>>(initialHistory.pointOffers);
@@ -172,13 +174,6 @@ export function PriceHistoryChart({
       autoSize: true,
     });
 
-    // Zoom no intervalo onde o preço realmente circula, com uma margem
-    // confortável — não força a régua a começar em zero. Preço de jogo
-    // costuma variar numa faixa estreita (ex: R$300-450); baseline em zero
-    // + teto no maior preço JÁ visto historicamente (às vezes um pico de
-    // meses atrás) espremia a linha real numa faixinha, e com poucos pontos
-    // reais (preço muda raramente) isso virava um bloco sólido sem leitura
-    // nenhuma em vez de uma linha/degrau visível.
     const autoscaleProvider = (original: any) => {
       const res = original();
       if (res === null) return res;
@@ -190,22 +185,13 @@ export function PriceHistoryChart({
       return res;
     };
 
-    // Curva suavizada (Catmull-Rom nativo do lightweight-charts) em vez de
-    // degrau — pedido explícito do cliente: o degrau lia como "quadrado"
-    // demais mesmo representando corretamente que o preço só muda por
-    // evento real (não desliza continuamente). A suavização é só visual, os
-    // PONTOS continuam exatamente nos mesmos baldes de tempo de antes.
+    // 1. Linha Suavizada do Menor Preço Mínimo Ativo (Amarela/Vibrante)
     const series = chart.addSeries(AreaSeries, {
       lineColor: palette.line,
       topColor: palette.areaTop,
       bottomColor: palette.areaBottom,
       lineWidth: 2,
       lineType: LineType.Curved,
-      // Um ponto por balde de tempo agora (não mais um por evento de
-      // mudança de preço) — o volume de pontos é baixo o bastante pra um
-      // raio pequeno e fixo marcar cada balde sem os círculos se fundirem
-      // numa mancha, como acontecia quando cada oscilação entre vendedores
-      // virava um marcador (raio padrão, proporcional à densidade de dados).
       pointMarkersVisible: true,
       pointMarkersRadius: 3,
       priceFormat: {
@@ -216,11 +202,7 @@ export function PriceHistoryChart({
       autoscaleInfoProvider: autoscaleProvider,
     });
 
-    // Preço médio real entre todas as lojas/plataformas (não é média móvel
-    // do menor preço) — linha fina tracejada de propósito: nunca deve
-    // competir visualmente com a série principal, é só contexto de mercado.
-    // Também suavizada (mesmo motivo da série principal), com marcadores
-    // menores pra não competir visualmente com os da linha de menor preço.
+    // 2. Linha Suavizada Tracejada da Média Geral de Mercado (Azul/Branca)
     const avgSeries = chart.addSeries(LineSeries, {
       color: palette.movingAverage,
       lineWidth: 1,
@@ -238,6 +220,27 @@ export function PriceHistoryChart({
       },
       autoscaleInfoProvider: autoscaleProvider,
     });
+
+    // 3. Histograma de Frequência de Cotações (Barras na parte inferior)
+    const freqSeries = chart.addSeries(HistogramSeries, {
+      color: 'rgba(214, 90, 0, 0.45)',
+      priceScaleId: 'histogram',
+      priceFormat: {
+        type: 'volume',
+      },
+    });
+
+    chart.priceScale('histogram').applyOptions({
+      scaleMargins: {
+        top: 0.75, // Ocupa somente os 25% inferiores do gráfico
+        bottom: 0,
+      },
+    });
+
+    chartRef.current = chart;
+    seriesRef.current = series;
+    avgSeriesRef.current = avgSeries;
+    freqSeriesRef.current = freqSeries;
 
     chart.subscribeCrosshairMove((param: MouseEventParams) => {
       if (!param.time || !param.point) {
@@ -312,6 +315,15 @@ export function PriceHistoryChart({
     avgSeriesRef.current.setData(
       history.avgPoints.map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
     );
+    if (freqSeriesRef.current && history.frequencyPoints) {
+      freqSeriesRef.current.setData(
+        history.frequencyPoints.map((p) => ({
+          time: p.time as UTCTimestamp,
+          value: p.value,
+          color: 'rgba(214, 90, 0, 0.45)',
+        }))
+      );
+    }
     if (chartRef.current) {
       chartRef.current.applyOptions({
         timeScale: {

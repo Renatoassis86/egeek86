@@ -292,7 +292,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
               </div>
             </div>
           </div>
-          <ThemeToggle className="hidden lg:inline-flex" />
+          <ThemeToggle className="inline-flex" />
           <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative" asChild>
             <Link href="/carrinho">
               <ShoppingBag className="size-5" />
