@@ -868,7 +868,7 @@ export interface DisplayCoupon {
   id: string;
   code: string;
   description: string | null;
-  discountType: 'percentage' | 'fixed_amount';
+  discountType: 'percentage' | 'fixed' | 'fixed_amount' | 'free_shipping' | 'bxgy' | 'points_multiplier' | string;
   discountValue: number;
   minOrderCents: number | null;
   validUntil: Date | null;
