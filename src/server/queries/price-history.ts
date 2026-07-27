@@ -32,13 +32,13 @@ const TIMEFRAME_MS: Record<Exclude<PriceHistoryTimeframe, 'Tudo'>, number> = {
  * balde de hora seria ruído puro.
  */
 const AVG_BUCKET_MS: Record<PriceHistoryTimeframe, number> = {
-  '1D': 4 * 60 * 60 * 1000,
-  '1S': 24 * 60 * 60 * 1000,
-  '1M': 3 * 24 * 60 * 60 * 1000,
-  '3M': 7 * 24 * 60 * 60 * 1000,
-  '6M': 14 * 24 * 60 * 60 * 1000,
-  '1A': 30 * 24 * 60 * 60 * 1000,
-  Tudo: 30 * 24 * 60 * 60 * 1000,
+  '1D': 30 * 60 * 1000, // Baldes de 30 min no gráfico diário
+  '1S': 6 * 60 * 60 * 1000, // Baldes de 6h no gráfico semanal
+  '1M': 24 * 60 * 60 * 1000, // Baldes de 1 dia no gráfico mensal
+  '3M': 2 * 24 * 60 * 60 * 1000, // Baldes de 2 dias no gráfico trimestral
+  '6M': 4 * 24 * 60 * 60 * 1000, // Baldes de 4 dias no gráfico semestral
+  '1A': 7 * 24 * 60 * 60 * 1000, // Baldes de 7 dias no gráfico anual
+  Tudo: 7 * 24 * 60 * 60 * 1000,
 };
 
 /**
@@ -98,6 +98,11 @@ function computeBucketedFrequency(rows: { collected_at: string }[], bucketMs: nu
  * oscilação entre vendedores concorrendo entre si (isso virava dezenas de
  * marcadores sobrepostos formando um bloco ilegível em vez de uma linha).
  */
+/**
+ * Calcula o menor preço real extraído em cada balde de tempo.
+ * Reflete as flutuações reais das cotações coletadas em cada varredura,
+ * permitindo que a linha de menor preço suba ou desça conforme o mercado.
+ */
 function computeBucketedMinSeries(
   rows: { offer_id: string; collected_at: string; price_cents: string }[],
   baselineByOffer: Map<string, number>,
@@ -106,54 +111,28 @@ function computeBucketedMinSeries(
   nowTime: number
 ): { points: PricePoint[]; offerByTime: Record<number, string> } {
   const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
-  const lastKnown = new Map(baselineByOffer);
+  const buckets = new Map<number, { minPrice: number; offerId: string }>();
 
-  function currentMin(): { value: number; offerId: string } | null {
-    let minValue = Infinity;
-    let minOfferId = '';
-    for (const [offerId, price] of lastKnown) {
-      if (price < minValue) {
-        minValue = price;
-        minOfferId = offerId;
-      }
+  // Agrupa cotações reais extraídas na janela por balde de tempo
+  for (const row of rows) {
+    const timeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
+    const bucketTime = Math.floor(timeSeconds / bucketSeconds) * bucketSeconds;
+    const priceReais = Number(row.price_cents) / 100;
+
+    const existing = buckets.get(bucketTime);
+    if (!existing || priceReais < existing.minPrice) {
+      buckets.set(bucketTime, { minPrice: priceReais, offerId: row.offer_id });
     }
-    return minOfferId ? { value: minValue, offerId: minOfferId } : null;
   }
 
   const points: PricePoint[] = [];
   const offerByTime: Record<number, string> = {};
-  const firstBucket = Math.floor(windowStart / bucketSeconds) * bucketSeconds;
-  let rowIndex = 0;
 
-  for (let bucketStart = firstBucket; bucketStart <= nowTime; bucketStart += bucketSeconds) {
-    const bucketEnd = bucketStart + bucketSeconds;
-    // Começa com o estado herdado de antes do balde (ninguém mudou de preço
-    // não significa que o preço não existia) e vai descendo se algum evento
-    // DENTRO do balde bater um preço ainda menor — assim o ponto reflete o
-    // menor preço realmente vigente em algum instante daquele intervalo.
-    let bucketMin = currentMin();
+  const sortedBuckets = [...buckets.entries()].sort((a, b) => a[0] - b[0]);
 
-    while (rowIndex < rows.length) {
-      const rowTime = Math.floor(new Date(rows[rowIndex].collected_at).getTime() / 1000);
-      if (rowTime >= bucketEnd) break;
-      lastKnown.set(rows[rowIndex].offer_id, Number(rows[rowIndex].price_cents) / 100);
-      const min = currentMin();
-      if (min && (!bucketMin || min.value < bucketMin.value)) bucketMin = min;
-      rowIndex++;
-    }
-
-    if (bucketMin) {
-      points.push({ time: bucketStart, value: bucketMin.value });
-      offerByTime[bucketStart] = bucketMin.offerId;
-    }
-  }
-
-  // Garante que o ponto mais recente reflita o estado atual mesmo que o
-  // balde corrente ainda não tenha se fechado.
-  const finalMin = currentMin();
-  if (finalMin && (points.length === 0 || points[points.length - 1].time < nowTime)) {
-    points.push({ time: nowTime, value: finalMin.value });
-    offerByTime[nowTime] = finalMin.offerId;
+  for (const [bucketTime, data] of sortedBuckets) {
+    points.push({ time: bucketTime, value: data.minPrice });
+    offerByTime[bucketTime] = data.offerId;
   }
 
   return { points, offerByTime };
