@@ -68,20 +68,20 @@ export default async function HomePage() {
     <>
       <Hero />
       <StatementBand />
-      <Suspense fallback={<SectionFallback />}>
+      <Suspense fallback={null}>
         <WeeklyPromosSection />
       </Suspense>
       <CategoriesSection />
       <MarketStatsSection />
       <MarketNumbersSection />
       <PlatformShowcase />
-      <Suspense fallback={<SectionFallback />}>
+      <Suspense fallback={null}>
         <SalesHighlights />
       </Suspense>
       <SurveySection surveyData={surveyData} />
       <IndicatorsSection stats={stats} />
       <InteligenciaGamerTeaserSection />
-      <Suspense fallback={<SectionFallback />}>
+      <Suspense fallback={null}>
         <HomeNewsSection />
       </Suspense>
       <Benefits />
@@ -127,6 +127,7 @@ function Cluster({
   heading,
   text,
   cards,
+  accentColor = 'gold',
 }: {
   word: string;
   src: string;
@@ -134,26 +135,32 @@ function Cluster({
   heading: string;
   text: string;
   cards: CategoryCard[];
+  accentColor?: 'gold' | 'emerald';
 }) {
+  const isEmerald = accentColor === 'emerald';
+  const labelBadgeBg = isEmerald ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+  const iconColor = isEmerald ? 'text-emerald-400' : 'text-amber-400';
+  const cardBorderHover = isEmerald ? 'hover:border-emerald-400/80 hover:bg-[#073629]' : 'hover:border-amber-400/80 hover:bg-[#2e1747]';
+
   return (
-    <section className="relative w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24 overflow-hidden border-b border-[var(--color-border-subtle)]">
-      <CircuitLines className="opacity-50" />
+    <section className="relative w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24 overflow-hidden border-b border-white/10">
+      <CircuitLines className="opacity-30" />
 
       <div className="relative grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-center lg:gap-16">
         <Reveal>
-          <TextImageMask text={word} src={src} className="text-[90px] leading-none sm:text-[130px] lg:text-[150px]" />
+          <TextImageMask text={word} src={src} className="text-[100px] leading-none sm:text-[140px] lg:text-[170px]" />
         </Reveal>
 
         <Reveal delay={0.08}>
-          <Text variant="label" color="tertiary">
+          <span className={cn('inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest border w-fit mb-3', labelBadgeBg)}>
             {label}
-          </Text>
-          <Text as="h2" variant="display-md" className="mt-2 max-w-[22ch]">
+          </span>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight mt-1 max-w-[22ch]">
             {heading}
-          </Text>
-          <Text variant="body-md" color="secondary" className="mt-4 max-w-[52ch]">
+          </h2>
+          <p className="text-zinc-200 text-base sm:text-lg font-medium leading-relaxed mt-4 max-w-[52ch]">
             {text}
-          </Text>
+          </p>
         </Reveal>
       </div>
 
@@ -162,18 +169,21 @@ function Cluster({
           <Reveal key={href} delay={0.06 + i * 0.06}>
             <Link
               href={href}
-              className="group flex h-full flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 transition-colors hover:border-[var(--color-border-strong)]"
+              className={cn(
+                'group flex h-full flex-col gap-3 rounded-[var(--radius-lg)] border border-white/15 bg-white/10 p-6 backdrop-blur-md transition-all shadow-lg',
+                cardBorderHover
+              )}
             >
-              <Icon className="size-6 text-[var(--color-accent-primary)]" aria-hidden />
-              <Text as="h3" variant="heading-sm">
+              <Icon className={cn('size-7', iconColor)} aria-hidden />
+              <h3 className="text-xl font-black text-white tracking-tight">
                 {cardLabel}
-              </Text>
-              <Text variant="body-sm" color="secondary">
+              </h3>
+              <p className="text-sm font-medium text-zinc-200 leading-relaxed">
                 {description}
-              </Text>
-              <span className="mt-auto inline-flex items-center gap-1 text-body-sm font-medium text-[var(--color-text-secondary)] transition-colors group-hover:text-[var(--color-text-primary)]">
+              </p>
+              <span className={cn('mt-auto inline-flex items-center gap-1.5 text-sm font-bold transition-colors', iconColor)}>
                 Ver ofertas
-                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" aria-hidden />
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
               </span>
             </Link>
           </Reveal>
@@ -186,24 +196,26 @@ function Cluster({
 function CategoriesSection() {
   return (
     <div className="w-full">
-      <div data-theme="dark" className="bg-gradient-to-b from-[#180b29] to-[#120720] text-white border-b border-purple-900/40">
+      <div data-theme="dark" className="bg-gradient-to-b from-[#1c0c32] via-[#160928] to-[#10061e] text-white border-b border-purple-900/40">
         <Cluster
           word="GAMER"
-          src="/images/categorias/gamer-collage.png"
+          src="/images/categorias/gamer-mask-light.png"
           label="O lado do jogo"
           heading="Jogo, console e o que equipa a experiência."
           text="Tudo que é produto de verdade, com preço monitorado e histórico real por trás de cada item."
           cards={gamerCards}
+          accentColor="gold"
         />
       </div>
-      <div data-theme="dark" className="bg-gradient-to-b from-[#04241b] to-[#021812] text-white border-b border-emerald-900/40">
+      <div data-theme="dark" className="bg-gradient-to-b from-[#053024] via-[#03241b] to-[#021812] text-white border-b border-emerald-900/40">
         <Cluster
           word="GEEK"
-          src="/images/categorias/geek-collage.png"
+          src="/images/categorias/geek-mask-light.png"
           label="O lado da cultura"
           heading="Franquia, lançamento e o que move a comunidade."
           text="A parte do site que não é sobre comprar, é sobre acompanhar o que importa pra quem vive cultura geek."
           cards={geekCards}
+          accentColor="emerald"
         />
       </div>
     </div>
@@ -218,7 +230,7 @@ function MarketStatsSection() {
           <div className="flex flex-col gap-4">
             <TextImageMask
               text="86"
-              src="/images/home/painel-analitico-86.png"
+              src="/images/home/painel-analitico-86-light.png"
               className="text-[160px] leading-none sm:text-[240px] lg:text-[320px] xl:text-[360px] font-black"
             />
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">

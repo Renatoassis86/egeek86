@@ -73,16 +73,16 @@ export default async function SobrePage() {
 // ----------------------------------------------------------------------
 function HeroSection() {
   return (
-    <section data-theme="dark" className="relative w-full bg-[#0F0C08] mx-auto px-4 lg:px-8 pt-14 pb-12 lg:pt-20 lg:pb-16 overflow-hidden border-b border-[var(--color-border-subtle)]">
-      <Glow color="gold" size="xl" intensity={0.2} className="-top-32 -left-32" />
+    <section data-theme="dark" className="relative w-full bg-[#0c0906] text-white px-4 lg:px-8 pt-14 pb-12 lg:pt-20 lg:pb-16 overflow-hidden border-b border-amber-900/30">
+      <Glow color="gold" size="xl" intensity={0.25} className="-top-32 -left-32" />
       <Glow color="hype" size="md" intensity={0.15} className="top-20 -right-20" />
 
       <div className="mx-auto max-w-7xl relative z-10 flex flex-col gap-8">
         <Reveal>
           <div className="flex flex-col gap-3">
-            <Badge variant="hype" size="md" className="w-fit font-black tracking-wider uppercase bg-amber-500 text-black">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
               Arkos Intelligence e Espaço Geek 86
-            </Badge>
+            </span>
             <Text as="h1" variant="display-xl" className="font-black text-white tracking-tight lg:text-display-2xl max-w-[22ch]">
               Inteligência de Dados e Decisão para o Mercado Gamer.
             </Text>
@@ -113,7 +113,7 @@ function HeroSection() {
 // ----------------------------------------------------------------------
 function PlatformMetricsSection({ stats }: { stats: any }) {
   return (
-    <section data-theme="dark" className="w-full bg-[#120E09] border-b border-[var(--color-border-subtle)] py-12 lg:py-16">
+    <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-12 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatTile icon={<Package className="size-5" />} value={stats.totalProducts} label="Produtos Catalogados" />
@@ -131,30 +131,30 @@ function PlatformMetricsSection({ stats }: { stats: any }) {
 // ----------------------------------------------------------------------
 function QuemSomosSection() {
   return (
-    <section id="quem-somos" data-theme="dark" className="w-full bg-[#0A0704] py-16 lg:py-24 border-b border-[var(--color-border-subtle)] scroll-mt-20">
+    <section id="quem-somos" data-theme="dark" className="w-full bg-gradient-to-b from-[#1c0c32] via-[#160928] to-[#10061e] text-white py-16 lg:py-24 border-b border-purple-900/40 scroll-mt-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
           <div className="flex flex-col gap-4">
-            <Badge variant="outline" size="sm" className="w-fit text-amber-400 border-amber-500/40 font-bold uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/40 w-fit">
               <History className="size-3.5 mr-1" /> Nossa História
-            </Badge>
+            </span>
             <Text as="h2" variant="display-lg" className="font-black text-white text-3xl sm:text-4xl lg:text-5xl leading-tight drop-shadow-md">
               Da paixão pelas locadoras dos anos 80 e 90 a um cockpit de Inteligência de Dados.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-200 font-medium">
+            <Text variant="body-md" className="leading-relaxed text-zinc-200 font-medium">
               O Espaço Geek 86 nasceu do fascínio pelas tardes passadas em locadoras de videogame, trocando cartuchos de Super Nintendo e Mega Drive, lendo revistas de dicas e vivenciando a ascensão dos consoles clássicos.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-200 font-medium">
-              O que começou como uma coleção pessoal rigorosamente catalogada evoluiu para análises quantitativas, rotinas de monitoramento e o hábito de ajudar amigos a encontrarem o preço justo sem cair em armadirhas de falsos descontos.
+            <Text variant="body-md" className="leading-relaxed text-zinc-200 font-medium">
+              O que começou como uma coleção pessoal rigorosamente catalogada evoluiu para análises quantitativas, rotinas de monitoramento e o hábito de ajudar amigos a encontrarem o preço justo sem cair em armadilhas de falsos descontos.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-200 font-medium">
+            <Text variant="body-md" className="leading-relaxed text-zinc-200 font-medium">
               Hoje, transformamos essa essência em uma plataforma completa de inteligência de dados que varre os maiores marketplaces do Brasil a cada 5 minutos, preservando a paixão do colecionador com a precisão dos modelos analíticos.
             </Text>
           </div>
         </Reveal>
 
         <Reveal delay={0.08}>
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-amber-500/30 bg-[#0B0805] shadow-2xl">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-2xl">
             <Image
               src="/images/sobre/locadora.png"
               alt="Ilustração de locadora retro gamer"
@@ -173,80 +173,73 @@ function QuemSomosSection() {
 // ----------------------------------------------------------------------
 function MissaoVisaoValoresSection() {
   return (
-    <section id="missao-visao-valores" data-theme="dark" className="relative w-full bg-gradient-to-b from-[#0F0C08] via-[#15100A] to-[#0A0704] py-20 lg:py-28 border-b border-[var(--color-border-subtle)] scroll-mt-20 overflow-hidden">
-      <Glow color="gold" size="xl" intensity={0.15} className="-top-32 right-0" />
-      <Glow color="hype" size="md" intensity={0.12} className="bottom-0 left-10" />
-
+    <section id="missao-visao-valores" data-theme="light" className="relative w-full bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-600/10 text-zinc-900 py-20 lg:py-28 border-b border-amber-300/40 scroll-mt-20 overflow-hidden">
       <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-14">
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
-            <Badge variant="hype" size="md" className="w-fit uppercase font-black tracking-widest bg-amber-500 text-black">
-              Pilares e Propósito Disruptivo
-            </Badge>
-            <Text as="h2" variant="display-lg" className="font-black text-white text-3xl sm:text-5xl tracking-tight">
-              Missão e Visão Unificada
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-800 border border-amber-500/40 w-fit">
+              Pilares Fundamentais
+            </span>
+            <Text as="h2" variant="display-lg" className="font-black text-zinc-900 text-3xl sm:text-5xl tracking-tight">
+              Nossa Missão &amp; Nossa Visão
             </Text>
-            <Text variant="body-lg" className="text-zinc-300 max-w-[64ch] leading-relaxed font-medium">
-              Nossa razão de existir e o nosso horizonte estratégico em um único compromisso com todo o ecossistema gamer.
+            <Text variant="body-lg" className="text-zinc-700 max-w-[64ch] leading-relaxed font-medium">
+              Os compromissos que norteiam a construção do maior ecossistema de inteligência de mercado gamer do Brasil.
             </Text>
           </div>
         </Reveal>
 
-        <div className="grid gap-8 lg:grid-cols-12">
-          {/* Declaração Única de Missão e Visão Disruptiva (8 colunas) */}
-          <Reveal delay={0.04} className="lg:col-span-8">
-            <div className="group h-full rounded-[var(--radius-xl)] border border-amber-500/40 bg-gradient-to-b from-[#1C150B] via-[#140E07] to-[#0D0A05] p-8 lg:p-10 flex flex-col gap-6 transition-all duration-500 hover:border-amber-400 hover:shadow-[0_0_40px_rgba(245,158,11,0.25)] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl group-hover:bg-amber-500/25 transition-all" />
-              
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* Card 1: NOSSA MISSÃO */}
+          <Reveal delay={0.04}>
+            <div className="group h-full rounded-[var(--radius-xl)] border-2 border-amber-500/40 bg-white p-8 lg:p-10 flex flex-col gap-6 transition-all duration-300 hover:border-amber-500 hover:shadow-2xl relative overflow-hidden">
               <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-amber-500/20 text-amber-400 w-fit group-hover:scale-110 transition-transform duration-300">
+                <div className="p-3.5 rounded-2xl bg-amber-500/20 text-amber-700 w-fit group-hover:scale-110 transition-transform duration-300">
                   <Target className="size-8" />
                 </div>
-                <span className="text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">
-                  Declaração de Propósito Supremo
+                <span className="text-xs font-black uppercase tracking-widest text-amber-700 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
+                  Nossa Missão
                 </span>
               </div>
 
-              <blockquote className="text-xl sm:text-2xl font-extrabold text-white leading-snug tracking-tight border-l-4 border-amber-500 pl-6 my-2 italic">
-                "Conectar a história, a cultura e a paixão do universo gamer a uma infraestrutura soberana de inteligência de dados, capacitando consumidores, criadores e o mercado a tomarem as melhores decisões no presente enquanto preservam a memória do futuro."
+              <blockquote className="text-lg sm:text-xl font-extrabold text-zinc-900 leading-relaxed border-l-4 border-amber-500 pl-5 my-1">
+                &quot;Transformar a experiência de compra e acompanhamento do universo gamer e geek por meio de inteligência de dados 100% empírica, conectando consumidores a preços reais, históricos auditáveis e transparentes no mercado.&quot;
               </blockquote>
 
-              <p className="text-sm sm:text-base text-zinc-300 leading-relaxed font-medium">
-                Inspirados pelos grandes ecossistemas disruptivos globais, não somos apenas um monitor de ofertas; somos a rede neural de conhecimento e tomada de decisão onde a nostalgia retro e a inovação tecnológica convergem para empoderar cada agente do mercado de jogos.
+              <p className="text-sm text-zinc-600 leading-relaxed font-medium">
+                Garantimos que cada cotação, gráfico e estatística da plataforma reflita com absoluto rigor o mercado ativo, empoderando o consumidor contra falsos descontos e distorções promocionais.
               </p>
 
-              <div className="mt-auto pt-6 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-4 text-xs font-bold text-amber-400 font-mono">
-                <span>✦ Soberania em Inteligência de Dados</span>
-                <span>✦ Preservação Cultural e Decisão Estratégica</span>
+              <div className="mt-auto pt-5 border-t border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-amber-800 font-mono">
+                <span>✦ Dados Empíricos 100% Reais</span>
+                <span>✦ Transparência de Preço</span>
               </div>
             </div>
           </Reveal>
 
-          {/* Código de Valores e Princípios Inegociáveis (4 colunas) */}
-          <Reveal delay={0.08} className="lg:col-span-4">
-            <div className="group h-full rounded-[var(--radius-xl)] border border-emerald-500/30 bg-gradient-to-b from-[#0B1D14] via-[#07140E] to-[#040A07] p-8 flex flex-col gap-6 transition-all duration-500 hover:border-emerald-400 hover:shadow-[0_0_40px_rgba(16,185,129,0.25)] relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/25 transition-all" />
-              
+          {/* Card 2: NOSSA VISÃO */}
+          <Reveal delay={0.08}>
+            <div className="group h-full rounded-[var(--radius-xl)] border-2 border-emerald-500/40 bg-white p-8 lg:p-10 flex flex-col gap-6 transition-all duration-300 hover:border-emerald-500 hover:shadow-2xl relative overflow-hidden">
               <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-400 w-fit group-hover:scale-110 transition-transform duration-300">
-                  <Award className="size-8" />
+                <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-700 w-fit group-hover:scale-110 transition-transform duration-300">
+                  <Compass className="size-8" />
                 </div>
-                <span className="text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/30">
-                  Princípios de Ouro
+                <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30">
+                  Nossa Visão
                 </span>
               </div>
 
-              <div className="flex flex-col gap-1">
-                <h3 className="text-2xl font-black text-white tracking-tight">Nossos Valores</h3>
-                <span className="text-xs font-bold text-emerald-400">Compromisso com o Colecionador e a Comunidade</span>
-              </div>
+              <blockquote className="text-lg sm:text-xl font-extrabold text-zinc-900 leading-relaxed border-l-4 border-emerald-500 pl-5 my-1">
+                &quot;Ser o maior hub e ecossistema de inteligência de preços e memória gamer da América Latina, tornando-se a referência definitiva de confiança para quem joga, coleciona e vive a cultura geek.&quot;
+              </blockquote>
 
-              <p className="text-sm text-zinc-300 leading-relaxed font-medium">
-                100% Imparcialidade em Inteligência de Dados, Preservação da Memória Retrogamer, Respeito à Comunidade, Rigor Absoluto na Coleta de Dados e Transparência em Links de Afiliados.
+              <p className="text-sm text-zinc-600 leading-relaxed font-medium">
+                Expandimos continuamente nossos algoritmos e cobertura para que qualquer gamer, do retrogamer ao entusiasta de última geração, consulte o Espaço Geek 86 antes de tomar qualquer decisão.
               </p>
 
-              <div className="mt-auto pt-6 border-t border-emerald-500/20 text-xs font-bold text-emerald-400 font-mono">
-                <span>✦ Integridade Sem Concessões</span>
+              <div className="mt-auto pt-5 border-t border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-emerald-800 font-mono">
+                <span>✦ Referência em Inteligência</span>
+                <span>✦ Ecossistema nº 1 na América Latina</span>
               </div>
             </div>
           </Reveal>
@@ -278,10 +271,10 @@ function MissaoVisaoValoresSection() {
 // ----------------------------------------------------------------------
 function ObjetivosJustificativaSection() {
   return (
-    <section id="objetivos-justificativa" data-theme="dark" className="w-full bg-[#0A0704] py-16 lg:py-24 border-b border-[var(--color-border-subtle)] scroll-mt-20">
+    <section id="objetivos-justificativa" data-theme="dark" className="w-full bg-gradient-to-b from-[#053024] via-[#03241b] to-[#021812] text-white py-16 lg:py-24 border-b border-emerald-900/40 scroll-mt-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-amber-500/30 bg-[#0B0805] shadow-2xl">
+          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-emerald-500/30 bg-[#0B0805] shadow-2xl">
             <Image
               src="/images/sobre/aluguel-tv.png"
               alt="Justificativa e inteligência de dados no mercado gamer"
@@ -289,7 +282,7 @@ function ObjetivosJustificativaSection() {
               className="object-cover object-center"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-amber-400 font-bold">
+            <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-emerald-400 font-bold">
               Eliminação de distorções e inflação artificial de preços no varejo.
             </div>
           </div>
@@ -297,29 +290,29 @@ function ObjetivosJustificativaSection() {
 
         <Reveal delay={0.08}>
           <div className="flex flex-col gap-5">
-            <Badge variant="outline" size="sm" className="w-fit text-amber-400 border-amber-500/40">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 w-fit">
               <ShieldCheck className="size-3.5 mr-1" /> Justificativa e Propósito
-            </Badge>
+            </span>
             <Text as="h2" variant="display-md" className="font-extrabold text-white">
               Por que uma plataforma de inteligência de dados é indispensável?
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-300">
+            <Text variant="body-md" className="leading-relaxed text-zinc-200">
               <strong>O Problema do Varejo Gamer:</strong> O mercado brasileiro de jogos sofre com grande fragmentação. O mesmo jogo pode custar R$ 349,00 em uma loja e R$ 499,00 em outra na mesma data. Além disso, em épocas promocionais, vendedores reajustam preços prévios para simular descontos inexistentes.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-300">
+            <Text variant="body-md" className="leading-relaxed text-zinc-200">
               <strong>A Solução Espaço Geek 86:</strong> Construímos rotinas automatizadas de ingestão 24/7 que coletam dados a cada 5 minutos em Mercado Livre, Shopee, Magalu, Amazon e Via.
             </Text>
             <div className="flex flex-col gap-2.5 pt-2">
               <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <CheckCircle2 className="size-4 text-amber-400 shrink-0" />
+                <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
                 <span>Limpeza estatística anti-outlier para expurgar distorções de preço</span>
               </div>
               <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <CheckCircle2 className="size-4 text-amber-400 shrink-0" />
+                <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
                 <span>Cálculo de preço médio real de mercado vs. menor preço ativo</span>
               </div>
               <div className="flex items-center gap-2 text-sm font-bold text-white">
-                <CheckCircle2 className="size-4 text-amber-400 shrink-0" />
+                <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
                 <span>Histórico auditável que prova se a oferta é oportunidade de verdade</span>
               </div>
             </div>
