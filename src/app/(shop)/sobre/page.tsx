@@ -336,7 +336,7 @@ function FerramentasShowcaseSection() {
         'Gráficos estatísticos interativos de 3 camadas (Linha do Menor Preço Ativo, Curva Média de Mercado de todas as lojas e Histograma de Frequência de Cotações). Suporta zoom dinâmico e exibe se o produto está no menor preço histórico.',
       imageSrc: '/images/sobre/ferramenta-bolsa-gamer.png',
       badgeColor: 'bg-amber-500 text-black',
-      borderHover: 'hover:border-amber-400 hover:shadow-[0_0_35px_rgba(245,158,11,0.25)]',
+      borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [
         'Curva suave da Média Geral entre todas as lojas e plataformas',
         'Área sombreada dinâmica do Menor Preço Ativo em cada varredura',
@@ -352,7 +352,7 @@ function FerramentasShowcaseSection() {
         'Central estratégica para criadores de conteúdo, afiliados e leiloeiros gerarem mensagens promocionais de alta conversão para WhatsApp e Telegram, aplicarem links de afiliado com rastreamento inteligente exclusivo e acompanharem cliques, métricas e receitas em tempo real.',
       imageSrc: '/images/sobre/ferramenta-gestao-afiliados.png',
       badgeColor: 'bg-orange-500 text-white',
-      borderHover: 'hover:border-orange-400 hover:shadow-[0_0_35px_rgba(249,115,22,0.25)]',
+      borderHover: 'hover:border-orange-500 hover:shadow-xl',
       bullets: [
         'Gerador automático de mensagens com formatação profissional',
         'Edição e exclusão de mensagens divulgadas no histórico',
@@ -366,9 +366,9 @@ function FerramentasShowcaseSection() {
       title: '3. Assistente Inteligente de Tomada de Decisão do Comprador',
       description:
         'Ferramenta para o comprador final identificar se o momento é ideal para compra. Exibe a variação percentual em relação ao preço médio, badges de oportunidade e links direcionando para a loja com o menor valor ativo.',
-      imageSrc: '/images/home/painel-analitico-86.png',
-      badgeColor: 'bg-emerald-500 text-black',
-      borderHover: 'hover:border-emerald-400 hover:shadow-[0_0_35px_rgba(16,185,129,0.25)]',
+      imageSrc: '/images/home/painel-analitico-86-light.png',
+      badgeColor: 'bg-emerald-600 text-white',
+      borderHover: 'hover:border-emerald-500 hover:shadow-xl',
       bullets: [
         'Indicador instantâneo "Comprar Agora no Menor Preço"',
         'Comparador de ofertas de diferentes vendedores no mesmo item',
@@ -383,8 +383,8 @@ function FerramentasShowcaseSection() {
       description:
         'Portal jornalístico e analítico com reportagens originais, análises descritivas e relatórios teóricos integrando dados de pesquisas de mercado globais e nacionais (Newzoo, Statista e Pesquisa Game Brasil).',
       imageSrc: '/images/home/observatorio-gamer-hero.png',
-      badgeColor: 'bg-cyan-500 text-black',
-      borderHover: 'hover:border-cyan-400 hover:shadow-[0_0_35px_rgba(6,182,212,0.25)]',
+      badgeColor: 'bg-cyan-600 text-white',
+      borderHover: 'hover:border-cyan-500 hover:shadow-xl',
       bullets: [
         'Artigos teóricos sobre a economia do retrogaming e cultura pop',
         'Dossiês de mercado com estatísticas consolidadas da indústria',
@@ -399,8 +399,8 @@ function FerramentasShowcaseSection() {
       description:
         'Infraestrutura de inteligência de dados desenvolvida para realizar pesquisas de marketing de mercado, testes de aceitação no lançamento de marcas e pesquisas qualitativas gerais aplicadas diretamente a consumidores gerais e público gamer.',
       imageSrc: '/images/home/pesquisa-comunidade.png',
-      badgeColor: 'bg-purple-500 text-white',
-      borderHover: 'hover:border-purple-400 hover:shadow-[0_0_35px_rgba(168,85,247,0.25)]',
+      badgeColor: 'bg-purple-600 text-white',
+      borderHover: 'hover:border-purple-500 hover:shadow-xl',
       bullets: [
         'Pesquisas qualitativas e quantitativas aplicadas a consumidores gerais',
         'Estudos de posicionamento estratégicos para lançamento de marcas',
@@ -415,8 +415,8 @@ function FerramentasShowcaseSection() {
       description:
         'Motor de inteligência de dados que analisa o engajamento social e a percepção da comunidade sobre títulos e consoles, gerando a nota Geek Hype Index para direcionar estratégias de marcas e colecionadores.',
       imageSrc: '/images/home/observatorio-cards-bg.png',
-      badgeColor: 'bg-rose-500 text-white',
-      borderHover: 'hover:border-rose-400 hover:shadow-[0_0_35px_rgba(244,63,94,0.25)]',
+      badgeColor: 'bg-rose-600 text-white',
+      borderHover: 'hover:border-rose-500 hover:shadow-xl',
       bullets: [
         'Métrica de hype calculada com Processamento de Linguagem Natural',
         'Classificação de sentimento positivo, neutro ou negativo',
@@ -431,8 +431,8 @@ function FerramentasShowcaseSection() {
       description:
         'Área nobre dedicada a lançamentos de edições limitadas e leilões C2C de itens clássicos e raros, com contagem regressiva ao vivo, histórico de lances e score de confiança dos vendedores.',
       imageSrc: '/images/home/newsletter-vip-club.png',
-      badgeColor: 'bg-amber-400 text-black',
-      borderHover: 'hover:border-amber-300 hover:shadow-[0_0_35px_rgba(251,191,36,0.25)]',
+      badgeColor: 'bg-amber-500 text-black',
+      borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [
         'Sistema de leilões com arremate ao vivo e cronômetro em tempo real',
         'Drops exclusivos com restrição de acesso e cadastro prévio',
@@ -443,20 +443,17 @@ function FerramentasShowcaseSection() {
   ];
 
   return (
-    <section id="ferramentas" data-theme="dark" className="relative w-full bg-gradient-to-b from-[#0A0704] via-[#140E08] to-[#0A0704] py-20 lg:py-28 border-b border-[var(--color-border-subtle)] scroll-mt-20 overflow-hidden">
-      <Glow color="gold" size="xl" intensity={0.15} className="top-10 left-10" />
-      <Glow color="hype" size="md" intensity={0.12} className="bottom-10 right-10" />
-
+    <section id="ferramentas" data-theme="light" className="relative w-full bg-[#fcfaf7] text-zinc-900 py-20 lg:py-28 border-b border-amber-900/10 scroll-mt-20 overflow-hidden">
       <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-16">
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
-            <Badge variant="hype" size="md" className="w-fit uppercase font-black tracking-widest bg-amber-500 text-black">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/15 text-orange-700 border border-orange-500/30 w-fit">
               Arquitetura de Ferramentas
-            </Badge>
-            <Text as="h2" variant="display-lg" className="font-black text-white tracking-tight">
+            </span>
+            <Text as="h2" variant="display-lg" className="font-black text-zinc-900 tracking-tight">
               Conheça Nossas Ferramentas de Inteligência de Dados
             </Text>
-            <Text variant="body-lg" className="text-zinc-300 max-w-[64ch] leading-relaxed">
+            <Text variant="body-lg" className="text-zinc-700 max-w-[64ch] leading-relaxed font-medium">
               Um ecossistema de inteligência de dados projetado com tecnologia de ponta, design nostálgico e módulos especializados para compradores, afiliados e colecionadores.
             </Text>
           </div>
@@ -467,7 +464,7 @@ function FerramentasShowcaseSection() {
           {tools.map((tool) => (
             <Reveal key={tool.id}>
               <div
-                className={`group rounded-[var(--radius-xl)] border border-amber-500/30 bg-gradient-to-b from-[#181109] to-[#0D0904] p-6 lg:p-10 transition-all duration-500 ${tool.borderHover}`}
+                className={`group rounded-[var(--radius-xl)] border border-amber-200/80 bg-white p-6 lg:p-10 transition-all duration-300 shadow-md ${tool.borderHover}`}
               >
                 <div className={`grid gap-8 lg:grid-cols-12 lg:items-center ${tool.reverse ? 'lg:flex-row-reverse' : ''}`}>
                   {/* Conteúdo Técnico */}
@@ -475,17 +472,17 @@ function FerramentasShowcaseSection() {
                     <span className={`px-3.5 py-1 rounded-full text-xs font-black w-fit tracking-wider uppercase ${tool.badgeColor}`}>
                       {tool.badge}
                     </span>
-                    <Text variant="heading-lg" className="font-black text-white leading-tight">
+                    <Text variant="heading-lg" className="font-black text-zinc-900 leading-tight">
                       {tool.title}
                     </Text>
-                    <Text variant="body-md" className="text-zinc-300 leading-relaxed font-medium">
+                    <Text variant="body-md" className="text-zinc-700 leading-relaxed font-medium">
                       {tool.description}
                     </Text>
 
-                    <div className="flex flex-col gap-2.5 pt-3 border-t border-amber-500/20">
+                    <div className="flex flex-col gap-2.5 pt-3 border-t border-amber-100">
                       {tool.bullets.map((b, idx) => (
-                        <div key={idx} className="flex items-center gap-2.5 text-xs font-semibold text-zinc-200">
-                          <CheckCircle2 className="size-4 text-amber-400 shrink-0" />
+                        <div key={idx} className="flex items-center gap-2.5 text-xs font-bold text-zinc-800">
+                          <CheckCircle2 className="size-4 text-amber-600 shrink-0" />
                           <span>{b}</span>
                         </div>
                       ))}
@@ -494,7 +491,7 @@ function FerramentasShowcaseSection() {
 
                   {/* Imagem em Moldura sem Corte */}
                   <div className={`lg:col-span-6 ${tool.reverse ? 'lg:order-1' : 'lg:order-2'}`}>
-                    <div className="relative aspect-[16/10] w-full rounded-[var(--radius-lg)] overflow-hidden border border-amber-500/30 bg-black shadow-2xl">
+                    <div className="relative aspect-[16/10] w-full rounded-[var(--radius-lg)] overflow-hidden border border-amber-200 bg-zinc-100 shadow-lg">
                       <Image
                         src={tool.imageSrc}
                         alt={tool.title}
@@ -518,7 +515,7 @@ function FerramentasShowcaseSection() {
 // ----------------------------------------------------------------------
 function IdealizadorSection() {
   return (
-    <section id="idealizador" data-theme="dark" className="w-full bg-[#0F0C08] py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
+    <section id="idealizador" data-theme="dark" className="w-full bg-[#0a0a0d] text-white py-16 lg:py-24 border-b border-amber-500/30">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
           <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-amber-500/30 overflow-hidden shadow-2xl p-6 sm:p-8 lg:p-12 grid gap-8 lg:grid-cols-12 lg:items-center">
@@ -539,10 +536,10 @@ function IdealizadorSection() {
 
             <div className="lg:col-span-7 flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <Badge variant="hype" size="sm" className="w-fit uppercase bg-amber-500 text-black font-extrabold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
                   Idealização e Liderança Técnica
-                </Badge>
-                <Text variant="heading-xl" className="font-extrabold text-white text-3xl sm:text-4xl">
+                </span>
+                <Text variant="heading-xl" className="font-black text-white text-3xl sm:text-4xl">
                   Renato Silva de Assis
                 </Text>
                 <Text variant="caption" className="text-amber-400 font-mono font-bold text-xs sm:text-sm leading-relaxed">

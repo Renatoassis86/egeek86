@@ -155,69 +155,79 @@ export default async function OffersPage({
         </Suspense>
       </div>
 
-      {/* Prateleiras Agrupadas de Produtos Estilo Marketplace */}
+      {/* Prateleiras Agrupadas de Produtos Estilo Marketplace com Intercalação de Atmosferas */}
       {broadPool.length === 0 ? (
         <Text variant="body-sm" color="secondary" className="mt-6">
           Nenhuma oferta encontrada com esses filtros. Tente outra combinação.
         </Text>
       ) : (
-        <div className="flex flex-col gap-12 mt-4">
-          {/* Seção 1: Tá vendendo muito */}
+        <div className="flex flex-col gap-10 mt-2">
+          {/* Seção 1: Tá vendendo muito (Warm Light Canvas) */}
           {featured.length > 0 && (
-            <GroupedOfferShelf
-              title="Tá Vendendo Muito · Destaques da Semana"
-              subtitle="Ofertas mais procuradas e populares com ótimas condições de preço"
-              icon={<Flame className="size-5 text-[var(--color-accent-hype)]" aria-hidden />}
-              badgeLabel="Destaque Geek 86"
-              offers={featured}
-              metricsMap={metricsMap}
-              cardVariant="feature"
-            />
+            <div data-theme="light" className="bg-[#faf7f2] text-zinc-900 p-6 lg:p-10 rounded-[var(--radius-xl)] border border-amber-900/10 shadow-sm">
+              <GroupedOfferShelf
+                title="Tá Vendendo Muito · Destaques da Semana"
+                subtitle="Ofertas mais procuradas e populares com ótimas condições de preço"
+                icon={<Flame className="size-5 text-orange-600" aria-hidden />}
+                badgeLabel="Destaque Geek 86"
+                offers={featured}
+                metricsMap={metricsMap}
+                cardVariant="feature"
+              />
+            </div>
           )}
 
-          {/* Seção 2: No Menor Preço Histórico */}
+          {/* Seção 2: No Menor Preço Histórico (Deep Emerald Gamer Depth) */}
           {lowestEverOffers.length > 0 && (
-            <GroupedOfferShelf
-              title="No Menor Preço Histórico"
-              subtitle="Produtos que atingiram o menor valor já registrado no nosso monitoramento"
-              icon={<TrendingDown className="size-5 text-[var(--color-accent-success)]" aria-hidden />}
-              badgeLabel="Oportunidade Real"
-              offers={lowestEverOffers.slice(0, 8)}
-              metricsMap={metricsMap}
-            />
+            <div data-theme="dark" className="bg-gradient-to-b from-[#053024] via-[#03241b] to-[#021812] text-white p-6 lg:p-10 rounded-[var(--radius-xl)] border border-emerald-800/40 shadow-xl">
+              <GroupedOfferShelf
+                title="No Menor Preço Histórico"
+                subtitle="Produtos que atingiram o menor valor já registrado no nosso monitoramento"
+                icon={<TrendingDown className="size-5 text-emerald-400" aria-hidden />}
+                badgeLabel="Oportunidade Real"
+                offers={lowestEverOffers.slice(0, 8)}
+                metricsMap={metricsMap}
+              />
+            </div>
           )}
 
-          {/* Seção 3: Universo Nintendo Switch */}
+          {/* Seção 3: Universo Nintendo Switch (Deep Roxo Açaí Depth) */}
           {nintendoOffers.length > 0 && (
-            <GroupedOfferShelf
-              title="Universo Nintendo Switch"
-              subtitle="Jogos em mídia física e acessórios para Nintendo Switch"
-              icon={<Gamepad2 className="size-5 text-red-500" aria-hidden />}
-              offers={nintendoOffers.slice(0, 8)}
-              metricsMap={metricsMap}
-            />
+            <div data-theme="dark" className="bg-gradient-to-b from-[#1c0c32] via-[#160928] to-[#10061e] text-white p-6 lg:p-10 rounded-[var(--radius-xl)] border border-purple-900/40 shadow-xl">
+              <GroupedOfferShelf
+                title="Universo Nintendo Switch"
+                subtitle="Jogos em mídia física e acessórios para Nintendo Switch"
+                icon={<Gamepad2 className="size-5 text-amber-400" aria-hidden />}
+                offers={nintendoOffers.slice(0, 8)}
+                metricsMap={metricsMap}
+              />
+            </div>
           )}
 
-          {/* Seção 4: Ecossistema PlayStation & Xbox */}
+          {/* Seção 4: Ecossistema PlayStation & Xbox (Sleek Cyber Dark Canvas) */}
           {psXboxOffers.length > 0 && (
-            <GroupedOfferShelf
-              title="Ecossistema PlayStation & Xbox"
-              subtitle="Títulos e lançamentos para PS5, PS4 e Xbox Series X|S"
-              icon={<Monitor className="size-5 text-blue-500" aria-hidden />}
-              offers={psXboxOffers.slice(0, 8)}
-              metricsMap={metricsMap}
-            />
+            <div data-theme="dark" className="bg-[#0a0a0d] text-white p-6 lg:p-10 rounded-[var(--radius-xl)] border border-zinc-800 shadow-xl">
+              <GroupedOfferShelf
+                title="Ecossistema PlayStation & Xbox"
+                subtitle="Títulos e lançamentos para PS5, PS4 e Xbox Series X|S"
+                icon={<Monitor className="size-5 text-sky-400" aria-hidden />}
+                offers={psXboxOffers.slice(0, 8)}
+                metricsMap={metricsMap}
+              />
+            </div>
           )}
 
-          {/* Seção 5: Hardware & Acessórios Gamer */}
+          {/* Seção 5: Hardware & Acessórios Gamer (Warm Light Cream Canvas) */}
           {accessoryOffers.length > 0 && (
-            <GroupedOfferShelf
-              title="Hardware, Joysticks & Acessórios Gamer"
-              subtitle="Controles, headsets e equipamentos de alta performance"
-              icon={<Headphones className="size-5 text-[var(--color-accent-hype)]" aria-hidden />}
-              offers={accessoryOffers.slice(0, 8)}
-              metricsMap={metricsMap}
-            />
+            <div data-theme="light" className="bg-[#fffdf9] text-zinc-900 p-6 lg:p-10 rounded-[var(--radius-xl)] border border-amber-900/10 shadow-sm">
+              <GroupedOfferShelf
+                title="Hardware, Joysticks & Acessórios Gamer"
+                subtitle="Controles, headsets e equipamentos de alta performance"
+                icon={<Headphones className="size-5 text-amber-600" aria-hidden />}
+                offers={accessoryOffers.slice(0, 8)}
+                metricsMap={metricsMap}
+              />
+            </div>
           )}
         </div>
       )}

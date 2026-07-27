@@ -181,11 +181,11 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
         'shadow-xl pt-safe'
       )}
     >
-      {/* Tarja Superior Institucional Arkos Intelligence */}
+      {/* Tarja Superior Institucional */}
       <div className="bg-[#050403] border-b border-[#1C1814] py-1 px-4 text-right">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 flex items-center justify-end">
           <span className="font-mono text-[10px] font-bold tracking-widest uppercase text-[#A39785]">
-            Arkos Intelligence · Plataforma Geek & Marketplace
+            Espaço Geek 86 · Inteligência de Mercado &amp; Monitoramento de Preços
           </span>
         </div>
       </div>

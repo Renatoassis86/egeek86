@@ -10,6 +10,7 @@ import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
 import { TextImageMask } from '@/components/motion/text-image-mask';
 import { HypeZoneTabs } from '@/components/hype/hype-zone-tabs';
+import { NeuralCircuitDivider } from '@/components/ui/neural-circuit-divider';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { getLiveDrops, getUpcomingDrops, getPastDrops, getUserWaitlist } from '@/server/queries/hype';
 
@@ -161,9 +162,11 @@ export default async function HypeZonePage() {
         </div>
       </div>
 
+      <NeuralCircuitDivider variant="gold" className="my-6" />
+
       {/* BANNER DE ACESSO DO COLECIONADOR (DESTACADO: CADASTRO OU LOGIN) */}
       <Reveal delay={0.12}>
-        <div className="mb-10 p-6 md:p-8 rounded-[var(--radius-xl)] border-2 border-[var(--color-accent-hype)]/40 bg-gradient-to-r from-[var(--color-accent-hype)]/10 via-[var(--color-bg-surface)] to-[var(--color-bg-inset)] shadow-[var(--shadow-xl)] relative overflow-hidden backdrop-blur-md">
+        <div data-theme="light" className="mb-10 p-6 md:p-8 rounded-[var(--radius-xl)] border-2 border-amber-500/40 bg-[#faf7f2] text-zinc-900 shadow-xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
             <div className="flex flex-col gap-2 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
