@@ -185,45 +185,49 @@ function Cluster({
 
 function CategoriesSection() {
   return (
-    <div data-theme="dark" className="w-full bg-[var(--color-bg-canvas)]">
-      <Cluster
-        word="GAMER"
-        src="/images/categorias/gamer-collage.png"
-        label="O lado do jogo"
-        heading="Jogo, console e o que equipa a experiência."
-        text="Tudo que é produto de verdade, com preço monitorado e histórico real por trás de cada item."
-        cards={gamerCards}
-      />
-      <Cluster
-        word="GEEK"
-        src="/images/categorias/geek-collage.png"
-        label="O lado da cultura"
-        heading="Franquia, lançamento e o que move a comunidade."
-        text="A parte do site que não é sobre comprar, é sobre acompanhar o que importa pra quem vive cultura geek."
-        cards={geekCards}
-      />
+    <div className="w-full">
+      <div data-theme="dark" className="bg-gradient-to-b from-[#180b29] to-[#120720] text-white border-b border-purple-900/40">
+        <Cluster
+          word="GAMER"
+          src="/images/categorias/gamer-collage.png"
+          label="O lado do jogo"
+          heading="Jogo, console e o que equipa a experiência."
+          text="Tudo que é produto de verdade, com preço monitorado e histórico real por trás de cada item."
+          cards={gamerCards}
+        />
+      </div>
+      <div data-theme="dark" className="bg-gradient-to-b from-[#04241b] to-[#021812] text-white border-b border-emerald-900/40">
+        <Cluster
+          word="GEEK"
+          src="/images/categorias/geek-collage.png"
+          label="O lado da cultura"
+          heading="Franquia, lançamento e o que move a comunidade."
+          text="A parte do site que não é sobre comprar, é sobre acompanhar o que importa pra quem vive cultura geek."
+          cards={geekCards}
+        />
+      </div>
     </div>
   );
 }
 
 function MarketStatsSection() {
   return (
-    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+    <section data-theme="dark" className="w-full bg-[#0a0a0d] text-white border-b border-zinc-800 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-14 lg:items-center">
         <Reveal>
           <div className="flex flex-col gap-4">
             <TextImageMask
               text="86"
               src="/images/home/painel-analitico-86.png"
-              className="text-[90px] leading-none sm:text-[120px] lg:text-[140px]"
+              className="text-[160px] leading-none sm:text-[240px] lg:text-[320px] xl:text-[360px] font-black"
             />
-            <Text variant="label" color="hype">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
               Painel Analítico
-            </Text>
-            <Text as="h2" variant="display-lg">
+            </span>
+            <Text as="h2" variant="display-lg" className="font-black tracking-tight text-white">
               Estatísticas reais da indústria de games.
             </Text>
-            <Text variant="body-lg" color="secondary" className="leading-relaxed">
+            <Text variant="body-lg" className="leading-relaxed text-zinc-300">
               Navegue pelos dados consolidados do nosso Relatório de Inteligência de Mercado. Métricas oficiais de comportamento e receita do mercado nacional e internacional.
             </Text>
           </div>
@@ -271,17 +275,17 @@ const MARKET_NUMBERS: StatBarItem[] = [
 
 function MarketNumbersSection() {
   return (
-    <section data-theme="dark" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+    <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
         <Reveal>
           <div className="flex flex-col gap-4">
-            <Text variant="label" color="hype">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/15 text-orange-600 border border-orange-500/30 w-fit">
               O mercado gamer em números
-            </Text>
-            <Text as="h2" variant="display-lg" className="max-w-[20ch]">
+            </span>
+            <Text as="h2" variant="display-lg" className="max-w-[20ch] font-black tracking-tight text-zinc-900">
               Games já é a maior indústria de entretenimento do mundo, e o Brasil lidera a América Latina.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed">
+            <Text variant="body-md" className="leading-relaxed text-zinc-700 font-medium">
               Mais gente joga do que assiste streaming ou vai ao cinema — e o Brasil é o maior mercado
               consumidor da América Latina desde 2021. Sempre com fonte citada, nunca projeção sem
               dizer de onde veio.
@@ -314,25 +318,25 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
   }));
 
   return (
-    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-20 lg:py-28">
+    <section data-theme="light" className="w-full bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-600/10 border-b border-amber-300/40 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:gap-14 lg:items-center">
         <Reveal>
           <GamerSurvey initialOptions={initialOptions} />
         </Reveal>
         <Reveal delay={0.08}>
           <div className="flex flex-col gap-4">
-            <Text variant="label" color="hype">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-700 border border-amber-500/40 w-fit">
               Voz da Comunidade
-            </Text>
-            <Text as="h2" variant="display-lg">
+            </span>
+            <Text as="h2" variant="display-lg" className="font-black text-zinc-900 tracking-tight">
               Participe das enquetes de mercado gamer.
             </Text>
-            <Text variant="body-lg" color="secondary" className="leading-relaxed">
+            <Text variant="body-lg" className="leading-relaxed text-zinc-700 font-medium">
               Queremos ouvir suas preferências. Seus votos alimentam nossos estudos de comportamento de consumo e ajudam micro-estúdios brasileiros a precificar e distribuir seus jogos de forma justa.
             </Text>
 
             {/* Imagem de Pesquisas & Engajamento da Comunidade Gamer */}
-            <div className="mt-2 relative aspect-[16/9] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
+            <div className="mt-2 relative aspect-[16/9] w-full rounded-[var(--radius-lg)] overflow-hidden border border-amber-300/60 bg-[var(--color-bg-inset)] shadow-md">
               <SceneImage
                 src="/images/home/pesquisa-comunidade.png"
                 alt="Ilustração de pesquisa de mercado gamer e estatísticas da comunidade"
@@ -349,17 +353,17 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
 
 function IndicatorsSection({ stats }: { stats: PlatformStats }) {
   return (
-    <section data-theme="dark" className="w-full bg-brand-orange-depth border-y border-[var(--color-border-subtle)] py-20 lg:py-28 relative overflow-hidden bg-brand-orange-glow">
+    <section data-theme="dark" className="w-full bg-gradient-to-b from-[#03291e] to-[#011a13] text-white border-y border-emerald-800/40 py-20 lg:py-28 relative overflow-hidden">
       <Glow color="hype" size="xl" intensity={0.15} className="-top-64 -right-48" />
       <div className="relative mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-10 text-center items-center">
         <Reveal>
-          <Text variant="label" className="text-[var(--color-accent-hype)] font-extrabold uppercase tracking-widest text-xs">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 w-fit mx-auto">
             Métricas da nossa plataforma
-          </Text>
-          <Text as="h2" variant="display-lg" className="mt-2 font-black text-[var(--color-text-primary)] tracking-tight">
+          </span>
+          <Text as="h2" variant="display-lg" className="mt-3 font-black text-white tracking-tight">
             Dados reais e transparentes, em tempo real.
           </Text>
-          <Text variant="body-lg" className="mt-3 max-w-[52ch] mx-auto text-[var(--color-text-secondary)] font-medium leading-relaxed">
+          <Text variant="body-lg" className="mt-3 max-w-[52ch] mx-auto text-emerald-100/80 font-medium leading-relaxed">
             Sem aproximações matemáticas. Estes são os números reais agregados do nosso banco de dados no exato momento da sua visita.
           </Text>
         </Reveal>
