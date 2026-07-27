@@ -4,6 +4,7 @@ import { TopUtilityBar } from './top-utility-bar';
 import { BottomTabBar } from './bottom-tab-bar';
 import { SiteFooter } from './site-footer';
 import { NeuralWatermarkBackground } from '@/components/ui/neural-watermark-background';
+import { TopProgressBar } from './top-progress-bar';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -33,6 +34,11 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)] w-full max-w-[100vw] overflow-x-hidden">
+      {/* Barra de Progresso Ultrarrápida no Topo (Elimina Sensação de Demora) */}
+      <React.Suspense fallback={null}>
+        <TopProgressBar />
+      </React.Suspense>
+
       {/* Marca d'Água Transparente Global (EG86 / ESPAÇO GEEK 86) + Brushes de Circuitos */}
       <NeuralWatermarkBackground />
 

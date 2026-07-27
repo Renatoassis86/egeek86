@@ -366,7 +366,7 @@ function FerramentasShowcaseSection() {
       title: '3. Assistente Inteligente de Tomada de Decisão do Comprador',
       description:
         'Ferramenta para o comprador final identificar se o momento é ideal para compra. Exibe a variação percentual em relação ao preço médio, badges de oportunidade e links direcionando para a loja com o menor valor ativo.',
-      imageSrc: '/images/home/painel-analitico-86-light.png',
+      imageSrc: '/images/sobre/assistente-decisao-comprador.png',
       badgeColor: 'bg-emerald-600 text-white',
       borderHover: 'hover:border-emerald-500 hover:shadow-xl',
       bullets: [
