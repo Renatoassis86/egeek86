@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, count, desc, asc, eq, gt, gte, inArray, sql, type SQL } from 'drizzle-orm';
+import { and, count, desc, asc, eq, gt, gte, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import { createCachedQuery } from '@/lib/cache/server-cache';
