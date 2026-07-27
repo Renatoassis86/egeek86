@@ -139,7 +139,7 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
         </div>
         <Button
           size="sm"
-          variant={copiedId === coupon.id ? 'secondary' : 'default'}
+          variant={copiedId === coupon.id ? 'secondary' : 'primary'}
           className={cn(
             'h-8 px-3 text-xs font-bold gap-1.5 shrink-0 transition-all',
             copiedId === coupon.id && 'bg-[var(--color-accent-success)]/20 text-[var(--color-accent-success)] border border-[var(--color-accent-success)]/40'
