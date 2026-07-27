@@ -227,7 +227,16 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
             aria-label={`Ir para slide ${idx + 1}`}
             className={
               'h-2 rounded-full transition-all duration-300 ' +
-              (currentIndex === idx ? 'w-8 bg-amber-400' : 'w-2 bg-zinc-600 hover:bg-zfunction InteligenciaGamerPageContent() {
+              (currentIndex === idx ? 'w-8 bg-amber-400' : 'w-2 bg-zinc-600 hover:bg-zinc-400')
+            }
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function InteligenciaGamerPageContent() {
   const searchParams = useSearchParams();
   const categoriaFromUrl = searchParams.get('categoria');
 
