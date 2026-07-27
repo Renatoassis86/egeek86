@@ -576,4 +576,15 @@ function ChartTooltip({
         {variationVsAvgPercent != null && (
           <span className={cn('text-xs font-bold font-mono', variationColor)}>
             {variationVsAvgPercent > 0 ? '+' : ''}
+            {variationVsAvgPercent}% vs. média de mercado
+          </span>
+        )}
+        {stats.avgPriceCents != null && (
+          <span className="text-[10px] font-medium text-[var(--color-text-tertiary)]">
+            Média no período: {formatBRL(stats.avgPriceCents)}
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }

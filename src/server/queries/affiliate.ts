@@ -701,9 +701,11 @@ export interface OfferListingMetrics {
  * "preço médio" diferente uma da outra, o que não faz sentido: o produto
  * tem UMA média só, formada pelo preço de todo mundo que vende ele.
  */
-export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<string, OfferListingMetrics>> {
+async function getOfferListingMetricsRaw(
+  offerIds: string[]
+): Promise<Map<string, OfferListingMetrics>> {
   const map = new Map<string, OfferListingMetrics>();
-  if (offerIds.length === 0) return map;
+  if (!offerIds.length) return map;
 
   const idList = sql.join(
     offerIds.map((id) => sql`${id}`),
@@ -805,6 +807,12 @@ export async function getOfferListingMetrics(offerIds: string[]): Promise<Map<st
 
   return map;
 }
+
+export const getOfferListingMetrics = createCachedQuery(
+  getOfferListingMetricsRaw,
+  ['offer-listing-metrics'],
+  { revalidate: 60, tags: ['affiliate-offers', 'price-snapshots'] }
+);
 
 export interface AdminDashboardMetrics {
   activeOffersCount: number;

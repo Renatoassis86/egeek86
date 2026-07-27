@@ -84,22 +84,40 @@ function computeBucketedAverage(rows: { collected_at: string; price_cents: strin
   });
 }
 
-function computeBucketedFrequency(rows: { collected_at: string }[], bucketMs: number): PricePoint[] {
+function computeBucketedFrequency(
+  rows: { offer_id: string; collected_at: string; price_cents: string }[],
+  bucketMs: number
+): PricePoint[] {
   const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
   const buckets = new Map<number, number>();
+  const lastPriceByOffer = new Map<string, number>();
 
-  for (const row of rows) {
+  // Ordena cronologicamente para acompanhar as mudanças de preço por oferta
+  const sortedRows = [...rows].sort(
+    (a, b) => new Date(a.collected_at).getTime() - new Date(b.collected_at).getTime()
+  );
+
+  for (const row of sortedRows) {
     const timeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
     const bucketTime = Math.floor(timeSeconds / bucketSeconds) * bucketSeconds;
+    const currentPrice = Number(row.price_cents);
+
+    const prevPrice = lastPriceByOffer.get(row.offer_id);
+
+    // Se o preço não mudou em relação à raspagem anterior da mesma loja,
+    // não incrementa o histograma de alteração de preços.
+    if (prevPrice !== undefined && prevPrice === currentPrice) {
+      continue;
+    }
+
+    // Registra o novo preço e contabiliza +1 movimentação no histograma
+    lastPriceByOffer.set(row.offer_id, currentPrice);
     buckets.set(bucketTime, (buckets.get(bucketTime) ?? 0) + 1);
   }
 
   return [...buckets.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([time, value]) => {
-      // Frequência real de cotações/snapshots coletados no balde de tempo
-      return { time, value };
-    });
+    .map(([time, value]) => ({ time, value }));
 }
 
 /**
