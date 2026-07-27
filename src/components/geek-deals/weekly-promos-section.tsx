@@ -11,7 +11,10 @@ import { WeeklyPromosCarousel, type CarouselSlide } from './weekly-promos-carous
  */
 export async function WeeklyPromosSection() {
   try {
-    const pool = await listRankedOffers({ sortBy: 'price_asc', limit: 9, gameFormat: 'physical' });
+    let pool = await listRankedOffers({ sortBy: 'price_asc', limit: 9, gameFormat: 'physical' });
+    if (pool.length === 0) {
+      pool = await listRankedOffers({ sortBy: 'price_asc', limit: 9 });
+    }
     if (pool.length === 0) return null;
 
     const metricsMap = await getOfferListingMetrics(pool.map((o) => o.id));
