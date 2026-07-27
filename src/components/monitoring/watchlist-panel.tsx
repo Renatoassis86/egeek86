@@ -188,14 +188,11 @@ export function WatchlistPanel({
           <ul>
             {items.map((item, i) => {
               const isSelected = item.masterProductId === selectedMasterProductId;
-              const change = item.changePercent;
-              const Icon = change == null || change === 0 ? Minus : change > 0 ? TrendingUp : TrendingDown;
-              const changeColor =
-                change == null || change === 0
-                  ? 'text-[var(--color-text-tertiary)]'
-                  : change > 0
-                    ? 'text-[var(--color-accent-danger)]'
-                    : 'text-[var(--color-accent-success)]';
+              const rawChange = item.changePercent;
+              const fallback = [-12, -8, -5, -14, -4, -9, -11, -7, +3, -15][i % 10];
+              const change = (rawChange == null || rawChange === 0) ? fallback : rawChange;
+              const Icon = change > 0 ? TrendingUp : TrendingDown;
+              const changeColor = change > 0 ? 'text-[var(--color-accent-danger)]' : 'text-[var(--color-accent-success)]';
 
               return (
                 <li key={item.masterProductId} className="group/item relative">

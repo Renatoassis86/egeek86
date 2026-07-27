@@ -381,16 +381,19 @@ export function PriceHistoryChart({
         </div>
         {hasEnoughData && <PriceSignalBadge signal={priceSignal} />}
       </div>
-      <div className="flex items-center gap-3">
-        <span className="inline-flex items-center gap-1.5 text-caption text-[var(--color-text-tertiary)]">
-          <span className="h-0.5 w-3 rounded-full bg-[var(--color-accent-primary)]" /> Menor preço
+      <div className="flex flex-wrap items-center gap-4 text-xs font-medium">
+        <span className="inline-flex items-center gap-1.5 text-[var(--color-text-secondary)] font-bold">
+          <span className="h-1 w-4 rounded-full bg-[var(--color-accent-primary)]" /> Menor preço praticado
         </span>
-        <span className="inline-flex items-center gap-1.5 text-caption text-[var(--color-text-tertiary)]">
+        <span className="inline-flex items-center gap-1.5 text-[var(--color-text-secondary)] font-bold">
           <span
-            className="h-0 w-3 border-t border-dashed"
+            className="h-0 w-4 border-t-2 border-dashed"
             style={{ borderColor: CHART_PALETTES[resolvedTheme].movingAverage }}
           />
-          Preço médio (todas as lojas)
+          Média geral de mercado
+        </span>
+        <span className="inline-flex items-center gap-1.5 text-[var(--color-text-secondary)] font-bold">
+          <span className="h-2.5 w-2.5 rounded-xs bg-[var(--color-accent-hype)] opacity-80" /> Frequência de cotações
         </span>
       </div>
       <div className="relative h-[360px] w-full">
