@@ -47,36 +47,36 @@ const mainMarketModules = [
 ];
 
 const hypeZoneModules = [
-  { href: '/hype-zone', label: 'Hype Zone & Drops', icon: Flame, highlight: true },
+  { href: '/hype-zone', label: 'Hype Zone e Drops', icon: Flame, highlight: true },
   { href: '/leiloes', label: 'Leilões Geek (Hammer)', icon: Gavel, highlight: true },
   { href: '/conta/vendedor/novo-drop', label: '✨ Cadastrar Novo Drop', icon: Sparkles, highlight: true },
 ];
 
 const observatorioModules = [
   { href: '/inteligencia-gamer', label: 'Observatório Gamer (Hub)', icon: Sparkles },
-  { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos & Opinião', icon: BookOpen },
+  { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos e Opinião', icon: BookOpen },
   { href: '/inteligencia-gamer?categoria=teoricas', label: 'Dossiês de Mercado', icon: FileText },
-  { href: '/inteligencia-gamer?categoria=empiricas', label: 'Radar de Preços & Dados', icon: TrendingUp },
-  { href: '/inteligencia-gamer?categoria=descritivas', label: 'Panorama & Tendências', icon: Sparkles },
+  { href: '/inteligencia-gamer?categoria=empiricas', label: 'Radar de Preços e Dados', icon: TrendingUp },
+  { href: '/inteligencia-gamer?categoria=descritivas', label: 'Panorama e Tendências', icon: Sparkles },
 ];
 
 const newsModules = [
-  { href: '/noticias', label: 'Notícias & Matérias', icon: Newspaper },
+  { href: '/noticias', label: 'Notícias e Matérias', icon: Newspaper },
 ];
 
 const userModules = [
-  { href: '/conta', label: 'Meu Perfil & Gamificação', icon: User },
-  { href: '/conta?aba=dados', label: 'Dados Cadastrais & Editar', icon: Sliders },
+  { href: '/conta', label: 'Meu Perfil e Gamificação', icon: User },
+  { href: '/conta?aba=dados', label: 'Dados Cadastrais e Editar', icon: Sliders },
   { href: '/conta?aba=compras', label: 'Minhas Compras', icon: ShoppingBag },
-  { href: '/conta?aba=vendas', label: 'Meus Drops & Vendas', icon: ShieldCheck },
-  { href: '/conta?aba=leiloes', label: 'Meus Leilões & Lances', icon: Gavel },
+  { href: '/conta?aba=vendas', label: 'Meus Drops e Vendas', icon: ShieldCheck },
+  { href: '/conta?aba=leiloes', label: 'Meus Leilões e Lances', icon: Gavel },
   { href: '/conta?aba=jogos', label: 'Meus Jogos Acompanhados', icon: Heart },
   { href: '/carrinho', label: 'Meu Carrinho', icon: ShoppingBag },
 ];
 
 const institutionalModules = [
-  { href: '/sobre', label: 'Manifesto & Plataforma', icon: Info },
-  { href: '/contatos', label: 'Contatos & Suporte', icon: HelpCircle },
+  { href: '/sobre', label: 'Manifesto e Plataforma', icon: Info },
+  { href: '/contatos', label: 'Contatos e Suporte', icon: HelpCircle },
   { href: '/termos', label: 'Termos de Uso', icon: FileCheck },
   { href: '/privacidade', label: 'Política de Privacidade', icon: Shield },
 ];
@@ -186,12 +186,12 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
 
           {/* Módulos do Site */}
           <div className="p-3 pb-6 flex flex-col gap-1">
-            <NavGroup items={mainMarketModules} onClose={onClose} pathname={pathname} subheading="Mercado & Ofertas" />
-            <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone & Drops" />
+            <NavGroup items={mainMarketModules} onClose={onClose} pathname={pathname} subheading="Mercado e Ofertas" />
+            <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone e Drops" />
             <NavGroup items={observatorioModules} onClose={onClose} pathname={pathname} subheading="Observatório Gamer" />
             <NavGroup items={newsModules} onClose={onClose} pathname={pathname} subheading="Notícias" />
             <NavGroup items={userModules} onClose={onClose} pathname={pathname} subheading="Minha Conta" />
-            <NavGroup items={institutionalModules} onClose={onClose} pathname={pathname} subheading="Institucional & Suporte" />
+            <NavGroup items={institutionalModules} onClose={onClose} pathname={pathname} subheading="Institucional e Suporte" />
           </div>
         </div>
 

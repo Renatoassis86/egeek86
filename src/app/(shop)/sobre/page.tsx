@@ -84,7 +84,7 @@ function HeroManifesto() {
         <Reveal>
           <div className="flex flex-col gap-3">
             <Badge variant="hype" size="md" className="w-fit font-black tracking-wider uppercase">
-              <Sparkles className="size-3.5 mr-1" /> Arkos Intelligence & Manifesto Geek 86
+              <Sparkles className="size-3.5 mr-1" /> Arkos Intelligence e Manifesto Geek 86
             </Badge>
             <Text as="h1" variant="display-xl" className="font-black text-white tracking-tight lg:text-display-2xl max-w-[22ch]">
               A Plataforma Inteligente de Econometria, Gestão e Decisão Gamer do Brasil.
@@ -354,7 +354,7 @@ function FerramentasShowcaseSection() {
     },
     {
       id: 'gestao-afiliados',
-      badge: 'Painel de Afiliados & Vendedores',
+      badge: 'Painel de Afiliados e Vendedores',
       title: '2. Instrumento de Gestão para Afiliados e Vendedores C2C',
       description:
         'Central completa para criadores de conteúdo e leiloeiros gerarem mensagens promocionais formatadas para WhatsApp/Telegram, inserirem links de afiliado com rastreamento único (matt_tool_id) e monitorarem cliques e receitas em tempo real.',
@@ -386,8 +386,8 @@ function FerramentasShowcaseSection() {
     },
     {
       id: 'observatorio-noticias',
-      badge: 'Pesquisas Secundárias & Editorial',
-      title: '4. Observatório Gamer, Dossiês & Notícias de Mercado',
+      badge: 'Pesquisas Secundárias e Editorial',
+      title: '4. Observatório Gamer, Dossiês e Notícias de Mercado',
       description:
         'Portal jornalístico e analítico com reportagens originais, análises descritivas e relatórios teóricos integrando dados de pesquisas de mercado globais e nacionais (Newzoo, Statista e Pesquisa Game Brasil).',
       imageSrc: '/images/home/observatorio-gamer-hero.png',
@@ -402,8 +402,8 @@ function FerramentasShowcaseSection() {
     },
     {
       id: 'pesquisas-primarias',
-      badge: 'Dados Primários & Voz do Público',
-      title: '5. Pesquisas Primárias & Coleta de Voz da Comunidade',
+      badge: 'Dados Primários e Voz do Público',
+      title: '5. Pesquisas Primárias e Coleta de Voz da Comunidade',
       description:
         'Módulo de enquetes vivas onde a comunidade opina sobre hábitos de consumo, consoles favoritos e expectativas de lançamento. Permite cadastrar, editar e gerenciar pesquisas ativas diretamente no painel admin.',
       imageSrc: '/images/home/pesquisa-comunidade.png',
@@ -418,8 +418,8 @@ function FerramentasShowcaseSection() {
     },
     {
       id: 'nlp-hype-index',
-      badge: 'Inteligência Artificial & NLP',
-      title: '6. Análise de Sentimento Social & Geek Hype Index™ (0-100)',
+      badge: 'Inteligência Artificial e NLP',
+      title: '6. Análise de Sentimento Social e Geek Hype Index™ (0-100)',
       description:
         'Motor estatístico que analisa o engajamento social e a percepção da comunidade sobre títulos e consoles, gerando a nota Geek Hype Index™ para direcionar estratégias de marcas, estoques e colecionadores.',
       imageSrc: '/images/home/observatorio-cards-bg.png',
@@ -434,8 +434,8 @@ function FerramentasShowcaseSection() {
     },
     {
       id: 'hype-zone-leiloes',
-      badge: 'Hype Zone & Leilões C2C',
-      title: '7. Hype Zone, Drops Exclusivos & Leilões entre Colecionadores',
+      badge: 'Hype Zone e Leilões C2C',
+      title: '7. Hype Zone, Drops Exclusivos e Leilões entre Colecionadores',
       description:
         'Área nobre dedicada a lançamentos de edições limitadas e leilões C2C de itens clássicos e raros, com contagem regressiva ao vivo, histórico de lances e score de confiança dos vendedores.',
       imageSrc: '/images/home/newsletter-vip-club.png',

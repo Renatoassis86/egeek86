@@ -38,7 +38,7 @@ const footerSections = [
     links: [
       { href: '/faq', label: 'FAQ' },
       { href: '/contato', label: 'Contato' },
-      { href: '/trocas', label: 'Trocas & devoluções' },
+      { href: '/trocas', label: 'Trocas e devoluções' },
       { href: '/rastreio', label: 'Rastrear pedido' },
     ],
   },

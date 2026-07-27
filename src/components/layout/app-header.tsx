@@ -34,7 +34,7 @@ interface NavItem {
 const navLinks: NavItem[] = [
   {
     href: '/ofertas',
-    label: 'Ofertas & Preços',
+    label: 'Ofertas e Preços',
     children: [
       { href: '/ofertas', label: 'Vitrine de Ofertas' },
       { href: '/tabela-de-precos', label: 'Tabela de Preços' },
@@ -46,7 +46,7 @@ const navLinks: NavItem[] = [
     label: 'Hype Zone',
     highlight: true,
     children: [
-      { href: '/hype-zone', label: 'Hype Zone & Drops' },
+      { href: '/hype-zone', label: 'Hype Zone e Drops' },
       { href: '/leiloes', label: 'Leilões Geek' },
     ],
   },
@@ -54,10 +54,10 @@ const navLinks: NavItem[] = [
     href: '/inteligencia-gamer',
     label: 'Observatório Gamer',
     children: [
-      { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos & Opinião' },
+      { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos e Opinião' },
       { href: '/inteligencia-gamer?categoria=teoricas', label: 'Dossiês de Mercado' },
-      { href: '/inteligencia-gamer?categoria=empiricas', label: 'Radar de Preços & Dados' },
-      { href: '/inteligencia-gamer?categoria=descritivas', label: 'Panorama & Tendências' },
+      { href: '/inteligencia-gamer?categoria=empiricas', label: 'Radar de Preços e Dados' },
+      { href: '/inteligencia-gamer?categoria=descritivas', label: 'Panorama e Tendências' },
     ],
   },
   {
@@ -252,12 +252,12 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
                 <div className="flex flex-col py-1">
                   <Link href="/conta" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
                     <User className="size-3.5 text-[var(--color-accent-primary)]" />
-                    <span>Meu Perfil & Gamificação</span>
+                    <span>Meu Perfil e Gamificação</span>
                   </Link>
 
                   <Link href="/conta?aba=dados" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
                     <Sliders className="size-3.5 text-[var(--color-accent-primary)]" />
-                    <span>Dados Cadastrais & Editar</span>
+                    <span>Dados Cadastrais e Editar</span>
                   </Link>
 
                   <Link href="/conta?aba=compras" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
@@ -267,12 +267,12 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
 
                   <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
                     <ShieldCheck className="size-3.5 text-[var(--color-accent-hype)]" />
-                    <span>Meus Drops & Vendas</span>
+                    <span>Meus Drops e Vendas</span>
                   </Link>
 
                   <Link href="/conta?aba=leiloes" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
                     <Gavel className="size-3.5 text-[var(--color-accent-gold)]" />
-                    <span>Meus Leilões & Lances</span>
+                    <span>Meus Leilões e Lances</span>
                   </Link>
                 </div>
 
