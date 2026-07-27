@@ -411,8 +411,9 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
 // canto a canto de verdade (object-cover garante isso em qualquer tela).
 function StatementBand() {
   return (
-    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
-      <Reveal>
+    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-10 lg:py-16">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <Reveal>
         <div className="relative isolate aspect-[16/7] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] sm:aspect-[21/9]">
           <Image
             src="/images/home/statement-band.png"
@@ -442,6 +443,7 @@ function StatementBand() {
           </div>
         </div>
       </Reveal>
+    </div>
     </section>
   );
 }
@@ -493,8 +495,9 @@ function DividerEmblem() {
 function Hero() {
   return (
     <section
+      data-theme="dark"
       aria-labelledby="hero-title"
-      className="relative overflow-hidden border-b border-[var(--color-border-subtle)]"
+      className="relative w-full bg-[var(--color-bg-canvas)] overflow-hidden border-b border-[var(--color-border-subtle)]"
     >
       <Glow color="gold" size="xl" intensity={0.3} className="-top-64 -left-48" />
       <Glow color="hype" size="md" intensity={0.2} className="top-24 -right-32" />
@@ -579,12 +582,12 @@ function Hero() {
                 <div className="absolute -bottom-4 -right-3 size-28 -rotate-6 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-strong)] shadow-[var(--shadow-lg)] sm:size-32">
                   <SceneImage src="/images/hero/tile-accent.png" alt="" tone="ember" className="absolute inset-0" />
                 </div>
-                <Card className="absolute -bottom-6 -left-4 w-56 border-[var(--color-border-strong)] bg-[var(--color-bg-canvas)]/90 p-4 shadow-[var(--shadow-lg)] backdrop-blur-md sm:-left-8 sm:w-60">
+                <Card className="absolute -bottom-6 -left-4 w-56 border border-[#3A3022] bg-[#0F0C08]/95 p-4 shadow-2xl backdrop-blur-md sm:-left-8 sm:w-60">
                   <Badge variant="hype" size="sm" className="mb-2">
                     <Flame className="size-3" />
                     Menor preço já visto
                   </Badge>
-                  <Text variant="caption" color="secondary">
+                  <Text variant="caption" className="text-white/95 font-medium leading-relaxed">
                     Comparamos preço nos principais marketplaces antes de você decidir.
                   </Text>
                 </Card>

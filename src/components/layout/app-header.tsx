@@ -165,10 +165,11 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
 
   return (
     <header
+      data-theme="dark"
       className={cn(
         'sticky top-0 z-30 w-full',
-        'bg-[var(--color-bg-canvas)]/80 backdrop-blur-xl backdrop-saturate-150',
-        'border-b border-[var(--color-border-subtle)]',
+        'bg-[#0F0C08]/95 backdrop-blur-xl backdrop-saturate-150',
+        'border-b border-[#262018]',
         'pt-safe'
       )}
     >
@@ -197,7 +198,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
             width={4220}
             height={1568}
             priority
-            className="theme-logo h-6 lg:h-7 w-auto transition-transform group-hover:scale-105"
+            className="h-6 lg:h-7 w-auto transition-transform group-hover:scale-105"
           />
         </Link>
       </div>
