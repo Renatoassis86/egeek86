@@ -112,6 +112,7 @@ export function MonitoringBoard({
               masterProductId={active.masterProductId}
               initialHistory={initialHistory}
               initialTimeframe="1M"
+              currentPriceCents={active.currentPriceCents}
             />
             <Text variant="caption" color="tertiary" className="mt-3">
               <Link href={`/monitoramento/comparar/${active.masterProductId}`} className="underline">

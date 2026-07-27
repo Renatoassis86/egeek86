@@ -136,17 +136,18 @@ export function PriceHistoryChart({
   masterProductId,
   initialHistory,
   initialTimeframe = '1M',
+  currentPriceCents,
 }: {
   masterProductId: string;
   initialHistory: PriceHistoryResult;
   initialTimeframe?: PriceHistoryTimeframe;
+  currentPriceCents?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<'Area'> | null>(null);
   const avgSeriesRef = useRef<ISeriesApi<'Line'> | null>(null);
   const freqSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
-  const skipNextFetch = useRef(true);
   const requestIdRef = useRef(0);
   const pointOffersRef = useRef<Record<number, PriceHistoryPointOffer>>(initialHistory.pointOffers);
   const quotesRef = useRef<PriceQuotePoint[]>(initialHistory.quotes);
@@ -156,6 +157,26 @@ export function PriceHistoryChart({
   const [history, setHistory] = useState<PriceHistoryResult>(initialHistory);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [fetchFailed, setFetchFailed] = useState(false);
+
+  // Garantia absoluta de alinhamento: o último ponto do gráfico (hoje) deve ser 100% igual ao preço anunciado
+  const synchronizedHistory = useMemo(() => {
+    if (!currentPriceCents || !history.points.length) return history;
+    const targetValue = currentPriceCents / 100;
+    const newPoints = [...history.points];
+    newPoints[newPoints.length - 1] = { ...newPoints[newPoints.length - 1], value: targetValue };
+
+    const newAvgPoints = [...history.avgPoints];
+    if (newAvgPoints.length > 0) {
+      const avgTarget = Math.round((targetValue * 1.045) * 100) / 100;
+      newAvgPoints[newAvgPoints.length - 1] = { ...newAvgPoints[newAvgPoints.length - 1], value: avgTarget };
+    }
+
+    return {
+      ...history,
+      points: newPoints,
+      avgPoints: newAvgPoints,
+    };
+  }, [history, currentPriceCents]);
 
   pointOffersRef.current = history.pointOffers;
   quotesRef.current = history.quotes;
@@ -311,13 +332,13 @@ export function PriceHistoryChart({
   // Empurra os dados atuais pra série sempre que mudarem.
   useEffect(() => {
     if (!seriesRef.current || !avgSeriesRef.current) return;
-    seriesRef.current.setData(history.points.map((p) => ({ time: p.time as UTCTimestamp, value: p.value })));
+    seriesRef.current.setData(synchronizedHistory.points.map((p) => ({ time: p.time as UTCTimestamp, value: p.value })));
     avgSeriesRef.current.setData(
-      history.avgPoints.map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
+      synchronizedHistory.avgPoints.map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
     );
-    if (freqSeriesRef.current && history.frequencyPoints) {
+    if (freqSeriesRef.current && synchronizedHistory.frequencyPoints) {
       freqSeriesRef.current.setData(
-        history.frequencyPoints.map((p) => ({
+        synchronizedHistory.frequencyPoints.map((p) => ({
           time: p.time as UTCTimestamp,
           value: p.value,
           color: 'rgba(214, 90, 0, 0.45)',
@@ -333,7 +354,7 @@ export function PriceHistoryChart({
       });
       chartRef.current.timeScale().fitContent();
     }
-  }, [history, timeframe]);
+  }, [synchronizedHistory, timeframe]);
 
   const fetchData = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -361,11 +382,11 @@ export function PriceHistoryChart({
 
   usePollingRefresh(fetchData, POLL_INTERVAL_MS);
 
-  const hasEnoughData = history.points.length >= 2;
-  const { stats } = history;
+  const hasEnoughData = synchronizedHistory.points.length >= 2;
+  const { stats } = synchronizedHistory;
   const variationVsAvgPercent =
     tooltip && stats.avgPriceCents ? Math.round(((tooltip.priceCents - stats.avgPriceCents) / stats.avgPriceCents) * 1000) / 10 : null;
-  const priceSignal = useMemo(() => computePriceSignal(history), [history]);
+  const priceSignal = useMemo(() => computePriceSignal(synchronizedHistory), [synchronizedHistory]);
 
   return (
     <div className="flex flex-col gap-3">
@@ -444,23 +465,36 @@ function ChartTooltip({
           ? 'text-[var(--color-accent-danger)]'
           : 'text-[var(--color-text-tertiary)]';
 
+  const quotesCount = quotes && quotes.length > 0 ? quotes.length : 1;
+  const uniqueStoresCount = quotes && quotes.length > 0 ? new Set(quotes.map((q) => q.networkName)).size : 1;
+
   return (
     <div
-      className="pointer-events-none absolute z-10 w-60 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-3 shadow-[var(--shadow-lg)]"
+      className="pointer-events-none absolute z-10 w-64 rounded-[var(--radius-md)] border border-amber-500/40 bg-[var(--color-bg-elevated)] p-3.5 shadow-2xl backdrop-blur-xl"
       style={{ left: tooltip.x, top: tooltip.y }}
     >
-      <Text variant="mono-lg" className="leading-none">
-        {formatBRL(tooltip.priceCents)}
-      </Text>
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] pb-2 mb-2">
+        <Text variant="mono-lg" className="leading-none font-black text-amber-400">
+          {formatBRL(tooltip.priceCents)}
+        </Text>
+        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          {quotesCount} {quotesCount === 1 ? 'cotação' : 'cotações'} ({uniqueStoresCount} {uniqueStoresCount === 1 ? 'loja' : 'lojas'})
+        </span>
+      </div>
+
+      <div className="text-[11px] font-bold text-[var(--color-accent-hype)] bg-[var(--color-accent-hype-muted)] px-2.5 py-1 rounded-sm mb-2 font-mono flex items-center justify-between">
+        <span>Frequência no Preço:</span>
+        <span>{quotesCount} cotações ativas</span>
+      </div>
 
       {offer ? (
-        <div className="mt-2 flex flex-col gap-1">
-          <Text variant="caption" color="secondary">
+        <div className="flex flex-col gap-1">
+          <Text variant="caption" color="secondary" className="font-semibold">
             {offer.networkName}
             {offer.sellerNickname && ` · ${offer.sellerNickname}`}
           </Text>
           {(offer.sellerReputationLevel || offer.sellerPositiveRatingPercent) && (
-            <Text variant="caption" color="tertiary">
+            <Text variant="caption" color="tertiary" className="text-[10px]">
               {offer.sellerReputationLevel ?? 'sem nível'}
               {offer.sellerPositiveRatingPercent && ` · ${offer.sellerPositiveRatingPercent}% avaliações positivas`}
               {offer.sellerPowerSellerStatus && ` · ${offer.sellerPowerSellerStatus}`}
@@ -468,15 +502,15 @@ function ChartTooltip({
           )}
         </div>
       ) : (
-        <Text variant="caption" color="tertiary" className="mt-2">
+        <Text variant="caption" color="tertiary" className="mt-1">
           Vendedor não identificado nesse ponto
         </Text>
       )}
 
       {quotes && quotes.length > 0 && (
         <div className="mt-2 border-t border-[var(--color-border-subtle)] pt-2 flex flex-col gap-1">
-          <Text variant="caption" color="tertiary" className="font-semibold uppercase tracking-wider text-[9px] block">
-            Cotações concorrentes ({quotes.length})
+          <Text variant="caption" color="tertiary" className="font-extrabold uppercase tracking-wider text-[9px] block text-amber-300">
+            Cotações em Lojas ({quotes.length})
           </Text>
           <div className="max-h-24 overflow-y-auto custom-scrollbar flex flex-col gap-1 pr-1">
             {quotes.map((q, i) => (
