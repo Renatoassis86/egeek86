@@ -127,6 +127,7 @@ export interface WatchSearchResult {
   imageUrl: string | null;
   currentPriceCents: number | null;
   networkName: string | null;
+  offerSlug: string | null;
   alreadyWatched: boolean;
 }
 
@@ -136,7 +137,7 @@ export interface WatchSearchResult {
  * melhor preço ativo (mesma lógica de getUserWatches) e marca se o usuário
  * já acompanha, pra desenhar "Adicionado" em vez de duplicar o watch.
  */
-export async function searchMasterProductsToWatch(query: string, userId: string, limit = 8): Promise<WatchSearchResult[]> {
+export async function searchMasterProductsToWatch(query: string, userId?: string | null, limit = 8): Promise<WatchSearchResult[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
 
@@ -149,7 +150,7 @@ export async function searchMasterProductsToWatch(query: string, userId: string,
       .from(masterProducts)
       .where(fuzzy)
       .limit(limit),
-    getWatchedMasterProductIds(userId),
+    userId ? getWatchedMasterProductIds(userId) : Promise.resolve(new Set<string>()),
   ]);
 
   if (rows.length === 0) return [];
@@ -160,6 +161,7 @@ export async function searchMasterProductsToWatch(query: string, userId: string,
     ? await db
         .select({
           id: affiliateOffers.id,
+          slug: affiliateOffers.slug,
           currentPriceCents: affiliateOffers.currentPriceCents,
           networkName: affiliateNetworks.name,
         })
@@ -179,6 +181,7 @@ export async function searchMasterProductsToWatch(query: string, userId: string,
       imageUrl: images?.[0] ?? null,
       currentPriceCents: offer?.currentPriceCents ?? null,
       networkName: offer?.networkName ?? null,
+      offerSlug: offer?.slug ?? null,
       alreadyWatched: watchedIds.has(r.id),
     };
   });

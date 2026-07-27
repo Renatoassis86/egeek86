@@ -198,153 +198,245 @@ export function PriceTableBoard({ items, totalCount, filters }: PriceTableBoardP
           </Text>
         </Card>
       ) : (
-        <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] shadow-md">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
-                <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)]">
-                  Título do Produto
-                </th>
-                <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
-                  Preço Atual
-                </th>
-                <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
-                  Média Histórica
-                </th>
-                <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
-                  Menor Histórico
-                </th>
-                <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-center">
-                  Cotações / Loja
-                </th>
-                <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-center">
-                  Indicador do Consumidor
-                </th>
-                <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
-                  Ação
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => {
-                const img = item.defaultImages[0] || null;
-                const specLine = [
-                  item.gameFormat !== 'unknown' ? GAME_FORMAT_LABELS[item.gameFormat] : null,
-                  item.gamePlatformGen !== 'unknown' ? GAME_PLATFORM_GEN_LABELS[item.gamePlatformGen] : null,
-                ]
-                  .filter(Boolean)
-                  .join(' · ');
+        <>
+          {/* Visão de Cards Responsivos para Telas Celulares (Mobile) */}
+          <div className="block md:hidden space-y-3">
+            {items.map((item) => {
+              const img = item.defaultImages[0] || null;
+              const specLine = [
+                item.gameFormat !== 'unknown' ? GAME_FORMAT_LABELS[item.gameFormat] : null,
+                item.gamePlatformGen !== 'unknown' ? GAME_PLATFORM_GEN_LABELS[item.gamePlatformGen] : null,
+              ]
+                .filter(Boolean)
+                .join(' · ');
 
-                return (
-                  <tr
-                    key={item.masterProductId}
-                    className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-surface)]/80 transition-colors"
-                  >
-                    {/* Nome & Capa */}
-                    <td className="px-4 py-3 max-w-sm">
-                      <div className="flex items-center gap-3">
-                        {img ? (
-                          <img
-                            src={img}
-                            alt={item.name}
-                            className="size-11 object-contain rounded bg-[var(--color-bg-inset)] p-1 shrink-0"
-                          />
-                        ) : (
-                          <div className="size-11 rounded bg-[var(--color-bg-inset)] flex items-center justify-center shrink-0">
-                            <Tag className="size-5 text-[var(--color-text-tertiary)]" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <Link href={`/ofertas/${item.offerSlug}`} className="hover:underline">
-                            <Text variant="body-sm" className="font-bold line-clamp-1">
-                              {item.name}
-                            </Text>
-                          </Link>
-                          {specLine && (
-                            <Text variant="caption" color="tertiary" className="uppercase tracking-wider">
-                              {specLine}
-                            </Text>
-                          )}
-                        </div>
+              return (
+                <div
+                  key={item.masterProductId}
+                  className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-4 shadow-sm space-y-3 min-w-0"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    {img ? (
+                      <img
+                        src={img}
+                        alt={item.name}
+                        className="size-14 object-contain rounded bg-[var(--color-bg-inset)] p-1 shrink-0"
+                      />
+                    ) : (
+                      <div className="size-14 rounded bg-[var(--color-bg-inset)] flex items-center justify-center shrink-0">
+                        <Tag className="size-6 text-[var(--color-text-tertiary)]" />
                       </div>
-                    </td>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/ofertas/${item.offerSlug}`} className="hover:underline">
+                        <Text variant="body-sm" className="font-bold line-clamp-2 leading-snug">
+                          {item.name}
+                        </Text>
+                      </Link>
+                      {specLine && (
+                        <Text variant="caption" color="tertiary" className="uppercase tracking-wider mt-0.5 block truncate">
+                          {specLine}
+                        </Text>
+                      )}
+                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                        {item.isLowestEver ? (
+                          <Badge variant="hype" size="sm" className="font-bold text-[10px] py-0 px-1.5">
+                            Recorde Histórico
+                          </Badge>
+                        ) : item.avgDiscountPercent && item.avgDiscountPercent > 0 ? (
+                          <Badge variant="outline" size="sm" className="border-emerald-500/50 text-emerald-400 text-[10px] py-0 px-1.5">
+                            -{item.avgDiscountPercent}% Média
+                          </Badge>
+                        ) : null}
+                        <span className="text-[10px] text-[var(--color-text-tertiary)] font-mono">
+                          {item.networkName}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                    {/* Preço Atual */}
-                    <td className="px-4 py-3 text-right">
+                  <div className="flex items-center justify-between border-t border-[var(--color-border-subtle)]/60 pt-2.5 min-w-0">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] block">
+                        Preço Atual
+                      </span>
                       <Text variant="mono-md" className="font-bold text-[var(--color-accent-gold)] tabular">
                         {formatBRL(item.currentPriceCents)}
                       </Text>
-                    </td>
+                    </div>
 
-                    {/* Média Histórica */}
-                    <td className="px-4 py-3 text-right">
-                      {item.avgPriceCents30d ? (
-                        <div className="flex flex-col items-end">
-                          <Text variant="mono-sm" color="secondary" className="line-through tabular">
-                            {formatBRL(item.avgPriceCents30d)}
-                          </Text>
-                          {item.avgDiscountPercent && item.avgDiscountPercent > 0 && (
-                            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400">
-                              -{item.avgDiscountPercent}%
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <Text variant="caption" color="tertiary">
-                          --
-                        </Text>
-                      )}
-                    </td>
-
-                    {/* Menor Histórico */}
-                    <td className="px-4 py-3 text-right">
-                      <Text variant="mono-sm" color="tertiary" className="tabular">
-                        {formatBRL(item.lowestPriceCents)}
-                      </Text>
-                    </td>
-
-                    {/* Cotações & Loja */}
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)]">
-                          {item.totalQuoteCount} variações
+                    {item.lowestPriceCents > 0 && (
+                      <div className="text-right">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] block">
+                          Menor Histórico
                         </span>
-                        <span className="text-[10px] color-tertiary">{item.networkName}</span>
+                        <Text variant="mono-sm" color="tertiary" className="tabular">
+                          {formatBRL(item.lowestPriceCents)}
+                        </Text>
                       </div>
-                    </td>
+                    )}
 
-                    {/* Indicador do Consumidor */}
-                    <td className="px-4 py-3 text-center">
-                      {item.isLowestEver ? (
-                        <Badge variant="hype" size="sm" className="font-bold">
-                          Recorde Histórico
-                        </Badge>
-                      ) : item.avgDiscountPercent && item.avgDiscountPercent > 0 ? (
-                        <Badge variant="outline" size="sm" className="border-emerald-500/50 text-emerald-400">
-                          Preço Excelente
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" size="sm">
-                          Preço Regular
-                        </Badge>
-                      )}
-                    </td>
+                    <Button asChild variant="outline" size="sm" className="gap-1 h-8 text-xs font-bold shrink-0">
+                      <Link href={`/monitoramento/comparar/${item.masterProductId}`}>
+                        <span>Comparar</span>
+                        <ArrowUpRight className="size-3.5" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-                    {/* Ação */}
-                    <td className="px-4 py-3 text-right">
-                      <Button asChild variant="ghost" size="sm" className="gap-1 hover:text-[var(--color-accent-gold)]">
-                        <Link href={`/monitoramento/comparar/${item.masterProductId}`}>
-                          <span>Comparar</span>
-                          <ArrowUpRight className="size-3.5" />
-                        </Link>
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+          {/* Visão de Tabela Completa para Telas Maiores (Tablet / Desktop) */}
+          <div className="hidden md:block overflow-x-auto rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] shadow-md">
+            <table className="w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
+                  <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                    Título do Produto
+                  </th>
+                  <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
+                    Preço Atual
+                  </th>
+                  <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
+                    Média Histórica
+                  </th>
+                  <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
+                    Menor Histórico
+                  </th>
+                  <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-center">
+                    Cotações / Loja
+                  </th>
+                  <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-center">
+                    Indicador do Consumidor
+                  </th>
+                  <th className="px-4 py-3.5 text-caption font-black uppercase tracking-wider text-[var(--color-text-tertiary)] text-right">
+                    Ação
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item) => {
+                  const img = item.defaultImages[0] || null;
+                  const specLine = [
+                    item.gameFormat !== 'unknown' ? GAME_FORMAT_LABELS[item.gameFormat] : null,
+                    item.gamePlatformGen !== 'unknown' ? GAME_PLATFORM_GEN_LABELS[item.gamePlatformGen] : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · ');
+
+                  return (
+                    <tr
+                      key={item.masterProductId}
+                      className="border-b border-[var(--color-border-subtle)] last:border-b-0 hover:bg-[var(--color-bg-surface)]/80 transition-colors"
+                    >
+                      {/* Nome & Capa */}
+                      <td className="px-4 py-3 max-w-sm">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {img ? (
+                            <img
+                              src={img}
+                              alt={item.name}
+                              className="size-11 object-contain rounded bg-[var(--color-bg-inset)] p-1 shrink-0"
+                            />
+                          ) : (
+                            <div className="size-11 rounded bg-[var(--color-bg-inset)] flex items-center justify-center shrink-0">
+                              <Tag className="size-5 text-[var(--color-text-tertiary)]" />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <Link href={`/ofertas/${item.offerSlug}`} className="hover:underline">
+                              <Text variant="body-sm" className="font-bold line-clamp-1">
+                                {item.name}
+                              </Text>
+                            </Link>
+                            {specLine && (
+                              <Text variant="caption" color="tertiary" className="uppercase tracking-wider truncate block">
+                                {specLine}
+                              </Text>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Preço Atual */}
+                      <td className="px-4 py-3 text-right">
+                        <Text variant="mono-md" className="font-bold text-[var(--color-accent-gold)] tabular">
+                          {formatBRL(item.currentPriceCents)}
+                        </Text>
+                      </td>
+
+                      {/* Média Histórica */}
+                      <td className="px-4 py-3 text-right">
+                        {item.avgPriceCents30d ? (
+                          <div className="flex flex-col items-end">
+                            <Text variant="mono-sm" color="secondary" className="line-through tabular">
+                              {formatBRL(item.avgPriceCents30d)}
+                            </Text>
+                            {item.avgDiscountPercent && item.avgDiscountPercent > 0 && (
+                              <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400">
+                                -{item.avgDiscountPercent}%
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <Text variant="caption" color="tertiary">
+                            --
+                          </Text>
+                        )}
+                      </td>
+
+                      {/* Menor Histórico */}
+                      <td className="px-4 py-3 text-right">
+                        <Text variant="mono-sm" color="tertiary" className="tabular">
+                          {formatBRL(item.lowestPriceCents)}
+                        </Text>
+                      </td>
+
+                      {/* Cotações & Loja */}
+                      <td className="px-4 py-3 text-center">
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)]">
+                            {item.totalQuoteCount} variações
+                          </span>
+                          <span className="text-[10px] color-tertiary">{item.networkName}</span>
+                        </div>
+                      </td>
+
+                      {/* Indicador do Consumidor */}
+                      <td className="px-4 py-3 text-center">
+                        {item.isLowestEver ? (
+                          <Badge variant="hype" size="sm" className="font-bold">
+                            Recorde Histórico
+                          </Badge>
+                        ) : item.avgDiscountPercent && item.avgDiscountPercent > 0 ? (
+                          <Badge variant="outline" size="sm" className="border-emerald-500/50 text-emerald-400">
+                            Preço Excelente
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" size="sm">
+                            Preço Regular
+                          </Badge>
+                        )}
+                      </td>
+
+                      {/* Ação */}
+                      <td className="px-4 py-3 text-right">
+                        <Button asChild variant="ghost" size="sm" className="gap-1 hover:text-[var(--color-accent-gold)]">
+                          <Link href={`/monitoramento/comparar/${item.masterProductId}`}>
+                            <span>Comparar</span>
+                            <ArrowUpRight className="size-3.5" />
+                          </Link>
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

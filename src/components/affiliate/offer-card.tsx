@@ -108,24 +108,24 @@ export function OfferCard({
 
         </div>
 
-        <CardContent className={cn('flex flex-1 flex-col gap-2', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-4')}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 w-full min-w-0">
+        <CardContent className={cn('flex flex-1 flex-col gap-2 min-w-0', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-3.5 sm:p-4')}>
+          <div className="flex flex-row items-center justify-between gap-1.5 w-full min-w-0">
             {specLine && (
-              <Text variant="caption" color="tertiary" className="truncate uppercase tracking-[0.04em] flex-1">
+              <Text variant="caption" color="tertiary" className="truncate uppercase tracking-[0.04em] flex-1 min-w-0">
                 {specLine}
               </Text>
             )}
             {metrics?.isLowestEver && (
-              <Badge variant="hype" size="sm" className="flex-shrink-0 shrink-0 whitespace-nowrap w-fit">
-                <Flame className="size-3" />
-                Menor já visto
+              <Badge variant="hype" size="sm" className="flex-shrink-0 shrink-0 whitespace-nowrap w-fit text-[10px] px-1.5 py-0">
+                <Flame className="size-3 shrink-0" />
+                <span>Menor já visto</span>
               </Badge>
             )}
           </div>
 
           <Text
             variant={isFeature ? 'body-md' : 'body-sm'}
-            className={cn('line-clamp-2 overflow-hidden text-ellipsis font-medium', isFeature ? 'min-h-11' : 'min-h-10')}
+            className={cn('line-clamp-2 overflow-hidden text-ellipsis font-medium break-words min-w-0', isFeature ? 'min-h-11' : 'min-h-10')}
           >
             {offer.title}
           </Text>

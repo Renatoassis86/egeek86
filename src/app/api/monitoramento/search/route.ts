@@ -10,12 +10,8 @@ export const dynamic = 'force-dynamic';
  * do usuário), igual o resto do módulo de Monitoramento.
  */
 export async function GET(request: NextRequest) {
-  const profile = await getCurrentProfile();
-  if (!profile) {
-    return NextResponse.json({ error: 'não autenticado' }, { status: 401 });
-  }
-
+  const profile = await getCurrentProfile().catch(() => null);
   const q = request.nextUrl.searchParams.get('q') ?? '';
-  const items = await searchMasterProductsToWatch(q, profile.id);
+  const items = await searchMasterProductsToWatch(q, profile?.id ?? null);
   return NextResponse.json({ items });
 }

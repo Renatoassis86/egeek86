@@ -60,6 +60,24 @@ export function WatchlistPanel({
   const [searchOpen, setSearchOpen] = useState(false);
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (isGuest) {
+      try {
+        const saved = localStorage.getItem('eg86_guest_watchlist');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setItems(parsed);
+            onItemsRefreshed?.(parsed);
+            if (parsed.length > 0 && (!selectedMasterProductId || selectedMasterProductId.startsWith('demo-'))) {
+              onSelect?.(parsed[0].masterProductId);
+            }
+          }
+        }
+      } catch {}
+    }
+  }, [isGuest]);
+
   async function refreshWatchlist() {
     if (isGuest) return;
     const res = await fetch('/api/monitoramento/watchlist');
@@ -75,16 +93,13 @@ export function WatchlistPanel({
     try {
       const remaining = items.filter((i) => i.masterProductId !== masterProductId);
       setItems(remaining);
-      // Avisa o pai NA HORA (não só no próximo poll de até 45s) — senão o
-      // painel do gráfico ficava mostrando o jogo removido (ou, se era o
-      // último da lista, um card "fantasma" sem nenhum item selecionado).
       onItemsRefreshed?.(remaining);
-      if (!isGuest) {
+      if (isGuest) {
+        try {
+          localStorage.setItem('eg86_guest_watchlist', JSON.stringify(remaining));
+        } catch {}
+      } else {
         await toggleWatch(masterProductId, false);
-        // toggleWatch já revalida a rota no server (revalidatePath), mas essa
-        // aba já está montada com a árvore antiga em cache — sem isso, voltar
-        // pra essa página por um Link (navegação client-side) ou a checagem
-        // periódica podia servir a versão desatualizada ainda com o item.
         router.refresh();
       }
       toast.success(`${title} removido da lista de monitoramento.`);
@@ -94,11 +109,32 @@ export function WatchlistPanel({
   }
 
   function handleAddClick() {
-    if (isGuest) {
+    if (isGuest && items.length >= 1) {
       setUnlockModalOpen(true);
     } else {
       setSearchOpen(true);
     }
+  }
+
+  function handleGuestAdd(result: WatchSearchResult) {
+    const newItem: WatchlistPanelItem = {
+      masterProductId: result.masterProductId,
+      slug: result.offerSlug || result.masterProductId,
+      title: result.name,
+      imageUrl: result.imageUrl,
+      networkName: result.networkName || 'Mercado Livre',
+      currentPriceCents: result.currentPriceCents || 0,
+      changePercent: null,
+    };
+    const newItems = [newItem];
+    setItems(newItems);
+    onItemsRefreshed?.(newItems);
+    onSelect?.(newItem.masterProductId);
+    try {
+      localStorage.setItem('eg86_guest_watchlist', JSON.stringify(newItems));
+    } catch {}
+    toast.success(`${result.name} adicionado ao monitoramento.`);
+    setSearchOpen(false);
   }
 
   function selectProduct(masterProductId: string, index: number) {
@@ -130,7 +166,13 @@ export function WatchlistPanel({
         </Button>
       </div>
 
-      <AddToWatchlistDialog open={searchOpen} onOpenChange={setSearchOpen} onAdded={refreshWatchlist} />
+      <AddToWatchlistDialog
+        open={searchOpen}
+        onOpenChange={setSearchOpen}
+        onAdded={refreshWatchlist}
+        isGuest={isGuest}
+        onGuestAdd={handleGuestAdd}
+      />
 
       {/* Modal de Desbloqueio para Visitantes */}
       <Dialog open={unlockModalOpen} onOpenChange={setUnlockModalOpen}>
@@ -254,10 +296,14 @@ function AddToWatchlistDialog({
   open,
   onOpenChange,
   onAdded,
+  isGuest = false,
+  onGuestAdd,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdded: () => void;
+  isGuest?: boolean;
+  onGuestAdd?: (result: WatchSearchResult) => void;
 }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<WatchSearchResult[]>([]);
@@ -294,14 +340,18 @@ function AddToWatchlistDialog({
     }
   }, [open]);
 
-  async function handleAdd(masterProductId: string) {
-    setAddingId(masterProductId);
+  async function handleAdd(result: WatchSearchResult) {
+    setAddingId(result.masterProductId);
     try {
-      await toggleWatch(masterProductId, true);
-      setResults((prev) =>
-        prev.map((r) => (r.masterProductId === masterProductId ? { ...r, alreadyWatched: true } : r))
-      );
-      onAdded();
+      if (isGuest && onGuestAdd) {
+        onGuestAdd(result);
+      } else {
+        await toggleWatch(result.masterProductId, true);
+        setResults((prev) =>
+          prev.map((r) => (r.masterProductId === result.masterProductId ? { ...r, alreadyWatched: true } : r))
+        );
+        onAdded();
+      }
     } finally {
       setAddingId(null);
     }
@@ -361,7 +411,7 @@ function AddToWatchlistDialog({
                     size="sm"
                     variant={result.alreadyWatched ? 'secondary' : 'primary'}
                     disabled={result.alreadyWatched || addingId === result.masterProductId}
-                    onClick={() => handleAdd(result.masterProductId)}
+                    onClick={() => handleAdd(result)}
                   >
                     {result.alreadyWatched ? (
                       <>

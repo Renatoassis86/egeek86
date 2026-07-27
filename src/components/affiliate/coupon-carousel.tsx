@@ -25,10 +25,10 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
   }, [total]);
 
   useEffect(() => {
-    if (isPaused || total <= 1) return;
-    const interval = setInterval(nextCoupon, 4500);
+    if (total <= 1 || isPaused) return;
+    const interval = setInterval(nextCoupon, 3500);
     return () => clearInterval(interval);
-  }, [isPaused, nextCoupon, total]);
+  }, [nextCoupon, total, isPaused]);
 
   if (!coupons || total === 0) return null;
 
@@ -52,9 +52,9 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
 
   return (
     <div
-      className="relative w-full max-w-sm overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/90 p-4 shadow-2xl backdrop-blur-xl transition-all hover:border-[var(--color-accent-primary)]/40"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      className="relative w-full max-w-full sm:max-w-sm overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/90 p-3.5 sm:p-4 shadow-2xl backdrop-blur-xl transition-all hover:border-[var(--color-accent-primary)]/60 min-w-0"
     >
       {/* Glow de fundo por loja */}
       <div
@@ -63,28 +63,28 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
       />
 
       {/* Header do Card */}
-      <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] pb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] pb-3 min-w-0">
+        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
           <span
             className="size-2.5 rounded-full shrink-0 animate-pulse"
             style={{ backgroundColor: coupon.networkColorHex || '#D4AF37' }}
           />
           <Badge
             variant="outline"
-            className="text-[11px] font-bold uppercase tracking-wider bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-primary)]"
+            className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-primary)] truncate max-w-[110px] sm:max-w-none"
           >
             {coupon.networkName}
           </Badge>
           {coupon.badgeText && (
-            <Badge variant="hype" size="sm" className="text-[10px] gap-1 py-0 px-2 font-bold uppercase tracking-wider">
-              <Sparkles className="size-3" />
-              {coupon.badgeText}
+            <Badge variant="hype" size="sm" className="text-[10px] gap-1 py-0 px-1.5 font-bold uppercase tracking-wider truncate max-w-[90px] sm:max-w-none">
+              <Sparkles className="size-3 shrink-0" />
+              <span className="truncate">{coupon.badgeText}</span>
             </Badge>
           )}
         </div>
 
         {/* Controles de Navegação */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <Button
             variant="ghost"
             size="icon-sm"
@@ -94,7 +94,7 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
           >
             <ChevronUp className="size-4" />
           </Button>
-          <span className="text-[11px] font-mono font-bold text-[var(--color-text-tertiary)] px-1">
+          <span className="text-[11px] font-mono font-bold text-[var(--color-text-tertiary)] px-0.5">
             {activeIndex + 1}/{total}
           </span>
           <Button
@@ -110,13 +110,13 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
       </div>
 
       {/* Conteúdo Principal do Cupom */}
-      <div className="my-3 flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-2xl font-black tracking-tight text-[var(--color-accent-primary)] font-mono">
+      <div key={coupon.id} className="my-3 flex flex-col gap-2 transition-all duration-300 animate-fadeIn min-w-0">
+        <div className="flex items-baseline justify-between gap-2 min-w-0">
+          <span className="text-xl sm:text-2xl font-black tracking-tight text-[var(--color-accent-primary)] font-mono truncate">
             {discountLabel}
           </span>
           {coupon.minOrderCents && (
-            <span className="text-[11px] font-medium text-[var(--color-text-tertiary)]">
+            <span className="text-[10px] sm:text-[11px] font-medium text-[var(--color-text-tertiary)] shrink-0">
               Mín. {formatBRL(coupon.minOrderCents)}
             </span>
           )}

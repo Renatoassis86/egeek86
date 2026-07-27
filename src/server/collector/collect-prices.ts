@@ -267,10 +267,15 @@ async function applySnapshotsToGroup(
         .limit(1);
       const slug = collision ? slugify(`${baseSlug}-${randomUUID().slice(0, 6)}`) : baseSlug;
 
+      function formatMeliItemId(itemId: string): string {
+        return itemId.replace(/^([A-Z]{3})(\d+)$/i, '$1-$2');
+      }
+
       const realToolId = process.env.MELI_TOOL_ID;
+      const formattedMeliId = result.externalItemId ? formatMeliItemId(result.externalItemId) : '';
       // Se for Mercado Livre, gera link direto pro anúncio específico do vendedor
       const initialUrl = (group.networkSlug === 'mercado-livre' && result.externalItemId)
-        ? (realToolId ? `https://produto.mercadolivre.com.br/${result.externalItemId}?matt_tool_id=${realToolId}` : `https://produto.mercadolivre.com.br/${result.externalItemId}`)
+        ? (realToolId ? `https://produto.mercadolivre.com.br/${formattedMeliId}?matt_tool_id=${realToolId}` : `https://produto.mercadolivre.com.br/${formattedMeliId}`)
         : `https://www.mercadolivre.com.br/p/${group.externalRef}`;
 
       const [createdRow] = await db
@@ -313,9 +318,10 @@ async function applySnapshotsToGroup(
       // Se o link de afiliado ainda está pendente, atualiza o placeholder com a URL do anúncio específico
       if (existingOffer.affiliateLinkPending && result.externalItemId && group.networkSlug === 'mercado-livre') {
         const realToolId = process.env.MELI_TOOL_ID;
+        const formattedItemId = result.externalItemId.replace(/^([A-Z]{3})(\d+)$/i, '$1-$2');
         updateData.affiliateUrl = realToolId
-          ? `https://produto.mercadolivre.com.br/${result.externalItemId}?matt_tool_id=${realToolId}`
-          : `https://produto.mercadolivre.com.br/${result.externalItemId}`;
+          ? `https://produto.mercadolivre.com.br/${formattedItemId}?matt_tool_id=${realToolId}`
+          : `https://produto.mercadolivre.com.br/${formattedItemId}`;
         if (realToolId) {
           updateData.affiliateLinkPending = false; // Ativa automaticamente o link!
         }

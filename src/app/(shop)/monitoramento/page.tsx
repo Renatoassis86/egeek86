@@ -97,37 +97,12 @@ export default async function MonitoramentoPage({
   try {
     let userWatches = profile ? await getUserWatches(profile.id) : [];
 
-    // A vitrine de "populares" só serve de amostra pra VISITANTE (sem conta,
-    // sem watch nenhum possível ainda) — nunca pra um usuário logado com a
-    // lista genuinamente vazia (seja por nunca ter adicionado nada, seja por
-    // ter acabado de apagar tudo). Aplicar isso pra qualquer perfil fazia a
-    // lista "voltar" sozinha com itens que o usuário nunca escolheu
-    // acompanhar, só rotulados como "Sua lista".
-    if (!profile && userWatches.length === 0) {
-      const popularOffers = await getPublicOffers(8);
-      if (popularOffers && popularOffers.length > 0) {
-        userWatches = popularOffers.map((item) => ({
-          watchId: item.id,
-          masterProductId: item.masterProduct.id,
-          offerId: item.id,
-          offerSlug: item.slug,
-          title: item.title,
-          imageUrl: item.imageUrl,
-          networkName: item.network.name,
-          gameFormat: item.masterProduct.gameFormat,
-          gamePlatformGen: item.masterProduct.gamePlatformGen,
-          currentPriceCents: item.currentPriceCents,
-          metrics: null,
-        }));
-      }
-    }
-
     if (userWatches.length > 0) {
       const selected = userWatches.find((w) => w.masterProductId === jogo) ?? userWatches[0];
       selectedProductId = selected.masterProductId;
 
       const [historyData, changeMap] = await Promise.all([
-        getMasterProductPriceHistory(selected.masterProductId, '1M').catch(() => DEMO_FALLBACK_HISTORY),
+        getMasterProductPriceHistory(selected.masterProductId, '1M').catch(() => null),
         getMasterProductChangePercent(userWatches.map((w) => w.masterProductId)).catch(() => new Map()),
       ]);
 
@@ -152,18 +127,19 @@ export default async function MonitoramentoPage({
           changePercent: percent,
         };
       });
+    } else if (jogo) {
+      // Se veio um jogo específico via URL (ex: ?jogo=UUID)
+      selectedProductId = jogo;
+      const historyData = await getMasterProductPriceHistory(jogo, '1M').catch(() => null);
+      if (historyData) {
+        initialHistory = historyData;
+      }
+    } else {
+      initialHistory = null;
+      selectedProductId = '';
     }
   } catch (e) {
     console.error('Erro ao montar dados de monitoramento:', e);
-  }
-
-  // Fallback de demonstração só pra visitante sem conta — pra um perfil
-  // logado com a lista genuinamente vazia, mantém vazia mesmo (o board
-  // mostra o estado "acompanhe seu primeiro jogo" de verdade, não uma
-  // amostra fixa disfarçada de "sua lista").
-  if (!profile && watchlistItems.length === 0) {
-    watchlistItems = DEMO_FALLBACK_WATCHLIST;
-    selectedProductId = 'demo-1';
   }
 
   return (

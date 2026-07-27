@@ -610,22 +610,32 @@ export async function getMasterProductMetrics(masterProductId: string): Promise<
     avg_price_30d: string | null;
     snapshot_count: string;
   }>(sql`
-    WITH sibling_offers AS (
+    WITH active_offers AS (
       SELECT ao.id AS offer_id
       FROM affiliate_offers ao
       WHERE ao.master_product_id = ${masterProductId} AND ao.status = 'active'
     ),
-    ranked AS (
+    all_offers AS (
+      SELECT ao.id AS offer_id
+      FROM affiliate_offers ao
+      WHERE ao.master_product_id = ${masterProductId}
+    ),
+    ranked_active AS (
       SELECT
         s.price_cents,
         s.collected_at,
         ROW_NUMBER() OVER (PARTITION BY s.offer_id ORDER BY s.collected_at DESC) AS rn
       FROM affiliate_price_snapshots s
-      WHERE s.offer_id IN (SELECT offer_id FROM sibling_offers)
+      WHERE s.offer_id IN (SELECT offer_id FROM active_offers)
+    ),
+    all_snapshots AS (
+      SELECT s.price_cents, s.collected_at
+      FROM affiliate_price_snapshots s
+      WHERE s.offer_id IN (SELECT offer_id FROM all_offers)
     ),
     -- degrau intermediário pra achar outliers — ver getOfferMetrics acima.
     raw_avg_30d AS (
-      SELECT AVG(price_cents) AS raw_avg FROM ranked WHERE collected_at >= now() - interval '30 days'
+      SELECT AVG(price_cents) AS raw_avg FROM all_snapshots WHERE collected_at >= now() - interval '30 days'
     ),
     agg AS (
       SELECT
@@ -635,14 +645,14 @@ export async function getMasterProductMetrics(masterProductId: string): Promise<
             AND price_cents <= (SELECT raw_avg FROM raw_avg_30d) * 2
         )::numeric AS avg_price_30d,
         COUNT(*)::int AS snapshot_count
-      FROM ranked
+      FROM all_snapshots
     ),
     lowest_at AS (
-      SELECT collected_at FROM ranked ORDER BY price_cents ASC, collected_at ASC LIMIT 1
+      SELECT collected_at FROM all_snapshots ORDER BY price_cents ASC, collected_at ASC LIMIT 1
     )
     SELECT
-      (SELECT MIN(price_cents) FROM ranked WHERE rn = 1)::bigint AS current_price_cents,
-      (SELECT MIN(price_cents) FROM ranked WHERE rn = 2)::bigint AS previous_price_cents,
+      (SELECT MIN(price_cents) FROM ranked_active WHERE rn = 1)::bigint AS current_price_cents,
+      (SELECT MIN(price_cents) FROM ranked_active WHERE rn = 2)::bigint AS previous_price_cents,
       agg.lowest_price_cents,
       (SELECT collected_at FROM lowest_at) AS lowest_price_at,
       agg.avg_price_30d,
@@ -737,7 +747,6 @@ async function getOfferListingMetricsRaw(
       SELECT ao.id AS offer_id, ao.master_product_id
       FROM affiliate_offers ao
       WHERE ao.master_product_id IN (SELECT DISTINCT master_product_id FROM target_offers)
-        AND ao.status = 'active'
     ),
     lowest_by_product AS (
       SELECT so.master_product_id, MIN(s.price_cents)::bigint AS lowest_price_cents

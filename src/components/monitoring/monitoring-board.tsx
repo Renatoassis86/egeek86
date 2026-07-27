@@ -81,7 +81,7 @@ export function MonitoringBoard({
   const active = selectedItem;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr] w-full min-w-0 max-w-full overflow-hidden">
+    <div className="grid gap-6 grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[320px_1fr] w-full min-w-0 max-w-full overflow-hidden">
       <WatchlistPanel
         initialItems={watchlistItems}
         selectedMasterProductId={selectedId}
@@ -92,17 +92,17 @@ export function MonitoringBoard({
 
       {active ? (
         <Card className="min-w-0 max-w-full overflow-hidden">
-          <CardContent className="p-5">
-            <div className="mb-4 flex items-baseline justify-between gap-4">
-              <div>
-                <Text variant="heading-md">{active.title}</Text>
-                <Text variant="caption" color="tertiary">
+          <CardContent className="p-3.5 sm:p-5">
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 min-w-0">
+              <div className="min-w-0">
+                <Text variant="heading-md" className="line-clamp-2 leading-snug">{active.title}</Text>
+                <Text variant="caption" color="tertiary" className="truncate block">
                   Menor preço entre todas as lojas · atualmente em {active.networkName}
                 </Text>
               </div>
               <Link
                 href={`/monitoramento/comparar/${active.masterProductId}`}
-                className="group inline-flex items-center gap-1 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
+                className="group inline-flex items-center gap-1 shrink-0 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
               >
                 <AnimatedPrice cents={active.currentPriceCents} className="text-mono-lg" />
                 <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />

@@ -47,5 +47,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     },
   });
 
-  return NextResponse.redirect(offer.affiliateUrl, 302);
+  let destinationUrl = offer.affiliateUrl;
+  if (destinationUrl.includes('mercadolivre.com.br/MLB') && !destinationUrl.includes('mercadolivre.com.br/MLB-')) {
+    destinationUrl = destinationUrl.replace(/mercadolivre\.com\.br\/(MLB)(\d+)/i, 'mercadolivre.com.br/$1-$2');
+  }
+
+  return NextResponse.redirect(destinationUrl, 302);
 }

@@ -107,7 +107,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable}`}
       suppressHydrationWarning
     >
-      <body className="antialiased">
+      <body className="antialiased overflow-x-hidden max-w-full w-full">
         <ThemeProvider initialTheme={themeCookie} initialResolvedTheme={resolvedTheme}>
           {children}
           <Toaster />

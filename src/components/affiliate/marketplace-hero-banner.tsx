@@ -61,30 +61,30 @@ export function MarketplaceHeroBanner({
   };
 
   return (
-    <div className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/60 p-6 md:p-10 backdrop-blur-xl">
+    <div className="relative overflow-hidden rounded-[var(--radius-2xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/60 p-4 sm:p-6 md:p-10 backdrop-blur-xl">
       <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.25} />
       <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.14} />
 
       <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8 z-10">
         {/* Lado Esquerdo: Conteúdo Comercial & Busca */}
-        <div className="flex-1 max-w-2xl">
+        <div className="flex-1 max-w-2xl min-w-0">
           <Reveal>
-            <Text variant="label" color="hype" className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-xs">
-              <LineChart className="size-4 text-[var(--color-accent-hype)]" aria-hidden />
-              {categoryTag}
+            <Text variant="label" color="hype" className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] sm:text-xs">
+              <LineChart className="size-3.5 sm:size-4 text-[var(--color-accent-hype)] shrink-0" aria-hidden />
+              <span className="truncate">{categoryTag}</span>
             </Text>
-            <Text as="h1" variant="display-lg" className="mt-2 font-black tracking-tight text-[var(--color-text-primary)]">
+            <Text as="h1" className="mt-2 font-black tracking-tight text-[var(--color-text-primary)] text-2xl sm:text-3xl lg:text-4xl xl:text-5xl leading-tight break-words">
               {title}
             </Text>
-            <Text variant="body-lg" color="secondary" className="mt-2 font-medium leading-relaxed text-[var(--color-text-secondary)]">
+            <Text variant="body-lg" color="secondary" className="mt-2 font-medium leading-relaxed text-[var(--color-text-secondary)] text-xs sm:text-sm md:text-base">
               {subtitle}
             </Text>
           </Reveal>
 
           {/* Barra de Pesquisa Estilo Portal */}
           <Reveal delay={0.04}>
-            <form onSubmit={handleSearch} className="mt-6 flex items-center gap-2 max-w-xl">
-              <div className="relative flex-1">
+            <form onSubmit={handleSearch} className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-xl">
+              <div className="relative flex-1 min-w-0">
                 <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
                 <input
                   type="text"
@@ -94,7 +94,7 @@ export function MarketplaceHeroBanner({
                   className="w-full rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/90 py-2.5 pl-10 pr-4 text-sm text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] outline-none transition-all focus:border-[var(--color-accent-primary)] focus:ring-1 focus:ring-[var(--color-accent-primary)]"
                 />
               </div>
-              <Button type="submit" disabled={isPending} className="h-10 px-5 font-bold">
+              <Button type="submit" disabled={isPending} className="h-10 px-5 font-bold shrink-0">
                 {isPending ? 'Buscando...' : 'Buscar'}
               </Button>
             </form>
