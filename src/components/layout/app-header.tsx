@@ -98,10 +98,10 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           'px-3.5 h-9 inline-flex items-center rounded-[var(--radius-sm)] font-bold text-sm',
-          'text-[var(--color-text-primary)] hover:text-[var(--color-accent-primary)] hover:bg-[var(--color-bg-inset)]',
+          'text-[#F3EFE6] hover:text-[#D4AF37] hover:bg-white/10',
           'transition-colors duration-[var(--duration-fast)]',
-          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)] font-extrabold',
-          isActive && 'bg-[var(--color-bg-inset)] text-[var(--color-accent-primary)] font-black'
+          item.highlight && !isActive && 'text-[#F59E0B] hover:text-[#F59E0B] font-extrabold',
+          isActive && 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 font-black'
         )}
       >
         {item.label}
@@ -122,14 +122,14 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         aria-expanded={isOpen}
         className={cn(
           'px-3.5 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all cursor-pointer font-bold text-sm',
-          'text-[var(--color-text-primary)] hover:text-[var(--color-accent-primary)] hover:bg-[var(--color-bg-inset)]',
-          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)] font-extrabold',
-          (isActive || isOpen) && 'bg-[var(--color-bg-inset)] text-[var(--color-accent-primary)] font-black'
+          'text-[#F3EFE6] hover:text-[#D4AF37] hover:bg-white/10',
+          item.highlight && !isActive && 'text-[#F59E0B] hover:text-[#F59E0B] font-extrabold',
+          (isActive || isOpen) && 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 font-black'
         )}
       >
         <span>{item.label}</span>
         <svg
-          className={cn('size-3.5 opacity-70 transition-transform duration-200', isOpen && 'rotate-180')}
+          className={cn('size-3.5 opacity-75 transition-transform duration-200 text-[#D4AF37]', isOpen && 'rotate-180')}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -141,17 +141,17 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
 
       {isOpen && (
         <div className="absolute left-0 top-full pt-1.5 w-64 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
-          <div className="flex flex-col p-2 bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-xl">
+          <div className="flex flex-col p-2 bg-[#161310] border border-[#332C24] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-xl">
             {item.children.map((child) => (
               <Link
                 key={child.href}
                 href={child.href}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-between px-3.5 py-2.5 text-xs font-bold text-[var(--color-text-primary)] hover:text-[var(--color-accent-primary)] hover:bg-[var(--color-bg-inset)] rounded-[var(--radius-xs)] transition-colors group/item"
+                className="flex items-center justify-between px-3.5 py-2.5 text-xs font-bold text-[#F3EFE6] hover:text-[#D4AF37] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors group/item"
               >
                 <span>{child.label}</span>
                 <svg
-                  className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[var(--color-accent-primary)]"
+                  className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[#D4AF37]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -176,40 +176,49 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
     <header
       className={cn(
         'sticky top-0 z-30 w-full',
-        'bg-[var(--color-bg-surface)]/95 backdrop-blur-xl backdrop-saturate-150',
-        'border-b border-[var(--color-border-subtle)]',
-        'pt-safe'
+        'bg-[#0C0A08]/95 backdrop-blur-xl backdrop-saturate-150',
+        'border-b border-[#28231D]',
+        'shadow-xl pt-safe'
       )}
     >
-        <div className="mx-auto h-[var(--header-mobile)] lg:h-[var(--header-desktop)] max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4 w-full">
-          <div className="flex items-center gap-2">
-            {/* Botão de Menu Hambúrguer (Três traços no mobile) */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden flex shrink-0"
-              onClick={() => setIsMobileDrawerOpen(true)}
-              aria-label="Abrir menu de módulos"
-            >
-              <Menu className="size-5 text-[var(--color-text-primary)]" />
-            </Button>
-
-            {/* Logo */}
-            <Link
-              href="/"
-              className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] rounded-[var(--radius-xs)]"
-              aria-label="Espaço Geek 86, início"
-            >
-          <Image
-            src="/geek 86.webp"
-            alt="Espaço Geek 86"
-            width={4220}
-            height={1568}
-            priority
-            className="h-6 lg:h-7 w-auto transition-transform group-hover:scale-105"
-          />
-        </Link>
+      {/* Tarja Superior Institucional Arkos Intelligence */}
+      <div className="bg-[#050403] border-b border-[#1C1814] py-1 px-4 text-right">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 flex items-center justify-end">
+          <span className="font-mono text-[10px] font-bold tracking-widest uppercase text-[#A39785]">
+            Arkos Intelligence · Plataforma Geek & Marketplace
+          </span>
+        </div>
       </div>
+
+      <div className="mx-auto h-[var(--header-mobile)] lg:h-[var(--header-desktop)] max-w-7xl px-4 lg:px-8 flex items-center justify-between gap-4 w-full">
+        <div className="flex items-center gap-2">
+          {/* Botão de Menu Hambúrguer (Três traços no mobile) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="lg:hidden flex shrink-0 text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]"
+            onClick={() => setIsMobileDrawerOpen(true)}
+            aria-label="Abrir menu de módulos"
+          >
+            <Menu className="size-5" />
+          </Button>
+
+          {/* Logo - Destaque em Fundo Escuro com Alto Contraste */}
+          <Link
+            href="/"
+            className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded-[var(--radius-xs)] p-1 transition-opacity hover:opacity-90"
+            aria-label="Espaço Geek 86, início"
+          >
+            <Image
+              src="/geek 86.webp"
+              alt="Espaço Geek 86"
+              width={4220}
+              height={1568}
+              priority
+              className="h-7 lg:h-8 w-auto filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.25)] transition-transform group-hover:scale-105"
+            />
+          </Link>
+        </div>
 
         {/* Nav desktop */}
         <nav className="hidden lg:flex items-center gap-1" aria-label="Navegação principal">
@@ -223,21 +232,21 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
         </nav>
 
         {/* Right actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 text-[#E6E0D4]">
           <HeaderSearchModal />
-          <Button variant="ghost" size="icon" aria-label="Ranking de Vendedores" className="hidden sm:inline-flex" asChild>
+          <Button variant="ghost" size="icon" aria-label="Ranking de Vendedores" className="hidden sm:inline-flex text-[#D4AF37] hover:bg-white/10 hover:text-[#F59E0B]" asChild>
             <Link href="/ranking">
-              <Trophy className="size-5 text-[var(--color-accent-gold)]" />
+              <Trophy className="size-5" />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Jogos acompanhados" className="hidden sm:inline-flex" asChild>
+          <Button variant="ghost" size="icon" aria-label="Jogos acompanhados" className="hidden sm:inline-flex text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" asChild>
             <Link href="/conta?aba=jogos">
               <Heart className="size-5" />
             </Link>
           </Button>
           {/* User Icon Dropdown */}
           <div className="relative group/user hidden sm:block">
-            <Button variant="ghost" size="icon" aria-label="Conta / Perfil" asChild>
+            <Button variant="ghost" size="icon" aria-label="Conta / Perfil" className="text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" asChild>
               <Link href="/conta">
                 <User className="size-5" />
               </Link>
@@ -245,53 +254,53 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
 
             {/* Dropdown Menu do Perfil */}
             <div className="absolute right-0 top-full pt-1.5 w-64 opacity-0 pointer-events-none group-hover/user:opacity-100 group-hover/user:pointer-events-auto transition-all duration-200 z-50">
-              <div className="flex flex-col p-2 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-[var(--shadow-xl)] backdrop-blur-md">
+              <div className="flex flex-col p-2 bg-[#161310] border border-[#332C24] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-md text-[#F3EFE6]">
 
                 {/* Cabeçalho do Perfil */}
-                <div className="p-3 border-b border-[var(--color-border-subtle)] flex flex-col gap-1">
+                <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[var(--color-text-primary)]">Perfil do Colecionador</span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)]">Nível 12</span>
+                    <span className="text-xs font-bold text-[#F3EFE6]">Perfil do Colecionador</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37]">Nível 12</span>
                   </div>
-                  <span className="text-[11px] text-[var(--color-text-secondary)]">Acesse seus dados, drops e leilões</span>
+                  <span className="text-[11px] text-[#A39785]">Acesse seus dados, drops e leilões</span>
                 </div>
 
                 {/* Links Principais */}
                 <div className="flex flex-col py-1">
-                  <Link href="/conta" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                    <User className="size-3.5 text-[var(--color-accent-primary)]" />
+                  <Link href="/conta" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                    <User className="size-3.5 text-[#D4AF37]" />
                     <span>Meu Perfil e Gamificação</span>
                   </Link>
 
-                  <Link href="/conta?aba=dados" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                    <Sliders className="size-3.5 text-[var(--color-accent-primary)]" />
+                  <Link href="/conta?aba=dados" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                    <Sliders className="size-3.5 text-[#D4AF37]" />
                     <span>Dados Cadastrais e Editar</span>
                   </Link>
 
-                  <Link href="/conta?aba=compras" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                    <ShoppingBag className="size-3.5 text-[var(--color-accent-primary)]" />
+                  <Link href="/conta?aba=compras" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                    <ShoppingBag className="size-3.5 text-[#D4AF37]" />
                     <span>Minhas Compras</span>
                   </Link>
 
-                  <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                    <ShieldCheck className="size-3.5 text-[var(--color-accent-hype)]" />
+                  <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                    <ShieldCheck className="size-3.5 text-[#F59E0B]" />
                     <span>Meus Drops e Vendas</span>
                   </Link>
 
-                  <Link href="/conta?aba=leiloes" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
-                    <Gavel className="size-3.5 text-[var(--color-accent-gold)]" />
+                  <Link href="/conta?aba=leiloes" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                    <Gavel className="size-3.5 text-[#D4AF37]" />
                     <span>Meus Leilões e Lances</span>
                   </Link>
                 </div>
 
-                <div className="h-px bg-[var(--color-border-subtle)] my-1" />
+                <div className="h-px bg-[#28231D] my-1" />
 
                 {/* Opções de Cadastro / Login */}
                 <div className="flex flex-col gap-1 p-1">
-                  <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[var(--color-accent-hype)] hover:bg-[var(--color-accent-hype)]/10 rounded-[var(--radius-xs)] transition-colors">
+                  <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-[var(--radius-xs)] transition-colors">
                     <span>🚀 Cadastrar Colecionador / Leiloeiro</span>
                   </Link>
-                  <Link href="/entrar" className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors">
+                  <Link href="/entrar" className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
                     <LogIn className="size-3.5" />
                     <span>Entrar / Fazer Login</span>
                   </Link>
@@ -300,12 +309,12 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
               </div>
             </div>
           </div>
-          <ThemeToggle className="inline-flex" />
-          <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative" asChild>
+          <ThemeToggle className="inline-flex text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" />
+          <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" asChild>
             <Link href="/carrinho">
               <ShoppingBag className="size-5" />
               {cartCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[var(--color-accent-primary)] text-[10px] font-bold text-[var(--color-text-inverse)]">
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[#D4AF37] text-[10px] font-bold text-black">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}
