@@ -24,10 +24,7 @@ export async function getBestActiveOfferIdsForMasterProducts(
       masterProductIds.map((id) => sql`${id}`),
       sql`, `
     )})
-      AND status = 'active'
-      -- current_price_cents = 0 é "ainda não coletado" (placeholder da
-      -- descoberta automática), nunca um preço real — nunca deixar isso
-      -- vencer como "menor preço" de um produto.
+      AND status != 'draft'
       AND current_price_cents > 0
     ORDER BY master_product_id, current_price_cents ASC
   `);
@@ -101,7 +98,7 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
       masterProductId: watch.masterProductId,
       offerId,
       offerSlug: offer.slug,
-      title: offer.title,
+      title: watch.masterProductName,
       imageUrl: offer.imageUrl,
       networkName: offer.networkName,
       gameFormat: watch.gameFormat,
