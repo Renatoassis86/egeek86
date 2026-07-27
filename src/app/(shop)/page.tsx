@@ -411,39 +411,39 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
 // canto a canto de verdade (object-cover garante isso em qualquer tela).
 function StatementBand() {
   return (
-    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)] border-b border-[var(--color-border-subtle)] py-10 lg:py-16">
+    <section data-theme="dark" className="w-full bg-[#0F0C08] border-b border-[var(--color-border-subtle)] py-10 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
-        <div className="relative isolate aspect-[16/7] overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] sm:aspect-[21/9]">
-          <Image
-            src="/images/home/statement-band.png"
-            alt=""
-            fill
-            sizes="(min-width: 1280px) 1280px, 100vw"
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-canvas)] via-[var(--color-bg-canvas)]/45 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-canvas)]/80 via-transparent to-transparent" />
-          <CornerBrackets inset={16} size={20} />
+          <div className="relative isolate aspect-[16/8] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805]">
+            <Image
+              src="/images/home/statement-band.png"
+              alt="Cockpit de inteligência de preço Espaço Geek 86"
+              fill
+              sizes="(min-width: 1280px) 1280px, 100vw"
+              className="object-cover object-right"
+            />
+            {/* Gradiente escuro para contraste cristalino sob o texto */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0B0805] via-[#0B0805]/85 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0805]/90 via-transparent to-transparent" />
+            <CornerBrackets inset={16} size={20} />
 
-          <div className="relative flex h-full items-center px-6 py-8 sm:px-10 lg:px-14">
-            <div>
-              <Text variant="label" color="tertiary" className="inline-flex items-center gap-1.5">
-                <History className="size-3.5" aria-hidden />
-                Por trás de cada preço
-              </Text>
-              <Text as="h2" variant="heading-xl" className="mt-3 max-w-[22ch] lg:text-display-md">
-                Um cockpit de dado pra cada jogo que você acompanha.
-              </Text>
-              <Text variant="body-md" color="secondary" className="mt-3 max-w-[42ch]">
-                Console, controle, cupom, histórico — tudo cruzado em tempo real pra você nunca
-                comprar no escuro.
-              </Text>
+            <div className="relative flex h-full items-center px-6 py-8 sm:px-10 lg:px-14 z-10">
+              <div className="max-w-xl rounded-[var(--radius-xl)] border border-amber-500/30 bg-[#0F0C08]/90 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-400">
+                  <History className="size-4 text-amber-400" aria-hidden />
+                  <span>Por trás de cada preço</span>
+                </div>
+                <Text as="h2" variant="display-md" className="mt-2 font-black text-white tracking-tight text-2xl sm:text-4xl leading-tight">
+                  Um cockpit de dado pra cada jogo que você acompanha.
+                </Text>
+                <Text variant="body-md" className="mt-3 font-medium text-zinc-200 text-sm sm:text-base leading-relaxed">
+                  Console, controle, cupom, histórico — tudo cruzado em tempo real pra você nunca comprar no escuro.
+                </Text>
+              </div>
             </div>
           </div>
-        </div>
-      </Reveal>
-    </div>
+        </Reveal>
+      </div>
     </section>
   );
 }
