@@ -3,6 +3,7 @@ import { AppHeader } from './app-header';
 import { TopUtilityBar } from './top-utility-bar';
 import { BottomTabBar } from './bottom-tab-bar';
 import { SiteFooter } from './site-footer';
+import { NeuralWatermarkBackground } from '@/components/ui/neural-watermark-background';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -32,6 +33,9 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)] w-full max-w-[100vw] overflow-x-hidden">
+      {/* Marca d'Água Transparente Global (EG86 / ESPAÇO GEEK 86) + Brushes de Circuitos */}
+      <NeuralWatermarkBackground />
+
       {!hideHeader && (
         <>
           <TopUtilityBar />

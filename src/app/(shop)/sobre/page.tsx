@@ -177,14 +177,14 @@ function MissaoVisaoValoresSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-14">
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-800 border border-amber-500/40 w-fit">
-              Pilares Fundamentais
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-amber-500/20 text-amber-900 border border-amber-500/40 w-fit">
+              Propósito &amp; Fronteira Tecnológica
             </span>
             <Text as="h2" variant="display-lg" className="font-black text-zinc-900 text-3xl sm:text-5xl tracking-tight">
               Nossa Missão &amp; Nossa Visão
             </Text>
-            <Text variant="body-lg" className="text-zinc-700 max-w-[64ch] leading-relaxed font-medium">
-              Os compromissos que norteiam a construção do maior ecossistema de inteligência de mercado gamer do Brasil.
+            <Text variant="body-lg" className="text-zinc-700 max-w-[66ch] leading-relaxed font-medium">
+              Muito além de exibir preços, construímos uma arquitetura de inteligência, paixão e entretenimento que redefine o mercado de jogos no Brasil.
             </Text>
           </div>
         </Reveal>
@@ -197,22 +197,22 @@ function MissaoVisaoValoresSection() {
                 <div className="p-3.5 rounded-2xl bg-amber-500/20 text-amber-700 w-fit group-hover:scale-110 transition-transform duration-300">
                   <Target className="size-8" />
                 </div>
-                <span className="text-xs font-black uppercase tracking-widest text-amber-700 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
+                <span className="text-xs font-black uppercase tracking-widest text-amber-800 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
                   Nossa Missão
                 </span>
               </div>
 
-              <blockquote className="text-lg sm:text-xl font-extrabold text-zinc-900 leading-relaxed border-l-4 border-amber-500 pl-5 my-1">
-                &quot;Transformar a experiência de compra e acompanhamento do universo gamer e geek por meio de inteligência de dados 100% empírica, conectando consumidores a preços reais, históricos auditáveis e transparentes no mercado.&quot;
+              <blockquote className="text-lg sm:text-xl font-black text-zinc-900 leading-relaxed border-l-4 border-amber-500 pl-5 my-1">
+                &quot;Elevar a experiência de viver, jogar e colecionar games ao mais alto nível de emoção e inteligência, unindo a magia do entretenimento e o fascínio da cultura geek a uma infraestrutura neural de dados empíricos que protege o consumidor e perpetua a memória dos videogames para as futuras gerações.&quot;
               </blockquote>
 
               <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Garantimos que cada cotação, gráfico e estatística da plataforma reflita com absoluto rigor o mercado ativo, empoderando o consumidor contra falsos descontos e distorções promocionais.
+                Muito além de listar ofertas, nossa missão é democratizar a verdade de mercado com alegria, transparência absoluta e paixão pelo colecionismo — transformando dados estatísticos complexos em confiança pura e satisfação para toda a comunidade gamer.
               </p>
 
-              <div className="mt-auto pt-5 border-t border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-amber-800 font-mono">
-                <span>✦ Dados Empíricos 100% Reais</span>
-                <span>✦ Transparência de Preço</span>
+              <div className="mt-auto pt-5 border-t border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-amber-900 font-mono">
+                <span>✦ Inteligência de Dados &amp; Alegria</span>
+                <span>✦ Preservação Cultural Gamer</span>
               </div>
             </div>
           </Reveal>
@@ -224,22 +224,22 @@ function MissaoVisaoValoresSection() {
                 <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-700 w-fit group-hover:scale-110 transition-transform duration-300">
                   <Compass className="size-8" />
                 </div>
-                <span className="text-xs font-black uppercase tracking-widest text-emerald-700 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30">
+                <span className="text-xs font-black uppercase tracking-widest text-emerald-800 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30">
                   Nossa Visão
                 </span>
               </div>
 
-              <blockquote className="text-lg sm:text-xl font-extrabold text-zinc-900 leading-relaxed border-l-4 border-emerald-500 pl-5 my-1">
-                &quot;Ser o maior hub e ecossistema de inteligência de preços e memória gamer da América Latina, tornando-se a referência definitiva de confiança para quem joga, coleciona e vive a cultura geek.&quot;
+              <blockquote className="text-lg sm:text-xl font-black text-zinc-900 leading-relaxed border-l-4 border-emerald-500 pl-5 my-1">
+                &quot;Construir o ecossistema global de inteligência de mercado, entretenimento e acervo gamer mais influente e confiável do planeta — um lugar onde a nostalgia histórica e a inovação tecnológica se fundem para redefinir como o mundo descobre, avalia e celebra o universo geek.&quot;
               </blockquote>
 
               <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Expandimos continuamente nossos algoritmos e cobertura para que qualquer gamer, do retrogamer ao entusiasta de última geração, consulte o Espaço Geek 86 antes de tomar qualquer decisão.
+                Buscamos ser o farol definitivo de decisão e paixão gamer no Brasil e no mundo. A cada inovação de algoritmo e a cada nova descoberta, moldamos um padrão global onde a integridade dos dados e o respeito ao consumidor caminham lado a lado com a celebração incondicional da cultura pop.
               </p>
 
-              <div className="mt-auto pt-5 border-t border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-emerald-800 font-mono">
-                <span>✦ Referência em Inteligência</span>
-                <span>✦ Ecossistema nº 1 na América Latina</span>
+              <div className="mt-auto pt-5 border-t border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-emerald-900 font-mono">
+                <span>✦ Farol Global de Confiança</span>
+                <span>✦ Inovação Disruptiva &amp; Cultura</span>
               </div>
             </div>
           </Reveal>

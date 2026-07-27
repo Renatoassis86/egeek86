@@ -309,26 +309,9 @@ export function PriceHistoryChart({
       autoscaleInfoProvider: autoscaleProvider,
     });
 
-    // 3. Histograma de Frequência de Cotações (Barras na parte inferior)
-    const freqSeries = chart.addSeries(HistogramSeries, {
-      color: 'rgba(214, 90, 0, 0.45)',
-      priceScaleId: 'histogram',
-      priceFormat: {
-        type: 'volume',
-      },
-    });
-
-    chart.priceScale('histogram').applyOptions({
-      scaleMargins: {
-        top: 0.75, // Ocupa somente os 25% inferiores do gráfico
-        bottom: 0,
-      },
-    });
-
     chartRef.current = chart;
     seriesRef.current = series;
     avgSeriesRef.current = avgSeries;
-    freqSeriesRef.current = freqSeries;
 
     chart.subscribeCrosshairMove((param: MouseEventParams) => {
       if (!param.time || !param.point) {
@@ -397,15 +380,6 @@ export function PriceHistoryChart({
     avgSeriesRef.current.setData(
       synchronizedHistory.avgPoints.map((p) => ({ time: p.time as UTCTimestamp, value: p.value }))
     );
-    if (freqSeriesRef.current && synchronizedHistory.frequencyPoints) {
-      freqSeriesRef.current.setData(
-        synchronizedHistory.frequencyPoints.map((p) => ({
-          time: p.time as UTCTimestamp,
-          value: p.value,
-          color: 'rgba(214, 90, 0, 0.45)',
-        }))
-      );
-    }
     if (chartRef.current) {
       chartRef.current.applyOptions({
         timeScale: {
@@ -483,9 +457,6 @@ export function PriceHistoryChart({
             style={{ borderColor: CHART_PALETTES[resolvedTheme].movingAverage }}
           />
           Média geral de mercado
-        </span>
-        <span className="inline-flex items-center gap-1.5 text-[var(--color-text-secondary)] font-bold">
-          <span className="h-2.5 w-2.5 rounded-xs bg-[var(--color-accent-hype)] opacity-80" /> Frequência de cotações
         </span>
       </div>
       <div className="relative h-[360px] w-full">

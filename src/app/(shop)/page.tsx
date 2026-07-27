@@ -347,14 +347,19 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
               Queremos ouvir suas preferências. Seus votos alimentam nossos estudos de comportamento de consumo e ajudam micro-estúdios brasileiros a precificar e distribuir seus jogos de forma justa.
             </Text>
 
-            {/* Imagem de Pesquisas & Engajamento da Comunidade Gamer */}
-            <div className="mt-2 relative aspect-[16/9] w-full rounded-[var(--radius-lg)] overflow-hidden border border-amber-300/60 bg-[var(--color-bg-inset)] shadow-md">
-              <SceneImage
+            {/* Imagem de Pesquisas & Engajamento da Comunidade Gamer (Exibição Completa sem cortes) */}
+            <div className="mt-4 relative w-full rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 bg-black shadow-xl">
+              <Image
                 src="/images/home/pesquisa-comunidade.png"
-                alt="Ilustração de pesquisa de mercado gamer e estatísticas da comunidade"
-                tone="gold"
-                caption="Estudos de Mercado & Voz da Comunidade"
+                alt="Sessão em Grupo Gamer - Humour e Pesquisa de Comunidade Geek 86"
+                width={1536}
+                height={600}
+                className="w-full h-auto object-contain block"
               />
+              <div className="p-3 bg-[#0d0a06] border-t border-amber-500/30 flex items-center justify-between text-xs font-mono text-amber-400">
+                <span>✦ Sessão em Grupo Gamer — Espaço Geek 86</span>
+                <span className="hidden sm:inline">Voz da Comunidade &amp; Cultura Pop</span>
+              </div>
             </div>
           </div>
         </Reveal>
@@ -430,7 +435,7 @@ function StatementBand() {
     <section data-theme="dark" className="w-full bg-[#0F0C08] border-b border-[var(--color-border-subtle)] py-10 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
-          <div className="relative isolate aspect-[16/8] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805]">
+          <div className="relative isolate min-h-[340px] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805] flex flex-col justify-center">
             <Image
               src="/images/home/statement-band.png"
               alt="Cockpit de inteligência de preço Espaço Geek 86"
@@ -439,20 +444,20 @@ function StatementBand() {
               className="object-cover object-right"
             />
             {/* Gradiente escuro para contraste cristalino sob o texto */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0B0805] via-[#0B0805]/85 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0805]/90 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0B0805] via-[#0B0805]/90 to-[#0B0805]/40 md:to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0805] via-transparent to-transparent" />
             <CornerBrackets inset={16} size={20} />
 
-            <div className="relative flex h-full items-center px-6 py-8 sm:px-10 lg:px-14 z-10">
-              <div className="max-w-xl rounded-[var(--radius-xl)] border border-amber-500/30 bg-[#0F0C08]/90 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+            <div className="relative flex h-full items-center p-4 sm:p-8 lg:p-14 z-10">
+              <div className="w-full max-w-xl rounded-[var(--radius-xl)] border border-amber-500/30 bg-[#0F0C08]/90 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
                 <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-400">
                   <History className="size-4 text-amber-400" aria-hidden />
                   <span>Por trás de cada preço</span>
                 </div>
-                <Text as="h2" variant="display-md" className="mt-2 font-black text-white tracking-tight text-2xl sm:text-4xl leading-tight">
+                <Text as="h2" variant="display-md" className="mt-2 font-black text-white tracking-tight text-xl sm:text-3xl lg:text-4xl leading-snug">
                   Um cockpit de dado pra cada jogo que você acompanha.
                 </Text>
-                <Text variant="body-md" className="mt-3 font-medium text-zinc-200 text-sm sm:text-base leading-relaxed">
+                <Text variant="body-md" className="mt-2.5 font-medium text-zinc-200 text-xs sm:text-base leading-relaxed">
                   Console, controle, cupom, histórico — tudo cruzado em tempo real pra você nunca comprar no escuro.
                 </Text>
               </div>
