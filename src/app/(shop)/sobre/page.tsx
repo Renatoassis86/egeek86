@@ -101,11 +101,6 @@ function HeroSection() {
               priority
               className="object-contain object-center p-2 opacity-95"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0805] via-transparent to-transparent" />
-            <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between text-xs font-bold text-amber-400">
-              <span className="uppercase tracking-widest font-mono">Preservando a Cultura Gamer • Monitorando o Futuro do Mercado</span>
-              <span className="hidden sm:inline text-zinc-400 font-mono text-[11px]">Fundado em Teresina-PI • Cobertura Nacional em 5 Marketplaces</span>
-            </div>
           </div>
         </Reveal>
       </div>
@@ -140,19 +135,19 @@ function QuemSomosSection() {
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
           <div className="flex flex-col gap-4">
-            <Badge variant="outline" size="sm" className="w-fit text-amber-400 border-amber-500/40">
+            <Badge variant="outline" size="sm" className="w-fit text-amber-400 border-amber-500/40 font-bold uppercase tracking-wider">
               <History className="size-3.5 mr-1" /> Nossa História
             </Badge>
-            <Text as="h2" variant="display-md" className="font-extrabold text-white">
+            <Text as="h2" variant="display-lg" className="font-black text-white text-3xl sm:text-4xl lg:text-5xl leading-tight drop-shadow-md">
               Da paixão pelas locadoras dos anos 80 e 90 a um cockpit de Inteligência de Dados.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-300">
+            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-200 font-medium">
               O Espaço Geek 86 nasceu do fascínio pelas tardes passadas em locadoras de videogame, trocando cartuchos de Super Nintendo e Mega Drive, lendo revistas de dicas e vivenciando a ascensão dos consoles clássicos.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-300">
-              O que começou como uma coleção pessoal rigorosamente catalogada evoluiu para análises quantitativas, rotinas de monitoramento e o hábito de ajudar amigos a encontrarem o preço justo sem cair em armadilhas de falsos descontos.
+            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-200 font-medium">
+              O que começou como uma coleção pessoal rigorosamente catalogada evoluiu para análises quantitativas, rotinas de monitoramento e o hábito de ajudar amigos a encontrarem o preço justo sem cair em armadirhas de falsos descontos.
             </Text>
-            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-300">
+            <Text variant="body-md" color="secondary" className="leading-relaxed text-zinc-200 font-medium">
               Hoje, transformamos essa essência em uma plataforma completa de inteligência de dados que varre os maiores marketplaces do Brasil a cada 5 minutos, preservando a paixão do colecionador com a precisão dos modelos analíticos.
             </Text>
           </div>
@@ -166,10 +161,6 @@ function QuemSomosSection() {
               fill
               className="object-contain object-center p-2"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-            <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-amber-400 font-bold">
-              Nostalgia anos 80 e 90 combinada com Inteligência de Dados de alta performance.
-            </div>
           </div>
         </Reveal>
       </div>
@@ -522,7 +513,6 @@ function FerramentasShowcaseSection() {
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
                       <div className="absolute bottom-3 left-4 right-4 text-[11px] font-mono text-amber-400 font-bold flex justify-between">
                         <span>Módulo Espaço Geek 86</span>
-                        <span className="text-zinc-400">Inteligência de Dados Gamer</span>
                       </div>
                     </div>
                   </div>
@@ -544,8 +534,8 @@ function IdealizadorSection() {
     <section id="idealizador" data-theme="dark" className="w-full bg-[#0F0C08] py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
-          <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-amber-500/30 overflow-hidden shadow-2xl p-8 lg:p-12 grid gap-8 lg:grid-cols-[240px_1fr] lg:items-center">
-            <div className="relative aspect-square w-full max-w-[240px] mx-auto rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-black">
+          <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-amber-500/30 overflow-hidden shadow-2xl p-8 lg:p-12 grid gap-8 lg:grid-cols-[280px_1fr] lg:items-start">
+            <div className="relative aspect-square w-full max-w-[280px] mx-auto rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-black">
               <Image
                 src="/images/sobre/idealizador.png"
                 alt="Renato Silva de Assis — Fundador e Idealizador"
@@ -554,19 +544,34 @@ function IdealizadorSection() {
               />
             </div>
 
-            <div className="flex flex-col gap-4">
-              <Badge variant="hype" size="sm" className="w-fit uppercase bg-amber-500 text-black font-extrabold">
-                Idealização e Liderança Técnica
-              </Badge>
-              <Text variant="heading-xl" className="font-extrabold text-white">
-                Renato Silva de Assis
-              </Text>
-              <Text variant="caption" className="text-amber-400 font-mono font-bold">
-                Fundador, Arquiteto de Software e Colecionador Gamer
-              </Text>
-              <Text variant="body-md" className="leading-relaxed text-zinc-300 font-medium">
-                "O Espaço Geek 86 é a materialização do respeito pela cultura dos games combinada com a inteligência de dados. Construímos uma plataforma onde o colecionador encontra nostalgia e o comprador encontra a verdade dos preços."
-              </Text>
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-2">
+                <Badge variant="hype" size="sm" className="w-fit uppercase bg-amber-500 text-black font-extrabold">
+                  Idealização e Liderança Técnica
+                </Badge>
+                <Text variant="heading-xl" className="font-extrabold text-white text-3xl sm:text-4xl">
+                  Renato Silva de Assis
+                </Text>
+                <Text variant="caption" className="text-amber-400 font-mono font-bold text-sm">
+                  Fundador, Arquiteto de Software, Pesquisador e Colecionador Gamer
+                </Text>
+              </div>
+
+              <div className="flex flex-col gap-4 text-zinc-300 font-medium leading-relaxed text-sm sm:text-base">
+                <p>
+                  Idealizado e desenvolvido por <strong>Renato Silva de Assis</strong> em Teresina-PI, o Espaço Geek 86 é fruto da convergência entre a paixão pela cultura pop retrogamer e a expertise em arquitetura de software e inteligência de dados.
+                </p>
+                <p>
+                  Com trajetória marcada por colecionismo rigoroso e desenvolvimento de soluções tecnológicas de alta complexidade, Renato criou a Arkos Intelligence e a estrutura do Espaço Geek 86 para sanar uma das maiores dores do mercado nacional: a assimetria de preços e a falta de transparência nas ofertas de videogames.
+                </p>
+                <p>
+                  Como idealizador e arquiteto chefe da plataforma, Renato lidera a concepção dos algoritmos de monitoramento 24/7, a engenharia da Bolsa Gamer, o desenvolvimento do Geek Hype Index e a aplicação de pesquisas qualitativas e de mercado para apoiar tanto o consumidor final quanto afiliados e grandes marcas da indústria.
+                </p>
+                <blockquote className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 italic text-amber-200 text-sm">
+                  "O Espaço Geek 86 é a materialização do respeito pela cultura dos games combinada com a inteligência de dados. Construímos uma plataforma onde o colecionador encontra nostalgia e o comprador encontra a verdade dos preços."
+                </blockquote>
+              </div>
+
               <div className="flex flex-wrap items-center gap-4 pt-2">
                 <Link href="/ofertas">
                   <Button variant="hype" size="md" rightIcon={<ArrowRight className="size-4" />}>

@@ -97,12 +97,11 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         href={item.href}
         aria-current={isActive ? 'page' : undefined}
         className={cn(
-          'px-3 h-9 inline-flex items-center rounded-[var(--radius-sm)]',
-          'text-body-sm font-medium text-[var(--color-text-secondary)]',
-          'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
+          'px-3.5 h-9 inline-flex items-center rounded-[var(--radius-sm)] font-bold text-sm',
+          'text-[var(--color-text-primary)] hover:text-[var(--color-accent-primary)] hover:bg-[var(--color-bg-inset)]',
           'transition-colors duration-[var(--duration-fast)]',
-          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]',
-          isActive && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
+          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)] font-extrabold',
+          isActive && 'bg-[var(--color-bg-inset)] text-[var(--color-accent-primary)] font-black'
         )}
       >
         {item.label}
@@ -122,16 +121,15 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         className={cn(
-          'px-3 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all cursor-pointer',
-          'text-body-sm font-medium text-[var(--color-text-secondary)]',
-          'hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)]',
-          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)]',
-          (isActive || isOpen) && 'bg-[var(--color-bg-surface)] text-[var(--color-text-primary)]'
+          'px-3.5 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all cursor-pointer font-bold text-sm',
+          'text-[var(--color-text-primary)] hover:text-[var(--color-accent-primary)] hover:bg-[var(--color-bg-inset)]',
+          item.highlight && !isActive && 'text-[var(--color-accent-hype)] hover:text-[var(--color-accent-hype)] font-extrabold',
+          (isActive || isOpen) && 'bg-[var(--color-bg-inset)] text-[var(--color-accent-primary)] font-black'
         )}
       >
         <span>{item.label}</span>
         <svg
-          className={cn('size-3.5 opacity-60 transition-transform duration-200', isOpen && 'rotate-180')}
+          className={cn('size-3.5 opacity-70 transition-transform duration-200', isOpen && 'rotate-180')}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -142,14 +140,14 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full pt-1.5 w-60 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
-          <div className="flex flex-col p-1.5 bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-xl">
+        <div className="absolute left-0 top-full pt-1.5 w-64 z-50 animate-in fade-in-50 zoom-in-95 duration-150">
+          <div className="flex flex-col p-2 bg-[var(--color-bg-surface)] border border-[var(--color-border-default)] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-xl">
             {item.children.map((child) => (
               <Link
                 key={child.href}
                 href={child.href}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-between px-3.5 py-2 text-xs font-semibold text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-surface)] rounded-[var(--radius-xs)] transition-colors group/item"
+                className="flex items-center justify-between px-3.5 py-2.5 text-xs font-bold text-[var(--color-text-primary)] hover:text-[var(--color-accent-primary)] hover:bg-[var(--color-bg-inset)] rounded-[var(--radius-xs)] transition-colors group/item"
               >
                 <span>{child.label}</span>
                 <svg
@@ -176,11 +174,10 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
 
   return (
     <header
-      data-theme="dark"
       className={cn(
         'sticky top-0 z-30 w-full',
-        'bg-[#0F0C08]/95 backdrop-blur-xl backdrop-saturate-150',
-        'border-b border-[#262018]',
+        'bg-[var(--color-bg-surface)]/95 backdrop-blur-xl backdrop-saturate-150',
+        'border-b border-[var(--color-border-subtle)]',
         'pt-safe'
       )}
     >
