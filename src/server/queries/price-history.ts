@@ -347,51 +347,61 @@ export async function getMasterProductPriceHistory(
     ? Math.floor((Date.now() - TIMEFRAME_MS[timeframe as Exclude<PriceHistoryTimeframe, 'Tudo'>]) / 1000)
     : Math.floor((Date.now() - 730 * 86400 * 1000) / 1000);
 
+  const activeOffers = await db.execute<{
+    offer_id: string;
+    current_price_cents: string;
+    network_name: string;
+    network_color_hex: string | null;
+    seller_nickname: string | null;
+  }>(sql`
+    SELECT o.id AS offer_id, o.current_price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
+    FROM affiliate_offers o
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
+    LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft' AND o.current_price_cents > 0
+  `);
+
   let finalRows = [...rows];
-  if (finalRows.length < 2) {
-    const activeOffers = await db.execute<{
-      offer_id: string;
-      current_price_cents: string;
-      network_name: string;
-      network_color_hex: string | null;
-      seller_nickname: string | null;
-    }>(sql`
-      SELECT o.id AS offer_id, o.current_price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
-      FROM affiliate_offers o
-      INNER JOIN affiliate_networks n ON n.id = o.network_id
-      LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-      WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft' AND o.current_price_cents > 0
-    `);
+  if (finalRows.length < 2 && activeOffers.length > 0) {
+    const numPoints = 16;
+    const timeStep = Math.max(3600, Math.floor((nowTime - windowStart) / numPoints));
+    const syntheticRows: typeof finalRows = [];
+    
+    for (let i = 0; i <= numPoints; i++) {
+      const pointTime = new Date((windowStart + i * timeStep) * 1000).toISOString();
+      for (const offer of activeOffers) {
+        const baseCents = Number(offer.current_price_cents) || 25000;
+        const charCodeSum = (offer.offer_id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+        const seedFactor = i === numPoints ? 1.0 : (1 + (Math.sin(i * 0.75 + charCodeSum) * 0.03));
+        const variedCents = Math.round(baseCents * seedFactor);
 
-    if (activeOffers.length > 0) {
-      const numPoints = 16;
-      const timeStep = Math.max(3600, Math.floor((nowTime - windowStart) / numPoints));
-      const syntheticRows: typeof finalRows = [];
-      
-      for (let i = 0; i <= numPoints; i++) {
-        const pointTime = new Date((windowStart + i * timeStep) * 1000).toISOString();
-        for (const offer of activeOffers) {
-          const baseCents = Number(offer.current_price_cents) || 25000;
-          const charCodeSum = (offer.offer_id || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-          // No ultimo ponto (hoje), o preco e rigorosamente igual ao preco ativo atual do produto
-          const seedFactor = i === numPoints ? 1.0 : (1 + (Math.sin(i * 0.75 + charCodeSum) * 0.03));
-          const variedCents = Math.round(baseCents * seedFactor);
-
-          syntheticRows.push({
-            offer_id: offer.offer_id,
-            collected_at: pointTime,
-            price_cents: variedCents.toString(),
-            network_name: offer.network_name,
-            network_color_hex: offer.network_color_hex,
-            seller_nickname: offer.seller_nickname,
-          });
-        }
+        syntheticRows.push({
+          offer_id: offer.offer_id,
+          collected_at: pointTime,
+          price_cents: variedCents.toString(),
+          network_name: offer.network_name,
+          network_color_hex: offer.network_color_hex,
+          seller_nickname: offer.seller_nickname,
+        });
       }
-      finalRows = syntheticRows;
     }
+    finalRows = syntheticRows;
   }
 
   const { points, offerByTime } = computeBucketedMinSeries(finalRows, baselineByOffer, bucketMs, windowStart, nowTime);
+
+  // Sincronização 100% exata: Garante que o último ponto do gráfico (hoje) seja rigorosamente igual ao menor preço ativo do produto
+  if (points.length > 0 && activeOffers.length > 0) {
+    const sortedActiveOffers = [...activeOffers].sort((a, b) => Number(a.current_price_cents) - Number(b.current_price_cents));
+    const lowestCurrentOffer = sortedActiveOffers[0];
+    const lowestReais = Number(lowestCurrentOffer.current_price_cents) / 100;
+    
+    if (lowestReais > 0) {
+      const lastIndex = points.length - 1;
+      points[lastIndex].value = lowestReais;
+      offerByTime[points[lastIndex].time] = lowestCurrentOffer.offer_id;
+    }
+  }
 
   const winningOfferIds = [...new Set(Object.values(offerByTime))].filter(Boolean);
 
