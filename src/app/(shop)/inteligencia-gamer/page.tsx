@@ -475,7 +475,6 @@ function InteligenciaGamerPageContent() {
         </div>
       </div>
     </div>
-    </div>
   );
 }
 
