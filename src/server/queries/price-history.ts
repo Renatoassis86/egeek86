@@ -310,7 +310,7 @@ export async function getMasterProductPriceHistory(
           SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
           FROM affiliate_price_snapshots s
           INNER JOIN affiliate_offers o ON o.id = s.offer_id
-          WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
             AND s.collected_at < now() - (${interval})::interval
           ORDER BY s.offer_id, s.collected_at DESC
         `)
@@ -331,7 +331,7 @@ export async function getMasterProductPriceHistory(
           INNER JOIN affiliate_offers o ON o.id = s.offer_id
           INNER JOIN affiliate_networks n ON n.id = o.network_id
           LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-          WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
             AND s.collected_at >= now() - (${interval})::interval
           ORDER BY s.collected_at ASC
         `
@@ -341,7 +341,7 @@ export async function getMasterProductPriceHistory(
           INNER JOIN affiliate_offers o ON o.id = s.offer_id
           INNER JOIN affiliate_networks n ON n.id = o.network_id
           LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-          WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
           ORDER BY s.collected_at ASC
         `
     ),
@@ -350,13 +350,13 @@ export async function getMasterProductPriceHistory(
       SELECT MAX(s.price_cents)::bigint AS max_price
       FROM affiliate_price_snapshots s
       INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
     `),
 
     db.execute<{ total: string }>(sql`
       SELECT COUNT(*)::bigint AS total
       FROM affiliate_offers o
-      WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft'
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
     `),
   ]);
 
@@ -382,7 +382,7 @@ export async function getMasterProductPriceHistory(
     FROM affiliate_offers o
     INNER JOIN affiliate_networks n ON n.id = o.network_id
     LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-    WHERE o.master_product_id IN (${idsSql}) AND o.status != 'draft' AND o.current_price_cents > 0
+    WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND o.current_price_cents > 0
   `);
 
   const finalRows = [...rows];

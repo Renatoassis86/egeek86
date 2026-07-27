@@ -24,7 +24,7 @@ export async function getBestActiveOfferIdsForMasterProducts(
       masterProductIds.map((id) => sql`${id}`),
       sql`, `
     )})
-      AND status != 'draft'
+      AND status = 'active'
       AND current_price_cents > 0
     ORDER BY master_product_id, current_price_cents ASC
   `);

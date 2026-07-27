@@ -388,7 +388,7 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
     db.execute<{ count: string }>(sql`
       SELECT COUNT(DISTINCT master_product_id)::bigint AS count
       FROM affiliate_offers
-      WHERE status != 'draft' AND current_price_cents > 0
+      WHERE status = 'active' AND current_price_cents > 0
     `),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_sellers`),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_networks`),
@@ -397,11 +397,11 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
     `),
     db.execute<{ avg_cents: string | null }>(sql`
       WITH raw_avg AS (
-        SELECT AVG(current_price_cents) AS v FROM affiliate_offers WHERE status != 'draft' AND current_price_cents > 0
+        SELECT AVG(current_price_cents) AS v FROM affiliate_offers WHERE status = 'active' AND current_price_cents > 0
       )
       SELECT AVG(current_price_cents)::bigint AS avg_cents
       FROM affiliate_offers, raw_avg
-      WHERE status != 'draft' AND current_price_cents > 0 AND current_price_cents <= raw_avg.v * 2
+      WHERE status = 'active' AND current_price_cents > 0 AND current_price_cents <= raw_avg.v * 2
     `),
     db.execute<{ min_cents: string | null }>(sql`
       SELECT MIN(price_cents)::bigint AS min_cents FROM affiliate_price_snapshots WHERE price_cents > 0
@@ -409,7 +409,7 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
     db.execute<{ count: string }>(sql`
       WITH active_offers AS (
         SELECT id AS offer_id, master_product_id, current_price_cents
-        FROM affiliate_offers WHERE status != 'draft' AND current_price_cents > 0
+        FROM affiliate_offers WHERE status = 'active' AND current_price_cents > 0
       ),
       current_lowest AS (
         SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
