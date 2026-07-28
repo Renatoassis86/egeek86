@@ -202,18 +202,13 @@ function MissaoVisaoValoresSection() {
                 </span>
               </div>
 
-              <blockquote className="text-lg sm:text-xl font-black text-zinc-900 leading-relaxed border-l-4 border-amber-500 pl-5 my-1">
-                &quot;Elevar a experiência de viver, jogar e colecionar games ao mais alto nível de emoção e inteligência, unindo a magia do entretenimento e o fascínio da cultura geek a uma infraestrutura neural de dados empíricos que protege o consumidor e perpetua a memória dos videogames para as futuras gerações.&quot;
+              <blockquote className="text-xl sm:text-2xl font-black text-zinc-900 leading-snug border-l-4 border-amber-500 pl-5 my-1 tracking-tight">
+                &quot;Entregar a verdade de mercado, a melhor economia e a alegria do entretenimento gamer para toda a comunidade geek.&quot;
               </blockquote>
 
               <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Muito além de listar ofertas, nossa missão é democratizar a verdade de mercado com alegria, transparência absoluta e paixão pelo colecionismo — transformando dados estatísticos complexos em confiança pura e satisfação para toda a comunidade gamer.
+                Inspirados pelos maiores cases de sucesso do mundo, nossa missão é simples e inegociável: proteger o bolso do consumidor com dados reais em tempo real, celebrando a paixão e a cultura dos videogames em cada decisão.
               </p>
-
-              <div className="mt-auto pt-5 border-t border-amber-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-amber-900 font-mono">
-                <span>✦ Inteligência de Dados &amp; Alegria</span>
-                <span>✦ Preservação Cultural Gamer</span>
-              </div>
             </div>
           </Reveal>
 
@@ -229,18 +224,13 @@ function MissaoVisaoValoresSection() {
                 </span>
               </div>
 
-              <blockquote className="text-lg sm:text-xl font-black text-zinc-900 leading-relaxed border-l-4 border-emerald-500 pl-5 my-1">
-                &quot;Construir o ecossistema global de inteligência de mercado, entretenimento e acervo gamer mais influente e confiável do planeta — um lugar onde a nostalgia histórica e a inovação tecnológica se fundem para redefinir como o mundo descobre, avalia e celebra o universo geek.&quot;
+              <blockquote className="text-xl sm:text-2xl font-black text-zinc-900 leading-snug border-l-4 border-emerald-500 pl-5 my-1 tracking-tight">
+                &quot;Ser a plataforma de inteligência, acervo e economia gamer mais confiável e inspiradora do mundo.&quot;
               </blockquote>
 
               <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Buscamos ser o farol definitivo de decisão e paixão gamer no Brasil e no mundo. A cada inovação de algoritmo e a cada nova descoberta, moldamos um padrão global onde a integridade dos dados e o respeito ao consumidor caminham lado a lado com a celebração incondicional da cultura pop.
+                Ser o destino definitivo onde qualquer pessoa descobre, compara e compra com 100% de confiança, fundindo a memória histórica dos consoles ao futuro da tecnologia de dados.
               </p>
-
-              <div className="mt-auto pt-5 border-t border-emerald-200 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-emerald-900 font-mono">
-                <span>✦ Farol Global de Confiança</span>
-                <span>✦ Inovação Disruptiva &amp; Cultura</span>
-              </div>
             </div>
           </Reveal>
         </div>
