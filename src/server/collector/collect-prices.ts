@@ -17,12 +17,15 @@ const REFRESH_INTERVAL = sql`interval '15 minutes'`;
 const WATCHED_REFRESH_INTERVAL = sql`interval '5 minutes'`;
 /**
  * Protege contra timeout se o backlog crescer — o que sobrar pega no próximo
- * tick do cron (a cada 5min). 40 com processamento em paralelo (4 grupos
- * por vez, ver GROUP_CONCURRENCY) — 12 sequencial levava 26s pra completar;
- * em paralelo a mesma carga cabe com folga, então dá pra processar mais
- * por execução sem se aproximar do maxDuration.
+ * tick do cron (a cada 5min). Achado real (2026-07-29): com 40/execução e
+ * ~11.700 ofertas ativas vencidas pro refresh, mais de 88% delas nunca
+ * recebiam um segundo preço — o teto era tão menor que o catálogo que a
+ * maioria das ofertas nunca era alcançada de fato (gráfico de preço vazio
+ * pro cliente, "menor preço"/"média" praticamente congelados). Subido pra
+ * 150 (mesma concorrência de 4 grupos por vez, ver GROUP_CONCURRENCY) —
+ * ainda cabe com folga dentro do maxDuration=250s do plano Pro da Vercel.
  */
-const MAX_OFFERS_PER_RUN = 40;
+const MAX_OFFERS_PER_RUN = 150;
 
 const isWatchedExpr = sql`EXISTS (
   SELECT 1 FROM affiliate_price_watches w

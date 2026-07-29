@@ -357,6 +357,13 @@ async function searchAndIngestTerm(
         category_id: item.category_id ?? null,
       }));
       results.push(...siteItems);
+    } else {
+      // Achado real (2026-07-29): /sites/MLB/search passou a devolver 403
+      // "forbidden" pra qualquer busca (com ou sem token) — bloqueio da
+      // própria API do Mercado Livre nesse endpoint. Antes esse `if` sem
+      // `else` engolia isso 100% em silêncio (busca aberta contribuía zero
+      // resultado sem nenhum sinal de erro em lugar nenhum).
+      console.error(`[discover-products] /sites/MLB/search falhou (${siteRes.status}) pro termo "${searchTerm.term}"`);
     }
 
     result.found = results.length;
@@ -662,7 +669,13 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
           { headers: { Authorization: `Bearer ${accessToken}` } }
         );
 
-        if (!response.ok) break;
+        if (!response.ok) {
+          // Ver nota em searchAndIngestTerm — mesmo bloqueio de /sites/MLB/search
+          // (403 pra qualquer busca). Essa função inteira depende só desse
+          // endpoint, então um bloqueio aqui zera totalIngested silenciosamente.
+          console.error(`[discover-products] /sites/MLB/search falhou (${response.status}) na categoria ${cat.name} pág ${page}`);
+          break;
+        }
 
         const data = await response.json();
         const results = data.results || [];

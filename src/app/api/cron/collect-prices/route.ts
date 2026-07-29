@@ -2,10 +2,13 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { collectPrices } from '@/server/collector/collect-prices';
 
 export const dynamic = 'force-dynamic';
-// 120s (era 60s) — projeto está no plano Pro da Vercel (suporta até 300s).
-// Com processamento em paralelo (ver GROUP_CONCURRENCY em collect-prices.ts)
-// e lote maior por execução, 60s ficava justo demais como margem de segurança.
-export const maxDuration = 120;
+// 200s (era 120s) — MAX_OFFERS_PER_RUN subiu de 40 pra 150 (ver
+// collect-prices.ts, achado real 2026-07-29: 88% das ofertas ativas nunca
+// recebiam um segundo preço com o teto antigo). Plano Pro da Vercel suporta
+// até 300s; o timeout_milliseconds do job pg_cron (net.http_get) também
+// precisa ficar >= esse valor, senão o pg_net desiste antes da função
+// terminar — ver migração/ajuste do job 'geek-deals-collect-prices'.
+export const maxDuration = 200;
 
 /**
  * Disparado periodicamente por um agendador externo (Vercel Cron ou

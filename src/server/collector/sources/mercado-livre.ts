@@ -80,9 +80,16 @@ const mercadoLivreSource: PriceSource = {
             }
           }
         }
+      } else if (searchRes.status !== 404) {
+        // Achado real (2026-07-29): /sites/MLB/search passou a devolver 403
+        // "forbidden" pra QUALQUER busca (com ou sem token) — bloqueio da
+        // própria API do Mercado Livre nesse endpoint, não erro pontual de
+        // item. Antes esse catch/else engolia isso 100% em silêncio; logar
+        // aqui é o que teria dado visibilidade do problema há mais tempo.
+        console.error(`[mercado-livre] /sites/MLB/search falhou (${searchRes.status}) pra catalog_product_id=${externalRef}`);
       }
-    } catch {
-      // Ignora falha de busca
+    } catch (err) {
+      console.error(`[mercado-livre] erro de rede em /sites/MLB/search pra ${externalRef}:`, (err as Error).message);
     }
 
     return Array.from(itemsMap.values());
