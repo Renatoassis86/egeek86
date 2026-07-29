@@ -291,7 +291,15 @@ async function applySnapshotsToGroup(
           imageUrl: masterProduct.defaultImages[0] ?? null,
           externalRef: group.externalRef,
           sellerId,
-          currentPriceCents: result.priceCents,
+          // Nunca o preço real aqui — 0 é o mesmo sentinel de "ainda não
+          // coletado" usado em discover-products.ts. O recordPriceSnapshot()
+          // logo abaixo é o único lugar que grava preço real: se essa oferta
+          // já nascesse com currentPriceCents = result.priceCents, o check de
+          // "priceChanged" do recordPriceSnapshot (cache já bate com o
+          // input) ficava falso e pulava o INSERT do primeiro snapshot —
+          // oferta nascia com preço na tela mas zero linha de histórico
+          // (achado real: 132 ofertas exatamente nesse estado).
+          currentPriceCents: 0,
           status: 'active',
           publishedAt: new Date(),
           lastCheckedAt: new Date(),

@@ -183,6 +183,51 @@ removido) na tela.
 
 ---
 
+## 6.1 Incidente grave (2026-07-28/29): dado sintético/corrompido no banco de produção
+
+Investigando um relato de preço divergente entre `/monitoramento`, `/admin` e o anúncio real no
+Mercado Livre (Darksiders III - Nintendo Switch), a causa raiz não foi nenhuma fórmula — foi dado
+de fato fabricado/corrompido, gravado por scripts avulsos que rodaram direto contra o banco de
+produção, fora do pipeline oficial:
+
+- **`scripts/seed-price-history-snapshots.ts`** (deletado): gerava 16 pontos de histórico "falso"
+  por oferta usando uma fórmula de onda senoidal (`preço × (1 + sin(...) × 4.5%)`) em vez de
+  qualquer coleta real — **57.376 linhas fabricadas em 3.586 ofertas**, alimentando direto toda
+  média/mínimo histórico/gráfico dessas ofertas. Todas removidas (mantido histórico real e entradas
+  manuais genuínas de admin).
+- **`scripts/audit-and-fix-price-discrepancies.ts`** (nunca commitado, achado só localmente):
+  tentou corrigir UM preço via `WHERE nome ILIKE '%Darksiders%'` — o match amplo pegou 26 ofertas de
+  6 jogos diferentes da franquia (plataformas diferentes, jogos diferentes) e forçou todas pro mesmo
+  preço fixo. As 23 ainda presas nesse valor foram resetadas pro sentinel `0` ("aguardando nova
+  coleta") em vez de eu inventar um número de reposição.
+- **`scripts/update-mario-rpg-price.ts`**: mesmo padrão, oferta única.
+- **`scripts/seed-5-collectors.ts`**: cadastrava 5 perfis de "colecionador" fictícios como se fossem
+  vendedores reais — mantido a pedido do cliente como mockup por enquanto (não é dado de preço).
+- **`scripts/seed-5-news.ts`**: notícias com conteúdo fabricado atribuído a fontes reais (Newzoo,
+  Bloomberg) — mesma decisão, mantido como mockup por enquanto.
+
+**Bug de código real, ainda ativo, encontrado na varredura seguinte** (esse não era script avulso —
+era o próprio coletor oficial): `collect-prices.ts`, ao criar uma oferta nova pra um vendedor ainda
+não rastreado, gravava `currentPriceCents` já com o preço real direto no `INSERT`. A chamada de
+`recordPriceSnapshot()` logo em seguida compara o preço novo contra o preço já em cache pra decidir
+se grava uma linha de histórico — como os dois já batiam (o INSERT já tinha posto o valor real), a
+condição "preço mudou" dava falso e o primeiro snapshot nunca era gravado. Resultado: **175 ofertas
+ativas com preço exibido na tela e ZERO linha em `affiliate_price_snapshots`** — nenhuma cotação
+real por trás do número. Corrigido: a oferta agora nasce com `currentPriceCents = 0` (mesmo sentinel
+de "ainda não coletado" já usado em `discover-products.ts`), e é o `recordPriceSnapshot()` — único
+caminho que grava preço de verdade em todo o sistema — quem preenche o valor real e o histórico
+juntos, atômico, sem exceção pro caso "oferta nova".
+
+**Verificado, não presumido**: pipeline automático real (`pg_cron`, job `geek-deals-collect-prices`,
+`*/5 * * * *`) confirmado ativo e saudável durante todo o incidente — nunca foi bug do coletor
+agendado, sempre foram scripts avulsos ou o bug pontual acima. Amostra pós-correção (7 ofertas,
+incluindo as 2 Darksiders III restantes): `current_price_cents` bate 100% com o último snapshot real.
+
+**Verificado e descartado como problema**: ~20 preços "redondos" (R$199,90, R$299,00, R$349,90 etc.)
+compartilhados por 13-47 produtos totalmente diferentes cada. Investigado e não é fabricação — é o
+padrão real de precificação psicológica do varejo (terminações .90/.99/.00), esperado num catálogo
+de milhares de anúncios de vendedores independentes competindo pelos mesmos preços "redondos".
+
 ## 7. O que foi validado nesta homologação (dado real, não amostra sintética)
 
 - Índice único (`user_id, master_product_id`) de `affiliate_price_watches` confirmado existente no
