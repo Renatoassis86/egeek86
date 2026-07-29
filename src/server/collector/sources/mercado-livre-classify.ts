@@ -20,6 +20,57 @@ function getAttr(attributes: MeliAttribute[], id: string): string | null {
   return attributes.find((a) => a.id === id)?.value_name ?? null;
 }
 
+export type MeliProductKind = 'game' | 'console' | 'accessory';
+
+/**
+ * Cache em memória de category_id -> tipo de produto — a mesma categoria se
+ * repete em centenas de itens (todo jogo de PS5 cai na mesma categoria
+ * "Jogos para PS5", por exemplo), então não faz sentido perguntar de novo
+ * pro Mercado Livre a cada item.
+ */
+const categoryKindCache = new Map<string, MeliProductKind | null>();
+
+/**
+ * Classifica jogo/console/acessório a partir da categoria REAL que o próprio
+ * Mercado Livre atribuiu ao anúncio (`GET /categories/{id}`, endpoint
+ * público, não precisa de token) — em vez de adivinhar pelo título contra
+ * uma lista de franquias mantida à mão (frágil: título de jogo que não está
+ * na lista, tipo "Company of Heroes 3 Edição Console", acaba caindo no
+ * `productType` do termo de busca por padrão, e vira "console" errado).
+ * A árvore de categoria do Mercado Livre já resolve isso de forma objetiva:
+ * "Jogos para Console e PC" nunca é a mesma categoria de "Consoles" nem de
+ * "Acessórios para Videogame". Usa o path_from_root inteiro (não só o nome
+ * da folha) porque a palavra decisiva às vezes está num nó pai.
+ */
+export async function resolveMeliCategoryProductType(categoryId: string | null | undefined): Promise<MeliProductKind | null> {
+  if (!categoryId) return null;
+  if (categoryKindCache.has(categoryId)) return categoryKindCache.get(categoryId)!;
+
+  let kind: MeliProductKind | null = null;
+  try {
+    const response = await fetch(`https://api.mercadolibre.com/categories/${categoryId}`);
+    if (response.ok) {
+      const data = (await response.json()) as { name?: string; path_from_root?: { id: string; name: string }[] };
+      const fullPath = [...(data.path_from_root ?? []).map((n) => n.name), data.name ?? ''].join(' > ');
+      // Ordem importa: "Jogos para Console" contém a palavra "console", por
+      // isso "jogo" é checado primeiro pra não cair no ramo errado.
+      if (/jogos?\b/i.test(fullPath) && !/acess[oó]rios?/i.test(fullPath)) {
+        kind = 'game';
+      } else if (/acess[oó]rios?/i.test(fullPath)) {
+        kind = 'accessory';
+      } else if (/consoles?\b/i.test(fullPath)) {
+        kind = 'console';
+      }
+    }
+  } catch {
+    // Falha de rede/categoria — devolve null e deixa o chamador cair no
+    // heurístico de título como reforço, não trava a descoberta por isso.
+  }
+
+  categoryKindCache.set(categoryId, kind);
+  return kind;
+}
+
 /**
  * Núcleo puro da classificação — recebe o array `attributes` no mesmo
  * formato usado tanto por GET /products/{id} quanto pelos resultados de
@@ -57,7 +108,9 @@ export function classifyFromAttributes(attributes: MeliAttribute[], fallbackName
  * não existe), diferente de lá (onde 404 em /items só significa "sem oferta
  * ativa agora").
  */
-export async function classifyMeliCatalogProduct(catalogProductId: string): Promise<MeliClassificationResult> {
+export async function classifyMeliCatalogProduct(
+  catalogProductId: string
+): Promise<MeliClassificationResult & { productType: MeliProductKind | null }> {
   const accessToken = await getValidAccessToken();
 
   const response = await fetch(`https://api.mercadolibre.com/products/${catalogProductId}`, {
@@ -70,6 +123,7 @@ export async function classifyMeliCatalogProduct(catalogProductId: string): Prom
     );
   }
 
-  const data = (await response.json()) as { attributes: MeliAttribute[]; name?: string };
-  return classifyFromAttributes(data.attributes, data.name);
+  const data = (await response.json()) as { attributes: MeliAttribute[]; name?: string; category_id?: string };
+  const productType = await resolveMeliCategoryProductType(data.category_id);
+  return { ...classifyFromAttributes(data.attributes, data.name), productType };
 }

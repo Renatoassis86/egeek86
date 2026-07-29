@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts, systemConfig } from '@/db/schema';
 import type { GamePlatformGen } from '@/db/schema';
 import { getValidAccessToken } from './sources/mercado-livre-auth';
-import { classifyFromAttributes, type MeliAttribute } from './sources/mercado-livre-classify';
+import { classifyFromAttributes, resolveMeliCategoryProductType, type MeliAttribute } from './sources/mercado-livre-classify';
 import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
 import { mapWithConcurrency } from '@/lib/concurrency';
@@ -127,6 +127,17 @@ const NON_PRODUCT_KEYWORDS = [
   /\bbolsas?\b/i,
   /\bmochilas?\b/i,
   /base de carregamento/i,
+  // Peça de reposição/troca de aparência do hardware — "veste" o console,
+  // não é o console (pedido explícito do cliente, 2026-07-29, após ver uma
+  // "Tampa Do Console Playstation 5" listada como se fosse o console em si).
+  /\btampas?\b/i,
+  /transformador/i,
+  /ventilador/i,
+  /ac adapter/i,
+  /adaptador de (?:energia|tomada|corrente)/i,
+  /fonte de alimenta[cç][aã]o/i,
+  /carregador de parede/i,
+  /porta[\s-]?(?:console|cart[uú]cho)/i,
   // Item de merchandising/novidade que só referencia o produto de jogo, mas
   // não é usado pra jogar (chaveiro, miniatura, réplica de exibição, pelúcia,
   // boneco avulso) — pedido explícito do cliente: só entra item de jogo em
@@ -242,6 +253,8 @@ interface MeliSearchResult {
   pictures?: { url: string }[];
   /** "new" | "used" — Mercado Livre retorna isso por resultado de busca. Ausente (undefined) = resultado do catálogo buy-box, que por definição já é sempre item novo. */
   condition?: string | null;
+  /** Categoria real do anúncio no Mercado Livre — usada por resolveMeliCategoryProductType pra classificar jogo/console/acessório sem depender de whitelist de título. */
+  category_id?: string | null;
 }
 
 export interface DiscoverProductsSummary {
@@ -341,6 +354,7 @@ async function searchAndIngestTerm(
         attributes: item.attributes || [],
         pictures: item.thumbnail ? [{ url: item.thumbnail.replace('-I.jpg', '-O.jpg') }] : [],
         condition: item.condition ?? null,
+        category_id: item.category_id ?? null,
       }));
       results.push(...siteItems);
     }
@@ -392,22 +406,34 @@ async function searchAndIngestTerm(
 
       const detectedPlatform = normalizeGamePlatformGen(null, item.name);
       const isGameMedia = isGameTitleOrMedia(item.name);
+
+      // Sinal primário: a categoria REAL que o Mercado Livre já atribuiu ao
+      // anúncio (ground truth do próprio marketplace) — resolve de forma
+      // objetiva casos que uma whitelist de título nunca cobre (ex: "Company
+      // of Heroes 3 Edição Console" é jogo, não hardware, mas nenhuma lista
+      // de franquia prevê esse nome). Título só entra como reforço quando a
+      // categoria não veio ou não deu pra reconhecer.
+      const categoryKind = await resolveMeliCategoryProductType(item.category_id);
+      const resolvedKind: 'game' | 'console' | 'accessory' =
+        categoryKind ??
+        (searchTerm.kind !== 'game' && !isGameMedia ? searchTerm.kind : 'game');
+
       const classification =
-        searchTerm.kind === 'console' && !isGameMedia
-          ? {
-              productType: 'console' as const,
+        resolvedKind === 'game'
+          ? { productType: 'game' as const, ...classifyFromAttributes(item.attributes, item.name) }
+          : {
+              productType: resolvedKind,
               gameFormat: 'unknown' as const,
               // Busca textual do Mercado Livre pra "console nintendo switch 2"
               // também retorna Switch/Lite (busca solta, não filtro exato) —
               // não dá pra confiar cegamente no termo de busca. Deriva a
               // plataforma de verdade a partir do título de cada resultado;
               // só cai pro termo de busca se o título não deixar claro.
-              gamePlatformGen: detectedPlatform !== 'unknown' ? detectedPlatform : searchTerm.platform!,
+              gamePlatformGen: detectedPlatform !== 'unknown' ? detectedPlatform : (searchTerm.platform ?? 'unknown'),
               gameEditionType: 'unknown' as const,
               gameEditionSource: null,
               gameCollection: null,
-            }
-          : { productType: 'game' as const, ...classifyFromAttributes(item.attributes, item.name) };
+            };
 
       // Dedup por similaridade de título e plataforma
       const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
@@ -656,7 +682,22 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
 
           if (existing) continue;
 
-          const classification = classifyFromAttributes(item.attributes || [], item.title);
+          // Varredura de categoria ampla (ex: "Video Games Geral") mistura
+          // jogo/console/acessório no mesmo resultado — sem essa checagem,
+          // console e acessório que caíssem aqui virariam 'game' por padrão
+          // da coluna (bug irmão do encontrado em searchAndIngestTerm).
+          const categoryKind = await resolveMeliCategoryProductType(item.category_id);
+          const classification =
+            categoryKind && categoryKind !== 'game'
+              ? {
+                  productType: categoryKind,
+                  gameFormat: 'unknown' as const,
+                  gamePlatformGen: normalizeGamePlatformGen(null, item.title),
+                  gameEditionType: 'unknown' as const,
+                  gameEditionSource: null,
+                  gameCollection: null,
+                }
+              : { productType: 'game' as const, ...classifyFromAttributes(item.attributes || [], item.title) };
           const baseSlug = slugify(item.title);
           const productSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}`);
 

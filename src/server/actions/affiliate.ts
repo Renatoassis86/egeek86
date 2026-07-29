@@ -160,6 +160,9 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
         slug,
         meliCatalogId: externalRef,
         ...(classification ?? {}),
+        // Coluna não aceita null — categoria não reconhecida (productType
+        // null) deve cair no default da coluna ('game'), não virar erro.
+        productType: classification?.productType ?? undefined,
         classifiedAt: classification ? new Date() : null,
       })
       .returning();
@@ -327,6 +330,11 @@ export async function reclassifyMasterProduct(formData: FormData) {
   await db
     .update(masterProducts)
     .set({
+      // Categoria real do Mercado Livre por trás do anúncio — só sobrescreve
+      // productType quando o resolvedor reconheceu a categoria (null = não
+      // deu pra reconhecer, mantém o valor atual em vez de arriscar um "game"
+      // por padrão).
+      ...(classification.productType ? { productType: classification.productType } : {}),
       gameFormat: classification.gameFormat,
       gamePlatformGen: classification.gamePlatformGen,
       gameCollection: classification.gameCollection,

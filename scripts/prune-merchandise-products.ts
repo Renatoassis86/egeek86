@@ -28,6 +28,25 @@ const KEYWORDS = [
   'funko', 'estatua', 'estátua', 'busto', 'luminoso', 'poster',
   'cartaz', 'caneta', 'caderno', 'agenda', 'estojo', 'miniatura',
   'replica', 'réplica', 'pelucia', 'pelúcia', 'boneco',
+  // Peça de reposição/troca de aparência ou energia do console — "veste" ou
+  // alimenta o hardware, não é o produto em si (pedido explícito do
+  // cliente, 2026-07-29, após ver "Tampa Do Console Playstation 5" listada
+  // como se fosse o console). Mesmo critério de NON_PRODUCT_KEYWORDS em
+  // discover-products.ts, reaplicado aqui pra limpar o que já entrou antes
+  // desse filtro existir.
+  'tampa', 'transformador', 'ventilador', 'ac adapter',
+  'adaptador de energia', 'adaptador de tomada', 'adaptador de corrente',
+  'fonte de alimentação', 'fonte de alimentacao', 'carregador de parede',
+  'porta-console', 'porta console', 'porta-cartucho', 'porta cartucho',
+  // Mesmo critério, mas pra montagem/proteção que nunca virou linha aqui
+  // antes (a lista original desse script só cobria merchandising/novidade,
+  // não esse segundo grupo — apesar do comentário acima dizer "mesma
+  // lista"). Termo específico ("capa para"/"suporte de parede") em vez da
+  // palavra solta pra não apagar produto legítimo por coincidência de
+  // substring.
+  'capa protetora', 'capa para', 'case protetor', 'case para', 'skin para',
+  'proteção', 'protecao', 'película', 'pelicula', 'adesivo',
+  'bolsa', 'mochila', 'base de carregamento', 'suporte de parede', 'suporte para',
 ];
 
 async function main() {
