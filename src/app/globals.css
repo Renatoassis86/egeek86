@@ -324,6 +324,24 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /*
+   * Reset sistêmico do bug clássico de flexbox/grid: por padrão o
+   * navegador dá min-width/min-height:auto pros filhos diretos, o que
+   * significa "nunca encolhe além do tamanho do conteúdo". Título/legenda
+   * comprida dentro de uma linha flex (cabeçalho de seção com ícone +
+   * texto, por exemplo) força o container inteiro a ficar mais largo que a
+   * tela — o body tem overflow-x:hidden, então esse excesso simplesmente
+   * fica cortado do lado direito no mobile, em vez de quebrar linha.
+   * Achado real (2026-07-29): reproduzido em várias páginas (ofertas, hype
+   * zone, home) sempre no mesmo padrão de cabeçalho ícone+título+legenda.
+   * Fica em @layer base pra qualquer min-w-*/min-h-* explícito no
+   * componente (camada utilities do Tailwind) continuar ganhando — isso
+   * aqui é só o piso default, não uma regra !important.
+   */
+  .flex > *, .inline-flex > *, .grid > *, .inline-grid > * {
+    min-width: 0;
+  }
 }
 
 /* ===========================================================

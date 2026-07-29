@@ -33,11 +33,11 @@ export function GroupedOfferShelf({
     <div className="flex flex-col gap-4">
       <Reveal>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--color-border-subtle)] pb-3">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0 w-full">
             {icon}
-            <div>
-              <div className="flex items-center gap-2">
-                <Text as="h2" variant="heading-lg" className="font-bold tracking-tight">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                <Text as="h2" variant="heading-lg" className="font-bold tracking-tight break-words">
                   {title}
                 </Text>
                 <Badge variant="outline" size="sm" className="font-mono">
@@ -50,7 +50,7 @@ export function GroupedOfferShelf({
                 )}
               </div>
               {subtitle && (
-                <Text variant="caption" color="secondary" className="mt-0.5 font-medium">
+                <Text variant="caption" color="secondary" className="mt-0.5 font-medium break-words">
                   {subtitle}
                 </Text>
               )}
