@@ -212,6 +212,43 @@
 }
 
 /* ===========================================================
+ * Dark theme override — precisa existir como regra explícita, não só
+ * como valor padrão do @theme. Achado real: uma seção com
+ * data-theme="dark" aninhada dentro de uma página cujo tema ativo é
+ * "light" ficava com texto escuro (herdado de [data-theme="light"], que
+ * cascateia pra qualquer descendente, mesmo um marcado data-theme="dark")
+ * sobre fundo escuro, quase ilegível. Sem essa regra pra "religar" os
+ * valores escuros, o atributo data-theme="dark" aninhado não tinha
+ * nenhum seletor CSS que de fato o usasse.
+ * =========================================================== */
+[data-theme="dark"] {
+  --color-bg-canvas: #0B0908;
+  --color-bg-surface: #161311;
+  --color-bg-elevated: #201C18;
+  --color-bg-inset: #060504;
+  --color-bg-overlay: rgb(6 5 4 / 0.72);
+
+  --color-text-primary: #F2E9D8;
+  --color-text-secondary: #B8AD98;
+  --color-text-tertiary: #8A8072;
+  --color-text-inverse: #0B0908;
+  --color-text-disabled: #5C5347;
+
+  --color-border-subtle: #221E19;
+  --color-border-default: #2C2620;
+  --color-border-strong: #453C31;
+
+  --color-accent-primary: #D4AF37;
+  --color-accent-primary-hover: #C29A2E;
+  --color-accent-primary-muted: rgb(212 175 55 / 0.14);
+  --color-accent-hype: #E8721C;
+  --color-accent-hype-muted: rgb(232 114 28 / 0.14);
+
+  --shadow-card: 0 4px 12px rgb(0 0 0 / 0.40);
+  --shadow-card-hover: 0 12px 28px rgb(0 0 0 / 0.55);
+}
+
+/* ===========================================================
  * Base styles
  * =========================================================== */
 @layer base {

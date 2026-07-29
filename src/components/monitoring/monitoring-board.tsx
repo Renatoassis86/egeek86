@@ -19,6 +19,10 @@ interface WatchlistPanelItem {
   networkName: string;
   currentPriceCents: number;
   changePercent: number | null;
+  sellerNickname: string | null;
+  sellerReputationLevel: string | null;
+  sellerPositiveRatingPercent: string | null;
+  sellerPowerSellerStatus: string | null;
 }
 
 /**
@@ -100,13 +104,23 @@ export function MonitoringBoard({
                   Menor preço entre todas as lojas · atualmente em {active.networkName}
                 </Text>
               </div>
-              <Link
-                href={`/monitoramento/comparar/${active.masterProductId}`}
-                className="group inline-flex items-center gap-1 shrink-0 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
-              >
-                <AnimatedPrice cents={active.currentPriceCents} className="text-mono-lg" />
-                <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
-              </Link>
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <Link
+                  href={`/monitoramento/comparar/${active.masterProductId}`}
+                  className="group inline-flex items-center gap-1 rounded-[var(--radius-sm)] transition-colors hover:text-[var(--color-accent-primary)]"
+                >
+                  <AnimatedPrice cents={active.currentPriceCents} className="text-mono-lg" />
+                  <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+                </Link>
+                {(active.sellerNickname || active.sellerReputationLevel) && (
+                  <Text variant="caption" color="tertiary" className="text-right">
+                    {active.sellerNickname && <span className="font-medium">{active.sellerNickname}</span>}
+                    {active.sellerReputationLevel && <span> · {active.sellerReputationLevel}</span>}
+                    {active.sellerPositiveRatingPercent && <span> · {active.sellerPositiveRatingPercent}% positivas</span>}
+                    {active.sellerPowerSellerStatus && <span> · {active.sellerPowerSellerStatus}</span>}
+                  </Text>
+                )}
+              </div>
             </div>
             <PriceHistoryChart
               masterProductId={active.masterProductId}

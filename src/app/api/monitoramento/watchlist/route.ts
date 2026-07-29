@@ -13,6 +13,10 @@ export interface WatchlistApiItem {
   networkName: string;
   currentPriceCents: number;
   changePercent: number | null;
+  sellerNickname: string | null;
+  sellerReputationLevel: string | null;
+  sellerPositiveRatingPercent: string | null;
+  sellerPowerSellerStatus: string | null;
 }
 
 /**
@@ -42,6 +46,10 @@ export async function GET() {
     networkName: w.networkName,
     currentPriceCents: w.currentPriceCents,
     changePercent: changeMap.get(w.masterProductId)?.changePercent ?? null,
+    sellerNickname: w.sellerNickname,
+    sellerReputationLevel: w.sellerReputationLevel,
+    sellerPositiveRatingPercent: w.sellerPositiveRatingPercent,
+    sellerPowerSellerStatus: w.sellerPowerSellerStatus,
   }));
 
   return NextResponse.json({ items });

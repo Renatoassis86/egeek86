@@ -34,6 +34,10 @@ interface WatchlistPanelItem {
   networkName: string;
   currentPriceCents: number;
   changePercent: number | null;
+  sellerNickname: string | null;
+  sellerReputationLevel: string | null;
+  sellerPositiveRatingPercent: string | null;
+  sellerPowerSellerStatus: string | null;
 }
 
 export function WatchlistPanel({
@@ -125,6 +129,10 @@ export function WatchlistPanel({
       networkName: result.networkName || 'Mercado Livre',
       currentPriceCents: result.currentPriceCents || 0,
       changePercent: null,
+      sellerNickname: null,
+      sellerReputationLevel: null,
+      sellerPositiveRatingPercent: null,
+      sellerPowerSellerStatus: null,
     };
     const newItems = [newItem];
     setItems(newItems);

@@ -437,13 +437,18 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
   ]);
 
   return {
-    totalProducts: Math.max(1250, Number(products[0]?.count ?? 0)),
-    totalSellers: Math.max(1084, Number(sellers[0]?.count ?? 0)),
-    totalNetworks: Number(networks[0]?.count ?? 6),
-    totalQuotes: Math.max(57376, Number(quotes[0]?.count ?? 0)),
-    avgPriceCents: Number(avgPrice[0]?.avg_cents ?? 29234),
-    lowestPriceCentsEver: Number(lowestEver[0]?.min_cents ?? 1528),
-    itemsBelowAverageCount: Math.max(612, Number(belowAverage[0]?.count ?? 0)),
+    // Nunca um piso artificial aqui — o número real é o número real, mesmo
+    // que caia depois de uma limpeza de dado fabricado (foi exatamente
+    // pra mascarar isso que alguém colocou Math.max(57376, ...) aqui antes,
+    // o mesmo total das linhas de histórico sintético removidas nesta
+    // sessão; valor real sempre vence, sem piso escondido).
+    totalProducts: Number(products[0]?.count ?? 0),
+    totalSellers: Number(sellers[0]?.count ?? 0),
+    totalNetworks: Number(networks[0]?.count ?? 0),
+    totalQuotes: Number(quotes[0]?.count ?? 0),
+    avgPriceCents: avgPrice[0]?.avg_cents != null ? Number(avgPrice[0].avg_cents) : 0,
+    lowestPriceCentsEver: lowestEver[0]?.min_cents != null ? Number(lowestEver[0].min_cents) : 0,
+    itemsBelowAverageCount: Number(belowAverage[0]?.count ?? 0),
   };
 }
 

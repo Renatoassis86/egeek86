@@ -1,7 +1,7 @@
 import 'server-only';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { affiliatePriceWatches, masterProducts, affiliateOffers, affiliateNetworks } from '@/db/schema';
+import { affiliatePriceWatches, masterProducts, affiliateOffers, affiliateNetworks, affiliateSellers } from '@/db/schema';
 import { getMasterProductMetrics, type OfferMetrics } from './affiliate';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import type { GameFormat, GamePlatformGen } from '@/db/schema';
@@ -45,6 +45,10 @@ export interface WatchListItem {
   gamePlatformGen: GamePlatformGen;
   currentPriceCents: number;
   metrics: OfferMetrics | null;
+  sellerNickname: string | null;
+  sellerReputationLevel: string | null;
+  sellerPositiveRatingPercent: string | null;
+  sellerPowerSellerStatus: string | null;
 }
 
 /**
@@ -79,9 +83,14 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
       imageUrl: affiliateOffers.imageUrl,
       currentPriceCents: affiliateOffers.currentPriceCents,
       networkName: affiliateNetworks.name,
+      sellerNickname: affiliateSellers.nickname,
+      sellerReputationLevel: affiliateSellers.reputationLevel,
+      sellerPositiveRatingPercent: affiliateSellers.positiveRatingPercent,
+      sellerPowerSellerStatus: affiliateSellers.powerSellerStatus,
     })
     .from(affiliateOffers)
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
+    .leftJoin(affiliateSellers, eq(affiliateOffers.sellerId, affiliateSellers.id))
     .where(inArray(affiliateOffers.id, offerIds));
 
   const offerById = new Map(offerRows.map((o) => [o.id, o]));
@@ -105,6 +114,10 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
       gamePlatformGen: watch.gamePlatformGen,
       currentPriceCents: offer.currentPriceCents,
       metrics,
+      sellerNickname: offer.sellerNickname,
+      sellerReputationLevel: offer.sellerReputationLevel,
+      sellerPositiveRatingPercent: offer.sellerPositiveRatingPercent,
+      sellerPowerSellerStatus: offer.sellerPowerSellerStatus,
     });
   }
 
@@ -144,18 +157,25 @@ export async function searchMasterProductsToWatch(query: string, userId?: string
   const fuzzy = fuzzyMatch([masterProducts.name], trimmed);
   if (!fuzzy) return [];
 
-  const [rows, watchedIds] = await Promise.all([
+  // Busca um pool maior que o limite final — produto sem oferta ativa
+  // precificada não tem nada pra monitorar (aparecia como "Sem oferta ativa
+  // no momento" e mesmo assim deixava clicar "Adicionar"), então é
+  // descartado abaixo antes do corte pelo `limit` real.
+  const [candidateRows, watchedIds] = await Promise.all([
     db
       .select({ id: masterProducts.id, name: masterProducts.name, defaultImages: masterProducts.defaultImages })
       .from(masterProducts)
       .where(fuzzy)
-      .limit(limit),
+      .limit(limit * 4),
     userId ? getWatchedMasterProductIds(userId) : Promise.resolve(new Set<string>()),
   ]);
 
+  if (candidateRows.length === 0) return [];
+
+  const bestOfferIds = await getBestActiveOfferIdsForMasterProducts(candidateRows.map((r) => r.id));
+  const rows = candidateRows.filter((r) => bestOfferIds.has(r.id)).slice(0, limit);
   if (rows.length === 0) return [];
 
-  const bestOfferIds = await getBestActiveOfferIdsForMasterProducts(rows.map((r) => r.id));
   const offerIds = [...bestOfferIds.values()];
   const offerRows = offerIds.length
     ? await db

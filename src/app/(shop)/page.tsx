@@ -54,8 +54,7 @@ import { getSurveyAggregation, type SurveyAggregation } from '@/server/queries/s
 import { gamerCards, geekCards } from '@/lib/categories-showcase';
 import { PriceChartsShowcase } from '@/components/home/price-charts-showcase';
 import { GamerSurvey } from '@/components/home/gamer-survey';
-import { Package, Store, Layers, LineChart, Wallet, Trophy, TrendingDown as TrendingDownIcon } from 'lucide-react';
-import { formatBRL } from '@/lib/format';
+import { Package, Store, Layers, LineChart, TrendingDown as TrendingDownIcon } from 'lucide-react';
 import { StatTile } from '@/components/ui/stat-tile';
 import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated-stat-bars';
 
@@ -309,10 +308,10 @@ function MarketNumbersSection() {
         </Reveal>
         <Reveal delay={0.08}>
           <SceneImage
-            src="/images/home/observatorio-gamer-hero.png"
+            src="/images/home/mercado-gamer-numeros.png"
             alt="Ilustração representando o crescimento do mercado gamer"
             tone="gold"
-            caption="Mercado Gamer em Números"
+            caption="Mercado Gamer em Números · em produção"
             className="aspect-[4/3] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]"
           />
         </Reveal>
@@ -346,21 +345,6 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
             <Text variant="body-lg" className="leading-relaxed text-zinc-700 font-medium">
               Queremos ouvir suas preferências. Seus votos alimentam nossos estudos de comportamento de consumo e ajudam micro-estúdios brasileiros a precificar e distribuir seus jogos de forma justa.
             </Text>
-
-            {/* Imagem de Pesquisas & Engajamento da Comunidade Gamer (Exibição Completa sem cortes) */}
-            <div className="mt-4 relative w-full rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 bg-black shadow-xl">
-              <Image
-                src="/images/home/pesquisa-comunidade.png"
-                alt="Sessão em Grupo Gamer - Humour e Pesquisa de Comunidade Geek 86"
-                width={1536}
-                height={600}
-                className="w-full h-auto object-contain block"
-              />
-              <div className="p-3 bg-[#0d0a06] border-t border-amber-500/30 flex items-center justify-between text-xs font-mono text-amber-400">
-                <span>✦ Sessão em Grupo Gamer — Espaço Geek 86</span>
-                <span className="hidden sm:inline">Voz da Comunidade &amp; Cultura Pop</span>
-              </div>
-            </div>
           </div>
         </Reveal>
       </div>
@@ -391,10 +375,7 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
             <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Lojas & Vendedores" />
             <StatTile icon={<Layers className="size-5" />} value={stats.totalNetworks} label="Plataformas Parceiras" />
             <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de Preço" />
-            <StatTile icon={<Wallet className="size-5" />} value={formatBRL(stats.avgPriceCents)} label="Preço Médio Geral" />
-            <StatTile icon={<Trophy className="size-5" />} value={formatBRL(stats.lowestPriceCentsEver)} label="Menor Preço Histórico" />
             <StatTile icon={<TrendingDownIcon className="size-5" />} value={stats.itemsBelowAverageCount} label="Itens em Queda Agora" />
-            <StatTile icon={<ShieldCheck className="size-5 text-[var(--color-accent-gold)]" />} value="99.4%" label="Precisão dos Indicadores" />
           </div>
         </Reveal>
 
@@ -407,15 +388,6 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
               fill
               className="object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-            <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-left">
-              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-                ⚡ Monitoramento de Inteligência de Mercado Gamer em Tempo Real
-              </span>
-              <span className="text-[11px] text-zinc-400 font-mono hidden sm:inline">
-                Data Pipeline • Engine de Precificação Histórica Ativa
-              </span>
-            </div>
           </div>
         </Reveal>
       </div>

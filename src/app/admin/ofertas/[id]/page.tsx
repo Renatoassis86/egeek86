@@ -15,7 +15,6 @@ import { getOfferByIdForAdmin, getOfferMetrics, listActiveCouponsByNetwork, getM
 import { getMasterProductPriceHistory } from '@/server/queries/price-history';
 import { getMeliCatalogDetails } from '@/server/collector/sources/mercado-livre-details';
 import {
-  logNewPrice,
   updateOfferStatus,
   updateAffiliateUrl,
   reclassifyMasterProduct,
@@ -184,23 +183,6 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
               </Button>
             </form>
           ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="p-5">
-          <Text variant="heading-sm" className="mb-4">
-            Registrar novo preço
-          </Text>
-          <form action={logNewPrice} className="grid gap-3 sm:grid-cols-3">
-            <input type="hidden" name="offerId" value={offer.id} />
-            <Input name="priceReais" placeholder="Preço atual (R$)" required />
-            <Input name="listPriceReais" placeholder="Preço 'de' (opcional)" />
-            <Input name="couponCode" placeholder="Cupom usado (opcional)" />
-            <Button type="submit" className="sm:col-span-3 sm:w-fit">
-              Registrar preço
-            </Button>
-          </form>
         </CardContent>
       </Card>
 

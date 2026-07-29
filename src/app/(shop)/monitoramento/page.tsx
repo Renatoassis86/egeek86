@@ -89,6 +89,10 @@ export default async function MonitoramentoPage({
     networkName: string;
     currentPriceCents: number;
     changePercent: number | null;
+    sellerNickname: string | null;
+    sellerReputationLevel: string | null;
+    sellerPositiveRatingPercent: string | null;
+    sellerPowerSellerStatus: string | null;
   }> = [];
 
   let selectedProductId = jogo ?? 'demo-1';
@@ -110,23 +114,22 @@ export default async function MonitoramentoPage({
         initialHistory = historyData;
       }
 
-      watchlistItems = userWatches.map((w, index) => {
-        let percent = changeMap.get(w.masterProductId)?.changePercent ?? null;
-        if (percent === null || percent === 0) {
-          const charSum = (w.masterProductId || '').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + index * 3;
-          const variations = [-12, -8, -5, -14, -4, -9, -11, -7, +3, -15];
-          percent = variations[charSum % variations.length];
-        }
-        return {
-          masterProductId: w.masterProductId,
-          slug: w.offerSlug,
-          title: w.title,
-          imageUrl: w.imageUrl,
-          networkName: w.networkName,
-          currentPriceCents: w.currentPriceCents,
-          changePercent: percent,
-        };
-      });
+      watchlistItems = userWatches.map((w) => ({
+        masterProductId: w.masterProductId,
+        slug: w.offerSlug,
+        title: w.title,
+        imageUrl: w.imageUrl,
+        networkName: w.networkName,
+        currentPriceCents: w.currentPriceCents,
+        // null quer dizer que ainda não temos base pra comparar (produto
+        // novo). 0 quer dizer que o preço genuinamente não mudou. Nenhum dos
+        // dois vira número inventado, a UI já mostra "N/D" quando é null.
+        changePercent: changeMap.get(w.masterProductId)?.changePercent ?? null,
+        sellerNickname: w.sellerNickname,
+        sellerReputationLevel: w.sellerReputationLevel,
+        sellerPositiveRatingPercent: w.sellerPositiveRatingPercent,
+        sellerPowerSellerStatus: w.sellerPowerSellerStatus,
+      }));
     } else if (jogo) {
       // Se veio um jogo específico via URL (ex: ?jogo=UUID)
       selectedProductId = jogo;

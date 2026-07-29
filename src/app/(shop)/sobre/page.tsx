@@ -87,7 +87,7 @@ function HeroSection() {
               Inteligência de Dados e Decisão para o Mercado Gamer.
             </Text>
             <Text variant="body-lg" className="mt-2 text-zinc-300 font-medium max-w-[68ch] leading-relaxed">
-              O Espaço Geek 86 unifica toda a história dos videogames — da nostalgia da era 8, 16 e 32-bit aos consoles de última geração — com os mais modernos modelos de inteligência de dados e tomada de decisão. Um ecossistema completo desenhado para transformar a experiência de compra do consumidor final e impulsionar a gestão de afiliados e vendedores no Brasil.
+              O Espaço Geek 86 reúne toda a história dos videogames, da nostalgia da era 8, 16 e 32-bit aos consoles de última geração, com modelos modernos de inteligência de dados e tomada de decisão. Um ecossistema completo pensado para melhorar a experiência de compra do consumidor final e apoiar a gestão de afiliados e vendedores no Brasil.
             </Text>
           </div>
         </Reveal>
@@ -154,13 +154,31 @@ function QuemSomosSection() {
         </Reveal>
 
         <Reveal delay={0.08}>
-          <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-2xl">
-            <Image
-              src="/images/sobre/locadora.png"
-              alt="Ilustração de locadora retro gamer"
-              fill
-              className="object-cover object-center"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="relative col-span-2 aspect-[16/10] w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-2xl">
+              <Image
+                src="/images/sobre/fliperama.png"
+                alt="Fliperama lotado nos anos 80 e 90"
+                fill
+                className="object-cover object-center"
+              />
+            </div>
+            <div className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-xl">
+              <Image
+                src="/images/sobre/aluguel-tv.png"
+                alt="Crianças jogando videogame numa TV de tubo"
+                fill
+                className="object-cover object-center"
+              />
+            </div>
+            <div className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-xl">
+              <Image
+                src="/images/sobre/hero-geracoes.png"
+                alt="Fitas VHS e cartuchos clássicos da era retro"
+                fill
+                className="object-cover object-center"
+              />
+            </div>
           </div>
         </Reveal>
       </div>
@@ -207,7 +225,7 @@ function MissaoVisaoValoresSection() {
               </blockquote>
 
               <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Inspirados pelos maiores cases de sucesso do mundo, nossa missão é simples e inegociável: proteger o bolso do consumidor com dados reais em tempo real, celebrando a paixão e a cultura dos videogames em cada decisão.
+                Nossa missão é simples: mostrar o preço real de cada jogo, sem estimativa e sem enfeite, pra você decidir com informação de verdade. Cada número que aparece aqui vem de uma cotação coletada direto das lojas, atualizada o tempo todo.
               </p>
             </div>
           </Reveal>
@@ -225,11 +243,11 @@ function MissaoVisaoValoresSection() {
               </div>
 
               <blockquote className="text-xl sm:text-2xl font-black text-zinc-900 leading-snug border-l-4 border-emerald-500 pl-5 my-1 tracking-tight">
-                &quot;Ser a plataforma de inteligência, acervo e economia gamer mais confiável e inspiradora do mundo.&quot;
+                &quot;Ser a plataforma de inteligência, acervo e economia gamer mais confiável do Brasil.&quot;
               </blockquote>
 
               <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Ser o destino definitivo onde qualquer pessoa descobre, compara e compra com 100% de confiança, fundindo a memória histórica dos consoles ao futuro da tecnologia de dados.
+                Queremos ser o lugar onde todo gamer brasileiro descobre, compara e compra com confiança, juntando a memória dos consoles clássicos com a tecnologia de dados de hoje.
               </p>
             </div>
           </Reveal>
@@ -245,10 +263,6 @@ function MissaoVisaoValoresSection() {
               className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-            <div className="absolute bottom-5 left-6 right-6 flex items-center justify-between text-xs text-amber-400 font-mono font-bold">
-              <span>A mesma energia dos arcades clássicos impulsionando a maior comunidade de inteligência de dados gamer.</span>
-              <span className="hidden sm:inline text-zinc-400">Arquitetura 100% Auditada</span>
-            </div>
           </div>
         </Reveal>
       </div>
@@ -290,7 +304,7 @@ function ObjetivosJustificativaSection() {
               <strong>O Problema do Varejo Gamer:</strong> O mercado brasileiro de jogos sofre com grande fragmentação. O mesmo jogo pode custar R$ 349,00 em uma loja e R$ 499,00 em outra na mesma data. Além disso, em épocas promocionais, vendedores reajustam preços prévios para simular descontos inexistentes.
             </Text>
             <Text variant="body-md" className="leading-relaxed text-zinc-200">
-              <strong>A Solução Espaço Geek 86:</strong> Construímos rotinas automatizadas de ingestão 24/7 que coletam dados a cada 5 minutos em Mercado Livre, Shopee, Magalu, Amazon e Via.
+              <strong>A Solução Espaço Geek 86:</strong> Construímos rotinas automatizadas de ingestão 24/7 que coletam dados a cada 5 minutos no Mercado Livre, nossa principal fonte hoje, com novas plataformas parceiras entrando conforme a integração de cada uma fica pronta.
             </Text>
             <div className="flex flex-col gap-2.5 pt-2">
               <div className="flex items-center gap-2 text-sm font-bold text-white">
@@ -323,14 +337,14 @@ function FerramentasShowcaseSection() {
       badge: 'Motor Principal de Preço',
       title: '1. Bolsa Gamer e Monitoramento de Preços em Tempo Real',
       description:
-        'Gráficos estatísticos interativos de 3 camadas (Linha do Menor Preço Ativo, Curva Média de Mercado de todas as lojas e Histograma de Frequência de Cotações). Suporta zoom dinâmico e exibe se o produto está no menor preço histórico.',
+        'Gráfico estatístico interativo com duas camadas (linha do Menor Preço Ativo e curva de Média de Mercado entre todas as lojas). Suporta zoom por período e mostra se o produto está no menor preço já registrado.',
       imageSrc: '/images/sobre/ferramenta-bolsa-gamer.png',
       badgeColor: 'bg-amber-500 text-black',
       borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [
         'Curva suave da Média Geral entre todas as lojas e plataformas',
         'Área sombreada dinâmica do Menor Preço Ativo em cada varredura',
-        'Histograma de volume de cotações na base do gráfico',
+        'Contagem real de cotações e lojas monitoradas no período selecionado',
       ],
       reverse: false,
     },
@@ -388,7 +402,7 @@ function FerramentasShowcaseSection() {
       title: '5. Pesquisas de Mercado, Qualitativas e Lançamento de Marcas',
       description:
         'Infraestrutura de inteligência de dados desenvolvida para realizar pesquisas de marketing de mercado, testes de aceitação no lançamento de marcas e pesquisas qualitativas gerais aplicadas diretamente a consumidores gerais e público gamer.',
-      imageSrc: '/images/home/pesquisa-comunidade.png',
+      imageSrc: '/images/noticias-hub/data-analysis.png',
       badgeColor: 'bg-purple-600 text-white',
       borderHover: 'hover:border-purple-500 hover:shadow-xl',
       bullets: [
@@ -420,7 +434,7 @@ function FerramentasShowcaseSection() {
       title: '7. Hype Zone, Drops Exclusivos e Leilões entre Colecionadores',
       description:
         'Área nobre dedicada a lançamentos de edições limitadas e leilões C2C de itens clássicos e raros, com contagem regressiva ao vivo, histórico de lances e score de confiança dos vendedores.',
-      imageSrc: '/images/home/newsletter-vip-club.png',
+      imageSrc: '/images/sobre/fliperama.png',
       badgeColor: 'bg-amber-500 text-black',
       borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [
