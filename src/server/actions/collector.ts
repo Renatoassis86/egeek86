@@ -328,19 +328,43 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
       }
 
       const classification = classifyFromAttributes(itemData.attributes || [], itemData.name);
-      const baseSlug = slugify(itemData.name);
 
-      const [masterProduct] = await db
-        .insert(masterProducts)
-        .values({
-          name: itemData.name,
-          slug: baseSlug,
-          meliCatalogId: itemData.id,
-          defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
-          ...classification,
-          classifiedAt: new Date(),
-        })
-        .returning();
+      // Checagem por catalog_product_id exato (acima) não pega o caso do
+      // Mercado Livre catalogar o MESMO jogo físico sob dois IDs diferentes
+      // (achado real 2026-07-29: Resident Evil Village Ps5 duplicado assim,
+      // cada cópia com sua própria média de preço). Mesma checagem por
+      // título+plataforma que as outras rotas de descoberta já fazem, senão
+      // colar aqui um link de um catalog_product_id "gêmeo" recria a mesma
+      // quebra de regra de negócio.
+      const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
+      const { normalizeGamePlatformGen } = await import('@/lib/affiliate/game-classification');
+      const platformForDedup =
+        classification.gamePlatformGen !== 'unknown'
+          ? classification.gamePlatformGen
+          : normalizeGamePlatformGen(null, itemData.name);
+      const existingBySimilarity = await findExistingMasterProduct(itemData.name, platformForDedup);
+
+      // Catalog_product_id "gêmeo" pro mesmo jogo real — anexa como nova
+      // oferta do produto já existente em vez de criar um master_product
+      // novo (o jogo continua sendo UM só, essa é só mais uma loja vendendo).
+      let masterProduct;
+      if (existingBySimilarity) {
+        masterProduct = existingBySimilarity;
+      } else {
+        const baseSlug = slugify(itemData.name);
+        const [created] = await db
+          .insert(masterProducts)
+          .values({
+            name: itemData.name,
+            slug: baseSlug,
+            meliCatalogId: itemData.id,
+            defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
+            ...classification,
+            classifiedAt: new Date(),
+          })
+          .returning();
+        masterProduct = created;
+      }
 
       const offerSlug = slugify(`${itemData.name}-${itemData.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
 

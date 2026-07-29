@@ -180,8 +180,10 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
     return created;
   }
 
-  // Tenta similaridade textual para outras plataformas
-  const existingBySimilarity = await findExistingMasterProduct(name, 'unknown');
+  // Tenta similaridade textual para outras plataformas — deriva a plataforma
+  // do próprio nome digitado em vez de fixar 'unknown' (mesmo gap que
+  // escondia duplicata real em findOrCreateMasterProductForOffer acima).
+  const existingBySimilarity = await findExistingMasterProduct(name, normalizeGamePlatformGen(null, name));
   if (existingBySimilarity) return existingBySimilarity;
 
   return findOrCreateMasterProduct(name);
