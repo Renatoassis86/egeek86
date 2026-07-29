@@ -173,8 +173,8 @@ function QuemSomosSection() {
             </div>
             <div className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-xl">
               <Image
-                src="/images/sobre/hero-geracoes.png"
-                alt="Fitas VHS e cartuchos clássicos da era retro"
+                src="/images/sobre/arcade-anos-90-noite.png"
+                alt="Garotos jogando videogame numa locadora nos anos 90"
                 fill
                 className="object-cover object-center"
               />
@@ -257,7 +257,7 @@ function MissaoVisaoValoresSection() {
         <Reveal delay={0.12}>
           <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/40 bg-[#0B0805] shadow-2xl group">
             <Image
-              src="/images/sobre/fliperama.png"
+              src="/images/sobre/arcade-anos-80.png"
               alt="Fliperama e cultura gamer retro"
               fill
               className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
@@ -280,7 +280,7 @@ function ObjetivosJustificativaSection() {
         <Reveal>
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-emerald-500/30 bg-[#0B0805] shadow-2xl">
             <Image
-              src="/images/sobre/aluguel-tv.png"
+              src="/images/sobre/quarto-retro.png"
               alt="Justificativa e inteligência de dados no mercado gamer"
               fill
               className="object-cover object-center"
@@ -386,7 +386,7 @@ function FerramentasShowcaseSection() {
       title: '4. Observatório Gamer, Dossiês e Notícias de Mercado',
       description:
         'Portal jornalístico e analítico com reportagens originais, análises descritivas e relatórios teóricos integrando dados de pesquisas de mercado globais e nacionais (Newzoo, Statista e Pesquisa Game Brasil).',
-      imageSrc: '/images/home/observatorio-gamer-hero.png',
+      imageSrc: '/images/sobre/vitrine-colecionaveis.png',
       badgeColor: 'bg-cyan-600 text-white',
       borderHover: 'hover:border-cyan-500 hover:shadow-xl',
       bullets: [
@@ -418,7 +418,7 @@ function FerramentasShowcaseSection() {
       title: '6. Análise de Sentimento Social e Geek Hype Index (0-100)',
       description:
         'Motor de inteligência de dados que analisa o engajamento social e a percepção da comunidade sobre títulos e consoles, gerando a nota Geek Hype Index para direcionar estratégias de marcas e colecionadores.',
-      imageSrc: '/images/home/observatorio-cards-bg.png',
+      imageSrc: '/images/sobre/snes-colecao.png',
       badgeColor: 'bg-rose-600 text-white',
       borderHover: 'hover:border-rose-500 hover:shadow-xl',
       bullets: [
@@ -434,7 +434,7 @@ function FerramentasShowcaseSection() {
       title: '7. Hype Zone, Drops Exclusivos e Leilões entre Colecionadores',
       description:
         'Área nobre dedicada a lançamentos de edições limitadas e leilões C2C de itens clássicos e raros, com contagem regressiva ao vivo, histórico de lances e score de confiança dos vendedores.',
-      imageSrc: '/images/sobre/fliperama.png',
+      imageSrc: '/images/sobre/loja-retro.png',
       badgeColor: 'bg-amber-500 text-black',
       borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [

@@ -456,13 +456,8 @@ function InteligenciaGamerPageContent() {
                 </p>
 
                 <div className="flex items-center gap-3 pt-3 border-t border-purple-900/40 mt-1">
-                  <div className="relative size-9 rounded-full overflow-hidden border-2 border-amber-400 shrink-0">
-                    <Image
-                      src="/images/sobre/idealizador.png"
-                      alt="Renato Silva de Assis"
-                      fill
-                      className="object-cover"
-                    />
+                  <div className="flex size-9 items-center justify-center rounded-full border-2 border-amber-400 bg-amber-400/10 text-amber-400 shrink-0">
+                    <Brain className="size-4" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-black text-white">Renato Silva de Assis</span>

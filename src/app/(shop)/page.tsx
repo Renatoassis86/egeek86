@@ -793,8 +793,8 @@ function HypeTeaser() {
               baixo e largo, então cai pra retângulo reto simples. */}
           <div className="relative min-h-[260px] lg:col-span-5 lg:min-h-full lg:[clip-path:polygon(10%_0,100%_0,100%_100%,0%_100%)]">
             <SceneImage
-              src="/images/hype-zone/banner.png"
-              alt="Drop ao vivo da Hype Zone"
+              src="/images/home/hype-zone-teaser.png"
+              alt="Multidão em evento de lançamento gamer, energia da Hype Zone"
               tone="ember"
               focal="left"
               caption="Drop ao vivo · em produção"
