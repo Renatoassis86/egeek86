@@ -49,6 +49,17 @@ const KEYWORDS = [
   'bolsa', 'mochila', 'base de carregamento', 'suporte de parede', 'suporte para',
 ];
 
+/**
+ * ILIKE '%poster%' nunca bate com "Pôster" (acento é um caractere diferente
+ * pro Postgres, sem unaccent habilitado) — bug real encontrado 2026-07-29:
+ * vários "Pôster - God Of War" seguiam no catálogo com oferta ativa apesar
+ * da keyword 'poster' já existir aqui. Casa em JS depois de tirar acento dos
+ * dois lados, em vez de depender de extensão do Postgres.
+ */
+function stripAccents(text: string): string {
+  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
 async function main() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
@@ -60,25 +71,21 @@ async function main() {
   let prunedCount = 0;
 
   try {
-    for (const kw of KEYWORDS) {
-      const pattern = `%${kw}%`;
-      await sql`
-        DELETE FROM affiliate_price_snapshots
-        WHERE offer_id IN (
-          SELECT id FROM affiliate_offers
-          WHERE master_product_id IN (
-            SELECT id FROM master_products WHERE name ILIKE ${pattern}
-          )
-        )
-      `;
-      await sql`
-        DELETE FROM affiliate_offers
-        WHERE master_product_id IN (
-          SELECT id FROM master_products WHERE name ILIKE ${pattern}
-        )
-      `;
-      const result = await sql`DELETE FROM master_products WHERE name ILIKE ${pattern}`;
-      prunedCount += result.count ?? 0;
+    const normalizedKeywords = KEYWORDS.map(stripAccents);
+    const allProducts = await sql<{ id: string; name: string }[]>`SELECT id, name FROM master_products`;
+
+    const idsToDelete = allProducts
+      .filter((p) => {
+        const normName = stripAccents(p.name);
+        return normalizedKeywords.some((kw) => normName.includes(kw));
+      })
+      .map((p) => p.id);
+
+    if (idsToDelete.length > 0) {
+      await sql`DELETE FROM affiliate_price_snapshots WHERE offer_id IN (SELECT id FROM affiliate_offers WHERE master_product_id IN ${sql(idsToDelete)})`;
+      await sql`DELETE FROM affiliate_offers WHERE master_product_id IN ${sql(idsToDelete)}`;
+      const result = await sql`DELETE FROM master_products WHERE id IN ${sql(idsToDelete)}`;
+      prunedCount = result.count ?? idsToDelete.length;
     }
 
     console.log('Produtos podados:', prunedCount);

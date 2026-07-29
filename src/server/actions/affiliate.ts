@@ -20,6 +20,7 @@ import { recordPriceSnapshot } from '@/server/collector/record-price-snapshot';
 import { classifyMeliCatalogProduct } from '@/server/collector/sources/mercado-livre-classify';
 import { isNonProductAccessory } from '@/server/collector/discover-products';
 import { findExistingMasterProduct } from '@/lib/affiliate/dedup';
+import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 
 /**
  * Normaliza número em formato brasileiro ("1.999,90") ou já com ponto decimal
@@ -145,8 +146,18 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
       console.error(`Falha ao classificar ${externalRef}, seguindo com 'unknown':`, (err as Error).message);
     }
 
-    // Tenta achar por similaridade de título/plataforma antes de inserir um novo
-    const existingBySimilarity = await findExistingMasterProduct(name, classification?.gamePlatformGen || 'unknown');
+    // Tenta achar por similaridade de título/plataforma antes de inserir um
+    // novo. Cair direto pra 'unknown' quando a classificação falha/não
+    // reconhece a plataforma escondia duplicata real (achado 2026-07-29:
+    // "Jogo Resident Evil Village - Ps5 Físico" cadastrado duas vezes,
+    // média de preço divergindo entre as duas) — o título quase sempre
+    // menciona a plataforma mesmo quando os atributos estruturados do
+    // Mercado Livre não vêm com isso, então deriva do nome antes de desistir.
+    const platformForDedup =
+      classification?.gamePlatformGen && classification.gamePlatformGen !== 'unknown'
+        ? classification.gamePlatformGen
+        : normalizeGamePlatformGen(null, name);
+    const existingBySimilarity = await findExistingMasterProduct(name, platformForDedup);
     if (existingBySimilarity) return existingBySimilarity;
 
     const baseSlug = slugify(name);

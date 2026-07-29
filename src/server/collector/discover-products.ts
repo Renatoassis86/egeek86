@@ -698,20 +698,43 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
                   gameCollection: null,
                 }
               : { productType: 'game' as const, ...classifyFromAttributes(item.attributes || [], item.title) };
-          const baseSlug = slugify(item.title);
-          const productSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}`);
 
-          const [masterProduct] = await db
-            .insert(masterProducts)
-            .values({
-              name: item.title,
-              slug: productSlug,
-              meliCatalogId,
-              defaultImages: item.thumbnail ? [item.thumbnail.replace('-I.jpg', '-O.jpg')] : [],
-              ...classification,
-              classifiedAt: new Date(),
-            })
-            .returning();
+          // Sem essa checagem, o mesmo jogo físico que o Mercado Livre
+          // catalogou sob dois catalog_product_id diferentes (acontece —
+          // achado real 2026-07-29: "Jogo Resident Evil Village - Ps5
+          // Físico" duplicado assim) virava dois master_products, cada um
+          // com sua própria média de preço — quebra a regra de negócio de
+          // que o mesmo jogo tem UMA média só. Mesma checagem que
+          // searchAndIngestTerm já faz, só que essa varredura de categoria
+          // ampla não fazia.
+          const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
+          const existingBySimilarity = await findExistingMasterProduct(item.title, classification.gamePlatformGen);
+
+          let masterProduct;
+          if (existingBySimilarity) {
+            masterProduct = existingBySimilarity;
+          } else {
+            const baseSlug = slugify(item.title);
+            const [collision] = await db
+              .select({ id: masterProducts.id })
+              .from(masterProducts)
+              .where(eq(masterProducts.slug, baseSlug))
+              .limit(1);
+            const productSlug = collision ? slugify(`${item.title}-${meliCatalogId.slice(-6)}`) : baseSlug;
+
+            const [created] = await db
+              .insert(masterProducts)
+              .values({
+                name: item.title,
+                slug: productSlug,
+                meliCatalogId,
+                defaultImages: item.thumbnail ? [item.thumbnail.replace('-I.jpg', '-O.jpg')] : [],
+                ...classification,
+                classifiedAt: new Date(),
+              })
+              .returning();
+            masterProduct = created;
+          }
 
           const offerSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
           const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
