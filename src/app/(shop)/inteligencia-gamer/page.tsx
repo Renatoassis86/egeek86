@@ -150,7 +150,7 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
     <div
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className="relative w-full rounded-[var(--radius-xl)] border-2 border-amber-500/40 bg-[#0d0d12] text-white overflow-hidden shadow-2xl p-4 sm:p-6 lg:p-8 mb-10 group"
+      className="relative w-full rounded-[var(--radius-xl)] border-2 border-blue-500/40 bg-[#0d0d12] text-white overflow-hidden shadow-2xl p-4 sm:p-6 lg:p-8 mb-10 group"
     >
       <div className="grid gap-6 lg:grid-cols-12 lg:items-center">
         {/* Imagem do lado esquerdo */}
@@ -166,14 +166,14 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
           <button
             onClick={prevSlide}
             aria-label="Slide anterior"
-            className="absolute left-3 top-1/2 -translate-y-1/2 size-9 rounded-full bg-black/70 hover:bg-amber-500 hover:text-black text-white flex items-center justify-center transition-all shadow-md"
+            className="absolute left-3 top-1/2 -translate-y-1/2 size-9 rounded-full bg-black/70 hover:bg-blue-500 hover:text-black text-white flex items-center justify-center transition-all shadow-md"
           >
             <ChevronLeft className="size-5" />
           </button>
           <button
             onClick={nextSlide}
             aria-label="Próximo slide"
-            className="absolute right-3 top-1/2 -translate-y-1/2 size-9 rounded-full bg-black/70 hover:bg-amber-500 hover:text-black text-white flex items-center justify-center transition-all shadow-md"
+            className="absolute right-3 top-1/2 -translate-y-1/2 size-9 rounded-full bg-black/70 hover:bg-blue-500 hover:text-black text-white flex items-center justify-center transition-all shadow-md"
           >
             <ChevronRight className="size-5" />
           </button>
@@ -182,7 +182,7 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
         {/* Informações do lado direito (Título, Excerpt completo e "Ler mais →") */}
         <div className="lg:col-span-6 flex flex-col gap-3 justify-center">
           <div className="flex items-center gap-2">
-            <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
+            <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-500/40 w-fit">
               {currentItem.categoryLabel}
             </span>
             <span className="text-[11px] font-mono text-zinc-400">⚡ Carrossel 2s</span>
@@ -198,7 +198,7 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
           </p>
 
           <div className="flex items-center gap-3 text-xs text-zinc-400 pt-2 font-mono">
-            <span>Por <strong className="text-amber-400">{currentItem.author}</strong></span>
+            <span>Por <strong className="text-blue-400">{currentItem.author}</strong></span>
             <span>•</span>
             <span>{currentItem.date}</span>
             <span>•</span>
@@ -209,7 +209,7 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
           <div className="pt-3">
             <Link
               href="/noticias"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black bg-amber-500 text-black hover:bg-amber-400 transition-all shadow-lg hover:translate-x-1"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black bg-blue-500 text-black hover:bg-blue-400 transition-all shadow-lg hover:translate-x-1"
             >
               <span>Ler mais</span>
               <ArrowRight className="size-4" />
@@ -227,7 +227,7 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
             aria-label={`Ir para slide ${idx + 1}`}
             className={
               'h-2 rounded-full transition-all duration-300 ' +
-              (currentIndex === idx ? 'w-8 bg-amber-400' : 'w-2 bg-zinc-600 hover:bg-zinc-400')
+              (currentIndex === idx ? 'w-8 bg-blue-400' : 'w-2 bg-zinc-600 hover:bg-zinc-400')
             }
           />
         ))}
@@ -274,8 +274,8 @@ function InteligenciaGamerPageContent() {
   return (
     <div className="min-h-screen bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
       {/* Faixa Superior */}
-      <div className="w-full bg-[#0c0906] border-b border-amber-900/30 py-3 px-4 lg:px-8 text-center">
-        <span className="text-xs tracking-[0.25em] font-black text-amber-400 uppercase">
+      <div className="w-full bg-[#0c0906] border-b border-blue-900/30 py-3 px-4 lg:px-8 text-center">
+        <span className="text-xs tracking-[0.25em] font-black text-blue-400 uppercase">
           Arkos Intelligence — Portal de Informação e Decisão Gamer
         </span>
       </div>
@@ -296,7 +296,7 @@ function InteligenciaGamerPageContent() {
         )}
 
         {/* 2. Barra de Filtros e Busca */}
-        <div data-theme="light" className="flex flex-col gap-4 md:flex-row md:items-center justify-between bg-[#faf7f2] border border-amber-900/10 rounded-[var(--radius-lg)] p-4 mb-8">
+        <div data-theme="light" className="flex flex-col gap-4 md:flex-row md:items-center justify-between bg-[#faf7f2] border border-blue-900/10 rounded-[var(--radius-lg)] p-4 mb-8">
           <div className="flex gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
             {categories.map((cat) => {
               const Icon = cat.icon;
@@ -308,8 +308,8 @@ function InteligenciaGamerPageContent() {
                   className={
                     'flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black whitespace-nowrap transition-all ' +
                     (isSelected
-                      ? 'bg-amber-500 text-black shadow-md'
-                      : 'bg-white border border-zinc-300 text-zinc-700 hover:border-amber-400')
+                      ? 'bg-blue-500 text-black shadow-md'
+                      : 'bg-white border border-zinc-300 text-zinc-700 hover:border-blue-400')
                   }
                 >
                   <Icon className="size-3.5" />
@@ -326,7 +326,7 @@ function InteligenciaGamerPageContent() {
               placeholder="Pesquisar artigos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-full border border-zinc-300 bg-white text-xs font-medium focus:outline-none focus:border-amber-500"
+              className="w-full pl-9 pr-4 py-2 rounded-full border border-zinc-300 bg-white text-xs font-medium focus:outline-none focus:border-blue-500"
             />
           </div>
         </div>
@@ -336,7 +336,7 @@ function InteligenciaGamerPageContent() {
           {/* Coluna da Esquerda: Lista de Artigos */}
           <div className="flex flex-col gap-6">
             <h2 className="text-xl font-black tracking-tight text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2 mb-2 flex items-center gap-2">
-              <BookOpen className="size-5 text-amber-500" />
+              <BookOpen className="size-5 text-blue-500" />
               Artigos de Inteligência e Pesquisas
             </h2>
 
@@ -347,7 +347,7 @@ function InteligenciaGamerPageContent() {
             ) : (
               <div className="grid gap-6 sm:grid-cols-2">
                 {filteredItems.map((item) => (
-                  <Card key={item.id} className="group overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0e0c14] hover:border-amber-400 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between">
+                  <Card key={item.id} className="group overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0e0c14] hover:border-blue-400 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between">
                     <CardContent className="p-4 sm:p-5 flex flex-col gap-3 h-full">
                       <div className="relative aspect-[16/10] w-full rounded-md overflow-hidden bg-black shrink-0">
                         <Image
@@ -359,10 +359,10 @@ function InteligenciaGamerPageContent() {
                       </div>
 
                       <div className="flex flex-col gap-2 flex-1">
-                        <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded border border-amber-500/20 w-fit">
+                        <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2.5 py-0.5 rounded border border-blue-500/20 w-fit">
                           {item.categoryLabel}
                         </span>
-                        <h3 className="text-base font-black tracking-tight leading-snug text-zinc-900 dark:text-white group-hover:text-amber-500 transition-colors">
+                        <h3 className="text-base font-black tracking-tight leading-snug text-zinc-900 dark:text-white group-hover:text-blue-500 transition-colors">
                           <Link href="/noticias">{item.title}</Link>
                         </h3>
 
@@ -381,7 +381,7 @@ function InteligenciaGamerPageContent() {
                         </div>
                         <Link
                           href="/noticias"
-                          className="inline-flex items-center gap-1 text-xs font-black text-amber-600 dark:text-amber-400 hover:text-amber-500 transition-all group-hover:translate-x-1"
+                          className="inline-flex items-center gap-1 text-xs font-black text-blue-600 dark:text-blue-400 hover:text-blue-500 transition-all group-hover:translate-x-1"
                         >
                           <span>Ler mais</span>
                           <ArrowRight className="size-3.5" />
@@ -397,9 +397,9 @@ function InteligenciaGamerPageContent() {
           {/* Coluna da Direita: Sidebar Animada de Cores Vibrantes */}
           <div className="flex flex-col gap-6">
             {/* Widget 1: Divisão de Inteligência (Vibrante Animado) */}
-            <div className="rounded-[var(--radius-xl)] border-2 border-amber-500/40 bg-gradient-to-br from-amber-500/10 via-purple-500/5 to-emerald-500/10 p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-amber-400 group">
-              <div className="flex items-center gap-2 border-b border-amber-500/30 pb-3 mb-4">
-                <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 group-hover:rotate-12 transition-transform">
+            <div className="rounded-[var(--radius-xl)] border-2 border-blue-500/40 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-emerald-500/10 p-5 shadow-lg hover:shadow-2xl transition-all duration-300 hover:border-blue-400 group">
+              <div className="flex items-center gap-2 border-b border-blue-500/30 pb-3 mb-4">
+                <div className="p-2 rounded-xl bg-blue-500/20 text-blue-600 dark:text-blue-400 group-hover:rotate-12 transition-transform">
                   <Filter className="size-4" />
                 </div>
                 <h3 className="text-base font-black tracking-tight text-zinc-900 dark:text-white">
@@ -408,8 +408,8 @@ function InteligenciaGamerPageContent() {
               </div>
 
               <div className="flex flex-col gap-3">
-                <div className="flex flex-col p-3 rounded-lg bg-white/80 dark:bg-black/40 border border-amber-500/20 hover:border-amber-400 transition-colors">
-                  <span className="text-xs font-black text-amber-700 dark:text-amber-400">Artigos e Ensaios</span>
+                <div className="flex flex-col p-3 rounded-lg bg-white/80 dark:bg-black/40 border border-blue-500/20 hover:border-blue-400 transition-colors">
+                  <span className="text-xs font-black text-blue-700 dark:text-blue-400">Artigos e Ensaios</span>
                   <span className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed font-medium mt-0.5">
                     Análises corporativas e colunas opinativas sobre a cultura gamer.
                   </span>
@@ -439,11 +439,11 @@ function InteligenciaGamerPageContent() {
             </div>
 
             {/* Widget 2: Arkos Insight (Vibrante Animado Roxo/Esmeralda/Gold) */}
-            <div className="rounded-[var(--radius-xl)] border-2 border-purple-500/40 bg-gradient-to-b from-[#1c0c32] via-[#140a24] to-[#04261c] text-white p-6 shadow-2xl relative overflow-hidden group hover:border-amber-400 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all" />
+            <div className="rounded-[var(--radius-xl)] border-2 border-purple-500/40 bg-gradient-to-b from-[#1c0c32] via-[#140a24] to-[#04261c] text-white p-6 shadow-2xl relative overflow-hidden group hover:border-blue-400 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
 
               <div className="relative z-10 flex flex-col gap-3">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500 text-black w-fit">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500 text-black w-fit">
                   <Brain className="size-3.5" /> Arkos Insight
                 </span>
 
@@ -451,17 +451,17 @@ function InteligenciaGamerPageContent() {
                   Oportunidades de Arbitragem no Mercado Gamer
                 </h3>
 
-                <p className="text-xs text-zinc-200 leading-relaxed font-medium italic border-l-2 border-amber-400 pl-3">
+                <p className="text-xs text-zinc-200 leading-relaxed font-medium italic border-l-2 border-blue-400 pl-3">
                   &quot;A flutuação de preços em diferentes vendedores de catálogo no Brasil abre janelas diárias de arbitragem para consoles e mídias físicas raras.&quot;
                 </p>
 
                 <div className="flex items-center gap-3 pt-3 border-t border-purple-900/40 mt-1">
-                  <div className="flex size-9 items-center justify-center rounded-full border-2 border-amber-400 bg-amber-400/10 text-amber-400 shrink-0">
+                  <div className="flex size-9 items-center justify-center rounded-full border-2 border-blue-400 bg-blue-400/10 text-blue-400 shrink-0">
                     <Brain className="size-4" />
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-black text-white">Renato Silva de Assis</span>
-                    <span className="text-[10px] text-amber-400 font-mono">Direção de Inteligência</span>
+                    <span className="text-[10px] text-blue-400 font-mono">Direção de Inteligência</span>
                   </div>
                 </div>
               </div>

@@ -158,7 +158,7 @@ export function HeaderSearchModal() {
               <button
                 type="button"
                 onClick={() => setFilter('hype')}
-                className={`px-3 py-1 rounded-full font-bold transition-all flex items-center gap-1.5 ${filter === 'hype' ? 'bg-amber-400 text-black' : 'bg-[var(--color-bg-inset)] text-[var(--color-text-secondary)] hover:text-white'}`}
+                className={`px-3 py-1 rounded-full font-bold transition-all flex items-center gap-1.5 ${filter === 'hype' ? 'bg-blue-400 text-black' : 'bg-[var(--color-bg-inset)] text-[var(--color-text-secondary)] hover:text-white'}`}
               >
                 <Flame className="size-3.5" /> Hype Zone
               </button>

@@ -98,10 +98,10 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         aria-current={isActive ? 'page' : undefined}
         className={cn(
           'px-3.5 h-9 inline-flex items-center rounded-[var(--radius-sm)] font-bold text-sm',
-          'text-[#F3EFE6] hover:text-[#D4AF37] hover:bg-white/10',
+          'text-[#F3EFE6] hover:text-[#3B82F6] hover:bg-white/10',
           'transition-colors duration-[var(--duration-fast)]',
-          item.highlight && !isActive && 'text-[#F59E0B] hover:text-[#F59E0B] font-extrabold',
-          isActive && 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 font-black'
+          item.highlight && !isActive && 'text-[#60A5FA] hover:text-[#60A5FA] font-extrabold',
+          isActive && 'bg-[#3B82F6]/15 text-[#3B82F6] border border-[#3B82F6]/30 font-black'
         )}
       >
         {item.label}
@@ -122,14 +122,14 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
         aria-expanded={isOpen}
         className={cn(
           'px-3.5 h-9 inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] transition-all cursor-pointer font-bold text-sm',
-          'text-[#F3EFE6] hover:text-[#D4AF37] hover:bg-white/10',
-          item.highlight && !isActive && 'text-[#F59E0B] hover:text-[#F59E0B] font-extrabold',
-          (isActive || isOpen) && 'bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30 font-black'
+          'text-[#F3EFE6] hover:text-[#3B82F6] hover:bg-white/10',
+          item.highlight && !isActive && 'text-[#60A5FA] hover:text-[#60A5FA] font-extrabold',
+          (isActive || isOpen) && 'bg-[#3B82F6]/15 text-[#3B82F6] border border-[#3B82F6]/30 font-black'
         )}
       >
         <span>{item.label}</span>
         <svg
-          className={cn('size-3.5 opacity-75 transition-transform duration-200 text-[#D4AF37]', isOpen && 'rotate-180')}
+          className={cn('size-3.5 opacity-75 transition-transform duration-200 text-[#3B82F6]', isOpen && 'rotate-180')}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -147,11 +147,11 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
                 key={child.href}
                 href={child.href}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center justify-between px-3.5 py-2.5 text-xs font-bold text-[#F3EFE6] hover:text-[#D4AF37] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors group/item"
+                className="flex items-center justify-between px-3.5 py-2.5 text-xs font-bold text-[#F3EFE6] hover:text-[#3B82F6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors group/item"
               >
                 <span>{child.label}</span>
                 <svg
-                  className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[#D4AF37]"
+                  className="size-3 opacity-0 group-hover/item:opacity-100 transition-opacity text-[#3B82F6]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -196,7 +196,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden flex shrink-0 text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]"
+            className="lg:hidden flex shrink-0 text-[#E6E0D4] hover:bg-white/10 hover:text-[#3B82F6]"
             onClick={() => setIsMobileDrawerOpen(true)}
             aria-label="Abrir menu de módulos"
           >
@@ -206,7 +206,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
           {/* Logo - Destaque em Fundo Escuro com Alto Contraste */}
           <Link
             href="/"
-            className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded-[var(--radius-xs)] p-1 transition-opacity hover:opacity-90"
+            className="flex items-center group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6] rounded-[var(--radius-xs)] p-1 transition-opacity hover:opacity-90"
             aria-label="Espaço Geek 86, início"
           >
             <Image
@@ -215,7 +215,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
               width={4220}
               height={1568}
               priority
-              className="h-7 lg:h-8 w-auto filter drop-shadow-[0_2px_8px_rgba(212,175,55,0.25)] transition-transform group-hover:scale-105"
+              className="h-7 lg:h-8 w-auto filter drop-shadow-[0_2px_8px_rgba(59,130,246,0.25)] transition-transform group-hover:scale-105"
             />
           </Link>
         </div>
@@ -234,19 +234,19 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
         {/* Right actions */}
         <div className="flex items-center gap-1 text-[#E6E0D4]">
           <HeaderSearchModal />
-          <Button variant="ghost" size="icon" aria-label="Ranking de Vendedores" className="hidden sm:inline-flex text-[#D4AF37] hover:bg-white/10 hover:text-[#F59E0B]" asChild>
+          <Button variant="ghost" size="icon" aria-label="Ranking de Vendedores" className="hidden sm:inline-flex text-[#3B82F6] hover:bg-white/10 hover:text-[#60A5FA]" asChild>
             <Link href="/ranking">
               <Trophy className="size-5" />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" aria-label="Jogos acompanhados" className="hidden sm:inline-flex text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" asChild>
+          <Button variant="ghost" size="icon" aria-label="Jogos acompanhados" className="hidden sm:inline-flex text-[#E6E0D4] hover:bg-white/10 hover:text-[#3B82F6]" asChild>
             <Link href="/conta?aba=jogos">
               <Heart className="size-5" />
             </Link>
           </Button>
           {/* User Icon Dropdown */}
           <div className="relative group/user hidden sm:block">
-            <Button variant="ghost" size="icon" aria-label="Conta / Perfil" className="text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" asChild>
+            <Button variant="ghost" size="icon" aria-label="Conta / Perfil" className="text-[#E6E0D4] hover:bg-white/10 hover:text-[#3B82F6]" asChild>
               <Link href="/conta">
                 <User className="size-5" />
               </Link>
@@ -260,7 +260,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
                 <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#F3EFE6]">Perfil do Colecionador</span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37]">Nível 12</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#3B82F6]/20 text-[#3B82F6]">Nível 12</span>
                   </div>
                   <span className="text-[11px] text-[#A39785]">Acesse seus dados, drops e leilões</span>
                 </div>
@@ -268,27 +268,27 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
                 {/* Links Principais */}
                 <div className="flex flex-col py-1">
                   <Link href="/conta" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <User className="size-3.5 text-[#D4AF37]" />
+                    <User className="size-3.5 text-[#3B82F6]" />
                     <span>Meu Perfil e Gamificação</span>
                   </Link>
 
                   <Link href="/conta?aba=dados" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <Sliders className="size-3.5 text-[#D4AF37]" />
+                    <Sliders className="size-3.5 text-[#3B82F6]" />
                     <span>Dados Cadastrais e Editar</span>
                   </Link>
 
                   <Link href="/conta?aba=compras" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <ShoppingBag className="size-3.5 text-[#D4AF37]" />
+                    <ShoppingBag className="size-3.5 text-[#3B82F6]" />
                     <span>Minhas Compras</span>
                   </Link>
 
                   <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <ShieldCheck className="size-3.5 text-[#F59E0B]" />
+                    <ShieldCheck className="size-3.5 text-[#60A5FA]" />
                     <span>Meus Drops e Vendas</span>
                   </Link>
 
                   <Link href="/conta?aba=leiloes" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <Gavel className="size-3.5 text-[#D4AF37]" />
+                    <Gavel className="size-3.5 text-[#3B82F6]" />
                     <span>Meus Leilões e Lances</span>
                   </Link>
                 </div>
@@ -297,7 +297,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
 
                 {/* Opções de Cadastro / Login */}
                 <div className="flex flex-col gap-1 p-1">
-                  <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-[var(--radius-xs)] transition-colors">
+                  <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#60A5FA] hover:bg-[#60A5FA]/10 rounded-[var(--radius-xs)] transition-colors">
                     <span>🚀 Cadastrar Colecionador / Leiloeiro</span>
                   </Link>
                   <Link href="/entrar" className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
@@ -309,12 +309,12 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
               </div>
             </div>
           </div>
-          <ThemeToggle className="inline-flex text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" />
-          <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative text-[#E6E0D4] hover:bg-white/10 hover:text-[#D4AF37]" asChild>
+          <ThemeToggle className="inline-flex text-[#E6E0D4] hover:bg-white/10 hover:text-[#3B82F6]" />
+          <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative text-[#E6E0D4] hover:bg-white/10 hover:text-[#3B82F6]" asChild>
             <Link href="/carrinho">
               <ShoppingBag className="size-5" />
               {cartCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[#D4AF37] text-[10px] font-bold text-black">
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[#3B82F6] text-[10px] font-bold text-black">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}

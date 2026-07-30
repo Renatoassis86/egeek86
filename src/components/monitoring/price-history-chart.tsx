@@ -511,15 +511,15 @@ function ChartTooltip({
 
   return (
     <div
-      className="pointer-events-none absolute z-30 w-60 rounded-[var(--radius-xl)] border border-amber-500/40 bg-[var(--color-bg-elevated)]/95 p-3.5 shadow-2xl backdrop-blur-xl transition-all"
+      className="pointer-events-none absolute z-30 w-60 rounded-[var(--radius-xl)] border border-blue-500/40 bg-[var(--color-bg-elevated)]/95 p-3.5 shadow-2xl backdrop-blur-xl transition-all"
       style={{ left: tooltip.x, top: tooltip.y }}
     >
       {/* Cabeçalho de Preço */}
       <div className="flex items-center justify-between gap-2 border-b border-[var(--color-border-subtle)] pb-2 mb-2">
-        <Text variant="mono-lg" className="leading-none font-black text-amber-400 text-lg">
+        <Text variant="mono-lg" className="leading-none font-black text-blue-400 text-lg">
           {formatBRL(tooltip.priceCents)}
         </Text>
-        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30">
+        <span className="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30">
           {quotesCount} {quotesCount === 1 ? 'cotação' : 'cotações'}
         </span>
       </div>

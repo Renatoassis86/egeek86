@@ -288,8 +288,8 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
           )}
 
           {offer.affiliateUrl.includes('/p/') && (
-            <div className="mb-3 rounded-[var(--radius-md)] border border-amber-500/30 bg-amber-500/5 p-3">
-              <Text variant="body-sm" className="font-semibold text-amber-400">
+            <div className="mb-3 rounded-[var(--radius-md)] border border-blue-500/30 bg-blue-500/5 p-3">
+              <Text variant="body-sm" className="font-semibold text-blue-400">
                 Atenção: link de catálogo compartilhado, não desse vendedor específico
               </Text>
               <Text variant="caption" color="secondary" className="mt-1 block leading-relaxed">

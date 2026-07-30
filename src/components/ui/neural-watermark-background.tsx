@@ -14,12 +14,12 @@ export function NeuralWatermarkBackground({ className }: NeuralWatermarkBackgrou
       )}
     >
       {/* Marca d'água 1: Emblema "EG86" Gigante no Canto Superior Direito */}
-      <div className="absolute -top-12 -right-16 text-[220px] font-black tracking-tighter text-amber-500/30 leading-none filter blur-[1px]">
+      <div className="absolute -top-12 -right-16 text-[220px] font-black tracking-tighter text-blue-500/30 leading-none filter blur-[1px]">
         EG86
       </div>
 
       {/* Marca d'água 2: Texto Institucional "ESPAÇO GEEK 86" Diagonal no Centro */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 whitespace-nowrap text-[120px] sm:text-[160px] font-black uppercase tracking-[0.2em] text-zinc-400/20 dark:text-amber-400/10 pointer-events-none">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -rotate-12 whitespace-nowrap text-[120px] sm:text-[160px] font-black uppercase tracking-[0.2em] text-zinc-400/20 dark:text-blue-400/10 pointer-events-none">
         ESPAÇO GEEK 86
       </div>
 
@@ -30,7 +30,7 @@ export function NeuralWatermarkBackground({ className }: NeuralWatermarkBackgrou
 
       {/* Brush de Circuitos Eletrônicos & Nós de Redes Neurais (Fundo Transparente) */}
       <svg
-        className="absolute inset-0 h-full w-full stroke-amber-500/20 dark:stroke-amber-400/20"
+        className="absolute inset-0 h-full w-full stroke-blue-500/20 dark:stroke-blue-400/20"
         viewBox="0 0 1200 800"
         fill="none"
         preserveAspectRatio="none"

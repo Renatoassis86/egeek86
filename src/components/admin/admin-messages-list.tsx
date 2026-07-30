@@ -106,7 +106,7 @@ export function AdminMessagesList({
                   </Link>
                   <Text variant="caption" color="tertiary" className="mt-0.5">
                     Preço no envio: {formatBRL(message.priceCentsAtSend)}
-                    {message.destination && ` · ${message.destination}`} · Canal: <span className="font-semibold uppercase text-amber-500">{message.channel}</span>
+                    {message.destination && ` · ${message.destination}`} · Canal: <span className="font-semibold uppercase text-blue-500">{message.channel}</span>
                   </Text>
                 </div>
 
@@ -143,15 +143,15 @@ export function AdminMessagesList({
 
               {/* Modo de Edição Inline */}
               {isEditing ? (
-                <div className="flex flex-col gap-3 mt-1 bg-[var(--color-bg-inset)] p-3.5 rounded-[var(--radius-md)] border border-amber-500/30">
-                  <Text variant="label" className="text-amber-400 font-bold text-xs">
+                <div className="flex flex-col gap-3 mt-1 bg-[var(--color-bg-inset)] p-3.5 rounded-[var(--radius-md)] border border-blue-500/30">
+                  <Text variant="label" className="text-blue-400 font-bold text-xs">
                     Editar Conteúdo da Mensagem:
                   </Text>
                   <textarea
                     rows={5}
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
-                    className="w-full rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] p-3 text-sm text-[var(--color-text-primary)] font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    className="w-full rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] p-3 text-sm text-[var(--color-text-primary)] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <div className="flex items-center justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={handleCancelEdit} disabled={isPending}>

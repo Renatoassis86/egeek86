@@ -144,7 +144,7 @@ export default async function HypeZonePage() {
                   <Link href="/conta/vendedor/novo-drop">✨ Cadastrar Novo Produto / Drop</Link>
                 </Button>
               ) : seller?.status === 'pending_kyc' ? (
-                <Button asChild size="lg" variant="outline" className="border-amber-500/60 text-amber-400 font-bold">
+                <Button asChild size="lg" variant="outline" className="border-blue-500/60 text-blue-400 font-bold">
                   <Link href="/conta/vendedor">⏳ Cadastro em Análise Admin</Link>
                 </Button>
               ) : (
@@ -166,7 +166,7 @@ export default async function HypeZonePage() {
 
       {/* BANNER DE ACESSO DO COLECIONADOR (DESTACADO: CADASTRO OU LOGIN) */}
       <Reveal delay={0.12}>
-        <div data-theme="light" className="mb-10 p-6 md:p-8 rounded-[var(--radius-xl)] border-2 border-amber-500/40 bg-[#faf7f2] text-zinc-900 shadow-xl relative overflow-hidden">
+        <div data-theme="light" className="mb-10 p-6 md:p-8 rounded-[var(--radius-xl)] border-2 border-blue-500/40 bg-[#faf7f2] text-zinc-900 shadow-xl relative overflow-hidden">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
             <div className="flex flex-col gap-2 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
@@ -174,7 +174,7 @@ export default async function HypeZonePage() {
                   <Sparkles className="size-3.5" /> Portal do Colecionador
                 </Badge>
                 {seller?.status === 'pending_kyc' && (
-                  <Badge variant="outline" className="border-amber-500/50 text-amber-400">
+                  <Badge variant="outline" className="border-blue-500/50 text-blue-400">
                     <Clock className="size-3 mr-1" /> Cadastro em Análise Admin
                   </Badge>
                 )}
@@ -203,7 +203,7 @@ export default async function HypeZonePage() {
                   </Button>
                 </>
               ) : seller?.status === 'pending_kyc' ? (
-                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-amber-500/50 text-amber-400 font-bold">
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-blue-500/50 text-blue-400 font-bold">
                   <Link href="/conta/vendedor">Ver Status da Análise</Link>
                 </Button>
               ) : seller?.status === 'active' || profile?.role === 'admin' ? (
@@ -271,7 +271,7 @@ export default async function HypeZonePage() {
                     <Link href="/entrar?role=colecionador">Cadastrar como Colecionador</Link>
                   </Button>
                 ) : seller?.status === 'pending_kyc' ? (
-                  <Button asChild size="sm" variant="outline" className="w-full text-[11px] border-amber-500/50 text-amber-400">
+                  <Button asChild size="sm" variant="outline" className="w-full text-[11px] border-blue-500/50 text-blue-400">
                     <Link href="/conta/vendedor">Cadastro em Análise Admin</Link>
                   </Button>
                 ) : seller?.status === 'active' || profile?.role === 'admin' ? (

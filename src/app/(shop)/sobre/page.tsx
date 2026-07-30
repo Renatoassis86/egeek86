@@ -73,14 +73,14 @@ export default async function SobrePage() {
 // ----------------------------------------------------------------------
 function HeroSection() {
   return (
-    <section data-theme="dark" className="relative w-full bg-[#0c0906] text-white px-4 lg:px-8 pt-14 pb-12 lg:pt-20 lg:pb-16 overflow-hidden border-b border-amber-900/30">
+    <section data-theme="dark" className="relative w-full bg-[#0c0906] text-white px-4 lg:px-8 pt-14 pb-12 lg:pt-20 lg:pb-16 overflow-hidden border-b border-blue-900/30">
       <Glow color="gold" size="xl" intensity={0.25} className="-top-32 -left-32" />
       <Glow color="hype" size="md" intensity={0.15} className="top-20 -right-20" />
 
       <div className="mx-auto max-w-7xl relative z-10 flex flex-col gap-8">
         <Reveal>
           <div className="flex flex-col gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/40 w-fit">
               Arkos Intelligence e Espaço Geek 86
             </span>
             <Text as="h1" variant="display-xl" className="font-black text-white tracking-tight lg:text-display-2xl max-w-[22ch]">
@@ -93,7 +93,7 @@ function HeroSection() {
         </Reveal>
 
         <Reveal delay={0.08}>
-          <div className="relative aspect-[16/7] sm:aspect-[21/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805]">
+          <div className="relative aspect-[16/7] sm:aspect-[21/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-blue-500/30 shadow-2xl bg-[#0B0805]">
             <Image
               src="/images/sobre/hero-geracoes.png"
               alt="Duas gerações de consoles e jogos no Espaço Geek 86"
@@ -113,7 +113,7 @@ function HeroSection() {
 // ----------------------------------------------------------------------
 function PlatformMetricsSection({ stats }: { stats: any }) {
   return (
-    <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-12 lg:py-16">
+    <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-blue-900/10 py-12 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <StatTile icon={<Package className="size-5" />} value={stats.totalProducts} label="Produtos Catalogados" />
@@ -191,11 +191,11 @@ function QuemSomosSection() {
 // ----------------------------------------------------------------------
 function MissaoVisaoValoresSection() {
   return (
-    <section id="missao-visao-valores" data-theme="light" className="relative w-full bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-600/10 text-zinc-900 py-20 lg:py-28 border-b border-amber-300/40 scroll-mt-20 overflow-hidden">
+    <section id="missao-visao-valores" data-theme="light" className="relative w-full bg-gradient-to-br from-blue-500/10 via-orange-500/5 to-blue-600/10 text-zinc-900 py-20 lg:py-28 border-b border-blue-300/40 scroll-mt-20 overflow-hidden">
       <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-14">
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-amber-500/20 text-amber-900 border border-amber-500/40 w-fit">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-blue-500/20 text-blue-900 border border-blue-500/40 w-fit">
               Propósito &amp; Fronteira Tecnológica
             </span>
             <Text as="h2" variant="display-lg" className="font-black text-zinc-900 text-3xl sm:text-5xl tracking-tight">
@@ -210,17 +210,17 @@ function MissaoVisaoValoresSection() {
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Card 1: NOSSA MISSÃO */}
           <Reveal delay={0.04}>
-            <div className="group h-full rounded-[var(--radius-xl)] border-2 border-amber-500/40 bg-white p-8 lg:p-10 flex flex-col gap-6 transition-all duration-300 hover:border-amber-500 hover:shadow-2xl relative overflow-hidden">
+            <div className="group h-full rounded-[var(--radius-xl)] border-2 border-blue-500/40 bg-white p-8 lg:p-10 flex flex-col gap-6 transition-all duration-300 hover:border-blue-500 hover:shadow-2xl relative overflow-hidden">
               <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-amber-500/20 text-amber-700 w-fit group-hover:scale-110 transition-transform duration-300">
+                <div className="p-3.5 rounded-2xl bg-blue-500/20 text-blue-700 w-fit group-hover:scale-110 transition-transform duration-300">
                   <Target className="size-8" />
                 </div>
-                <span className="text-xs font-black uppercase tracking-widest text-amber-800 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
+                <span className="text-xs font-black uppercase tracking-widest text-blue-800 bg-blue-500/15 px-3 py-1 rounded-full border border-blue-500/30">
                   Nossa Missão
                 </span>
               </div>
 
-              <blockquote className="text-xl sm:text-2xl font-black text-zinc-900 leading-snug border-l-4 border-amber-500 pl-5 my-1 tracking-tight">
+              <blockquote className="text-xl sm:text-2xl font-black text-zinc-900 leading-snug border-l-4 border-blue-500 pl-5 my-1 tracking-tight">
                 &quot;Entregar a verdade de mercado, a melhor economia e a alegria do entretenimento gamer para toda a comunidade geek.&quot;
               </blockquote>
 
@@ -255,7 +255,7 @@ function MissaoVisaoValoresSection() {
 
         {/* Banner Ilustrativo */}
         <Reveal delay={0.12}>
-          <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/40 bg-[#0B0805] shadow-2xl group">
+          <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-blue-500/40 bg-[#0B0805] shadow-2xl group">
             <Image
               src="/images/sobre/arcade-anos-80.png"
               alt="Fliperama e cultura gamer retro"
@@ -339,8 +339,8 @@ function FerramentasShowcaseSection() {
       description:
         'Gráfico estatístico interativo com duas camadas (linha do Menor Preço Ativo e curva de Média de Mercado entre todas as lojas). Suporta zoom por período e mostra se o produto está no menor preço já registrado.',
       imageSrc: '/images/sobre/ferramenta-bolsa-gamer.png',
-      badgeColor: 'bg-amber-500 text-black',
-      borderHover: 'hover:border-amber-500 hover:shadow-xl',
+      badgeColor: 'bg-blue-500 text-black',
+      borderHover: 'hover:border-blue-500 hover:shadow-xl',
       bullets: [
         'Curva suave da Média Geral entre todas as lojas e plataformas',
         'Área sombreada dinâmica do Menor Preço Ativo em cada varredura',
@@ -435,8 +435,8 @@ function FerramentasShowcaseSection() {
       description:
         'Área nobre dedicada a lançamentos de edições limitadas e leilões C2C de itens clássicos e raros, com contagem regressiva ao vivo, histórico de lances e score de confiança dos vendedores.',
       imageSrc: '/images/sobre/loja-retro.png',
-      badgeColor: 'bg-amber-500 text-black',
-      borderHover: 'hover:border-amber-500 hover:shadow-xl',
+      badgeColor: 'bg-blue-500 text-black',
+      borderHover: 'hover:border-blue-500 hover:shadow-xl',
       bullets: [
         'Sistema de leilões com arremate ao vivo e cronômetro em tempo real',
         'Drops exclusivos com restrição de acesso e cadastro prévio',
@@ -447,7 +447,7 @@ function FerramentasShowcaseSection() {
   ];
 
   return (
-    <section id="ferramentas" data-theme="light" className="relative w-full bg-[#fcfaf7] text-zinc-900 py-20 lg:py-28 border-b border-amber-900/10 scroll-mt-20 overflow-hidden">
+    <section id="ferramentas" data-theme="light" className="relative w-full bg-[#fcfaf7] text-zinc-900 py-20 lg:py-28 border-b border-blue-900/10 scroll-mt-20 overflow-hidden">
       <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-16">
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
@@ -468,7 +468,7 @@ function FerramentasShowcaseSection() {
           {tools.map((tool) => (
             <Reveal key={tool.id}>
               <div
-                className={`group rounded-[var(--radius-xl)] border border-amber-200/80 bg-white p-6 lg:p-10 transition-all duration-300 shadow-md ${tool.borderHover}`}
+                className={`group rounded-[var(--radius-xl)] border border-blue-200/80 bg-white p-6 lg:p-10 transition-all duration-300 shadow-md ${tool.borderHover}`}
               >
                 <div className={`grid gap-8 lg:grid-cols-12 lg:items-center ${tool.reverse ? 'lg:flex-row-reverse' : ''}`}>
                   {/* Conteúdo Técnico */}
@@ -483,10 +483,10 @@ function FerramentasShowcaseSection() {
                       {tool.description}
                     </Text>
 
-                    <div className="flex flex-col gap-2.5 pt-3 border-t border-amber-100">
+                    <div className="flex flex-col gap-2.5 pt-3 border-t border-blue-100">
                       {tool.bullets.map((b, idx) => (
                         <div key={idx} className="flex items-center gap-2.5 text-xs font-bold text-zinc-800">
-                          <CheckCircle2 className="size-4 text-amber-600 shrink-0" />
+                          <CheckCircle2 className="size-4 text-blue-600 shrink-0" />
                           <span>{b}</span>
                         </div>
                       ))}
@@ -495,7 +495,7 @@ function FerramentasShowcaseSection() {
 
                   {/* Imagem em Moldura sem Corte */}
                   <div className={`lg:col-span-6 ${tool.reverse ? 'lg:order-1' : 'lg:order-2'}`}>
-                    <div className="relative aspect-[16/10] w-full rounded-[var(--radius-lg)] overflow-hidden border border-amber-200 bg-zinc-100 shadow-lg">
+                    <div className="relative aspect-[16/10] w-full rounded-[var(--radius-lg)] overflow-hidden border border-blue-200 bg-zinc-100 shadow-lg">
                       <Image
                         src={tool.imageSrc}
                         alt={tool.title}
@@ -519,11 +519,11 @@ function FerramentasShowcaseSection() {
 // ----------------------------------------------------------------------
 function IdealizadorSection() {
   return (
-    <section id="idealizador" data-theme="dark" className="w-full bg-[#0a0a0d] text-white py-16 lg:py-24 border-b border-amber-500/30">
+    <section id="idealizador" data-theme="dark" className="w-full bg-[#0a0a0d] text-white py-16 lg:py-24 border-b border-blue-500/30">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
-          <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-amber-500/30 overflow-hidden shadow-2xl p-6 sm:p-8 lg:p-12 grid gap-8 lg:grid-cols-12 lg:items-center">
-            <div className="lg:col-span-5 relative aspect-[4/3] w-full rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-[#0B0805] group">
+          <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-blue-500/30 overflow-hidden shadow-2xl p-6 sm:p-8 lg:p-12 grid gap-8 lg:grid-cols-12 lg:items-center">
+            <div className="lg:col-span-5 relative aspect-[4/3] w-full rounded-[var(--radius-xl)] overflow-hidden border-2 border-blue-500/40 shadow-2xl bg-[#0B0805] group">
               <Image
                 src="/images/sobre/idealizador.png"
                 alt="Renato Silva de Assis — Fundador e Idealizador"
@@ -532,7 +532,7 @@ function IdealizadorSection() {
                 className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              <div className="absolute bottom-3.5 left-4 right-4 text-xs font-mono text-amber-400 font-bold flex items-center justify-between">
+              <div className="absolute bottom-3.5 left-4 right-4 text-xs font-mono text-blue-400 font-bold flex items-center justify-between">
                 <span>Renato Silva de Assis</span>
                 <span className="text-[10px] text-zinc-400">Arkos Intelligence</span>
               </div>
@@ -540,13 +540,13 @@ function IdealizadorSection() {
 
             <div className="lg:col-span-7 flex flex-col gap-5">
               <div className="flex flex-col gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/40 w-fit">
                   Idealização e Liderança Técnica
                 </span>
                 <Text variant="heading-xl" className="font-black text-white text-3xl sm:text-4xl">
                   Renato Silva de Assis
                 </Text>
-                <Text variant="caption" className="text-amber-400 font-mono font-bold text-xs sm:text-sm leading-relaxed">
+                <Text variant="caption" className="text-blue-400 font-mono font-bold text-xs sm:text-sm leading-relaxed">
                   Economista • Mestre em Economia Regional • Arquiteto de Software • Cientista de Dados • Pesquisador • Colecionador Gamer
                 </Text>
               </div>
@@ -567,7 +567,7 @@ function IdealizadorSection() {
                 <p>
                   Mais do que um marketplace, o Espaço Geek 86 está sendo construído como uma plataforma de inteligência para o consumidor geek. O objetivo é reunir, em um único ambiente, monitoramento de preços em tempo real, histórico de valores, reputação de vendedores, pesquisas com a comunidade, conteúdo especializado e algoritmos próprios capazes de ajudar cada usuário a comprar melhor, pagar menos e colecionar com mais segurança.
                 </p>
-                <blockquote className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 italic text-amber-200 text-sm leading-relaxed">
+                <blockquote className="p-4 rounded-xl bg-blue-500/10 border-l-4 border-blue-500 italic text-blue-200 text-sm leading-relaxed">
                   &quot;Por trás da plataforma existe uma filosofia simples: tecnologia deve servir às pessoas. A missão do Espaço Geek 86 não é vender produtos a qualquer custo, mas oferecer conhecimento, transparência e inteligência para que cada decisão de compra seja baseada em informações reais e não apenas em publicidade.&quot;
                 </blockquote>
               </div>
@@ -579,7 +579,7 @@ function IdealizadorSection() {
                   </Button>
                 </Link>
                 <Link href="/pesquisa">
-                  <Button variant="outline" size="md" className="text-white border-amber-500/40 hover:bg-amber-500/10">
+                  <Button variant="outline" size="md" className="text-white border-blue-500/40 hover:bg-blue-500/10">
                     Responder Pesquisa da Comunidade
                   </Button>
                 </Link>

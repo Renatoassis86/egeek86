@@ -164,7 +164,7 @@ export default async function OffersPage({
         <div className="flex flex-col gap-10 mt-2">
           {/* Seção 1: Tá vendendo muito (Warm Light Canvas) */}
           {featured.length > 0 && (
-            <div data-theme="light" className="bg-[#faf7f2] text-zinc-900 p-6 lg:p-10 rounded-[var(--radius-xl)] border border-amber-900/10 shadow-sm">
+            <div data-theme="light" className="bg-[#faf7f2] text-zinc-900 p-6 lg:p-10 rounded-[var(--radius-xl)] border border-blue-900/10 shadow-sm">
               <GroupedOfferShelf
                 title="Tá Vendendo Muito · Destaques da Semana"
                 subtitle="Ofertas mais procuradas e populares com ótimas condições de preço"
@@ -197,7 +197,7 @@ export default async function OffersPage({
               <GroupedOfferShelf
                 title="Universo Nintendo Switch"
                 subtitle="Jogos em mídia física e acessórios para Nintendo Switch"
-                icon={<Gamepad2 className="size-5 text-amber-400" aria-hidden />}
+                icon={<Gamepad2 className="size-5 text-blue-400" aria-hidden />}
                 offers={nintendoOffers.slice(0, 8)}
                 metricsMap={metricsMap}
               />
@@ -219,11 +219,11 @@ export default async function OffersPage({
 
           {/* Seção 5: Hardware & Acessórios Gamer (Warm Light Cream Canvas) */}
           {accessoryOffers.length > 0 && (
-            <div data-theme="light" className="bg-[#fffdf9] text-zinc-900 p-6 lg:p-10 rounded-[var(--radius-xl)] border border-amber-900/10 shadow-sm">
+            <div data-theme="light" className="bg-[#fffdf9] text-zinc-900 p-6 lg:p-10 rounded-[var(--radius-xl)] border border-blue-900/10 shadow-sm">
               <GroupedOfferShelf
                 title="Hardware, Joysticks & Acessórios Gamer"
                 subtitle="Controles, headsets e equipamentos de alta performance"
-                icon={<Headphones className="size-5 text-amber-600" aria-hidden />}
+                icon={<Headphones className="size-5 text-blue-600" aria-hidden />}
                 offers={accessoryOffers.slice(0, 8)}
                 metricsMap={metricsMap}
               />

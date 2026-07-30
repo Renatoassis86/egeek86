@@ -14,7 +14,7 @@ export interface ChartPalette {
   areaBottom: string;
   up: string;
   down: string;
-  /** Linha de média móvel — precisa contrastar com o dourado da série principal. */
+  /** Linha de média móvel — precisa contrastar com o azul da série principal. */
   movingAverage: string;
 }
 
@@ -24,23 +24,23 @@ export const CHART_PALETTES: Record<'dark' | 'light', ChartPalette> = {
     grid: '#221E19',
     text: '#B8AD98',
     textMuted: '#8A8072',
-    line: '#D4AF37',
-    areaTop: 'rgba(212, 175, 55, 0.28)',
-    areaBottom: 'rgba(212, 175, 55, 0.02)',
+    line: '#3B82F6',
+    areaTop: 'rgba(59, 130, 246, 0.28)',
+    areaBottom: 'rgba(59, 130, 246, 0.02)',
     up: '#10B981',
     down: '#EF4444',
-    movingAverage: '#38BDF8',
+    movingAverage: '#A855F7',
   },
   light: {
     background: '#FAF7F0',
     grid: '#DDD2B8',
     text: '#3D352B',
     textMuted: '#5E5344',
-    line: '#B8901F',
-    areaTop: 'rgba(184, 144, 31, 0.24)',
-    areaBottom: 'rgba(184, 144, 31, 0.02)',
+    line: '#2563EB',
+    areaTop: 'rgba(37, 99, 235, 0.24)',
+    areaBottom: 'rgba(37, 99, 235, 0.02)',
     up: '#10B981',
     down: '#EF4444',
-    movingAverage: '#0284C7',
+    movingAverage: '#7C3AED',
   },
 };

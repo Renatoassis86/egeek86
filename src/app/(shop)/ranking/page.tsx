@@ -255,14 +255,14 @@ export default function RankingPage() {
           </Card>
 
           {/* 3º Lugar (Bronze) */}
-          <Card className="border-amber-700/40 bg-[var(--color-bg-surface)] hover:border-amber-600 transition-all md:order-3">
+          <Card className="border-blue-700/40 bg-[var(--color-bg-surface)] hover:border-blue-600 transition-all md:order-3">
             <CardContent className="p-6 flex flex-col items-center text-center gap-3 relative overflow-hidden">
-              <div className="absolute top-3 right-3 text-2xl font-black text-amber-600">#3</div>
-              <div className="size-20 rounded-full border-4 border-amber-600 p-1 bg-amber-700/20 relative">
+              <div className="absolute top-3 right-3 text-2xl font-black text-blue-600">#3</div>
+              <div className="size-20 rounded-full border-4 border-blue-600 p-1 bg-blue-700/20 relative">
                 <div className="size-full rounded-full overflow-hidden relative">
                   <Image src={TOP_USERS[2].avatarUrl} alt={TOP_USERS[2].name} fill className="object-cover" />
                 </div>
-                <div className="absolute -bottom-2 -right-2 bg-amber-600 text-white font-black text-xs px-2 py-0.5 rounded-full shadow-md">
+                <div className="absolute -bottom-2 -right-2 bg-blue-600 text-white font-black text-xs px-2 py-0.5 rounded-full shadow-md">
                   3º
                 </div>
               </div>
@@ -274,7 +274,7 @@ export default function RankingPage() {
               <div className="w-full pt-3 border-t border-[var(--color-border-subtle)] grid grid-cols-2 gap-2 text-xs">
                 <div className="bg-[var(--color-bg-inset)] p-2 rounded">
                   <Text variant="caption" color="tertiary">Nível XP</Text>
-                  <Text variant="body-sm" className="font-bold font-mono text-amber-400">Lvl {TOP_USERS[2].xpLevel}</Text>
+                  <Text variant="body-sm" className="font-bold font-mono text-blue-400">Lvl {TOP_USERS[2].xpLevel}</Text>
                 </div>
                 <div className="bg-[var(--color-bg-inset)] p-2 rounded">
                   <Text variant="caption" color="tertiary">Positivação</Text>

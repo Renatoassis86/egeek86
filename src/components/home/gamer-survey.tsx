@@ -115,7 +115,7 @@ export function GamerSurvey({
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="text-[11px] font-mono h-8 text-[var(--color-text-tertiary)] hover:text-amber-500 gap-1 shrink-0"
+              className="text-[11px] font-mono h-8 text-[var(--color-text-tertiary)] hover:text-blue-500 gap-1 shrink-0"
               title="Refazer enquete"
             >
               <RefreshCw className="size-3.5" />
@@ -127,7 +127,7 @@ export function GamerSurvey({
         {/* ETAPA 1: PREFERÊNCIA GERAL / FAVORITA DE TODOS OS TEMPOS */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm md:text-base font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+            <h4 className="text-sm md:text-base font-extrabold text-blue-600 dark:text-blue-400 flex items-center gap-2">
               <Sparkles className="size-4 text-[var(--color-accent-gold)] shrink-0" />
               1. Qual é a sua plataforma FAVORITA (preferência geral)?
             </h4>
@@ -196,7 +196,7 @@ export function GamerSurvey({
         {/* ETAPA 2: O QUE MAIS TEM JOGADO HOJE */}
         <div className="flex flex-col gap-3 pt-2">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm md:text-base font-extrabold text-amber-600 dark:text-amber-400 flex items-center gap-2">
+            <h4 className="text-sm md:text-base font-extrabold text-blue-600 dark:text-blue-400 flex items-center gap-2">
               <Flame className="size-4 text-orange-500 shrink-0" />
               2. Qual é a plataforma que você MAIS TEM JOGADO hoje em dia?
             </h4>
