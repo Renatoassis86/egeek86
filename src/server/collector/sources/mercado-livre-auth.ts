@@ -25,8 +25,15 @@ async function saveTokens(tokens: StoredTokens): Promise<void> {
     .onConflictDoUpdate({ target: systemConfig.key, set: { value: tokens, updatedAt: new Date() } });
 }
 
-/** Chamado pela rota de callback logo após o usuário autorizar (etapa única, manual). */
-export async function exchangeCodeForTokens(code: string, redirectUri: string): Promise<void> {
+/**
+ * Chamado pela rota de callback logo após o usuário autorizar (etapa única,
+ * manual). codeVerifier é obrigatório — achado real (2026-07-30): o
+ * Mercado Livre passou a exigir PKCE nessa troca ("code_verifier is a
+ * required parameter", 400), mesmo sem isso ter sido pedido no momento de
+ * gerar a URL de autorização antes. Precisa ser o mesmo valor bruto usado
+ * pra gerar o code_challenge em /auth/mercadolivre/start.
+ */
+export async function exchangeCodeForTokens(code: string, redirectUri: string, codeVerifier: string): Promise<void> {
   const response = await fetch(TOKEN_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -36,6 +43,7 @@ export async function exchangeCodeForTokens(code: string, redirectUri: string): 
       client_secret: process.env.MERCADO_LIVRE_CLIENT_SECRET!,
       code,
       redirect_uri: redirectUri,
+      code_verifier: codeVerifier,
     }),
   });
 
