@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
@@ -46,6 +46,16 @@ interface ProfileHubTabsProps {
 
 export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, watches }: ProfileHubTabsProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  // useState(initialTab) só roda o inicializador na primeira montagem — se o
+  // usuário já está em /conta e clica num link tipo /conta?aba=jogos (o
+  // coração no topo, por exemplo), o Server Component recalcula initialTab
+  // mas esse componente cliente é reaproveitado (mesma posição na árvore),
+  // então a aba nunca trocava sozinha. Sincroniza sempre que o valor vindo
+  // da URL mudar.
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   // Form states de edição de dados cadastrais
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatarUrl || '');

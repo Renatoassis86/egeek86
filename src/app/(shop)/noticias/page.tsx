@@ -10,7 +10,7 @@ import { SceneImage } from '@/components/motion/scene-image';
 import { cn } from '@/lib/cn';
 import { getPublishedArticles } from '@/server/queries/news';
 import type { ArticleCategory, NewsArticle } from '@/db/schema';
-import { ARTICLE_CATEGORY_LABELS, ARTICLE_CATEGORY_OPTIONS } from '@/lib/news/labels';
+import { ARTICLE_CATEGORY_LABELS, ARTICLE_CATEGORY_OPTIONS, ARTICLE_CATEGORY_STYLES } from '@/lib/news/labels';
 import { FeaturedArticlesCarousel } from '@/components/news/featured-articles-carousel';
 import { db } from '@/lib/db';
 import { sql } from 'drizzle-orm';
@@ -19,26 +19,6 @@ export const metadata = { title: 'Notícias' };
 
 const CATEGORY_LABELS = ARTICLE_CATEGORY_LABELS;
 const CATEGORY_OPTIONS = ARTICLE_CATEGORY_OPTIONS;
-
-// Imagens reais (documental + tecnologia/negócio) pro mosaico do hub — ver
-// lista de prompts de geração entregue ao cliente pra criar cada arquivo.
-const marketScenes: { src: string; alt: string; tone: 'gold' | 'ember' | 'ink' }[] = [
-  {
-    src: '/images/noticias-hub/gamer-setup.png',
-    alt: 'Pessoa jogando em um setup gamer completo, tela e periféricos iluminados',
-    tone: 'gold',
-  },
-  {
-    src: '/images/noticias-hub/esports-event.png',
-    alt: 'Público acompanhando um evento de esports ao vivo',
-    tone: 'ember',
-  },
-  {
-    src: '/images/noticias-hub/data-analysis.png',
-    alt: 'Equipe analisando gráficos e dados de mercado em tela grande',
-    tone: 'ink',
-  },
-];
 
 function parseCategoryParam(value?: string): ArticleCategory | undefined {
   return value && value in CATEGORY_LABELS ? (value as ArticleCategory) : undefined;
@@ -84,48 +64,27 @@ export default async function NoticiasPage({
   const secondaryItems = isDefaultView ? items.slice(1) : items;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-14">
-      {/* Banner "Mural Geek" — topo da página, pareado com o carrossel de
-          destaques logo abaixo (texto inicial + card de notícia juntos). */}
-      <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-14 overflow-hidden mb-8 z-10">
-
-        {/* Imagem do banner inteira com recorte diagonal na direita */}
-        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
-          <div
-            className="relative w-full h-full"
-            style={{
-              clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
-            }}
-          >
-            <Image
-              src="/images/noticias/header-collage.png"
-              alt="Notícias Banner"
-              fill
-              className="object-cover object-center"
-              priority
-            />
-            {/* Gradiente sutil de fade na junção do corte diagonal */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-transparent to-transparent opacity-80 pointer-events-none" />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 relative z-10 max-w-2xl">
-          <Reveal>
-            <Badge variant="hype" size="md">
-              Mural Geek
-            </Badge>
-          </Reveal>
-          <Reveal delay={0.05}>
-            <Text as="h1" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
-              Notícias
-            </Text>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <Text variant="body-sm" color="secondary" className="max-w-[50ch] leading-relaxed text-xs md:text-sm">
-              Cultura pop, sinopse de jogos, tecnologia e tudo que envolve o mundo gamer e geek.
-            </Text>
-          </Reveal>
-        </div>
+    <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)]">
+      <div className="mx-auto max-w-7xl px-4 lg:px-8 py-8 lg:py-12">
+      {/* Cabeçalho estilo portal (Globo/UOL): título simples, sem banner
+          escuro nem imagem de fundo — o carrossel de destaques logo abaixo
+          já carrega a força visual da abertura. */}
+      <div className="mb-6 flex flex-col gap-1 border-b border-[var(--color-border-subtle)] pb-5">
+        <Reveal>
+          <Badge variant="hype" size="md" className="w-fit mb-1">
+            Mural Geek
+          </Badge>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <Text as="h1" variant="display-md" className="text-[28px] md:text-[36px] font-black leading-none tracking-tight text-[var(--color-text-primary)]">
+            Notícias
+          </Text>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <Text variant="body-sm" color="secondary" className="max-w-[60ch] leading-relaxed text-xs md:text-sm">
+            Cultura pop, sinopse de jogos, tecnologia e tudo que envolve o mundo gamer e geek.
+          </Text>
+        </Reveal>
       </div>
 
       {/* Carrossel de destaques — as 5 matérias mais recentes, direto abaixo
@@ -134,20 +93,6 @@ export default async function NoticiasPage({
         <Reveal delay={0.06}>
           <FeaturedArticlesCarousel articles={featured} />
         </Reveal>
-      </div>
-
-      {/* Mosaico documental/promocional — imagens reais (não geradas por IA
-          sem revisão humana antes de publicar); enquanto o arquivo não
-          existir em public/images/noticias-hub/, SceneImage cai no
-          fallback "em produção" (nunca quebra, nunca imagem cinza genérica). */}
-      <div className="mb-10 grid gap-4 sm:grid-cols-3">
-        {marketScenes.map(({ src, alt, tone }, i) => (
-          <Reveal key={src} delay={0.06 + i * 0.06}>
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]">
-              <SceneImage src={src} alt={alt} tone={tone} caption="Em curadoria" className="absolute inset-0" />
-            </div>
-          </Reveal>
-        ))}
       </div>
 
       <div className="mb-8 flex flex-wrap gap-2 lg:hidden">
@@ -393,6 +338,7 @@ export default async function NoticiasPage({
           </Link>
         </div>
       )}
+      </div>
     </section>
   );
 }
@@ -412,74 +358,74 @@ function getCleanNewsImage(coverUrl?: string | null, index = 0) {
   return CLEAN_NEWS_IMAGES[index % CLEAN_NEWS_IMAGES.length];
 }
 
-/** Manchete principal, estilo home de portal: imagem grande + título de destaque, não um card igual aos demais. */
+/**
+ * Manchete principal — estilo globo.com/UOL: foto no topo, título abaixo
+ * dela (não sobreposto na imagem), card branco com borda fina na cor da
+ * editoria e etiqueta de categoria embaixo (mesmo padrão do card menor,
+ * só maior).
+ */
 function LeadArticleCard({ article }: { article: NewsArticle }) {
   const isCurated = article.kind === 'curated_link';
+  const style = ARTICLE_CATEGORY_STYLES[article.category];
 
   return (
     <Link href={`/noticias/${article.slug}`} className="group block">
-      <Card interactive className="overflow-hidden">
+      <div className={cn('overflow-hidden rounded-[var(--radius-xl)] border bg-white shadow-sm transition-shadow hover:shadow-md', style.border)}>
         <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
           <SceneImage src={getCleanNewsImage(article.coverImageUrl, 0)} alt={article.title} tone="ember" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-          <div className="absolute left-0 right-0 bottom-0 p-4 sm:p-6 flex flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <Badge variant={isCurated ? 'outline' : 'primary'} size="sm" className={isCurated ? 'bg-black/50 backdrop-blur-sm text-white border-white/30' : undefined}>
-                {isCurated ? 'Também na mídia' : 'Manchete'}
-              </Badge>
-              <span className="text-[10px] uppercase tracking-[0.04em] text-white/70 font-medium">
-                {CATEGORY_LABELS[article.category]}
+        </div>
+        <div className="flex flex-col gap-2 p-5 sm:p-6">
+          <Text as="h2" variant="heading-lg" className={cn('line-clamp-3 font-black leading-snug', style.heading)}>
+            {article.title}
+          </Text>
+          <Text variant="body-sm" color="secondary" className="line-clamp-2 max-w-[70ch]">
+            {article.excerpt}
+          </Text>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <span className={cn('inline-flex items-center rounded-full px-3 py-1 text-xs font-bold', style.chipBg, style.chipText)}>
+              {CATEGORY_LABELS[article.category]}
+            </span>
+            {isCurated && (
+              <span className="inline-flex items-center rounded-full border border-[var(--color-border-default)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]">
+                Também na mídia{article.sourceName ? ` · ${article.sourceName}` : ''}
               </span>
-            </div>
-            <Text as="h2" variant="heading-lg" className="text-white line-clamp-3 font-bold">
-              {article.title}
-            </Text>
-            <Text variant="body-sm" className="text-white/80 line-clamp-2 max-w-[70ch]">
-              {article.excerpt}
-            </Text>
+            )}
           </div>
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }
 
+/** Card de matéria — mesmo padrão do LeadArticleCard, em tamanho menor pra grade. */
 function ArticleCard({ article, index = 0 }: { article: NewsArticle; index?: number }) {
   const isCurated = article.kind === 'curated_link';
+  const style = ARTICLE_CATEGORY_STYLES[article.category];
   const href = `/noticias/${article.slug}`;
 
   return (
     <Link href={href} className="group block h-full">
-      <Card interactive className="flex h-full flex-col overflow-hidden">
+      <div className={cn('flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border bg-white shadow-sm transition-shadow hover:shadow-md', style.border)}>
         <div className="relative aspect-[16/9] shrink-0 overflow-hidden bg-[var(--color-bg-inset)]">
           <SceneImage src={getCleanNewsImage(article.coverImageUrl, index + 1)} alt={article.title} tone="gold" />
-          <div className="absolute left-3 top-3">
-            <Badge
-              variant={isCurated ? 'outline' : 'primary'}
-              size="sm"
-              className={isCurated ? 'bg-[var(--color-bg-canvas)]/80 backdrop-blur-sm' : undefined}
-            >
-              {isCurated ? 'Também na mídia' : 'Artigo'}
-            </Badge>
-          </div>
         </div>
-        <CardContent className="flex flex-1 flex-col gap-2 p-4">
-          <Text variant="caption" color="tertiary" className="uppercase tracking-[0.04em]">
-            {CATEGORY_LABELS[article.category]}
-          </Text>
-          <Text variant="body-md" className="line-clamp-2 font-medium">
+        <div className="flex flex-1 flex-col gap-2 p-4">
+          <Text variant="body-md" className={cn('line-clamp-2 font-bold leading-snug', style.heading)}>
             {article.title}
           </Text>
           <Text variant="body-sm" color="secondary" className="mt-auto line-clamp-2">
             {article.excerpt}
           </Text>
-          {isCurated && article.sourceName && (
-            <Text variant="caption" color="tertiary">
-              via {article.sourceName}
-            </Text>
-          )}
-        </CardContent>
-      </Card>
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold', style.chipBg, style.chipText)}>
+              {CATEGORY_LABELS[article.category]}
+            </span>
+            {isCurated && article.sourceName && (
+              <span className="text-[11px] text-[var(--color-text-tertiary)]">via {article.sourceName}</span>
+            )}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }

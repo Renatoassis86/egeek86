@@ -76,6 +76,7 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
   const readingMinutes = estimateReadingMinutes(bodyMarkdown);
 
   return (
+    <div data-theme="light" className="w-full bg-[var(--color-bg-canvas)]">
     <article className="mx-auto max-w-3xl px-4 lg:px-8 py-10 lg:py-14">
       <Link
         href="/noticias"
@@ -196,5 +197,6 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
         </div>
       )}
     </article>
+    </div>
   );
 }
