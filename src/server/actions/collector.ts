@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { sellers, sellerMetrics, profiles, products, productVariants, productMedia, drops, categories } from '@/db/schema';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
@@ -366,24 +366,46 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
         masterProduct = created;
       }
 
+      // Achado real (2026-07-30): catalog_product_id "gêmeo" (mesmo jogo
+      // físico, ID de catálogo diferente) reaproveita o master_product certo
+      // acima (findExistingMasterProduct) mas, sem essa checagem, criava
+      // outra oferta pra esse mesmo item.id se o admin reprocessasse o
+      // mesmo link/ID — agora bloqueado também pelo índice único em
+      // affiliate_offers (network_id, external_ref).
+      const [existingOffer] = await db
+        .select({ id: affiliateOffers.id })
+        .from(affiliateOffers)
+        .where(and(eq(affiliateOffers.networkId, network.id), eq(affiliateOffers.externalRef, itemData.id)))
+        .limit(1);
+
+      if (existingOffer) {
+        return { error: `"${itemData.name}" já está catalogado — veja em Ofertas.` };
+      }
+
       const offerSlug = slugify(`${itemData.name}-${itemData.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
 
-      await db.insert(affiliateOffers).values({
-        masterProductId: masterProduct.id,
-        networkId: network.id,
-        title: itemData.name,
-        slug: offerSlug,
-        affiliateUrl: `https://www.mercadolivre.com.br/p/${itemData.id}`,
-        affiliateLinkPending: true,
-        imageUrl: itemData.pictures?.[0]?.url ?? null,
-        externalRef: itemData.id,
-        // Sem preço coletado ainda (endpoint de catálogo não garante preço
-        // confiável de buy-box) — nunca inventa um valor; collectPrices()
-        // logo abaixo já busca o preço real antes da action retornar.
-        currentPriceCents: 0,
-        status: 'active',
-        publishedAt: new Date(),
-      });
+      await db
+        .insert(affiliateOffers)
+        .values({
+          masterProductId: masterProduct.id,
+          networkId: network.id,
+          title: itemData.name,
+          slug: offerSlug,
+          affiliateUrl: `https://www.mercadolivre.com.br/p/${itemData.id}`,
+          affiliateLinkPending: true,
+          imageUrl: itemData.pictures?.[0]?.url ?? null,
+          externalRef: itemData.id,
+          // Sem preço coletado ainda (endpoint de catálogo não garante preço
+          // confiável de buy-box) — nunca inventa um valor; collectPrices()
+          // logo abaixo já busca o preço real antes da action retornar.
+          currentPriceCents: 0,
+          status: 'active',
+          publishedAt: new Date(),
+        })
+        .onConflictDoNothing({
+          target: [affiliateOffers.networkId, affiliateOffers.externalRef],
+          where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
+        });
 
       const priceSummary = await collectPrices();
       revalidatePath('/ofertas');

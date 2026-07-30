@@ -1,6 +1,6 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts, systemConfig } from '@/db/schema';
 import type { GamePlatformGen } from '@/db/schema';
@@ -411,6 +411,28 @@ async function searchAndIngestTerm(
         continue;
       }
 
+      // Achado real (2026-07-30): esse `existing` acima só pega repetição
+      // exata de meliCatalogId — não pega o caso (comum) do Mercado Livre
+      // catalogar o mesmo jogo físico sob um catalog_product_id "gêmeo": aí
+      // o dedup por similaridade abaixo reaproveita certo o master_product,
+      // mas sem checar se JÁ existe uma oferta pra esse item.id específico,
+      // toda vez que o mesmo anúncio reaparecia numa busca (72 termos rodam
+      // em paralelo, itens populares casam com vários termos ao mesmo
+      // tempo) nascia mais uma oferta placeholder duplicada. 28.800 ofertas
+      // duplicadas encontradas num total de 29.804 (96% da tabela) até essa
+      // correção — ver também o índice único em affiliate_offers (network_id,
+      // external_ref) que agora garante isso no nível do banco.
+      const [existingOffer] = await db
+        .select({ id: affiliateOffers.id })
+        .from(affiliateOffers)
+        .where(and(eq(affiliateOffers.networkId, network.id), eq(affiliateOffers.externalRef, item.id)))
+        .limit(1);
+
+      if (existingOffer) {
+        result.alreadyExisted++;
+        continue;
+      }
+
       const detectedPlatform = normalizeGamePlatformGen(null, item.name);
       const isGameMedia = isGameTitleOrMedia(item.name);
 
@@ -486,23 +508,43 @@ async function searchAndIngestTerm(
       const realToolId = process.env.MELI_TOOL_ID;
       const meliUrl = `https://www.mercadolivre.com.br/p/${item.id}`;
 
-      await db.insert(affiliateOffers).values({
-        masterProductId: masterProduct.id,
-        networkId: network.id,
-        title: item.name,
-        slug: offerSlug,
-        affiliateUrl: realToolId ? `${meliUrl}?matt_tool_id=${realToolId}` : meliUrl,
-        affiliateLinkPending: !realToolId,
-        imageUrl: item.pictures?.[0]?.url ?? null,
-        externalRef: item.id,
-        // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.
-        currentPriceCents: 0,
-        status: 'active',
-        publishedAt: new Date(),
-      });
+      // onConflictDoNothing (não só o SELECT acima) é o que de fato impede a
+      // duplicata quando dois termos de busca em paralelo (TERM_CONCURRENCY)
+      // processam o mesmo item.id ao mesmo tempo — os dois passam pelo SELECT
+      // antes de qualquer um commitar o INSERT; só o índice único do banco
+      // resolve essa corrida.
+      const [insertedOffer] = await db
+        .insert(affiliateOffers)
+        .values({
+          masterProductId: masterProduct.id,
+          networkId: network.id,
+          title: item.name,
+          slug: offerSlug,
+          affiliateUrl: realToolId ? `${meliUrl}?matt_tool_id=${realToolId}` : meliUrl,
+          affiliateLinkPending: !realToolId,
+          imageUrl: item.pictures?.[0]?.url ?? null,
+          externalRef: item.id,
+          // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.
+          currentPriceCents: 0,
+          status: 'active',
+          publishedAt: new Date(),
+        })
+        .onConflictDoNothing({
+          target: [affiliateOffers.networkId, affiliateOffers.externalRef],
+          // Precisa bater exatamente com o predicado do índice parcial
+          // (affiliate_offers_network_external_ref_uq) — sem isso o Postgres
+          // não reconhece o alvo do conflito. seller_id sempre nulo aqui
+          // (placeholder de catálogo, nunca vendedor específico).
+          where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
+        })
+        .returning({ id: affiliateOffers.id });
 
-      result.created++;
-      result.createdTitles.push(item.name);
+      if (insertedOffer) {
+        result.created++;
+        result.createdTitles.push(item.name);
+      } else {
+        result.alreadyExisted++;
+      }
     } catch (err) {
       result.errors.push({ term: searchTerm.term, message: `${item.id}: ${(err as Error).message}` });
     }
@@ -695,6 +737,20 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
 
           if (existing) continue;
 
+          // Ver nota equivalente em searchAndIngestTerm (2026-07-30) — o
+          // `existing` acima só pega catalog_product_id exato repetido, não
+          // pega o caso de catalog_product_id "gêmeo" reaproveitando o
+          // master_product certo via similaridade mas criando oferta nova
+          // toda vez. externalRef aqui é item.id (o ID do anúncio em si, não
+          // o meliCatalogId com fallback), então a checagem usa o mesmo valor.
+          const [existingOffer] = await db
+            .select({ id: affiliateOffers.id })
+            .from(affiliateOffers)
+            .where(and(eq(affiliateOffers.networkId, network.id), eq(affiliateOffers.externalRef, item.id)))
+            .limit(1);
+
+          if (existingOffer) continue;
+
           // Varredura de categoria ampla (ex: "Video Games Geral") mistura
           // jogo/console/acessório no mesmo resultado — sem essa checagem,
           // console e acessório que caíssem aqui virariam 'game' por padrão
@@ -787,7 +843,17 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
               status: 'active',
               publishedAt: new Date(),
             })
+            .onConflictDoNothing({
+              target: [affiliateOffers.networkId, affiliateOffers.externalRef],
+              // Precisa bater exatamente com o predicado do índice parcial
+              // (affiliate_offers_network_external_ref_uq) — sem isso o
+              // Postgres não reconhece o alvo do conflito. seller_id sempre
+              // nulo aqui (placeholder de catálogo, nunca vendedor específico).
+              where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
+            })
             .returning({ id: affiliateOffers.id });
+
+          if (!newOffer) continue;
 
           if (priceCents > 0) {
             await recordPriceSnapshot({ offerId: newOffer.id, priceCents, source: 'api' });

@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "affiliate_offers_network_external_ref_uq" ON "affiliate_offers" USING btree ("network_id","external_ref") WHERE external_ref IS NOT NULL AND seller_id IS NULL;

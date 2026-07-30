@@ -81,6 +81,22 @@ export const affiliateOffers = pgTable(
   },
   (t) => [
     uniqueIndex('affiliate_offers_slug_uq').on(t.slug),
+    // Achado real (2026-07-30): descoberta automática do Mercado Livre rodava
+    // termos de busca em paralelo (4 por vez) e, quando o mesmo anúncio
+    // aparecia em vários termos (jogo popular casa em vários gêneros), cada
+    // ocorrência reusava o master_product certo (dedup por similaridade
+    // funcionava) mas criava um placeholder de CATÁLOGO novo (seller_id
+    // nulo) sem checar se já existia um pro mesmo (network, external_ref) —
+    // 28.673 ofertas duplicadas encontradas num total de 29.804 (96% da
+    // tabela era lixo), todas com seller_id nulo. `WHERE seller_id IS NULL`
+    // é essencial: collect-prices.ts cria de propósito VÁRIAS ofertas com o
+    // MESMO external_ref (o catalog_product_id) quando vários vendedores
+    // reais competem pelo mesmo anúncio — cada vendedor com seu próprio
+    // seller_id (ver applySnapshotsToGroup). Restringir sem esse filtro
+    // quebraria esse caso legítimo.
+    uniqueIndex('affiliate_offers_network_external_ref_uq')
+      .on(t.networkId, t.externalRef)
+      .where(sql`external_ref IS NOT NULL AND seller_id IS NULL`),
     index('affiliate_offers_master_idx').on(t.masterProductId),
     index('affiliate_offers_network_idx').on(t.networkId),
     index('affiliate_offers_status_published_idx')
