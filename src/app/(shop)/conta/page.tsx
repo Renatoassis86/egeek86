@@ -77,7 +77,7 @@ export default async function ContaPage({
                   <ShieldCheck className="size-3 mr-1" /> Perfil Verificado
                 </Badge>
               ) : (
-                <Badge variant="outline" className="border-blue-500/50 text-blue-400">
+                <Badge variant="outline" className="border-amber-500/50 text-amber-400">
                   ⚡ Nível 12 (Colecionador)
                 </Badge>
               )}

@@ -130,8 +130,8 @@ export default function TermosPage() {
             <Text variant="body-sm" color="secondary" className="leading-relaxed">
               O portal Espaço Geek 86 atua exclusivamente como intermediador tecnológico e vitrine de inteligência, disponibilizando a infraestrutura para aproximação de compradores, parceiros afiliados e colecionadores vendedores (C2C e B2C).
             </Text>
-            <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)]/40 border border-blue-500/30 flex flex-col gap-2 my-1">
-              <Text variant="body-sm" className="font-bold text-blue-400">
+            <div className="p-4 rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)]/40 border border-amber-500/30 flex flex-col gap-2 my-1">
+              <Text variant="body-sm" className="font-bold text-amber-400">
                 ⚠️ Limitação de Responsabilidade da Administração
               </Text>
               <Text variant="caption" color="secondary" className="leading-relaxed">

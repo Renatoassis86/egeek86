@@ -16,7 +16,7 @@ const focalMap: Record<SceneFocal, string> = {
 };
 
 const toneStops: Record<SceneTone, string> = {
-  gold: 'radial-gradient(80% 70% at 70% 30%, rgba(59,130,246,0.22) 0%, transparent 60%), radial-gradient(90% 80% at 30% 80%, rgba(20,16,10,0.9) 0%, rgba(6,5,4,1) 100%)',
+  gold: 'radial-gradient(80% 70% at 70% 30%, rgba(224,168,59,0.22) 0%, transparent 60%), radial-gradient(90% 80% at 30% 80%, rgba(20,16,10,0.9) 0%, rgba(6,5,4,1) 100%)',
   ember:
     'radial-gradient(70% 60% at 60% 30%, rgba(232,114,28,0.20) 0%, transparent 60%), radial-gradient(90% 80% at 30% 80%, rgba(30,16,8,0.85) 0%, rgba(6,5,4,1) 100%)',
   ink: 'radial-gradient(60% 60% at 50% 30%, rgba(242,233,216,0.08) 0%, transparent 60%), linear-gradient(180deg, rgba(11,9,8,1) 0%, rgba(6,5,4,1) 100%)',

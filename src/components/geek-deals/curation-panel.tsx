@@ -403,7 +403,7 @@ export function CurationPanel({
                     <div>
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] truncate max-w-[200px]">{rev.productTitle}</span>
-                        <div className="flex text-blue-400">
+                        <div className="flex text-amber-400">
                           {Array.from({ length: rev.rating }).map((_, i) => (
                             <Star key={i} className="size-3 fill-current" />
                           ))}

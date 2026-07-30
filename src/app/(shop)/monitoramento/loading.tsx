@@ -17,7 +17,7 @@ export default function MonitoramentoLoading() {
         <div className="lg:col-span-8 h-96 bg-zinc-900/80 border border-zinc-800/60 rounded-xl p-6 space-y-6">
           <div className="h-10 w-full bg-zinc-800/50 rounded-lg flex justify-between items-center px-4">
             <div className="h-5 w-48 bg-zinc-700/60 rounded" />
-            <div className="h-6 w-24 bg-blue-500/20 rounded" />
+            <div className="h-6 w-24 bg-amber-500/20 rounded" />
           </div>
           <div className="h-64 w-full bg-zinc-800/30 rounded-lg flex items-center justify-center">
             <div className="h-4 w-40 bg-zinc-700/50 rounded" />

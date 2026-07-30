@@ -41,19 +41,18 @@
   --color-border-subtle: #221E19;
   --color-border-default: #2C2620;
   --color-border-strong: #453C31;
-  --color-border-focus: #3B82F6;
+  --color-border-focus: #E0A83B;
 
-  --color-accent-primary: #3B82F6;
-  --color-accent-primary-hover: #2563EB;
-  --color-accent-primary-muted: rgb(59 130 246 / 0.14);
+  --color-accent-primary: #E0A83B;
+  --color-accent-primary-hover: #C99230;
+  --color-accent-primary-muted: rgb(224 168 59 / 0.14);
   /* Achado real (2026-07-30): usada em 13 arquivos (ranking, gamer-survey,
    * price-table-board, admin etc.) mas nunca tinha sido definida em lugar
    * nenhum do CSS — var(--color-accent-gold) sem fallback ficava inválida,
    * essas cores "douradas" nunca funcionaram de verdade. Alias do accent
-   * principal (mesma cor, outro nome histórico), corrige o bug e já entra
-   * na cor nova certa. */
-  --color-accent-gold: #3B82F6;
-  /* Hype fica deliberadamente distinto do accent principal — accent é
+   * principal (mesmo dourado, outro nome histórico), corrige o bug. */
+  --color-accent-gold: #E0A83B;
+  /* Hype fica deliberadamente distinto do dourado principal — dourado é
    * "confiança/marca", hype é "urgência/drop" — virarem a mesma cor perde
    * o sinal visual. */
   --color-accent-hype: #E8721C;
@@ -164,7 +163,7 @@
   --shadow-xl: 0 24px 56px rgb(0 0 0 / 0.65);
   --shadow-card: 0 4px 12px rgb(0 0 0 / 0.40);
   --shadow-card-hover: 0 12px 28px rgb(0 0 0 / 0.55);
-  --shadow-glow-primary: 0 0 24px rgb(59 130 246 / 0.35);
+  --shadow-glow-primary: 0 0 24px rgb(224 168 59 / 0.35);
   --shadow-glow-hype: 0 0 24px rgb(232 114 28 / 0.35);
   --shadow-glow-success: 0 0 20px rgb(16 185 129 / 0.30);
   --shadow-glow-danger: 0 0 20px rgb(239 68 68 / 0.30);
@@ -208,10 +207,10 @@
   --color-border-default: #DDD2B8;
   --color-border-strong: #C4B592;
 
-  --color-accent-primary: #2563EB;
-  --color-accent-primary-hover: #1D4ED8;
-  --color-accent-primary-muted: rgb(37 99 235 / 0.12);
-  --color-accent-gold: #2563EB;
+  --color-accent-primary: #B8860B;
+  --color-accent-primary-hover: #9C7209;
+  --color-accent-primary-muted: rgb(184 134 11 / 0.12);
+  --color-accent-gold: #B8860B;
   --color-accent-hype: #D65A00;
   --color-accent-hype-muted: rgb(214 90 0 / 0.12);
 
@@ -246,10 +245,10 @@
   --color-border-default: #2C2620;
   --color-border-strong: #453C31;
 
-  --color-accent-primary: #3B82F6;
-  --color-accent-primary-hover: #2563EB;
-  --color-accent-primary-muted: rgb(59 130 246 / 0.14);
-  --color-accent-gold: #3B82F6;
+  --color-accent-primary: #E0A83B;
+  --color-accent-primary-hover: #C99230;
+  --color-accent-primary-muted: rgb(224 168 59 / 0.14);
+  --color-accent-gold: #E0A83B;
   --color-accent-hype: #E8721C;
   --color-accent-hype-muted: rgb(232 114 28 / 0.14);
 

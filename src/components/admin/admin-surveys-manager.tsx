@@ -186,11 +186,11 @@ export function AdminSurveysManager({
 
       {/* Formulário de Criação de Enquete */}
       {isCreating && (
-        <Card className="border border-blue-500/40 bg-[var(--color-bg-inset)]/60 shadow-xl">
+        <Card className="border border-amber-500/40 bg-[var(--color-bg-inset)]/60 shadow-xl">
           <CardContent className="p-6 flex flex-col gap-4">
-            <div className="flex items-center gap-2 border-b border-blue-500/20 pb-3">
-              <Sparkles className="size-5 text-blue-400" />
-              <Text variant="heading-sm" className="font-bold text-blue-400">
+            <div className="flex items-center gap-2 border-b border-amber-500/20 pb-3">
+              <Sparkles className="size-5 text-amber-400" />
+              <Text variant="heading-sm" className="font-bold text-amber-400">
                 Cadastrar Nova Enquete / Pergunta
               </Text>
             </div>
@@ -205,7 +205,7 @@ export function AdminSurveysManager({
                   placeholder="Ex: Qual o lançamento mais aguardado de 2026?"
                   value={formQuestion}
                   onChange={(e) => setFormQuestion(e.target.value)}
-                  className="rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export function AdminSurveysManager({
                   placeholder="Ex: Consoles, Jogos, Hardware"
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value)}
-                  className="rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
               </div>
             </div>
@@ -232,7 +232,7 @@ export function AdminSurveysManager({
                 value={formOptionsText}
                 onChange={(e) => setFormOptionsText(e.target.value)}
                 placeholder="Nintendo Switch 2&#10;PlayStation 5 Pro&#10;PC Gamer High-End"
-                className="w-full rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] p-3 text-sm text-[var(--color-text-primary)] font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-[var(--radius-sm)] bg-[var(--color-bg-canvas)] border border-[var(--color-border-default)] p-3 text-sm text-[var(--color-text-primary)] font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
 
@@ -304,8 +304,8 @@ export function AdminSurveysManager({
 
                   {/* Edição Form Inline */}
                   {isEditing ? (
-                    <div className="flex flex-col gap-3 bg-[var(--color-bg-inset)] p-4 rounded-[var(--radius-md)] border border-blue-500/30">
-                      <Text variant="label" className="text-blue-400 font-bold text-xs">
+                    <div className="flex flex-col gap-3 bg-[var(--color-bg-inset)] p-4 rounded-[var(--radius-md)] border border-amber-500/30">
+                      <Text variant="label" className="text-amber-400 font-bold text-xs">
                         Editar Pergunta e Opções:
                       </Text>
                       <input
@@ -373,7 +373,7 @@ export function AdminSurveysManager({
                               <Text variant="body-sm" className="relative font-medium text-[var(--color-text-primary)] truncate z-10">
                                 {opt.label}
                               </Text>
-                              <Text variant="caption" className="relative font-bold text-blue-400 z-10 shrink-0 ml-2">
+                              <Text variant="caption" className="relative font-bold text-amber-400 z-10 shrink-0 ml-2">
                                 {opt.votes} ({pct}%)
                               </Text>
                             </div>

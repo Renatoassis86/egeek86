@@ -154,7 +154,7 @@ export default async function AdminUsersPage() {
                             <Badge variant="outline">Comprador</Badge>
                           )}
                           {hasPendingCollector && (
-                            <span className="text-[10px] font-mono text-blue-400 block mt-1">⚠️ Cadastro em análise</span>
+                            <span className="text-[10px] font-mono text-amber-400 block mt-1">⚠️ Cadastro em análise</span>
                           )}
                         </td>
 

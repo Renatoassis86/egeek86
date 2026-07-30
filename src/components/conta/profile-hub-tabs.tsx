@@ -205,8 +205,8 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
             <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
               <div className="flex items-center justify-between mb-3">
                 <Text variant="caption" color="tertiary">Reputação na Comunidade</Text>
-                <div className="flex items-center gap-1 text-blue-400 text-xs font-bold">
-                  <Star className="size-4 fill-blue-400" /> 4.9/5.0
+                <div className="flex items-center gap-1 text-amber-400 text-xs font-bold">
+                  <Star className="size-4 fill-amber-400" /> 4.9/5.0
                 </div>
               </div>
               <Text variant="heading-lg" className="font-black text-2xl">18 Transações</Text>
@@ -221,11 +221,11 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
               Insígnias & Conquistas Desbloqueadas
             </Text>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-blue-500/30 text-center">
-                <div className="relative size-12 rounded-full overflow-hidden border border-blue-400/50">
+              <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-amber-500/30 text-center">
+                <div className="relative size-12 rounded-full overflow-hidden border border-amber-400/50">
                   <Image src="/images/conta/collector-badge.png" alt="Badge" fill className="object-cover" />
                 </div>
-                <Text variant="body-sm" className="font-bold text-blue-400">Guardião do Vault</Text>
+                <Text variant="body-sm" className="font-bold text-amber-400">Guardião do Vault</Text>
                 <Text variant="caption" color="secondary" className="text-[10px]">Cadastrou +5 itens raros no acervo</Text>
               </div>
 
@@ -375,9 +375,9 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
           </div>
 
           {!isSellerActive ? (
-            <div className="p-8 rounded-[var(--radius-lg)] border border-blue-500/30 bg-blue-500/5 text-center flex flex-col items-center gap-3">
-              <ShieldCheck className="size-8 text-blue-400" />
-              <Text variant="heading-sm" className="font-bold text-blue-400">Credenciamento de Colecionador Necessário</Text>
+            <div className="p-8 rounded-[var(--radius-lg)] border border-amber-500/30 bg-amber-500/5 text-center flex flex-col items-center gap-3">
+              <ShieldCheck className="size-8 text-amber-400" />
+              <Text variant="heading-sm" className="font-bold text-amber-400">Credenciamento de Colecionador Necessário</Text>
               <Text variant="body-sm" color="secondary" className="max-w-[50ch]">
                 Para publicar e vender seus próprios itens na Hype Zone, efetue o cadastro de colecionador. Após a validação administrativa, você poderá cadastrar seus drops ilimitadamente.
               </Text>

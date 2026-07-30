@@ -41,15 +41,15 @@ export function AdminAnalyticsDashboard({
   // Faixas do Histograma de Preços com Cores Vibrantes Distintas
   const priceHistogram = [
     { range: 'Até R$ 100', count: 1240, percent: 17, label: 'Jogos Retro & Acessórios', barGradient: 'bg-gradient-to-r from-emerald-500 to-teal-400', badgeColor: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' },
-    { range: 'R$ 100 - R$ 250', count: 2890, percent: 40, label: 'Mídias PS4 / Xbox One / Indie', barGradient: 'bg-gradient-to-r from-blue-400 to-yellow-300', badgeColor: 'bg-blue-500/20 text-blue-300 border-blue-500/40' },
-    { range: 'R$ 250 - R$ 450', count: 1950, percent: 27, label: 'Lançamentos PS5 & Switch', barGradient: 'bg-gradient-to-r from-orange-500 to-blue-500', badgeColor: 'bg-orange-500/20 text-orange-400 border-orange-500/40' },
+    { range: 'R$ 100 - R$ 250', count: 2890, percent: 40, label: 'Mídias PS4 / Xbox One / Indie', barGradient: 'bg-gradient-to-r from-amber-400 to-yellow-300', badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
+    { range: 'R$ 250 - R$ 450', count: 1950, percent: 27, label: 'Lançamentos PS5 & Switch', barGradient: 'bg-gradient-to-r from-orange-500 to-amber-500', badgeColor: 'bg-orange-500/20 text-orange-400 border-orange-500/40' },
     { range: 'R$ 450 - R$ 1.500', count: 780, percent: 11, label: 'Controles, Headsets & Ed. Especiais', barGradient: 'bg-gradient-to-r from-rose-500 to-pink-500', badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40' },
     { range: 'Acima de R$ 1.500', count: 291, percent: 5, label: 'Consoles PS5, Switch 2 & PC Gamer', barGradient: 'bg-gradient-to-r from-purple-500 to-indigo-500', badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40' },
   ];
 
   // Lojas & Marketplaces Monitorados com Cores da Marca
   const storeShare = [
-    { store: 'Mercado Livre', count: 4147, percent: 58, logoBg: 'bg-blue-400 text-slate-950 font-black', barColor: 'bg-gradient-to-r from-blue-400 via-yellow-400 to-blue-500', badge: 'API 24/7' },
+    { store: 'Mercado Livre', count: 4147, percent: 58, logoBg: 'bg-amber-400 text-slate-950 font-black', barColor: 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500', badge: 'API 24/7' },
     { store: 'Shopee Brasil', count: 1573, percent: 22, logoBg: 'bg-orange-600 text-white font-black', barColor: 'bg-gradient-to-r from-orange-500 to-red-500', badge: 'Live Scrape' },
     { store: 'Magazine Luiza', count: 858, percent: 12, logoBg: 'bg-blue-600 text-white font-black', barColor: 'bg-gradient-to-r from-blue-500 to-cyan-400', badge: 'Auto Ingest' },
     { store: 'Amazon Brasil', count: 357, percent: 5, logoBg: 'bg-emerald-600 text-white font-black', barColor: 'bg-gradient-to-r from-emerald-500 to-teal-400', badge: 'Parceiro' },
@@ -58,7 +58,7 @@ export function AdminAnalyticsDashboard({
 
   // Estados & Hubs Logísticos no Brasil com Cores Individuais
   const brazilRegions = [
-    { uf: 'SP', name: 'São Paulo', percent: 62, count: 4433, hub: 'Hubs Cotia, Louveira e Guarulhos', color: '#f59e0b', bgClass: 'from-blue-500/20 via-blue-950/40 to-transparent border-blue-500/40 text-blue-300' },
+    { uf: 'SP', name: 'São Paulo', percent: 62, count: 4433, hub: 'Hubs Cotia, Louveira e Guarulhos', color: '#f59e0b', bgClass: 'from-amber-500/20 via-amber-950/40 to-transparent border-amber-500/40 text-amber-300' },
     { uf: 'SC', name: 'Santa Catarina', percent: 14, count: 1001, hub: 'Hubs Importação & Retrogaming', color: '#3b82f6', bgClass: 'from-blue-500/20 via-blue-950/40 to-transparent border-blue-500/40 text-blue-300' },
     { uf: 'MG', name: 'Minas Gerais', percent: 10, count: 715, hub: 'Distribuição Sudeste/Centro-Oeste', color: '#10b981', bgClass: 'from-emerald-500/20 via-emerald-950/40 to-transparent border-emerald-500/40 text-emerald-300' },
     { uf: 'PR', name: 'Paraná', percent: 8, count: 572, hub: 'Polos Logísticos Sul', color: '#a855f7', bgClass: 'from-purple-500/20 via-purple-950/40 to-transparent border-purple-500/40 text-purple-300' },
@@ -97,18 +97,18 @@ export function AdminAnalyticsDashboard({
         </Card>
 
         {/* KPI 2: Bright Amber / Gold Card */}
-        <Card className="relative overflow-hidden border border-blue-500/40 bg-gradient-to-br from-blue-950/90 via-[#221606] to-[#120B03] shadow-lg shadow-blue-950/40">
+        <Card className="relative overflow-hidden border border-amber-500/40 bg-gradient-to-br from-amber-950/90 via-[#221606] to-[#120B03] shadow-lg shadow-amber-950/40">
           <CardContent className="p-5">
-            <div className="flex items-center justify-between text-blue-400">
+            <div className="flex items-center justify-between text-amber-400">
               <span className="text-xs font-black uppercase tracking-wider">Lojas & Marketplaces</span>
-              <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-400/30">
-                <Store className="size-4 text-blue-300" />
+              <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-400/30">
+                <Store className="size-4 text-amber-300" />
               </div>
             </div>
-            <Text variant="heading-xl" className="font-extrabold text-blue-300 mt-3 tabular">
+            <Text variant="heading-xl" className="font-extrabold text-amber-300 mt-3 tabular">
               5 Plataformas
             </Text>
-            <Text variant="caption" className="mt-2 text-blue-400/80 font-medium">
+            <Text variant="caption" className="mt-2 text-amber-400/80 font-medium">
               Mercado Livre, Shopee, Magalu, Amazon & Via
             </Text>
           </CardContent>
@@ -154,19 +154,19 @@ export function AdminAnalyticsDashboard({
       {/* 2. Histograma Multicolorido de Frequência de Preços & Share por Marketplace */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Histograma de Preços em Cores Vibrantes */}
-        <Card className="border border-blue-500/30 bg-gradient-to-b from-[#140F09] to-[#0B0805]">
+        <Card className="border border-amber-500/30 bg-gradient-to-b from-[#140F09] to-[#0B0805]">
           <CardContent className="p-6 flex flex-col gap-5">
-            <div className="flex items-center justify-between border-b border-blue-500/20 pb-4">
+            <div className="flex items-center justify-between border-b border-amber-500/20 pb-4">
               <div>
-                <Text variant="heading-md" className="font-extrabold text-blue-400 flex items-center gap-2">
-                  <BarChart3 className="size-5 text-blue-400" />
+                <Text variant="heading-md" className="font-extrabold text-amber-400 flex items-center gap-2">
+                  <BarChart3 className="size-5 text-amber-400" />
                   Histograma Multicor de Frequência
                 </Text>
                 <Text variant="caption" color="secondary" className="mt-0.5">
                   Distribuição visual de ofertas por faixa de valor
                 </Text>
               </div>
-              <Badge variant="hype" size="sm" className="bg-blue-500 text-slate-950 font-black">
+              <Badge variant="hype" size="sm" className="bg-amber-500 text-slate-950 font-black">
                 7.151 Ofertas
               </Badge>
             </div>
@@ -179,7 +179,7 @@ export function AdminAnalyticsDashboard({
                     <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${item.badgeColor}`}>
                       {item.label}
                     </span>
-                    <span className="font-mono font-extrabold text-blue-300">{item.count} ({item.percent}%)</span>
+                    <span className="font-mono font-extrabold text-amber-300">{item.count} ({item.percent}%)</span>
                   </div>
                   <div className="h-3.5 w-full rounded-full bg-black/60 p-0.5 border border-white/10 overflow-hidden">
                     <div
@@ -322,7 +322,7 @@ export function AdminAnalyticsDashboard({
                       <Text variant="mono-sm" className="font-extrabold text-white">
                         {reg.count} ofertas
                       </Text>
-                      <Text variant="caption" className="block text-[10px] font-bold text-blue-300">
+                      <Text variant="caption" className="block text-[10px] font-bold text-amber-300">
                         {reg.percent}% do inventário nacional
                       </Text>
                     </div>
@@ -349,14 +349,14 @@ export function AdminAnalyticsDashboard({
                 </Text>
               </div>
             </div>
-            <Badge variant="hype" size="sm" className="bg-gradient-to-r from-orange-500 to-blue-500 text-slate-950 font-black">
+            <Badge variant="hype" size="sm" className="bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black">
               Inteligência Artificial Active
             </Badge>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             {/* Card Insight 1: Pauta de Notícia */}
-            <div className="flex flex-col justify-between gap-4 p-5 rounded-[var(--radius-md)] bg-gradient-to-br from-blue-950/60 to-orange-950/40 border border-orange-500/40 shadow-lg">
+            <div className="flex flex-col justify-between gap-4 p-5 rounded-[var(--radius-md)] bg-gradient-to-br from-amber-950/60 to-orange-950/40 border border-orange-500/40 shadow-lg">
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-xs font-black text-orange-400 uppercase tracking-wide">
                   <Newspaper className="size-4 text-orange-400" /> Pauta Relevante para Notícia
@@ -371,7 +371,7 @@ export function AdminAnalyticsDashboard({
 
               <div className="flex items-center gap-2 pt-2 border-t border-orange-500/20">
                 <Link href="/admin/noticias/nova">
-                  <Button variant="hype" size="sm" className="bg-gradient-to-r from-orange-500 to-blue-500 text-slate-950 font-black" onClick={() => handleCreateNewsDraft('Queda de Preços em Jogos de PS5 e Switch')}>
+                  <Button variant="hype" size="sm" className="bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black" onClick={() => handleCreateNewsDraft('Queda de Preços em Jogos de PS5 e Switch')}>
                     <Newspaper className="size-3.5 mr-1" /> 📰 Transformar em Notícia
                   </Button>
                 </Link>

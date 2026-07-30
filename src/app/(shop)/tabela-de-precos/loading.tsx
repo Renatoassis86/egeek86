@@ -15,7 +15,7 @@ export default function TabelaDePrecosLoading() {
           <div key={i} className="h-14 w-full bg-zinc-800/40 rounded-lg flex items-center px-4 justify-between">
             <div className="h-5 w-64 bg-zinc-700/60 rounded" />
             <div className="h-5 w-24 bg-zinc-700/40 rounded" />
-            <div className="h-5 w-20 bg-blue-500/20 rounded" />
+            <div className="h-5 w-20 bg-amber-500/20 rounded" />
           </div>
         ))}
       </div>

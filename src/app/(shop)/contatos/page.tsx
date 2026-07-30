@@ -116,11 +116,11 @@ export default async function ContatosPage() {
           </Reveal>
 
           <Reveal delay={0.15}>
-            <Card className="border-blue-500/30 bg-blue-500/5">
+            <Card className="border-amber-500/30 bg-amber-500/5">
               <CardContent className="p-6 flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-blue-400">
+                <div className="flex items-center gap-2 text-amber-400">
                   <ShieldCheck className="size-5" />
-                  <Text variant="heading-sm" className="font-bold text-blue-400">Credenciamento de Colecionadores</Text>
+                  <Text variant="heading-sm" className="font-bold text-amber-400">Credenciamento de Colecionadores</Text>
                 </div>
                 <Text variant="caption" color="secondary" className="leading-relaxed">
                   Quer cadastrar seu acervo para vender drops ou abrir leilões? O credenciamento é feito diretamente pelo cadastro com upload de foto da coleção + rosto e fica sujeito à aprovação administrativa.

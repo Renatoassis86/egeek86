@@ -7,7 +7,7 @@ type GlowSize = 'sm' | 'md' | 'lg' | 'xl';
 // sincronia manual com --color-accent-primary/--color-accent-hype/--color-text-primary
 // em globals.css. Se a paleta mudar lá, atualizar aqui também.
 const colorMap: Record<GlowColor, string> = {
-  gold: '59 130 246',
+  gold: '224 168 59',
   hype: '232 114 28',
   cream: '242 233 216',
 };

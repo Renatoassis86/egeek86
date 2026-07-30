@@ -190,7 +190,7 @@ export default async function AuctionsPage({
                   <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote de Leilão</Link>
                 </Button>
               ) : seller?.status === 'pending_kyc' ? (
-                <Button asChild size="lg" variant="outline" className="border-blue-500/60 text-blue-400 font-bold">
+                <Button asChild size="lg" variant="outline" className="border-amber-500/60 text-amber-400 font-bold">
                   <Link href="/conta/vendedor">⏳ Credenciamento em Análise</Link>
                 </Button>
               ) : (
@@ -218,7 +218,7 @@ export default async function AuctionsPage({
                   <Gavel className="size-3.5" /> Credenciamento de Leiloeiro
                 </Badge>
                 {seller?.status === 'pending_kyc' && (
-                  <Badge variant="outline" className="border-blue-500/50 text-blue-400">
+                  <Badge variant="outline" className="border-amber-500/50 text-amber-400">
                     <Clock className="size-3 mr-1" /> Cadastro em Análise Admin
                   </Badge>
                 )}
@@ -247,7 +247,7 @@ export default async function AuctionsPage({
                   </Button>
                 </>
               ) : seller?.status === 'pending_kyc' ? (
-                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-blue-500/50 text-blue-400 font-bold">
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-amber-500/50 text-amber-400 font-bold">
                   <Link href="/conta/vendedor">Ver Status da Análise</Link>
                 </Button>
               ) : seller?.status === 'active' || profile?.role === 'admin' ? (
@@ -421,12 +421,12 @@ export default async function AuctionsPage({
               </div>
             </Card>
           ) : seller?.status === 'pending_kyc' ? (
-            <Card className="border-blue-500/30 bg-blue-500/5 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
-              <div className="flex size-14 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 mx-auto">
+            <Card className="border-amber-500/30 bg-amber-500/5 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
+              <div className="flex size-14 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mx-auto">
                 <Clock className="size-8" />
               </div>
               <div className="flex flex-col gap-2">
-                <Badge variant="outline" className="w-fit mx-auto border-blue-500/40 text-blue-400">
+                <Badge variant="outline" className="w-fit mx-auto border-amber-500/40 text-amber-400">
                   Em Análise pela Administração
                 </Badge>
                 <Text variant="heading-md">Aguardando Liberação</Text>

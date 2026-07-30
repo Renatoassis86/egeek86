@@ -64,12 +64,12 @@ export default async function CollectorDashboardPage() {
     return (
       <section className="mx-auto max-w-4xl px-4 lg:px-8 py-12">
         <Reveal>
-          <Card className="border-blue-500/30 bg-blue-500/5 p-8 text-center flex flex-col items-center gap-6">
-            <div className="flex size-16 items-center justify-center rounded-full bg-blue-500/10 text-blue-400">
+          <Card className="border-amber-500/30 bg-amber-500/5 p-8 text-center flex flex-col items-center gap-6">
+            <div className="flex size-16 items-center justify-center rounded-full bg-amber-500/10 text-amber-400">
               <Clock className="size-8" />
             </div>
             <div className="flex flex-col gap-2 max-w-md">
-              <Badge variant="outline" className="w-fit mx-auto border-blue-500/40 text-blue-400">
+              <Badge variant="outline" className="w-fit mx-auto border-amber-500/40 text-amber-400">
                 Cadastro em Análise
               </Badge>
               <Text variant="heading-lg">Credenciamento Pendente</Text>

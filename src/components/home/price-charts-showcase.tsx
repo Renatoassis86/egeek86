@@ -86,7 +86,7 @@ function GlobalMetrics() {
   const [hoveredSlice, setHoveredSlice] = useState<string | null>(null);
 
   const platformShare = [
-    { name: 'Mobile', percent: 49, val: '$92B', color: 'bg-blue-500', icon: Smartphone, desc: 'Fatia dominante puxada por microtransações e acessibilidade móvel.' },
+    { name: 'Mobile', percent: 49, val: '$92B', color: 'bg-amber-500', icon: Smartphone, desc: 'Fatia dominante puxada por microtransações e acessibilidade móvel.' },
     { name: 'Consoles', percent: 28, val: '$51B', color: 'bg-[var(--color-accent-primary)]', icon: Gamepad2, desc: 'Hardware dedicado e lançamentos físicos/digitais AAA.' },
     { name: 'PC', percent: 23, val: '$43B', color: 'bg-emerald-500', icon: Laptop, desc: 'Maior taxa de crescimento relativo entre todos os grandes segmentos (+10.4%).' },
   ];

@@ -13,12 +13,12 @@ export function NeuralCircuitDivider({ className, variant = 'gold' }: NeuralCirc
       ? 'text-purple-500'
       : variant === 'subtle'
       ? 'text-zinc-400'
-      : 'text-blue-400';
+      : 'text-amber-400';
 
   return (
     <div className={cn('relative w-full py-4 flex items-center justify-center overflow-hidden pointer-events-none select-none', className)}>
       {/* Linha Divisória Horizontal Base com Fade Gradiente nas Pontas */}
-      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-blue-500/25 to-transparent opacity-60" />
+      <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-amber-500/25 to-transparent opacity-60" />
 
       {/* SVG de Redes Neurais e Circuitos Eletrônicos (Muito Transparente e Clean) */}
       <svg

@@ -67,7 +67,7 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
             {coupon.networkName}
           </span>
           {coupon.badgeText && (
-            <Badge className="text-[10px] gap-1 py-0 px-1.5 font-bold uppercase tracking-wider bg-blue-500 text-black border-blue-400 truncate max-w-[90px] sm:max-w-none">
+            <Badge className="text-[10px] gap-1 py-0 px-1.5 font-bold uppercase tracking-wider bg-amber-500 text-black border-amber-400 truncate max-w-[90px] sm:max-w-none">
               <Sparkles className="size-3 shrink-0" />
               <span className="truncate">{coupon.badgeText}</span>
             </Badge>
@@ -120,7 +120,7 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
       <div className="flex items-center justify-between gap-2 rounded-[var(--radius-md)] border-2 border-dashed border-emerald-400/60 bg-black/40 p-2.5">
         <div className="flex items-center gap-2 min-w-0">
           <Ticket className="size-4 text-emerald-400 shrink-0" aria-hidden />
-          <span className="font-mono text-base font-black tracking-widest text-blue-300 truncate">
+          <span className="font-mono text-base font-black tracking-widest text-amber-300 truncate">
             {coupon.code}
           </span>
         </div>
@@ -129,7 +129,7 @@ export function CouponCarousel({ coupons }: { coupons: DisplayCoupon[] }) {
           className={cn(
             'h-8 px-3.5 text-xs font-black gap-1.5 shrink-0 transition-all shadow-md',
             copiedId === coupon.id
-              ? 'bg-blue-400 text-black border border-blue-300'
+              ? 'bg-amber-400 text-black border border-amber-300'
               : 'bg-emerald-500 hover:bg-emerald-400 text-black border border-emerald-400'
           )}
           onClick={() => handleCopy(coupon.code, coupon.id)}

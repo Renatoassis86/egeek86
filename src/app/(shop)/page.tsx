@@ -137,9 +137,9 @@ function Cluster({
   accentColor?: 'gold' | 'emerald';
 }) {
   const isEmerald = accentColor === 'emerald';
-  const labelBadgeBg = isEmerald ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-blue-500/20 text-blue-300 border-blue-500/40';
-  const iconColor = isEmerald ? 'text-emerald-400' : 'text-blue-400';
-  const cardBorderHover = isEmerald ? 'hover:border-emerald-400/80 hover:bg-[#073629]' : 'hover:border-blue-400/80 hover:bg-[#2e1747]';
+  const labelBadgeBg = isEmerald ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border-amber-500/40';
+  const iconColor = isEmerald ? 'text-emerald-400' : 'text-amber-400';
+  const cardBorderHover = isEmerald ? 'hover:border-emerald-400/80 hover:bg-[#073629]' : 'hover:border-amber-400/80 hover:bg-[#2e1747]';
 
   return (
     <section className="relative w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24 overflow-hidden border-b border-white/10">
@@ -232,7 +232,7 @@ function MarketStatsSection() {
               src="/images/home/painel-analitico-86-light.png"
               className="text-[160px] leading-none sm:text-[240px] lg:text-[320px] xl:text-[360px] font-black"
             />
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/40 w-fit">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
               Painel Analítico
             </span>
             <Text as="h2" variant="display-lg" className="font-black tracking-tight text-white">
@@ -286,7 +286,7 @@ const MARKET_NUMBERS: StatBarItem[] = [
 
 function MarketNumbersSection() {
   return (
-    <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-blue-900/10 py-20 lg:py-28">
+    <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
         <Reveal>
           <div className="flex flex-col gap-4">
@@ -329,14 +329,14 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
   }));
 
   return (
-    <section data-theme="light" className="w-full bg-gradient-to-br from-blue-500/10 via-orange-500/5 to-blue-600/10 border-b border-blue-300/40 py-20 lg:py-28">
+    <section data-theme="light" className="w-full bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-600/10 border-b border-amber-300/40 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1.3fr_1fr] lg:gap-14 lg:items-center">
         <Reveal>
           <GamerSurvey initialOptions={initialOptions} />
         </Reveal>
         <Reveal delay={0.08}>
           <div className="flex flex-col gap-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-500/20 text-blue-700 border border-blue-500/40 w-fit">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-700 border border-amber-500/40 w-fit">
               Voz da Comunidade
             </span>
             <Text as="h2" variant="display-lg" className="font-black text-zinc-900 tracking-tight">
@@ -407,7 +407,7 @@ function StatementBand() {
     <section data-theme="dark" className="w-full bg-[#0F0C08] border-b border-[var(--color-border-subtle)] py-10 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
-          <div className="relative isolate min-h-[340px] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-xl)] border border-blue-500/30 shadow-2xl bg-[#0B0805] flex flex-col justify-center">
+          <div className="relative isolate min-h-[340px] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805] flex flex-col justify-center">
             <Image
               src="/images/home/statement-band.png"
               alt="Cockpit de inteligência de preço Espaço Geek 86"
@@ -421,9 +421,9 @@ function StatementBand() {
             <CornerBrackets inset={16} size={20} />
 
             <div className="relative flex h-full items-center p-4 sm:p-8 lg:p-14 z-10">
-              <div className="w-full max-w-xl rounded-[var(--radius-xl)] border border-blue-500/30 bg-[#0F0C08]/90 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
-                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-blue-400">
-                  <History className="size-4 text-blue-400" aria-hidden />
+              <div className="w-full max-w-xl rounded-[var(--radius-xl)] border border-amber-500/30 bg-[#0F0C08]/90 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
+                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-400">
+                  <History className="size-4 text-amber-400" aria-hidden />
                   <span>Por trás de cada preço</span>
                 </div>
                 <Text as="h2" variant="display-md" className="mt-2 font-black text-white tracking-tight text-xl sm:text-3xl lg:text-4xl leading-snug">
@@ -873,7 +873,7 @@ function InteligenciaGamerTeaserSection() {
               <Reveal delay={0.12}>
                 <Card className="h-full">
                   <CardContent className="p-5 flex flex-col gap-3">
-                    <div className="flex size-9 items-center justify-center rounded-full bg-blue-500/10 text-blue-500">
+                    <div className="flex size-9 items-center justify-center rounded-full bg-amber-500/10 text-amber-500">
                       <FileText className="size-4" />
                     </div>
                     <Text variant="heading-sm" className="font-bold">Pesquisas Teóricas</Text>
@@ -1082,7 +1082,7 @@ function Benefits() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
           <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-left">
-            <span className="text-xs font-bold text-blue-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
               🛡️ Curadoria de Especialistas & Selo de Autenticidade Verificado
             </span>
           </div>
@@ -1102,7 +1102,7 @@ function NewsletterCTA() {
         <div className="relative grid items-center gap-8 p-8 lg:grid-cols-12 lg:gap-12 lg:p-14">
           <div className="lg:col-span-7 flex flex-col justify-center">
             <Reveal>
-              <Badge variant="outline" size="md" className="mb-5 border-blue-500/40 text-blue-400">
+              <Badge variant="outline" size="md" className="mb-5 border-amber-500/40 text-amber-400">
                 Comunidade & Clube VIP
               </Badge>
               <Text as="h2" variant="display-lg" className="max-w-[18ch]">

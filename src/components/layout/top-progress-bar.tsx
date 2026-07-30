@@ -34,7 +34,7 @@ export function TopProgressBar() {
       className="fixed top-0 left-0 right-0 z-[99999] pointer-events-none h-1 bg-transparent overflow-hidden"
     >
       <div
-        className="h-full bg-gradient-to-r from-blue-500 via-yellow-400 to-emerald-400 shadow-[0_0_10px_#f59e0b] transition-all duration-300 ease-out"
+        className="h-full bg-amber-500 shadow-[0_0_10px_#f59e0b] transition-all duration-300 ease-out"
         style={{
           width: `${progress}%`,
           opacity: loading ? 1 : 0,

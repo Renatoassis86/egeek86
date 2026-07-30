@@ -99,7 +99,7 @@ export default async function AdminDataSciencePage() {
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex flex-col gap-2 max-w-2xl">
             <div className="flex items-center gap-2">
-              <Badge variant="hype" size="md" className="gap-1.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white font-bold">
+              <Badge variant="hype" size="md" className="gap-1.5 bg-gradient-to-r from-purple-600 to-amber-500 text-white font-bold">
                 <BrainCircuit className="size-3.5" />
                 NEXUS Data Science Lab
               </Badge>
@@ -147,15 +147,15 @@ export default async function AdminDataSciencePage() {
           </CardContent>
         </Card>
 
-        <Card variant="elevated" className="border-blue-500/20 bg-[var(--color-bg-surface)]">
+        <Card variant="elevated" className="border-amber-500/20 bg-[var(--color-bg-surface)]">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <Text variant="caption" color="tertiary" className="font-semibold uppercase tracking-wider text-[10px]">
                 Sentimento Social (NLP)
               </Text>
-              <Activity className="size-4 text-blue-400" />
+              <Activity className="size-4 text-amber-400" />
             </div>
-            <Text variant="display-md" className="tabular mt-2 text-2xl font-black text-blue-400">
+            <Text variant="display-md" className="tabular mt-2 text-2xl font-black text-amber-400">
               +0.78 / 1.00
             </Text>
             <Text variant="caption" color="tertiary" className="mt-1 text-[11px]">
