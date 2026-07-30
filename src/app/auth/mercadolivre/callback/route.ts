@@ -16,7 +16,7 @@ function htmlResponse(title: string, message: string, ok: boolean) {
 export async function GET(request: NextRequest) {
   await requireAdmin();
 
-  const { searchParams, origin } = request.nextUrl;
+  const { searchParams } = request.nextUrl;
   const code = searchParams.get('code');
   const error = searchParams.get('error');
 
@@ -28,7 +28,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    await exchangeCodeForTokens(code, `${origin}/auth/mercadolivre/callback`);
+    // Precisa ser EXATAMENTE a mesma string usada em /auth/mercadolivre/start
+    // pra montar a URL de autorização — o Mercado Livre exige bater
+    // caractere a caractere nas duas pontas. Usar request.nextUrl.origin
+    // aqui (em vez de NEXT_PUBLIC_APP_URL, a mesma fonte do /start) foi o
+    // bug real (2026-07-30): atrás do proxy da Vercel esse origin não bate
+    // sempre com o domínio público, e o Mercado Livre recusa a troca com
+    // "the redirect_uri does not match the original".
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+    await exchangeCodeForTokens(code, `${appUrl}/auth/mercadolivre/callback`);
     return htmlResponse(
       'Autorização concluída! 🎉',
       'O token do Mercado Livre foi salvo. A coleta automática de preços já pode usar a API.',
