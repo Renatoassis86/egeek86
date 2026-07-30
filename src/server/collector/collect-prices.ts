@@ -11,6 +11,17 @@ import { slugify } from '@/lib/slugify';
 import { mapWithConcurrency } from '@/lib/concurrency';
 import './sources'; // registra os adapters disponíveis (efeito colateral do import)
 
+/**
+ * Depois de N checagens SEGUIDAS sem achar nenhum vendedor ativo pro
+ * catalog_product_id, marca a(s) oferta(s) como 'expired' — achado real
+ * (2026-07-30): antes disso, uma oferta sem vendedor nenhum ficava 'active'
+ * pra sempre, preço congelado na tela, disputando espaço na fila de coleta
+ * com ofertas que ainda estão vivas de verdade. 3 tentativas (~45min-3h
+ * dependendo do intervalo de refresh) dá margem pra não expirar por causa
+ * de uma falha passageira da API.
+ */
+const MAX_CONSECUTIVE_MISSES = 3;
+
 /** Intervalo mínimo entre coletas — catálogo geral. */
 const REFRESH_INTERVAL = sql`interval '15 minutes'`;
 /** Intervalo mínimo entre coletas — jogos com pelo menos um cliente acompanhando (dado "quente"). */
@@ -142,6 +153,19 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       const results = await source.fetchSnapshots(group.externalRef);
       if (results.length === 0) {
         summary.skippedNoOffer += group.offerIds.length;
+        // Incrementa a sequência de falhas e expira quem já bateu o teto —
+        // numa query só (evita ler o valor antes pra decidir o que fazer).
+        await db.execute(sql`
+          UPDATE affiliate_offers
+          SET consecutive_miss_count = consecutive_miss_count + 1,
+              status = CASE
+                WHEN status = 'active' AND consecutive_miss_count + 1 >= ${MAX_CONSECUTIVE_MISSES}
+                THEN 'expired'::affiliate_offer_status
+                ELSE status
+              END,
+              updated_at = now()
+          WHERE id IN (${sql.join(group.offerIds.map((id) => sql`${id}`), sql`, `)})
+        `);
         return;
       }
 
@@ -215,7 +239,7 @@ async function applySnapshotsToGroup(
     });
     await db
       .update(affiliateOffers)
-      .set({ lastCheckedAt: new Date() })
+      .set({ lastCheckedAt: new Date(), consecutiveMissCount: 0 })
       .where(eq(affiliateOffers.id, placeholderOffer.id));
   }
 
@@ -234,6 +258,7 @@ async function applySnapshotsToGroup(
       .select({
         id: affiliateOffers.id,
         affiliateLinkPending: affiliateOffers.affiliateLinkPending,
+        status: affiliateOffers.status,
       })
       .from(affiliateOffers)
       .where(
@@ -325,7 +350,15 @@ async function applySnapshotsToGroup(
     // a mais aqui seria puro desperdício (o pool de conexão roda com max:1,
     // cada round-trip a menos importa de verdade pro tempo total da execução).
     if (!isNewOffer) {
-      const updateData: Partial<typeof affiliateOffers.$inferInsert> = { sellerId };
+      // Achou vendedor de novo pra essa oferta — zera a sequência de falhas
+      // (ver MAX_CONSECUTIVE_MISSES). Também reativa quem tinha sido
+      // marcada 'expired' por engano numa falha passageira e voltou a
+      // aparecer, em vez de ficar presa fora do catálogo pra sempre.
+      const updateData: Partial<typeof affiliateOffers.$inferInsert> = {
+        sellerId,
+        consecutiveMissCount: 0,
+        status: existingOffer.status === 'expired' ? 'active' : existingOffer.status,
+      };
       // Se o link de afiliado ainda está pendente, atualiza o placeholder com a URL do anúncio específico
       if (existingOffer.affiliateLinkPending && result.externalItemId && group.networkSlug === 'mercado-livre') {
         const realToolId = process.env.MELI_TOOL_ID;

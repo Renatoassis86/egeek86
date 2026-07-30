@@ -4,6 +4,7 @@ import {
   text,
   bigint,
   boolean,
+  integer,
   timestamp,
   uniqueIndex,
   index,
@@ -50,6 +51,13 @@ export const affiliateOffers = pgTable(
     // Nulo enquanto a oferta só existe via cadastro manual.
     externalRef: text('external_ref'),
     lastCheckedAt: timestamp('last_checked_at', { withTimezone: true }),
+    // Quantas vezes SEGUIDAS a coleta não achou nenhum vendedor ativo pra
+    // esse catalog_product_id (zera assim que volta a achar). Achado real
+    // (2026-07-30): sem isso, uma oferta sem vendedor nenhum ficava 'active'
+    // pra sempre, com preço congelado, disputando espaço na fila de coleta
+    // com ofertas que ainda estão vivas — nunca era marcada 'expired'
+    // porque o caminho de "zero resultado" só atualizava lastCheckedAt.
+    consecutiveMissCount: integer('consecutive_miss_count').notNull().default(0),
     // Cache do vendedor vencedor do buy-box atual — atualizado a cada coleta
     // de preço, igual a currentPriceCents (pode mudar se outro seller assumir
     // o menor preço/melhor oferta pro mesmo produto).
