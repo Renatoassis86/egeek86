@@ -461,12 +461,29 @@ async function searchAndIngestTerm(
       // catálogo como productType='game'. Agora exige pelo menos um sinal
       // positivo (categoria OU título) antes de assumir 'game' — sem sinal
       // nenhum, `resolvedKind` fica null e o item é descartado abaixo.
-      const resolvedKind: 'game' | 'console' | 'accessory' | null =
+      let resolvedKind: 'game' | 'console' | 'accessory' | null =
         categoryKind ??
         (searchTerm.kind !== 'game' ? (!isGameMedia ? searchTerm.kind : 'game') : (isGameMedia ? 'game' : null));
 
+      // Terceiro sinal, só consultado quando os dois primeiros (categoria
+      // real do Mercado Livre + heurística de título) ficaram em silêncio —
+      // nunca sobrepõe um sinal que já resolveu. Classificador Naive Bayes
+      // treinado no próprio catálogo (`npm run train:classifier`,
+      // src/lib/affiliate/product-type-classifier.ts) — 91.9% de acurácia
+      // real medida em holdout (2026-07-31). Só aceita a previsão acima de
+      // 65% de confiança; abaixo disso, mantém o descarte (mais seguro que
+      // adivinhar — mesmo espírito da regra "nunca cair em platform=unknown").
       if (!resolvedKind) {
-        result.errors.push({ term: searchTerm.term, message: `${item.id}: descartado — sem categoria reconhecida nem título de jogo ("${item.name}")` });
+        const { classify: classifyProductType, getProductTypeClassifierModel } = await import('@/lib/affiliate/product-type-classifier');
+        const model = await getProductTypeClassifierModel();
+        const [topPrediction] = classifyProductType(item.name, model);
+        if (topPrediction && topPrediction.probability >= 0.65) {
+          resolvedKind = topPrediction.label;
+        }
+      }
+
+      if (!resolvedKind) {
+        result.errors.push({ term: searchTerm.term, message: `${item.id}: descartado — sem categoria reconhecida, título de jogo nem confiança do classificador ("${item.name}")` });
         continue;
       }
 
