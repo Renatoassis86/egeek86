@@ -175,6 +175,11 @@ const NON_PRODUCT_KEYWORDS = [
   /\bfacas?\b/i,
   /canivetes?/i,
   /\bpunhal(?:is)?\b/i,
+  // Achado real (2026-07-31): 18 amiibo (estatueta NFC colecionável)
+  // catalogados como productType='game' — é figura/colecionável, mesma
+  // classe de item que chaveiro/miniatura/action-figure/funko acima, mesmo
+  // com a função de desbloquear conteúdo via NFC não ser "jogo" em si.
+  /amiibo/i,
 ];
 
 /**
