@@ -317,6 +317,15 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
       }
 
       const itemData = await response.json();
+
+      // Achado real (2026-07-31): esse caminho (colar link/ID direto) nunca
+      // checava a mesma lista de merchandising/não-produto que a descoberta
+      // automática já usa (faca, chaveiro, réplica etc) — um admin colando
+      // um link desses catalogava sem barreira nenhuma.
+      if (isNonProductAccessory(itemData.name)) {
+        return { error: `"${itemData.name}" parece ser um item de merchandising/colecionável, não um jogo/console/acessório de jogo — fora do escopo do catálogo.` };
+      }
+
       const [existing] = await db
         .select({ id: masterProducts.id })
         .from(masterProducts)

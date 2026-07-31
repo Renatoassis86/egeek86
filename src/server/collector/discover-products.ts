@@ -1,6 +1,6 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, sql, TransactionRollbackError } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts, systemConfig } from '@/db/schema';
 import type { GamePlatformGen } from '@/db/schema';
@@ -167,6 +167,14 @@ const NON_PRODUCT_KEYWORDS = [
   /caderno/i,
   /agenda/i,
   /estojo/i,
+  // Achado real (2026-07-31): "Facas Ka-bar 7511 Jarosz Camp Turok" (faca de
+  // merchandising licenciado) entrou no catálogo como se fosse o jogo Turok —
+  // faca/canivete/punhal nunca é item de jogo nem acessório que melhora a
+  // experiência de jogo, é objeto colecionável licenciado (mesma classe do
+  // chaveiro/réplica/estátua acima).
+  /\bfacas?\b/i,
+  /canivetes?/i,
+  /\bpunhal(?:is)?\b/i,
 ];
 
 /**
@@ -443,9 +451,24 @@ async function searchAndIngestTerm(
       // de franquia prevê esse nome). Título só entra como reforço quando a
       // categoria não veio ou não deu pra reconhecer.
       const categoryKind = await resolveMeliCategoryProductType(item.category_id);
-      const resolvedKind: 'game' | 'console' | 'accessory' =
+      // Achado real (2026-07-31): termo de franquia (kind='game', ex: "turok
+      // ps4") nunca passava por essa checagem — sem categoria resolvida
+      // (categoryKind null, ex: uma categoria de "Facas/Ferramentas" que não
+      // bate nem "jogo" nem "acessório" nem "console"), o item virava 'game'
+      // só por ter vindo de um termo de busca de jogo, sem NENHUM sinal
+      // positivo de que era jogo de verdade. Foi assim que uma faca Ka-Bar
+      // de merchandising ("Facas Ka-bar 7511 Jarosz Camp Turok") entrou no
+      // catálogo como productType='game'. Agora exige pelo menos um sinal
+      // positivo (categoria OU título) antes de assumir 'game' — sem sinal
+      // nenhum, `resolvedKind` fica null e o item é descartado abaixo.
+      const resolvedKind: 'game' | 'console' | 'accessory' | null =
         categoryKind ??
-        (searchTerm.kind !== 'game' && !isGameMedia ? searchTerm.kind : 'game');
+        (searchTerm.kind !== 'game' ? (!isGameMedia ? searchTerm.kind : 'game') : (isGameMedia ? 'game' : null));
+
+      if (!resolvedKind) {
+        result.errors.push({ term: searchTerm.term, message: `${item.id}: descartado — sem categoria reconhecida nem título de jogo ("${item.name}")` });
+        continue;
+      }
 
       const classification =
         resolvedKind === 'game'
@@ -468,32 +491,6 @@ async function searchAndIngestTerm(
       const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
       const existingBySimilarity = await findExistingMasterProduct(item.name, classification.gamePlatformGen);
 
-      let masterProduct;
-      if (existingBySimilarity) {
-        masterProduct = existingBySimilarity;
-      } else {
-        const baseSlug = slugify(item.name);
-        const [collision] = await db
-          .select({ id: masterProducts.id })
-          .from(masterProducts)
-          .where(eq(masterProducts.slug, baseSlug))
-          .limit(1);
-        const productSlug = collision ? slugify(`${item.name}-${item.id.slice(-6)}`) : baseSlug;
-
-        const [created] = await db
-          .insert(masterProducts)
-          .values({
-            name: item.name,
-            slug: productSlug,
-            meliCatalogId: item.id,
-            defaultImages: item.pictures?.map((p) => p.url) ?? [],
-            ...classification,
-            classifiedAt: new Date(),
-          })
-          .returning();
-        masterProduct = created;
-      }
-
       const offerSlug = slugify(`${item.name}-${item.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
 
       // Só marca link como definitivo (não pendente) quando MELI_TOOL_ID
@@ -507,37 +504,97 @@ async function searchAndIngestTerm(
       // e pela extração manual do admin.
       const realToolId = process.env.MELI_TOOL_ID;
       const meliUrl = `https://www.mercadolivre.com.br/p/${item.id}`;
-
+      const offerValues = {
+        networkId: network.id,
+        title: item.name,
+        slug: offerSlug,
+        affiliateUrl: realToolId ? `${meliUrl}?matt_tool_id=${realToolId}` : meliUrl,
+        affiliateLinkPending: !realToolId,
+        imageUrl: item.pictures?.[0]?.url ?? null,
+        externalRef: item.id,
+        // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.
+        currentPriceCents: 0,
+        status: 'active' as const,
+        publishedAt: new Date(),
+      };
       // onConflictDoNothing (não só o SELECT acima) é o que de fato impede a
       // duplicata quando dois termos de busca em paralelo (TERM_CONCURRENCY)
       // processam o mesmo item.id ao mesmo tempo — os dois passam pelo SELECT
       // antes de qualquer um commitar o INSERT; só o índice único do banco
       // resolve essa corrida.
-      const [insertedOffer] = await db
-        .insert(affiliateOffers)
-        .values({
-          masterProductId: masterProduct.id,
-          networkId: network.id,
-          title: item.name,
-          slug: offerSlug,
-          affiliateUrl: realToolId ? `${meliUrl}?matt_tool_id=${realToolId}` : meliUrl,
-          affiliateLinkPending: !realToolId,
-          imageUrl: item.pictures?.[0]?.url ?? null,
-          externalRef: item.id,
-          // Ainda sem preço coletado — o próximo ciclo do coletor de preço preenche o real.
-          currentPriceCents: 0,
-          status: 'active',
-          publishedAt: new Date(),
-        })
-        .onConflictDoNothing({
-          target: [affiliateOffers.networkId, affiliateOffers.externalRef],
-          // Precisa bater exatamente com o predicado do índice parcial
-          // (affiliate_offers_network_external_ref_uq) — sem isso o Postgres
-          // não reconhece o alvo do conflito. seller_id sempre nulo aqui
-          // (placeholder de catálogo, nunca vendedor específico).
-          where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
-        })
-        .returning({ id: affiliateOffers.id });
+      const offerConflict = {
+        target: [affiliateOffers.networkId, affiliateOffers.externalRef],
+        // Precisa bater exatamente com o predicado do índice parcial
+        // (affiliate_offers_network_external_ref_uq) — sem isso o Postgres
+        // não reconhece o alvo do conflito. seller_id sempre nulo aqui
+        // (placeholder de catálogo, nunca vendedor específico).
+        where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
+      };
+
+      let masterProduct;
+      let insertedOffer;
+      if (existingBySimilarity) {
+        masterProduct = existingBySimilarity;
+        [insertedOffer] = await db
+          .insert(affiliateOffers)
+          .values({ ...offerValues, masterProductId: masterProduct.id })
+          .onConflictDoNothing(offerConflict)
+          .returning({ id: affiliateOffers.id });
+      } else {
+        // Achado real (2026-07-31): sem transação, uma corrida entre dois
+        // termos em paralelo processando o MESMO item.id pela primeira vez
+        // podia fazer os dois criarem um master_product novo cada um
+        // (nenhum via a inserção do outro ainda) — só o segundo INSERT de
+        // oferta perdia pro índice único (onConflictDoNothing devolvia 0
+        // linhas), deixando o master_product do "perdedor" órfão pra sempre
+        // (zero ofertas, zero preço, zero histórico). 1.086 órfãos assim
+        // encontrados no catálogo existente (achado real 2026-07-31, maior
+        // parte concentrada num único dia — 753 num só lote). Envolve os
+        // dois INSERTs numa transação: se a oferta perder a corrida, a
+        // criação do master_product é desfeita junto (tx.rollback()).
+        const baseSlug = slugify(item.name);
+        const [collision] = await db
+          .select({ id: masterProducts.id })
+          .from(masterProducts)
+          .where(eq(masterProducts.slug, baseSlug))
+          .limit(1);
+        const productSlug = collision ? slugify(`${item.name}-${item.id.slice(-6)}`) : baseSlug;
+
+        const txResult = await db
+          .transaction(async (tx) => {
+            const [created] = await tx
+              .insert(masterProducts)
+              .values({
+                name: item.name,
+                slug: productSlug,
+                meliCatalogId: item.id,
+                defaultImages: item.pictures?.map((p) => p.url) ?? [],
+                ...classification,
+                classifiedAt: new Date(),
+              })
+              .returning();
+            const [offer] = await tx
+              .insert(affiliateOffers)
+              .values({ ...offerValues, masterProductId: created.id })
+              .onConflictDoNothing(offerConflict)
+              .returning({ id: affiliateOffers.id });
+            if (!offer) tx.rollback();
+            return { masterProduct: created, offer };
+          })
+          .catch((e) => {
+            if (e instanceof TransactionRollbackError) return null;
+            throw e;
+          });
+
+        if (!txResult) {
+          // Perdemos a corrida — o item já está catalogado pela iteração
+          // concorrente que venceu; nada a criar aqui.
+          result.alreadyExisted++;
+          continue;
+        }
+        masterProduct = txResult.masterProduct;
+        insertedOffer = txResult.offer;
+      }
 
       if (insertedOffer) {
         result.created++;
@@ -779,32 +836,6 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
           const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
           const existingBySimilarity = await findExistingMasterProduct(item.title, classification.gamePlatformGen);
 
-          let masterProduct;
-          if (existingBySimilarity) {
-            masterProduct = existingBySimilarity;
-          } else {
-            const baseSlug = slugify(item.title);
-            const [collision] = await db
-              .select({ id: masterProducts.id })
-              .from(masterProducts)
-              .where(eq(masterProducts.slug, baseSlug))
-              .limit(1);
-            const productSlug = collision ? slugify(`${item.title}-${meliCatalogId.slice(-6)}`) : baseSlug;
-
-            const [created] = await db
-              .insert(masterProducts)
-              .values({
-                name: item.title,
-                slug: productSlug,
-                meliCatalogId,
-                defaultImages: item.thumbnail ? [item.thumbnail.replace('-I.jpg', '-O.jpg')] : [],
-                ...classification,
-                classifiedAt: new Date(),
-              })
-              .returning();
-            masterProduct = created;
-          }
-
           const offerSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
           const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
 
@@ -818,40 +849,83 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
               ? `${rawPermalink}&matt_tool_id=${realToolId}`
               : `${rawPermalink}?matt_tool_id=${realToolId}`
             : rawPermalink;
+          const offerValues = {
+            networkId: network.id,
+            title: item.title,
+            slug: offerSlug,
+            affiliateUrl: trackedUrl,
+            affiliateLinkPending: !realToolId,
+            imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
+            externalRef: item.id,
+            // Sem preço ainda no INSERT (mesmo padrão de searchAndIngestTerm)
+            // — recordPriceSnapshot logo abaixo é quem grava o snapshot
+            // inicial E atualiza o cache. Inserir já com o preço real aqui
+            // e nunca chamar recordPriceSnapshot deixava a oferta com
+            // current_price_cents preenchido mas ZERO linha em
+            // affiliate_price_snapshots (bug real, achado 2026-07-24:
+            // gráfico/cotações concorrentes nunca mostravam esse preço,
+            // já que os dois só leem de affiliate_price_snapshots — 403
+            // ofertas afetadas até aqui).
+            currentPriceCents: 0,
+            status: 'active' as const,
+            publishedAt: new Date(),
+          };
+          const offerConflict = {
+            target: [affiliateOffers.networkId, affiliateOffers.externalRef],
+            // Precisa bater exatamente com o predicado do índice parcial
+            // (affiliate_offers_network_external_ref_uq) — sem isso o
+            // Postgres não reconhece o alvo do conflito. seller_id sempre
+            // nulo aqui (placeholder de catálogo, nunca vendedor específico).
+            where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
+          };
 
-          const [newOffer] = await db
-            .insert(affiliateOffers)
-            .values({
-              masterProductId: masterProduct.id,
-              networkId: network.id,
-              title: item.title,
-              slug: offerSlug,
-              affiliateUrl: trackedUrl,
-              affiliateLinkPending: !realToolId,
-              imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
-              externalRef: item.id,
-              // Sem preço ainda no INSERT (mesmo padrão de searchAndIngestTerm)
-              // — recordPriceSnapshot logo abaixo é quem grava o snapshot
-              // inicial E atualiza o cache. Inserir já com o preço real aqui
-              // e nunca chamar recordPriceSnapshot deixava a oferta com
-              // current_price_cents preenchido mas ZERO linha em
-              // affiliate_price_snapshots (bug real, achado 2026-07-24:
-              // gráfico/cotações concorrentes nunca mostravam esse preço,
-              // já que os dois só leem de affiliate_price_snapshots — 403
-              // ofertas afetadas até aqui).
-              currentPriceCents: 0,
-              status: 'active',
-              publishedAt: new Date(),
-            })
-            .onConflictDoNothing({
-              target: [affiliateOffers.networkId, affiliateOffers.externalRef],
-              // Precisa bater exatamente com o predicado do índice parcial
-              // (affiliate_offers_network_external_ref_uq) — sem isso o
-              // Postgres não reconhece o alvo do conflito. seller_id sempre
-              // nulo aqui (placeholder de catálogo, nunca vendedor específico).
-              where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
-            })
-            .returning({ id: affiliateOffers.id });
+          let newOffer;
+          if (existingBySimilarity) {
+            [newOffer] = await db
+              .insert(affiliateOffers)
+              .values({ ...offerValues, masterProductId: existingBySimilarity.id })
+              .onConflictDoNothing(offerConflict)
+              .returning({ id: affiliateOffers.id });
+          } else {
+            // Ver nota equivalente em searchAndIngestTerm (2026-07-31) — evita
+            // master_product órfão (zero ofertas) se essa oferta perder uma
+            // corrida de concorrência (ex: execução manual do admin
+            // sobrepondo o cron).
+            const baseSlug = slugify(item.title);
+            const [collision] = await db
+              .select({ id: masterProducts.id })
+              .from(masterProducts)
+              .where(eq(masterProducts.slug, baseSlug))
+              .limit(1);
+            const productSlug = collision ? slugify(`${item.title}-${meliCatalogId.slice(-6)}`) : baseSlug;
+
+            const txResult = await db
+              .transaction(async (tx) => {
+                const [created] = await tx
+                  .insert(masterProducts)
+                  .values({
+                    name: item.title,
+                    slug: productSlug,
+                    meliCatalogId,
+                    defaultImages: item.thumbnail ? [item.thumbnail.replace('-I.jpg', '-O.jpg')] : [],
+                    ...classification,
+                    classifiedAt: new Date(),
+                  })
+                  .returning();
+                const [offer] = await tx
+                  .insert(affiliateOffers)
+                  .values({ ...offerValues, masterProductId: created.id })
+                  .onConflictDoNothing(offerConflict)
+                  .returning({ id: affiliateOffers.id });
+                if (!offer) tx.rollback();
+                return offer;
+              })
+              .catch((e) => {
+                if (e instanceof TransactionRollbackError) return undefined;
+                throw e;
+              });
+            newOffer = txResult;
+          }
 
           if (!newOffer) continue;
 
