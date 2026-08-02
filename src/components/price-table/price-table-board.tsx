@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { formatBRL } from '@/lib/format';
 import { GAME_FORMAT_LABELS, GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { cn } from '@/lib/cn';
-import type { PriceTableRow } from '@/server/queries/price-table';
+import type { PriceTableRow, NetworkOption } from '@/server/queries/price-table';
 import type { ProductType, GameFormat, GamePlatformGen } from '@/db/schema';
 
 type SortBy = 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'discount_desc';
@@ -34,17 +34,19 @@ interface PriceTableFilters {
   sortBy: SortBy;
   search: string;
   onlyBelowAvg: boolean;
+  loja: string;
 }
 
 interface PriceTableBoardProps {
   items: PriceTableRow[];
   totalCount: number;
   filters: PriceTableFilters;
+  networks: NetworkOption[];
 }
 
 const SEARCH_DEBOUNCE_MS = 400;
 
-export function PriceTableBoard({ items, totalCount, filters }: PriceTableBoardProps) {
+export function PriceTableBoard({ items, totalCount, filters, networks }: PriceTableBoardProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -136,6 +138,20 @@ export function PriceTableBoard({ items, totalCount, filters }: PriceTableBoardP
 
         {/* Linha de filtros deslizante no mobile */}
         <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar whitespace-nowrap w-full sm:w-auto sm:ml-auto">
+          {/* Loja */}
+          <select
+            value={filters.loja}
+            onChange={(e) => setParams({ loja: e.target.value === 'all' ? null : e.target.value })}
+            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
+          >
+            <option value="all">Toda Loja</option>
+            {networks.map((n) => (
+              <option key={n.slug} value={n.slug}>
+                {n.name}
+              </option>
+            ))}
+          </select>
+
           {/* Plataforma */}
           <select
             value={filters.gen}

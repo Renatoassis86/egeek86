@@ -8,6 +8,8 @@ export interface PriceTableFilter {
   productType?: ProductType;
   gameFormat?: GameFormat;
   gamePlatformGen?: GamePlatformGen | GamePlatformGen[];
+  /** Filtra pela loja/rede que oferece o menor preço exibido (ex: 'shopee', 'mercado-livre'). */
+  networkSlug?: string;
   searchQuery?: string;
   onlyLowestEver?: boolean;
   onlyBelowAvg?: boolean;
@@ -16,6 +18,22 @@ export interface PriceTableFilter {
   sortBy?: 'name_asc' | 'name_desc' | 'price_asc' | 'price_desc' | 'discount_desc' | 'quotes_desc';
   limit?: number;
   offset?: number;
+}
+
+export interface NetworkOption {
+  slug: string;
+  name: string;
+}
+
+/** Lojas com pelo menos 1 oferta cadastrada — alimenta o filtro "Loja" da tabela, sem hardcode que desatualiza sozinho. */
+export async function getNetworksWithOffers(): Promise<NetworkOption[]> {
+  const rows = await db.execute<{ slug: string; name: string }>(sql`
+    SELECT DISTINCT n.slug, n.name
+    FROM affiliate_networks n
+    INNER JOIN affiliate_offers o ON o.network_id = n.id
+    ORDER BY n.name ASC
+  `);
+  return rows.map((r) => ({ slug: r.slug, name: r.name }));
 }
 
 export interface PriceTableRow {
@@ -130,6 +148,9 @@ async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ ite
     } else if (filter.gamePlatformGen !== 'unknown') {
       conditions.push(sql`mp.game_platform_gen = ${filter.gamePlatformGen}`);
     }
+  }
+  if (filter.networkSlug) {
+    conditions.push(sql`n.slug = ${filter.networkSlug}`);
   }
   if (filter.searchQuery && filter.searchQuery.trim().length > 0) {
     const fuzzy = fuzzyMatchRaw(['mp.name'], filter.searchQuery);

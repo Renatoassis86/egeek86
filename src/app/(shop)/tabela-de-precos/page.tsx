@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { MarketplaceHeroBanner } from '@/components/affiliate/marketplace-hero-banner';
-import { getPriceTableData, type PriceTableFilter } from '@/server/queries/price-table';
+import { getPriceTableData, getNetworksWithOffers, type PriceTableFilter } from '@/server/queries/price-table';
 import { getActiveCouponsForDisplay } from '@/server/queries/affiliate';
 import { PriceTableBoard } from '@/components/price-table/price-table-board';
 import type { ProductType, GameFormat, GamePlatformGen } from '@/db/schema';
@@ -43,11 +43,13 @@ export default async function TabelaDePrecosPage({
   const onlyBelowAvg = sp.desconto === '1';
   const showAll = sp.todos === '1';
   const page = Math.max(1, Number(sp.pagina) || 1);
+  const loja = typeof sp.loja === 'string' && sp.loja.trim() ? sp.loja.trim() : undefined;
 
   const filter: PriceTableFilter = {
     productType: area,
     gameFormat: format,
     gamePlatformGen: gen,
+    networkSlug: loja,
     searchQuery: search,
     onlyBelowAvg,
     sortBy,
@@ -55,9 +57,10 @@ export default async function TabelaDePrecosPage({
     offset: showAll ? 0 : (page - 1) * PAGE_SIZE,
   };
 
-  const [{ items, totalCount }, coupons] = await Promise.all([
+  const [{ items, totalCount }, coupons, networks] = await Promise.all([
     getPriceTableData(filter),
     getActiveCouponsForDisplay(),
+    getNetworksWithOffers(),
   ]);
 
   const paginationParams = new URLSearchParams();
@@ -67,6 +70,7 @@ export default async function TabelaDePrecosPage({
   if (sortBy !== 'name_asc') paginationParams.set('ordenar', sortBy);
   if (search) paginationParams.set('busca', search);
   if (onlyBelowAvg) paginationParams.set('desconto', '1');
+  if (loja) paginationParams.set('loja', loja);
 
   function pageHref(targetPage: number) {
     const params = new URLSearchParams(paginationParams);
@@ -100,7 +104,8 @@ export default async function TabelaDePrecosPage({
       <PriceTableBoard
         items={items}
         totalCount={totalCount}
-        filters={{ area, format: format ?? 'all', gen: gen ?? 'all', sortBy, search: search ?? '', onlyBelowAvg }}
+        filters={{ area, format: format ?? 'all', gen: gen ?? 'all', sortBy, search: search ?? '', onlyBelowAvg, loja: loja ?? 'all' }}
+        networks={networks}
       />
 
       {!showAll && totalCount > 0 && (
