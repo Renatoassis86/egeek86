@@ -71,18 +71,22 @@ export async function generateShopeeAffiliateLink(originUrl: string): Promise<st
   if (!hasShopeeAffiliateCredentials()) return null;
 
   try {
+    // Achado real (2026-08-02): a mutation real da API (confirmada via
+    // introspecção contra a conta de afiliado aprovada) é `generateShortLink`,
+    // não `generateCustomLink` — essa última nunca existiu no schema, teria
+    // falhado (`Cannot query field`) mesmo com credencial válida configurada.
     const mutation = `
-      mutation GenerateCustomLink($originUrl: String!) {
-        generateCustomLink(input: { originUrl: $originUrl }) {
+      mutation GenerateShortLink($input: ShortLinkInput!) {
+        generateShortLink(input: $input) {
           shortLink
           longLink
         }
       }
     `;
-    const data = await fetchShopeeGraphQL(mutation, { originUrl });
-    return data?.generateCustomLink?.shortLink || data?.generateCustomLink?.longLink || null;
+    const data = await fetchShopeeGraphQL(mutation, { input: { originUrl } });
+    return data?.generateShortLink?.shortLink || data?.generateShortLink?.longLink || null;
   } catch (e) {
-    console.error('Erro ao gerar link customizado Shopee via GraphQL:', e);
+    console.error('Erro ao gerar link de afiliado Shopee via GraphQL:', e);
     return null;
   }
 }
