@@ -180,6 +180,18 @@ const NON_PRODUCT_KEYWORDS = [
   // classe de item que chaveiro/miniatura/action-figure/funko acima, mesmo
   // com a função de desbloquear conteúdo via NFC não ser "jogo" em si.
   /amiibo/i,
+  // Achado real (2026-08-02): descoberta da Shopee trouxe "Placa decorativa
+  // PS5 GTA VI...", "Placa Não Perturbe GTA 6 para Porta..." (placa/quadro
+  // de decoração, não o jogo) e "Mouse pad Elden Ring..." (desce de mesa,
+  // não melhora a jogabilidade como um mouse de verdade melhora — mesma
+  // classe do estojo/almofada acima). `\bpad\b` sozinho pegaria "gamepad"
+  // de verdade, por isso o regex exige "mouse" logo antes.
+  /\bplacas?\s+(?:decorativ|n[aã]o perturbe)/i,
+  /mouse\s*pads?\b/i,
+  /decora[çc][aã]o/i,
+  /decorativ[oa]s?\b/i,
+  /colecion[aá]vel/i,
+  /\btric[oô]\b/i,
 ];
 
 /**

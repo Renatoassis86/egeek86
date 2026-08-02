@@ -132,3 +132,31 @@ export async function getProductTypeClassifierModel(): Promise<ProductTypeClassi
   cachedModel = (mod.default ?? mod) as unknown as ProductTypeClassifierModel;
   return cachedModel;
 }
+
+/** Confiança mínima do classificador pra aceitar a previsão quando não há
+ * nenhum outro sinal (categoria real de marketplace) disponível — ver
+ * `resolveProductTypeFromTitle` abaixo. */
+const MIN_CONFIDENCE_TEXT_ONLY = 0.6;
+
+/**
+ * Achado real (2026-08-02): discover-shopee-products.ts e discover-magalu-
+ * products.ts nunca determinavam productType nenhum — `classifyFromAttributes`
+ * só devolve plataforma/formato/edição, nunca productType, e a coluna tem
+ * DEFAULT 'game' no schema. Resultado: TODO produto novo descoberto via
+ * Shopee/Magalu virava 'game' automaticamente, mesmo joystick, bateria de
+ * controle, carregador, mousepad — sem nenhuma classificação real acontecer.
+ *
+ * Shopee/Magalu não expõem uma árvore de categoria real como a do Mercado
+ * Livre (`resolveMeliCategoryProductType`), então o único sinal disponível
+ * aqui é o título — por isso o padrão de confiança é mais rigoroso
+ * (MIN_CONFIDENCE_TEXT_ONLY) e não cataloga nada abaixo dele, em vez de
+ * arriscar herdar o default errado.
+ */
+export async function resolveProductTypeFromTitle(title: string): Promise<ProductType | null> {
+  const model = await getProductTypeClassifierModel();
+  const [top] = classify(title, model);
+  if (top && top.probability >= MIN_CONFIDENCE_TEXT_ONLY) {
+    return top.label;
+  }
+  return null;
+}

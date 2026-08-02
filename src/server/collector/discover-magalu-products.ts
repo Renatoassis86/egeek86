@@ -4,6 +4,7 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema';
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
+import { resolveProductTypeFromTitle } from '@/lib/affiliate/product-type-classifier';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory, isUsedCondition } from './discover-products';
 import { recordPriceSnapshot } from './record-price-snapshot';
@@ -200,12 +201,22 @@ export async function discoverMagaluProducts(): Promise<{
           if (existingBySimilarity) {
             masterProduct = existingBySimilarity;
           } else {
+            // Ver nota equivalente em discover-shopee-products.ts (2026-08-02)
+            // — sem isso, todo produto novo do Magalu virava 'game' pelo
+            // DEFAULT da coluna, nunca classificado de verdade.
+            const productType = await resolveProductTypeFromTitle(item.title);
+            if (!productType) {
+              summary.errors.push(`Descartado (sem confiança de classificação): ${item.title}`);
+              continue;
+            }
+
             const productSlug = slugify(`${item.title}-magalu-${String(item.id).slice(-6)}`);
             const [created] = await db
               .insert(masterProducts)
               .values({
                 name: item.title,
                 slug: productSlug,
+                productType,
                 defaultImages: item.imageUrl ? [item.imageUrl] : [],
                 ...classification,
                 classifiedAt: new Date(),

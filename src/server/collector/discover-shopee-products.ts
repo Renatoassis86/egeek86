@@ -5,6 +5,7 @@ import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema';
 import { fetchShopeeGraphQL, generateShopeeAffiliateLink, hasShopeeAffiliateCredentials } from './sources/shopee-auth';
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
+import { resolveProductTypeFromTitle } from '@/lib/affiliate/product-type-classifier';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory, isUsedCondition } from './discover-products';
 import { recordPriceSnapshot } from './record-price-snapshot';
@@ -192,12 +193,27 @@ export async function discoverShopeeProducts(): Promise<{
           if (existingBySimilarity) {
             masterProduct = existingBySimilarity;
           } else {
+            // Achado real (2026-08-02): `classifyFromAttributes` nunca
+            // devolve productType (só plataforma/formato/edição) — sem essa
+            // checagem, TODO produto novo da Shopee virava 'game' pelo
+            // DEFAULT da coluna no schema, mesmo joystick, bateria de
+            // controle, carregador, mousepad. Shopee não expõe categoria
+            // real de marketplace (diferente do Mercado Livre), então o
+            // único sinal disponível é o classificador treinado no título —
+            // sem confiança suficiente, descarta em vez de herdar o default.
+            const productType = await resolveProductTypeFromTitle(item.productName);
+            if (!productType) {
+              summary.errors.push(`Descartado (sem confiança de classificação): ${item.productName}`);
+              continue;
+            }
+
             const productSlug = slugify(`${item.productName}-shopee-${String(item.itemId).slice(-6)}`);
             const [created] = await db
               .insert(masterProducts)
               .values({
                 name: item.productName,
                 slug: productSlug,
+                productType,
                 defaultImages: item.imageUrl ? [item.imageUrl] : [],
                 ...classification,
                 classifiedAt: new Date(),
