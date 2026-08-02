@@ -301,9 +301,14 @@ async function applySnapshotsToGroup(
 
       const realToolId = process.env.MELI_TOOL_ID;
       const formattedMeliId = result.externalItemId ? formatMeliItemId(result.externalItemId) : '';
-      // Se for Mercado Livre, gera link direto pro anúncio específico do vendedor
+      // Se for Mercado Livre, gera link direto pro anúncio específico do vendedor.
+      // Achado real (2026-08-02): o parâmetro certo de rastreamento é
+      // `matt_tool` (confirmado contra um link gerado de verdade no Gerador
+      // de Links do Mercado Livre) — `matt_tool_id` nunca existiu de verdade.
+      // Só não deu problema até aqui porque MELI_TOOL_ID nunca esteve
+      // configurado (realToolId sempre undefined, todo link ficava pendente).
       const initialUrl = (group.networkSlug === 'mercado-livre' && result.externalItemId)
-        ? (realToolId ? `https://produto.mercadolivre.com.br/${formattedMeliId}?matt_tool_id=${realToolId}` : `https://produto.mercadolivre.com.br/${formattedMeliId}`)
+        ? (realToolId ? `https://produto.mercadolivre.com.br/${formattedMeliId}?matt_tool=${realToolId}` : `https://produto.mercadolivre.com.br/${formattedMeliId}`)
         : `https://www.mercadolivre.com.br/p/${group.externalRef}`;
 
       const [createdRow] = await db
@@ -364,7 +369,7 @@ async function applySnapshotsToGroup(
         const realToolId = process.env.MELI_TOOL_ID;
         const formattedItemId = result.externalItemId.replace(/^([A-Z]{3})(\d+)$/i, '$1-$2');
         updateData.affiliateUrl = realToolId
-          ? `https://produto.mercadolivre.com.br/${formattedItemId}?matt_tool_id=${realToolId}`
+          ? `https://produto.mercadolivre.com.br/${formattedItemId}?matt_tool=${realToolId}`
           : `https://produto.mercadolivre.com.br/${formattedItemId}`;
         if (realToolId) {
           updateData.affiliateLinkPending = false; // Ativa automaticamente o link!

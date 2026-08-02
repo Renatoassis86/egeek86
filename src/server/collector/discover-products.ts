@@ -533,16 +533,20 @@ async function searchAndIngestTerm(
       // e NÃO é o ID de afiliado do usuário (confirmado 2026-07-24). Usar
       // esse ID em todo link publicado arriscava rastrear a comissão pra
       // conta de outra pessoa, não gerar zero comissão. Sem ID real
-      // configurado, publica a página normal do produto (sem matt_tool_id)
+      // configurado, publica a página normal do produto (sem matt_tool)
       // e marca pendente — mesmo padrão honesto já usado pra Shopee/Magalu
       // e pela extração manual do admin.
+      // Achado real (2026-08-02): o parâmetro certo é `matt_tool`, não
+      // `matt_tool_id` — confirmado contra um link gerado de verdade no
+      // Gerador de Links do Mercado Livre (resolve pra
+      // .../p/MLB.../?matt_tool=NUMERO, sem "_id").
       const realToolId = process.env.MELI_TOOL_ID;
       const meliUrl = `https://www.mercadolivre.com.br/p/${item.id}`;
       const offerValues = {
         networkId: network.id,
         title: item.name,
         slug: offerSlug,
-        affiliateUrl: realToolId ? `${meliUrl}?matt_tool_id=${realToolId}` : meliUrl,
+        affiliateUrl: realToolId ? `${meliUrl}?matt_tool=${realToolId}` : meliUrl,
         affiliateLinkPending: !realToolId,
         imageUrl: item.pictures?.[0]?.url ?? null,
         externalRef: item.id,
@@ -873,15 +877,16 @@ export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Prom
           const offerSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
           const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
 
-          // Ver nota em discoverNewProducts: só usa matt_tool_id quando
+          // Ver nota em discoverNewProducts: só usa matt_tool quando
           // MELI_TOOL_ID é o ID real do usuário, configurado via env — nunca
-          // um valor fixo no código.
+          // um valor fixo no código. Parâmetro correto é `matt_tool` (achado
+          // real 2026-08-02, ver nota completa em discoverNewProducts).
           const rawPermalink = item.permalink || `https://www.mercadolivre.com.br/p/${meliCatalogId}`;
           const realToolId = process.env.MELI_TOOL_ID;
           const trackedUrl = realToolId
             ? rawPermalink.includes('?')
-              ? `${rawPermalink}&matt_tool_id=${realToolId}`
-              : `${rawPermalink}?matt_tool_id=${realToolId}`
+              ? `${rawPermalink}&matt_tool=${realToolId}`
+              : `${rawPermalink}?matt_tool=${realToolId}`
             : rawPermalink;
           const offerValues = {
             networkId: network.id,
