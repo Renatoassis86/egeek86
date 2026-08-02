@@ -72,7 +72,10 @@ async function fetchViaOfficialGraphQL(term: string): Promise<ShopeeItem[]> {
       }
     }
   `;
-  const gqlData = await fetchShopeeGraphQL(gqlQuery, { keyword: term, page: 1, limit: 30 });
+  // Documentação oficial da Shopee Affiliate API confirma limit aceito de
+  // 1-500 (default 10) — 30 era bem conservador. 100 cobre bem mais
+  // resultado por termo sem multiplicar chamada nenhuma (2026-08-02).
+  const gqlData = await fetchShopeeGraphQL(gqlQuery, { keyword: term, page: 1, limit: 100 });
   const nodes = gqlData?.productOfferV2?.nodes || [];
 
   const items: ShopeeItem[] = [];

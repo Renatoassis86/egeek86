@@ -15,10 +15,24 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const categorySummary = await discoverAllCategoryProducts(3);
-  const discoverySummary = await discoverNewProducts();
-  const shopeeSummary = await discoverShopeeProducts();
-  const magaluSummary = await discoverMagaluProducts();
+  // As duas chamadas do Mercado Livre share o mesmo rate limit (mesmo
+  // access_token) e ficam sequenciais entre si, como sempre foram — mas
+  // Shopee e Magalu são serviços externos totalmente separados, cada um
+  // com seu próprio limite, então rodar os três "grupos" em paralelo não
+  // aumenta a carga que NENHUM dos três serviços vê individualmente, só
+  // usa melhor o tempo de execução (2026-08-02 — antes rodava tudo em
+  // série, desperdiçando boa parte do maxDuration esperando um serviço de
+  // cada vez em vez de aproveitar os três ao mesmo tempo).
+  const [meli, shopeeSummary, magaluSummary] = await Promise.all([
+    (async () => {
+      const categorySummary = await discoverAllCategoryProducts(3);
+      const discoverySummary = await discoverNewProducts();
+      return { categorySummary, discoverySummary };
+    })(),
+    discoverShopeeProducts(),
+    discoverMagaluProducts(),
+  ]);
+  const { categorySummary, discoverySummary } = meli;
 
   return NextResponse.json({
     categorySummary,
