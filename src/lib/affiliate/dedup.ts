@@ -45,7 +45,17 @@ export function normalizeTitle(title: string): { cleanTitle: string; platform: s
     .replace(/xbox series s/g, '')
     .replace(/xbox series/g, '')
     .replace(/xbox one/g, '')
-    .replace(/xbox 360/g, '');
+    .replace(/xbox 360/g, '')
+    // Capacidade de armazenamento ("32gb", "1tb") não diferencia produto real
+    // pra dedup — a variante de modelo já fica representada por outras
+    // palavras (oled, lite, slim, digital). Achado real (2026-08-03):
+    // "Console Nintendo Switch Lite 32gb Amarelo" e "Console Nintendo
+    // Switch Lite Amarelo" (mesmo console — só um vendedor escreveu a
+    // capacidade e outro não, Switch Lite só existe em 32gb no Brasil)
+    // ficaram como 2 master_products porque "32gb" derrubou a similaridade
+    // Jaccard de 1.0 pra 0.75, abaixo do limiar de 0.8.
+    .replace(/\b\d{2,4}\s?gb\b/g, '')
+    .replace(/\b\d\s?tb\b/g, '');
 
   // Termos irrelevantes que costumam poluir anúncios
   const noiseWords = [
