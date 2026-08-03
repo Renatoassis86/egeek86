@@ -72,10 +72,13 @@ async function fetchViaOfficialGraphQL(term: string): Promise<ShopeeItem[]> {
       }
     }
   `;
-  // Documentação oficial da Shopee Affiliate API confirma limit aceito de
-  // 1-500 (default 10) — 30 era bem conservador. 100 cobre bem mais
-  // resultado por termo sem multiplicar chamada nenhuma (2026-08-02).
-  const gqlData = await fetchShopeeGraphQL(gqlQuery, { keyword: term, page: 1, limit: 100 });
+  // Achado real (2026-08-02): documentação de terceiros dizia limit
+  // aceito de 1-500, mas a API de verdade rejeitou 100 com "error [11001]:
+  // Params Error: Exceeded the maximum number of page limit, the maximum
+  // limit is 50" — quebrou a busca inteira da Shopee (0 resultado em toda
+  // busca) até essa correção. 50 é o teto real confirmado pela própria API,
+  // não por doc de terceiro.
+  const gqlData = await fetchShopeeGraphQL(gqlQuery, { keyword: term, page: 1, limit: 50 });
   const nodes = gqlData?.productOfferV2?.nodes || [];
 
   const items: ShopeeItem[] = [];
