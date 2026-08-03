@@ -68,20 +68,17 @@ function computeBucketedAverage(rows: { collected_at: string; price_cents: strin
   }
 
   const sortedBuckets = [...buckets.entries()].sort((a, b) => a[0] - b[0]);
-  const rawAverages = sortedBuckets.map(([time, { sum, count }]) => ({ time, value: sum / count }));
 
-  // Média Móvel Suavizada (SMA) de 5 períodos: Reflete a tendência macro real do mercado,
-  // ponderando todas as cotações de todas as lojas ativas no período.
-  return rawAverages.map((item, i) => {
-    const windowStart = Math.max(0, i - 4);
-    const windowItems = rawAverages.slice(windowStart, i + 1);
-    const windowSum = windowItems.reduce((acc, curr) => acc + curr.value, 0);
-    const smaValue = windowSum / windowItems.length;
-
-    // Preço médio real de mercado (sem multiplicadores artificiais)
-    const realAvg = Math.round(smaValue * 100) / 100;
-    return { time: item.time, value: realAvg };
-  });
+  // Achado real (2026-08-03): antes disso aplicava uma média móvel suavizada
+  // (SMA de 5 baldes) por cima da média real — o cliente pediu explicitamente
+  // "a média de TODOS os preços", não uma versão amaciada misturando baldes
+  // vizinhos. Devolve a média real de cada balde, ponto — soma de toda
+  // cotação de toda loja/plataforma naquele intervalo, dividido pela
+  // quantidade, sem nenhum suavizador por cima.
+  return sortedBuckets.map(([time, { sum, count }]) => ({
+    time,
+    value: Math.round((sum / count) * 100) / 100,
+  }));
 }
 
 function computeBucketedFrequency(
@@ -144,28 +141,53 @@ function computeBucketedMinSeries(
   nowTime: number
 ): { points: PricePoint[]; offerByTime: Record<number, string> } {
   const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
-  const buckets = new Map<number, { minPrice: number; offerId: string }>();
 
-  // Agrupa cotações reais extraídas na janela por balde de tempo
-  for (const row of rows) {
-    const timeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
-    const bucketTime = Math.floor(timeSeconds / bucketSeconds) * bucketSeconds;
-    const priceReais = Number(row.price_cents) / 100;
+  // Achado real (2026-08-03): a versão anterior só olhava as cotações que
+  // caíram DENTRO de cada balde — se a loja mais barata não foi rechecada
+  // naquele balde específico (só uma loja mais cara foi), o "menor preço do
+  // balde" virava o preço da loja cara, mesmo a barata continuando ativa e
+  // barata o tempo todo. Isso criava picos artificiais na linha (sobe
+  // quando a barata simplesmente não foi verificada naquele dia, desce de
+  // volta assim que ela é rechecada). Corrigido: carrega adiante o último
+  // preço conhecido de cada oferta entre baldes (começando do `baselineByOffer`,
+  // a cotação mais recente de cada oferta ANTES da janela) — uma loja barata
+  // continua contando como a mais barata até uma cotação NOVA de verdade
+  // dizer o contrário, nunca "desaparece" do cálculo só por falta de recheque.
+  const sortedRows = [...rows].sort(
+    (a, b) => new Date(a.collected_at).getTime() - new Date(b.collected_at).getTime()
+  );
 
-    const existing = buckets.get(bucketTime);
-    if (!existing || priceReais < existing.minPrice) {
-      buckets.set(bucketTime, { minPrice: priceReais, offerId: row.offer_id });
-    }
-  }
-
+  const lastKnownPriceByOffer = new Map<string, number>(baselineByOffer);
   const points: PricePoint[] = [];
   const offerByTime: Record<number, string> = {};
 
-  const sortedBuckets = [...buckets.entries()].sort((a, b) => a[0] - b[0]);
+  const startBucket = Math.floor(windowStart / bucketSeconds) * bucketSeconds;
+  const endBucket = Math.floor(nowTime / bucketSeconds) * bucketSeconds;
 
-  for (const [bucketTime, data] of sortedBuckets) {
-    points.push({ time: bucketTime, value: data.minPrice });
-    offerByTime[bucketTime] = data.offerId;
+  let rowIndex = 0;
+  for (let bucketTime = startBucket; bucketTime <= endBucket; bucketTime += bucketSeconds) {
+    const bucketEnd = bucketTime + bucketSeconds;
+    while (rowIndex < sortedRows.length) {
+      const row = sortedRows[rowIndex];
+      const rowTimeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
+      if (rowTimeSeconds >= bucketEnd) break;
+      lastKnownPriceByOffer.set(row.offer_id, Number(row.price_cents) / 100);
+      rowIndex++;
+    }
+
+    if (lastKnownPriceByOffer.size === 0) continue;
+
+    let minPrice = Infinity;
+    let minOfferId = '';
+    for (const [offerId, price] of lastKnownPriceByOffer) {
+      if (price < minPrice) {
+        minPrice = price;
+        minOfferId = offerId;
+      }
+    }
+
+    points.push({ time: bucketTime, value: minPrice });
+    offerByTime[bucketTime] = minOfferId;
   }
 
   return { points, offerByTime };
