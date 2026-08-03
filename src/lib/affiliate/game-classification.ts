@@ -29,6 +29,21 @@ export function normalizeGamePlatformGen(consoleVersion: string | null, fallback
   if (value === 'xbox 360') return 'xbox_360';
 
   const text = fallbackText?.toLowerCase() ?? '';
+
+  // Achado real (2026-08-03): "Organizador de Jogos Playstation XBOX
+  // Nintendo..." caía em switch_1 só porque a checagem em cascata parava na
+  // PRIMEIRA plataforma que batesse (nesse caso "switch"), ignorando que o
+  // título também menciona Playstation e Xbox — item universal/multi-
+  // plataforma virava "exclusivo" de uma vitrine que não é dele (apareceu
+  // dentro de "Universo Nintendo Switch"). Antes de escolher UMA plataforma,
+  // conta quantas famílias distintas de console o título menciona — 2 ou
+  // mais é sinal de acessório universal, não específico de nenhuma.
+  const mentionsSwitch = /\bswitch\b/.test(text);
+  const mentionsPlaystation = /\b(playstation|ps[2345])\b/.test(text);
+  const mentionsXbox = /\bxbox\b/.test(text);
+  const distinctFamilies = [mentionsSwitch, mentionsPlaystation, mentionsXbox].filter(Boolean).length;
+  if (distinctFamilies >= 2) return 'unknown';
+
   if (/switch\s*2/.test(text)) return 'switch_2';
   if (/\bswitch\b/.test(text)) return 'switch_1';
   if (/\b(playstation\s*5|ps5)\b/.test(text)) return 'ps5';

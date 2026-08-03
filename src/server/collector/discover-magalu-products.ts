@@ -204,7 +204,7 @@ export async function discoverMagaluProducts(): Promise<{
             // Ver nota equivalente em discover-shopee-products.ts (2026-08-02)
             // — sem isso, todo produto novo do Magalu virava 'game' pelo
             // DEFAULT da coluna, nunca classificado de verdade.
-            const productType = await resolveProductTypeFromTitle(item.title);
+            const productType = await resolveProductTypeFromTitle(item.title, Math.round(item.price * 100));
             if (!productType) {
               summary.errors.push(`Descartado (sem confiança de classificação): ${item.title}`);
               continue;

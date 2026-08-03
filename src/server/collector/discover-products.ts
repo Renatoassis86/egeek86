@@ -192,6 +192,39 @@ const NON_PRODUCT_KEYWORDS = [
   /decorativ[oa]s?\b/i,
   /colecion[aá]vel/i,
   /\btric[oô]\b/i,
+  // Achado real (2026-08-03): "5 molduras decorativas Zelda...", "Pingente
+  // de prata 925... Controle XBox" (joia em formato de controle) e "Febre
+  // do tênis de Mario" (tênis licenciado) — mesma classe de merchandising
+  // colecionável/decorativo das entradas acima, não é jogo nem acessório
+  // que melhora a experiência de jogo.
+  /\bmoldura/i,
+  /\bpingente/i,
+  /\bt[eê]nis\b/i,
+  /\bsapat/i,
+  // Achado real (2026-08-03): varredura da franquia Zelda achou "Interruptor
+  // Nintendo Zelda..." (espelho de tomada decorativo), "Lancheira Zelda
+  // Metal...", "Nintendo Estuche Game Traveler...", "Licença Hori Bag
+  // (Zelda)", "Guarda-chuva Nintendo Zelda", "Símbolo... Key Ring", "Livro -
+  // The Legend Of Zelda..." e "...De Caixas Protetoras" — todos merchandising
+  // ou proteção/transporte, mesma classe das entradas acima (capas/estojo/
+  // proteção já cobrem o conceito, esses são só variações de palavra que
+  // escapavam, inclusive em espanhol/inglês, comuns em anúncio da Shopee).
+  /\binterruptor(?:es)?\b/i,
+  /\blancheiras?\b/i,
+  /\bestuche/i,
+  /\bbags?\b/i,
+  /guarda.?chuvas?/i,
+  /key\s*ring/i,
+  /\blivros?\b/i,
+  /protetor(?:a|as|es)?\b/i,
+  // Achado real (2026-08-03): "King - Tekken 8 - S.h.figuarts - Bandai",
+  // "Kazuya Mishima - S.h.figuarts..." — S.H.Figuarts é linha de action
+  // figure colecionável da Bandai, mesma classe de "action figure"/"funko"
+  // acima. "The Art Of God Of War Ragnarok" é artbook (livro de arte
+  // conceitual), sem a palavra "livro" mas mesma classe de merchandising.
+  /figuarts/i,
+  /\bthe art of\b/i,
+  /\bartbook\b/i,
 ];
 
 /**

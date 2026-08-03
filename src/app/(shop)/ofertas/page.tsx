@@ -120,16 +120,36 @@ export default async function OffersPage({
   ];
   const metricsMap = await getOfferListingMetrics(allOfferIds);
 
-  const lowestEverOffers = broadPool.filter((o) => metricsMap.get(o.id)?.isLowestEver);
+  // Achado real (2026-08-03): as vitrines "No Menor Preço Histórico",
+  // "Universo Nintendo Switch" e "Ecossistema PlayStation & Xbox" vinham sem
+  // filtro de tipo — como acessório barato (botão, cabo, grip) domina por
+  // preço absoluto, as 3 viraram só acessório, nenhum jogo/console de
+  // verdade. Pedido explícito do cliente: só jogo (mídia física) e console
+  // nessas 3 vitrines — acessório continua tendo a vitrine própria dele
+  // logo abaixo ("Hardware, Joysticks & Acessórios Gamer").
+  const isGameOrConsolePhysical = (o: OfferWithRelations) =>
+    o.masterProduct.productType === 'console' ||
+    (o.masterProduct.productType === 'game' && o.masterProduct.gameFormat === 'physical');
+
+  // "Menor preço histórico" rankeado por desconto vs. média (não por preço
+  // absoluto) — senão um botão de R$7,99 sempre vence um console de R$3.000
+  // com 20% de desconto real, mesmo o console sendo a oportunidade de
+  // verdade.
+  const lowestEverOffers = broadPool
+    .filter((o) => metricsMap.get(o.id)?.isLowestEver && isGameOrConsolePhysical(o))
+    .sort((a, b) => (metricsMap.get(b.id)?.avgDiscountPercent ?? 0) - (metricsMap.get(a.id)?.avgDiscountPercent ?? 0));
   const nintendoOffers = broadPool.filter(
-    (o) => o.masterProduct.gamePlatformGen === 'switch_1' || o.masterProduct.gamePlatformGen === 'switch_2'
+    (o) =>
+      (o.masterProduct.gamePlatformGen === 'switch_1' || o.masterProduct.gamePlatformGen === 'switch_2') &&
+      isGameOrConsolePhysical(o)
   );
   const psXboxOffers = broadPool.filter(
     (o) =>
-      o.masterProduct.gamePlatformGen === 'ps5' ||
-      o.masterProduct.gamePlatformGen === 'ps4' ||
-      o.masterProduct.gamePlatformGen === 'xbox_series' ||
-      o.masterProduct.gamePlatformGen === 'xbox_one'
+      (o.masterProduct.gamePlatformGen === 'ps5' ||
+        o.masterProduct.gamePlatformGen === 'ps4' ||
+        o.masterProduct.gamePlatformGen === 'xbox_series' ||
+        o.masterProduct.gamePlatformGen === 'xbox_one') &&
+      isGameOrConsolePhysical(o)
   );
   const accessoryOffers = broadPool.filter((o) => o.masterProduct.productType === 'accessory');
 

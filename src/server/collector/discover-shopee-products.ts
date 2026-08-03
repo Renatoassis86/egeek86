@@ -207,7 +207,7 @@ export async function discoverShopeeProducts(): Promise<{
             // real de marketplace (diferente do Mercado Livre), então o
             // único sinal disponível é o classificador treinado no título —
             // sem confiança suficiente, descarta em vez de herdar o default.
-            const productType = await resolveProductTypeFromTitle(item.productName);
+            const productType = await resolveProductTypeFromTitle(item.productName, Math.round(item.price * 100));
             if (!productType) {
               summary.errors.push(`Descartado (sem confiança de classificação): ${item.productName}`);
               continue;

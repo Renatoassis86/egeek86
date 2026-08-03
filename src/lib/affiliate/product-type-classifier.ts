@@ -152,11 +152,53 @@ const MIN_CONFIDENCE_TEXT_ONLY = 0.6;
  * (MIN_CONFIDENCE_TEXT_ONLY) e não cataloga nada abaixo dele, em vez de
  * arriscar herdar o default errado.
  */
-export async function resolveProductTypeFromTitle(title: string): Promise<ProductType | null> {
+/**
+ * Achado real (2026-08-03): "Nintendo Nintendo Switch Oled 64gb The Legend
+ * Of Zelda: Tears Of The Kingdom" (R$3.055) e mais 9 anúncios do mesmo tipo
+ * (R$1.875 a R$4.450) — todos CONSOLES de verdade em edição especial Zelda —
+ * foram classificados como 'game' com confiança alta, só porque o título
+ * menciona a franquia e a plataforma, sem nenhuma palavra de hardware
+ * (não bate nenhum keyword de exclusão, e o classificador aprendeu que
+ * "the legend of zelda" + "nintendo switch" é forte sinal de jogo, o que é
+ * verdade na MAIORIA dos casos, só não quando o preço já denuncia hardware).
+ * Nenhum jogo físico de varejo custa isso — preço acima do teto sem uma
+ * palavra explícita de mídia de jogo é sinal forte de console/bundle, não
+ * de jogo.
+ */
+const HIGH_PRICE_THRESHOLD_CENTS = 80_000; // R$800 — teto acima do qual vale checar sinal de hardware
+
+// Achado real (2026-08-03): a primeira versão dessa checagem exigia uma
+// palavra explícita de jogo (senão descartava) — isso teria descartado
+// edição de colecionador REAL e cara ("Elden Ring: Shadow Of The Erdtree
+// Collector's PS5" R$3.699, "God of War Ragnarök: Edição de Colecionador"
+// R$4.765, "Tekken 8 Collector's Edition" R$1.840), que não tem "jogo" nem
+// "físico" no título mas é produto de catálogo genuíno. Invertido: só mexe
+// quando o título tem um sinal POSITIVO de hardware — muito mais seguro que
+// inferir pela ausência de uma palavra.
+const CONSOLE_HARDWARE_SIGNALS =
+  /\bconsole\b|\boled\b|desbl|\bslim\b|\bde vitrine\b|nota fiscal e garantia|\b\d{2,4}\s?gb\b|\b\d\s?(?:tb|tera)\b|cfi-?\d|\bbundle\b/i;
+/** Título "nu" — só o nome da plataforma, sem jogo nem edição nenhuma (ex: "PS4" sozinho) — nunca é o nome de um jogo de verdade. */
+const BARE_PLATFORM_NAME = /^\s*(?:ps[2345]|playstation\s*[2345]|xbox(?:\s*(?:one|series\s*[xs]|360))?|nintendo\s*switch(?:\s*2)?)\s*$/i;
+
+export async function resolveProductTypeFromTitle(title: string, priceCents?: number | null): Promise<ProductType | null> {
   const model = await getProductTypeClassifierModel();
-  const [top] = classify(title, model);
-  if (top && top.probability >= MIN_CONFIDENCE_TEXT_ONLY) {
-    return top.label;
+  const predictions = classify(title, model);
+  const [top] = predictions;
+  if (!top || top.probability < MIN_CONFIDENCE_TEXT_ONLY) return null;
+
+  if (
+    top.label === 'game' &&
+    priceCents != null &&
+    priceCents > HIGH_PRICE_THRESHOLD_CENTS &&
+    (CONSOLE_HARDWARE_SIGNALS.test(title) || BARE_PLATFORM_NAME.test(title))
+  ) {
+    // Sinal de hardware + preço de console — prefere reclassificar pra
+    // console (se o modelo já enxergava algum sinal disso) em vez de
+    // descartar um produto real do catálogo.
+    const consoleGuess = predictions.find((p) => p.label === 'console');
+    if (consoleGuess && consoleGuess.probability >= 0.1) return 'console';
+    return null;
   }
-  return null;
+
+  return top.label;
 }
