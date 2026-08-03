@@ -245,7 +245,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
                     )}
                     <div className="min-w-0 flex-1">
                       <Link href={`/ofertas/${item.offerSlug}`} className="hover:underline">
-                        <Text variant="body-sm" className="font-bold line-clamp-2 leading-snug">
+                        <Text variant="body-sm" className="font-bold line-clamp-2 leading-snug" title={item.name}>
                           {item.name}
                         </Text>
                       </Link>
@@ -363,7 +363,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
                           )}
                           <div className="min-w-0">
                             <Link href={`/ofertas/${item.offerSlug}`} className="hover:underline">
-                              <Text variant="body-sm" className="font-bold line-clamp-1">
+                              <Text variant="body-sm" className="font-bold line-clamp-1" title={item.name}>
                                 {item.name}
                               </Text>
                             </Link>
