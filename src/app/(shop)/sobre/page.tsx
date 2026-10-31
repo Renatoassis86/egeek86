@@ -30,6 +30,7 @@ import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
 import { StatTile } from '@/components/ui/stat-tile';
 import { getPlatformStats } from '@/server/queries/affiliate';
+import { getPublicTotals } from '@/server/queries/home-search';
 
 export const metadata: Metadata = {
   title: 'História e Arquitetura da Plataforma',
@@ -40,15 +41,15 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function SobrePage() {
-  const stats = await getPlatformStats();
+  const [stats, totals] = await Promise.all([getPlatformStats(), getPublicTotals()]);
 
   return (
     <div className="flex flex-col w-full bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
       {/* 1. Hero e Identidade */}
       <HeroSection />
 
-      {/* 2. Métricas do Ecossistema em Tempo Real */}
-      <PlatformMetricsSection stats={stats} />
+      {/* 2. Métricas do ecossistema (produtos/lojas: mesma fonte da home, getPublicTotals) */}
+      <PlatformMetricsSection stats={stats} totals={totals} />
 
       {/* 3. Quem Somos (Nossa História e Origem) */}
       <QuemSomosSection />
@@ -111,15 +112,21 @@ function HeroSection() {
 // ----------------------------------------------------------------------
 // 2. Métricas do Ecossistema
 // ----------------------------------------------------------------------
-function PlatformMetricsSection({ stats }: { stats: any }) {
+function PlatformMetricsSection({
+  stats,
+  totals,
+}: {
+  stats: any;
+  totals: { products: number; stores: number };
+}) {
   return (
     <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-12 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatTile icon={<Package className="size-5" />} value={stats.totalProducts} label="Produtos Catalogados" />
-          <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Lojas e Vendedores" />
-          <StatTile icon={<Layers className="size-5" />} value={stats.totalNetworks} label="Plataformas Parceiras" />
-          <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações em Tempo Real" />
+          <StatTile icon={<Package className="size-5" />} value={totals.products} label="Produtos com preço atual" />
+          <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Vendedores identificados" />
+          <StatTile icon={<Layers className="size-5" />} value={totals.stores} label="Lojas monitoradas" />
+          <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações registradas" />
         </div>
       </div>
     </section>
@@ -335,7 +342,7 @@ function FerramentasShowcaseSection() {
     {
       id: 'ferramenta-bolsa-gamer',
       badge: 'Motor Principal de Preço',
-      title: '1. Bolsa Gamer e Monitoramento de Preços em Tempo Real',
+      title: '1. Bolsa Gamer e Monitoramento de Preços',
       description:
         'Gráfico estatístico interativo com duas camadas (linha do Menor Preço Ativo e curva de Média de Mercado entre todas as lojas). Suporta zoom por período e mostra se o produto está no menor preço já registrado.',
       imageSrc: '/images/sobre/ferramenta-bolsa-gamer.png',
@@ -353,7 +360,7 @@ function FerramentasShowcaseSection() {
       badge: 'Painel de Afiliados e Vendedores',
       title: '2. Instrumento de Gestão para Afiliados e Vendedores',
       description:
-        'Central estratégica para criadores de conteúdo, afiliados e leiloeiros gerarem mensagens promocionais de alta conversão para WhatsApp e Telegram, aplicarem links de afiliado com rastreamento inteligente exclusivo e acompanharem cliques, métricas e receitas em tempo real.',
+        'Central estratégica para criadores de conteúdo, afiliados e leiloeiros gerarem mensagens promocionais de alta conversão para WhatsApp e Telegram, aplicarem links de afiliado com rastreamento inteligente exclusivo e acompanharem cliques, métricas e receitas.',
       imageSrc: '/images/sobre/ferramenta-gestao-afiliados.png',
       badgeColor: 'bg-orange-500 text-white',
       borderHover: 'hover:border-orange-500 hover:shadow-xl',
@@ -408,7 +415,7 @@ function FerramentasShowcaseSection() {
       bullets: [
         'Pesquisas qualitativas e quantitativas aplicadas a consumidores gerais',
         'Estudos de posicionamento estratégicos para lançamento de marcas',
-        'Relatórios de hábitos de consumo e percepção de marca em tempo real',
+        'Relatórios de hábitos de consumo e percepção de marca',
       ],
       reverse: false,
     },
@@ -565,7 +572,7 @@ function IdealizadorSection() {
                   Foi dessa realidade que surgiu o Espaço Geek 86.
                 </p>
                 <p>
-                  Mais do que um marketplace, o Espaço Geek 86 está sendo construído como uma plataforma de inteligência para o consumidor geek. O objetivo é reunir, em um único ambiente, monitoramento de preços em tempo real, histórico de valores, reputação de vendedores, pesquisas com a comunidade, conteúdo especializado e algoritmos próprios capazes de ajudar cada usuário a comprar melhor, pagar menos e colecionar com mais segurança.
+                  Mais do que um marketplace, o Espaço Geek 86 está sendo construído como uma plataforma de inteligência para o consumidor geek. O objetivo é reunir, em um único ambiente, monitoramento de preços atualizado a cada coleta, histórico de valores, reputação de vendedores, pesquisas com a comunidade, conteúdo especializado e algoritmos próprios capazes de ajudar cada usuário a comprar melhor, pagar menos e colecionar com mais segurança.
                 </p>
                 <blockquote className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 italic text-amber-200 text-sm leading-relaxed">
                   &quot;Por trás da plataforma existe uma filosofia simples: tecnologia deve servir às pessoas. A missão do Espaço Geek 86 não é vender produtos a qualquer custo, mas oferecer conhecimento, transparência e inteligência para que cada decisão de compra seja baseada em informações reais e não apenas em publicidade.&quot;

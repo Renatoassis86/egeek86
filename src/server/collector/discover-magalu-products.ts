@@ -133,6 +133,11 @@ export async function discoverMagaluProducts(): Promise<{
     errors: [] as string[],
   };
 
+  // DÍVIDA: raspagem de HTML público com User-Agent de navegador viola
+  // "coleta só por API oficial". Desligada por padrão; só roda com
+  // MAGALU_PUBLIC_SCRAPING_ENABLED=true. Ver docs/divida-coleta-sem-api-oficial.md.
+  if (process.env.MAGALU_PUBLIC_SCRAPING_ENABLED !== 'true') return summary;
+
   try {
     const network = await ensureMagaluNetwork();
 

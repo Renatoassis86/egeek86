@@ -1,24 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { 
-  User, 
-  Sliders, 
-  ShoppingBag, 
-  ShieldCheck, 
-  Gavel, 
-  Crown,
+import {
+  Sliders,
+  ShoppingBag,
+  ShieldCheck,
+  Gavel,
   Flame,
-  Award,
-  Coins,
   Zap,
-  Star,
   Plus,
-  Trash2,
   Save,
-  Upload,
   ArrowRight,
   Gamepad2,
 } from 'lucide-react';
@@ -30,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/toast';
 import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
+import { updateOwnProfile } from '@/app/(shop)/conta/actions';
 
 interface ProfileHubTabsProps {
   initialTab?: string;
@@ -37,12 +31,17 @@ interface ProfileHubTabsProps {
     id: string;
     name: string;
     email: string;
-    avatarUrl?: string | null;
+    phone?: string | null;
     role?: string | null;
+    geekPoints: number;
   } | null;
   seller: any;
   watches: any[];
 }
+
+const TAB_BASE =
+  'pb-3 px-2 text-xs md:text-sm font-bold transition-all border-b-2 focus:outline-none flex items-center gap-2 shrink-0';
+const TAB_IDLE = 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]';
 
 export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, watches }: ProfileHubTabsProps) {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -57,436 +56,261 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
     setActiveTab(initialTab);
   }, [initialTab]);
 
-  // Form states de edição de dados cadastrais
-  const [avatarUrl, setAvatarUrl] = useState(profile?.avatarUrl || '');
-  const [name, setName] = useState(profile?.name || 'Renato Assis');
-  const [phone, setPhone] = useState('(83) 98195-7737');
-  const [city, setCity] = useState('João Pessoa');
-  const [state, setState] = useState('PB');
-  const [bio, setBio] = useState('Colecionador focado em consoles retrô, TCG Pokémon e raridades Nintendo.');
-  const [isSaving, setIsSaving] = useState(false);
+  // Só campos que existem em `profiles`: nome e telefone.
+  const [name, setName] = useState(profile?.name ?? '');
+  const [phone, setPhone] = useState(profile?.phone ?? '');
+  const [isSaving, startSaving] = useTransition();
 
-  const isSellerActive = seller?.status === 'active' || profile?.role === 'admin';
-
-  const handleAvatarFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('A imagem deve ter no máximo 5MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      setAvatarUrl(base64);
-      toast.success('Foto carregada do PC com sucesso! Clique em "Salvar Alterações" para aplicar.');
-    };
-    reader.readAsDataURL(file);
-  };
+  const isSellerActive = seller?.status === 'active' || profile?.role === 'admin' || profile?.role === 'super_admin';
 
   const handleSaveData = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      toast.success('Foto e dados cadastrais atualizados com sucesso!');
-    }, 600);
-  };
-
-  const handleDeleteAccountData = () => {
-    if (confirm('Tem certeza que deseja solicitar a limpeza dos seus dados cadastrais facultativos?')) {
-      toast.success('Dados opcionais removidos com sucesso.');
-    }
+    startSaving(async () => {
+      const result = await updateOwnProfile({ name, phone });
+      if (result.ok) toast.success('Dados atualizados.');
+      else toast.error(result.error);
+    });
   };
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Menu de Abas Interativo */}
+      {/* Menu de Abas */}
       <div className="flex flex-wrap border-b border-[var(--color-border-subtle)] pb-px gap-2 md:gap-4 overflow-x-auto">
         <button
           onClick={() => setActiveTab('visao_geral')}
           className={cn(
-            'pb-3 px-2 text-xs md:text-sm font-bold transition-all border-b-2 focus:outline-none flex items-center gap-2 shrink-0',
-            activeTab === 'visao_geral'
-              ? 'border-[var(--color-accent-gold)] text-[var(--color-accent-gold)]'
-              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            TAB_BASE,
+            activeTab === 'visao_geral' ? 'border-[var(--color-accent-gold)] text-[var(--color-accent-gold)]' : TAB_IDLE
           )}
         >
           <Zap className="size-4" />
-          <span>Visão Geral & Gamificação</span>
+          <span>Visão geral</span>
         </button>
 
         <button
           onClick={() => setActiveTab('dados')}
           className={cn(
-            'pb-3 px-2 text-xs md:text-sm font-bold transition-all border-b-2 focus:outline-none flex items-center gap-2 shrink-0',
-            activeTab === 'dados'
-              ? 'border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]'
-              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            TAB_BASE,
+            activeTab === 'dados' ? 'border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]' : TAB_IDLE
           )}
         >
           <Sliders className="size-4" />
-          <span>Dados Cadastrais & Perfil</span>
+          <span>Dados cadastrais</span>
         </button>
 
         <button
           onClick={() => setActiveTab('vendas')}
           className={cn(
-            'pb-3 px-2 text-xs md:text-sm font-bold transition-all border-b-2 focus:outline-none flex items-center gap-2 shrink-0',
-            activeTab === 'vendas'
-              ? 'border-[var(--color-accent-hype)] text-[var(--color-accent-hype)]'
-              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            TAB_BASE,
+            activeTab === 'vendas' ? 'border-[var(--color-accent-hype)] text-[var(--color-accent-hype)]' : TAB_IDLE
           )}
         >
           <ShieldCheck className="size-4" />
-          <span>Meus Drops & Vendas</span>
+          <span>Meus drops</span>
         </button>
 
         <button
           onClick={() => setActiveTab('leiloes')}
           className={cn(
-            'pb-3 px-2 text-xs md:text-sm font-bold transition-all border-b-2 focus:outline-none flex items-center gap-2 shrink-0',
-            activeTab === 'leiloes'
-              ? 'border-[var(--color-accent-gold)] text-[var(--color-accent-gold)]'
-              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            TAB_BASE,
+            activeTab === 'leiloes' ? 'border-[var(--color-accent-gold)] text-[var(--color-accent-gold)]' : TAB_IDLE
           )}
         >
           <Gavel className="size-4" />
-          <span>Meus Leilões & Lances</span>
+          <span>Meus leilões</span>
         </button>
 
         <button
           onClick={() => setActiveTab('compras')}
           className={cn(
-            'pb-3 px-2 text-xs md:text-sm font-bold transition-all border-b-2 focus:outline-none flex items-center gap-2 shrink-0',
-            activeTab === 'compras'
-              ? 'border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]'
-              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            TAB_BASE,
+            activeTab === 'compras' ? 'border-[var(--color-accent-primary)] text-[var(--color-accent-primary)]' : TAB_IDLE
           )}
         >
           <ShoppingBag className="size-4" />
-          <span>Minhas Compras</span>
+          <span>Minhas compras</span>
         </button>
 
         <button
           onClick={() => setActiveTab('jogos')}
           className={cn(
-            'pb-3 px-2 text-xs md:text-sm font-bold transition-all border-b-2 focus:outline-none flex items-center gap-2 shrink-0',
-            activeTab === 'jogos'
-              ? 'border-[var(--color-accent-hype)] text-[var(--color-accent-hype)]'
-              : 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+            TAB_BASE,
+            activeTab === 'jogos' ? 'border-[var(--color-accent-hype)] text-[var(--color-accent-hype)]' : TAB_IDLE
           )}
         >
           <Flame className="size-4" />
-          <span>Meus Jogos Monitorados ({watches.length})</span>
+          <span>Jogos acompanhados ({watches.length})</span>
         </button>
       </div>
 
-      {/* Conteúdo das Abas */}
-
-      {/* 1. VISÃO GERAL & GAMIFICAÇÃO */}
+      {/* 1. VISÃO GERAL — somente dado real da conta */}
       {activeTab === 'visao_geral' && (
-        <div className="flex flex-col gap-8">
-          {/* Métricas de Gamificação */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-              <div className="flex items-center justify-between mb-3">
-                <Text variant="caption" color="tertiary">Progresso de Nível</Text>
-                <Badge variant="legend" size="sm">Nível 12</Badge>
-              </div>
-              <Text variant="heading-lg" className="font-black text-2xl">2.840 XP</Text>
-              <div className="w-full bg-[var(--color-bg-inset)] h-2 rounded-full mt-3 overflow-hidden border border-[var(--color-border-subtle)]">
-                <div className="bg-gradient-to-r from-[var(--color-accent-gold)] to-[var(--color-accent-hype)] h-full w-[85%]" />
-              </div>
-              <Text variant="caption" color="secondary" className="text-[11px] mt-2">Faltam 160 XP para Nível 13 (Colecionador Master)</Text>
-            </Card>
-
-            <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-              <div className="flex items-center justify-between mb-3">
-                <Text variant="caption" color="tertiary">Saldo Geek Coins</Text>
-                <Coins className="size-5 text-[var(--color-accent-gold)]" />
-              </div>
-              <Text variant="heading-lg" className="font-black text-2xl text-[var(--color-accent-gold)]">🪙 480 Coins</Text>
-              <Text variant="caption" color="secondary" className="text-[11px] mt-3">Acumulados em lances, drops e interações comunitárias</Text>
-            </Card>
-
-            <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-              <div className="flex items-center justify-between mb-3">
-                <Text variant="caption" color="tertiary">Reputação na Comunidade</Text>
-                <div className="flex items-center gap-1 text-amber-400 text-xs font-bold">
-                  <Star className="size-4 fill-amber-400" /> 4.9/5.0
-                </div>
-              </div>
-              <Text variant="heading-lg" className="font-black text-2xl">18 Transações</Text>
-              <Text variant="caption" color="secondary" className="text-[11px] mt-3">100% de avaliações positivas em entregas e leilões</Text>
-            </Card>
-          </div>
-
-          {/* Conquistas & Insígnias */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
-            <Text variant="heading-md" className="font-bold mb-4 flex items-center gap-2">
-              <Award className="size-5 text-[var(--color-accent-gold)]" />
-              Insígnias & Conquistas Desbloqueadas
+            <Text variant="caption" color="tertiary">Jogos acompanhados</Text>
+            <Text variant="heading-lg" className="mt-2 text-2xl font-black">{watches.length}</Text>
+            <Text variant="caption" color="secondary" className="mt-3 text-[11px]">
+              {watches.length === 0
+                ? 'Acompanhe um jogo na vitrine para ver o menor preço aqui.'
+                : 'Veja os preços na aba de jogos acompanhados.'}
             </Text>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-amber-500/30 text-center">
-                <div className="relative size-12 rounded-full overflow-hidden border border-amber-400/50">
-                  <Image src="/images/conta/collector-badge.png" alt="Badge" fill className="object-cover" />
-                </div>
-                <Text variant="body-sm" className="font-bold text-amber-400">Guardião do Vault</Text>
-                <Text variant="caption" color="secondary" className="text-[10px]">Cadastrou +5 itens raros no acervo</Text>
-              </div>
+          </Card>
 
-              <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-[var(--color-accent-hype)]/30 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)] font-black text-xl">⚡</div>
-                <Text variant="body-sm" className="font-bold text-[var(--color-accent-hype)]">Caçador Hype</Text>
-                <Text variant="caption" color="secondary" className="text-[10px]">Primeiro drop finalizado na Hype Zone</Text>
-              </div>
+          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
+            <Text variant="caption" color="tertiary">Pontos</Text>
+            <Text variant="heading-lg" className="mt-2 text-2xl font-black">
+              {profile && profile.geekPoints > 0 ? profile.geekPoints.toLocaleString('pt-BR') : 'sem pontos ainda'}
+            </Text>
+            <Text variant="caption" color="secondary" className="mt-3 text-[11px]">
+              Saldo gravado na sua conta. Ainda não há regra pública de como ganhar ou usar pontos.
+            </Text>
+          </Card>
 
-              <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-[var(--color-accent-primary)]/30 text-center">
-                <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] font-black">
-                  <Gavel className="size-5" />
-                </div>
-                <Text variant="body-sm" className="font-bold text-[var(--color-accent-primary)]">Martelo de Ouro</Text>
-                <Text variant="caption" color="secondary" className="text-[10px]">Participou de 3 leilões com lance vencedor</Text>
-              </div>
-
-              <div className="flex flex-col items-center gap-2 p-4 rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] border border-[var(--color-border-subtle)] text-center opacity-60">
-                <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-bg-surface)] text-[var(--color-text-tertiary)] font-black">
-                  <Crown className="size-5" />
-                </div>
-                <Text variant="body-sm" className="font-bold">Lenda Retro</Text>
-                <Text variant="caption" color="tertiary" className="text-[10px]">Bloqueado (Alcance 5.000 XP)</Text>
-              </div>
-            </div>
+          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
+            <Text variant="caption" color="tertiary">Perfil de colecionador</Text>
+            <Text variant="heading-lg" className="mt-2 text-2xl font-black">
+              {seller?.status === 'active' ? 'Verificado' : seller ? 'Em análise' : 'Não cadastrado'}
+            </Text>
+            <Text variant="caption" color="secondary" className="mt-3 text-[11px]">
+              {seller
+                ? 'Situação do seu cadastro de colecionador.'
+                : 'Cadastre-se como colecionador para publicar drops e leilões.'}
+            </Text>
           </Card>
         </div>
       )}
 
-      {/* 2. DADOS CADASTRAIS & EDITAIS DO PERFIL */}
+      {/* 2. DADOS CADASTRAIS */}
       {activeTab === 'dados' && (
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:p-8">
           <form onSubmit={handleSaveData} className="flex flex-col gap-6">
             <div className="flex items-center justify-between border-b border-[var(--color-border-subtle)] pb-4">
               <div>
-                <Text variant="heading-lg" className="font-bold">Dados Cadastrais & Perfil</Text>
-                <Text variant="body-sm" color="secondary" className="text-xs">Atualize suas informações de contato e personalização pública.</Text>
+                <Text variant="heading-lg" className="font-bold">Dados cadastrais</Text>
+                <Text variant="body-sm" color="secondary" className="text-xs">Nome de exibição e telefone de contato.</Text>
               </div>
               <Button type="submit" variant="primary" disabled={isSaving} rightIcon={<Save className="size-4" />}>
-                {isSaving ? 'Salvando...' : 'Salvar Alterações'}
+                {isSaving ? 'Salvando...' : 'Salvar alterações'}
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Campo de Upload da Foto do Perfil diretamente do PC */}
-              <div className="md:col-span-2 flex flex-col sm:flex-row items-center gap-4 p-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
-                <div className="relative size-20 rounded-full overflow-hidden border-2 border-[var(--color-accent-gold)] shrink-0 shadow-md">
-                  <Image
-                    src={avatarUrl || profile?.avatarUrl || '/images/home/tile-1.png'}
-                    alt="Foto do Perfil"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5 min-w-0 text-center sm:text-left">
-                  <Text variant="body-sm" className="font-bold">Foto do Perfil / Avatar do Colecionador</Text>
-                  <Text variant="caption" color="tertiary" className="text-xs">
-                    Envie uma foto diretamente do seu computador (PNG, JPG ou WEBP de até 5MB).
-                  </Text>
-                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
-                    <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--color-accent-primary)] text-black text-xs font-bold hover:opacity-90 transition-opacity">
-                      <Upload className="size-3.5" />
-                      Escolher Foto do PC
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleAvatarFileUpload}
-                      />
-                    </label>
-                    {avatarUrl && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAvatarUrl('')}
-                        className="text-xs text-[var(--color-text-tertiary)]"
-                      >
-                        Restaurar Padrão
-                      </Button>
-                    )}
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="conta-nome" className="text-xs font-semibold text-[var(--color-text-secondary)]">Nome de exibição</label>
+                <Input id="conta-nome" value={name} onChange={(e) => setName(e.target.value)} required />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Nome de Exibição</label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} required />
+                <label htmlFor="conta-email" className="text-xs font-semibold text-[var(--color-text-secondary)]">E-mail cadastrado</label>
+                <Input id="conta-email" value={profile?.email ?? ''} disabled className="opacity-70 cursor-not-allowed" />
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-[var(--color-text-secondary)]">E-mail Cadastrado</label>
-                <Input value={profile?.email || 'egeek86@arkosintelligence.com'} disabled className="opacity-70 cursor-not-allowed" />
+                <label htmlFor="conta-telefone" className="text-xs font-semibold text-[var(--color-text-secondary)]">Telefone / WhatsApp</label>
+                <Input id="conta-telefone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Opcional" />
               </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Telefone / WhatsApp</label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} required />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Cidade</label>
-                  <Input value={city} onChange={(e) => setCity(e.target.value)} required />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Estado</label>
-                  <Input value={state} onChange={(e) => setState(e.target.value)} required />
-                </div>
-              </div>
-
-              <div className="md:col-span-2 flex flex-col gap-2">
-                <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Biografia / Apresentação do Colecionador</label>
-                <Input value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Descreva seu foco de coleção..." />
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-[var(--color-border-subtle)] flex items-center justify-between">
-              <Button type="button" variant="outline" size="sm" onClick={handleDeleteAccountData} className="text-red-400 border-red-500/30 hover:bg-red-500/10">
-                <Trash2 className="size-3.5 mr-1" /> Excluir Dados Facultativos
-              </Button>
-              <Button type="submit" variant="primary" disabled={isSaving}>
-                Salvar Alterações
-              </Button>
             </div>
           </form>
         </Card>
       )}
 
-      {/* 3. MEUS DROPS & VENDAS */}
+      {/* 3. MEUS DROPS */}
       {activeTab === 'vendas' && (
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:p-8">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
-              <Text variant="heading-lg" className="font-bold">Meus Drops & Vendas (Hype Zone)</Text>
-              <Text variant="body-sm" color="secondary" className="text-xs">Gerencie os colecionáveis que você cadastrou para lançamento.</Text>
+              <Text variant="heading-lg" className="font-bold">Meus drops (Hype Zone)</Text>
+              <Text variant="body-sm" color="secondary" className="text-xs">Os colecionáveis que você cadastrou para lançamento.</Text>
             </div>
             {isSellerActive ? (
               <Button asChild variant="hype" size="sm" rightIcon={<Plus className="size-4" />}>
-                <Link href="/conta/vendedor/novo-drop">Cadastrar Novo Drop</Link>
+                <Link href="/conta/vendedor/novo-drop">Cadastrar novo drop</Link>
               </Button>
             ) : (
               <Button asChild variant="hype" size="sm" rightIcon={<ArrowRight className="size-4" />}>
-                <Link href="/entrar?role=colecionador">Solicitar Cadastro de Colecionador</Link>
+                <Link href="/entrar?role=colecionador">Solicitar cadastro de colecionador</Link>
               </Button>
             )}
           </div>
 
           {!isSellerActive ? (
-            <div className="p-8 rounded-[var(--radius-lg)] border border-amber-500/30 bg-amber-500/5 text-center flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border border-amber-500/30 bg-amber-500/5 p-8 text-center">
               <ShieldCheck className="size-8 text-amber-400" />
-              <Text variant="heading-sm" className="font-bold text-amber-400">Credenciamento de Colecionador Necessário</Text>
+              <Text variant="heading-sm" className="font-bold text-amber-400">Credenciamento de colecionador necessário</Text>
               <Text variant="body-sm" color="secondary" className="max-w-[50ch]">
-                Para publicar e vender seus próprios itens na Hype Zone, efetue o cadastro de colecionador. Após a validação administrativa, você poderá cadastrar seus drops ilimitadamente.
+                Para publicar itens na Hype Zone, faça o cadastro de colecionador. Depois da validação administrativa você poderá cadastrar seus drops.
               </Text>
-              <Button asChild variant="hype" className="mt-2">
-                <Link href="/entrar?role=colecionador">Cadastrar como Colecionador</Link>
-              </Button>
             </div>
           ) : (
-            <div className="flex flex-col gap-4">
-              <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="relative size-16 rounded-[var(--radius-sm)] overflow-hidden border border-[var(--color-border-subtle)] shrink-0">
-                    <Image src="/images/home/tile-1.png" alt="Drop" fill className="object-cover" />
-                  </div>
-                  <div>
-                    <Text variant="body-md" className="font-bold">Statue Iron Studios Batman 1/10 Legacy Replica</Text>
-                    <Text variant="caption" color="secondary">Postado em 14/07/2026 • 24 visualizações</Text>
-                    <Badge variant="hype" size="sm" className="mt-1">Drop Ativo (Ao Vivo)</Badge>
-                  </div>
-                </div>
-                <Text variant="heading-sm" className="font-bold text-[var(--color-accent-gold)]">R$ 1.850,00</Text>
-              </div>
+            <div className="flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 p-8 text-center">
+              <Text variant="body-sm" color="secondary" className="max-w-[50ch]">
+                A lista dos seus drops, com situação e visualizações, fica no painel do colecionador.
+              </Text>
+              <Button asChild variant="primary" size="sm">
+                <Link href="/conta/vendedor">Abrir painel do colecionador</Link>
+              </Button>
             </div>
           )}
         </Card>
       )}
 
-      {/* 4. MEUS LEILÕES & LANCES */}
+      {/* 4. MEUS LEILÕES */}
       {activeTab === 'leiloes' && (
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:p-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 w-full max-w-full overflow-hidden">
+          <div className="mb-6 flex w-full max-w-full flex-col items-start justify-between gap-4 overflow-hidden sm:flex-row sm:items-center">
             <div>
-              <Text variant="heading-lg" className="font-bold text-lg sm:text-xl">Meus Leilões & Lances (Geek Hammer)</Text>
-              <Text variant="body-sm" color="secondary" className="text-xs">Acompanhe lotes que você cadastrou ou disputas que está participando.</Text>
+              <Text variant="heading-lg" className="text-lg font-bold sm:text-xl">Meus leilões e lances</Text>
+              <Text variant="body-sm" color="secondary" className="text-xs">Lotes que você cadastrou e disputas de que participa.</Text>
             </div>
             {isSellerActive ? (
-              <Button asChild variant="primary" size="sm" className="w-full sm:w-auto font-bold text-xs" rightIcon={<Plus className="size-4" />}>
-                <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote</Link>
+              <Button asChild variant="primary" size="sm" className="w-full text-xs font-bold sm:w-auto" rightIcon={<Plus className="size-4" />}>
+                <Link href="/hype-zone/leiloes?aba=novo">Cadastrar novo lote</Link>
               </Button>
             ) : (
-              <Button asChild variant="primary" size="sm" className="w-full sm:w-auto font-bold text-xs" rightIcon={<ArrowRight className="size-4" />}>
-                <Link href="/entrar?role=colecionador">Solicitar Cadastro de Leiloeiro</Link>
+              <Button asChild variant="primary" size="sm" className="w-full text-xs font-bold sm:w-auto" rightIcon={<ArrowRight className="size-4" />}>
+                <Link href="/entrar?role=colecionador">Solicitar cadastro de leiloeiro</Link>
               </Button>
             )}
           </div>
 
-          {!isSellerActive ? (
-            <div className="p-8 rounded-[var(--radius-lg)] border border-[var(--color-accent-primary)]/30 bg-[var(--color-accent-primary)]/5 text-center flex flex-col items-center gap-3">
-              <Gavel className="size-8 text-[var(--color-accent-primary)]" />
-              <Text variant="heading-sm" className="font-bold text-[var(--color-accent-primary)]">Credenciamento de Leiloeiro Necessário</Text>
-              <Text variant="body-sm" color="secondary" className="max-w-[50ch]">
-                Para abrir lotes e conduzir leilões ao vivo, faça seu cadastro de leiloeiro/vendedor e aguarde a aprovação do administrador.
-              </Text>
-              <Button asChild variant="primary" className="mt-2">
-                <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="p-4 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex size-12 items-center justify-center rounded-full bg-[var(--color-accent-gold)]/10 text-[var(--color-accent-gold)] shrink-0">
-                    <Gavel className="size-6" />
-                  </div>
-                  <div>
-                    <Text variant="body-md" className="font-bold">Nintendo Virtual Boy CIB (Completo na Caixa)</Text>
-                    <Text variant="caption" color="secondary">Seu Lance: R$ 2.450,00 • Lance Atual Vencedor</Text>
-                    <Badge variant="legend" size="sm" className="mt-1">Leilão Ativo • Encerra em 4h</Badge>
-                  </div>
-                </div>
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/leiloes">Ver Sala ao Vivo</Link>
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="flex flex-col items-center gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 p-8 text-center">
+            <Gavel className="size-8 text-[var(--color-text-tertiary)]" aria-hidden />
+            <Text variant="body-sm" color="secondary" className="max-w-[50ch]">
+              {isSellerActive
+                ? 'Os lotes que você cadastrou aparecem no painel do colecionador.'
+                : 'Para abrir lotes é preciso o cadastro de colecionador, validado pelo administrador.'}
+            </Text>
+            <Button asChild variant="outline" size="sm">
+              <Link href={isSellerActive ? '/conta/vendedor' : '/leiloes'}>
+                {isSellerActive ? 'Abrir painel do colecionador' : 'Ver leilões'}
+              </Link>
+            </Button>
+          </div>
         </Card>
       )}
 
       {/* 5. MINHAS COMPRAS */}
       {activeTab === 'compras' && (
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:p-8">
-          <Text variant="heading-lg" className="font-bold mb-2">Minhas Compras</Text>
-          <Text variant="body-sm" color="secondary" className="text-xs mb-6">Histórico de pedidos e produtos adquiridos através do portal.</Text>
-          
+          <Text variant="heading-lg" className="font-bold mb-2">Minhas compras</Text>
+          <Text variant="body-sm" color="secondary" className="text-xs mb-6">
+            O Espaço Geek 86 compara preços e leva você à loja; a compra acontece no site da loja, então não há pedidos registrados aqui.
+          </Text>
+
           <div className="p-8 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 text-center flex flex-col items-center gap-3">
             <ShoppingBag className="size-8 text-[var(--color-text-tertiary)]" />
-            <Text variant="heading-sm">Nenhum pedido finalizado recentemente</Text>
+            <Text variant="heading-sm">Nenhum pedido registrado</Text>
             <Text variant="body-sm" color="secondary" className="max-w-[44ch]">
-              Explore as melhores ofertas de consoles, jogos e colecionáveis na nossa vitrine.
+              Explore as ofertas de jogos e consoles na vitrine.
             </Text>
             <Button asChild variant="primary" className="mt-2">
-              <Link href="/ofertas">Explorar Vitrine de Ofertas</Link>
+              <Link href="/ofertas">Explorar ofertas</Link>
             </Button>
           </div>
         </Card>
       )}
 
-      {/* 6. MEUS JOGOS MONITORADOS */}
+      {/* 6. JOGOS ACOMPANHADOS */}
       {activeTab === 'jogos' && (
         <div>
           {watches.length === 0 ? (
@@ -529,7 +353,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
                           {item.networkName}
                         </Badge>
                         <Badge variant="legend" size="sm" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/30">
-                          ⚡ Menor Cotação Atual
+                          Menor cotação atual
                         </Badge>
                       </div>
 
@@ -539,7 +363,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
 
                       <div className="mt-auto pt-2 border-t border-[var(--color-border-subtle)] flex flex-col gap-1">
                         <Text variant="caption" color="tertiary" className="text-[10px]">
-                          Melhor oferta encontrada entre todas as lojas
+                          Menor preço entre todas as lojas
                         </Text>
                         <Text variant="heading-md" className="font-mono font-black text-xl text-[var(--color-accent-primary)]">
                           {formatBRL(item.currentPriceCents)}

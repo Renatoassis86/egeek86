@@ -100,7 +100,7 @@ export default function TermosPage() {
               O lance vencedor constitui um <strong>compromisso legal de compra</strong>. O não pagamento do lote arrematado no prazo estipulado sujeita a conta a:
             </Text>
             <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
-              <li>Redução imediata de 500 Geek Points (XP) do perfil.</li>
+              <li>Redução imediata de 500 Geek Coins (XP) do perfil.</li>
               <li>Status de inadimplência e potencial suspensão permanente da conta de colecionador.</li>
             </ul>
           </div>

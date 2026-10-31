@@ -4,6 +4,16 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { gamerSurveys, type SurveyOptionItem } from '@/db/schema';
+import { getCurrentProfile } from '@/lib/auth/require-admin';
+
+async function assertAdmin(): Promise<{ ok: false; error: string } | null> {
+  const profile = await getCurrentProfile();
+  if (!profile) return { ok: false, error: 'Não autenticado.' };
+  if (profile.role !== 'admin' && profile.role !== 'super_admin') {
+    return { ok: false, error: 'Sem permissão.' };
+  }
+  return null;
+}
 
 export async function createSurveyQuestionAction({
   question,
@@ -14,6 +24,8 @@ export async function createSurveyQuestionAction({
   category?: string;
   options: SurveyOptionItem[];
 }): Promise<{ ok: boolean; error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
   try {
     if (!question.trim() || !options || options.length === 0) {
       return { ok: false, error: 'Pergunta e opções são obrigatórias.' };
@@ -49,6 +61,8 @@ export async function updateSurveyQuestionAction({
   options: SurveyOptionItem[];
   isActive?: boolean;
 }): Promise<{ ok: boolean; error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
   try {
     if (!id || !question.trim()) {
       return { ok: false, error: 'ID e pergunta são obrigatórios.' };
@@ -80,6 +94,8 @@ export async function deleteSurveyQuestionAction({
 }: {
   id: string;
 }): Promise<{ ok: boolean; error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
   try {
     if (!id) {
       return { ok: false, error: 'ID da enquete inválido.' };

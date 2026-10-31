@@ -28,31 +28,61 @@ export function normalizeGamePlatformGen(consoleVersion: string | null, fallback
   if (value === 'xbox one') return 'xbox_one';
   if (value === 'xbox 360') return 'xbox_360';
 
-  const text = fallbackText?.toLowerCase() ?? '';
+  return derivePlatformFromTitle(fallbackText);
+}
 
-  // Achado real (2026-08-03): "Organizador de Jogos Playstation XBOX
-  // Nintendo..." caía em switch_1 só porque a checagem em cascata parava na
-  // PRIMEIRA plataforma que batesse (nesse caso "switch"), ignorando que o
-  // título também menciona Playstation e Xbox — item universal/multi-
-  // plataforma virava "exclusivo" de uma vitrine que não é dele (apareceu
-  // dentro de "Universo Nintendo Switch"). Antes de escolher UMA plataforma,
-  // conta quantas famílias distintas de console o título menciona — 2 ou
-  // mais é sinal de acessório universal, não específico de nenhuma.
-  const mentionsSwitch = /\bswitch\b/.test(text);
-  const mentionsPlaystation = /\b(playstation|ps[2345])\b/.test(text);
-  const mentionsXbox = /\bxbox\b/.test(text);
-  const distinctFamilies = [mentionsSwitch, mentionsPlaystation, mentionsXbox].filter(Boolean).length;
-  if (distinctFamilies >= 2) return 'unknown';
+/**
+ * Deriva a plataforma a partir do texto livre do título. Regra de negócio:
+ * nunca desistir para 'unknown' se o título indica a plataforma (31 jogos
+ * 'unknown' no banco, 2026-10-31, já traziam a plataforma no nome).
+ *
+ * Achado real (2026-08-03): "Organizador de Jogos Playstation XBOX
+ * Nintendo..." caía em switch_1 porque a cascata parava na PRIMEIRA
+ * plataforma que batesse. Antes de escolher UMA plataforma, conta quantas
+ * famílias de console o título menciona: 2 ou mais é acessório universal e
+ * devolve 'unknown'. Pelo mesmo motivo, "PS4 / PS5" no mesmo título é
+ * ambíguo (o disco é de uma geração só) e também devolve 'unknown', para
+ * revisão manual em vez de fundir no master errado.
+ * "Xbox One / Series X|S" (cross-gen) mantém o comportamento histórico:
+ * xbox_series.
+ */
+export function derivePlatformFromTitle(title: string | null | undefined): GamePlatformGen {
+  const text = (title ?? '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/switch\s+sports/g, 'switchsports');
+  if (!text.trim()) return 'unknown';
 
-  if (/switch\s*2/.test(text)) return 'switch_2';
-  if (/\bswitch\b/.test(text)) return 'switch_1';
-  if (/\b(playstation\s*5|ps5)\b/.test(text)) return 'ps5';
-  if (/\b(playstation\s*4|ps4)\b/.test(text)) return 'ps4';
-  if (/xbox\s*series/.test(text)) return 'xbox_series';
-  // "xbox 360" precisa vir antes de "xbox one" no texto livre: título como
-  // "Xbox 360 / One" (jogo cross-gen) não pode cair só na checagem de one.
-  if (/xbox\s*360/.test(text)) return 'xbox_360';
-  if (/xbox\s*one/.test(text)) return 'xbox_one';
+  const switch2 = /\b(nintendo\s+)?switch\s*2\b|\bns2\b/;
+  const hasSwitch2 = switch2.test(text);
+  const textNoSwitch2 = text.replace(new RegExp(switch2.source, 'g'), ' ');
+  const hasSwitch1 = /\bswitch\b|\bnsw\b|switchsports/.test(textNoSwitch2);
+  const hasPs5 = /\b(playstation\s*5|ps\s*5)\b/.test(text);
+  const hasPs4 = /\b(playstation\s*4|ps\s*4)\b/.test(text);
+  const hasPsGeneric = /\bplaystation\b|\bps[23]\b/.test(text);
+  const hasXboxSeries = /xbox\s*series|xbox\s*serie\b|\bseries\s*[xs]\b|\bxsx\b/.test(text);
+  const hasXbox360 = /xbox\s*360|\bx360\b/.test(text);
+  const hasXboxOne = /xbox\s*one|\bxb1\b|\bxone\b/.test(text);
+  const hasXboxGeneric = /\bxbox\b/.test(text);
+
+  const families = [
+    hasSwitch2 || hasSwitch1,
+    hasPs5 || hasPs4 || hasPsGeneric,
+    hasXboxSeries || hasXbox360 || hasXboxOne || hasXboxGeneric,
+  ].filter(Boolean).length;
+  if (families >= 2) return 'unknown';
+
+  if (hasSwitch2 && hasSwitch1) return 'unknown'; // "Switch 1 e Switch 2": ambíguo
+  if (hasSwitch2) return 'switch_2';
+  if (hasSwitch1) return 'switch_1';
+  if (hasPs5 && hasPs4) return 'unknown';
+  if (hasPs5) return 'ps5';
+  if (hasPs4) return 'ps4';
+  if (hasXboxSeries) return 'xbox_series';
+  // "xbox 360" antes de "xbox one": "Xbox 360 / One" não pode cair só em one.
+  if (hasXbox360) return 'xbox_360';
+  if (hasXboxOne) return 'xbox_one';
 
   return 'unknown';
 }

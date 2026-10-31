@@ -185,7 +185,7 @@ export default async function CurationPage() {
                 </span>
                 <ul className="list-disc pl-4 flex flex-col gap-1.5 text-[11px] leading-relaxed">
                   <li><strong className="font-bold text-[var(--color-text-primary)]">+10 XP imediato</strong> por participar de qualquer curadoria de drop ou auditoria de review.</li>
-                  <li><strong className="font-bold text-[var(--color-text-primary)]">+50 Geek Points</strong> adicionais quando seu veredicto for correto e bater com a decisão final da moderação.</li>
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">+50 Geek Coins</strong> adicionais quando seu veredicto for correto e bater com a decisão final da moderação.</li>
                   <li>Pontos bônus por positivação recebida de compradores em seus próprios drops.</li>
                 </ul>
               </div>
@@ -196,7 +196,7 @@ export default async function CurationPage() {
                   💸 2. Regra de Resgate (Milhas)
                 </span>
                 <ul className="list-disc pl-4 flex flex-col gap-1.5 text-[11px] leading-relaxed">
-                  <li><strong className="font-bold text-[var(--color-text-primary)]">Taxa Conversora</strong>: 100 Geek Points = R$ 1,00 de desconto na loja do administrador.</li>
+                  <li><strong className="font-bold text-[var(--color-text-primary)]">Taxa Conversora</strong>: 100 Geek Coins = R$ 1,00 de desconto na loja do administrador.</li>
                   <li>Resgates podem ser feitos em qualquer múltiplo de 100 pontos.</li>
                   <li>O sistema gera um código de cupom exclusivo na hora para você aplicar no carrinho.</li>
                 </ul>

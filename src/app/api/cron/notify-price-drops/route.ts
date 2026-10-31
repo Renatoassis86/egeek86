@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 import { runDailyDigest } from '@/server/notifications/send-daily-digest';
 
 export const dynamic = 'force-dynamic';
@@ -10,10 +11,8 @@ export const maxDuration = 60;
  * /api/cron/collect-prices.
  */
 export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  }
+  const denied = rejectUnlessCronAuthorized(request);
+  if (denied) return denied;
 
   const summary = await runDailyDigest();
   return NextResponse.json(summary);

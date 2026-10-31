@@ -62,33 +62,7 @@ export function CurationPanel({
   const [formReviewVerdict, setFormReviewVerdict] = useState<Record<string, 'approve' | 'reject'>>({});
   const [formReviewNotes, setFormReviewNotes] = useState<Record<string, string>>({});
 
-  // Mock de avaliações pendentes caso venha vazio da API/banco
-  const fallbackReviews: PendingReview[] = [
-    {
-      id: 'rev-mock-1',
-      productId: 'p1',
-      productTitle: 'PlayStation 5 Pro - Edição Limitada 30 Anos',
-      buyerName: 'Carlos G. (Comprador)',
-      sellerName: 'Renato Assis (Renato86)',
-      rating: 1,
-      comment: 'O console veio com cabo de força preto comum em vez do cabo comemorativo clássico cinza. Propaganda enganosa!',
-      images: ['/images/hero/tile-accent.png'],
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: 'rev-mock-2',
-      productId: 'p2',
-      productTitle: 'Vaporwave Custom Keyboard mechanical (65%)',
-      buyerName: 'Julia M. (Compradora)',
-      sellerName: 'Aline Tech & Craft',
-      rating: 2,
-      comment: 'O teclado faz muito barulho ao digitar. Comprei achando que switches lubrificados fossem totalmente silenciosos. Não recomendo.',
-      images: [],
-      createdAt: new Date().toISOString(),
-    }
-  ];
-
-  const targetReviews = pendingReviews.length > 0 ? pendingReviews : fallbackReviews;
+  const targetReviews = pendingReviews;
 
   const handleDropVoteSubmit = (dropId: string) => {
     if (!isAuthenticated) {
@@ -226,7 +200,7 @@ export function CurationPanel({
         <div className="bg-[var(--color-accent-hype)]/5 border border-[var(--color-accent-hype)]/20 text-[var(--color-text-secondary)] rounded-[var(--radius-md)] p-4 text-xs leading-relaxed">
           <AlertTriangle className="size-4 text-[var(--color-accent-hype)] inline-block align-middle mr-1.5" />
           <span className="font-semibold text-[var(--color-text-primary)]">Restrição de Nível</span>: 
-          Você precisa de pelo menos <strong className="text-[var(--color-text-primary)] font-bold">200 Geek Points (Nível Explorador)</strong> para votar de forma oficial. Seus votos acumulam XP de participação, mas não contam para o consenso final até atingir o nível.
+          Você precisa de pelo menos <strong className="text-[var(--color-text-primary)] font-bold">200 Geek Coins (Nível Explorador)</strong> para votar de forma oficial. Seus votos acumulam XP de participação, mas não contam para o consenso final até atingir o nível.
         </div>
       )}
 

@@ -10,6 +10,7 @@ import { StatTile } from '@/components/ui/stat-tile';
 import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
 import { getPlatformStats } from '@/server/queries/affiliate';
+import { getPublicTotals } from '@/server/queries/home-search';
 
 export const metadata: Metadata = {
   title: 'Contatos & Suporte',
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function ContatosPage() {
-  const stats = await getPlatformStats();
+  const [stats, totals] = await Promise.all([getPlatformStats(), getPublicTotals()]);
 
   return (
     <section className="relative mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16 overflow-hidden">
@@ -52,9 +53,9 @@ export default async function ContatosPage() {
       {/* Indicadores Reais da Plataforma — sempre COUNT direto do banco, nunca um número redondo estimado. */}
       <Reveal delay={0.08}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
-          <StatTile icon={<Package className="size-5" />} value={stats.totalProducts} label="Produtos Catalogados" />
-          <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Lojas & Vendedores" />
-          <StatTile icon={<Layers className="size-5" />} value={stats.totalNetworks} label="Plataformas Parceiras" />
+          <StatTile icon={<Package className="size-5" />} value={totals.products} label="Produtos com preço atual" />
+          <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Vendedores identificados" />
+          <StatTile icon={<Layers className="size-5" />} value={totals.stores} label="Lojas monitoradas" />
           <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de Preço" />
         </div>
       </Reveal>

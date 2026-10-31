@@ -15,7 +15,7 @@ import { formatBRL } from '@/lib/format';
 import { Flame, Gavel, Plus, ShieldCheck, Clock, Sparkles, AlertCircle } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Painel do Colecionador | Espaço Geek 86',
+  title: 'Painel do colecionador',
   description: 'Gerencie seus itens de coleção, agende drops e abra leilões de raridades.',
 };
 
@@ -178,14 +178,14 @@ export default async function CollectorDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/20">
           <CardContent className="p-5">
-            <Text variant="caption" color="tertiary" className="uppercase font-mono text-[10px]">Pontuação Geek XP</Text>
-            <Text variant="heading-lg" className="font-bold text-[var(--color-accent-primary)] mt-1">{profile.geekPoints || 0} XP</Text>
+            <Text variant="caption" color="tertiary" className="uppercase font-mono text-[10px]">Pontos</Text>
+            <Text variant="heading-lg" className="font-bold text-[var(--color-accent-primary)] mt-1">{profile.geekPoints ? profile.geekPoints : 'sem pontos ainda'}</Text>
           </CardContent>
         </Card>
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/20">
           <CardContent className="p-5">
             <Text variant="caption" color="tertiary" className="uppercase font-mono text-[10px]">Reputação / Avaliação</Text>
-            <Text variant="heading-lg" className="font-bold mt-1">⭐ {metrics?.avgRating ? Number(metrics.avgRating).toFixed(2) : '5.00'}</Text>
+            <Text variant="heading-lg" className="font-bold mt-1">{metrics?.avgRating && (metrics?.totalReviews ?? 0) > 0 ? `⭐ ${Number(metrics.avgRating).toFixed(2)}` : 'sem avaliações'}</Text>
           </CardContent>
         </Card>
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/20">

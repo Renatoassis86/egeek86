@@ -6,12 +6,13 @@ import { Button } from '@/components/ui/button';
 import { MarketplaceHeroBanner } from '@/components/affiliate/marketplace-hero-banner';
 import { getPriceTableData, getNetworksWithOffers, type PriceTableFilter } from '@/server/queries/price-table';
 import { getActiveCouponsForDisplay } from '@/server/queries/affiliate';
+import { getPublicTotals } from '@/server/queries/home-search';
 import { PriceTableBoard } from '@/components/price-table/price-table-board';
 import type { ProductType, GameFormat, GamePlatformGen } from '@/db/schema';
 
 export const metadata: Metadata = {
-  title: 'Tabela Geral de Preços | Espaço Geek 86',
-  description: 'Tabela dinâmica e contínua de preços para todos os jogos, consoles e acessórios com indicadores de decisão do consumidor e cupons ativos.',
+  title: 'Tabela Geral de Preços',
+  description: 'Tabela de preços atualizada a cada coleta para todos os jogos, consoles e acessórios com indicadores de decisão do consumidor e cupons ativos.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -57,10 +58,11 @@ export default async function TabelaDePrecosPage({
     offset: showAll ? 0 : (page - 1) * PAGE_SIZE,
   };
 
-  const [{ items, totalCount }, coupons, networks] = await Promise.all([
+  const [{ items, totalCount }, coupons, networks, publicTotals] = await Promise.all([
     getPriceTableData(filter),
     getActiveCouponsForDisplay(),
     getNetworksWithOffers(),
+    getPublicTotals(),
   ]);
 
   const paginationParams = new URLSearchParams();
@@ -95,8 +97,11 @@ export default async function TabelaDePrecosPage({
         subtitle="Explore todo o catálogo monitorado em ordem alfabética. Compare cotações ativas, médias históricas e os principais indicadores para sua decisão de compra."
         categoryTag="Monitoramento Abrangente"
         stats={{
-          monitoredProducts: totalCount,
-          partnerStores: 6,
+          // Totais do site inteiro (mesma fonte da home: produtos com oferta pública
+          // ativa e marketplaces com oferta pública ativa). totalCount é o recorte
+          // filtrado da tabela e aparece só na paginação/contador da própria tabela.
+          monitoredProducts: publicTotals.products,
+          partnerStores: publicTotals.stores,
         }}
         coupons={coupons}
       />

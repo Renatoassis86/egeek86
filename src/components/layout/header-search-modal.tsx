@@ -108,6 +108,9 @@ export function HeaderSearchModal() {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 md:pt-24 px-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
           <div 
+            role="dialog"
+            aria-modal="true"
+            aria-label="Buscar preços"
             className="relative w-full max-w-2xl bg-[var(--color-bg-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-xl)] shadow-2xl overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -119,6 +122,7 @@ export function HeaderSearchModal() {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                aria-label="Buscar jogos, consoles e notícias"
                 placeholder="Pesquisar por jogos, notícias, leilões ou consoles..."
                 className="w-full bg-transparent text-sm md:text-base text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none"
               />

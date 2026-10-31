@@ -43,7 +43,7 @@ export function PointsRewardsCard({
     }
 
     if (geekPoints < pointsToConvert) {
-      toast.error('Saldo de Geek Points insuficiente.');
+      toast.error('Saldo de Geek Coins insuficiente.');
       return;
     }
 
@@ -66,7 +66,7 @@ export function PointsRewardsCard({
           <Award className="size-10 text-[var(--color-text-tertiary)] animate-pulse" />
           <Text variant="body-sm" className="font-semibold">Resgate de Milhas Geek</Text>
           <Text variant="caption" color="secondary" className="max-w-[28ch]">
-            Faça login para ver seu saldo de Geek Points e convertê-los em descontos.
+            Faça login para ver seu saldo de Geek Coins e convertê-los em descontos.
           </Text>
         </CardContent>
       </Card>

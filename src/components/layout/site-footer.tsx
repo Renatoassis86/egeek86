@@ -7,7 +7,7 @@ import { Send } from 'lucide-react';
 function InstagramIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <rect width="20" height="20" x="2" y="2" />
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
     </svg>
@@ -27,19 +27,15 @@ const footerSections = [
   {
     title: 'Loja',
     links: [
-      { href: '/universos', label: 'Universos' },
-      { href: '/categorias', label: 'Categorias' },
+      { href: '/ofertas', label: 'Ofertas' },
+      { href: '/ranking', label: 'Ranking' },
       { href: '/hype-zone', label: 'Hype Zone' },
-      { href: '/sellers', label: 'Sellers' },
     ],
   },
   {
     title: 'Suporte',
     links: [
-      { href: '/faq', label: 'FAQ' },
-      { href: '/contato', label: 'Contato' },
-      { href: '/trocas', label: 'Trocas e devoluções' },
-      { href: '/rastreio', label: 'Rastrear pedido' },
+      { href: '/contatos', label: 'Contato' },
     ],
   },
   {
@@ -48,7 +44,6 @@ const footerSections = [
       { href: '/sobre', label: 'Sobre nós' },
       { href: '/termos', label: 'Termos de uso' },
       { href: '/privacidade', label: 'Privacidade' },
-      { href: '/seja-seller', label: 'Seja um seller' },
     ],
   },
 ];

@@ -13,7 +13,6 @@ import type { ArticleCategory, NewsArticle } from '@/db/schema';
 import { ARTICLE_CATEGORY_LABELS, ARTICLE_CATEGORY_OPTIONS, ARTICLE_CATEGORY_STYLES } from '@/lib/news/labels';
 import { FeaturedArticlesCarousel } from '@/components/news/featured-articles-carousel';
 import { db } from '@/lib/db';
-import { sql } from 'drizzle-orm';
 
 export const metadata = { title: 'Notícias' };
 
@@ -27,21 +26,7 @@ function parseCategoryParam(value?: string): ArticleCategory | undefined {
 // Executa migrações dinâmicas de enums de notícias para garantir consistência
 // (rede de segurança — a fonte real dessas categorias agora é a migration
 // drizzle + o enum article_category; ver src/db/schema/_enums.ts).
-async function ensureDbEnums() {
-  const newCategories = ['filmes', 'series_tv', 'animes', 'games', 'korea', 'criticas', 'listas', 'colunistas', 'ccxp', 'pesquisa_mercado'];
-  for (const cat of newCategories) {
-    try {
-      await db.execute(sql.raw(`ALTER TYPE article_category ADD VALUE '${cat}'`));
-    } catch (e) {
-      // Ignora se o valor já existir no enum do Postgres
-    }
-  }
-  try {
-    await db.execute(sql.raw(`ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS keywords text`));
-  } catch (e) {
-    // Ignora se já existe
-  }
-}
+// DDL em tempo de requisição removido (QA Onda 1): enum article_category e coluna keywords já estão nas migrations 0014 e no banco.
 
 export default async function NoticiasPage({
   searchParams,
@@ -52,8 +37,6 @@ export default async function NoticiasPage({
   const category = parseCategoryParam(categoria);
   const page = Number(pagina) > 0 ? Number(pagina) : 1;
 
-  // Garante os enums no banco antes de buscar
-  await ensureDbEnums();
 
   const [{ items, totalPages }, { items: featured }] = await Promise.all([
     getPublishedArticles({ category, page }),
@@ -299,7 +282,7 @@ export default async function NoticiasPage({
                   Escreva sobre cultura pop, games ou tecnologia e compartilhe com milhares de leitores.
                 </span>
                 <Button asChild size="sm" variant="outline" className="w-full mt-3 text-[11px] h-8">
-                  <Link href="/contato">Candidatar-se à Coluna</Link>
+                  <Link href="/contatos">Candidatar-se à Coluna</Link>
                 </Button>
               </div>
 

@@ -94,3 +94,5 @@ export default async function AdminPesquisaPage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Pesquisa' };

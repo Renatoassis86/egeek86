@@ -6,5 +6,11 @@ export default async function ShopLayout({ children }: { children: React.ReactNo
   const profile = await getCurrentProfile();
   const cartCount = profile ? await getCartItemCount(profile.id) : 0;
 
-  return <AppShell cartCount={cartCount}>{children}</AppShell>;
+  const viewer = profile ? { name: profile.name, role: profile.role } : null;
+
+  return (
+    <AppShell cartCount={cartCount} viewer={viewer}>
+      {children}
+    </AppShell>
+  );
 }

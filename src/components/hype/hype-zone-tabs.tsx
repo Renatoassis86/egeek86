@@ -65,17 +65,11 @@ export function HypeZoneTabs({
       toast.error('Faça login para comprar.');
       return;
     }
-    setActiveDropTitle(dropTitle);
-    setIsBuying(true);
-    setBuyStep('checking');
-
-    // Simula as etapas do cockpit anti-bot
-    setTimeout(() => {
-      setBuyStep('queue');
-      setTimeout(() => {
-        setBuyStep('success');
-      }, 1800);
-    }, 1200);
+    // A compra direta de drops ainda NÃO existe (nenhuma cobrança, reserva ou
+    // pedido é gravado). A simulação antiga mostrava "Compra Aprovada" com ID
+    // de transação aleatório — removida por violar a regra de dado real.
+    void dropTitle;
+    toast.info('A compra direta de drops ainda não está disponível. Nenhuma transação foi realizada.');
   };
 
   const tabsConfig = [

@@ -120,3 +120,5 @@ export default async function AdminArticleDetailPage({
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Editar notícia' };

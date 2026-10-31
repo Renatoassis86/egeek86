@@ -180,7 +180,139 @@ const CONSOLE_HARDWARE_SIGNALS =
 /** Título "nu" — só o nome da plataforma, sem jogo nem edição nenhuma (ex: "PS4" sozinho) — nunca é o nome de um jogo de verdade. */
 const BARE_PLATFORM_NAME = /^\s*(?:ps[2345]|playstation\s*[2345]|xbox(?:\s*(?:one|series\s*[xs]|360))?|nintendo\s*switch(?:\s*2)?)\s*$/i;
 
+
+// ---------------------------------------------------------------------------
+// EG-04 — regras determinísticas por título (rodam ANTES do Naive Bayes)
+// ---------------------------------------------------------------------------
+// Achado (auditoria 2026-10-30): 17 masters 'game' eram encarte, caixa vazia,
+// faceplate, réplica; entre os 'game' também há volante, dock cover, Pro
+// Controller e console OLED edição Zelda. Regra: termo de peça/embalagem ou
+// de acessório SEM sinal de mídia de jogo no título vence o modelo. Todos os
+// padrões usam fronteira de palavra (\b) para não casar "Replicant" com
+// "réplica" (Nier Replicant é jogo).
+
+export type NonGameKind = 'part_or_packaging' | 'accessory' | 'console';
+
+export interface NonGameRuleHit {
+  /** Tipo proposto no enum atual (peça/embalagem cai em 'accessory' até o dono decidir categoria própria). */
+  productType: ProductType;
+  kind: NonGameKind;
+  /** Termo do título que disparou a regra (auditável). */
+  matched: string;
+}
+
+/** Peça solta, encarte, embalagem vazia, réplica: nunca é o jogo nem acessório de uso. */
+const PART_OR_PACKAGING_PATTERNS: RegExp[] = [
+  /\b(?:somente|apenas|s[oó]|so)\s+(?:o\s+|a\s+|os\s+|as\s+)?(?:encartes?|caixa|capa|manual|case|estojo)\b/i,
+  /\bcaixa\s+vazia\b/i,
+  /\b(?:saco|carca[cç]a|coldre|estojo|bolsa)\b/i,
+  /\bfaceplates?\b/i,
+  /\bcapa\s+(?:reversivel|reversível|protetora|para|de\s+silicone|de\s+prote[cç][aã]o)\b/i,
+  /\bcases?\s+(?:protetor|para|de\s+prote[cç][aã]o)\b/i,
+  /\br[eé]plicas?\b/i,
+  /\bdock\s+cover\b/i,
+  /\bsteelbook\s+(?:vazio|sem)\b/i,
+];
+
+/** Acessório de uso (controle, volante, headset, cabo…) — não é mídia de jogo. */
+const ACCESSORY_PATTERNS: RegExp[] = [
+  /\bcontroles?\b/i,
+  /\bjoysticks?\b/i,
+  /\bjoy[\s-]?cons?\b/i,
+  /\bpro\s+controller\b/i,
+  /\bdual\s?(?:sense|shock)\b/i,
+  /\bgamepads?\b/i,
+  /\bvolantes?\b/i,
+  /\bpedais\b/i,
+  /\bheadsets?\b/i,
+  /\bfones?\b/i,
+  /\bcarregador(?:es)?\b/i,
+  /\bbaterias?\b/i,
+  /\bcabos?\b/i,
+  /\badaptador(?:es)?\b/i,
+  /\bdocks?\b/i,
+  /\bcart[aã]o\s+de\s+mem[oó]ria\b/i,
+  /\bmemory\s+card\b/i,
+  /\bmouse\b/i,
+  /\bteclado\b/i,
+  /\bcadeiras?\b/i,
+  /\bwebcam\b/i,
+  /\bmousepad\b/i,
+  /\bsuporte\b/i,
+  /\bcontrolador(?:es)?\b/i,
+];
+
+/** Console (hardware) — termo explícito de aparelho. */
+const CONSOLE_PATTERNS: RegExp[] = [
+  // "para console", "edição console", "um console" = texto sobre o jogo, não o aparelho
+  /(?<!\b(?:para|edi[cç][aã]o|vers[aã]o|um|no|do|de|em)\s)\bconsoles?\b/i,
+  /\b\d\s?tb\b/i,
+  /\bps5\s+slim\b/i,
+  /\bswitch\s+(?:lite|oled)\b/i,
+  /\boled\b/i,
+  /\bxbox\s+series\s+[sx]\b.*\b\d{3,4}\s?gb\b/i,
+  /\bcfi-?\d/i,
+  /\b\d{3,4}\s?gb\b.*\b(?:ps[45]|xbox|switch)\b/i,
+];
+
+/** Sinal de MÍDIA de jogo: se presente, termo de acessório/console no título não decide sozinho. */
+const GAME_MEDIA_SIGNAL = /\b(?:jogos?|m[ií]dia|f[ií]sic[oa]|games?|cartucho|blu[\s-]?ray|dlc|edi[cç][aã]o\s+(?:de\s+colecionador|deluxe|gold|definitiva|completa))\b/i;
+
+function earliestMatch(patterns: RegExp[], title: string): { text: string; index: number } | null {
+  let best: { text: string; index: number } | null = null;
+  for (const re of patterns) {
+    const m = re.exec(title);
+    if (m && (best === null || m.index < best.index)) best = { text: m[0], index: m.index };
+  }
+  return best;
+}
+
+function firstMatch(patterns: RegExp[], title: string): string | null {
+  return earliestMatch(patterns, title)?.text ?? null;
+}
+
+/** Peça solta / encarte / caixa vazia / réplica / faceplate? (usado também no filtro de descoberta). */
+export function isPartOrPackagingTitle(title: string): boolean {
+  return detectNonGameByRules(title)?.kind === 'part_or_packaging';
+}
+
+/**
+ * Regra de não-jogo por título. Devolve null quando o título não tem sinal
+ * claro (o chamador cai no modelo / mantém o tipo atual). Prioridade:
+ * peça/embalagem > acessório sem mídia > console sem mídia.
+ */
+export function detectNonGameByRules(title: string): NonGameRuleHit | null {
+  const part = firstMatch(PART_OR_PACKAGING_PATTERNS, title);
+  if (part) return { productType: 'accessory', kind: 'part_or_packaging', matched: part };
+
+  const hasMedia = GAME_MEDIA_SIGNAL.test(title);
+  // "Encarte" sozinho com mídia no título = jogo com encarte reimpresso, não a peça solta.
+  if (!hasMedia && /encartes?/i.test(title)) {
+    return { productType: 'accessory', kind: 'part_or_packaging', matched: 'encarte' };
+  }
+  if (hasMedia) return null;
+
+  const acc = earliestMatch(ACCESSORY_PATTERNS, title);
+  const con = earliestMatch(CONSOLE_PATTERNS, title);
+  // Ambos presentes: o termo que aparece primeiro é o substantivo principal
+  // ("Dock para Switch Lite" = acessório; "Xbox Series S 512GB ... Cabo" = console).
+  if (acc && (!con || acc.index <= con.index)) return { productType: 'accessory', kind: 'accessory', matched: acc.text };
+  if (con) return { productType: 'console', kind: 'console', matched: con.text };
+
+  return null;
+}
+
+/** Kit/lote/combo: pode misturar itens; não reclassifica sozinho, só sinaliza para revisão humana. */
+export function isBundleTitle(title: string): boolean {
+  return /\b(?:kit|lote|combo)\b/i.test(title);
+}
+
 export async function resolveProductTypeFromTitle(title: string, priceCents?: number | null): Promise<ProductType | null> {
+  // Regras determinísticas vencem o modelo (EG-04). Peça/embalagem não deve
+  // entrar no catálogo na descoberta: devolve null (= descartar).
+  const ruleHit = detectNonGameByRules(title);
+  if (ruleHit) return ruleHit.kind === 'part_or_packaging' ? null : ruleHit.productType;
+
   const model = await getProductTypeClassifierModel();
   const predictions = classify(title, model);
   const [top] = predictions;

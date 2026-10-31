@@ -1,7 +1,8 @@
+// Next 16: convenção `proxy` (antiga `middleware`). Só renova cookie de sessão; autorização real fica nas actions/rotas/layout (requireAdmin).
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   try {
     return await updateSession(request);
   } catch (e) {

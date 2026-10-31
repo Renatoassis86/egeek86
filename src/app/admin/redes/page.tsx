@@ -77,3 +77,5 @@ export default async function AdminNetworksPage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Redes' };

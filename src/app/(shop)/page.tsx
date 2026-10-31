@@ -5,8 +5,6 @@ import Image from 'next/image';
 import {
   ArrowRight,
   Sparkles,
-  Zap,
-  ShieldCheck,
   Flame,
   Clock,
   History,
@@ -29,7 +27,6 @@ import { CornerBrackets } from '@/components/motion/corner-brackets';
 import { CircuitLines } from '@/components/motion/circuit-lines';
 import type { CategoryCard } from '@/lib/categories-showcase';
 import { WeeklyPromosSection } from '@/components/geek-deals/weekly-promos-section';
-import { PlatformShowcase } from '@/components/geek-deals/platform-showcase';
 import { SalesHighlights } from '@/components/geek-deals/sales-highlights';
 import { cn } from '@/lib/cn';
 
@@ -52,6 +49,9 @@ import { getPublishedArticles } from '@/server/queries/news';
 import { getPlatformStats, type PlatformStats } from '@/server/queries/affiliate';
 import { getSurveyAggregation, type SurveyAggregation } from '@/server/queries/survey';
 import { gamerCards, geekCards } from '@/lib/categories-showcase';
+import { getHomeSearchData, type HomeSearchData } from '@/server/queries/home-search';
+import { SearchBox } from '@/components/search/search-box';
+import { PLATFORM_SHORT } from '@/components/search/platform-short';
 import { PriceChartsShowcase } from '@/components/home/price-charts-showcase';
 import { GamerSurvey } from '@/components/home/gamer-survey';
 import { Package, Store, Layers, LineChart, TrendingDown as TrendingDownIcon } from 'lucide-react';
@@ -61,11 +61,15 @@ import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const [stats, surveyData] = await Promise.all([getPlatformStats(), getSurveyAggregation()]);
+  const [stats, surveyData, searchData] = await Promise.all([
+    getPlatformStats(),
+    getSurveyAggregation(),
+    getHomeSearchData(),
+  ]);
 
   return (
     <>
-      <Hero />
+      <Hero data={searchData} />
       <StatementBand />
       <Suspense fallback={null}>
         <WeeklyPromosSection />
@@ -73,12 +77,11 @@ export default async function HomePage() {
       <CategoriesSection />
       <MarketStatsSection />
       <MarketNumbersSection />
-      <PlatformShowcase />
       <Suspense fallback={null}>
         <SalesHighlights />
       </Suspense>
       <SurveySection surveyData={surveyData} />
-      <IndicatorsSection stats={stats} />
+      <IndicatorsSection stats={stats} activeMarketplaces={searchData.totals.stores} activeProducts={searchData.totals.products} />
       <InteligenciaGamerTeaserSection />
       <Suspense fallback={null}>
         <HomeNewsSection />
@@ -164,7 +167,7 @@ function Cluster({
       </div>
 
       <div className="relative mt-12 grid gap-4 sm:grid-cols-3">
-        {cards.map(({ href, label: cardLabel, description, Icon }, i) => (
+        {cards.map(({ href, label: cardLabel, description, Icon, cta = 'Ver ofertas' }, i) => (
           <Reveal key={href} delay={0.06 + i * 0.06}>
             <Link
               href={href}
@@ -181,7 +184,7 @@ function Cluster({
                 {description}
               </p>
               <span className={cn('mt-auto inline-flex items-center gap-1.5 text-sm font-bold transition-colors', iconColor)}>
-                Ver ofertas
+                {cta}
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" aria-hidden />
               </span>
             </Link>
@@ -229,7 +232,7 @@ function MarketStatsSection() {
           <div className="flex flex-col gap-4">
             <TextImageMask
               text="86"
-              src="/images/home/painel-analitico-86-light.png"
+              src="/images/categorias/geek-collage.png"
               className="text-[160px] leading-none sm:text-[240px] lg:text-[320px] xl:text-[360px] font-black"
             />
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
@@ -287,7 +290,7 @@ const MARKET_NUMBERS: StatBarItem[] = [
 function MarketNumbersSection() {
   return (
     <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+      <div className="mx-auto max-w-4xl px-4 lg:px-8">
         <Reveal>
           <div className="flex flex-col gap-4">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/15 text-orange-600 border border-orange-500/30 w-fit">
@@ -305,15 +308,6 @@ function MarketNumbersSection() {
               <AnimatedStatBars items={MARKET_NUMBERS} />
             </div>
           </div>
-        </Reveal>
-        <Reveal delay={0.08}>
-          <SceneImage
-            src="/images/home/mercado-gamer-numeros.png"
-            alt="Ilustração representando o crescimento do mercado gamer"
-            tone="gold"
-            caption="Mercado Gamer em Números · em produção"
-            className="aspect-[4/3] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]"
-          />
         </Reveal>
       </div>
     </section>
@@ -343,7 +337,7 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
               Participe das enquetes de mercado gamer.
             </Text>
             <Text variant="body-lg" className="leading-relaxed text-zinc-700 font-medium">
-              Queremos ouvir suas preferências. Seus votos alimentam nossos estudos de comportamento de consumo e ajudam micro-estúdios brasileiros a precificar e distribuir seus jogos de forma justa.
+              Queremos ouvir suas preferências. Os resultados mostrados ao lado são a contagem real das respostas gravadas na pesquisa.
             </Text>
           </div>
         </Reveal>
@@ -352,7 +346,7 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
   );
 }
 
-function IndicatorsSection({ stats }: { stats: PlatformStats }) {
+function IndicatorsSection({ stats, activeMarketplaces, activeProducts }: { stats: PlatformStats; activeMarketplaces: number; activeProducts: number }) {
   return (
     <section data-theme="dark" className="w-full bg-gradient-to-b from-[#03291e] to-[#011a13] text-white border-y border-emerald-800/40 py-20 lg:py-28 relative overflow-hidden">
       <Glow color="hype" size="xl" intensity={0.15} className="-top-64 -right-48" />
@@ -362,20 +356,19 @@ function IndicatorsSection({ stats }: { stats: PlatformStats }) {
             Métricas da nossa plataforma
           </span>
           <Text as="h2" variant="display-lg" className="mt-3 font-black text-white tracking-tight">
-            Dados reais e transparentes, em tempo real.
+            Dados reais e transparentes.
           </Text>
           <Text variant="body-lg" className="mt-3 max-w-[52ch] mx-auto text-emerald-100/80 font-medium leading-relaxed">
-            Sem aproximações matemáticas. Estes são os números reais agregados do nosso banco de dados no exato momento da sua visita.
+            Sem aproximações: são contagens do nosso banco de dados, recalculadas a cada poucos minutos.
           </Text>
         </Reveal>
 
         <Reveal delay={0.08} className="w-full">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
-            <StatTile icon={<Package className="size-5" />} value={stats.totalProducts} label="Produtos Catalogados" />
-            <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Lojas & Vendedores" />
-            <StatTile icon={<Layers className="size-5" />} value={stats.totalNetworks} label="Plataformas Parceiras" />
-            <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de Preço" />
-            <StatTile icon={<TrendingDownIcon className="size-5" />} value={stats.itemsBelowAverageCount} label="Itens em Queda Agora" />
+            <StatTile icon={<Package className="size-5" />} value={activeProducts} label="Produtos com oferta ativa" />
+            <StatTile icon={<Store className="size-5" />} value={activeMarketplaces} label="Marketplaces com oferta ativa" />
+            <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de preço registradas" />
+            <StatTile icon={<TrendingDownIcon className="size-5" />} value={stats.itemsBelowAverageCount} label="Produtos abaixo da média (histórico elegível)" />
           </div>
         </Reveal>
 
@@ -409,18 +402,18 @@ function StatementBand() {
         <Reveal>
           <div className="relative isolate min-h-[340px] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805] flex flex-col justify-center">
             <Image
-              src="/images/home/statement-band.png"
-              alt="Cockpit de inteligência de preço Espaço Geek 86"
+              src="/images/home/hero-watermark.png"
+              alt="Mesa gamer com painéis de gráfico de preço em tons de dourado"
               fill
               sizes="(min-width: 1280px) 1280px, 100vw"
-              className="object-cover object-right"
+              className="object-cover object-left"
             />
             {/* Gradiente escuro para contraste cristalino sob o texto */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0B0805] via-[#0B0805]/90 to-[#0B0805]/40 md:to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-l from-[#0B0805] via-[#0B0805]/90 to-[#0B0805]/40 md:to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0B0805] via-transparent to-transparent" />
             <CornerBrackets inset={16} size={20} />
 
-            <div className="relative flex h-full items-center p-4 sm:p-8 lg:p-14 z-10">
+            <div className="relative flex h-full items-center justify-end p-4 sm:p-8 lg:p-14 z-10">
               <div className="w-full max-w-xl rounded-[var(--radius-xl)] border border-amber-500/30 bg-[#0F0C08]/90 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
                 <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-400">
                   <History className="size-4 text-amber-400" aria-hidden />
@@ -430,7 +423,7 @@ function StatementBand() {
                   Um cockpit de dado pra cada jogo que você acompanha.
                 </Text>
                 <Text variant="body-md" className="mt-2.5 font-medium text-zinc-200 text-xs sm:text-base leading-relaxed">
-                  Console, controle, cupom, histórico — tudo cruzado em tempo real pra você nunca comprar no escuro.
+                  Preço atual, média e menor preço registrado de cada jogo, para você não comprar no escuro.
                 </Text>
               </div>
             </div>
@@ -485,108 +478,69 @@ function DividerEmblem() {
 }
 
 // ----- Hero ---------------------------------------------------
-function Hero() {
+// Primeira tela = a função principal do site: BUSCAR PREÇOS. Campo grande com
+// autocomplete (motor `suggestProducts`), chips de plataforma e termos mais
+// cotados vindos do banco (`getHomeSearchData`); nada fixo nem inventado.
+// Segue o tema (claro/escuro) pelos tokens; sem imagem decorativa.
+function Hero({ data }: { data: HomeSearchData }) {
+  const { platforms, popular, totals } = data;
   return (
     <section
-      data-theme="dark"
       aria-labelledby="hero-title"
-      className="relative w-full bg-[var(--color-bg-canvas)] overflow-hidden border-b border-[var(--color-border-subtle)]"
+      className="relative w-full overflow-hidden border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)]"
     >
-      <Glow color="gold" size="xl" intensity={0.3} className="-top-64 -left-48" />
-      <Glow color="hype" size="md" intensity={0.2} className="top-24 -right-32" />
+      <Glow color="gold" size="xl" intensity={0.22} className="-top-64 -left-48" />
 
-      <div className="relative mx-auto max-w-7xl px-4 lg:px-8 pt-14 pb-20 lg:pt-24 lg:pb-28">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
-          {/* Copy — coluna dominante, alinhada à esquerda */}
-          <div className="relative lg:col-span-7">
-            <Reveal>
-              <Badge variant="primary" size="lg">
-                <Sparkles className="size-3" />
-                Drop da semana ao vivo em 4d 12h
-              </Badge>
-            </Reveal>
+      <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-6 lg:px-8 lg:pb-16 lg:pt-10">
+        <div className="max-w-4xl">
+          <span className="inline-flex items-center gap-2 bg-[var(--color-accent-primary-muted)] px-3 py-1.5 text-[14px] font-semibold text-[var(--color-text-primary)]">
+            <Sparkles aria-hidden className="size-4 text-[var(--color-accent-primary)]" />
+            Ofertas reais. Decisões inteligentes.
+          </span>
+          <Text
+            as="h1"
+            id="hero-title"
+            variant="display-xl"
+            className="mt-3 !font-black tracking-tight !text-[44px] !leading-[48px] lg:!text-[56px] lg:!leading-[60px]"
+          >
+            Informação real sobre games{' '}
+            <span className="bg-gradient-to-r from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] bg-clip-text text-transparent">
+              Decisões inteligentes.
+            </span>
+          </Text>
 
-            <Reveal delay={0.05}>
-              <Text
-                as="h1"
-                id="hero-title"
-                variant="display-xl"
-                className="mt-6 max-w-[24ch] tracking-tight lg:max-w-[32ch] lg:text-display-2xl"
-              >
-                Informação real sobre games
-                <br />
-                <span className="bg-gradient-to-r from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] bg-clip-text text-transparent">
-                  Decisões inteligentes.
-                </span>
-              </Text>
-            </Reveal>
+          <div className="mt-5">
+            <SearchBox
+              variant="hero"
+              platforms={platforms.map((p) => ({ platform: p.platform, label: PLATFORM_SHORT[p.platform] || p.label }))}
+            />
+          </div>
 
-            <Reveal delay={0.12}>
-              <Text variant="body-lg" color="secondary" className="mt-6 max-w-[48ch]">
-                Tudo sobre o mundo gamer e geek, em um só lugar: preço, histórico e cupom
-                sempre atualizados, pra você decidir com informação real, não com pressa.
-              </Text>
-            </Reveal>
+          <Text variant="body-lg" color="secondary" className="mt-4 max-w-[52ch]">
+            Ache o menor preço do seu próximo jogo: preço atual, média histórica e menor preço já registrado, para saber se hoje é um bom dia de comprar.
+          </Text>
 
-            <Reveal delay={0.18}>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Button asChild size="lg" leftIcon={<Zap className="size-4" />}>
-                  <Link href="/hype-zone">Entrar na Hype Zone</Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="secondary"
-                  size="lg"
-                  rightIcon={<ArrowRight className="size-4" />}
+          {popular.length > 0 && (
+            <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="text-[14px] font-semibold text-[var(--color-text-secondary)]">Mais cotados:</span>
+              {popular.slice(0, 5).map((t) => (
+                <Link
+                  key={t.term}
+                  href={`/ofertas?q=${encodeURIComponent(t.term)}`}
+                  className="inline-flex min-h-11 items-center rounded-[var(--radius-md)] px-2 text-[14px] text-[var(--color-text-primary)] underline decoration-[var(--color-border-strong)] underline-offset-4 hover:text-[var(--color-accent-primary)] hover:decoration-[var(--color-accent-primary)]"
                 >
-                  <Link href="/categorias">Explorar catálogo</Link>
-                </Button>
-              </div>
-            </Reveal>
+                  {t.term}
+                </Link>
+              ))}
+            </div>
+          )}
 
-          </div>
-
-          {/* Âncora visual — mosaico desconstruído (3 quadros levemente
-              rotacionados/sobrepostos) em vez de uma imagem única, no
-              espírito colagem editorial pedido como referência. */}
-          <div className="lg:col-span-5">
-            <Reveal delay={0.1}>
-              <div className="relative mt-2 aspect-[4/5] lg:mt-6">
-                <div className="absolute inset-x-6 inset-y-4 -rotate-3 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-default)] shadow-[var(--shadow-lg)]">
-                  <SceneImage
-                    src="/images/hero/tile-back.png"
-                    alt=""
-                    tone="ink"
-                    focal="left"
-                    className="absolute inset-0"
-                  />
-                </div>
-                <div className="absolute inset-2 rotate-2 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-default)] shadow-[var(--shadow-xl)]">
-                  <SceneImage
-                    src="/images/hero/tile-main.png"
-                    alt="Vitrine de colecionáveis Espaço Geek 86"
-                    tone="gold"
-                    focal="left"
-                    caption="Vitrine em curadoria"
-                    priority
-                    className="absolute inset-0"
-                  />
-                </div>
-                <div className="absolute -bottom-4 -right-3 size-28 -rotate-6 overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-strong)] shadow-[var(--shadow-lg)] sm:size-32">
-                  <SceneImage src="/images/hero/tile-accent.png" alt="" tone="ember" className="absolute inset-0" />
-                </div>
-                <Card className="absolute -bottom-6 -left-4 w-56 border border-[#3A3022] bg-[#0F0C08]/95 p-4 shadow-2xl backdrop-blur-md sm:-left-8 sm:w-60">
-                  <Badge variant="hype" size="sm" className="mb-2">
-                    <Flame className="size-3" />
-                    Menor preço já visto
-                  </Badge>
-                  <Text variant="caption" className="text-white/95 font-medium leading-relaxed">
-                    Comparamos preço nos principais marketplaces antes de você decidir.
-                  </Text>
-                </Card>
-              </div>
-            </Reveal>
-          </div>
+          {totals.products > 0 && (
+            <Text variant="caption" color="tertiary" className="mt-2">
+              {totals.products.toLocaleString('pt-BR')} produtos com preço atual em {totals.stores}{' '}
+              {totals.stores === 1 ? 'loja monitorada' : 'lojas monitoradas'}.
+            </Text>
+          )}
         </div>
       </div>
     </section>
@@ -704,13 +658,6 @@ function UniversesSection() {
               Universos que a gente cataloga a fundo.
             </Text>
           </div>
-          <Link
-            href="/universos"
-            className="inline-flex items-center gap-1 text-body-sm text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-text-primary)]"
-          >
-            Ver todos
-            <ArrowRight className="size-4" />
-          </Link>
         </div>
       </Reveal>
 
@@ -754,70 +701,6 @@ function UniversesSection() {
   );
 }
 
-// ----- Hype Teaser -------------------------------------------
-function HypeTeaser() {
-  return (
-    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-20 lg:py-28">
-      <Card variant="elevated" className="relative overflow-hidden">
-        <Glow color="hype" size="lg" intensity={0.3} className="-top-32 -right-24" />
-        {/* Glow extra na costura do corte diagonal — sangramento de luz
-            "colando" o painel de imagem ao resto do card, só lg+. */}
-        <Glow color="hype" size="sm" intensity={0.3} className="hidden lg:block top-1/3 left-[62%]" />
-
-        <div className="relative grid lg:grid-cols-12">
-          <div className="flex flex-col justify-center p-8 lg:col-span-7 lg:p-14">
-            <Badge variant="hype" size="lg" className="mb-5 w-fit">
-              <Flame className="size-3.5" />
-              Hype Zone
-            </Badge>
-            <Text as="h2" variant="display-lg" className="mb-4 max-w-[16ch]">
-              Drops que acabam quando acabam.
-            </Text>
-            <Text variant="body-lg" color="secondary" className="mb-8 max-w-[44ch]">
-              Edições limitadas, contagem regressiva real, estoque ao vivo. Entre
-              cedo, leve antes de todo mundo.
-            </Text>
-
-            <div className="mb-8 flex flex-wrap items-center gap-x-8 gap-y-3">
-              <HypeStat icon={<Clock className="size-3.5" />} label="Contagem regressiva real" />
-              <HypeStat icon={<Zap className="size-3.5" />} label="Estoque ao vivo" />
-            </div>
-
-            <Button asChild variant="hype" size="lg" className="w-fit">
-              <Link href="/hype-zone">Ver drops ao vivo</Link>
-            </Button>
-          </div>
-
-          {/* Corte geométrico diagonal (referência Mevos) — só lg+: em
-              mobile o clip-path angular corta demais a foto num painel
-              baixo e largo, então cai pra retângulo reto simples. */}
-          <div className="relative min-h-[260px] lg:col-span-5 lg:min-h-full lg:[clip-path:polygon(10%_0,100%_0,100%_100%,0%_100%)]">
-            <SceneImage
-              src="/images/home/hype-zone-teaser.png"
-              alt="Multidão em evento de lançamento gamer, energia da Hype Zone"
-              tone="ember"
-              focal="left"
-              caption="Drop ao vivo · em produção"
-              className="absolute inset-0"
-            />
-          </div>
-        </div>
-      </Card>
-    </section>
-  );
-}
-
-function HypeStat({ icon, label }: { icon: ReactNode; label: string }) {
-  return (
-    <div className="inline-flex items-center gap-2">
-      <span className="text-[var(--color-accent-hype)]">{icon}</span>
-      <Text variant="caption" color="tertiary">
-        {label}
-      </Text>
-    </div>
-  );
-}
-
 // ----- Inteligência Gamer Teaser Section --------------------
 function InteligenciaGamerTeaserSection() {
   return (
@@ -832,7 +715,6 @@ function InteligenciaGamerTeaserSection() {
                 src="/images/home/observatorio-gamer-hero.png"
                 alt="Pesquisadores e analistas do Observatório Gamer"
                 tone="ember"
-                caption="Observatório Gamer · em produção"
                 className="aspect-[16/9] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] mb-2"
               />
               <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
@@ -906,7 +788,7 @@ function InteligenciaGamerTeaserSection() {
                     </div>
                     <Text variant="heading-sm" className="font-bold">Notícias e Artigos</Text>
                     <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                      As principais novidades corporativas da indústria global de jogos e colunas semanais dos idealizadores.
+                      Novidades da indústria de jogos e colunas dos idealizadores.
                     </Text>
                   </CardContent>
                 </Card>
@@ -934,19 +816,11 @@ function InteligenciaGamerTeaserSection() {
 // ----- Home News Section ------------------------------------
 async function HomeNewsSection() {
   try {
-    const { items: articles } = await getPublishedArticles({ pageSize: 5 });
+    // Só entra na home notícia com fonte registrada (EG-16): sem fonte, não há como
+    // conferir a afirmação, então o bloco some até o dono publicar matéria com fonte.
+    const { items: published } = await getPublishedArticles({ pageSize: 30 });
+    const articles = published.filter((a) => (a.sourceName ?? '').trim() !== '').slice(0, 6);
     if (articles.length === 0) return null;
-
-    function getMatchingCover(title: string, coverUrl?: string | null): string {
-      if (coverUrl && coverUrl.startsWith('/images/')) return coverUrl;
-      const lower = title.toLowerCase();
-      if (lower.includes('gta') || lower.includes('grand theft auto')) return '/images/noticias-hub/news-gta6.png';
-      if (lower.includes('x-men') || lower.includes('xmen') || lower.includes('mutantes')) return '/images/noticias-hub/news-xmen.png';
-      if (lower.includes('e-sports') || lower.includes('esports') || lower.includes('circuito')) return '/images/noticias-hub/news-esports.png';
-      if (lower.includes('setup') || lower.includes('periféricos') || lower.includes('performance')) return '/images/noticias-hub/news-gaming-setup.png';
-      if (lower.includes('retrô') || lower.includes('retro') || lower.includes('consoles')) return '/images/noticias-hub/news-retro-console.png';
-      return '/images/noticias-hub/news-gta6.png';
-    }
 
     return (
       <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24 border-b border-[var(--color-border-subtle)]">
@@ -972,18 +846,22 @@ async function HomeNewsSection() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {articles.map((article, i) => {
-            const finalCover = getMatchingCover(article.title, article.coverImageUrl);
+            // Sem capa própria = sem imagem (nada de capa escolhida por palavra do título).
+            const finalCover = article.coverImageUrl?.startsWith('/images/') ? article.coverImageUrl : null;
             return (
               <Reveal key={article.id} delay={i * 0.05}>
                 <Link href={`/noticias/${article.slug}`} className="group block h-full">
                   <Card interactive className="h-full flex flex-col overflow-hidden border border-[var(--color-border-subtle)]">
                     <div className="relative aspect-[16/9] w-full overflow-hidden bg-black">
-                      <Image
-                        src={finalCover}
-                        alt={article.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                      {finalCover && (
+                        <Image
+                          src={finalCover}
+                          alt=""
+                          fill
+                          sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      )}
                       <Badge variant="hype" size="sm" className="absolute top-3 left-3 capitalize z-10 shadow-md">
                         {article.category.replace('_', ' ')}
                       </Badge>
@@ -996,7 +874,9 @@ async function HomeNewsSection() {
                         {article.excerpt}
                       </Text>
                       <Text variant="caption" color="tertiary" className="mt-auto pt-3 border-t border-[var(--color-border-subtle)] font-mono text-[11px]">
-                        {new Date(article.publishedAt ?? article.createdAt).toLocaleDateString('pt-BR')}
+                        {new Date(article.publishedAt ?? article.createdAt).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+                        {' · Fonte: '}
+                        {article.sourceName}
                       </Text>
                     </CardContent>
                   </Card>
@@ -1016,19 +896,19 @@ async function HomeNewsSection() {
 // ----- Benefits ----------------------------------------------
 const benefits = [
   {
-    Icon: ShieldCheck,
-    title: 'Autenticidade verificada',
-    description: 'Cada item passa por curadoria. Selo de autenticidade em produtos elegíveis.',
+    Icon: TrendingDown,
+    title: 'Preço monitorado',
+    description: 'Acompanhamos o preço dos jogos e consoles nas lojas parceiras e mostramos o menor preço com oferta ativa.',
+  },
+  {
+    Icon: History,
+    title: 'Histórico de preço',
+    description: 'Preço atual, média e menor preço registrado de cada produto, quando já há histórico suficiente.',
   },
   {
     Icon: Sparkles,
-    title: 'Geek Points em tudo',
-    description: 'Ganhe pontos a cada compra e troque por descontos em drops futuros.',
-  },
-  {
-    Icon: Zap,
-    title: 'Drops semanais',
-    description: 'Raridades, exclusivos e edições limitadas todas as semanas.',
+    title: 'Aviso de queda de preço',
+    description: 'Acompanhe um jogo e seja avisado quando o menor preço entre as lojas cair.',
   },
 ];
 
@@ -1043,7 +923,7 @@ function Benefits() {
             Por que Geek 86
           </Text>
           <Text as="h2" variant="display-lg" className="mt-2">
-            Curadoria de verdade, não só um catálogo.
+            Preço monitorado, histórico à vista.
           </Text>
         </div>
       </Reveal>
@@ -1070,24 +950,6 @@ function Benefits() {
           </Reveal>
         ))}
       </div>
-
-      {/* Imagem Estratégica de Curadoria & Autenticidade */}
-      <Reveal delay={0.2} className="mt-8">
-        <div className="relative aspect-[21/7] sm:aspect-[24/7] w-full rounded-[var(--radius-xl)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-2xl">
-          <Image
-            src="/images/home/por-que-geek86.png"
-            alt="Curadoria de Verdade e Cofre de Autenticidade Espaço Geek 86"
-            fill
-            className="object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-          <div className="absolute bottom-4 left-6 right-6 flex items-center justify-between text-left">
-            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-              🛡️ Curadoria de Especialistas & Selo de Autenticidade Verificado
-            </span>
-          </div>
-        </div>
-      </Reveal>
     </section>
   );
 }
@@ -1103,17 +965,17 @@ function NewsletterCTA() {
           <div className="lg:col-span-7 flex flex-col justify-center">
             <Reveal>
               <Badge variant="outline" size="md" className="mb-5 border-amber-500/40 text-amber-400">
-                Comunidade & Clube VIP
+                Comunidade
               </Badge>
               <Text as="h2" variant="display-lg" className="max-w-[18ch]">
-                Receba drops antes de todo mundo.
+                Avisamos quando o preço cair.
               </Text>
               <Text variant="body-lg" color="secondary" className="mt-4 max-w-[48ch]">
-                Entre na newsletter e ganhe 50 Geek Points no seu primeiro cadastro para trocar por descontos exclusivos.
+                Crie sua conta para acompanhar jogos e receber aviso quando o preço cair.
               </Text>
               <div className="mt-8">
                 <Button asChild size="xl" rightIcon={<ArrowRight className="size-4" />}>
-                  <Link href="/cadastro">Quero entrar no Clube VIP</Link>
+                  <Link href="/entrar">Criar minha conta</Link>
                 </Button>
               </div>
             </Reveal>
@@ -1124,7 +986,7 @@ function NewsletterCTA() {
               <div className="relative aspect-[4/3] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-2xl">
                 <Image
                   src="/images/home/newsletter-vip-club.png"
-                  alt="Passe VIP da Comunidade e Geek Points"
+                  alt="Passe VIP da comunidade Espaço Geek 86"
                   fill
                   className="object-cover object-center"
                 />

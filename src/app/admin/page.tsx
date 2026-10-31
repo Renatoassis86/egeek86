@@ -4,13 +4,20 @@ import { Text } from '@/components/ui/text';
 import { ClicksSparkline } from '@/components/admin/clicks-sparkline';
 import { getAdminDashboardMetrics, getDailyClicks } from '@/server/queries/affiliate';
 import { AdminAnalyticsDashboard } from '@/components/admin/admin-analytics-dashboard';
+import { getAdminCatalogMetrics } from '@/server/queries/admin-metrics';
+
+export const metadata = { title: 'Admin: Painel' };
 
 // Dashboard com dado ao vivo, sem searchParams — força dinâmica pra não
 // tentar pré-renderizar como estática (travava buscando no banco no build).
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
-  const [metrics, dailyClicks] = await Promise.all([getAdminDashboardMetrics(), getDailyClicks(14)]);
+  const [metrics, dailyClicks, catalog] = await Promise.all([
+    getAdminDashboardMetrics(),
+    getDailyClicks(14),
+    getAdminCatalogMetrics(),
+  ]);
 
   const secondaryCards = [
     { label: 'Ofertas cadastradas', value: metrics.totalOffersCount, icon: PackageCheck },
@@ -24,10 +31,10 @@ export default async function AdminDashboardPage() {
     <div className="flex flex-col gap-8">
       <div>
         <Text as="h1" variant="heading-xl">
-          Painel de Controle Executivo & Inteligência de Mercado
+          Painel administrativo
         </Text>
         <Text variant="body-sm" color="secondary" className="mt-1">
-          Visão geral de inteligência, cotações Big Data, mapa logístico no Brasil, histogramas e gerador de insights instantâneos.
+          Ofertas, cliques e cotações registradas, lidos direto do banco. Onde não há dado, a seção aparece vazia.
         </Text>
       </div>
 
@@ -80,7 +87,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Dashboard Analítico Completo (Histogramas, Mapa do Brasil, Lojas & Insights) */}
-      <AdminAnalyticsDashboard metrics={metrics} />
+      <AdminAnalyticsDashboard catalog={catalog} />
     </div>
   );
 }

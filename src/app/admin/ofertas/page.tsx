@@ -112,7 +112,9 @@ export default async function AdminOffersPage({
       priceCents: Number(r.current_price_cents || 0),
       imageUrl: r.image_url,
       networkName: r.network_name,
-      publishedAt: r.published_at ? new Date(r.published_at).toLocaleTimeString('pt-BR') : 'Hoje',
+      publishedAt: r.published_at
+        ? new Date(r.published_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo' })
+        : 'sem data',
     })),
   };
 
@@ -304,3 +306,5 @@ export default async function AdminOffersPage({
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Ofertas' };

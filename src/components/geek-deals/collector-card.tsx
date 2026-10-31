@@ -96,7 +96,7 @@ export function CollectorCard({ collector, className }: CollectorCardProps) {
 
         {/* Informações adicionais do colecionador */}
         <div className="text-[10px] text-[var(--color-text-secondary)] bg-[var(--color-bg-inset)] rounded-[var(--radius-sm)] p-2 font-mono flex flex-col gap-1 border border-[var(--color-border-subtle)]">
-          <div>Geek Points: <span className="text-[var(--color-accent-primary)] font-bold">{collector.geekPoints} XP</span></div>
+          <div>Geek Coins: <span className="text-[var(--color-accent-primary)] font-bold">{collector.geekPoints} XP</span></div>
           <div>Envio Pontual: <span className="text-[var(--color-accent-success)] font-bold">100%</span></div>
         </div>
       </CardContent>

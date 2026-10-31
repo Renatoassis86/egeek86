@@ -28,295 +28,6 @@ export function getBadgeName(points: number): string {
   return 'Iniciante';
 }
 
-function getMockDrops(): DropWithRelations[] {
-  const now = new Date();
-  
-  return [
-    {
-      id: 'd1111111-1111-1111-1111-111111111111',
-      productId: null,
-      variantId: null,
-      title: 'PlayStation 5 Pro - Edição Limitada 30 Anos',
-      slug: 'ps5-pro-30-anos-lim',
-      description: 'O drop mais disputado do ano. Coleção comemorativa oficial da Sony em homenagem ao lendário console cinza original de 1994. Caixa numerada de colecionador e acabamentos clássicos impecáveis.',
-      bannerUrl: '/images/hype-zone/banner.png',
-      startsAt: new Date(now.getTime() - 1000 * 60 * 45), // Começou há 45 min
-      endsAt: new Date(now.getTime() + 1000 * 60 * 60 * 3), // Acaba em 3 horas
-      stockLimit: 8,
-      stockSold: 7, // Resta 1 (87.5% vendido)
-      perUserLimit: 1,
-      priceCents: 999900,
-      accessType: 'public',
-      requiredLevelId: null,
-      requiredAccountAgeDays: 0,
-      status: 'live',
-      metadata: {
-        velocityIndex: 'CRITICAL_SPEED',
-        collectorsViewing: 142,
-        velocityMessage: 'Última unidade disponível. Alta velocidade de checkout!',
-        antiBotCertified: true,
-        rarityGrade: 'Legendary (Tier 1)',
-        specs: [
-          'Console PS5® Pro (Edição de Colecionador)',
-          'Tampa de console estilizada clássica cinza',
-          'Controle DualSense® Edge 30 Anos',
-          'Caixa especial estilo original com número estampado (#0886)'
-        ],
-        story: 'Adquiri este PS5 Pro no lançamento oficial da PlayStation Direct Brasil. Está absolutamente lacrado na caixa original, sem nenhum detalhe de manuseio. Um tesouro definitivo para qualquer fã da marca.'
-      },
-      createdBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      images: [
-        '/images/hype-zone/banner.png',
-        '/images/hero/tile-main.png',
-        '/images/hero/tile-accent.png'
-      ],
-      collector: {
-        id: 'collector-1',
-        displayName: 'Renato Assis (Renato86)',
-        avatarUrl: null,
-        geekPoints: 3450,
-        avgRating: 4.9,
-        totalReviews: 86,
-        badgeName: 'Mestre'
-      }
-    },
-    {
-      id: 'd2222222-2222-2222-2222-222222222222',
-      productId: null,
-      variantId: null,
-      title: 'Funko Pop! Gold Metallic Charizard #04',
-      slug: 'funko-pop-metallic-charizard',
-      description: 'Exclusividade San Diego Comic-Con. Edição metálica banhada a ouro do icônico Pokémon de fogo Charizard. Apenas para colecionadores selecionados com Geek Level avançado.',
-      bannerUrl: '/images/hero/tile-main.png',
-      startsAt: new Date(now.getTime() + 1000 * 60 * 60 * 1.5), // Começa em 1h 30min
-      endsAt: new Date(now.getTime() + 1000 * 60 * 60 * 5),
-      stockLimit: 15,
-      stockSold: 0,
-      perUserLimit: 1,
-      priceCents: 49900,
-      accessType: 'tier_locked',
-      requiredLevelId: 'level-master-id',
-      requiredAccountAgeDays: 15,
-      status: 'scheduled',
-      metadata: {
-        requiredLevelName: 'Nível 5 - Mestre',
-        rarityGrade: 'Legendary (Tier 2)',
-        collectorsWatching: 580,
-        antiBotCertified: true,
-        specs: [
-          'Edição SDCC Oficial',
-          'Acabamento folheado a ouro escovado',
-          'Acompanha case rígido acrílico de proteção UV',
-          'Selo oficial de autenticidade numerado'
-        ],
-        story: 'Este item foi importado diretamente da SDCC de 2022. Caixa em perfeitas condições (Grade 9.5/10). Foi guardado em ambiente livre de fumaça e poeira desde então. Ideal para exibição.'
-      },
-      createdBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      images: [
-        '/images/hero/tile-main.png',
-        '/images/hero/tile-accent.png'
-      ],
-      collector: {
-        id: 'collector-2',
-        displayName: 'Arthur Pendragon',
-        avatarUrl: null,
-        geekPoints: 6120,
-        avgRating: 4.8,
-        totalReviews: 124,
-        badgeName: 'Lendário'
-      }
-    },
-    {
-      id: 'd3333333-3333-3333-3333-333333333333',
-      productId: null,
-      variantId: null,
-      title: 'Vaporwave Custom Keyboard mechanical (65%)',
-      slug: 'vaporwave-retro-keyboard',
-      description: 'Teclado mecânico feito à mão com carcaça de alumínio anodizado roxo, switches lubrificados de fábrica e keycaps PBT no clássico estilo neon Vaporwave. Lista de espera obrigatória para liberar o link.',
-      bannerUrl: '/images/hero/tile-back.png',
-      startsAt: new Date(now.getTime() + 1000 * 60 * 60 * 36), // Começa em 36h
-      endsAt: new Date(now.getTime() + 1000 * 60 * 60 * 42),
-      stockLimit: 25,
-      stockSold: 0,
-      perUserLimit: 1,
-      priceCents: 125000,
-      accessType: 'waitlist',
-      requiredLevelId: null,
-      requiredAccountAgeDays: 0,
-      status: 'scheduled',
-      metadata: {
-        rarityGrade: 'Rare (Tier 3)',
-        collectorsWatching: 1204,
-        antiBotCertified: true,
-        specs: [
-          'Switches Customizados Lineares (Lubed)',
-          'Keycaps Premium PBT Double-Shot (Dye-sub)',
-          'Estrutura Gasket-mount de alumínio pesado',
-          'Cabo em espiral paracord roxo com conector aviador'
-        ],
-        story: 'Montei este teclado usando os melhores componentes importados. A lubrificação dos switches Gateron Yellow foi feita manualmente com Krytox 205g0 para um som incrivelmente suave e silencioso (clássico "thock").'
-      },
-      createdBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      images: [
-        '/images/hero/tile-back.png',
-        '/images/hero/tile-main.png'
-      ],
-      collector: {
-        id: 'collector-3',
-        displayName: 'Aline Tech & Craft',
-        avatarUrl: null,
-        geekPoints: 1250,
-        avgRating: 5.0,
-        totalReviews: 12,
-        badgeName: 'Veterano'
-      }
-    },
-    {
-      id: 'd4444444-4444-4444-4444-444444444444',
-      productId: null,
-      variantId: null,
-      title: 'Retro Game Boy Color Custom (IPS backlit)',
-      slug: 'retro-gameboy-color-ips',
-      description: 'Console Game Boy Color customizado com tela IPS retroiluminada de alta definição (ajuste de brilho por toque), carcaça translúcida fumê e bateria interna recarregável USB-C.',
-      bannerUrl: '/images/hero/tile-accent.png',
-      startsAt: new Date(now.getTime() - 1000 * 60 * 60 * 48),
-      endsAt: new Date(now.getTime() - 1000 * 60 * 60 * 46),
-      stockLimit: 5,
-      stockSold: 5,
-      perUserLimit: 1,
-      priceCents: 140000,
-      accessType: 'public',
-      requiredLevelId: null,
-      requiredAccountAgeDays: 0,
-      status: 'sold_out',
-      metadata: {
-        soldOutInSeconds: 42,
-        velocityMessage: 'Esgotado em apenas 42 segundos!',
-        antiBotCertified: true,
-        specs: [
-          'Tela IPS retroiluminada v3 com 5 níveis de brilho',
-          'Alto-falante amplificado com áudio cristalino',
-          'Porta USB-C para recarga integrada',
-          'Bateria de Lítio de 1200mAh inclusa'
-        ],
-        story: 'Um projeto de modificação feito com muito carinho. A placa original foi lavada em banho ultrassônico e todos os capacitores foram trocados por novos de alta durabilidade (re-capped). A tela IPS é vibrante!'
-      },
-      createdBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      images: [
-        '/images/hero/tile-accent.png'
-      ],
-      collector: {
-        id: 'collector-4',
-        displayName: 'Gamer Retro Lab',
-        avatarUrl: null,
-        geekPoints: 4100,
-        avgRating: 4.7,
-        totalReviews: 242,
-        badgeName: 'Mestre'
-      }
-    },
-    {
-      id: 'd5555555-5555-5555-5555-555555555555',
-      productId: null,
-      variantId: null,
-      title: 'Magic: The Gathering - Caixa de Booster de Colecionador',
-      slug: 'mtg-booster-box-ltd',
-      description: 'Caixa lacrada contendo boosters de colecionador raros com artes exclusivas de borda infinita, cards numerados e foils texturizados premium.',
-      bannerUrl: '/images/hero/tile-main.png',
-      startsAt: new Date(now.getTime() - 1000 * 60 * 60 * 120),
-      endsAt: new Date(now.getTime() - 1000 * 60 * 60 * 115),
-      stockLimit: 12,
-      stockSold: 12,
-      perUserLimit: 2,
-      priceCents: 249000,
-      accessType: 'public',
-      requiredLevelId: null,
-      requiredAccountAgeDays: 0,
-      status: 'sold_out',
-      metadata: {
-        soldOutInSeconds: 118,
-        velocityMessage: 'Esgotado em 1 minuto e 58 segundos!',
-        antiBotCertified: true,
-        specs: [
-          'Caixa contendo 12 boosters de colecionador premium',
-          'Chances aumentadas de cards numerados raros',
-          'Selo oficial holográfico Wizards of the Coast'
-        ],
-        story: 'Caixa selada direto do distribuidor oficial no Brasil. Armazenada sob temperatura controlada.'
-      },
-      createdBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      images: [
-        '/images/hero/tile-main.png'
-      ],
-      collector: {
-        id: 'collector-5',
-        displayName: 'TCG Master Vault',
-        avatarUrl: null,
-        geekPoints: 5200,
-        avgRating: 4.9,
-        totalReviews: 180,
-        badgeName: 'Veterano'
-      }
-    },
-    {
-      id: 'd6666666-6666-6666-6666-666666666666',
-      productId: null,
-      variantId: null,
-      title: 'Zelda Tears of the Kingdom - Replica Master Sword (Edição de Colecionador)',
-      slug: 'master-sword-zelda-totk-replica',
-      description: 'Réplica licenciada em tamanho real da lendária espada Master Sword com base iluminada por LEDs azul e dourado e acabamento metálico fundido.',
-      bannerUrl: '/images/home/statement-band.png',
-      startsAt: new Date(now.getTime() + 1000 * 60 * 60 * 72),
-      endsAt: new Date(now.getTime() + 1000 * 60 * 60 * 80),
-      stockLimit: 10,
-      stockSold: 0,
-      perUserLimit: 1,
-      priceCents: 189900,
-      accessType: 'public',
-      requiredLevelId: null,
-      requiredAccountAgeDays: 0,
-      status: 'scheduled',
-      metadata: {
-        rarityGrade: 'Legendary (Tier 1)',
-        collectorsWatching: 840,
-        antiBotCertified: true,
-        specs: [
-          'Réplica 1:1 em metal e liga de titânio (1,15m de comprimento)',
-          'Pedestal de exibição com iluminação LED inteligente',
-          'Selo oficial Nintendo & certificado de autenticidade numerado',
-          'Acompanha bainha artesanal revestida em couro sintético'
-        ],
-        story: 'Peça importada de exibição de colecionador. Nunca foi manuseada fora de luvas de algodão. Ideal para estantes de destaque e coleções lendárias.'
-      },
-      createdBy: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      images: [
-        '/images/home/statement-band.png',
-        '/images/home/observatorio-cards-bg.png'
-      ],
-      collector: {
-        id: 'collector-6',
-        displayName: 'Zelda Legacy Collector',
-        avatarUrl: null,
-        geekPoints: 8900,
-        avgRating: 5.0,
-        totalReviews: 310,
-        badgeName: 'Lendário'
-      }
-    }
-  ];
-}
 
 async function mapDropsToRelations(dbDrops: any[]): Promise<DropWithRelations[]> {
   if (dbDrops.length === 0) return [];
@@ -429,13 +140,13 @@ export async function getLiveDrops(): Promise<DropWithRelations[]> {
       .orderBy(drops.startsAt);
       
     if (rows.length === 0) {
-      return getMockDrops().filter((d) => d.status === 'live');
+      return [];
     }
     
     return await mapDropsToRelations(rows);
   } catch (error) {
-    console.error('Falha ao obter live drops do banco, usando mocks:', error);
-    return getMockDrops().filter((d) => d.status === 'live');
+    console.error('Falha ao obter live drops do banco, retornando lista vazia:', error);
+    return [];
   }
 }
 
@@ -457,13 +168,13 @@ export async function getUpcomingDrops(): Promise<DropWithRelations[]> {
       .orderBy(drops.startsAt);
 
     if (rows.length === 0) {
-      return getMockDrops().filter((d) => d.status === 'scheduled');
+      return [];
     }
     
     return await mapDropsToRelations(rows);
   } catch (error) {
-    console.error('Falha ao obter upcoming drops do banco, usando mocks:', error);
-    return getMockDrops().filter((d) => d.status === 'scheduled');
+    console.error('Falha ao obter upcoming drops do banco, retornando lista vazia:', error);
+    return [];
   }
 }
 
@@ -486,13 +197,13 @@ export async function getPastDrops(): Promise<DropWithRelations[]> {
       .orderBy(drops.endsAt);
 
     if (rows.length === 0) {
-      return getMockDrops().filter((d) => d.status === 'sold_out' || d.status === 'ended');
+      return [];
     }
     
     return await mapDropsToRelations(rows);
   } catch (error) {
-    console.error('Falha ao obter past drops do banco, usando mocks:', error);
-    return getMockDrops().filter((d) => d.status === 'sold_out' || d.status === 'ended');
+    console.error('Falha ao obter past drops do banco, retornando lista vazia:', error);
+    return [];
   }
 }
 

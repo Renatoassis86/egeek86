@@ -28,6 +28,18 @@ export interface PriceSnapshotResult {
  */
 export interface PriceSource {
   networkSlug: string;
+  /**
+   * false = stub sem coleta oficial implementada (só lança erro). O coletor
+   * não seleciona ofertas dessas redes: tentar e falhar a cada tick só
+   * ocuparia a fila de 150 ofertas por execução (EG-03). Default: true.
+   */
+  operational?: boolean;
+  /**
+   * true = a rede tem coletor próprio (ex.: collect-shopee-prices.ts) e NÃO
+   * deve passar pelo collect-prices.ts genérico, que pressupõe vários
+   * vendedores por external_ref (modelo do Mercado Livre).
+   */
+  dedicatedCollector?: boolean;
   fetchSnapshots(externalRef: string): Promise<PriceSnapshotResult[]>;
 }
 
@@ -39,4 +51,11 @@ export function registerPriceSource(source: PriceSource): void {
 
 export function getPriceSource(networkSlug: string): PriceSource | null {
   return registry.get(networkSlug) ?? null;
+}
+
+/** Slugs de rede com coleta operacional pelo coletor genérico (exclui redes com coletor dedicado). */
+export function listOperationalSourceSlugs(): string[] {
+  return Array.from(registry.values())
+    .filter((s) => s.operational !== false && !s.dedicatedCollector)
+    .map((s) => s.networkSlug);
 }

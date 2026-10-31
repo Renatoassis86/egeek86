@@ -44,3 +44,9 @@ next-env.d.ts
 # ferramentas locais (configuração pessoal, não é código do projeto)
 .claude/
 *.vsix
+
+.vercel
+.env*
+
+# dumps do banco e logs de backup local (PII + 700MB, nunca versionar)
+/backup/

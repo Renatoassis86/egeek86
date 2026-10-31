@@ -6,6 +6,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { sellers, sellerMetrics, profiles, products, productVariants, productMedia, drops, categories } from '@/db/schema';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
+import { requireAdmin } from '@/lib/auth/require-admin';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory } from '@/server/collector/discover-products';
 
@@ -105,7 +106,11 @@ export async function saveCollectorOnboarding(answers: {
       });
     }
 
-    // Gamificação: Recompensa o usuário com 150 Geek Points pelo onboarding!
+    // Gamificação: Recompensa o usuário com 150 Geek Coins pelo onboarding!
+    // Anti-abuso: o bônus só é concedido na primeira conclusão (antes dava +150 a cada chamada).
+    const alreadyCompleted = Boolean(
+      (profile.preferences as Record<string, any> | null)?.collectorOnboarding?.completed
+    );
     const updatedPreferences = {
       ...(profile.preferences as Record<string, any> || {}),
       collectorOnboarding: {
@@ -118,7 +123,7 @@ export async function saveCollectorOnboarding(answers: {
     await db
       .update(profiles)
       .set({
-        geekPoints: (profile.geekPoints || 0) + 150,
+        geekPoints: (profile.geekPoints || 0) + (alreadyCompleted ? 0 : 150),
         preferences: updatedPreferences,
         updatedAt: new Date(),
       })
@@ -126,7 +131,7 @@ export async function saveCollectorOnboarding(answers: {
 
     revalidatePath('/conta');
     revalidatePath('/hype-zone');
-    return { success: true, message: 'Parabéns! Onboarding concluído. Você recebeu 150 Geek Points de bônus!' };
+    return { success: true, message: alreadyCompleted ? 'Cadastro de colecionador atualizado.' : 'Parabéns! Onboarding concluído. Você recebeu 150 Geek Coins de bônus!' };
   } catch (error) {
     console.error('Erro no onboarding do colecionador:', error);
     return { error: 'Ocorreu um erro ao processar seu onboarding. Tente novamente.' };
@@ -149,6 +154,17 @@ export async function createCollectorDrop(data: {
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para agendar um drop.' };
+    }
+
+    if (
+      !data.title?.trim() ||
+      !Number.isInteger(data.priceCents) || data.priceCents <= 0 ||
+      !Number.isInteger(data.stockLimit) || data.stockLimit <= 0 || data.stockLimit > 10000 ||
+      Number.isNaN(new Date(data.startsAtStr).getTime()) ||
+      !Array.isArray(data.images) ||
+      data.images.some((u) => typeof u !== 'string' || (u && !/^https:\/\//i.test(u)))
+    ) {
+      return { error: 'Dados do drop inválidos (título, preço, estoque, data ou imagens).' };
     }
 
     // Carrega o registro de vendedor ativo
@@ -280,6 +296,8 @@ export async function createCollectorDrop(data: {
  * Permite cadastrar qualquer item (ex: Turok Nintendo Switch ou link MLB61640919) imediatamente.
  */
 export async function triggerManualMeliExtraction(queryOrUrl: string) {
+  // Server Action é endpoint público: exige admin no servidor (redirect fora do try).
+  await requireAdmin();
   try {
     const { searchAndIngestMeliTerm } = await import('@/server/collector/discover-products');
     const { collectPrices } = await import('@/server/collector/collect-prices');
@@ -472,6 +490,8 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
  * Dispara uma varredura completa de descoberta e atualização de preços sob demanda.
  */
 export async function triggerFullDiscoveryRun() {
+  // Server Action é endpoint público: exige admin no servidor (redirect fora do try).
+  await requireAdmin();
   try {
     const { discoverNewProducts, discoverAllCategoryProducts } = await import('@/server/collector/discover-products');
     const { discoverShopeeProducts } = await import('@/server/collector/discover-shopee-products');
@@ -513,6 +533,8 @@ export async function triggerFullDiscoveryRun() {
  * Dispara uma extração instantânea para Shopee por palavra-chave ou link.
  */
 export async function triggerShopeeExtraction(queryOrUrl: string) {
+  // Server Action é endpoint público: exige admin no servidor (redirect fora do try).
+  await requireAdmin();
   try {
     const { discoverShopeeProducts } = await import('@/server/collector/discover-shopee-products');
     const summary = await discoverShopeeProducts();
@@ -536,6 +558,8 @@ export async function triggerShopeeExtraction(queryOrUrl: string) {
  * Dispara uma extração instantânea para Magazine Luiza (Magalu).
  */
 export async function triggerMagaluExtraction(queryOrUrl?: string) {
+  // Server Action é endpoint público: exige admin no servidor (redirect fora do try).
+  await requireAdmin();
   try {
     const { discoverMagaluProducts } = await import('@/server/collector/discover-magalu-products');
     const summary = await discoverMagaluProducts();

@@ -62,7 +62,7 @@ export default function PrivacidadePage() {
             </Text>
             <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
               <li><strong>Dados de Acesso (Login):</strong> E-mail fornecido voluntariamente para o login via Magic Link (Supabase Auth).</li>
-              <li><strong>Dados de Perfil:</strong> Nome, pontos acumulados (Geek Points) e preferências de notificações ativas (como e-mail de alertas ou Telegram ID do nosso bot).</li>
+              <li><strong>Dados de Perfil:</strong> Nome, pontos acumulados (Geek Coins) e preferências de notificações ativas (como e-mail de alertas ou Telegram ID do nosso bot).</li>
               <li><strong>Histórico de Interação:</strong> Jogos e ofertas adicionados à sua watchlist particular e lances efetuados em leilões.</li>
             </ul>
           </div>

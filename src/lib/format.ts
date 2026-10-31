@@ -18,7 +18,7 @@ export function formatDiscountLabel(discountType: string, discountValue: string)
     case 'bxgy':
       return 'Leve mais, pague menos';
     case 'points_multiplier':
-      return `${discountValue}x Geek Points`;
+      return `${discountValue}x Geek Coins`;
     default:
       return `${discountValue} OFF`;
   }

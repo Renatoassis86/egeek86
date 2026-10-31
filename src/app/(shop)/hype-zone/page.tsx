@@ -356,10 +356,10 @@ export default async function HypeZonePage() {
 
               <div className="flex flex-col gap-1 p-3.5 bg-[var(--color-bg-surface)] rounded border border-[var(--color-border-subtle)]">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  Acúmulo de Geek Points (XP)
+                  Acúmulo de Geek Coins (XP)
                 </span>
                 <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
-                  Ganhe <strong className="font-bold text-[var(--color-text-primary)]">+10 XP</strong> ao votar em drops e reviews, e <strong className="font-bold text-[var(--color-text-primary)]">+50 Geek Points</strong> por acerto. Seus pontos determinam seu nível e liberam benefícios exclusivos.
+                  Ganhe <strong className="font-bold text-[var(--color-text-primary)]">+10 XP</strong> ao votar em drops e reviews, e <strong className="font-bold text-[var(--color-text-primary)]">+50 Geek Coins</strong> por acerto. Seus pontos determinam seu nível e liberam benefícios exclusivos.
                 </span>
               </div>
 
@@ -378,7 +378,7 @@ export default async function HypeZonePage() {
                   Penalização por Infração
                 </span>
                 <span className="text-[var(--color-text-secondary)] leading-relaxed text-[11px]">
-                  Vender itens falsos ou votar contra provas claras resulta em perda drástica de Geek Points, 
+                  Vender itens falsos ou votar contra provas claras resulta em perda drástica de Geek Coins, 
                   redução de nível ou banimento da Hype Zone.
                 </span>
               </div>

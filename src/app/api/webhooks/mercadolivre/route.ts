@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { after } from 'next/server';
+import { timingSafeEqual } from 'crypto';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks } from '@/db/schema';
@@ -92,12 +93,44 @@ async function processNotification(notification: MeliNotification) {
   }
 }
 
+function safeEqual(a: string, b: string): boolean {
+  const ba = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ba.length === bb.length && timingSafeEqual(ba, bb);
+}
+
+/**
+ * O Mercado Livre NÃO assina as notificações (sem HMAC). Autenticidade em duas
+ * camadas, ambas falhando FECHADO:
+ *  1. `application_id` do corpo deve ser o do nosso app (MERCADO_LIVRE_CLIENT_ID);
+ *  2. se MELI_WEBHOOK_SECRET existir, a URL cadastrada no painel deve levar
+ *     `?key=<segredo>` (recomendado: configure e atualize a URL no painel).
+ * Mesmo assim o handler nunca confia no corpo: só usa o item_id e rebusca o
+ * preço na API oficial autenticada.
+ */
+function isAuthentic(request: NextRequest, notification: MeliNotification): boolean {
+  const clientId = process.env.MERCADO_LIVRE_CLIENT_ID;
+  if (!clientId) return false;
+  if (String(notification?.application_id ?? '') !== String(clientId)) return false;
+
+  const secret = process.env.MELI_WEBHOOK_SECRET;
+  if (secret) {
+    const key = request.nextUrl.searchParams.get('key') ?? '';
+    if (!safeEqual(key, secret)) return false;
+  }
+  return true;
+}
+
 export async function POST(request: NextRequest) {
   let notification: MeliNotification;
   try {
     notification = await request.json();
   } catch {
     return NextResponse.json({ error: 'invalid body' }, { status: 400 });
+  }
+
+  if (!isAuthentic(request, notification)) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
   if (notification?.resource && notification?.topic && HANDLED_TOPICS.has(notification.topic)) {

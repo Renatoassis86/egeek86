@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { listRankedOffers } from '@/server/queries/affiliate';
+import { suggestProducts, type ProductSuggestion } from '@/server/queries/search-products';
 import { searchPublishedArticles } from '@/server/queries/news';
 
 export const dynamic = 'force-dynamic';
@@ -13,35 +13,43 @@ export interface GlobalSearchResult {
   url: string;
 }
 
+export interface SearchApiResponse {
+  /** Autocomplete de produtos (motor `suggestProducts`), já ordenado por relevância. */
+  products: ProductSuggestion[];
+  /** Formato achatado usado pelo modal do header (produtos + notícias). */
+  items: GlobalSearchResult[];
+}
+
+const CACHE_HEADERS = { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' };
+
 /**
- * Busca global do header (Ctrl+K) — antes rodava 100% sobre um array
- * hardcoded de 8 itens de exemplo (DEMO_SEARCH_DATABASE), então qualquer
- * busca real (fora desses 8 títulos) sempre voltava "nenhum resultado",
- * mesmo pra item que já estava catalogado de verdade no banco. Hype Zone e
- * Leilões ficam de fora por ora — outro processo está construindo esses
- * módulos em paralelo nesta mesma base de código.
+ * Busca do header e do hero. Produtos vêm do motor novo (`suggestProducts`,
+ * cache próprio de 60 s); nada de fuzzy próprio aqui. `?scope=products`
+ * dispensa as notícias (hero). Resposta cacheável no CDN por 60 s.
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get('q')?.trim() ?? '';
+  const q = (searchParams.get('q') ?? '').trim().slice(0, 80);
+  const productsOnly = searchParams.get('scope') === 'products';
+  const limit = Math.min(10, Math.max(1, Number(searchParams.get('limit')) || 6));
 
   if (q.length < 2) {
-    return NextResponse.json({ items: [] satisfies GlobalSearchResult[] });
+    return NextResponse.json({ products: [], items: [] } satisfies SearchApiResponse, { headers: CACHE_HEADERS });
   }
 
-  const [offers, articles] = await Promise.all([
-    listRankedOffers({ search: q, limit: 6 }),
-    searchPublishedArticles(q, 4),
+  const [products, articles] = await Promise.all([
+    suggestProducts(q, limit).catch(() => [] as ProductSuggestion[]),
+    productsOnly ? Promise.resolve([]) : searchPublishedArticles(q, 4).catch(() => []),
   ]);
 
   const items: GlobalSearchResult[] = [
-    ...offers.map((o) => ({
-      id: o.id,
-      title: o.title,
+    ...products.map((p) => ({
+      id: p.masterProductId,
+      title: p.title,
       type: 'jogo' as const,
-      category: o.masterProduct.name,
-      priceCents: o.currentPriceCents,
-      url: `/ofertas/${o.slug}`,
+      category: p.platformLabel,
+      priceCents: p.lowestPriceCents,
+      url: p.href,
     })),
     ...articles.map((a) => ({
       id: a.id,
@@ -52,5 +60,5 @@ export async function GET(request: Request) {
     })),
   ];
 
-  return NextResponse.json({ items });
+  return NextResponse.json({ products, items } satisfies SearchApiResponse, { headers: CACHE_HEADERS });
 }

@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { RotateCcw, Search } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Text } from '@/components/ui/text';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
@@ -99,14 +98,6 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
     <div className="flex flex-col gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 backdrop-blur-md p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 w-full max-w-full overflow-hidden shadow-sm">
       {/* 1. Busca compacta e contagem */}
       <div className="flex items-center gap-2.5 w-full sm:w-auto">
-        <Input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Buscar jogo..."
-          leftAddon={<Search className="size-3.5 text-[var(--color-text-tertiary)]" />}
-          className="h-8 text-xs font-medium w-full sm:w-56 bg-[var(--color-bg-inset)]"
-        />
-
         {typeof resultCount === 'number' && (
           <Text variant="caption" color="tertiary" className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1">
             {resultCount} {resultCount === 1 ? 'oferta' : 'ofertas'}

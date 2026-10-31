@@ -63,29 +63,7 @@ export function LiveBidRoom({
   
   const [customBidAmount, setCustomBidAmount] = useState(recommendedBid / 100);
 
-  // Mocks de lances anteriores para visualização se a lista estiver vazia
-  const fallbackBids: Bid[] = [
-    {
-      id: 'b1',
-      userId: 'u1',
-      userName: 'Arthur Pendragon',
-      userAvatarUrl: null,
-      amountCents: currentPrice - minIncrement,
-      isWinning: false,
-      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    },
-    {
-      id: 'b2',
-      userId: 'u2',
-      userName: 'Julia M. (Vencedor Temporário)',
-      userAvatarUrl: null,
-      amountCents: currentPrice,
-      isWinning: true,
-      createdAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
-    }
-  ];
-
-  const activeBids = bids.length > 0 ? bids : fallbackBids;
+  const activeBids = bids;
 
   // Atualização em tempo real do temporizador
   useEffect(() => {

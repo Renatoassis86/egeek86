@@ -340,3 +340,5 @@ export default async function AdminOfferDetailPage({ params }: { params: Promise
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Editar oferta' };

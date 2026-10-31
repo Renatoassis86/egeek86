@@ -5,11 +5,13 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
-import { ShoppingBag, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu, Trophy } from 'lucide-react';
+import { Bookmark, Heart, User, Sliders, LogIn, Gavel, ShieldCheck, Menu, Trophy, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
 import { HeaderSearchModal } from '@/components/layout/header-search-modal';
 import { MobileNavDrawer } from '@/components/layout/mobile-nav-drawer';
+import { SignOutButton } from '@/components/layout/sign-out-button';
+import { isAdminRole, type ShellViewer } from '@/components/layout/shell-viewer';
 import { cn } from '@/lib/cn';
 
 interface NavChild {
@@ -168,7 +170,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   );
 }
 
-export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
+export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number; viewer?: ShellViewer | null }) {
   const pathname = usePathname();
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
@@ -246,8 +248,8 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
           </Button>
           {/* User Icon Dropdown */}
           <div className="relative group/user hidden sm:block">
-            <Button variant="ghost" size="icon" aria-label="Conta / Perfil" className="text-[#E6E0D4] hover:bg-white/10 hover:text-[#E0A83B]" asChild>
-              <Link href="/conta">
+            <Button variant="ghost" size="icon" aria-label={viewer ? 'Minha conta' : 'Entrar'} className="text-[#E6E0D4] hover:bg-white/10 hover:text-[#E0A83B]" asChild>
+              <Link href={viewer ? '/conta' : '/entrar'}>
                 <User className="size-5" />
               </Link>
             </Button>
@@ -256,63 +258,70 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
             <div className="absolute right-0 top-full pt-1.5 w-64 opacity-0 pointer-events-none group-hover/user:opacity-100 group-hover/user:pointer-events-auto transition-all duration-200 z-50">
               <div className="flex flex-col p-2 bg-[#161310] border border-[#332C24] rounded-[var(--radius-md)] shadow-2xl backdrop-blur-md text-[#F3EFE6]">
 
-                {/* Cabeçalho do Perfil */}
-                <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#F3EFE6]">Perfil do Colecionador</span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#E0A83B]/20 text-[#E0A83B]">Nível 12</span>
-                  </div>
-                  <span className="text-[11px] text-[#A39785]">Acesse seus dados, drops e leilões</span>
-                </div>
+                {viewer ? (
+                  <>
+                    {/* Cabeçalho do Perfil */}
+                    <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
+                      <span className="text-xs font-bold text-[#F3EFE6] truncate">{viewer.name}</span>
+                      <span className="text-[11px] text-[#A39785]">Acesse seus dados, drops e leilões</span>
+                    </div>
 
-                {/* Links Principais */}
-                <div className="flex flex-col py-1">
-                  <Link href="/conta" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <User className="size-3.5 text-[#E0A83B]" />
-                    <span>Meu Perfil e Gamificação</span>
-                  </Link>
+                    <div className="flex flex-col py-1">
+                      <Link href="/conta" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                        <User className="size-3.5 text-[#E0A83B]" />
+                        <span>Minha conta</span>
+                      </Link>
+                      <Link href="/conta?aba=dados" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                        <Sliders className="size-3.5 text-[#E0A83B]" />
+                        <span>Dados cadastrais</span>
+                      </Link>
+                      <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                        <ShieldCheck className="size-3.5 text-[#F59E0B]" />
+                        <span>Meus drops</span>
+                      </Link>
+                      <Link href="/conta?aba=leiloes" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                        <Gavel className="size-3.5 text-[#E0A83B]" />
+                        <span>Meus leilões</span>
+                      </Link>
+                      {isAdminRole(viewer.role) && (
+                        <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-[var(--radius-xs)] transition-colors">
+                          <Settings className="size-3.5" />
+                          <span>Painel administrativo</span>
+                        </Link>
+                      )}
+                    </div>
 
-                  <Link href="/conta?aba=dados" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <Sliders className="size-3.5 text-[#E0A83B]" />
-                    <span>Dados Cadastrais e Editar</span>
-                  </Link>
+                    <div className="h-px bg-[#28231D] my-1" />
 
-                  <Link href="/conta?aba=compras" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <ShoppingBag className="size-3.5 text-[#E0A83B]" />
-                    <span>Minhas Compras</span>
-                  </Link>
-
-                  <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <ShieldCheck className="size-3.5 text-[#F59E0B]" />
-                    <span>Meus Drops e Vendas</span>
-                  </Link>
-
-                  <Link href="/conta?aba=leiloes" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <Gavel className="size-3.5 text-[#E0A83B]" />
-                    <span>Meus Leilões e Lances</span>
-                  </Link>
-                </div>
-
-                <div className="h-px bg-[#28231D] my-1" />
-
-                {/* Opções de Cadastro / Login */}
-                <div className="flex flex-col gap-1 p-1">
-                  <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-[var(--radius-xs)] transition-colors">
-                    <span>🚀 Cadastrar Colecionador / Leiloeiro</span>
-                  </Link>
-                  <Link href="/entrar" className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
-                    <LogIn className="size-3.5" />
-                    <span>Entrar / Fazer Login</span>
-                  </Link>
-                </div>
+                    <div className="flex flex-col gap-1 p-1">
+                      <SignOutButton className="flex w-full items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors" />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
+                      <span className="text-xs font-bold text-[#F3EFE6]">Espaço Geek 86</span>
+                      <span className="text-[11px] text-[#A39785]">Entre para acompanhar jogos e receber avisos de preço</span>
+                    </div>
+                    <div className="flex flex-col gap-1 p-1 pt-2">
+                      <Link href="/entrar" className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
+                        <LogIn className="size-3.5" />
+                        <span>Entrar</span>
+                      </Link>
+                      <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-[var(--radius-xs)] transition-colors">
+                        <span>Cadastrar como colecionador</span>
+                      </Link>
+                    </div>
+                  </>
+                )}
 
               </div>
             </div>
           </div>
           <ThemeToggle className="inline-flex text-[#E6E0D4] hover:bg-white/10 hover:text-[#E0A83B]" />
-          <Button variant="ghost" size="icon" aria-label="Carrinho" className="relative text-[#E6E0D4] hover:bg-white/10 hover:text-[#E0A83B]" asChild>
+          <Button variant="ghost" size="icon" aria-label="Lista de acompanhamento" className="relative text-[#E6E0D4] hover:bg-white/10 hover:text-[#E0A83B]" asChild>
             <Link href="/carrinho">
-              <ShoppingBag className="size-5" />
+              <Bookmark className="size-5" />
               {cartCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[#E0A83B] text-[10px] font-bold text-black">
                   {cartCount > 9 ? '9+' : cartCount}
@@ -322,7 +331,7 @@ export function AppHeader({ cartCount = 0 }: { cartCount?: number }) {
           </Button>
         </div>
       </div>
-      <MobileNavDrawer isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
+      <MobileNavDrawer viewer={viewer} isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
     </header>
   );
 }

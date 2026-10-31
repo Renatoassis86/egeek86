@@ -9,6 +9,7 @@ import { registerPriceSource, type PriceSource, type PriceSnapshotResult } from 
  */
 const aliexpressSource: PriceSource = {
   networkSlug: 'aliexpress',
+  operational: false,
   async fetchSnapshots(): Promise<PriceSnapshotResult[]> {
     throw new Error(
       'AliExpress: coleta ainda não configurada. Falta credenciar a AliExpress Affiliate API (ALIEXPRESS_APP_KEY, ALIEXPRESS_APP_SECRET). Aguardando credenciais.'

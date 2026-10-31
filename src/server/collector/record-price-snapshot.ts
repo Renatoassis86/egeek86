@@ -1,5 +1,5 @@
 import 'server-only';
-import { eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliatePriceSnapshots } from '@/db/schema';
 
@@ -31,8 +31,16 @@ export interface RecordSnapshotInput {
  * oferta recém-criada (current == input.priceCents nesse caso, não conta
  * como mudança).
  */
+/** Batimento: mesmo sem mudança de preço, grava 1 snapshot a cada 24h para provar que a coleta segue viva. */
+const HEARTBEAT_MS = 24 * 60 * 60 * 1000;
+
 export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<void> {
   await db.transaction(async (tx) => {
+    // Serializa escritas concorrentes da mesma oferta (ticks do cron que se
+    // sobrepõem): o lock vale até o fim da transação, então a segunda
+    // execução lê o último snapshot já gravado pela primeira e não duplica.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${input.offerId}))`);
+
     const [current] = await tx
       .select({ currentPriceCents: affiliateOffers.currentPriceCents })
       .from(affiliateOffers)
@@ -41,7 +49,28 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<v
 
     const priceChanged = current == null || current.currentPriceCents !== input.priceCents;
 
-    if (priceChanged) {
+    // Auditoria 2026-10-30: 47 ofertas ativas tinham current_price_cents SEM nenhuma
+    // cotação igual a ele no histórico (cache e snapshot divergentes desde julho).
+    // Como o preço da API batia com o cache, 'priceChanged' nunca disparava e a
+    // cotação real nunca era gravada. Comparar também com o ÚLTIMO snapshot fecha
+    // essa brecha: preço coletado agora é cotação real e entra no histórico.
+    // A decisão de gravar depende SÓ do último snapshot (não do cache): cache
+    // divergente com snapshot igual não deve gerar linha repetida.
+    const [lastSnap] = await tx
+        .select({
+          priceCents: affiliatePriceSnapshots.priceCents,
+          collectedAt: affiliatePriceSnapshots.collectedAt,
+        })
+        .from(affiliatePriceSnapshots)
+        .where(eq(affiliatePriceSnapshots.offerId, input.offerId))
+        .orderBy(desc(affiliatePriceSnapshots.collectedAt), desc(affiliatePriceSnapshots.id))
+        .limit(1);
+    const needsSnapshot =
+      lastSnap == null ||
+      lastSnap.priceCents !== input.priceCents ||
+      Date.now() - lastSnap.collectedAt.getTime() >= HEARTBEAT_MS;
+
+    if (needsSnapshot) {
       await tx.insert(affiliatePriceSnapshots).values({
         offerId: input.offerId,
         priceCents: input.priceCents,

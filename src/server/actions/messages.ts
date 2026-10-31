@@ -4,6 +4,16 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateMessages } from '@/db/schema';
+import { getCurrentProfile } from '@/lib/auth/require-admin';
+
+async function assertAdmin(): Promise<{ ok: false; error: string } | null> {
+  const profile = await getCurrentProfile();
+  if (!profile) return { ok: false, error: 'Não autenticado.' };
+  if (profile.role !== 'admin' && profile.role !== 'super_admin') {
+    return { ok: false, error: 'Sem permissão.' };
+  }
+  return null;
+}
 
 export async function updateMessageAction({
   id,
@@ -12,6 +22,8 @@ export async function updateMessageAction({
   id: string;
   messageText: string;
 }): Promise<{ ok: boolean; error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
   try {
     if (!id || !messageText.trim()) {
       return { ok: false, error: 'ID e texto da mensagem são obrigatórios.' };
@@ -35,6 +47,8 @@ export async function deleteMessageAction({
 }: {
   id: string;
 }): Promise<{ ok: boolean; error?: string }> {
+  const denied = await assertAdmin();
+  if (denied) return denied;
   try {
     if (!id) {
       return { ok: false, error: 'ID da mensagem inválido.' };

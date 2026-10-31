@@ -10,7 +10,7 @@ import { UserApprovalActions, PhotoPreviewModal } from '@/components/admin/user-
 import { Shield, UserCheck, ShoppingCart, Users, Sparkles } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Admin: Gestão de Usuários & Credenciamento',
+  title: 'Admin: Usuários',
   description: 'Gerencie usuários, permissões, aprovações de colecionadores e credenciais de afiliados.',
 };
 

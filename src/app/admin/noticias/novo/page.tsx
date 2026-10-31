@@ -78,3 +78,5 @@ export default function NewArticlePage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Nova notícia' };

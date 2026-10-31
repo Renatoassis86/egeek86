@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { db } from '@/lib/db';
 import { newsArticles } from '@/db/schema';
@@ -75,11 +75,6 @@ async function uniqueArticleSlug(base: string): Promise<string> {
 }
 
 export async function createArticle(formData: FormData) {
-  // Garante a coluna keywords no banco
-  try {
-    await db.execute(sql`ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS keywords text`);
-  } catch (e) {}
-
   const profile = await requireAdmin();
   const parsed = parseArticleForm(formData);
   const status = formData.get('status') === 'published' ? 'published' : 'draft';
@@ -154,11 +149,6 @@ export async function createArticle(formData: FormData) {
 
 /** Slug é imutável após criado (mesmo princípio de affiliate_offers.slug). */
 export async function updateArticle(formData: FormData) {
-  // Garante a coluna keywords no banco
-  try {
-    await db.execute(sql`ALTER TABLE news_articles ADD COLUMN IF NOT EXISTS keywords text`);
-  } catch (e) {}
-
   await requireAdmin();
   const id = String(formData.get('id'));
   const parsed = parseArticleForm(formData);

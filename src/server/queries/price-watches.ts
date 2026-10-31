@@ -2,14 +2,17 @@ import 'server-only';
 import { eq, and, inArray, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliatePriceWatches, masterProducts, affiliateOffers, affiliateNetworks, affiliateSellers } from '@/db/schema';
-import { getMasterProductMetrics, type OfferMetrics } from './affiliate';
+import { getMasterProductMetricsBatch, type OfferMetrics } from './affiliate';
+import { publicOffersCtes } from './public-offers';
+import { suggestTargetPriceCents } from '@/lib/affiliate/price-verdict';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import type { GameFormat, GamePlatformGen } from '@/db/schema';
 
 /**
- * Pra cada master_product, resolve a oferta ativa com o menor preço — o
- * "melhor preço do jogo agora", independente de qual rede/vendedor está na
- * frente. Usado tanto pelo dashboard do cliente quanto pelo job de alerta.
+ * Pra cada master_product, resolve a oferta PÚBLICA (ADR 0002: ativa, preço > 0,
+ * coleta real <= 7 dias, preço plausível) com o menor preço — o "melhor preço do
+ * jogo agora", independente de qual rede/vendedor está na frente. Se a mais
+ * barata sai, vale a próxima (concorrência real).
  */
 export async function getBestActiveOfferIdsForMasterProducts(
   masterProductIds: string[]
@@ -18,15 +21,14 @@ export async function getBestActiveOfferIdsForMasterProducts(
   if (masterProductIds.length === 0) return map;
 
   const rows = await db.execute<{ master_product_id: string; offer_id: string }>(sql`
-    SELECT DISTINCT ON (master_product_id) master_product_id, id AS offer_id
-    FROM affiliate_offers
-    WHERE master_product_id IN (${sql.join(
+    WITH ${publicOffersCtes()}
+    SELECT DISTINCT ON (po.master_product_id) po.master_product_id, po.id AS offer_id
+    FROM public_offers po
+    WHERE po.master_product_id IN (${sql.join(
       masterProductIds.map((id) => sql`${id}`),
       sql`, `
     )})
-      AND status = 'active'
-      AND current_price_cents > 0
-    ORDER BY master_product_id, current_price_cents ASC
+    ORDER BY po.master_product_id, po.current_price_cents ASC
   `);
 
   for (const row of rows) map.set(row.master_product_id, row.offer_id);
@@ -44,7 +46,12 @@ export interface WatchListItem {
   gameFormat: GameFormat;
   gamePlatformGen: GamePlatformGen;
   currentPriceCents: number;
+  /** Escopo PRODUTO, fonte única. `metrics.eligibility.eligible=false` => "histórico curto" (média e selo vêm null/false). */
   metrics: OfferMetrics | null;
+  /** Preço-alvo do alerta gravado pelo cliente (ou o sugerido ao acompanhar). null = sem alvo. */
+  targetPriceCents: number | null;
+  /** ceil(menor registrado * 1,05); só com histórico elegível, senão null (a UI não sugere alvo sem base). */
+  suggestedTargetCents: number | null;
   sellerNickname: string | null;
   sellerReputationLevel: string | null;
   sellerPositiveRatingPercent: string | null;
@@ -52,9 +59,8 @@ export interface WatchListItem {
 }
 
 /**
- * Lista de jogos acompanhados pro dashboard do cliente. N chamadas a
- * getOfferMetrics (N = qtde de watches do usuário) — aceitável pra uma tela
- * de conta, não é hot path como a vitrine pública.
+ * Lista de jogos acompanhados pro dashboard do cliente. Métricas em lote da
+ * fonte única (getMasterProductMetricsBatch), não mais N consultas pesadas.
  */
 export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
   const watches = await db
@@ -64,6 +70,7 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
       masterProductName: masterProducts.name,
       gameFormat: masterProducts.gameFormat,
       gamePlatformGen: masterProducts.gamePlatformGen,
+      targetPriceCents: affiliatePriceWatches.targetPriceCents,
     })
     .from(affiliatePriceWatches)
     .innerJoin(masterProducts, eq(affiliatePriceWatches.masterProductId, masterProducts.id))
@@ -95,13 +102,15 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
 
   const offerById = new Map(offerRows.map((o) => [o.id, o]));
 
+  const metricsByProduct = await getMasterProductMetricsBatch(watches.map((w) => w.masterProductId));
+
   const items: WatchListItem[] = [];
   for (const watch of watches) {
     const offerId = bestOfferIds.get(watch.masterProductId);
     const offer = offerId ? offerById.get(offerId) : null;
     if (!offerId || !offer) continue; // jogo acompanhado sem nenhuma oferta ativa no momento
 
-    const metrics = await getMasterProductMetrics(watch.masterProductId);
+    const metrics = metricsByProduct.get(watch.masterProductId) ?? null;
     items.push({
       watchId: watch.watchId,
       masterProductId: watch.masterProductId,
@@ -114,6 +123,8 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
       gamePlatformGen: watch.gamePlatformGen,
       currentPriceCents: offer.currentPriceCents,
       metrics,
+      targetPriceCents: watch.targetPriceCents,
+      suggestedTargetCents: metrics?.eligibility?.eligible ? suggestTargetPriceCents(metrics.lowestPriceCents) : null,
       sellerNickname: offer.sellerNickname,
       sellerReputationLevel: offer.sellerReputationLevel,
       sellerPositiveRatingPercent: offer.sellerPositiveRatingPercent,

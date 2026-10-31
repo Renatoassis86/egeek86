@@ -119,7 +119,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
 
         <div className="flex items-center gap-2 text-xs font-semibold text-[var(--color-text-secondary)] px-3 py-1 bg-[var(--color-bg-elevated)] rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)]">
           {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5 text-[var(--color-accent-gold)]" />}
-          <span>{totalCount} cotações monitoradas nesta área</span>
+          <span>{totalCount} {totalCount === 1 ? 'item' : 'itens'} nesta seleção</span>
         </div>
       </div>
 

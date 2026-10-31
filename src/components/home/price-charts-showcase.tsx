@@ -23,6 +23,8 @@ export function PriceChartsShowcase() {
         {/* Header de Abas Interno */}
         <div className="flex border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30">
           <button
+            type="button"
+            aria-pressed={activeTab === 'global'}
             onClick={() => setActiveTab('global')}
             className={cn(
               'flex-1 py-4 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 text-center focus:outline-none relative z-10',
@@ -34,6 +36,8 @@ export function PriceChartsShowcase() {
             Mercado Global
           </button>
           <button
+            type="button"
+            aria-pressed={activeTab === 'brasil'}
             onClick={() => setActiveTab('brasil')}
             className={cn(
               'flex-1 py-4 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 text-center focus:outline-none relative z-10',
@@ -45,6 +49,8 @@ export function PriceChartsShowcase() {
             Mercado Brasil
           </button>
           <button
+            type="button"
+            aria-pressed={activeTab === 'consoles'}
             onClick={() => setActiveTab('consoles')}
             className={cn(
               'flex-1 py-4 text-xs font-mono uppercase tracking-wider transition-colors border-b-2 text-center focus:outline-none relative z-10',
@@ -65,15 +71,12 @@ export function PriceChartsShowcase() {
           </div>
 
           {/* Rodapé das Fontes */}
-          <div className="mt-8 pt-4 border-t border-[var(--color-border-subtle)] flex flex-wrap gap-x-4 gap-y-2 justify-between items-center text-[10px] text-[var(--color-text-tertiary)] font-mono">
+          <div className="mt-8 pt-4 border-t border-[var(--color-border-subtle)] flex flex-wrap gap-x-4 gap-y-2 justify-between items-center text-xs text-[var(--color-text-tertiary)] font-mono">
             <span className="flex items-center gap-1">
-              <Calendar className="size-3" />
-              Atualizado em Tempo Real (Julho/2026)
-            </span>
-            <span>
-              {activeTab === 'global' && 'Fonte: Newzoo Global Games Market Report & BCG Analysis'}
-              {activeTab === 'brasil' && 'Fonte: 11ª Pesquisa Game Brasil (PGB) & Censo Abragames'}
-              {activeTab === 'consoles' && 'Fonte: Sony & Nintendo Investor Relations Reports'}
+              <Calendar className="size-3" aria-hidden />
+              {activeTab === 'global' && 'Fonte: Newzoo, Global Games Market Report, 2025 (e análise BCG)'}
+              {activeTab === 'brasil' && 'Fonte: Pesquisa Game Brasil (11ª edição) e Censo Abragames'}
+              {activeTab === 'consoles' && 'Fonte: relatórios de relações com investidores da Sony e da Nintendo, dados até março de 2026'}
             </span>
           </div>
         </div>

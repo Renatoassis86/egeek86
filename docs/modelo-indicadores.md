@@ -252,3 +252,47 @@ de milhares de anúncios de vendedores independentes competindo pelos mesmos pre
   deste modelo — são contagens diretas, sem outlier a considerar.
 - Volume de conteúdo do módulo de Notícias é baixo (2 publicados) — não é um problema de métrica,
   mas limita quão "cheio" o layout de portal fica até mais matérias serem publicadas.
+
+---
+
+## 7. Estatística canônica de preço por produto (decisão do dono, 2026-10-30)
+
+Fonte única: `src/server/queries/product-price-stats.ts` (`getMasterProductPriceStats` / `getMasterProductPriceStatsBatch`). Funções de veredito puras: `src/lib/affiliate/price-verdict.ts`. ADR: `docs/08-decisoes-adr/0001-fonte-unica-estatistica-de-preco.md`. Escopo: PRODUTO (`master_product_id` único, sem agrupamento por nome). Esta seção prevalece sobre 2.2, 2.3 e 2.6 nas telas migradas (as demais ainda usam a janela de 30 dias até a migração das etapas 2 a 5 do plano).
+
+### 7.1 Conjunto de cotações
+Todos os `affiliate_price_snapshots` de TODAS as ofertas do produto, de qualquer status (ativa, pausada, expirada), com `price_cents > 0`. Histórico nunca é apagado. Sem interpolação: janela sem cotação retorna `null`.
+
+### 7.1.1 Piso de plausibilidade nas cotações (ADR 0001 decisão 3 revista, 2026-10-31)
+Antes de qualquer cálculo: `piso = 35% x mediana(price_cents das cotações do produto)`; cotação `< piso` é anúncio-isca e sai de mínimos (`lowAll/low1y/low3m`), média, máximo, `quoteCount` e elegibilidade. Só vale com >= 3 cotações (sem régua, tudo passa). Nada é apagado. Auditoria: `rawMinCents` (mínimo bruto), `floorCents`, `floorApplied` (mínimo bruto < piso), `floorExcludedQuoteCount`. SQL único: `priceQuotesCtes` (`product-price-stats.ts`), usado por estatística de produto, busca, tabela de preços e home. "Menor preço já visto" da home (`lowestPriceCentsEver`) = menor cotação plausível entre produtos elegíveis (>= 5 cotações e >= 14 dias). Sobrepõe 7.4 ("sem filtro") e a frase "o mínimo nunca é afetado" de 7.3 quanto ao piso (o filtro 2x continua só por cima).
+
+### 7.2 Média única ("normal")
+`avg = SUM(price_cents das cotações mantidas) / COUNT(cotações mantidas)`, em TODO o histórico, todas as lojas. Sem janela de 30 dias. Uma média por produto; a oferta individual é comparada a ela.
+
+### 7.3 Filtro de outlier (mantido, documentado)
+1. `raw_avg = AVG(price_cents)` de todas as cotações do produto.
+2. Descarta cotação com `price_cents > 2 * raw_avg`.
+3. `avg` = média das que sobraram. O mínimo nunca é afetado (o filtro só corta por cima). O máximo exposto (`maxCents`) também ignora os descartados; `maxRawCents` e `rawAvgCents` guardam o valor bruto para auditoria, e `excludedQuoteCount` diz quantas foram cortadas.
+Motivo: erro de captura, frete embutido ou câmbio errado (ex.: console a R$ 22.850,00, seção 3) distorceriam a média; o preço real mais barato continua valendo.
+
+### 7.4 Menor preço histórico
+Cotação mais barata do produto **acima do piso de plausibilidade (7.1.1)**, em três janelas (`lowAll`, `low1y` = 365 dias, `low3m` = 90 dias), contando ofertas expiradas. Cada uma traz preço, data, loja, vendedor e `offerActive`; quando `offerActive = false` a UI deve rotular "encerrada" (não dá para comprar naquele preço). Empate: vale a primeira ocorrência (menor `collected_at`).
+
+### 7.5 Preço atual
+Menor `current_price_cents > 0` entre ofertas `status = 'active'` do produto (concorrência real; se a mais barata sai, vale a próxima).
+
+### 7.6 Credibilidade e veredito
+- Elegível se `quoteCount >= 5` E `historyDays >= 14` (dias entre a primeira e a última cotação). Caso contrário: "histórico curto", sem selo e sem veredito.
+- Veredito: `delta = atual - avg`; `|delta| <= 5%` da média => "em linha com o normal"; abaixo => "abaixo do normal"; acima => "acima do normal". Mostrar delta em R$ e %.
+- Selo "Menor preço já registrado": elegível E `atual <= lowAll`.
+- Preço-alvo sugerido do alerta: `ceil(lowAll * 1,05)`.
+
+### 7.7 Cálculos unificados e legados
+Unificado nesta etapa: o menor preço (`price_cents > 0`, escopo produto) em `getMasterProductMetrics` agora vem da fonte única; o filtro `price_cents > 0` foi adicionado ao mínimo de `getOfferMetrics`, `getOfferListingMetrics` (lowest) e `price-table.ts` (min), sem alterar assinaturas. Legados que ainda usam média de 30 dias e `isLowestEver` trivial, a migrar nas etapas 2 a 5: `getOfferMetrics`, `getMasterProductMetrics.avgPriceCents30d`, `getOfferListingMetrics`, `getFeaturedOffers`, `price-table.ts`, `getMasterProductPriceHistory` (inclui `ILIKE` por nome e histórico só de ofertas ativas) e `detect-price-drops.ts`.
+
+### 7.8 Oferta pública, piso e frescor (ADR 0002, 2026-10-31)
+- "Preço atual", vitrines, tabela de preços, contagens da home, watchlist e alertas só usam ofertas **públicas**: ativas, preço > 0, última coleta real <= 7 dias (com prova de coleta, ver ADR) e preço >= 35% da mediana do produto quando há >= 3 ofertas frescas. Constantes em `price-verdict.ts`; SQL em `src/server/queries/public-offers.ts`. O histórico e as cotações não mudam.
+- Contrato de card (`getOfferListingMetrics`): `avgPriceCents` (média única, null sem elegibilidade), `eligibility`, `verdict`, `isLowestEver` (já com elegibilidade), `priceDrop`/`isPriceDropping` (queda >= 5% em <= 7 dias, só elegível), `lowestRecord`. `avgPriceCents30d` é alias depreciado do mesmo valor (nunca mais janela de 30 dias).
+- Tabela de preços: o fallback antigo `média = menor ?? preço atual` foi removido; sem histórico elegível a média é null. "Abaixo da média" = fora da faixa "em linha" (-5%) e elegível.
+- `getMasterProductMetrics` (watchlist) agora sai da fonte única; `trend` só vira `down`/`up` com histórico elegível e variação >= 5%.
+- Alerta: com `target_price_cents`, avisa ao atingir; sem alvo, só com histórico elegível (novo menor registrado ou >= 12% abaixo da média única).
+- Legados restantes: `getOfferMetrics` (escopo oferta, admin, depreciado) e `getMasterProductPriceHistory` (`price-history.ts`, EG-12).

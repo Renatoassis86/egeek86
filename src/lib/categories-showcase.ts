@@ -1,11 +1,13 @@
 import type { ComponentType } from 'react';
-import { Boxes, Gamepad2, Joystick, LibraryBig, Newspaper, Zap, Sparkles } from 'lucide-react';
+import { Boxes, Gamepad2, Joystick, Newspaper, Zap, Sparkles } from 'lucide-react';
 
 export interface CategoryCard {
   href: string;
   label: string;
   description: string;
   Icon: ComponentType<{ className?: string }>;
+  /** Texto do link do cartão; padrão 'Ver ofertas' (só correto quando o destino lista ofertas). */
+  cta?: string;
 }
 
 /** Lado GAMER (produto: jogo/console/acessório) — fonte única, usada em /categorias e /sobre. */
@@ -17,8 +19,7 @@ export const gamerCards: CategoryCard[] = [
 
 /** Lado GEEK (cultura: franquia/drop/notícia) — fonte única, usada em /categorias e /sobre. */
 export const geekCards: CategoryCard[] = [
-  { href: '/universos', label: 'Universos', description: 'Navegue por franquia: Naruto, One Piece, Marvel e mais.', Icon: LibraryBig },
-  { href: '/hype-zone', label: 'Hype Zone', description: 'Drop e lançamento em contagem regressiva real.', Icon: Zap },
-  { href: '/noticias', label: 'Notícias', description: 'Cultura pop, sinopse de jogo e tecnologia geek.', Icon: Newspaper },
-  { href: '/inteligencia-gamer', label: 'Observatório Gamer', description: 'Notícias, artigos opinativos e pesquisas teóricas, empíricas e descritivas sobre o mercado.', Icon: Sparkles },
+  { href: '/hype-zone', label: 'Hype Zone', description: 'Lançamentos e cultura geek para acompanhar.', Icon: Zap, cta: 'Abrir Hype Zone' },
+  { href: '/noticias', label: 'Notícias', description: 'Cultura pop, sinopse de jogo e tecnologia geek.', Icon: Newspaper, cta: 'Ler notícias' },
+  { href: '/inteligencia-gamer', label: 'Observatório Gamer', description: 'Notícias, artigos opinativos e pesquisas teóricas, empíricas e descritivas sobre o mercado.', Icon: Sparkles, cta: 'Acessar portal' },
 ];

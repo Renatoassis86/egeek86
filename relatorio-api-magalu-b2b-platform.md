@@ -9,7 +9,9 @@ Nesta mesma sessão, dois documentos diferentes da Magalu foram colados no chat.
 
 | | **Magalu Developers** (`developers.magalu.com`) | **Magalu Empresas B2B Platform** (`institucional.magaluempresas.com.br`) |
 |---|---|---|
-| Veredito | ❌ Já descartada — ver `relatorio-api-magalu-developers.md` | ✅ Caminho novo e real, ainda não integrado |
+| Veredito | ❌ Já descartada — ve
+
+r `relatorio-api-magalu-developers.md` | ✅ Caminho novo e real, ainda não integrado |
 | Modelo | Cliente OAuth2 + **cada seller individual autoriza seu app** (`./idm client create`, escopos `open:portfolio-*-seller:*`) | Usuário/senha fornecidos pelo **comercial da Magalu** após "onboarding" — sem fluxo de autorização por seller |
 | Serve pra | Seller gerenciar o **próprio** catálogo/preço/estoque dentro do Magalu | Parceiro B2B **revender o catálogo inteiro da Magalu** no próprio site |
 | O que colamos hoje | Guia "Como Criar e Configurar um Cliente" (`./idm client create`) — é a MESMA API já analisada e descartada em julho, só reapareceu no chat | Spec OpenAPI completa (`document.yaml`, v2.0.0) + landing `institucional.magaluempresas.com.br/api-integracao` |

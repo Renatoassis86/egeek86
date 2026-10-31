@@ -64,7 +64,7 @@ export async function submitDropCuration(data: {
     }
 
     revalidatePath('/hype-zone/curadoria');
-    return { success: true, message: 'Sua curadoria foi enviada! Você ganhou +10 Geek Points de bônus por sua contribuição.' };
+    return { success: true, message: 'Sua curadoria foi enviada! Você ganhou +10 Geek Coins de bônus por sua contribuição.' };
   } catch (error) {
     console.error('Erro ao enviar curadoria comunitária:', error);
     return { error: 'Erro ao processar curadoria. Tente novamente.' };
@@ -72,7 +72,7 @@ export async function submitDropCuration(data: {
 }
 
 /**
- * Resgata Geek Points acumulados como cupons de desconto para a loja (100 pontos = R$ 1,00).
+ * Resgata Geek Coins acumulados como cupons de desconto para a loja (100 pontos = R$ 1,00).
  */
 export async function convertPointsToDiscount(pointsToConvert: number) {
   try {
@@ -82,7 +82,7 @@ export async function convertPointsToDiscount(pointsToConvert: number) {
     }
 
     if (pointsToConvert < 100) {
-      return { error: 'O resgate mínimo é de 100 Geek Points.' };
+      return { error: 'O resgate mínimo é de 100 Geek Coins.' };
     }
 
     if (pointsToConvert % 100 !== 0) {
@@ -90,7 +90,7 @@ export async function convertPointsToDiscount(pointsToConvert: number) {
     }
 
     if ((profile.geekPoints || 0) < pointsToConvert) {
-      return { error: 'Saldo de Geek Points insuficiente para este resgate.' };
+      return { error: 'Saldo de Geek Coins insuficiente para este resgate.' };
     }
 
     // Calcula o valor em reais (100 pontos = R$ 1,00)
@@ -135,7 +135,7 @@ export async function convertPointsToDiscount(pointsToConvert: number) {
       message: `Resgate realizado! Cupom de R$ ${discountAmount.toFixed(2)} gerado com sucesso.`
     };
   } catch (error) {
-    console.error('Erro ao converter Geek Points em cupom:', error);
+    console.error('Erro ao converter Geek Coins em cupom:', error);
     return { error: 'Erro ao processar o resgate. Tente novamente.' };
   }
 }
@@ -199,7 +199,7 @@ export async function resolveDropCuration(dropId: string, correctVerdict: 'authe
     revalidatePath('/hype-zone');
     return {
       success: true,
-      message: `Curadoria finalizada! ${correctVoters.length} curador(es) assertivo(s) receberam +50 Geek Points (Milhas Geek) cada.`
+      message: `Curadoria finalizada! ${correctVoters.length} curador(es) assertivo(s) receberam +50 Geek Coins (Milhas Geek) cada.`
     };
   } catch (error) {
     console.error('Erro ao resolver curadoria do drop:', error);
@@ -260,7 +260,7 @@ export async function submitReviewCuration(data: {
     }
 
     revalidatePath('/hype-zone/curadoria');
-    return { success: true, message: 'Auditoria registrada! Você ganhou +10 Geek Points por ajudar a manter a integridade da plataforma.' };
+    return { success: true, message: 'Auditoria registrada! Você ganhou +10 Geek Coins por ajudar a manter a integridade da plataforma.' };
   } catch (error) {
     console.error('Erro ao registrar auditoria de avaliação:', error);
     return { error: 'Ocorreu um erro ao processar seu voto de curadoria.' };
@@ -328,7 +328,7 @@ export async function resolveReviewCuration(reviewId: string, correctVerdict: 'a
     revalidatePath('/hype-zone/curadoria');
     return {
       success: true,
-      message: `Auditoria de avaliação encerrada! ${correctVoters.length} curador(es) assertivo(s) receberam +50 Geek Points (Milhas Geek).`
+      message: `Auditoria de avaliação encerrada! ${correctVoters.length} curador(es) assertivo(s) receberam +50 Geek Coins (Milhas Geek).`
     };
   } catch (error) {
     console.error('Erro ao resolver auditoria de avaliação:', error);

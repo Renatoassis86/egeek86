@@ -13,7 +13,7 @@ import { getUserWatches } from '@/server/queries/price-watches';
 import { ProfileHubTabs } from '@/components/conta/profile-hub-tabs';
 import { ShieldCheck, User, Sparkles, Bell, ArrowRight, Gavel } from 'lucide-react';
 
-export const metadata = { title: 'Perfil do Colecionador | Espaço Geek 86' };
+export const metadata = { title: 'Minha conta' };
 export const dynamic = 'force-dynamic';
 
 export default async function ContaPage({
@@ -52,7 +52,7 @@ export default async function ContaPage({
           <div className="relative w-full h-full">
             <Image
               src="/images/conta/profile-hero.png"
-              alt="Geek Collector Artwork"
+              alt=""
               fill
               className="object-cover object-center"
               priority
@@ -64,36 +64,35 @@ export default async function ContaPage({
         <div className="flex flex-col gap-4 relative z-10 max-w-2xl">
           <Reveal>
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="legend" size="lg" className="animate-pulse">
+              <Badge variant="legend" size="lg">
                 <Sparkles className="size-3.5" />
-                Cofre do Colecionador
+                Minha conta
               </Badge>
-              {profile?.role === 'admin' ? (
+              {profile?.role === 'admin' || profile?.role === 'super_admin' ? (
                 <Badge variant="hype" size="lg">
-                  👑 Administrador Geral
+                  Administrador
                 </Badge>
               ) : seller?.status === 'active' ? (
                 <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">
-                  <ShieldCheck className="size-3 mr-1" /> Perfil Verificado
+                  <ShieldCheck className="size-3 mr-1" /> Colecionador verificado
                 </Badge>
-              ) : (
+              ) : seller ? (
                 <Badge variant="outline" className="border-amber-500/50 text-amber-400">
-                  ⚡ Nível 12 (Colecionador)
+                  Cadastro de colecionador em análise
                 </Badge>
-              )}
+              ) : null}
             </div>
           </Reveal>
 
           <Reveal delay={0.05}>
             <Text as="h1" variant="display-md" className="text-[32px] md:text-[44px] font-black leading-none tracking-tight">
-              {profile ? profile.name : 'Seu Perfil Geek'}
+              {profile ? profile.name : 'Minha conta'}
             </Text>
           </Reveal>
 
           <Reveal delay={0.1}>
             <Text variant="body-md" color="secondary" className="max-w-[52ch] leading-relaxed text-xs md:text-sm">
-              Gerencie seus dados cadastrais, acompanhe a evolução do seu nível de XP na plataforma,
-              consulte suas moedas Geek Coins, histórico de compras, drops cadastrados e leilões ativos.
+              Gerencie seus dados cadastrais, os jogos que você acompanha, seus drops e leilões.
             </Text>
           </Reveal>
 
@@ -133,8 +132,19 @@ export default async function ContaPage({
       {/* Abas Interativas do Perfil */}
       <ProfileHubTabs
         initialTab={aba || 'visao_geral'}
-        profile={profile}
-        seller={seller}
+        profile={
+          profile
+            ? {
+                id: profile.id,
+                name: profile.name,
+                email: profile.email,
+                phone: profile.phone,
+                role: profile.role,
+                geekPoints: profile.geekPoints,
+              }
+            : null
+        }
+        seller={seller ? { status: seller.status } : null}
         watches={watches}
       />
     </section>

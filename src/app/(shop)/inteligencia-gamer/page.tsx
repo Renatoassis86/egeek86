@@ -34,7 +34,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Renato Silva de Assis',
     date: '27 Jul 2026',
     readTime: '8 min',
-    imageUrl: '/images/sobre/hero-geracoes.png',
+    imageUrl: '/images/categorias/hero-gamer-panel.png',
     isMainHighlight: true,
   },
   {
@@ -46,7 +46,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Renato Silva de Assis',
     date: '25 Jul 2026',
     readTime: '12 min',
-    imageUrl: '/images/noticias-hub/data-analysis.png',
+    imageUrl: '/images/home/pesquisa-comunidade.png',
     isMainHighlight: true,
   },
   {
@@ -92,7 +92,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Mariana Costa',
     date: '24 Jul 2026',
     readTime: '5 min',
-    imageUrl: '/images/sobre/fliperama.png',
+    imageUrl: '/images/sobre/locadora.png',
   },
   {
     id: '7',

@@ -11,6 +11,19 @@ import { PriceHistoryChart } from './price-history-chart';
 import { AnimatedPrice } from './animated-price';
 import type { PriceHistoryResult } from '@/server/queries/price-history';
 
+/** Estado vazio (sem nenhum ponto): o gráfico busca o histórico real logo ao montar. Não é dado sintético. */
+const EMPTY_PRICE_HISTORY: PriceHistoryResult = {
+  points: [],
+  avgPoints: [],
+  frequencyPoints: [],
+  pointOffers: {},
+  stats: { avgPriceCents: null, minPriceCents: null, maxPriceCents: null, globalMaxPriceCents: null },
+  quotes: [],
+  totalQuoteCount: 0,
+  totalOffersCount: 0,
+  bucketSeconds: 86400,
+};
+
 interface WatchlistPanelItem {
   masterProductId: string;
   slug: string;
@@ -42,7 +55,7 @@ export function MonitoringBoard({
 }: {
   watchlistItems: WatchlistPanelItem[];
   initialSelectedId: string;
-  initialHistory: PriceHistoryResult;
+  initialHistory: PriceHistoryResult | null;
   isGuest?: boolean;
 }) {
   const router = useRouter();
@@ -124,7 +137,7 @@ export function MonitoringBoard({
             </div>
             <PriceHistoryChart
               masterProductId={active.masterProductId}
-              initialHistory={initialHistory}
+              initialHistory={initialHistory ?? EMPTY_PRICE_HISTORY}
               initialTimeframe="1M"
               currentPriceCents={active.currentPriceCents}
             />
@@ -147,6 +160,9 @@ export function MonitoringBoard({
             <Text variant="body-sm" color="tertiary" className="max-w-[36ch]">
               Clique no + ao lado de &quot;Sua lista&quot; pra adicionar o primeiro jogo e acompanhar o gráfico de preço aqui.
             </Text>
+            <Link href="/ofertas" className="text-sm underline">
+              Ver ofertas
+            </Link>
           </CardContent>
         </Card>
       )}

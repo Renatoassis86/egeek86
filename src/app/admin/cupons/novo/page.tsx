@@ -86,3 +86,5 @@ export default async function NewCouponPage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Novo cupom' };

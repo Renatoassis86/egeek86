@@ -4,6 +4,27 @@ import { db } from '@/lib/db';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import { createCachedQuery } from '@/lib/cache/server-cache';
 import {
+  getMasterProductPriceStatsBatch,
+  getMasterProductPriceStatsBatchRaw,
+  getPlatformLowestPriceCentsEver,
+  priceQuotesCtes,
+  type MasterProductPriceStats,
+} from '@/server/queries/product-price-stats';
+import { publicOffersCtes } from '@/server/queries/public-offers';
+import {
+  checkEligibility,
+  computeLowBadge,
+  computePriceDrop,
+  computeVerdict,
+  INLINE_BAND_PERCENT,
+  MIN_QUOTES_FOR_VERDICT,
+  MIN_HISTORY_DAYS_FOR_VERDICT,
+  PRICE_DROP_MIN_PERCENT,
+  type Eligibility,
+  type PriceDrop,
+  type PriceVerdict,
+} from '@/lib/affiliate/price-verdict';
+import {
   affiliateOffers,
   affiliateNetworks,
   affiliateCoupons,
@@ -107,11 +128,12 @@ function baseOfferQuery() {
  * em vez de outros 3 produtos distintos.
  */
 export async function getPublicOffers(limit = 24): Promise<OfferWithRelations[]> {
+  // Só ofertas PÚBLICAS (ADR 0002: coleta real <= 7 dias e piso de plausibilidade).
   const dedupRows = await db.execute<{ id: string }>(sql`
-    SELECT DISTINCT ON (${affiliateOffers.masterProductId}) ${affiliateOffers.id} AS id
-    FROM ${affiliateOffers}
-    WHERE ${affiliateOffers.status} = 'active' AND ${affiliateOffers.currentPriceCents} > 0
-    ORDER BY ${affiliateOffers.masterProductId}, ${affiliateOffers.currentPriceCents} ASC
+    WITH ${publicOffersCtes()}
+    SELECT DISTINCT ON (po.master_product_id) po.id AS id
+    FROM public_offers po
+    ORDER BY po.master_product_id, po.current_price_cents ASC
   `);
   const dedupedIds = dedupRows.map((r) => r.id);
   if (dedupedIds.length === 0) return [];
@@ -182,23 +204,10 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   if (filter.productType) {
     conditions.push(eq(masterProducts.productType, filter.productType));
     if (filter.productType === 'console') {
-      try {
-        await db.execute(sql`
-          UPDATE master_products
-          SET product_type = 'game'
-          WHERE product_type = 'console' AND (
-            name ILIKE '%resident evil%' OR
-            name ILIKE '%madden%' OR
-            name ILIKE '%jogo%' OR
-            name ILIKE '%game%' OR
-            name ILIKE '%físico%' OR
-            name ILIKE '%fisico%' OR
-            name ILIKE '%mídia%' OR
-            name ILIKE '%midia%'
-          )
-        `);
-      } catch (e) { }
-
+      // Leitura pública NÃO escreve (EG-04/N3, 2026-10-31): havia aqui um
+      // UPDATE master_products SET product_type='game' por ILIKE de nome, que
+      // reclassificava consoles a cada visita. Reclassificação é script
+      // dedicado com dry-run (EG-04); aqui só se filtra na leitura.
       conditions.push(
         sql`NOT (${masterProducts.name} ILIKE '%jogo%' OR ${masterProducts.name} ILIKE '%game%' OR ${masterProducts.name} ILIKE '%físico%' OR ${masterProducts.name} ILIKE '%fisico%' OR ${masterProducts.name} ILIKE '%mídia%' OR ${masterProducts.name} ILIKE '%midia%' OR ${masterProducts.name} ILIKE '%resident evil%' OR ${masterProducts.name} ILIKE '%madden%' OR ${masterProducts.name} ILIKE '%zelda%' OR ${masterProducts.name} ILIKE '%mario%' OR ${masterProducts.name} ILIKE '%gta%' OR ${masterProducts.name} ILIKE '%fifa%' OR ${masterProducts.name} ILIKE '%call of duty%' OR ${masterProducts.name} ILIKE '%god of war%' OR ${masterProducts.name} ILIKE '%cyberpunk%' OR ${masterProducts.name} ILIKE '%elden ring%')`
       );
@@ -222,14 +231,16 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
 
   const whereClause = and(...conditions);
 
-  // Dedup por master_product — só a oferta mais barata daquele produto
+  // Só ofertas PÚBLICAS (ADR 0002) entram. Dedup por master_product — só a oferta mais barata daquele produto
   // (dentro dos filtros já aplicados) representa o produto na lista. Sem
   // isso o mesmo jogo, vendido em N lojas/redes diferentes, ocupa N vagas
   // da seção em vez de N produtos distintos (era o motivo do mesmo item
   // repetir várias vezes nos destaques/seções por plataforma).
   const dedupRows = await db.execute<{ id: string }>(sql`
+    WITH ${publicOffersCtes()}
     SELECT DISTINCT ON (${affiliateOffers.masterProductId}) ${affiliateOffers.id} AS id
     FROM ${affiliateOffers}
+    INNER JOIN public_offers po ON po.id = ${affiliateOffers.id}
     INNER JOIN ${masterProducts} ON ${eq(affiliateOffers.masterProductId, masterProducts.id)}
     LEFT JOIN ${affiliateSellers} ON ${eq(affiliateOffers.sellerId, affiliateSellers.id)}
     WHERE ${whereClause}
@@ -372,9 +383,9 @@ export interface PlatformStats {
   totalQuotes: number;
   /** Preço médio entre todas as ofertas ativas, com o mesmo filtro de outlier (>2x a média bruta) usado em toda métrica de média do site. */
   avgPriceCents: number;
-  /** Menor preço já cotado em qualquer oferta, de todo o histórico da plataforma (nunca filtrado — é um evento real que aconteceu). */
+  /** Menor cotação plausível já vista na plataforma: mesmo piso de plausibilidade da fonte única (product-price-stats.ts, ADR 0001 revisada em 2026-10-31), só entre produtos com histórico elegível. Cotação-isca não entra. */
   lowestPriceCentsEver: number;
-  /** Quantos produtos (master_product) estão com o menor preço ativo hoje abaixo da própria média histórica — "em queda" agora mesmo. */
+  /** Quantos produtos (master_product) têm o menor preço PÚBLICO hoje abaixo da faixa "em linha" (-5%) da média única, só com histórico elegível (>= 5 cotações e >= 14 dias). */
   itemsBelowAverageCount: number;
 }
 
@@ -385,10 +396,10 @@ export interface PlatformStats {
  */
 async function getPlatformStatsUncached(): Promise<PlatformStats> {
   const [products, sellers, networks, quotes, avgPrice, lowestEver, belowAverage] = await Promise.all([
+    // Só ofertas PÚBLICAS (ADR 0002): contador não conta oferta sem coleta real nem preço implausível.
     db.execute<{ count: string }>(sql`
-      SELECT COUNT(DISTINCT master_product_id)::bigint AS count
-      FROM affiliate_offers
-      WHERE status = 'active' AND current_price_cents > 0
+      WITH ${publicOffersCtes()}
+      SELECT COUNT(DISTINCT master_product_id)::bigint AS count FROM public_offers
     `),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_sellers`),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_networks`),
@@ -396,43 +407,44 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
       SELECT COUNT(*)::bigint AS count FROM affiliate_price_snapshots
     `),
     db.execute<{ avg_cents: string | null }>(sql`
-      WITH raw_avg AS (
-        SELECT AVG(current_price_cents) AS v FROM affiliate_offers WHERE status = 'active' AND current_price_cents > 0
-      )
-      SELECT AVG(current_price_cents)::bigint AS avg_cents
-      FROM affiliate_offers, raw_avg
-      WHERE status = 'active' AND current_price_cents > 0 AND current_price_cents <= raw_avg.v * 2
+      WITH ${publicOffersCtes()},
+      raw_avg AS (SELECT AVG(current_price_cents) AS v FROM public_offers)
+      SELECT AVG(po.current_price_cents)::bigint AS avg_cents
+      FROM public_offers po, raw_avg
+      WHERE po.current_price_cents <= raw_avg.v * 2
     `),
-    db.execute<{ min_cents: string | null }>(sql`
-      SELECT MIN(price_cents)::bigint AS min_cents FROM affiliate_price_snapshots WHERE price_cents > 0
-    `),
+    getPlatformLowestPriceCentsEver(),
+    // "Abaixo da média" = preço público mais barato do produto abaixo da faixa
+    // "em linha" (-INLINE_BAND_PERCENT%) da média única, SÓ com histórico
+    // elegível (>= MIN_QUOTES cotações e >= MIN_DAYS dias). Mesma fórmula de
+    // product-price-stats.ts (média de todas as ofertas do produto, filtro 2x).
     db.execute<{ count: string }>(sql`
-      WITH active_offers AS (
-        SELECT id AS offer_id, master_product_id, current_price_cents
-        FROM affiliate_offers WHERE status = 'active' AND current_price_cents > 0
-      ),
+      WITH ${publicOffersCtes()},
       current_lowest AS (
         SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
-        FROM active_offers GROUP BY master_product_id
+        FROM public_offers GROUP BY master_product_id
       ),
-      raw_hist_avg AS (
-        SELECT ao.master_product_id, AVG(s.price_cents) AS raw_avg
-        FROM affiliate_price_snapshots s
-        INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
-        GROUP BY ao.master_product_id
+      -- Mesmas cotações plausíveis (piso, ADR 0001 revisada) da fonte única.
+      ${priceQuotesCtes(sql`o.master_product_id IN (SELECT master_product_id FROM current_lowest)`)},
+      raw AS (
+        SELECT master_product_id, AVG(price_cents) AS raw_avg, COUNT(*) AS n,
+               MIN(collected_at) AS first_at, MAX(collected_at) AS last_at
+        FROM q GROUP BY master_product_id
       ),
-      hist_avg AS (
-        SELECT ao.master_product_id,
-          AVG(s.price_cents) FILTER (WHERE s.price_cents <= rha.raw_avg * 2)::numeric AS avg_price
-        FROM affiliate_price_snapshots s
-        INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
-        INNER JOIN raw_hist_avg rha ON rha.master_product_id = ao.master_product_id
-        GROUP BY ao.master_product_id
+      hist AS (
+        SELECT q.master_product_id,
+               AVG(q.price_cents) FILTER (WHERE q.price_cents <= raw.raw_avg * 2) AS avg_price,
+               raw.n, raw.first_at, raw.last_at
+        FROM q INNER JOIN raw ON raw.master_product_id = q.master_product_id
+        GROUP BY q.master_product_id, raw.n, raw.first_at, raw.last_at
       )
       SELECT COUNT(*)::bigint AS count
       FROM current_lowest cl
-      INNER JOIN hist_avg ha ON ha.master_product_id = cl.master_product_id
-      WHERE ha.avg_price IS NOT NULL AND cl.current_price_cents < ha.avg_price
+      INNER JOIN hist h ON h.master_product_id = cl.master_product_id
+      WHERE h.avg_price IS NOT NULL
+        AND h.n >= ${sql.raw(String(MIN_QUOTES_FOR_VERDICT))}
+        AND FLOOR(EXTRACT(EPOCH FROM (h.last_at - h.first_at)) / 86400) >= ${sql.raw(String(MIN_HISTORY_DAYS_FOR_VERDICT))}
+        AND cl.current_price_cents < h.avg_price * (1 - ${sql.raw(String(INLINE_BAND_PERCENT / 100))})
     `),
   ]);
 
@@ -447,7 +459,7 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
     totalNetworks: Number(networks[0]?.count ?? 0),
     totalQuotes: Number(quotes[0]?.count ?? 0),
     avgPriceCents: avgPrice[0]?.avg_cents != null ? Number(avgPrice[0].avg_cents) : 0,
-    lowestPriceCentsEver: lowestEver[0]?.min_cents != null ? Number(lowestEver[0].min_cents) : 0,
+    lowestPriceCentsEver: lowestEver,
     itemsBelowAverageCount: Number(belowAverage[0]?.count ?? 0),
   };
 }
@@ -455,7 +467,9 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
 export const getPlatformStats = createCachedQuery(
   getPlatformStatsUncached,
   ['platform-stats'],
-  { revalidate: 10 }
+  // 10s -> 300s (2026-10-30): a consulta varre ~3,2M snapshots 4x (≈6s medidos) e
+  // alimenta Home, /sobre e /contatos; contador institucional não precisa de 10s.
+  { revalidate: 300 }
 );
 
 export async function listNetworks(): Promise<AffiliateNetwork[]> {
@@ -534,16 +548,34 @@ export interface OfferMetrics {
   currentPriceCents: number;
   lowestPriceCents: number;
   lowestPriceAt: Date;
+  /**
+   * @deprecated Nome legado (janela de 30 dias). Em `getMasterProductMetrics` agora
+   * carrega a MÉDIA ÚNICA do produto e é null quando o histórico não é elegível
+   * (< 5 cotações ou < 14 dias). Use `avgPriceCents`.
+   */
   avgPriceCents30d: number | null;
   discountVsLowestPercent: number;
   trend: 'up' | 'down' | 'stable';
   snapshotCount: number;
+  /** Só em `getMasterProductMetrics` (escopo produto). Média única do produto; null se !eligibility.eligible. */
+  avgPriceCents?: number | null;
+  /** Só em `getMasterProductMetrics`. Elegibilidade do histórico (>= 5 cotações e >= 14 dias). */
+  eligibility?: Eligibility;
+  /** Só em `getMasterProductMetrics`. Veredito contra a média única (`insufficient` se histórico curto). */
+  verdict?: PriceVerdict;
+  /** Só em `getMasterProductMetrics`. true = menor preço registrado, já exigindo elegibilidade. */
+  isLowestEver?: boolean;
 }
 
 /**
  * Métricas simples via SQL sobre affiliate_price_snapshots (menor histórico,
  * média 30d, tendência). NÃO é o Geek Index™ (nota 0-100) — isso é roadmap
  * futuro, fora de escopo desta fase.
+ *
+ * @deprecated Escopo OFERTA (um vendedor), média 30d e `trend` trivial (últimos 2
+ * snapshots): não use em tela pública nem em alerta (EG-02/10). Use
+ * `getOfferListingMetrics` (escopo produto, selos com elegibilidade) ou
+ * `getMasterProductPriceStats`. Restam usos de admin.
  */
 export async function getOfferMetrics(offerId: string): Promise<OfferMetrics | null> {
   const aggRows = await db.execute<{
@@ -562,9 +594,9 @@ export async function getOfferMetrics(offerId: string): Promise<OfferMetrics | n
       WHERE offer_id = ${offerId} AND collected_at >= now() - interval '30 days'
     )
     SELECT
-      MIN(s.price_cents)::bigint AS lowest_price_cents,
+      MIN(s.price_cents) FILTER (WHERE s.price_cents > 0)::bigint AS lowest_price_cents,
       (SELECT collected_at FROM affiliate_price_snapshots
-        WHERE offer_id = ${offerId} ORDER BY price_cents ASC, collected_at ASC LIMIT 1) AS lowest_price_at,
+        WHERE offer_id = ${offerId} AND price_cents > 0 ORDER BY price_cents ASC, collected_at ASC LIMIT 1) AS lowest_price_at,
       AVG(s.price_cents) FILTER (
         WHERE s.collected_at >= now() - interval '30 days'
           AND s.price_cents <= (SELECT raw_avg FROM raw_avg_30d) * 2
@@ -598,235 +630,272 @@ export async function getOfferMetrics(offerId: string): Promise<OfferMetrics | n
   };
 }
 
+type TrendValue = OfferMetrics['trend'];
+
 /**
- * Igual a getOfferMetrics, mas agregado por master_product (entre TODOS os
- * vendedores/redes ativos daquele produto), não de uma oferta específica —
- * usada em qualquer lugar que representa o "produto" pro cliente (watchlist,
- * alerta de queda de preço), nunca um vendedor isolado. getOfferMetrics
- * continua correta pra tela de detalhe de UMA oferta específica (histórico
- * daquele anúncio/vendedor) e pro admin editando um anúncio.
+ * Monta OfferMetrics do PRODUTO a partir da fonte única (product-price-stats.ts).
+ * - Preço atual = menor oferta PÚBLICA (ADR 0002); sem oferta pública => null.
+ * - Média única e selo "menor registrado" só com histórico elegível.
+ * - `trend` 'down'/'up' só com histórico elegível e variação >= PRICE_DROP_MIN_PERCENT
+ *   entre o último e o penúltimo preço confirmados da oferta atual; senão 'stable'.
  */
-export async function getMasterProductMetrics(masterProductId: string): Promise<OfferMetrics | null> {
-  const aggRows = await db.execute<{
-    current_price_cents: string | null;
-    previous_price_cents: string | null;
-    lowest_price_cents: string | null;
-    lowest_price_at: string | null;
-    avg_price_30d: string | null;
-    snapshot_count: string;
-  }>(sql`
-    WITH active_offers AS (
-      SELECT ao.id AS offer_id
-      FROM affiliate_offers ao
-      WHERE ao.master_product_id = ${masterProductId} AND ao.status = 'active'
-    ),
-    all_offers AS (
-      SELECT ao.id AS offer_id
-      FROM affiliate_offers ao
-      WHERE ao.master_product_id = ${masterProductId}
-    ),
-    ranked_active AS (
-      SELECT
-        s.price_cents,
-        s.collected_at,
-        ROW_NUMBER() OVER (PARTITION BY s.offer_id ORDER BY s.collected_at DESC) AS rn
-      FROM affiliate_price_snapshots s
-      WHERE s.offer_id IN (SELECT offer_id FROM active_offers)
-    ),
-    all_snapshots AS (
-      SELECT s.price_cents, s.collected_at
-      FROM affiliate_price_snapshots s
-      WHERE s.offer_id IN (SELECT offer_id FROM all_offers)
-    ),
-    -- degrau intermediário pra achar outliers — ver getOfferMetrics acima.
-    raw_avg_30d AS (
-      SELECT AVG(price_cents) AS raw_avg FROM all_snapshots WHERE collected_at >= now() - interval '30 days'
-    ),
-    agg AS (
-      SELECT
-        MIN(price_cents)::bigint AS lowest_price_cents,
-        AVG(price_cents) FILTER (
-          WHERE collected_at >= now() - interval '30 days'
-            AND price_cents <= (SELECT raw_avg FROM raw_avg_30d) * 2
-        )::numeric AS avg_price_30d,
-        COUNT(*)::int AS snapshot_count
-      FROM all_snapshots
-    ),
-    lowest_at AS (
-      SELECT collected_at FROM all_snapshots ORDER BY price_cents ASC, collected_at ASC LIMIT 1
-    )
-    SELECT
-      (SELECT MIN(price_cents) FROM ranked_active WHERE rn = 1)::bigint AS current_price_cents,
-      (SELECT MIN(price_cents) FROM ranked_active WHERE rn = 2)::bigint AS previous_price_cents,
-      agg.lowest_price_cents,
-      (SELECT collected_at FROM lowest_at) AS lowest_price_at,
-      agg.avg_price_30d,
-      agg.snapshot_count
-    FROM agg
-  `);
-
-  const agg = aggRows[0];
-  if (!agg || Number(agg.snapshot_count) === 0 || !agg.lowest_price_cents || agg.current_price_cents == null) {
-    return null;
+function buildMasterProductMetrics(
+  stats: MasterProductPriceStats | undefined,
+  previousPriceByOffer: Map<string, number>
+): OfferMetrics | null {
+  if (!stats || !stats.currentLowestActive || !stats.lowAll || stats.quoteCount === 0) return null;
+  const current = stats.currentLowestActive.priceCents;
+  const lowest = stats.lowAll.priceCents;
+  const eligibility = checkEligibility({ quoteCount: stats.quoteCount, historyDays: stats.historyDays });
+  const verdict = computeVerdict({
+    currentCents: current,
+    avgCents: stats.avgCents,
+    quoteCount: stats.quoteCount,
+    historyDays: stats.historyDays,
+  });
+  const avg = eligibility.eligible ? stats.avgCents : null;
+  const prev = previousPriceByOffer.get(stats.currentLowestActive.offerId) ?? null;
+  let trend: TrendValue = 'stable';
+  if (eligibility.eligible && prev && prev > 0) {
+    const movePercent = ((current - prev) / prev) * 100;
+    if (movePercent <= -PRICE_DROP_MIN_PERCENT) trend = 'down';
+    else if (movePercent >= PRICE_DROP_MIN_PERCENT) trend = 'up';
   }
-
-  const lastPrice = Number(agg.current_price_cents);
-  const prevPrice = agg.previous_price_cents != null ? Number(agg.previous_price_cents) : null;
-  const trend: OfferMetrics['trend'] =
-    prevPrice === null ? 'stable' : lastPrice < prevPrice ? 'down' : lastPrice > prevPrice ? 'up' : 'stable';
-
-  const lowest = Number(agg.lowest_price_cents);
   return {
-    currentPriceCents: lastPrice,
+    currentPriceCents: current,
     lowestPriceCents: lowest,
-    lowestPriceAt: new Date(agg.lowest_price_at!),
-    avgPriceCents30d: agg.avg_price_30d ? Number(agg.avg_price_30d) : null,
-    discountVsLowestPercent: lowest > 0 ? Math.round(((lastPrice - lowest) / lowest) * 100) : 0,
+    lowestPriceAt: new Date(stats.lowAll.at),
+    avgPriceCents30d: avg,
+    avgPriceCents: avg,
+    discountVsLowestPercent: lowest > 0 ? Math.round(((current - lowest) / lowest) * 100) : 0,
     trend,
-    snapshotCount: Number(agg.snapshot_count),
+    snapshotCount: stats.quoteCount,
+    eligibility,
+    verdict,
+    isLowestEver: computeLowBadge({
+      currentCents: current,
+      lowestCents: lowest,
+      quoteCount: stats.quoteCount,
+      historyDays: stats.historyDays,
+    }),
   };
 }
 
-export interface OfferListingMetrics {
-  /** Preço do snapshot mais recente (pode divergir por segundos do cache em affiliate_offers.current_price_cents). */
-  currentPriceCents: number;
-  lowestPriceCents: number;
-  isLowestEver: boolean;
-  /** "Preço de tabela" do snapshot mais recente (quando a fonte informou original_price/list price). */
-  listPriceCents: number | null;
-  /** % de desconto vs. listPriceCents — calculado aqui quando a fonte não grava discount_percent (caso comum hoje). */
-  discountPercent: number | null;
-  /** Preço médio dos últimos 30 dias (null se não houver snapshot nesse período). */
-  avgPriceCents30d: number | null;
-  /** % abaixo da média de 30 dias, só quando o preço atual está de fato abaixo dela (null caso contrário). */
-  avgDiscountPercent: number | null;
-}
-
-/**
- * Versão em lote de métricas pra grades de cards (evita 1 query por oferta ao
- * renderizar a vitrine) — cobre só o que os cards precisam: menor preço
- * histórico e desconto vs. preço de tabela do snapshot mais recente. Pra
- * métricas completas (tendência, média 30d) de UMA oferta, use getOfferMetrics.
- *
- * IMPORTANTE: lowest_price_cents e avg_price_30d são calculados por
- * MASTER_PRODUCT (entre TODOS os vendedores ativos daquele produto), não só
- * a partir do histórico da oferta em questão — mesmo princípio já usado em
- * getMasterProductPriceHistory/getBestActiveOfferIdsForMasterProducts.
- * Sem isso, duas ofertas do mesmo produto (vendedores diferentes) mostravam
- * "preço médio" diferente uma da outra, o que não faz sentido: o produto
- * tem UMA média só, formada pelo preço de todo mundo que vende ele.
- */
-async function getOfferListingMetricsRaw(
-  offerIds: string[]
-): Promise<Map<string, OfferListingMetrics>> {
-  const map = new Map<string, OfferListingMetrics>();
+/** Penúltimo preço confirmado (cotação anterior, > 0) de cada oferta pedida. */
+async function getPreviousPriceByOffer(offerIds: string[]): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
   if (!offerIds.length) return map;
-
-  const idList = sql.join(
-    offerIds.map((id) => sql`${id}`),
-    sql`, `
-  );
-
-  const rows = await db.execute<{
-    offer_id: string;
-    current_price_cents: string;
-    list_price_cents: string | null;
-    discount_percent: string | null;
-    lowest_price_cents: string;
-    avg_price_30d: string | null;
-  }>(sql`
-    WITH target_offers AS (
-      SELECT id AS offer_id, master_product_id
-      FROM affiliate_offers
-      WHERE id IN (${idList})
-    ),
-    latest AS (
-      SELECT DISTINCT ON (offer_id) offer_id, price_cents, list_price_cents, discount_percent
-      FROM affiliate_price_snapshots
-      WHERE offer_id IN (SELECT offer_id FROM target_offers)
-      ORDER BY offer_id, collected_at DESC
-    ),
-    -- Todo vendedor ATIVO do mesmo produto (não só as ofertas pedidas) —
-    -- base pro menor preço/média serem do produto, não de um vendedor só.
-    sibling_offers AS (
-      SELECT ao.id AS offer_id, ao.master_product_id
-      FROM affiliate_offers ao
-      WHERE ao.master_product_id IN (SELECT DISTINCT master_product_id FROM target_offers)
-    ),
-    lowest_by_product AS (
-      SELECT so.master_product_id, MIN(s.price_cents)::bigint AS lowest_price_cents
+  const rows = await db.execute<{ offer_id: string; price_cents: string }>(sql`
+    SELECT t.offer_id, t.price_cents::bigint AS price_cents
+    FROM (
+      SELECT s.offer_id, s.price_cents,
+             ROW_NUMBER() OVER (PARTITION BY s.offer_id ORDER BY s.collected_at DESC) AS rn
       FROM affiliate_price_snapshots s
-      INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
-      WHERE s.offer_id IN (SELECT offer_id FROM sibling_offers)
-      GROUP BY so.master_product_id
-    ),
-    -- degrau intermediário pra achar outliers — ver getOfferMetrics acima.
-    raw_avg30d_by_product AS (
-      SELECT so.master_product_id, AVG(s.price_cents) AS raw_avg
-      FROM affiliate_price_snapshots s
-      INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
-      WHERE s.collected_at >= now() - interval '30 days'
-        AND s.offer_id IN (SELECT offer_id FROM sibling_offers)
-      GROUP BY so.master_product_id
-    ),
-    avg30d_by_product AS (
-      SELECT so.master_product_id,
-        AVG(s.price_cents) FILTER (WHERE s.price_cents <= ra.raw_avg * 2)::numeric AS avg_price_30d
-      FROM affiliate_price_snapshots s
-      INNER JOIN sibling_offers so ON so.offer_id = s.offer_id
-      INNER JOIN raw_avg30d_by_product ra ON ra.master_product_id = so.master_product_id
-      WHERE s.collected_at >= now() - interval '30 days'
-        AND s.offer_id IN (SELECT offer_id FROM sibling_offers)
-      GROUP BY so.master_product_id
-    )
-    SELECT
-      latest.offer_id,
-      latest.price_cents::bigint AS current_price_cents,
-      latest.list_price_cents,
-      latest.discount_percent,
-      lowest_by_product.lowest_price_cents,
-      avg30d_by_product.avg_price_30d
-    FROM latest
-    INNER JOIN target_offers ON target_offers.offer_id = latest.offer_id
-    LEFT JOIN lowest_by_product ON lowest_by_product.master_product_id = target_offers.master_product_id
-    LEFT JOIN avg30d_by_product ON avg30d_by_product.master_product_id = target_offers.master_product_id
+      WHERE s.offer_id IN (${sql.join(offerIds.map((id) => sql`${id}`), sql`, `)}) AND s.price_cents > 0
+    ) t
+    WHERE t.rn = 2
   `);
-
-  for (const row of rows) {
-    const current = Number(row.current_price_cents);
-    const lowest = Number(row.lowest_price_cents);
-    const listPriceCents = row.list_price_cents != null ? Number(row.list_price_cents) : null;
-    const discountPercent =
-      row.discount_percent != null
-        ? Number(row.discount_percent)
-        : listPriceCents && listPriceCents > current
-          ? Math.round(((listPriceCents - current) / listPriceCents) * 100)
-          : null;
-    const avgPriceCents30d = row.avg_price_30d != null ? Number(row.avg_price_30d) : null;
-    const avgDiscountPercent =
-      avgPriceCents30d != null && avgPriceCents30d > current
-        ? Math.round(((avgPriceCents30d - current) / avgPriceCents30d) * 100)
-        : null;
-
-    map.set(row.offer_id, {
-      currentPriceCents: current,
-      lowestPriceCents: lowest,
-      isLowestEver: current <= lowest,
-      listPriceCents,
-      discountPercent,
-      avgPriceCents30d,
-      avgDiscountPercent,
-    });
-  }
-
+  for (const r of rows) map.set(r.offer_id, Number(r.price_cents));
   return map;
 }
 
-export const getOfferListingMetrics = createCachedQuery(
-  getOfferListingMetricsRaw,
-  ['offer-listing-metrics'],
+/**
+ * Métricas por master_product em LOTE (watchlist, alerta): tudo sai de
+ * `getMasterProductPriceStatsBatch` (fonte única, cache 60 s). Devolve null
+ * para produto sem oferta pública ou sem cotação.
+ */
+export async function getMasterProductMetricsBatch(masterProductIds: string[]): Promise<Map<string, OfferMetrics | null>> {
+  const ids = [...new Set(masterProductIds.filter(Boolean))];
+  const out = new Map<string, OfferMetrics | null>();
+  if (!ids.length) return out;
+  const stats = await getMasterProductPriceStatsBatch(ids);
+  const offerIds = ids
+    .map((id) => stats.get(id)?.currentLowestActive?.offerId)
+    .filter((v): v is string => !!v);
+  const prev = await getPreviousPriceByOffer(offerIds);
+  for (const id of ids) out.set(id, buildMasterProductMetrics(stats.get(id), prev));
+  return out;
+}
+
+/**
+ * Métricas do PRODUTO (todas as lojas), não de um vendedor: watchlist e alerta.
+ * Reescrita em 2026-10-31 sobre a fonte única (ADR 0001/0002): o preço atual é o
+ * da menor oferta pública, a média é a média única do produto e só existe se o
+ * histórico for elegível. `getOfferMetrics` segue sendo o escopo oferta (admin).
+ */
+export async function getMasterProductMetrics(masterProductId: string): Promise<OfferMetrics | null> {
+  const stats = (await getMasterProductPriceStatsBatchRaw([masterProductId])).get(masterProductId);
+  const offerId = stats?.currentLowestActive?.offerId;
+  const prev = offerId ? await getPreviousPriceByOffer([offerId]) : new Map<string, number>();
+  return buildMasterProductMetrics(stats, prev);
+}
+
+/**
+ * Contrato de card/lista (UMA oferta exibida de um produto). Escopo dos
+ * números de histórico: PRODUTO (todas as lojas), via product-price-stats.ts.
+ *
+ * REGRA DE DADO: tudo que depende de histórico (`avgPriceCents`, `isLowestEver`,
+ * `isPriceDropping`, `priceDrop`, veredito) só existe com
+ * `eligibility.eligible` (>= 5 cotações E >= 14 dias). Sem elegibilidade os
+ * campos vêm null/false e a UI mostra "histórico curto" (sem preencher nada).
+ */
+export interface OfferListingMetrics {
+  masterProductId: string;
+  /** Preço da oferta exibida (cache vigente de affiliate_offers.current_price_cents). */
+  currentPriceCents: number;
+  /** Menor preço registrado do produto (todas as lojas, inclui encerradas). Legado: sem histórico elegível a UI NÃO deve exibir. */
+  lowestPriceCents: number;
+  /** Selo "menor preço já registrado". JÁ exige elegibilidade (corrige o falso positivo de 1 cotação). */
+  isLowestEver: boolean;
+  /** "Preço de tabela" do snapshot mais recente (quando a fonte informou original_price/list price). Único valor legítimo para "de/por" (EG-13). */
+  listPriceCents: number | null;
+  /** % de desconto vs. listPriceCents. */
+  discountPercent: number | null;
+  /** MÉDIA ÚNICA do produto (todas as lojas, todo o histórico, filtro 2x). null se !eligibility.eligible. Não é preço de tabela: não riscar. */
+  avgPriceCents: number | null;
+  /** @deprecated Alias de `avgPriceCents` (nome antigo da janela de 30 dias, que não existe mais). */
+  avgPriceCents30d: number | null;
+  /** % abaixo da média única, só com elegibilidade e quando o preço atual está abaixo dela. Prefira `verdict`. */
+  avgDiscountPercent: number | null;
+  quoteCount: number;
+  historyDays: number;
+  /** Credibilidade do histórico. `eligible=false` => "histórico curto". */
+  eligibility: Eligibility;
+  /** Veredito contra a média única: below/inline/above ou insufficient (delta em R$ e %). */
+  verdict: PriceVerdict;
+  /** "Preço em queda": queda real >= 5% em <= 7 dias, só com elegibilidade. null caso contrário. */
+  priceDrop: PriceDrop | null;
+  isPriceDropping: boolean;
+  /** Menor registrado do produto com loja/data e se ainda está ativa ("encerrada" se false). null sem histórico elegível. */
+  lowestRecord: { priceCents: number; at: string; networkName: string; offerActive: boolean } | null;
+}
+
+interface OfferListingRow {
+  offerId: string;
+  masterProductId: string;
+  currentPriceCents: number;
+  previousPriceCents: number | null;
+  lastPriceChangeAt: string | null;
+  listPriceCents: number | null;
+  discountPercentRaw: number | null;
+}
+
+async function getOfferListingRowsRaw(offerIds: string[]): Promise<Record<string, OfferListingRow>> {
+  const out: Record<string, OfferListingRow> = {};
+  if (!offerIds.length) return out;
+  const idList = sql.join(offerIds.map((id) => sql`${id}`), sql`, `);
+  const rows = await db.execute<{
+    offer_id: string;
+    master_product_id: string;
+    current_price_cents: string;
+    previous_price_cents: string | null;
+    last_price_change_at: Date | string | null;
+    list_price_cents: string | null;
+    discount_percent: string | null;
+  }>(sql`
+    SELECT o.id AS offer_id, o.master_product_id,
+           o.current_price_cents::bigint AS current_price_cents,
+           o.previous_price_cents::bigint AS previous_price_cents,
+           o.last_price_change_at,
+           ls.list_price_cents, ls.discount_percent
+    FROM affiliate_offers o
+    LEFT JOIN LATERAL (
+      SELECT s.list_price_cents, s.discount_percent
+      FROM affiliate_price_snapshots s
+      WHERE s.offer_id = o.id
+      ORDER BY s.collected_at DESC
+      LIMIT 1
+    ) ls ON TRUE
+    WHERE o.id IN (${idList}) AND o.current_price_cents > 0
+  `);
+  for (const r of rows) {
+    out[r.offer_id] = {
+      offerId: r.offer_id,
+      masterProductId: r.master_product_id,
+      currentPriceCents: Number(r.current_price_cents),
+      previousPriceCents: r.previous_price_cents != null ? Number(r.previous_price_cents) : null,
+      lastPriceChangeAt: r.last_price_change_at ? new Date(r.last_price_change_at).toISOString() : null,
+      listPriceCents: r.list_price_cents != null ? Number(r.list_price_cents) : null,
+      discountPercentRaw: r.discount_percent != null ? Number(r.discount_percent) : null,
+    };
+  }
+  return out;
+}
+
+// unstable_cache serializa o retorno em JSON: um Map volta como objeto vazio e
+// `.get` quebra (erro real em produção na home, 2026-10-30). Por isso o cache
+// guarda um Record e o Map é remontado aqui.
+const getOfferListingRowsCachedAsRecord = createCachedQuery(
+  getOfferListingRowsRaw,
+  ['offer-listing-rows'],
   { revalidate: 60, tags: ['affiliate-offers', 'price-snapshots'] }
 );
+
+/** Pura: junta a linha da oferta com a estatística do produto (fonte única). */
+function buildOfferListingMetrics(row: OfferListingRow, stats: MasterProductPriceStats | undefined): OfferListingMetrics {
+  const current = row.currentPriceCents;
+  const quoteCount = stats?.quoteCount ?? 0;
+  const historyDays = stats?.historyDays ?? 0;
+  const eligibility = checkEligibility({ quoteCount, historyDays });
+  const verdict = computeVerdict({ currentCents: current, avgCents: stats?.avgCents, quoteCount, historyDays });
+  const isLowestEver = computeLowBadge({ currentCents: current, lowestCents: stats?.lowAll?.priceCents, quoteCount, historyDays });
+  const priceDrop = computePriceDrop({
+    currentCents: current,
+    previousCents: row.previousPriceCents,
+    changedAt: row.lastPriceChangeAt,
+    quoteCount,
+    historyDays,
+  });
+  const avgPriceCents = eligibility.eligible && stats?.avgCents ? stats.avgCents : null;
+  const avgDiscountPercent =
+    avgPriceCents != null && avgPriceCents > current ? Math.round(((avgPriceCents - current) / avgPriceCents) * 100) : null;
+  const discountPercent =
+    row.discountPercentRaw != null
+      ? row.discountPercentRaw
+      : row.listPriceCents && row.listPriceCents > current
+        ? Math.round(((row.listPriceCents - current) / row.listPriceCents) * 100)
+        : null;
+  const low = stats?.lowAll ?? null;
+  return {
+    masterProductId: row.masterProductId,
+    currentPriceCents: current,
+    lowestPriceCents: low ? low.priceCents : current,
+    isLowestEver,
+    listPriceCents: row.listPriceCents,
+    discountPercent,
+    avgPriceCents,
+    avgPriceCents30d: avgPriceCents,
+    avgDiscountPercent,
+    quoteCount,
+    historyDays,
+    eligibility,
+    verdict,
+    priceDrop,
+    isPriceDropping: priceDrop !== null,
+    lowestRecord:
+      eligibility.eligible && low
+        ? { priceCents: low.priceCents, at: low.at, networkName: low.networkName, offerActive: low.offerActive }
+        : null,
+  };
+}
+
+/**
+ * Métricas em lote para grades de cards, por offerId. Fonte única de histórico:
+ * `getMasterProductPriceStatsBatch` (ADR 0001); piso/frescor: ADR 0002.
+ * Oferta sem preço > 0 não aparece no Map.
+ */
+export async function getOfferListingMetrics(
+  offerIds: string[]
+): Promise<Map<string, OfferListingMetrics>> {
+  if (!offerIds.length) return new Map();
+  const ids = [...new Set(offerIds)].sort();
+  const rows = await getOfferListingRowsCachedAsRecord(ids);
+  const list = Object.values(rows);
+  const stats = await getMasterProductPriceStatsBatch(list.map((r) => r.masterProductId));
+  const map = new Map<string, OfferListingMetrics>();
+  for (const row of list) map.set(row.offerId, buildOfferListingMetrics(row, stats.get(row.masterProductId)));
+  return map;
+}
 
 export interface AdminDashboardMetrics {
   activeOffersCount: number;
@@ -901,8 +970,11 @@ export interface DisplayCoupon {
 }
 
 /**
- * Retorna cupons ativos cadastrados no banco. Caso o banco não possua cupons ativados,
- * devolve 5 cupons de exemplo predefinidos para renderização no carrossel.
+ * Cupons ativos cadastrados no banco e dentro da validade. Sem cupom real,
+ * devolve lista vazia e a UI não mostra o carrossel (EG-22, 2026-10-31):
+ * existia aqui um fallback de 5 cupons fixos (MELI100, SHOPEE20, MAGALU15,
+ * GAMER50 "Verificado", GEEK12) com validUntil null, ou seja, dado inventado em
+ * produção. Nunca reintroduzir cupom de exemplo.
  */
 export async function getActiveCouponsForDisplay(): Promise<DisplayCoupon[]> {
   try {
@@ -930,91 +1002,22 @@ export async function getActiveCouponsForDisplay(): Promise<DisplayCoupon[]> {
       .orderBy(desc(affiliateCoupons.createdAt))
       .limit(10);
 
-    if (rows.length > 0) {
-      return rows.map((r) => ({
-        id: r.id,
-        code: r.code,
-        description: r.description,
-        discountType: r.discountType,
-        discountValue: Number(r.discountValue),
-        minOrderCents: r.minOrderCents != null ? Number(r.minOrderCents) : null,
-        validUntil: r.validUntil,
-        networkName: r.networkName,
-        networkSlug: r.networkSlug,
-        networkColorHex: r.networkColorHex,
-      }));
-    }
-  } catch {
-    // Fallback para os 5 cupons padrão
+    return rows.map((r) => ({
+      id: r.id,
+      code: r.code,
+      description: r.description,
+      discountType: r.discountType,
+      discountValue: Number(r.discountValue),
+      minOrderCents: r.minOrderCents != null ? Number(r.minOrderCents) : null,
+      validUntil: r.validUntil,
+      networkName: r.networkName,
+      networkSlug: r.networkSlug,
+      networkColorHex: r.networkColorHex,
+    }));
+  } catch (err) {
+    console.error('getActiveCouponsForDisplay falhou:', (err as Error).message);
+    return [];
   }
-
-  return [
-    {
-      id: 'coupon-sample-1',
-      code: 'MELI100',
-      description: 'R$ 100 OFF em compras acima de R$ 500 em mídias físicas',
-      discountType: 'fixed_amount',
-      discountValue: 100,
-      minOrderCents: 50000,
-      validUntil: null,
-      networkName: 'Mercado Livre',
-      networkSlug: 'mercado-livre',
-      networkColorHex: '#FFE600',
-      badgeText: 'Cupom do Dia',
-    },
-    {
-      id: 'coupon-sample-2',
-      code: 'SHOPEE20',
-      description: '20% OFF em jogos selecionados de Nintendo e PlayStation',
-      discountType: 'percentage',
-      discountValue: 20,
-      minOrderCents: 15000,
-      validUntil: null,
-      networkName: 'Shopee',
-      networkSlug: 'shopee',
-      networkColorHex: '#EE4D2D',
-      badgeText: 'Exclusivo',
-    },
-    {
-      id: 'coupon-sample-3',
-      code: 'MAGALU15',
-      description: '15% OFF em consoles, controles e acessórios gamer',
-      discountType: 'percentage',
-      discountValue: 15,
-      minOrderCents: 20000,
-      validUntil: null,
-      networkName: 'Magalu',
-      networkSlug: 'magalu',
-      networkColorHex: '#0086FF',
-      badgeText: 'Destaque',
-    },
-    {
-      id: 'coupon-sample-4',
-      code: 'GAMER50',
-      description: 'R$ 50 OFF em pedidos acima de R$ 250 em produtos parceiros',
-      discountType: 'fixed_amount',
-      discountValue: 50,
-      minOrderCents: 25000,
-      validUntil: null,
-      networkName: 'Amazon',
-      networkSlug: 'amazon',
-      networkColorHex: '#FF9900',
-      badgeText: 'Verificado',
-    },
-    {
-      id: 'coupon-sample-5',
-      code: 'GEEK12',
-      description: '12% OFF em acessórios e headsets com envio rápido',
-      discountType: 'percentage',
-      discountValue: 12,
-      minOrderCents: 10000,
-      validUntil: null,
-      networkName: 'AliExpress',
-      networkSlug: 'aliexpress',
-      networkColorHex: '#FF4747',
-      badgeText: 'Ofertaço',
-    },
-  ];
 }
 
 export interface DailyClicksPoint {
@@ -1049,14 +1052,33 @@ export async function getDailyClicks(days = 14): Promise<DailyClicksPoint[]> {
   return rows.map((row) => ({ date: row.day, clicks: Number(row.clicks) }));
 }
 
+/** Candidatos avaliados por `getFeaturedOffers` com a estatística de histórico (custo ~ linear no pool). */
+const FEATURED_POOL_SIZE = 60;
+
 /**
- * Retorna as melhores ofertas em destaque com base no desconto real (menor preço histórico ou
- * percentual abaixo da média de 30 dias), em vez do preço nominal mais baixo.
+ * Retorna as melhores ofertas em destaque com base no desconto real (menor preço registrado ou
+ * % abaixo da média ÚNICA do produto), em vez do preço nominal mais baixo. Ambos só contam com
+ * histórico elegível (>= 5 cotações e >= 14 dias); ofertas só PÚBLICAS (ADR 0002).
  */
 export async function getFeaturedOffers(
   filter: RankedOffersFilter = {},
   limit = 6
 ): Promise<OfferWithRelations[]> {
+  // Só os IDs passam pelo cache (Date de OfferWithRelations não sobrevive ao JSON do unstable_cache).
+  const offerIds = await rankFeaturedOfferIdsCached(filter, limit);
+  if (offerIds.length === 0) return [];
+
+  const rows = await baseOfferQuery().where(inArray(affiliateOffers.id, offerIds));
+  const rowById = new Map(rows.map((r) => [r.offer.id, r]));
+
+  // Preserva a ordem de ranking (IN não garante ordem).
+  return offerIds
+    .map((id) => rowById.get(id))
+    .filter((row): row is OfferRow => row != null)
+    .map(toOfferWithRelations);
+}
+
+async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): Promise<string[]> {
   const conditions: SQL[] = [
     sql`o.status = 'active'`,
     sql`o.current_price_cents > 0`
@@ -1096,66 +1118,62 @@ export async function getFeaturedOffers(
 
   const whereClause = sql.join(conditions, sql` AND `);
 
-  // 1) Dedup por master_product: só a oferta mais barata daquele produto
-  //    entra na corrida por uma vaga de destaque.
-  // 2) Rankeia por desconto REAL — primeiro quem está no menor preço já
-  //    visto (isLowestEver), depois por % abaixo da média de 30 dias —
-  //    nunca pelo preço nominal/recência, que sempre favoreceria os mesmos
-  //    jogos baratos e nunca capturaria uma promoção de verdade num item caro.
-  const rankedRows = await db.execute<{ offer_id: string }>(sql`
-    WITH candidates AS (
+  // 1) Só ofertas PÚBLICAS (ADR 0002) e dedup por master_product: a oferta mais
+  //    barata do produto disputa a vaga.
+  // 2) Pool de candidatos limitado (FEATURED_POOL_SIZE), pré-ordenado pela maior
+  //    queda recente do preço da oferta (previous_price_cents -> atual), um
+  //    proxy barato; a estatística de histórico NÃO é recalculada aqui.
+  // 3) Ranking final com a fonte única (product-price-stats.ts): primeiro quem
+  //    está no menor preço registrado COM histórico elegível, depois maior % abaixo
+  //    da média única (elegível), depois preço. Sem elegibilidade não há vantagem.
+  const poolSize = Math.max(FEATURED_POOL_SIZE, limit * 3);
+  const candidateRows = await db.execute<{
+    offer_id: string;
+    master_product_id: string;
+    current_price_cents: string;
+  }>(sql`
+    WITH ${publicOffersCtes()},
+    candidates AS (
       SELECT DISTINCT ON (o.master_product_id)
-        o.id AS offer_id, o.master_product_id, o.current_price_cents
+        o.id AS offer_id, o.master_product_id, o.current_price_cents, o.previous_price_cents
       FROM affiliate_offers o
+      INNER JOIN public_offers po ON po.id = o.id
       INNER JOIN master_products mp ON mp.id = o.master_product_id
       LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
       WHERE ${whereClause}
       ORDER BY o.master_product_id, o.current_price_cents ASC
-    ),
-    -- degrau intermediário pra achar outliers — ver getOfferMetrics em cima
-    -- deste arquivo (mesma regra: >2x a média bruta do período é excluído).
-    raw_history_avg AS (
-      SELECT so.master_product_id, AVG(s.price_cents) AS raw_avg
-      FROM affiliate_price_snapshots s
-      INNER JOIN affiliate_offers so ON so.id = s.offer_id
-      WHERE s.offer_id IN (SELECT offer_id FROM candidates)
-        AND s.collected_at >= now() - interval '30 days'
-      GROUP BY so.master_product_id
-    ),
-    history AS (
-      SELECT so.master_product_id,
-        MIN(s.price_cents)::bigint AS lowest_price_cents,
-        AVG(s.price_cents) FILTER (
-          WHERE s.collected_at >= now() - interval '30 days'
-            AND s.price_cents <= rha.raw_avg * 2
-        )::numeric AS avg_price_30d
-      FROM affiliate_price_snapshots s
-      INNER JOIN affiliate_offers so ON so.id = s.offer_id
-      LEFT JOIN raw_history_avg rha ON rha.master_product_id = so.master_product_id
-      WHERE s.offer_id IN (SELECT offer_id FROM candidates)
-      GROUP BY so.master_product_id
     )
-    SELECT c.offer_id
-    FROM candidates c
-    LEFT JOIN history h ON h.master_product_id = c.master_product_id
+    SELECT offer_id, master_product_id, current_price_cents
+    FROM candidates
     ORDER BY
-      (c.current_price_cents <= COALESCE(h.lowest_price_cents, c.current_price_cents)) DESC,
-      CASE WHEN h.avg_price_30d IS NOT NULL AND h.avg_price_30d > c.current_price_cents
-           THEN (h.avg_price_30d - c.current_price_cents) / h.avg_price_30d
+      CASE WHEN previous_price_cents > current_price_cents
+           THEN (previous_price_cents - current_price_cents)::numeric / previous_price_cents
            ELSE 0 END DESC,
-      c.current_price_cents ASC
-    LIMIT ${limit}
+      current_price_cents ASC
+    LIMIT ${poolSize}
   `);
+  if (candidateRows.length === 0) return [];
 
-  const offerIds = rankedRows.map((r) => r.offer_id);
-  if (offerIds.length === 0) return [];
-
-  const rows = await baseOfferQuery().where(inArray(affiliateOffers.id, offerIds));
-  const rowById = new Map(rows.map((r) => [r.offer.id, r]));
-
-  // Preserva a ordem de ranking calculada acima (IN não garante ordem).
-  return offerIds
-    .map((id) => rowById.get(id))
-    .filter((row): row is OfferRow => row != null)
-    .map(toOfferWithRelations);
+  const stats = await getMasterProductPriceStatsBatch(candidateRows.map((r) => r.master_product_id));
+  const scored = candidateRows.map((r) => {
+    const st = stats.get(r.master_product_id);
+    const current = Number(r.current_price_cents);
+    const quoteCount = st?.quoteCount ?? 0;
+    const historyDays = st?.historyDays ?? 0;
+    const lowBadge = computeLowBadge({ currentCents: current, lowestCents: st?.lowAll?.priceCents, quoteCount, historyDays });
+    const verdict = computeVerdict({ currentCents: current, avgCents: st?.avgCents, quoteCount, historyDays });
+    const belowPct = verdict.kind === 'below' && verdict.deltaPercent != null ? -verdict.deltaPercent : 0;
+    return { offerId: r.offer_id, current, lowBadge, belowPct };
+  });
+  scored.sort(
+    (a, b) =>
+      Number(b.lowBadge) - Number(a.lowBadge) || b.belowPct - a.belowPct || a.current - b.current
+  );
+  return scored.slice(0, limit).map((r) => r.offerId);
 }
+
+const rankFeaturedOfferIdsCached = createCachedQuery(
+  rankFeaturedOfferIds,
+  ['featured-offer-ids'],
+  { revalidate: 120, tags: ['affiliate-offers', 'price-snapshots'] }
+);

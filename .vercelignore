@@ -1,0 +1,8 @@
+backup
+.env
+.env.*
+node_modules
+.next
+research
+.vercel
+*.log

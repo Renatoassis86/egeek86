@@ -133,3 +133,5 @@ export default async function NewOfferPage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Nova oferta' };

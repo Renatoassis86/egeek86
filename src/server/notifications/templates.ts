@@ -4,6 +4,7 @@ import type { QualifyingDrop } from './detect-price-drops';
 const REASON_LABEL: Record<QualifyingDrop['reason'], string> = {
   new_low: 'Menor preço já visto',
   below_average: 'Bem abaixo da média',
+  target_reached: 'Atingiu o seu preço-alvo',
 };
 
 function offerUrl(offerSlug: string): string {
@@ -35,11 +36,11 @@ export function buildDigestEmailHtml(name: string, items: QualifyingDrop[]): str
         <td style="padding:16px 0;border-bottom:1px solid #e5e5e5;">
           <div style="font-size:15px;font-weight:600;color:#111;">${item.title}</div>
           <div style="font-size:13px;color:#777;margin-top:4px;">
-            <span style="background:#fef2f2;color:#b91c1c;padding:2px 8px;border-radius:999px;font-weight:600;">${REASON_LABEL[item.reason]}</span>
+            <span style="background:#fef2f2;color:#b91c1c;padding:2px 8px;border-radius:0;font-weight:600;">${REASON_LABEL[item.reason]}</span>
           </div>
           <div style="font-size:20px;font-weight:700;color:#111;margin-top:8px;">${formatBRL(item.currentPriceCents)}</div>
           <div style="font-size:13px;color:#777;">na ${item.networkName}</div>
-          <a href="${offerUrl(item.offerSlug)}" style="display:inline-block;margin-top:10px;background:#111;color:#fff;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:14px;">Ver oferta</a>
+          <a href="${offerUrl(item.offerSlug)}" style="display:inline-block;margin-top:10px;background:#111;color:#fff;text-decoration:none;padding:8px 16px;border-radius:0;font-size:14px;">Ver oferta</a>
         </td>
       </tr>`
     )

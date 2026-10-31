@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { and, eq, inArray, isNotNull, isNull, or, lt, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema';
-import { getPriceSource } from './price-sources';
+import { getPriceSource, listOperationalSourceSlugs } from './price-sources';
 import type { PriceSnapshotResult } from './price-sources';
 import { recordPriceSnapshot } from './record-price-snapshot';
 import { upsertSellerFromOffer } from './sources/mercado-livre-seller';
@@ -65,8 +65,9 @@ interface OfferGroup {
 /**
  * Roda uma passada de coleta: pega ofertas ativas com external_ref cadastrado
  * e vencidas pro refresh, busca preço atual via o PriceSource da rede, grava
- * o snapshot (source: 'api') e marca last_checked_at — mesmo se falhar, pra
- * não martelar uma oferta com adapter quebrado a cada execução do cron.
+ * o snapshot (source: 'api') e marca last_checked_at SÓ quando a consulta à
+ * fonte teve sucesso (EG-03). Falha (exceção) não renova o carimbo: a oferta
+ * continua 'não verificada' e volta ao topo da fila no próximo tick.
  *
  * Agrupa por (network_id, external_ref) antes de consultar a fonte: no
  * Mercado Livre, o mesmo catalog_product_id pode ter várias affiliate_offers
@@ -79,6 +80,10 @@ interface OfferGroup {
  * de afiliado real em 100% dos itens desde o primeiro instante).
  */
 export async function collectPrices(): Promise<CollectPricesSummary> {
+  const operationalSlugs = listOperationalSourceSlugs();
+  if (operationalSlugs.length === 0) {
+    return { checked: 0, updated: 0, offersCreated: 0, skippedNoSource: 0, skippedNoOffer: 0, errors: [] };
+  }
   const dueOffers = await db
     .select({
       id: affiliateOffers.id,
@@ -98,6 +103,10 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         // discover-products.ts), então 'draft' aqui cobre principalmente o
         // fluxo manual do admin.
         inArray(affiliateOffers.status, ['active', 'draft']),
+        // Só redes com coleta oficial operacional (EG-03): stubs (Shopee,
+        // Amazon, AliExpress) sempre lançam erro e, sem renovar o carimbo,
+        // ficariam no topo da fila e starvariam o Mercado Livre.
+        inArray(affiliateNetworks.slug, operationalSlugs),
         isNotNull(affiliateOffers.externalRef),
         or(
           isNull(affiliateOffers.lastCheckedAt),
@@ -152,6 +161,9 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     try {
       const results = await source.fetchSnapshots(group.externalRef);
       if (results.length === 0) {
+        // Resposta bem-sucedida da API dizendo "sem vendedor ativo": é uma
+        // checagem real, então o carimbo é renovado (diferente de exceção).
+        await stampChecked(group.offerIds);
         summary.skippedNoOffer += group.offerIds.length;
         // Incrementa a sequência de falhas e expira quem já bateu o teto —
         // numa query só (evita ler o valor antes pra decidir o que fazer).
@@ -172,17 +184,45 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       const { updated, created } = await applySnapshotsToGroup(group, results);
       summary.updated += updated;
       summary.offersCreated += created;
+      // Só chega aqui se a fonte respondeu e os snapshots foram aplicados.
+      await stampChecked(group.offerIds);
     } catch (err) {
+      // Sem finally: falha NÃO grava last_checked_at (EG-03).
       summary.errors.push({ externalRef: group.externalRef, message: (err as Error).message });
-    } finally {
-      await db
-        .update(affiliateOffers)
-        .set({ lastCheckedAt: new Date() })
-        .where(inArray(affiliateOffers.id, group.offerIds));
     }
   });
 
   return summary;
+}
+
+/**
+ * A identidade da oferta no banco é (produto, rede, vendedor): não existe
+ * coluna de item id. Quando o MESMO vendedor tem 2+ anúncios do mesmo catálogo,
+ * cada anúncio gravava seu preço na MESMA oferta, alternando a cada coleta
+ * (diagnóstico 2026-10-31: 483 ofertas, 186 mil trocas A-B-A em 7 dias).
+ * Representa o vendedor pelo anúncio mais barato (desempate: item id), o que é
+ * determinístico e é o preço que o comprador realmente pode pagar dele.
+ */
+function collapseBySeller(results: PriceSnapshotResult[]): PriceSnapshotResult[] {
+  const bySeller = new Map<string, PriceSnapshotResult>();
+  for (const r of results) {
+    const cur = bySeller.get(r.externalSellerId);
+    if (
+      !cur ||
+      r.priceCents < cur.priceCents ||
+      (r.priceCents === cur.priceCents && r.externalItemId < cur.externalItemId)
+    ) {
+      bySeller.set(r.externalSellerId, r);
+    }
+  }
+  return Array.from(bySeller.values());
+}
+
+async function stampChecked(offerIds: string[]): Promise<void> {
+  await db
+    .update(affiliateOffers)
+    .set({ lastCheckedAt: new Date() })
+    .where(inArray(affiliateOffers.id, offerIds));
 }
 
 /**
@@ -191,8 +231,9 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
  */
 async function applySnapshotsToGroup(
   group: OfferGroup,
-  results: PriceSnapshotResult[]
+  rawResults: PriceSnapshotResult[]
 ): Promise<{ updated: number; created: number }> {
+  const results = collapseBySeller(rawResults);
   let updated = 0;
   let created = 0;
   let masterProduct: { name: string; defaultImages: string[] } | null = null;

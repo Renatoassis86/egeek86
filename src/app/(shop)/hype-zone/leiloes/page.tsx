@@ -72,38 +72,8 @@ export default async function AuctionsPage({
     console.error('Erro ao carregar leilões do banco:', err);
   }
 
-  // 2. Mocks de demonstração se o banco estiver vazio
   const now = new Date();
-  const mockList = [
-    {
-      id: 'auc-mock-1',
-      title: 'Nintendo Virtual Boy CIB (Completo na Caixa)',
-      description: 'O console 3D da Nintendo de 1995. Estado de conservação impecável (Grade 9/10), com caixa original, manuais, suporte e controle sem rachaduras. Item de museu!',
-      images: ['/images/hero/tile-back.png', '/images/hero/tile-main.png'],
-      startsAt: new Date(now.getTime() - 1000 * 60 * 120).toISOString(), // começou há 2h
-      endsAt: new Date(now.getTime() + 1000 * 60 * 60 * 5).toISOString(), // acaba em 5h
-      minBidCents: 200000,
-      currentBidCents: 245000,
-      buyoutPriceCents: 450000,
-      status: 'active',
-      sellerName: 'Renato Assis (Renato86)',
-    },
-    {
-      id: 'auc-mock-2',
-      title: 'Placa Arcade CPS2 Marvel Super Heroes',
-      description: 'Placa CPS2 original japonesa, placa-mãe A+B. Testada e funcionando perfeitamente, sem bateria de suicídio (instalado mod Infinitum para preservação a longo prazo).',
-      images: ['/images/hero/tile-main.png'],
-      startsAt: new Date(now.getTime() + 1000 * 60 * 60 * 24).toISOString(), // amanhã
-      endsAt: new Date(now.getTime() + 1000 * 60 * 60 * 48).toISOString(),
-      minBidCents: 180000,
-      currentBidCents: 180000,
-      buyoutPriceCents: 280000,
-      status: 'scheduled',
-      sellerName: 'Capcom Collector SP',
-    }
-  ];
-
-  const targetList = list.length > 0 ? list : mockList;
+  const targetList = list;
 
   // Filtragem conforme aba
   const activeAuctions = targetList.filter((a) => {

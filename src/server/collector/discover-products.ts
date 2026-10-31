@@ -8,6 +8,7 @@ import { getValidAccessToken } from './sources/mercado-livre-auth';
 import { classifyFromAttributes, resolveMeliCategoryProductType, type MeliAttribute } from './sources/mercado-livre-classify';
 import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
+import { isPartOrPackagingTitle } from '@/lib/affiliate/product-type-classifier';
 import { mapWithConcurrency } from '@/lib/concurrency';
 import { recordPriceSnapshot } from './record-price-snapshot';
 
@@ -285,7 +286,7 @@ export function isGameTitleOrMedia(title: string): boolean {
 }
 
 export function isNonProductAccessory(title: string): boolean {
-  return NON_PRODUCT_KEYWORDS.some((re) => re.test(title));
+  return NON_PRODUCT_KEYWORDS.some((re) => re.test(title)) || isPartOrPackagingTitle(title);
 }
 
 /**
@@ -297,10 +298,24 @@ const SEARCH_TERMS: SearchTerm[] = [...FRANCHISE_SEARCH_TERMS, ...GAME_SEARCH_TE
 /**
  * Quantos termos por execução.
  */
-const TERMS_PER_RUN = 20;
+const TERMS_PER_RUN = 10;
 
-/** Cap por termo — busca até 50 resultados por termo para máxima profundidade de cobertura. */
-const MAX_RESULTS_PER_TERM = 50;
+/**
+ * /products/search (API oficial de catálogo): limit máx 100 e offset máx 100,
+ * ou seja, no máximo 200 resultados por termo (medido, ver
+ * docs/plano-expansao-tecnologia-2026-10-31.md seção 2.2).
+ */
+const SEARCH_PAGE_SIZE = 100;
+const SEARCH_MAX_PAGES = 2;
+
+/**
+ * ~75-85% dos produtos de catálogo não têm oferta ativa (/products/{id}/items
+ * responde 404). Cada candidato novo exige uma sonda de preço antes de virar
+ * master_product, então o teto de sondas por termo limita o custo de API
+ * (cota do app desconhecida; 429 já observado em rajada). Candidatos já
+ * cadastrados não gastam sonda.
+ */
+const MAX_PROBES_PER_TERM = 60;
 
 const CURSOR_CONFIG_KEY = 'discover_products_cursor';
 
@@ -311,8 +326,21 @@ interface MeliSearchResult {
   pictures?: { url: string }[];
   /** "new" | "used" — Mercado Livre retorna isso por resultado de busca. Ausente (undefined) = resultado do catálogo buy-box, que por definição já é sempre item novo. */
   condition?: string | null;
-  /** Categoria real do anúncio no Mercado Livre — usada por resolveMeliCategoryProductType pra classificar jogo/console/acessório sem depender de whitelist de título. */
+  /** /products/search não devolve category_id (só domain_id); quando ausente, a classificação cai pro título/classificador. */
   category_id?: string | null;
+}
+
+/** Item que o dry-run cadastraria (nada é gravado). */
+export interface DiscoveryPreviewItem {
+  catalogId: string;
+  title: string;
+  platform: string;
+  productType: string;
+  /** Cadastraria master_product novo, ou anexaria a um já existente (dedup por título+plataforma). */
+  action: 'create_master' | 'attach_to_existing_master';
+  existingMasterId?: string;
+  sellers: number;
+  bestPriceCents: number;
 }
 
 export interface DiscoverProductsSummary {
@@ -322,7 +350,81 @@ export interface DiscoverProductsSummary {
   found: number;
   alreadyExisted: number;
   created: number;
+  /** Candidatos novos sem nenhum vendedor ativo novo em /products/{id}/items — não viram master_product. */
+  skippedNoOffers: number;
+  /** Candidatos novos que ficaram sem sonda por causa de MAX_PROBES_PER_TERM (reaparecem em rotações futuras). */
+  skippedProbeCap: number;
+  dryRun: boolean;
+  preview: DiscoveryPreviewItem[];
   errors: { term: string; message: string }[];
+}
+
+/** GET autenticado na API oficial com 1 retry em 429 (respeita Retry-After, teto 5s). */
+async function meliGet(url: string, accessToken: string): Promise<Response> {
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  let res = await fetch(url, { headers });
+  if (res.status === 429) {
+    const retryAfter = Number(res.headers.get('retry-after'));
+    const waitMs = Math.min(Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter * 1000 : 1500, 5000);
+    await new Promise((r) => setTimeout(r, waitMs + Math.floor(Math.random() * 300)));
+    res = await fetch(url, { headers });
+  }
+  return res;
+}
+
+/** Busca no catálogo oficial (/products/search), até 200 resultados, sem repetir id. */
+async function searchCatalog(term: string, accessToken: string): Promise<MeliSearchResult[]> {
+  const byId = new Map<string, MeliSearchResult>();
+  for (let page = 0; page < SEARCH_MAX_PAGES; page++) {
+    const res = await meliGet(
+      `https://api.mercadolibre.com/products/search?site_id=MLB&status=active&q=${encodeURIComponent(term)}&limit=${SEARCH_PAGE_SIZE}&offset=${page * SEARCH_PAGE_SIZE}`,
+      accessToken
+    );
+    if (!res.ok) {
+      // Primeira página falhando = erro real do termo; segunda = só para.
+      if (page === 0) throw new Error(`/products/search HTTP ${res.status}`);
+      break;
+    }
+    const data = (await res.json()) as { results?: MeliSearchResult[] };
+    const batch = data.results ?? [];
+    for (const r of batch) if (r?.id && r.name && !byId.has(r.id)) byId.set(r.id, r);
+    if (batch.length < SEARCH_PAGE_SIZE) break;
+  }
+  return Array.from(byId.values());
+}
+
+/**
+ * Sonda oficial de preço (/products/{id}/items): vendedores com item NOVO,
+ * um preço por vendedor (o anúncio mais barato; desempate pelo item id —
+ * mesma regra de collapseBySeller em collect-prices.ts). Lança em falha de
+ * API (≠404) para o chamador não confundir "API caiu" com "sem oferta".
+ */
+async function probeSellerPrices(
+  catalogId: string,
+  accessToken: string
+): Promise<{ sellerId: string; itemId: string; priceCents: number; listPriceCents: number | null }[]> {
+  const res = await meliGet(`https://api.mercadolibre.com/products/${catalogId}/items`, accessToken);
+  if (res.status === 404) return [];
+  if (!res.ok) throw new Error(`/products/${catalogId}/items HTTP ${res.status}`);
+  const data = (await res.json()) as {
+    results?: { item_id: string; price: number; original_price: number | null; seller_id: number; condition: string | null }[];
+  };
+  const bySeller = new Map<string, { sellerId: string; itemId: string; priceCents: number; listPriceCents: number | null }>();
+  for (const r of data.results ?? []) {
+    if (r.seller_id == null || r.item_id == null || r.condition !== 'new' || !(r.price > 0)) continue;
+    const priceCents = Math.round(r.price * 100);
+    const sellerId = String(r.seller_id);
+    const cur = bySeller.get(sellerId);
+    if (!cur || priceCents < cur.priceCents || (priceCents === cur.priceCents && r.item_id < cur.itemId)) {
+      bySeller.set(sellerId, {
+        sellerId,
+        itemId: r.item_id,
+        priceCents,
+        listPriceCents: r.original_price != null ? Math.round(r.original_price * 100) : null,
+      });
+    }
+  }
+  return Array.from(bySeller.values());
 }
 
 /** Lê de onde a rotação parou da última vez — default 0 na primeira execução. */
@@ -369,7 +471,14 @@ interface TermIngestResult {
   created: number;
   alreadyExisted: number;
   createdTitles: string[];
+  skippedNoOffers: number;
+  skippedProbeCap: number;
+  preview: DiscoveryPreviewItem[];
   errors: { term: string; message: string }[];
+}
+
+function emptyTermResult(): TermIngestResult {
+  return { found: 0, created: 0, alreadyExisted: 0, createdTitles: [], skippedNoOffers: 0, skippedProbeCap: 0, preview: [], errors: [] };
 }
 
 /**
@@ -383,47 +492,20 @@ interface TermIngestResult {
 async function searchAndIngestTerm(
   searchTerm: SearchTerm,
   network: { id: string },
-  accessToken: string
+  accessToken: string,
+  options: { dryRun?: boolean } = {}
 ): Promise<TermIngestResult> {
-  const result: TermIngestResult = { found: 0, created: 0, alreadyExisted: 0, createdTitles: [], errors: [] };
+  const dryRun = options.dryRun === true;
+  const result = emptyTermResult();
   let results: MeliSearchResult[] = [];
+  let probesUsed = 0;
 
   try {
-    // 1. Busca no Catálogo Buy-Box (/products/search)
-    const catalogRes = await fetch(
-      `https://api.mercadolibre.com/products/search?site_id=MLB&q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    if (catalogRes.ok) {
-      const catalogData = (await catalogRes.json()) as { results: MeliSearchResult[] };
-      results.push(...(catalogData.results || []));
-    }
-
-    // 2. Busca Aberta nos Anúncios de Todos os Vendedores (/sites/MLB/search) — Garante capturar TUDO (Turok, raridades, etc.)
-    const siteRes = await fetch(
-      `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(searchTerm.term)}&limit=${MAX_RESULTS_PER_TERM}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    if (siteRes.ok) {
-      const siteData = (await siteRes.json()) as { results: any[] };
-      const siteItems: MeliSearchResult[] = (siteData.results || []).map((item) => ({
-        id: item.catalog_product_id || item.id,
-        name: item.title,
-        attributes: item.attributes || [],
-        pictures: item.thumbnail ? [{ url: item.thumbnail.replace('-I.jpg', '-O.jpg') }] : [],
-        condition: item.condition ?? null,
-        category_id: item.category_id ?? null,
-      }));
-      results.push(...siteItems);
-    } else {
-      // Achado real (2026-07-29): /sites/MLB/search passou a devolver 403
-      // "forbidden" pra qualquer busca (com ou sem token) — bloqueio da
-      // própria API do Mercado Livre nesse endpoint. Antes esse `if` sem
-      // `else` engolia isso 100% em silêncio (busca aberta contribuía zero
-      // resultado sem nenhum sinal de erro em lugar nenhum).
-      console.error(`[discover-products] /sites/MLB/search falhou (${siteRes.status}) pro termo "${searchTerm.term}"`);
-    }
-
+    // Só API oficial de catálogo. /sites/MLB/search (busca aberta) devolve
+    // 403 desde 2026-07-29 e foi removida; /items/{id} de terceiros também é
+    // bloqueado. Consequência: anúncio sem catalog_product_id não é
+    // descobrível (limite conhecido).
+    results = await searchCatalog(searchTerm.term, accessToken);
     result.found = results.length;
   } catch (err) {
     result.errors.push({ term: searchTerm.term, message: (err as Error).message });
@@ -537,7 +619,7 @@ async function searchAndIngestTerm(
         continue;
       }
 
-      const classification =
+      const baseClassification =
         resolvedKind === 'game'
           ? { productType: 'game' as const, ...classifyFromAttributes(item.attributes, item.name) }
           : {
@@ -554,9 +636,48 @@ async function searchAndIngestTerm(
               gameCollection: null,
             };
 
-      // Dedup por similaridade de título e plataforma
+      // Nunca 'unknown' por padrão: se a classificação estruturada não trouxe
+      // a plataforma, deriva do título antes de desistir (regra de negócio).
+      const classification = {
+        ...baseClassification,
+        gamePlatformGen:
+          baseClassification.gamePlatformGen !== 'unknown' ? baseClassification.gamePlatformGen : detectedPlatform,
+      };
+
+      // Dedup por título+plataforma normalizados (obrigatório antes de
+      // cadastrar qualquer master_product).
       const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
-      const existingBySimilarity = await findExistingMasterProduct(item.name, classification.gamePlatformGen);
+      const existingBySimilarity = await findExistingMasterProduct(item.name, classification.gamePlatformGen, {
+        productType: classification.productType,
+      });
+
+      // Sonda oficial de preço antes de cadastrar: sem vendedor ativo novo
+      // não há cotação real, e criar o produto só geraria master morto.
+      if (probesUsed >= MAX_PROBES_PER_TERM) {
+        result.skippedProbeCap++;
+        continue;
+      }
+      probesUsed++;
+      const sellerPrices = await probeSellerPrices(item.id, accessToken);
+      if (sellerPrices.length === 0) {
+        result.skippedNoOffers++;
+        continue;
+      }
+      const bestSeller = sellerPrices.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
+
+      if (dryRun) {
+        result.preview.push({
+          catalogId: item.id,
+          title: item.name,
+          platform: classification.gamePlatformGen,
+          productType: classification.productType,
+          action: existingBySimilarity ? 'attach_to_existing_master' : 'create_master',
+          existingMasterId: existingBySimilarity?.id,
+          sellers: sellerPrices.length,
+          bestPriceCents: bestSeller.priceCents,
+        });
+        continue;
+      }
 
       const offerSlug = slugify(`${item.name}-${item.id.slice(-6)}-${randomUUID().slice(0, 6)}`);
 
@@ -668,6 +789,16 @@ async function searchAndIngestTerm(
       }
 
       if (insertedOffer) {
+        // Cotação inicial real do placeholder = menor preço entre os
+        // vendedores. recordPriceSnapshot só grava se o preço mudou (ou é o
+        // primeiro). As ofertas por vendedor (uma por vendedor, anúncio mais
+        // barato) são criadas pelo collect-prices no próximo ciclo.
+        await recordPriceSnapshot({
+          offerId: insertedOffer.id,
+          priceCents: bestSeller.priceCents,
+          listPriceCents: bestSeller.listPriceCents,
+          source: 'api',
+        });
         result.created++;
         result.createdTitles.push(item.name);
       } else {
@@ -694,17 +825,24 @@ export async function searchAndIngestMeliTerm(term: string): Promise<TermIngestR
     .limit(1);
 
   if (!network) {
-    return { found: 0, created: 0, alreadyExisted: 0, createdTitles: [], errors: [{ term, message: 'Rede mercado-livre não cadastrada em affiliate_networks' }] };
+    return { ...emptyTermResult(), errors: [{ term, message: 'Rede mercado-livre não cadastrada em affiliate_networks' }] };
   }
 
   const accessToken = await getValidAccessToken();
   return searchAndIngestTerm({ term, kind: 'game' }, network, accessToken);
 }
 
-export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
+/**
+ * dryRun: só leitura no banco e GETs na API oficial — não cadastra nada e
+ * não avança o cursor de rotação. `termsLimit` restringe quantos termos o
+ * dry-run percorre (default: TERMS_PER_RUN).
+ */
+export async function discoverNewProducts(options: { dryRun?: boolean; termsLimit?: number } = {}): Promise<DiscoverProductsSummary> {
+  const dryRun = options.dryRun === true;
+  const termsPerRun = options.termsLimit ?? TERMS_PER_RUN;
   const cursorStart = await getCursor();
   const terms = Array.from(
-    { length: TERMS_PER_RUN },
+    { length: termsPerRun },
     (_, i) => SEARCH_TERMS[(cursorStart + i) % SEARCH_TERMS.length]
   );
 
@@ -715,6 +853,10 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
     found: 0,
     alreadyExisted: 0,
     created: 0,
+    skippedNoOffers: 0,
+    skippedProbeCap: 0,
+    dryRun,
+    preview: [],
     errors: [],
   };
 
@@ -735,17 +877,22 @@ export async function discoverNewProducts(): Promise<DiscoverProductsSummary> {
   // paralelo (não um de cada vez) é o que faz a rota caber no maxDuration
   // com mais termos por execução. Concorrência 4: deixa folga no pool de
   // conexão do banco (max:5) pro trabalho de escrita de cada termo.
-  const TERM_CONCURRENCY = 4;
+  // Concorrência 2 (era 4): cada termo agora faz até 2 buscas + até
+  // MAX_PROBES_PER_TERM sondas, e a cota do app é desconhecida (429 já visto).
+  const TERM_CONCURRENCY = 2;
   await mapWithConcurrency(terms, TERM_CONCURRENCY, async (searchTerm) => {
     summary.termsSearched++;
-    const termResult = await searchAndIngestTerm(searchTerm, network, accessToken);
+    const termResult = await searchAndIngestTerm(searchTerm, network, accessToken, { dryRun });
     summary.found += termResult.found;
     summary.created += termResult.created;
     summary.alreadyExisted += termResult.alreadyExisted;
+    summary.skippedNoOffers += termResult.skippedNoOffers;
+    summary.skippedProbeCap += termResult.skippedProbeCap;
+    summary.preview.push(...termResult.preview);
     summary.errors.push(...termResult.errors);
   });
 
-  await saveCursor((cursorStart + TERMS_PER_RUN) % SEARCH_TERMS.length);
+  if (!dryRun) await saveCursor((cursorStart + termsPerRun) % SEARCH_TERMS.length);
 
   return summary;
 }
@@ -803,215 +950,13 @@ export async function pruneMerchandiseProducts(): Promise<{ prunedCount: number 
   return { prunedCount };
 }
 
-/** Categorias oficiais de jogos no Mercado Livre (MLB) */
-const MELI_GAME_CATEGORIES = [
-  { id: 'MLB437701', name: 'Nintendo Switch' },
-  { id: 'MLB437702', name: 'PlayStation 5' },
-  { id: 'MLB186456', name: 'PlayStation 4' },
-  { id: 'MLB437703', name: 'Xbox Series X/S' },
-  { id: 'MLB186457', name: 'Xbox One' },
-  { id: 'MLB1144', name: 'Video Games Geral' },
-];
-
 /**
- * Varre exaustivamente as categorias de video games do Mercado Livre página por página,
- * garantindo a ingestão de 100% dos jogos postados na plataforma.
+ * Varredura por categoria DESATIVADA (2026-10-31). Dependia só de
+ * /sites/MLB/search?category=..., que responde 403, e a API oficial de
+ * catálogo (/products/search) ignora filtro de categoria. A cobertura agora
+ * vem da rotação de termos em discoverNewProducts. Mantida como no-op para
+ * não quebrar os chamadores (cron e ação do admin).
  */
-export async function discoverAllCategoryProducts(maxPagesPerCategory = 5): Promise<{ totalIngested: number }> {
-  let totalIngested = 0;
-
-  const [network] = await db
-    .select()
-    .from(affiliateNetworks)
-    .where(eq(affiliateNetworks.slug, 'mercado-livre'))
-    .limit(1);
-
-  if (!network) return { totalIngested: 0 };
-
-  const accessToken = await getValidAccessToken();
-
-  for (const cat of MELI_GAME_CATEGORIES) {
-    for (let page = 0; page < maxPagesPerCategory; page++) {
-      const offset = page * 50;
-      try {
-        const response = await fetch(
-          `https://api.mercadolibre.com/sites/MLB/search?category=${cat.id}&offset=${offset}&limit=50`,
-          { headers: { Authorization: `Bearer ${accessToken}` } }
-        );
-
-        if (!response.ok) {
-          // Ver nota em searchAndIngestTerm — mesmo bloqueio de /sites/MLB/search
-          // (403 pra qualquer busca). Essa função inteira depende só desse
-          // endpoint, então um bloqueio aqui zera totalIngested silenciosamente.
-          console.error(`[discover-products] /sites/MLB/search falhou (${response.status}) na categoria ${cat.name} pág ${page}`);
-          break;
-        }
-
-        const data = await response.json();
-        const results = data.results || [];
-        if (results.length === 0) break;
-
-        for (const item of results) {
-          if (isNonProductAccessory(item.title)) continue;
-          // Ver nota em searchAndIngestTerm — nunca cataloga usado/seminovo.
-          if (item.condition === 'used' || isUsedCondition(item.title)) continue;
-
-          const meliCatalogId = item.catalog_product_id || item.id;
-          const [existing] = await db
-            .select({ id: masterProducts.id })
-            .from(masterProducts)
-            .where(eq(masterProducts.meliCatalogId, meliCatalogId))
-            .limit(1);
-
-          if (existing) continue;
-
-          // Ver nota equivalente em searchAndIngestTerm (2026-07-30) — o
-          // `existing` acima só pega catalog_product_id exato repetido, não
-          // pega o caso de catalog_product_id "gêmeo" reaproveitando o
-          // master_product certo via similaridade mas criando oferta nova
-          // toda vez. externalRef aqui é item.id (o ID do anúncio em si, não
-          // o meliCatalogId com fallback), então a checagem usa o mesmo valor.
-          const [existingOffer] = await db
-            .select({ id: affiliateOffers.id })
-            .from(affiliateOffers)
-            .where(and(eq(affiliateOffers.networkId, network.id), eq(affiliateOffers.externalRef, item.id)))
-            .limit(1);
-
-          if (existingOffer) continue;
-
-          // Varredura de categoria ampla (ex: "Video Games Geral") mistura
-          // jogo/console/acessório no mesmo resultado — sem essa checagem,
-          // console e acessório que caíssem aqui virariam 'game' por padrão
-          // da coluna (bug irmão do encontrado em searchAndIngestTerm).
-          const categoryKind = await resolveMeliCategoryProductType(item.category_id);
-          const classification =
-            categoryKind && categoryKind !== 'game'
-              ? {
-                  productType: categoryKind,
-                  gameFormat: 'unknown' as const,
-                  gamePlatformGen: normalizeGamePlatformGen(null, item.title),
-                  gameEditionType: 'unknown' as const,
-                  gameEditionSource: null,
-                  gameCollection: null,
-                }
-              : { productType: 'game' as const, ...classifyFromAttributes(item.attributes || [], item.title) };
-
-          // Sem essa checagem, o mesmo jogo físico que o Mercado Livre
-          // catalogou sob dois catalog_product_id diferentes (acontece —
-          // achado real 2026-07-29: "Jogo Resident Evil Village - Ps5
-          // Físico" duplicado assim) virava dois master_products, cada um
-          // com sua própria média de preço — quebra a regra de negócio de
-          // que o mesmo jogo tem UMA média só. Mesma checagem que
-          // searchAndIngestTerm já faz, só que essa varredura de categoria
-          // ampla não fazia.
-          const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
-          const existingBySimilarity = await findExistingMasterProduct(item.title, classification.gamePlatformGen);
-
-          const offerSlug = slugify(`${item.title}-${meliCatalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
-          const priceCents = item.price ? Math.round(Number(item.price) * 100) : 0;
-
-          // Ver nota em discoverNewProducts: só usa matt_tool quando
-          // MELI_TOOL_ID é o ID real do usuário, configurado via env — nunca
-          // um valor fixo no código. Parâmetro correto é `matt_tool` (achado
-          // real 2026-08-02, ver nota completa em discoverNewProducts).
-          const rawPermalink = item.permalink || `https://www.mercadolivre.com.br/p/${meliCatalogId}`;
-          const realToolId = process.env.MELI_TOOL_ID;
-          const trackedUrl = realToolId
-            ? rawPermalink.includes('?')
-              ? `${rawPermalink}&matt_tool=${realToolId}`
-              : `${rawPermalink}?matt_tool=${realToolId}`
-            : rawPermalink;
-          const offerValues = {
-            networkId: network.id,
-            title: item.title,
-            slug: offerSlug,
-            affiliateUrl: trackedUrl,
-            affiliateLinkPending: !realToolId,
-            imageUrl: item.thumbnail ? item.thumbnail.replace('-I.jpg', '-O.jpg') : null,
-            externalRef: item.id,
-            // Sem preço ainda no INSERT (mesmo padrão de searchAndIngestTerm)
-            // — recordPriceSnapshot logo abaixo é quem grava o snapshot
-            // inicial E atualiza o cache. Inserir já com o preço real aqui
-            // e nunca chamar recordPriceSnapshot deixava a oferta com
-            // current_price_cents preenchido mas ZERO linha em
-            // affiliate_price_snapshots (bug real, achado 2026-07-24:
-            // gráfico/cotações concorrentes nunca mostravam esse preço,
-            // já que os dois só leem de affiliate_price_snapshots — 403
-            // ofertas afetadas até aqui).
-            currentPriceCents: 0,
-            status: 'active' as const,
-            publishedAt: new Date(),
-          };
-          const offerConflict = {
-            target: [affiliateOffers.networkId, affiliateOffers.externalRef],
-            // Precisa bater exatamente com o predicado do índice parcial
-            // (affiliate_offers_network_external_ref_uq) — sem isso o
-            // Postgres não reconhece o alvo do conflito. seller_id sempre
-            // nulo aqui (placeholder de catálogo, nunca vendedor específico).
-            where: sql`${affiliateOffers.externalRef} IS NOT NULL AND ${affiliateOffers.sellerId} IS NULL`,
-          };
-
-          let newOffer;
-          if (existingBySimilarity) {
-            [newOffer] = await db
-              .insert(affiliateOffers)
-              .values({ ...offerValues, masterProductId: existingBySimilarity.id })
-              .onConflictDoNothing(offerConflict)
-              .returning({ id: affiliateOffers.id });
-          } else {
-            // Ver nota equivalente em searchAndIngestTerm (2026-07-31) — evita
-            // master_product órfão (zero ofertas) se essa oferta perder uma
-            // corrida de concorrência (ex: execução manual do admin
-            // sobrepondo o cron).
-            const baseSlug = slugify(item.title);
-            const [collision] = await db
-              .select({ id: masterProducts.id })
-              .from(masterProducts)
-              .where(eq(masterProducts.slug, baseSlug))
-              .limit(1);
-            const productSlug = collision ? slugify(`${item.title}-${meliCatalogId.slice(-6)}`) : baseSlug;
-
-            const txResult = await db
-              .transaction(async (tx) => {
-                const [created] = await tx
-                  .insert(masterProducts)
-                  .values({
-                    name: item.title,
-                    slug: productSlug,
-                    meliCatalogId,
-                    defaultImages: item.thumbnail ? [item.thumbnail.replace('-I.jpg', '-O.jpg')] : [],
-                    ...classification,
-                    classifiedAt: new Date(),
-                  })
-                  .returning();
-                const [offer] = await tx
-                  .insert(affiliateOffers)
-                  .values({ ...offerValues, masterProductId: created.id })
-                  .onConflictDoNothing(offerConflict)
-                  .returning({ id: affiliateOffers.id });
-                if (!offer) tx.rollback();
-                return offer;
-              })
-              .catch((e) => {
-                if (e instanceof TransactionRollbackError) return undefined;
-                throw e;
-              });
-            newOffer = txResult;
-          }
-
-          if (!newOffer) continue;
-
-          if (priceCents > 0) {
-            await recordPriceSnapshot({ offerId: newOffer.id, priceCents, source: 'api' });
-          }
-
-          totalIngested++;
-        }
-      } catch (e) {
-        console.error(`Erro ao varrer categoria ${cat.name} página ${page}:`, e);
-      }
-    }
-  }
-
-  return { totalIngested };
+export async function discoverAllCategoryProducts(_maxPagesPerCategory = 5): Promise<{ totalIngested: number }> {
+  return { totalIngested: 0 };
 }

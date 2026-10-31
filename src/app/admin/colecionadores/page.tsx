@@ -6,12 +6,12 @@ import { CurationPanel } from '@/components/geek-deals/curation-panel';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
-import { getUpcomingDrops, getBadgeName } from '@/server/queries/hype';
+import { getUpcomingDrops } from '@/server/queries/hype';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { DeleteSellerButton } from '@/components/admin/delete-seller-button';
 
 export const metadata: Metadata = {
-  title: 'Admin: Colecionadores e Curadoria',
+  title: 'Admin: Colecionadores',
   description: 'Gerenciamento de colecionadores vendedores, auditorias de drops e revisões de consumo.',
 };
 
@@ -131,7 +131,7 @@ export default async function AdminCollectorsPage() {
                 <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 font-mono text-[var(--color-text-tertiary)] uppercase tracking-wider h-10">
                   <th className="px-4">Colecionador</th>
                   <th className="px-4">Status</th>
-                  <th className="px-4">XP / Nível</th>
+                  <th className="px-4">Pontos</th>
                   <th className="px-4">Nota Média</th>
                   <th className="px-4">Vendas</th>
                   <th className="px-4 text-right">Ações</th>
@@ -157,11 +157,10 @@ export default async function AdminCollectorsPage() {
                         </Badge>
                       </td>
                       <td className="px-4">
-                        <span className="text-[var(--color-accent-primary)] font-bold">{col.geekPoints || 0} XP</span>
-                        <span className="text-[10px] text-[var(--color-text-tertiary)] block">({getBadgeName(col.geekPoints || 0)})</span>
+                        <span className="text-[var(--color-accent-primary)] font-bold">{col.geekPoints ? col.geekPoints : 'sem pontos'}</span>
                       </td>
                       <td className="px-4 font-bold text-[var(--color-text-primary)]">
-                        ⭐ {col.avgRating ? Number(col.avgRating).toFixed(2) : '5.00'}
+                        {col.avgRating && (col.totalReviews ?? 0) > 0 ? `⭐ ${Number(col.avgRating).toFixed(2)}` : 'sem avaliações'}
                         <span className="text-[10px] text-[var(--color-text-tertiary)] font-normal block">({col.totalReviews || 0} reviews)</span>
                       </td>
                       <td className="px-4">{col.totalOrders || 0} pedidos</td>

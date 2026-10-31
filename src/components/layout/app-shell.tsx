@@ -5,6 +5,7 @@ import { BottomTabBar } from './bottom-tab-bar';
 import { SiteFooter } from './site-footer';
 import { NeuralWatermarkBackground } from '@/components/ui/neural-watermark-background';
 import { TopProgressBar } from './top-progress-bar';
+import type { ShellViewer } from './shell-viewer';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -14,8 +15,10 @@ interface AppShellProps {
   hideBottomBar?: boolean;
   /** Esconde footer (ex: app-like rotas). */
   hideFooter?: boolean;
-  /** Contagem de itens no carrinho — buscada no servidor pelo layout, repassada pro badge do ícone. */
+  /** Contagem de itens da lista de acompanhamento (tabela affiliate_cart_items) — buscada no servidor pelo layout, repassada pro badge do ícone. */
   cartCount?: number;
+  /** Quem está logado (nome e papel), lido no servidor pelo layout; null = visitante. */
+  viewer?: ShellViewer | null;
 }
 
 /**
@@ -31,6 +34,7 @@ export function AppShell({
   hideBottomBar,
   hideFooter,
   cartCount,
+  viewer,
 }: AppShellProps) {
   return (
     <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)] w-full max-w-[100vw] overflow-x-hidden">
@@ -45,7 +49,7 @@ export function AppShell({
       {!hideHeader && (
         <>
           <TopUtilityBar />
-          <AppHeader cartCount={cartCount} />
+          <AppHeader cartCount={cartCount} viewer={viewer ?? null} />
         </>
       )}
 

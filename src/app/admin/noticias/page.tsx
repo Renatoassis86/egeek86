@@ -137,3 +137,5 @@ export default async function AdminNoticiasPage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Notícias' };

@@ -23,6 +23,8 @@ import { Glow } from '@/components/motion/glow';
 import { SceneImage } from '@/components/motion/scene-image';
 import { PriceRangeBar } from '@/components/geek-deals/price-range-bar';
 import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
+import { getProductStores } from '@/server/queries/product-stores';
+import { ProductStoresTable } from '@/components/search/product-stores-table';
 import { CartToggleButton } from '@/components/affiliate/cart-toggle-button';
 import { GameAboutSection } from '@/components/affiliate/game-about-section';
 import { formatBRL, formatDiscountLabel } from '@/lib/format';
@@ -34,7 +36,7 @@ import {
   getSellerTrustInfo,
   sellerTrustTextColor,
 } from '@/lib/affiliate/labels';
-import { getOfferBySlug, getOfferMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
+import { getOfferBySlug, getMasterProductMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
 import { getWatchedMasterProductIds } from '@/server/queries/price-watches';
 import { getCartOfferIds } from '@/server/queries/cart';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
@@ -66,11 +68,12 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const offer = await getOfferBySlug(slug);
   if (!offer) notFound();
 
-  const [metrics, coupons, profile, meliDetails] = await Promise.all([
-    getOfferMetrics(offer.id),
+  const [metrics, coupons, profile, meliDetails, stores] = await Promise.all([
+    getMasterProductMetrics(offer.masterProductId),
     listActiveCouponsByNetwork(offer.networkId),
     getCurrentProfile(),
     offer.masterProduct.meliCatalogId ? getMeliCatalogDetails(offer.masterProduct.meliCatalogId) : Promise.resolve(null),
+    getProductStores(offer.masterProductId).catch(() => []),
   ]);
   const isWatching = profile
     ? (await getWatchedMasterProductIds(profile.id)).has(offer.masterProductId)
@@ -84,7 +87,8 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   // inteira fica oculta em vez de mostrar um "sem descrição" pro cliente.
   const galleryImages = (meliDetails?.pictures.length ? meliDetails.pictures : images ?? []).filter((url) => url !== image);
   const hasAboutSection = Boolean(meliDetails?.shortDescription) || Boolean(meliDetails?.features.length) || galleryImages.length > 0;
-  const isLowest = metrics ? isLowestPrice(offer.currentPriceCents, metrics.lowestPriceCents) : false;
+  // Selo só com histórico elegível (>= 5 cotações e >= 14 dias, ADR 0001/0002): com 1 cotação, atual <= menor é verdade por definição.
+  const isLowest = metrics?.isLowestEver === true && isLowestPrice(offer.currentPriceCents, metrics.lowestPriceCents);
   const trend = metrics ? TREND_META[metrics.trend] : null;
   const trustInfo = getSellerTrustInfo(offer.seller);
 
@@ -155,9 +159,9 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                   <Text variant="display-lg" color="primary" className="tabular leading-none">
                     {formatBRL(offer.currentPriceCents)}
                   </Text>
-                  {metrics?.avgPriceCents30d != null && (
+                  {metrics?.avgPriceCents != null && (
                     <Text variant="body-sm" color="secondary">
-                      Média dos últimos 30 dias: {formatBRL(metrics.avgPriceCents30d)}
+                      Média do produto (todas as lojas): {formatBRL(metrics.avgPriceCents)}
                     </Text>
                   )}
                 </>
@@ -184,11 +188,17 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                     )}
                   </div>
 
-                  <PriceRangeBar currentPriceCents={offer.currentPriceCents} metrics={metrics} />
+                  {metrics.eligibility?.eligible ? (
+                    <PriceRangeBar currentPriceCents={offer.currentPriceCents} metrics={metrics} />
+                  ) : (
+                    <Text variant="caption" color="tertiary">
+                      Histórico ainda curto para comparar com a média.
+                    </Text>
+                  )}
 
                   <Text variant="caption" color="tertiary">
-                    Menor preço em {metrics.lowestPriceAt.toLocaleDateString('pt-BR')} · {metrics.snapshotCount}{' '}
-                    coletas registradas
+                    Menor preço registrado em {metrics.lowestPriceAt.toLocaleDateString('pt-BR')} · {metrics.snapshotCount}{' '}
+                    cotações (todas as lojas)
                   </Text>
                 </CardContent>
               </Card>
@@ -218,21 +228,11 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
             )}
 
             <div className="flex flex-wrap gap-2">
-              {offer.affiliateLinkPending ? (
-                <Button
-                  size="lg"
-                  disabled
-                  className="flex-1 sm:flex-none"
-                  title="Esse item ainda está sendo preparado — o link de compra libera em breve."
-                >
-                  <ShieldCheck className="size-4" />
-                  Link de compra em preparação
-                </Button>
-              ) : (
+              {/^https?:\/\//i.test(offer.affiliateUrl) && (
                 <Button asChild size="lg" className="flex-1 sm:flex-none">
                   <a href={`/go/${offer.slug}`} target="_blank" rel="noopener noreferrer nofollow sponsored">
                     <ShieldCheck className="size-4" />
-                    {`Ver oferta na ${offer.network.name}`}
+                    Ir à loja
                   </a>
                 </Button>
               )}
@@ -247,6 +247,11 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                 </Button>
               )}
             </div>
+
+            <ProductStoresTable
+              stores={stores}
+              avgPriceCents={metrics?.eligibility?.eligible ? metrics.avgPriceCents ?? null : null}
+            />
 
             {offer.highlightNote && (
               <Text variant="caption" color="hype">

@@ -559,12 +559,19 @@ export async function getMasterProductChangePercent(
       FROM active_offers
       GROUP BY master_product_id
     ),
+    -- LATERAL com LIMIT 1 usa o índice (offer_id, collected_at) e lê 1 linha por
+    -- oferta; o DISTINCT ON anterior ordenava ~3M snapshots (28s -> 1,2s medido
+    -- em 2026-10-30, resultado idêntico).
     baseline_per_offer AS (
-      SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents AS baseline_price_cents
-      FROM affiliate_price_snapshots s
-      INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
-      WHERE s.collected_at <= now() - (${interval})::interval
-      ORDER BY s.offer_id, s.collected_at DESC
+      SELECT ao.offer_id, b.price_cents AS baseline_price_cents
+      FROM active_offers ao
+      CROSS JOIN LATERAL (
+        SELECT s.price_cents
+        FROM affiliate_price_snapshots s
+        WHERE s.offer_id = ao.offer_id AND s.collected_at <= now() - (${interval})::interval
+        ORDER BY s.collected_at DESC
+        LIMIT 1
+      ) b
     ),
     baseline_lowest AS (
       SELECT ao.master_product_id, MIN(b.baseline_price_cents)::bigint AS baseline_price_cents
@@ -640,11 +647,15 @@ export async function getTopMovers({
       ORDER BY master_product_id, current_price_cents ASC
     ),
     baseline_per_offer AS (
-      SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents AS baseline_price_cents
-      FROM affiliate_price_snapshots s
-      INNER JOIN active_offers ao ON ao.offer_id = s.offer_id
-      WHERE s.collected_at <= now() - (${interval})::interval
-      ORDER BY s.offer_id, s.collected_at DESC
+      SELECT ao.offer_id, b.price_cents AS baseline_price_cents
+      FROM active_offers ao
+      CROSS JOIN LATERAL (
+        SELECT s.price_cents
+        FROM affiliate_price_snapshots s
+        WHERE s.offer_id = ao.offer_id AND s.collected_at <= now() - (${interval})::interval
+        ORDER BY s.collected_at DESC
+        LIMIT 1
+      ) b
     ),
     baseline_lowest AS (
       SELECT ao.master_product_id, MIN(b.baseline_price_cents)::bigint AS baseline_price_cents

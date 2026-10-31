@@ -23,3 +23,5 @@ export default async function AdminMessagesPage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Mensagens' };

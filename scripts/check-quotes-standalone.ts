@@ -1,6 +1,10 @@
 import postgres from 'postgres';
 
-const sql = postgres('postgresql://postgres.sdrjxgwczeumbcbscjpi:Rairooha123%40@aws-1-us-west-2.pooler.supabase.com:5432/postgres');
+const connectionString = process.env.DATABASE_URL ?? process.env.DIRECT_URL;
+if (!connectionString) {
+  throw new Error('Defina DATABASE_URL (ex.: node --env-file=.env.local) — credencial nunca fica no código.');
+}
+const sql = postgres(connectionString);
 
 async function main() {
   console.log('--- BUSCANDO COTAÇÕES DO BANCO DE DADOS ---');

@@ -73,7 +73,7 @@ export function WatchlistPanel({
           if (Array.isArray(parsed)) {
             setItems(parsed);
             onItemsRefreshed?.(parsed);
-            if (parsed.length > 0 && (!selectedMasterProductId || selectedMasterProductId.startsWith('demo-'))) {
+            if (parsed.length > 0 && !selectedMasterProductId) {
               onSelect?.(parsed[0].masterProductId);
             }
           }
@@ -199,7 +199,7 @@ export function WatchlistPanel({
               Desbloqueie o Monitoramento Ilimitado
             </DialogTitle>
             <DialogDescription className="text-xs leading-relaxed text-[var(--color-text-secondary)]">
-              No <strong>Modo de Demonstração</strong>, você pode explorar 1 item como amostra. Crie sua conta grátis para adicionar quantos jogos quiser à sua lista e receber avisos automáticos no e-mail e Telegram quando o preço cair de verdade!
+              Como visitante, você pode acompanhar 1 item. Crie sua conta grátis para adicionar quantos jogos quiser à sua lista e receber o resumo diário de quedas de preço no e-mail e no Telegram.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2 mt-3">
@@ -207,7 +207,7 @@ export function WatchlistPanel({
               <Link href="/entrar?next=/monitoramento">Criar Minha Conta Grátis / Entrar</Link>
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setUnlockModalOpen(false)}>
-              Continuar com 1 Item de Demonstração
+              Continuar com 1 item
             </Button>
           </div>
         </DialogContent>
@@ -218,6 +218,9 @@ export function WatchlistPanel({
           <Text variant="body-sm" color="tertiary">
             Você ainda não está acompanhando nenhum jogo. Clica no + acima pra adicionar o primeiro.
           </Text>
+          <Link href="/ofertas" className="mt-2 inline-block text-sm underline">
+            Ver ofertas
+          </Link>
         </div>
       ) : (
         <>

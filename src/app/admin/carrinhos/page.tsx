@@ -8,7 +8,7 @@ import { SendCartMessageButton } from '@/components/admin/send-cart-message-butt
 import { formatBRL } from '@/lib/format';
 import { getPendingCartsForAdmin } from '@/server/queries/cart';
 
-export const metadata = { title: 'Admin: Carrinhos' };
+export const metadata = { title: 'Admin: Listas de interesse' };
 export const dynamic = 'force-dynamic';
 
 export default async function AdminCartsPage() {
@@ -18,7 +18,7 @@ export default async function AdminCartsPage() {
     <div className="flex flex-col gap-6">
       <div>
         <Text as="h1" variant="heading-xl">
-          Carrinhos
+          Listas de interesse
         </Text>
         <Text variant="body-sm" color="secondary" className="mt-1">
           Compradores que marcaram interesse em itens — resolva o link de afiliado de cada um e envie a

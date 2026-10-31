@@ -4,6 +4,8 @@ import { Flame, TrendingDown, Gamepad2, Monitor, Headphones, Sparkles, LineChart
 import { Reveal } from '@/components/motion/reveal';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
+import { SearchResultsView, isSearchRequest } from '@/components/search/search-results-view';
+import { SearchBox } from '@/components/search/search-box';
 import { OfferFilters } from '@/components/affiliate/offer-filters';
 import { MarketplaceHeroBanner } from '@/components/affiliate/marketplace-hero-banner';
 import { GroupedOfferShelf } from '@/components/affiliate/grouped-offer-shelf';
@@ -16,13 +18,29 @@ import {
   type OfferWithRelations,
   type OfferListingMetrics,
 } from '@/server/queries/affiliate';
+import { getPublicTotals } from '@/server/queries/home-search';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import type { GameFormat, GamePlatformGen, ProductType } from '@/db/schema';
 
-export const metadata: Metadata = {
-  title: 'Ofertas & Preços Monitorados',
-  description: 'Os melhores preços em cultura geek nos principais marketplaces, com histórico autêntico e cupons do dia.',
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const q = typeof sp.q === 'string' ? sp.q.trim().slice(0, 80) : '';
+  if (isSearchRequest(sp)) {
+    return {
+      title: q ? `Preços de ${q}` : 'Menores preços por plataforma',
+      description: 'Compare o menor preço de jogos e consoles nas lojas monitoradas, com histórico real.',
+      robots: { index: false, follow: true },
+    };
+  }
+  return {
+    title: 'Ofertas & Preços Monitorados',
+    description: 'Os melhores preços em cultura geek nos principais marketplaces, com histórico autêntico e cupons do dia.',
+  };
+}
 
 const FORMAT_VALUES: readonly GameFormat[] = ['physical', 'digital', 'unknown'];
 const GEN_VALUES: readonly GamePlatformGen[] = [
@@ -66,47 +84,15 @@ export default async function OffersPage({
   const productType = parseEnumParam(sp.tipo, TYPE_VALUES);
   const networkId = typeof sp.rede === 'string' && sp.rede ? sp.rede : undefined;
   const sortBy = sp.ordenar === 'price_desc' ? 'price_desc' : 'price_asc';
-  const search = typeof sp.q === 'string' ? sp.q.trim() : '';
+
+  // Busca (termo ou plataforma): motor novo de busca de produtos, cartão por jogo.
+  if (isSearchRequest(sp)) {
+    return <SearchResultsView searchParams={sp} />;
+  }
 
   const baseFilter = { gameFormat, productType, networkId, sortBy: sortBy as 'price_asc' | 'price_desc' };
 
-  const [networks, coupons] = await Promise.all([listNetworks(), getActiveCouponsForDisplay()]);
-
-  // Se houver busca por texto ativa, exibe visualização de resultados de busca
-  if (search) {
-    const results = await listRankedOffers({ ...baseFilter, gamePlatformGen, search, limit: 60 });
-    const metricsMap = await getOfferListingMetrics(results.map((o) => o.id));
-
-    return (
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
-        <Reveal>
-          <Text as="h1" variant="display-md">
-            Resultados para &quot;{search}&quot;
-          </Text>
-        </Reveal>
-
-        <div className="sticky top-[calc(var(--header-mobile)+8px)] lg:top-[calc(var(--header-desktop)+12px)] z-20 mt-8">
-          <Suspense fallback={null}>
-            <OfferFilters networks={networks} resultCount={results.length} />
-          </Suspense>
-        </div>
-
-        {results.length === 0 ? (
-          <Text variant="body-sm" color="secondary" className="mt-10">
-            Nenhuma oferta encontrada para &quot;{search}&quot;. Tente outro termo ou remova os filtros.
-          </Text>
-        ) : (
-          <div className="mt-10">
-            <GroupedOfferShelf
-              title={`Resultados para "${search}"`}
-              offers={results}
-              metricsMap={metricsMap}
-            />
-          </div>
-        )}
-      </section>
-    );
-  }
+  const [networks, coupons, publicTotals] = await Promise.all([listNetworks(), getActiveCouponsForDisplay(), getPublicTotals()]);
 
   // Carregamento dos dados gerais e prateleiras comerciais
   const [broadPool, featured] = await Promise.all([
@@ -155,15 +141,20 @@ export default async function OffersPage({
 
   return (
     <section className="mx-auto max-w-7xl px-4 lg:px-8 py-8 lg:py-12 flex flex-col gap-10">
+      <div className="max-w-3xl">
+        <SearchBox variant="compact" placeholder="Busque um jogo ou console" />
+      </div>
+
       {/* Banner Principal com Carrossel de Cupons do Dia no Lado Direito */}
       <MarketplaceHeroBanner
         title="Vitrine de Ofertas"
         subtitle="Preços monitorados nos principais marketplaces, histórico de cotações autêntico e cupons ativos para você comprar na hora certa."
         categoryTag="Geek Deals · Inteligência de Mercado"
         stats={{
-          monitoredProducts: broadPool.length,
+          // Mesmos totais da home (getPublicTotals); broadPool é só a amostra exibida.
+          monitoredProducts: publicTotals.products,
           lowestPriceCount: lowestEverOffers.length,
-          partnerStores: networks.length,
+          partnerStores: publicTotals.stores,
         }}
         coupons={coupons}
       />

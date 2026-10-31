@@ -17,7 +17,7 @@ export const adminNavItems: AdminNavItem[] = [
   { href: '/admin/data-science', label: 'NEXUS Data Science', icon: BrainCircuit },
   { href: '/admin/usuarios', label: 'Usuários', icon: Users },
   { href: '/admin/ofertas', label: 'Ofertas', icon: Tags },
-  { href: '/admin/carrinhos', label: 'Carrinhos', icon: ShoppingBag },
+  { href: '/admin/carrinhos', label: 'Listas de interesse', icon: ShoppingBag },
   { href: '/admin/redes', label: 'Redes', icon: Network },
   { href: '/admin/cupons', label: 'Cupons', icon: Ticket },
   { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },

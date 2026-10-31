@@ -82,3 +82,5 @@ export default async function AdminCouponsPage() {
     </div>
   );
 }
+
+export const metadata = { title: 'Admin: Cupons' };

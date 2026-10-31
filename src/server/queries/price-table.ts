@@ -3,6 +3,17 @@ import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { fuzzyMatchRaw } from '@/lib/db/fuzzy-search';
 import { type ProductType, type GameFormat, type GamePlatformGen } from '@/db/schema';
+import { publicOffersCtes } from '@/server/queries/public-offers';
+import { priceQuotesCtes } from '@/server/queries/product-price-stats';
+import {
+  INLINE_BAND_PERCENT,
+  MIN_HISTORY_DAYS_FOR_VERDICT,
+  MIN_QUOTES_FOR_VERDICT,
+  checkEligibility,
+  computeVerdict,
+  type Eligibility,
+  type PriceVerdict,
+} from '@/lib/affiliate/price-verdict';
 
 export interface PriceTableFilter {
   productType?: ProductType;
@@ -45,17 +56,25 @@ export interface PriceTableRow {
   gamePlatformGen: GamePlatformGen;
   defaultImages: string[];
   currentPriceCents: number;
-  /** Menor preço já visto (todas as lojas/plataformas do produto), não só o all-time-low dessa oferta específica. */
+  /** Menor preço já visto (todas as lojas/plataformas do produto). Sem `eligibility.eligible` a UI NÃO deve exibir (com 1 cotação é o próprio preço atual). */
   lowestPriceCents: number;
-  /** Apesar do nome (mantido pra não quebrar os 8 lugares que já leem esse campo), é a média de TODA cotação de TODA loja/plataforma desde que o produto existe no catálogo — não uma janela de 30 dias. */
+  /** MÉDIA ÚNICA do produto (todas as lojas, todo o histórico, filtro 2x). null se !eligibility.eligible. */
+  avgPriceCents: number | null;
+  /** @deprecated Alias de `avgPriceCents` (nome legado; nunca foi 30 dias). Agora null sem histórico elegível, sem fallback inventado. */
   avgPriceCents30d: number | null;
+  /** Credibilidade do histórico (>= 5 cotações e >= 14 dias). */
+  eligibility: Eligibility;
+  /** Veredito contra a média única (insufficient se histórico curto). */
+  verdict: PriceVerdict;
   highestPriceCents: number | null;
   totalQuoteCount: number;
   offerId: string;
   offerSlug: string;
   networkName: string;
   networkColorHex: string | null;
+  /** Selo "menor registrado"; já exige elegibilidade. */
   isLowestEver: boolean;
+  /** % abaixo da média única; null sem elegibilidade. */
   avgDiscountPercent: number | null;
 }
 
@@ -69,7 +88,10 @@ export interface PriceTableRow {
  * arredondar só na hora de exibir).
  */
 function buildCtes(whereClause: SQL) {
+  // publicOffersCtes (ADR 0002): só ofertas com coleta real <= 7 dias e preço
+  // plausível entram como "oferta mais barata" do produto.
   return sql`
+    ${publicOffersCtes()},
     distinct_products AS (
       SELECT DISTINCT ON (mp.id)
         mp.id AS mp_id,
@@ -86,38 +108,41 @@ function buildCtes(whereClause: SQL) {
         n.color_hex AS network_color_hex
       FROM master_products mp
       INNER JOIN affiliate_offers o ON o.master_product_id = mp.id
+      INNER JOIN public_offers po ON po.id = o.id
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       WHERE ${whereClause}
       ORDER BY mp.id, o.current_price_cents ASC
     ),
+    -- Cotações plausíveis (piso, ADR 0001 revisada) da fonte única product-price-stats.ts.
+    ${priceQuotesCtes(sql`o.master_product_id IN (SELECT mp_id FROM distinct_products)`)},
     raw_avg AS (
-      SELECT o.master_product_id, AVG(s.price_cents) AS raw_avg
-      FROM affiliate_price_snapshots s
-      INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      WHERE o.master_product_id IN (SELECT mp_id FROM distinct_products)
-      GROUP BY o.master_product_id
+      SELECT master_product_id, AVG(price_cents) AS raw_avg FROM q GROUP BY master_product_id
     ),
     stats AS (
       SELECT
-        o.master_product_id,
-        AVG(s.price_cents) FILTER (WHERE s.price_cents <= ra.raw_avg * 2)::numeric AS avg_price_cents,
-        MIN(s.price_cents)::bigint AS min_price_cents,
-        MAX(s.price_cents)::bigint AS max_price_cents,
-        COUNT(*)::int AS quote_count
-      FROM affiliate_price_snapshots s
-      INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      INNER JOIN raw_avg ra ON ra.master_product_id = o.master_product_id
-      WHERE o.master_product_id IN (SELECT mp_id FROM distinct_products)
-      GROUP BY o.master_product_id
+        q.master_product_id,
+        AVG(q.price_cents) FILTER (WHERE q.price_cents <= ra.raw_avg * 2)::numeric AS avg_price_cents,
+        MIN(q.price_cents)::bigint AS min_price_cents,
+        MAX(q.price_cents)::bigint AS max_price_cents,
+        COUNT(*)::int AS quote_count,
+        FLOOR(EXTRACT(EPOCH FROM (MAX(q.collected_at) - MIN(q.collected_at))) / 86400)::int AS history_days
+      FROM q
+      INNER JOIN raw_avg ra ON ra.master_product_id = q.master_product_id
+      GROUP BY q.master_product_id
     ),
     combined AS (
       SELECT
         dp.mp_id, dp.mp_name, dp.mp_slug, dp.product_type, dp.game_format, dp.game_platform_gen,
         dp.default_images, dp.offer_id, dp.offer_slug, dp.current_price_cents,
         dp.network_name, dp.network_color_hex,
-        st.avg_price_cents, st.min_price_cents, st.max_price_cents, st.quote_count,
+        st.avg_price_cents, st.min_price_cents, st.max_price_cents, st.quote_count, st.history_days,
+        (COALESCE(st.quote_count, 0) >= ${sql.raw(String(MIN_QUOTES_FOR_VERDICT))}
+          AND COALESCE(st.history_days, 0) >= ${sql.raw(String(MIN_HISTORY_DAYS_FOR_VERDICT))}) AS eligible,
+        -- % abaixo da média única: SÓ com histórico elegível (>= 5 cotações e >= 14 dias).
         CASE
           WHEN st.avg_price_cents IS NOT NULL AND st.avg_price_cents > dp.current_price_cents
+            AND COALESCE(st.quote_count, 0) >= ${sql.raw(String(MIN_QUOTES_FOR_VERDICT))}
+            AND COALESCE(st.history_days, 0) >= ${sql.raw(String(MIN_HISTORY_DAYS_FOR_VERDICT))}
           THEN (st.avg_price_cents - dp.current_price_cents) / st.avg_price_cents * 100
           ELSE NULL
         END AS discount_percent_raw
@@ -167,10 +192,14 @@ async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ ite
   const ctes = buildCtes(whereClause);
 
   // "Apenas Itens Abaixo da Média" filtra por desconto real (já livre de
-  // outliers) vs. inventar um corte arbitrário de preço.
-  const belowAvgClause = filter.onlyBelowAvg
-    ? sql`AND discount_percent_raw IS NOT NULL AND discount_percent_raw > 0`
-    : sql``;
+  // outliers) e só com histórico elegível; "abaixo" = fora da faixa "em linha"
+  // (mesma regra do veredito). "Menor já visto" idem: exige elegibilidade.
+  const belowAvgClause = sql`
+    ${filter.onlyBelowAvg
+      ? sql`AND discount_percent_raw IS NOT NULL AND discount_percent_raw > ${sql.raw(String(INLINE_BAND_PERCENT))}`
+      : sql``}
+    ${filter.onlyLowestEver ? sql`AND eligible AND min_price_cents IS NOT NULL AND current_price_cents <= min_price_cents` : sql``}
+  `;
 
   let orderByClause = sql`mp_name ASC, current_price_cents ASC`;
   if (filter.sortBy === 'name_desc') {
@@ -206,15 +235,20 @@ async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ ite
   const items: PriceTableRow[] = rows.map((row) => {
     const currentPrice = Number(row.current_price_cents);
     // Sem cotação histórica ainda (produto recém-descoberto, coletor não
-    // rodou o primeiro ciclo) — nunca inventa média/mínimo, mostra só o
-    // preço atual como referência única.
+    // rodou o primeiro ciclo) — nunca inventa média/mínimo. A média única só
+    // existe com histórico elegível (>= 5 cotações e >= 14 dias); antes havia
+    // um fallback `avg = min ?? current` que fabricava "média" = preço atual.
     const minPriceCents = row.min_price_cents != null ? Number(row.min_price_cents) : null;
     const maxPriceCents = row.max_price_cents != null ? Number(row.max_price_cents) : null;
-    const avgRaw = row.avg_price_cents != null ? Number(row.avg_price_cents) : null;
-    const avg = avgRaw ?? minPriceCents ?? currentPrice;
+    const avgRaw = row.avg_price_cents != null ? Math.round(Number(row.avg_price_cents)) : null;
+    const quoteCount = row.quote_count != null ? Number(row.quote_count) : 0;
+    const historyDays = row.history_days != null ? Number(row.history_days) : 0;
+    const eligibility = checkEligibility({ quoteCount, historyDays });
+    const verdict = computeVerdict({ currentCents: currentPrice, avgCents: avgRaw, quoteCount, historyDays });
+    const avg = eligibility.eligible ? avgRaw : null;
     const lowest = minPriceCents ?? currentPrice;
     const highest = maxPriceCents ?? currentPrice;
-    const avgDiscountPercent = avg > currentPrice ? Math.round(((avg - currentPrice) / avg) * 100) : null;
+    const avgDiscountPercent = avg != null && avg > currentPrice ? Math.round(((avg - currentPrice) / avg) * 100) : null;
 
     return {
       masterProductId: row.mp_id,
@@ -226,14 +260,17 @@ async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ ite
       defaultImages: row.default_images ?? [],
       currentPriceCents: currentPrice,
       lowestPriceCents: lowest,
-      avgPriceCents30d: Math.round(avg),
+      avgPriceCents: avg,
+      avgPriceCents30d: avg,
+      eligibility,
+      verdict,
       highestPriceCents: highest,
-      totalQuoteCount: row.quote_count != null ? Number(row.quote_count) : 0,
+      totalQuoteCount: quoteCount,
       offerId: row.offer_id,
       offerSlug: row.offer_slug,
       networkName: row.network_name,
       networkColorHex: row.network_color_hex,
-      isLowestEver: currentPrice <= lowest,
+      isLowestEver: eligibility.eligible && currentPrice <= lowest,
       avgDiscountPercent,
     };
   });

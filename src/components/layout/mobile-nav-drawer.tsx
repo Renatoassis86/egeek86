@@ -16,7 +16,7 @@ import {
   Newspaper,
   User,
   Sliders,
-  ShoppingBag,
+  Bookmark,
   ShieldCheck,
   LogIn,
   X,
@@ -31,9 +31,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/providers/theme-toggle';
+import { SignOutButton } from '@/components/layout/sign-out-button';
+import type { ShellViewer } from '@/components/layout/shell-viewer';
 import { cn } from '@/lib/cn';
 
 interface MobileNavDrawerProps {
+  viewer?: ShellViewer | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -65,13 +68,12 @@ const newsModules = [
 ];
 
 const userModules = [
-  { href: '/conta', label: 'Meu Perfil e Gamificação', icon: User },
-  { href: '/conta?aba=dados', label: 'Dados Cadastrais e Editar', icon: Sliders },
-  { href: '/conta?aba=compras', label: 'Minhas Compras', icon: ShoppingBag },
-  { href: '/conta?aba=vendas', label: 'Meus Drops e Vendas', icon: ShieldCheck },
-  { href: '/conta?aba=leiloes', label: 'Meus Leilões e Lances', icon: Gavel },
-  { href: '/conta?aba=jogos', label: 'Meus Jogos Acompanhados', icon: Heart },
-  { href: '/carrinho', label: 'Meu Carrinho', icon: ShoppingBag },
+  { href: '/conta', label: 'Minha conta', icon: User },
+  { href: '/conta?aba=dados', label: 'Dados cadastrais', icon: Sliders },
+  { href: '/conta?aba=vendas', label: 'Meus drops', icon: ShieldCheck },
+  { href: '/conta?aba=leiloes', label: 'Meus leilões', icon: Gavel },
+  { href: '/conta?aba=jogos', label: 'Jogos acompanhados', icon: Heart },
+  { href: '/carrinho', label: 'Lista de acompanhamento', icon: Bookmark },
 ];
 
 const institutionalModules = [
@@ -124,7 +126,7 @@ function NavGroup({
   );
 }
 
-export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
+export function MobileNavDrawer({ viewer = null, isOpen, onClose }: MobileNavDrawerProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
 
@@ -190,29 +192,37 @@ export function MobileNavDrawer({ isOpen, onClose }: MobileNavDrawerProps) {
             <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone e Drops" />
             <NavGroup items={observatorioModules} onClose={onClose} pathname={pathname} subheading="Observatório Gamer" />
             <NavGroup items={newsModules} onClose={onClose} pathname={pathname} subheading="Notícias" />
-            <NavGroup items={userModules} onClose={onClose} pathname={pathname} subheading="Minha Conta" />
+            {viewer && <NavGroup items={userModules} onClose={onClose} pathname={pathname} subheading="Minha conta" />}
             <NavGroup items={institutionalModules} onClose={onClose} pathname={pathname} subheading="Institucional e Suporte" />
           </div>
         </div>
 
         {/* Rodapé do Drawer */}
         <div className="p-4 border-t border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] flex flex-col gap-2 shrink-0">
-          <Link
-            href="/entrar?role=colecionador"
-            onClick={onClose}
-            className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-[var(--radius-sm)] bg-[var(--color-accent-hype)] text-white text-xs font-bold shadow-md text-center"
-          >
-            <span>🚀 Cadastrar Colecionador</span>
-          </Link>
-
-          <Link
-            href="/entrar"
-            onClick={onClose}
-            className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] text-xs font-semibold text-[var(--color-text-primary)] text-center hover:bg-[var(--color-bg-elevated)]"
-          >
-            <LogIn className="size-3.5" />
-            <span>Entrar / Fazer Login</span>
-          </Link>
+          {viewer ? (
+            <SignOutButton
+              onDone={onClose}
+              className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] text-xs font-semibold text-[var(--color-text-primary)] text-center hover:bg-[var(--color-bg-elevated)]"
+            />
+          ) : (
+            <>
+              <Link
+                href="/entrar"
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-[var(--radius-sm)] border border-[var(--color-border-default)] text-xs font-semibold text-[var(--color-text-primary)] text-center hover:bg-[var(--color-bg-elevated)]"
+              >
+                <LogIn className="size-3.5" />
+                <span>Entrar</span>
+              </Link>
+              <Link
+                href="/entrar?role=colecionador"
+                onClick={onClose}
+                className="flex items-center justify-center gap-2 w-full py-2.5 px-3 rounded-[var(--radius-sm)] bg-[var(--color-accent-hype)] text-white text-xs font-bold shadow-md text-center"
+              >
+                <span>Cadastrar como colecionador</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>,

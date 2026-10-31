@@ -50,7 +50,7 @@ export function PriceRangeBar({
               className="absolute top-1/2 size-2.5 -translate-y-1/2 -translate-x-1/2 rounded-full bg-[var(--color-text-secondary)] ring-2 ring-[var(--color-bg-canvas)]"
               style={{ left: `${avgPct}%` }}
               aria-hidden
-              title="Média 30 dias"
+              title="Média do produto"
             />
           )}
           <div
@@ -73,7 +73,7 @@ export function PriceRangeBar({
       {metrics.avgPriceCents30d != null && (
         <Text variant="caption" color="tertiary" className="mt-1 inline-flex items-center gap-1 whitespace-nowrap">
           <span className="size-1.5 rounded-full bg-[var(--color-text-secondary)]" aria-hidden />
-          Média 30d: {formatBRL(metrics.avgPriceCents30d)}
+          Média: {formatBRL(metrics.avgPriceCents30d)}
         </Text>
       )}
     </div>
