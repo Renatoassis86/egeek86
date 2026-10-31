@@ -197,72 +197,80 @@ function QuemSomosSection() {
 // 4. Missão, Visão e Valores
 // ----------------------------------------------------------------------
 function MissaoVisaoValoresSection() {
+  const pilares = [
+    {
+      id: 'missao',
+      label: 'Nossa Missão',
+      Icon: Target,
+      quote:
+        'Entregar a verdade de mercado, a melhor economia e a alegria do entretenimento gamer para toda a comunidade geek.',
+      text:
+        'Nossa missão é simples: mostrar o preço real de cada jogo, sem estimativa e sem enfeite, pra você decidir com informação de verdade. Cada número que aparece aqui vem de uma cotação coletada direto das lojas, atualizada o tempo todo.',
+      accent: 'text-amber-300',
+      bar: 'bg-amber-400',
+      border: 'border-amber-400/40 hover:border-amber-400',
+      chip: 'bg-amber-400 text-zinc-950',
+    },
+    {
+      id: 'visao',
+      label: 'Nossa Visão',
+      Icon: Compass,
+      quote: 'Ser a plataforma de inteligência, acervo e economia gamer mais confiável do Brasil.',
+      text:
+        'Queremos ser o lugar onde todo gamer brasileiro descobre, compara e compra com confiança, juntando a memória dos consoles clássicos com a tecnologia de dados de hoje.',
+      accent: 'text-emerald-300',
+      bar: 'bg-emerald-400',
+      border: 'border-emerald-400/40 hover:border-emerald-400',
+      chip: 'bg-emerald-400 text-zinc-950',
+    },
+  ];
+
   return (
-    <section id="missao-visao-valores" data-theme="light" className="relative w-full bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-amber-600/10 text-zinc-900 py-20 lg:py-28 border-b border-amber-300/40 scroll-mt-20 overflow-hidden">
+    <section
+      id="missao-visao-valores"
+      data-theme="dark"
+      className="relative w-full bg-gradient-to-b from-[#1a1033] via-[#120b26] to-[#0c0719] text-white py-20 lg:py-28 border-b border-purple-500/20 scroll-mt-20 overflow-hidden"
+    >
       <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 flex flex-col gap-14">
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-amber-500/20 text-amber-900 border border-amber-500/40 w-fit">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black uppercase tracking-widest bg-amber-400 text-zinc-950 w-fit">
               Propósito &amp; Fronteira Tecnológica
             </span>
-            <Text as="h2" variant="display-lg" className="font-black text-zinc-900 text-3xl sm:text-5xl tracking-tight">
+            <Text as="h2" variant="display-lg" className="font-black !text-white text-3xl sm:text-5xl tracking-tight">
               Nossa Missão &amp; Nossa Visão
             </Text>
-            <Text variant="body-lg" className="text-zinc-700 max-w-[66ch] leading-relaxed font-medium">
+            <Text variant="body-lg" className="!text-zinc-200 max-w-[66ch] leading-relaxed font-medium">
               Muito além de exibir preços, construímos uma arquitetura de inteligência, paixão e entretenimento que redefine o mercado de jogos no Brasil.
             </Text>
           </div>
         </Reveal>
 
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Card 1: NOSSA MISSÃO */}
-          <Reveal delay={0.04}>
-            <div className="group h-full rounded-[var(--radius-xl)] border-2 border-amber-500/40 bg-white p-8 lg:p-10 flex flex-col gap-6 transition-all duration-300 hover:border-amber-500 hover:shadow-2xl relative overflow-hidden">
-              <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-amber-500/20 text-amber-700 w-fit group-hover:scale-110 transition-transform duration-300">
-                  <Target className="size-8" />
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest text-amber-800 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
-                  Nossa Missão
-                </span>
-              </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {pilares.map(({ id, label, Icon, quote, text, accent, bar, border, chip }, i) => (
+            <Reveal key={id} delay={0.04 + i * 0.04}>
+              <article className={`h-full border-2 ${border} bg-[#1f1540] p-8 lg:p-10 flex flex-col gap-6 transition-colors duration-300`}>
+                <header className="flex items-center gap-4">
+                  <span className={`inline-flex size-14 items-center justify-center ${chip}`}>
+                    <Icon className="size-7" aria-hidden />
+                  </span>
+                  <span className={`text-sm font-black uppercase tracking-widest ${accent}`}>{label}</span>
+                </header>
 
-              <blockquote className="text-xl sm:text-2xl font-black text-zinc-900 leading-snug border-l-4 border-amber-500 pl-5 my-1 tracking-tight">
-                &quot;Entregar a verdade de mercado, a melhor economia e a alegria do entretenimento gamer para toda a comunidade geek.&quot;
-              </blockquote>
+                <blockquote className="flex gap-4">
+                  <span className={`w-1.5 shrink-0 ${bar}`} aria-hidden />
+                  <p className="text-xl sm:text-2xl font-black text-white leading-snug tracking-tight">&ldquo;{quote}&rdquo;</p>
+                </blockquote>
 
-              <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Nossa missão é simples: mostrar o preço real de cada jogo, sem estimativa e sem enfeite, pra você decidir com informação de verdade. Cada número que aparece aqui vem de uma cotação coletada direto das lojas, atualizada o tempo todo.
-              </p>
-            </div>
-          </Reveal>
-
-          {/* Card 2: NOSSA VISÃO */}
-          <Reveal delay={0.08}>
-            <div className="group h-full rounded-[var(--radius-xl)] border-2 border-emerald-500/40 bg-white p-8 lg:p-10 flex flex-col gap-6 transition-all duration-300 hover:border-emerald-500 hover:shadow-2xl relative overflow-hidden">
-              <div className="flex items-center gap-3">
-                <div className="p-3.5 rounded-2xl bg-emerald-500/20 text-emerald-700 w-fit group-hover:scale-110 transition-transform duration-300">
-                  <Compass className="size-8" />
-                </div>
-                <span className="text-xs font-black uppercase tracking-widest text-emerald-800 bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30">
-                  Nossa Visão
-                </span>
-              </div>
-
-              <blockquote className="text-xl sm:text-2xl font-black text-zinc-900 leading-snug border-l-4 border-emerald-500 pl-5 my-1 tracking-tight">
-                &quot;Ser a plataforma de inteligência, acervo e economia gamer mais confiável do Brasil.&quot;
-              </blockquote>
-
-              <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-                Queremos ser o lugar onde todo gamer brasileiro descobre, compara e compra com confiança, juntando a memória dos consoles clássicos com a tecnologia de dados de hoje.
-              </p>
-            </div>
-          </Reveal>
+                <p className="text-base text-zinc-200 leading-relaxed">{text}</p>
+              </article>
+            </Reveal>
+          ))}
         </div>
 
         {/* Banner Ilustrativo */}
         <Reveal delay={0.12}>
-          <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/40 bg-[#0B0805] shadow-2xl group">
+          <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full overflow-hidden border border-amber-400/40 bg-[#0B0805] shadow-2xl group">
             <Image
               src="/images/sobre/arcade-anos-80.png"
               alt="Fliperama e cultura gamer retro"

@@ -23,6 +23,9 @@ function EntrarForm() {
   const next = searchParams.get('next') ?? '/conta';
 
   const [mode, setMode] = React.useState<'login' | 'register'>('login');
+  // "Voltar" nunca aponta para rota que exige login (ex.: /conta): ela redireciona de volta para /entrar e prende o usuario.
+  const backHref =
+    next.startsWith('/') && !next.startsWith('//') && !/^\/(conta|entrar|login|admin|auth)(\/|$|\?)/.test(next) ? next : '/';
 
   return (
     <div className="grid min-h-dvh bg-[var(--color-bg-canvas)] lg:grid-cols-2">
@@ -54,11 +57,11 @@ function EntrarForm() {
       <div className="flex flex-col items-center justify-center px-4 py-10 relative">
         <div className="w-full max-w-sm mb-4">
           <Link
-            href={next.startsWith('/') ? next : '/'}
+            href={backHref}
             className="inline-flex items-center gap-2 text-xs font-bold text-[var(--color-text-secondary)] hover:text-[var(--color-accent-gold)] transition-colors border border-[var(--color-border-subtle)] px-3.5 py-1.5 rounded-full bg-[var(--color-bg-inset)]/80 hover:bg-[var(--color-bg-surface)]"
           >
             <ArrowLeft className="size-3.5 text-[var(--color-accent-gold)]" />
-            Voltar para {next.includes('monitoramento') ? 'o Monitoramento' : 'o Espaço Geek 86'}
+            Voltar para {backHref.includes('monitoramento') ? 'o Monitoramento' : 'a página inicial'}
           </Link>
         </div>
 
