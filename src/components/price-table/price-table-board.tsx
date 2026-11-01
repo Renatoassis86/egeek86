@@ -9,7 +9,6 @@ import {
   Tv2,
   Headphones,
   Flame,
-  Tag,
   ArrowUpRight,
   Sparkles,
   Loader2,
@@ -19,6 +18,8 @@ import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { ProductImage } from '@/components/ui/product-image';
 import { formatBRL } from '@/lib/format';
 import { GAME_FORMAT_LABELS, GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { cn } from '@/lib/cn';
@@ -232,17 +233,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
                   className="rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)] p-4 shadow-sm space-y-3 min-w-0"
                 >
                   <div className="flex items-start gap-3 min-w-0">
-                    {img ? (
-                      <img
-                        src={img}
-                        alt={item.name}
-                        className="size-14 object-contain rounded bg-[var(--color-bg-inset)] p-1 shrink-0"
-                      />
-                    ) : (
-                      <div className="size-14 rounded bg-[var(--color-bg-inset)] flex items-center justify-center shrink-0">
-                        <Tag className="size-6 text-[var(--color-text-tertiary)]" />
-                      </div>
-                    )}
+                    <ProductImage src={img} alt={item.name} dimension={item.productType} bundle={isBundleTitle(item.name)} padding="sm" className="w-14" />
                     <div className="min-w-0 flex-1">
                       <Link href={`/ofertas/${item.offerSlug}`} className="hover:underline">
                         <Text variant="body-sm" className="font-bold line-clamp-2 leading-snug" title={item.name}>
@@ -350,17 +341,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
                       {/* Nome & Capa */}
                       <td className="px-4 py-3 max-w-sm">
                         <div className="flex items-center gap-3 min-w-0">
-                          {img ? (
-                            <img
-                              src={img}
-                              alt={item.name}
-                              className="size-11 object-contain rounded bg-[var(--color-bg-inset)] p-1 shrink-0"
-                            />
-                          ) : (
-                            <div className="size-11 rounded bg-[var(--color-bg-inset)] flex items-center justify-center shrink-0">
-                              <Tag className="size-5 text-[var(--color-text-tertiary)]" />
-                            </div>
-                          )}
+                          <ProductImage src={img} alt={item.name} dimension={item.productType} bundle={isBundleTitle(item.name)} padding="sm" className="w-11" />
                           <div className="min-w-0">
                             <Link href={`/ofertas/${item.offerSlug}`} className="hover:underline">
                               <Text variant="body-sm" className="font-bold line-clamp-1" title={item.name}>

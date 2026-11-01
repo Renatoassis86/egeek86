@@ -295,7 +295,8 @@ export function SearchBox({
                   src={s.imageUrl}
                   alt=""
                   fallbackLabel={PLATFORM_SHORT[s.platform] || 'Jogo'}
-                  className="size-11"
+                  dimension={s.productType}
+                  className="w-11"
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-medium text-[var(--color-text-primary)]">{s.title}</span>

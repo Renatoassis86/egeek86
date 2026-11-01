@@ -18,7 +18,8 @@ import {
 } from '@/lib/affiliate/price-verdict';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { derivePlatformFromTitle } from '@/lib/affiliate/game-classification';
-import { detectNonGameByRules, isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { comparePreference, effectiveCatalogType } from '@/lib/catalog/dimensions';
 import {
   analyzeName,
   cleanProductTitle,
@@ -121,6 +122,8 @@ export interface SearchProduct {
   platform: GamePlatformGen;
   platformLabel: string;
   productType: SearchProductKind;
+  /** Kit/lote/combo/bundle. Console com jogo: selo "Bundle" na aba Consoles e FORA da média/menor preço do console puro. */
+  isBundle: boolean;
   /** 0..1 (1 = título exato). */
   relevance: number;
 
@@ -244,15 +247,6 @@ const CACHE_TAGS = ['affiliate-offers', 'price-snapshots'];
 const PLATFORM_VALUES: ReadonlySet<string> = new Set([
   'switch_1', 'switch_2', 'ps4', 'ps5', 'xbox_one', 'xbox_series', 'xbox_360', 'unknown',
 ]);
-
-/**
- * Merchandising, material impresso e produtos de outros ramos que o
- * classificador de tipo ainda deixa em 'game' (EG-04). Só leitura: tratados
- * como acessório na busca, nunca no resultado de jogo.
- */
-const MERCH_RE = /\b(?:strategy\s+guide|guia\s+estrat[eé]gico|artbook|art\s+book|pel[uú]cia|funko|action\s+figure|chaveiro|camiseta|moletom|caneca|p[oô]ster|poster|quadro|miniatura|boneco|m[aá]scara|lumin[aá]ria|mang[aá]|c[aâ]mera|guid[aã]o|bicicleta|mtb|pc\s+gamer|placa\s+de\s+v[ií]deo|xeon|notebook|monitor)\b|\bvol\.?\s*\d+\b/i;
-/** Capacidade de armazenamento no título = hardware, não mídia. */
-const HARDWARE_RE = /\b\d{2,4}\s?gb\b|\b\d\s?tb\b/i;
 
 // ---------------------------------------------------------------------------
 // SQL: normalização do nome (função da migration 0020 se existir; senão inline)
@@ -455,18 +449,14 @@ function effectivePlatform(c: Candidate): GamePlatformGen {
 }
 
 /**
- * Tipo efetivo: as regras de título (EG-04) corrigem jogo que é acessório,
- * peça ou console enquanto a reclassificação em lote não for aplicada. Nunca
- * promove um acessório/console do banco a jogo.
+ * Tipo efetivo (aba) pela regra única de dimensões (`src/lib/catalog/dimensions.ts`):
+ * o título corrige o tipo gravado (acessório/console tipado como jogo, etc.)
+ * enquanto o UPDATE em lote não for aprovado. `null` = fora da cartela de games
+ * (merchandise, peça/embalagem, outra vertical): NUNCA aparece em aba, facet,
+ * sugestão nem autocomplete. Nunca promove acessório/console do banco a jogo.
  */
-function effectiveType(c: Candidate): ProductType {
-  if (c.dbType === 'game') {
-    const hit = detectNonGameByRules(c.name);
-    if (hit) return hit.productType;
-    if (MERCH_RE.test(c.name)) return 'accessory';
-    if (HARDWARE_RE.test(c.name)) return 'console';
-  }
-  return c.dbType;
+function effectiveType(c: Candidate): ProductType | null {
+  return effectiveCatalogType(c.name, c.dbType);
 }
 
 function isHttpUrl(u: string | null | undefined): u is string {
@@ -570,7 +560,9 @@ function scoreCandidates(q: ParsedQuery, rows: Candidate[], opts: { prefixLast?:
       relevance = s.relevance;
     }
     if (relevance < (opts.relaxed ? 0.5 : SEARCH_MIN_RELEVANCE)) continue;
-    out.push({ c, relevance, type: effectiveType(c), platform: effectivePlatform(c), bundle: isBundleTitle(c.name) });
+    const type = effectiveType(c);
+    if (type === null) continue; // fora da cartela pública
+    out.push({ c, relevance, type, platform: effectivePlatform(c), bundle: isBundleTitle(c.name) || /\bbundle\b/i.test(c.name) });
   }
   return out;
 }
@@ -602,8 +594,9 @@ function emptyResult(n: NormalizedParams, q: ParsedQuery | null, reason: SearchE
 
 function sortScored(list: Scored[], sort: SearchSort): Scored[] {
   const bucket = (s: Scored) => Math.round(s.relevance * 20);
+  // preferência: jogos > consoles > acessórios (só desempata quando a lista mistura abas)
   const byRel = (a: Scored, b: Scored) =>
-    bucket(b) - bucket(a) || b.c.offerCount - a.c.offerCount || a.c.minPrice - b.c.minPrice || a.c.name.localeCompare(b.c.name);
+    bucket(b) - bucket(a) || comparePreference(a.type, b.type) || b.c.offerCount - a.c.offerCount || a.c.minPrice - b.c.minPrice || a.c.name.localeCompare(b.c.name);
   const copy = [...list];
   if (sort === 'price_asc') copy.sort((a, b) => a.c.minPrice - b.c.minPrice || byRel(a, b));
   else if (sort === 'stores') copy.sort((a, b) => b.c.networkCount - a.c.networkCount || b.c.offerCount - a.c.offerCount || byRel(a, b));
@@ -624,6 +617,7 @@ function buildBaseItems(list: Scored[]): SearchProduct[] {
       platform: s.platform,
       platformLabel: GAME_PLATFORM_GEN_LABELS[s.platform],
       productType: s.type,
+      isBundle: s.bundle,
       relevance: Math.round(s.relevance * 1000) / 1000,
       lowestPriceCents: best.lowestPriceCents,
       lowestStoreName: best.storeName,
@@ -875,7 +869,7 @@ async function runSearch(n: NormalizedParams): Promise<SearchProductsResult> {
 
 const searchProductsCached = createCachedQuery(
   async (n: NormalizedParams): Promise<SearchProductsResult> => runSearch(n),
-  ['search-products-v2'],
+  ['search-products-v3'],
   { revalidate: CACHE_SECONDS, tags: CACHE_TAGS }
 );
 
@@ -1027,7 +1021,7 @@ const loadIndexRowsCached = createCachedQuery(loadIndexRows, ['suggest-index-v1'
 });
 
 function buildIndex(rows: IndexRow[]): IndexEntry[] {
-  return rows.map((r) => {
+  return rows.flatMap((r): IndexEntry[] => {
     const c: Candidate = {
       id: r.id,
       name: r.name,
@@ -1058,12 +1052,13 @@ function buildIndex(rows: IndexRow[]): IndexEntry[] {
       wsim: 0,
     };
     const type = effectiveType(c);
-    return {
+    if (type === null) return []; // fora da cartela pública: nunca entra no autocomplete
+    return [{
       scored: { c, type, platform: effectivePlatform(c), bundle: isBundleTitle(r.name) },
       info: analyzeName(r.name),
       folded: foldText(r.name).replace(/[^a-z0-9]+/g, ' '),
       title: cleanProductTitle(r.name, { keepPlatform: type !== 'game' }),
-    };
+    }];
   });
 }
 

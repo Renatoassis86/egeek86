@@ -33,9 +33,9 @@ import { getPlatformStats } from '@/server/queries/affiliate';
 import { getPublicTotals } from '@/server/queries/home-search';
 
 export const metadata: Metadata = {
-  title: 'História e Arquitetura da Plataforma',
+  title: 'História e Ferramentas',
   description:
-    'Conheça a história, missão, objetivos de inteligência de dados e o ecossistema completo de ferramentas do Espaço Geek 86.',
+    'Conheça a história, a missão e as ferramentas do Espaço Geek 86.',
 };
 
 export const dynamic = 'force-dynamic';
@@ -85,10 +85,10 @@ function HeroSection() {
               Arkos Intelligence e Espaço Geek 86
             </span>
             <Text as="h1" variant="display-xl" className="font-black text-white tracking-tight lg:text-display-2xl max-w-[22ch]">
-              Inteligência de Dados e Decisão para o Mercado Gamer.
+              Preço real de games, com histórico.
             </Text>
             <Text variant="body-lg" className="mt-2 text-zinc-300 font-medium max-w-[68ch] leading-relaxed">
-              O Espaço Geek 86 reúne toda a história dos videogames, da nostalgia da era 8, 16 e 32-bit aos consoles de última geração, com modelos modernos de inteligência de dados e tomada de decisão. Um ecossistema completo pensado para melhorar a experiência de compra do consumidor final e apoiar a gestão de afiliados e vendedores no Brasil.
+              O Espaço Geek 86 compara preços de jogos, consoles e acessórios nos marketplaces do Brasil. Do 8-bit aos consoles atuais, a ideia é ajudar você a comprar sabendo quanto o produto custa nas lojas e quanto já custou.
             </Text>
           </div>
         </Reveal>
@@ -146,16 +146,16 @@ function QuemSomosSection() {
               <History className="size-3.5 mr-1" /> Nossa História
             </span>
             <Text as="h2" variant="display-lg" className="font-black text-white text-3xl sm:text-4xl lg:text-5xl leading-tight drop-shadow-md">
-              Da paixão pelas locadoras dos anos 80 e 90 a um cockpit de Inteligência de Dados.
+              Das locadoras dos anos 80 e 90 a um comparador de preços.
             </Text>
             <Text variant="body-md" className="leading-relaxed text-zinc-200 font-medium">
-              O Espaço Geek 86 nasceu do fascínio pelas tardes passadas em locadoras de videogame, trocando cartuchos de Super Nintendo e Mega Drive, lendo revistas de dicas e vivenciando a ascensão dos consoles clássicos.
+              O Espaço Geek 86 nasceu das tardes em locadoras de videogame, trocando cartuchos de Super Nintendo e Mega Drive e lendo revistas de dicas.
             </Text>
             <Text variant="body-md" className="leading-relaxed text-zinc-200 font-medium">
-              O que começou como uma coleção pessoal rigorosamente catalogada evoluiu para análises quantitativas, rotinas de monitoramento e o hábito de ajudar amigos a encontrarem o preço justo sem cair em armadilhas de falsos descontos.
+              Começou como uma coleção pessoal catalogada e virou o hábito de ajudar amigos a achar um preço justo sem cair em falso desconto.
             </Text>
             <Text variant="body-md" className="leading-relaxed text-zinc-200 font-medium">
-              Hoje, transformamos essa essência em uma plataforma completa de inteligência de dados que varre os maiores marketplaces do Brasil a cada 5 minutos, preservando a paixão do colecionador com a precisão dos modelos analíticos.
+              Hoje o site consulta os maiores marketplaces do Brasil a cada 5 minutos e guarda o histórico de preço de cada produto.
             </Text>
           </div>
         </Reveal>
@@ -203,9 +203,9 @@ function MissaoVisaoValoresSection() {
       label: 'Nossa Missão',
       Icon: Target,
       quote:
-        'Entregar a verdade de mercado, a melhor economia e a alegria do entretenimento gamer para toda a comunidade geek.',
+        'Mostrar o preço real dos jogos para a comunidade geek economizar na hora de comprar.',
       text:
-        'Nossa missão é simples: mostrar o preço real de cada jogo, sem estimativa e sem enfeite, pra você decidir com informação de verdade. Cada número que aparece aqui vem de uma cotação coletada direto das lojas, atualizada o tempo todo.',
+        'Mostramos o preço real de cada jogo, sem estimativa, para você decidir com informação. Cada número vem de uma cotação coletada direto das lojas e atualizada a cada coleta.',
       accent: 'text-amber-300',
       bar: 'bg-amber-400',
       border: 'border-amber-400/40 hover:border-amber-400',
@@ -215,9 +215,9 @@ function MissaoVisaoValoresSection() {
       id: 'visao',
       label: 'Nossa Visão',
       Icon: Compass,
-      quote: 'Ser a plataforma de inteligência, acervo e economia gamer mais confiável do Brasil.',
+      quote: 'Ser a referência de comparação de preços de games no Brasil.',
       text:
-        'Queremos ser o lugar onde todo gamer brasileiro descobre, compara e compra com confiança, juntando a memória dos consoles clássicos com a tecnologia de dados de hoje.',
+        'Queremos que o gamer brasileiro encontre aqui o menor preço do jogo que procura e saiba se vale a pena comprar agora.',
       accent: 'text-emerald-300',
       bar: 'bg-emerald-400',
       border: 'border-emerald-400/40 hover:border-emerald-400',
@@ -235,13 +235,13 @@ function MissaoVisaoValoresSection() {
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-black uppercase tracking-widest bg-amber-400 text-zinc-950 w-fit">
-              Propósito &amp; Fronteira Tecnológica
+              Propósito
             </span>
             <Text as="h2" variant="display-lg" className="font-black !text-white text-3xl sm:text-5xl tracking-tight">
               Nossa Missão &amp; Nossa Visão
             </Text>
             <Text variant="body-lg" className="!text-zinc-200 max-w-[66ch] leading-relaxed font-medium">
-              Muito além de exibir preços, construímos uma arquitetura de inteligência, paixão e entretenimento que redefine o mercado de jogos no Brasil.
+              O que queremos entregar e aonde queremos chegar.
             </Text>
           </div>
         </Reveal>
@@ -302,7 +302,7 @@ function ObjetivosJustificativaSection() {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-emerald-400 font-bold">
-              Eliminação de distorções e inflação artificial de preços no varejo.
+              Preços que variam muito de uma loja para outra.
             </div>
           </div>
         </Reveal>
@@ -313,26 +313,26 @@ function ObjetivosJustificativaSection() {
               <ShieldCheck className="size-3.5 mr-1" /> Justificativa e Propósito
             </span>
             <Text as="h2" variant="display-md" className="font-extrabold text-white">
-              Por que uma plataforma de inteligência de dados é indispensável?
+              Por que comparar preços de games
             </Text>
             <Text variant="body-md" className="leading-relaxed text-zinc-200">
-              <strong>O Problema do Varejo Gamer:</strong> O mercado brasileiro de jogos sofre com grande fragmentação. O mesmo jogo pode custar R$ 349,00 em uma loja e R$ 499,00 em outra na mesma data. Além disso, em épocas promocionais, vendedores reajustam preços prévios para simular descontos inexistentes.
+              <strong>O Problema do Varejo Gamer:</strong> O mesmo jogo pode custar muito mais em uma loja do que em outra no mesmo dia. Em época de promoção, alguns vendedores aumentam o preço antes para simular um desconto.
             </Text>
             <Text variant="body-md" className="leading-relaxed text-zinc-200">
-              <strong>A Solução Espaço Geek 86:</strong> Construímos rotinas automatizadas de ingestão 24/7 que coletam dados a cada 5 minutos no Mercado Livre, nossa principal fonte hoje, com novas plataformas parceiras entrando conforme a integração de cada uma fica pronta.
+              <strong>A Solução Espaço Geek 86:</strong> Coletamos preços automaticamente a cada 5 minutos no Mercado Livre, nossa principal fonte hoje. Novos marketplaces entram conforme a integração de cada um fica pronta.
             </Text>
             <div className="flex flex-col gap-2.5 pt-2">
               <div className="flex items-center gap-2 text-sm font-bold text-white">
                 <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
-                <span>Limpeza estatística anti-outlier para expurgar distorções de preço</span>
+                <span>Preços fora do normal são descartados do cálculo da média</span>
               </div>
               <div className="flex items-center gap-2 text-sm font-bold text-white">
                 <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
-                <span>Cálculo de preço médio real de mercado vs. menor preço ativo</span>
+                <span>Preço médio de mercado comparado ao menor preço ativo</span>
               </div>
               <div className="flex items-center gap-2 text-sm font-bold text-white">
                 <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
-                <span>Histórico auditável que prova se a oferta é oportunidade de verdade</span>
+                <span>Histórico que mostra se a oferta é boa de verdade</span>
               </div>
             </div>
           </div>
@@ -349,113 +349,113 @@ function FerramentasShowcaseSection() {
   const tools = [
     {
       id: 'ferramenta-bolsa-gamer',
-      badge: 'Motor Principal de Preço',
-      title: '1. Bolsa Gamer e Monitoramento de Preços',
+      badge: 'Preço e histórico',
+      title: '1. Monitoramento de preços',
       description:
-        'Gráfico estatístico interativo com duas camadas (linha do Menor Preço Ativo e curva de Média de Mercado entre todas as lojas). Suporta zoom por período e mostra se o produto está no menor preço já registrado.',
+        'Gráfico com duas linhas: o menor preço ativo e a média entre todas as lojas. Dá para escolher o período e ver se o produto está no menor preço já registrado.',
       imageSrc: '/images/sobre/ferramenta-bolsa-gamer.png',
       badgeColor: 'bg-amber-500 text-black',
       borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [
-        'Curva suave da Média Geral entre todas as lojas e plataformas',
-        'Área sombreada dinâmica do Menor Preço Ativo em cada varredura',
-        'Contagem real de cotações e lojas monitoradas no período selecionado',
+        'Média geral entre todas as lojas',
+        'Menor preço ativo em cada coleta',
+        'Número de cotações e de lojas monitoradas no período escolhido',
       ],
       reverse: false,
     },
     {
       id: 'ferramenta-gestao-afiliados',
-      badge: 'Painel de Afiliados e Vendedores',
-      title: '2. Instrumento de Gestão para Afiliados e Vendedores',
+      badge: 'Divulgadores e vendedores',
+      title: '2. Painel para divulgadores e vendedores',
       description:
-        'Central estratégica para criadores de conteúdo, afiliados e leiloeiros gerarem mensagens promocionais de alta conversão para WhatsApp e Telegram, aplicarem links de afiliado com rastreamento inteligente exclusivo e acompanharem cliques, métricas e receitas.',
+        'Para quem divulga ofertas: gere mensagens para WhatsApp e Telegram, use links com rastreamento e acompanhe cliques e resultados.',
       imageSrc: '/images/sobre/ferramenta-gestao-afiliados.png',
       badgeColor: 'bg-orange-500 text-white',
       borderHover: 'hover:border-orange-500 hover:shadow-xl',
       bullets: [
-        'Gerador automático de mensagens com formatação profissional',
-        'Edição e exclusão de mensagens divulgadas no histórico',
-        'Rastreamento inteligente de cliques e taxa de conversão',
+        'Gerador de mensagens para WhatsApp e Telegram',
+        'Histórico de mensagens, com edição e exclusão',
+        'Contagem de cliques e taxa de conversão',
       ],
       reverse: true,
     },
     {
       id: 'ferramenta-assistente-comprador',
       badge: 'Decisão do Consumidor',
-      title: '3. Assistente Inteligente de Tomada de Decisão do Comprador',
+      title: '3. Ajuda na hora de comprar',
       description:
-        'Ferramenta para o comprador final identificar se o momento é ideal para compra. Exibe a variação percentual em relação ao preço médio, badges de oportunidade e links direcionando para a loja com o menor valor ativo.',
+        'Mostra se vale comprar agora: a variação percentual em relação ao preço médio, selos de oportunidade e o link da loja com o menor preço ativo.',
       imageSrc: '/images/sobre/assistente-decisao-comprador.png',
       badgeColor: 'bg-emerald-600 text-white',
       borderHover: 'hover:border-emerald-500 hover:shadow-xl',
       bullets: [
-        'Indicador instantâneo "Comprar Agora no Menor Preço"',
-        'Comparador de ofertas de diferentes vendedores no mesmo item',
-        'Filtro de menor histórico vitalício sem pegadinhas',
+        'Indicador de menor preço ativo',
+        'Ofertas de vários vendedores para o mesmo item',
+        'Filtro pelo menor preço já registrado',
       ],
       reverse: false,
     },
     {
       id: 'ferramenta-observatorio-noticias',
       badge: 'Pesquisas Secundárias e Editorial',
-      title: '4. Observatório Gamer, Dossiês e Notícias de Mercado',
+      title: '4. Observatório Gamer e notícias',
       description:
-        'Portal jornalístico e analítico com reportagens originais, análises descritivas e relatórios teóricos integrando dados de pesquisas de mercado globais e nacionais (Newzoo, Statista e Pesquisa Game Brasil).',
+        'Reportagens originais, análises e relatórios com dados de pesquisas de mercado do Brasil e do mundo (Newzoo, Statista e Pesquisa Game Brasil).',
       imageSrc: '/images/sobre/vitrine-colecionaveis.png',
       badgeColor: 'bg-cyan-600 text-white',
       borderHover: 'hover:border-cyan-500 hover:shadow-xl',
       bullets: [
-        'Artigos teóricos sobre a economia do retrogaming e cultura pop',
-        'Dossiês de mercado com estatísticas consolidadas da indústria',
-        'Seções organizadas por sub-categorias filtráveis via menu',
+        'Artigos sobre a economia do retrogaming e a cultura pop',
+        'Dossiês de mercado com estatísticas da indústria',
+        'Seções organizadas por categoria',
       ],
       reverse: true,
     },
     {
       id: 'ferramenta-pesquisas-primarias',
       badge: 'Pesquisas de Mercado e Voz do Consumidor',
-      title: '5. Pesquisas de Mercado, Qualitativas e Lançamento de Marcas',
+      title: '5. Pesquisas de mercado',
       description:
-        'Infraestrutura de inteligência de dados desenvolvida para realizar pesquisas de marketing de mercado, testes de aceitação no lançamento de marcas e pesquisas qualitativas gerais aplicadas diretamente a consumidores gerais e público gamer.',
+        'Pesquisas com consumidores e com o público gamer, como testes de aceitação no lançamento de marcas.',
       imageSrc: '/images/noticias-hub/data-analysis.png',
       badgeColor: 'bg-purple-600 text-white',
       borderHover: 'hover:border-purple-500 hover:shadow-xl',
       bullets: [
-        'Pesquisas qualitativas e quantitativas aplicadas a consumidores gerais',
-        'Estudos de posicionamento estratégicos para lançamento de marcas',
+        'Pesquisas qualitativas e quantitativas com consumidores',
+        'Estudos de posicionamento para lançamento de marcas',
         'Relatórios de hábitos de consumo e percepção de marca',
       ],
       reverse: false,
     },
     {
       id: 'ferramenta-nlp-hype-index',
-      badge: 'Inteligência Artificial e NLP',
-      title: '6. Análise de Sentimento Social e Geek Hype Index (0-100)',
+      badge: 'Hype Index',
+      title: '6. Geek Hype Index (0-100)',
       description:
-        'Motor de inteligência de dados que analisa o engajamento social e a percepção da comunidade sobre títulos e consoles, gerando a nota Geek Hype Index para direcionar estratégias de marcas e colecionadores.',
+        'Nota de 0 a 100 que mede o engajamento e a percepção da comunidade sobre títulos e consoles.',
       imageSrc: '/images/sobre/snes-colecao.png',
       badgeColor: 'bg-rose-600 text-white',
       borderHover: 'hover:border-rose-500 hover:shadow-xl',
       bullets: [
-        'Métrica de hype calculada com Processamento de Linguagem Natural',
+        'Nota de hype calculada a partir de comentários da comunidade',
         'Classificação de sentimento positivo, neutro ou negativo',
-        'Direcionamento estratégico para aquisições de catálogo',
+        'Apoio para decidir quais títulos adquirir',
       ],
       reverse: true,
     },
     {
       id: 'ferramenta-hype-zone-leiloes',
       badge: 'Hype Zone e Leilões C2C',
-      title: '7. Hype Zone, Drops Exclusivos e Leilões entre Colecionadores',
+      title: '7. Hype Zone, drops e leilões entre colecionadores',
       description:
-        'Área nobre dedicada a lançamentos de edições limitadas e leilões C2C de itens clássicos e raros, com contagem regressiva ao vivo, histórico de lances e score de confiança dos vendedores.',
+        'Lançamentos de edições limitadas e leilões entre colecionadores de itens clássicos e raros, com contagem regressiva, histórico de lances e nota de confiança dos vendedores.',
       imageSrc: '/images/sobre/loja-retro.png',
       badgeColor: 'bg-amber-500 text-black',
       borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [
-        'Sistema de leilões com arremate ao vivo e cronômetro em tempo real',
-        'Drops exclusivos com restrição de acesso e cadastro prévio',
-        'Score de reputação auditado para vendedores e colecionadores',
+        'Leilões com cronômetro regressivo',
+        'Drops com acesso restrito e cadastro prévio',
+        'Nota de reputação de vendedores e colecionadores',
       ],
       reverse: false,
     },
@@ -467,13 +467,13 @@ function FerramentasShowcaseSection() {
         <Reveal>
           <div className="text-center flex flex-col items-center gap-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/15 text-orange-700 border border-orange-500/30 w-fit">
-              Arquitetura de Ferramentas
+              Ferramentas
             </span>
             <Text as="h2" variant="display-lg" className="font-black text-zinc-900 tracking-tight">
-              Conheça Nossas Ferramentas de Inteligência de Dados
+              Ferramentas do Espaço Geek 86
             </Text>
             <Text variant="body-lg" className="text-zinc-700 max-w-[64ch] leading-relaxed font-medium">
-              Um ecossistema de inteligência de dados projetado com tecnologia de ponta, design nostálgico e módulos especializados para compradores, afiliados e colecionadores.
+              O que o site oferece para compradores, divulgadores e colecionadores.
             </Text>
           </div>
         </Reveal>
@@ -541,7 +541,7 @@ function IdealizadorSection() {
             <div className="lg:col-span-5 relative aspect-[4/3] w-full rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-[#0B0805] group">
               <Image
                 src="/images/sobre/idealizador.png"
-                alt="Renato Silva de Assis — Fundador e Idealizador"
+                alt="Renato Silva de Assis, fundador e Idealizador"
                 fill
                 priority
                 className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
@@ -568,34 +568,34 @@ function IdealizadorSection() {
 
               <div className="flex flex-col gap-4 text-zinc-300 font-medium leading-relaxed text-sm sm:text-base">
                 <p>
-                  O Espaço Geek 86 nasceu da união entre duas paixões que acompanham <strong>Renato Silva de Assis</strong> desde a infância: o universo dos videogames e a construção de soluções tecnológicas capazes de transformar mercados.
+                  O Espaço Geek 86 nasceu da união entre duas paixões que acompanham <strong>Renato Silva de Assis</strong> desde a infância: os videogames e a tecnologia.
                 </p>
                 <p>
-                  Economista pela Universidade Federal da Paraíba (UFPB), Mestre em Economia Regional pela Universidade Federal do Rio Grande do Norte (UFRN) e especialista em Ciência de Dados aplicada aos negócios, Renato construiu sua carreira desenvolvendo plataformas, modelos analíticos e sistemas de inteligência para tomada de decisão. Ao longo de sua trajetória, sempre acreditou que dados bem utilizados têm o poder de reduzir incertezas, aumentar a transparência e gerar valor para as pessoas.
+                  Economista pela Universidade Federal da Paraíba (UFPB), Mestre em Economia Regional pela Universidade Federal do Rio Grande do Norte (UFRN) e especialista em Ciência de Dados aplicada aos negócios, Renato trabalha há anos desenvolvendo plataformas e modelos de análise de dados para apoiar decisões.
                 </p>
                 <p>
-                  Paralelamente à vida profissional, cultivou por décadas outra grande paixão: o colecionismo gamer. Desde os consoles clássicos até as gerações atuais, acompanhou de perto a evolução da indústria, do mercado de colecionáveis e da cultura geek, vivenciando também as dificuldades enfrentadas diariamente por milhares de consumidores: preços inconsistentes, falsas promoções, pouca transparência e escassez de informação confiável para decidir uma compra.
+                  Há décadas ele coleciona games. Dos consoles clássicos aos atuais, acompanhou a indústria, o mercado de colecionáveis e a cultura geek, e viu de perto os problemas de quem compra: preço que muda de loja para loja, falsa promoção e pouca informação confiável.
                 </p>
                 <p className="font-semibold text-white">
-                  Foi dessa realidade que surgiu o Espaço Geek 86.
+                  Daí surgiu o Espaço Geek 86.
                 </p>
                 <p>
-                  Mais do que um marketplace, o Espaço Geek 86 está sendo construído como uma plataforma de inteligência para o consumidor geek. O objetivo é reunir, em um único ambiente, monitoramento de preços atualizado a cada coleta, histórico de valores, reputação de vendedores, pesquisas com a comunidade, conteúdo especializado e algoritmos próprios capazes de ajudar cada usuário a comprar melhor, pagar menos e colecionar com mais segurança.
+                  O Espaço Geek 86 está sendo construído para reunir num só lugar o monitoramento de preços atualizado a cada coleta, o histórico de valores, a reputação de vendedores, pesquisas com a comunidade e conteúdo sobre games.
                 </p>
                 <blockquote className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 italic text-amber-200 text-sm leading-relaxed">
-                  &quot;Por trás da plataforma existe uma filosofia simples: tecnologia deve servir às pessoas. A missão do Espaço Geek 86 não é vender produtos a qualquer custo, mas oferecer conhecimento, transparência e inteligência para que cada decisão de compra seja baseada em informações reais e não apenas em publicidade.&quot;
+                  &quot;A tecnologia deve servir às pessoas. Queremos que cada compra seja decidida com informação real sobre o preço, e não só com base em publicidade.&quot;
                 </blockquote>
               </div>
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
                 <Link href="/ofertas">
                   <Button variant="hype" size="md" rightIcon={<ArrowRight className="size-4" />}>
-                    Explorar a Plataforma
+                    Ver ofertas
                   </Button>
                 </Link>
                 <Link href="/pesquisa">
                   <Button variant="outline" size="md" className="text-white border-amber-500/40 hover:bg-amber-500/10">
-                    Responder Pesquisa da Comunidade
+                    Responder à pesquisa
                   </Button>
                 </Link>
               </div>

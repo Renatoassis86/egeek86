@@ -1,3 +1,4 @@
+import { getGameSynopsis } from '@/server/queries/synopsis';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -19,8 +20,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { Separator } from '@/components/ui/separator';
 import { Reveal } from '@/components/motion/reveal';
-import { Glow } from '@/components/motion/glow';
-import { SceneImage } from '@/components/motion/scene-image';
+import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { ProductImage } from '@/components/ui/product-image';
 import { PriceRangeBar } from '@/components/geek-deals/price-range-bar';
 import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
 import { getProductStores } from '@/server/queries/product-stores';
@@ -68,12 +69,13 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const offer = await getOfferBySlug(slug);
   if (!offer) notFound();
 
-  const [metrics, coupons, profile, meliDetails, stores] = await Promise.all([
+  const [metrics, coupons, profile, meliDetails, stores, synopsis] = await Promise.all([
     getMasterProductMetrics(offer.masterProductId),
     listActiveCouponsByNetwork(offer.networkId),
     getCurrentProfile(),
     offer.masterProduct.meliCatalogId ? getMeliCatalogDetails(offer.masterProduct.meliCatalogId) : Promise.resolve(null),
     getProductStores(offer.masterProductId).catch(() => []),
+    getGameSynopsis(offer.masterProductId).catch(() => null),
   ]);
   const isWatching = profile
     ? (await getWatchedMasterProductIds(profile.id)).has(offer.masterProductId)
@@ -86,7 +88,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   // aparece quando meliDetails traz conteúdo de verdade; sem isso, a seção
   // inteira fica oculta em vez de mostrar um "sem descrição" pro cliente.
   const galleryImages = (meliDetails?.pictures.length ? meliDetails.pictures : images ?? []).filter((url) => url !== image);
-  const hasAboutSection = Boolean(meliDetails?.shortDescription) || Boolean(meliDetails?.features.length) || galleryImages.length > 0;
+  const hasAboutSection = Boolean(synopsis) || Boolean(meliDetails?.features.length) || galleryImages.length > 0;
   // Selo só com histórico elegível (>= 5 cotações e >= 14 dias, ADR 0001/0002): com 1 cotação, atual <= menor é verdade por definição.
   const isLowest = metrics?.isLowestEver === true && isLowestPrice(offer.currentPriceCents, metrics.lowestPriceCents);
   const trend = metrics ? TREND_META[metrics.trend] : null;
@@ -116,9 +118,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
       </Link>
 
       <div className="mt-5 grid gap-8 lg:gap-14 lg:grid-cols-[minmax(0,440px)_1fr] lg:items-start">
-        <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] aspect-square lg:sticky lg:top-24">
-          <Glow color="gold" size="md" className="-top-16 -right-16" intensity={0.22} />
-          <SceneImage src={image} alt={offer.title} tone="gold" fit="contain" className="relative" priority />
+        <ProductImage src={image} alt={offer.title} dimension={offer.masterProduct.productType} bundle={isBundleTitle(offer.title)} priority padding="sm" className="w-full lg:sticky lg:top-24">
 
           <div className="absolute left-3 top-3">
             <Badge
@@ -139,7 +139,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
               </Text>
             </div>
           )}
-        </div>
+        </ProductImage>
 
         <Reveal delay={0.06}>
           <div className="flex flex-col gap-5">
@@ -227,9 +227,9 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
               </Card>
             )}
 
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               {/^https?:\/\//i.test(offer.affiliateUrl) && (
-                <Button asChild size="lg" className="flex-1 sm:flex-none">
+                <Button asChild size="lg" className="col-span-2 sm:col-auto sm:flex-none">
                   <a href={`/go/${offer.slug}`} target="_blank" rel="noopener noreferrer nofollow sponsored">
                     <ShieldCheck className="size-4" />
                     Ir à loja
@@ -309,7 +309,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
             </Text>
 
             <GameAboutSection
-              shortDescription={meliDetails?.shortDescription ?? null}
+              synopsis={synopsis}
               features={meliDetails?.features ?? []}
               galleryImages={galleryImages}
             />

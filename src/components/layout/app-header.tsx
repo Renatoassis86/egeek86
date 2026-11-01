@@ -187,7 +187,7 @@ export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number
       <div className="bg-[#050403] border-b border-[#1C1814] py-1 px-4 text-right">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 flex items-center justify-end">
           <span className="font-mono text-[10px] font-bold tracking-widest uppercase text-[#A39785]">
-            Espaço Geek 86 · Inteligência de Mercado &amp; Monitoramento de Preços
+            Espaço Geek 86 · Comparador de preços de games
           </span>
         </div>
       </div>

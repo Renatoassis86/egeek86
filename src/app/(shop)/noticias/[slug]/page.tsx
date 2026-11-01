@@ -166,7 +166,7 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
             if (!cleanKw) return null;
             return (
               <Badge key={cleanKw} variant="outline" className="text-xs bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none">
-                🏷️ {cleanKw}
+                {cleanKw}
               </Badge>
             );
           })}

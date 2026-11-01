@@ -94,8 +94,8 @@ export default async function TabelaDePrecosPage({
       {/* Banner Principal com Carrossel de Cupons do Dia no Lado Direito */}
       <MarketplaceHeroBanner
         title="Tabela Geral de Preços"
-        subtitle="Explore todo o catálogo monitorado em ordem alfabética. Compare cotações ativas, médias históricas e os principais indicadores para sua decisão de compra."
-        categoryTag="Monitoramento Abrangente"
+        subtitle="Todo o catálogo monitorado em ordem alfabética, com cotações ativas e médias históricas para você comparar."
+        categoryTag="Catálogo completo"
         stats={{
           // Totais do site inteiro (mesma fonte da home: produtos com oferta pública
           // ativa e marketplaces com oferta pública ativa). totalCount é o recorte

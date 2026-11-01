@@ -1,52 +1,23 @@
 'use client';
 
-import { useState } from 'react';
-import { cn } from '@/lib/cn';
+import type { CatalogDimension } from '@/lib/catalog/dimensions';
+import { ProductImage } from '@/components/ui/product-image';
 
-/**
- * Miniatura de produto: foto real com `contain` (capa nunca cortada) ou, sem
- * foto/em erro, um placeholder só de CSS com a sigla da plataforma. Nunca
- * reutiliza imagem de outro produto.
- */
+/** Miniatura de produto: delega ao quadro padrão `ProductImage`. */
 export function ProductThumb({
   src,
   alt,
   fallbackLabel,
+  dimension,
+  bundle,
   className,
 }: {
   src: string | null;
   alt: string;
   fallbackLabel: string;
+  dimension?: CatalogDimension | null;
+  bundle?: boolean;
   className?: string;
 }) {
-  const [failed, setFailed] = useState(false);
-  const show = Boolean(src) && !failed;
-  return (
-    <div
-      className={cn(
-        'relative flex shrink-0 items-center justify-center overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]',
-        className
-      )}
-    >
-      {show ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src as string}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          referrerPolicy="no-referrer"
-          onError={() => setFailed(true)}
-          className="size-full object-contain p-1"
-        />
-      ) : (
-        <span
-          aria-hidden
-          className="px-1 text-center font-mono text-[10px] font-bold uppercase leading-tight tracking-wider text-[var(--color-text-tertiary)]"
-        >
-          {fallbackLabel}
-        </span>
-      )}
-    </div>
-  );
+  return <ProductImage src={src} alt={alt} fallbackLabel={fallbackLabel} dimension={dimension} bundle={bundle} padding="sm" className={className} />;
 }

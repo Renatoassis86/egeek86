@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/cn';
-import { SceneImage } from '@/components/motion/scene-image';
+import { ProductImage } from '@/components/ui/product-image';
 import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
 import { formatBRL } from '@/lib/format';
 import { getSellerTrustInfo, sellerTrustTextColor } from '@/lib/affiliate/labels';
@@ -118,9 +118,7 @@ export default async function CompararPrecosPage({
 
       <Card className="mb-6 border-[var(--color-accent-primary)]/40">
         <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-          <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-inset)] sm:w-24">
-            <SceneImage src={cheapest.imageUrl} alt={cheapest.title} tone="gold" fit="contain" />
-          </div>
+          <ProductImage src={cheapest.imageUrl} alt={cheapest.title} padding="sm" className="w-full sm:w-28" />
           <div className="min-w-0 flex-1">
             <Badge variant="hype" size="sm" className="mb-2">
               <Flame className="size-3" />
@@ -146,7 +144,7 @@ export default async function CompararPrecosPage({
               <Text
                 variant="body-sm"
                 color="tertiary"
-                title="Esse item ainda está sendo preparado — o link de compra libera em breve."
+                title="Esse item ainda está sendo preparado. O link de compra será liberado em breve."
               >
                 Link em preparação
               </Text>

@@ -141,7 +141,7 @@ export default async function HypeZonePage() {
                 </>
               ) : seller?.status === 'active' || profile?.role === 'admin' ? (
                 <Button asChild size="lg" variant="hype" className="font-bold shadow-lg" rightIcon={<Sparkles className="size-4" />}>
-                  <Link href="/conta/vendedor/novo-drop">✨ Cadastrar Novo Produto / Drop</Link>
+                  <Link href="/conta/vendedor/novo-drop">Cadastrar novo produto / drop</Link>
                 </Button>
               ) : seller?.status === 'pending_kyc' ? (
                 <Button asChild size="lg" variant="outline" className="border-amber-500/60 text-amber-400 font-bold">
@@ -208,7 +208,7 @@ export default async function HypeZonePage() {
                 </Button>
               ) : seller?.status === 'active' || profile?.role === 'admin' ? (
                 <Button asChild size="lg" variant="hype" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<ChevronRight className="size-4" />}>
-                  <Link href="/conta/vendedor/novo-drop">✨ Cadastrar Novo Drop</Link>
+                  <Link href="/conta/vendedor/novo-drop">Cadastrar novo drop</Link>
                 </Button>
               ) : (
                 <>
@@ -261,9 +261,8 @@ export default async function HypeZonePage() {
                 </div>
               </div>
               <Text variant="body-sm" color="secondary" className="leading-relaxed text-[11px] md:text-xs mb-auto">
-                Transforme seu colecionável em um evento de lançamento com hora marcada! Conte a história da 
-                sua peça, envie até <strong className="text-[var(--color-text-primary)] font-bold">10 fotos detalhadas</strong> e crie uma disputa saudável que atrai centenas 
-                de interessados em minutos.
+                Lance seu colecionável com hora marcada. Conte a história da 
+                sua peça e envie até <strong className="text-[var(--color-text-primary)] font-bold">10 fotos</strong>.
               </Text>
               <div className="flex flex-col gap-3 border-t border-[var(--color-border-subtle)] pt-3">
                 {!profile ? (
@@ -397,7 +396,7 @@ export default async function HypeZonePage() {
             Drops e Ofertas da Comunidade
           </Text>
           <Text variant="body-sm" color="secondary" className="max-w-[60ch] text-xs">
-            Explore abaixo as raridades ativas no mercado, lotes agendados e o histórico de negociações concluídas.
+            Veja abaixo as raridades à venda, os lotes agendados e as negociações já concluídas.
           </Text>
         </div>
       </Reveal>

@@ -179,7 +179,7 @@ export function HeaderSearchModal() {
             <div className="max-h-80 overflow-y-auto p-2 flex flex-col gap-1">
               {!isLiveCategory ? (
                 <div className="p-8 text-center text-xs text-[var(--color-text-tertiary)]">
-                  Busca de {filter === 'hype' ? 'Hype Zone' : 'Leilões'} ainda não tem prévia aqui — pressione Enter pra buscar direto na seção.
+                  Busca de {filter === 'hype' ? 'Hype Zone' : 'Leilões'} ainda não tem prévia aqui. Pressione Enter para buscar direto na seção.
                 </div>
               ) : loading ? (
                 <div className="p-8 text-center text-xs text-[var(--color-text-tertiary)]">Buscando...</div>

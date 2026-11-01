@@ -52,3 +52,8 @@ Coordenação lógica, não hierarquia rígida: especialistas trocam informaçã
 ## 5. Conflitos
 
 Divergência entre agentes é registrada, não escondida. O `geek-lead` reconcilia e, se a decisão for de negócio, leva ao responsável do projeto.
+
+
+## 6. Conselho Geek (2026-10-31)
+
+Acima dos papéis operacionais existe o **Conselho Geek**, mesa consultiva de especialistas de nível doutoral (perfis de competência, não pessoas reais) que opina antes de qualquer execução. Presidente: `geek-lead`. Membros: `gamer-veterano`, `especialista-precos`, `estatistico-senior`, `matematico-aplicado`, `produtor-gamer-mundial`, `cientista-dados-tempo-real`, `estrategista-mercado`. Mesa fixa em tarefas médias e grandes: estrategista-mercado, especialista-precos, gamer-veterano, qa-verificador. Regra: nada passa sem parecer, só muda a profundidade. Método completo em `docs/03-metodologia/CONSELHO_GEEK.md`; atas em `docs/conselho/atas/`.

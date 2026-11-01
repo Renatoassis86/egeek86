@@ -15,21 +15,21 @@ const PLATFORMS: PlatformCard[] = [
   {
     href: '/ofertas?geracao=ps4,ps5',
     label: 'PlayStation',
-    description: 'PS4 e PS5 — jogos e consoles',
+    description: 'PS4 e PS5: jogos e consoles',
     image: '/images/platforms/playstation.png',
     bg: '#1450C4',
   },
   {
     href: '/ofertas?geracao=xbox_one,xbox_series',
     label: 'Xbox',
-    description: 'Xbox One e Series — jogos e consoles',
+    description: 'Xbox One e Series: jogos e consoles',
     image: '/images/platforms/xbox.png',
     bg: '#1C7A3B',
   },
   {
     href: '/ofertas?geracao=switch_1,switch_2',
     label: 'Nintendo',
-    description: 'Switch e Switch 2 — jogos e consoles',
+    description: 'Switch e Switch 2: jogos e consoles',
     image: '/images/platforms/nintendo.png',
     bg: '#C81E2E',
   },
@@ -51,7 +51,7 @@ export function PlatformShowcase() {
   return (
     <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-8 lg:py-10">
       <Text variant="label" color="hype">
-        Geek Deals · Explore por plataforma
+        Geek Deals · Ofertas por plataforma
       </Text>
       <Text as="h2" variant="display-lg" className="mt-2 mb-4 max-w-[24ch]">
         Ache pela plataforma que você joga.

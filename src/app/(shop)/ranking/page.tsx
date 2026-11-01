@@ -25,7 +25,7 @@ export default function RankingPage() {
       </Text>
       <Text variant="body-md" color="secondary" className="mt-4 leading-relaxed">
         Ainda não há ranking publicado. Ele só será exibido quando existirem pontuações reais de
-        colecionadores medidas na plataforma — não mostramos nomes ou números de exemplo.
+        colecionadores medidas na plataforma. Não mostramos nomes nem números de exemplo.
       </Text>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
         <Button asChild size="lg" variant="primary">

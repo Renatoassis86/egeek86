@@ -5,6 +5,9 @@ import { createCachedQuery } from '@/lib/cache/server-cache';
 import type { GamePlatformGen } from '@/db/schema';
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { derivePlatformFromTitle } from '@/lib/affiliate/game-classification';
+import { effectiveCatalogType } from '@/lib/catalog/dimensions';
+import type { ProductType } from '@/db/schema';
 import { cleanProductTitle, foldText } from '@/lib/search/query-normalize';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 
@@ -46,10 +49,22 @@ async function compute(): Promise<HomeSearchData> {
     FROM public_offers p INNER JOIN affiliate_offers o ON o.id = p.id
   `);
 
+  // Cartela pública (src/lib/catalog/dimensions.ts): o que está fora dela
+  // (merchandise, peças, outras verticais) não conta em total, chip nem atalho,
+  // e o tipo EFETIVO (título corrige o campo do banco) decide o que é jogo.
+  const visible = rows
+    .map((r) => ({
+      ...r,
+      type: effectiveCatalogType(String(r.name ?? ''), r.product_type as ProductType),
+      // plataforma 'unknown' nunca é padrão: deriva do título antes de desistir
+      platform: r.game_platform_gen !== 'unknown' ? r.game_platform_gen : derivePlatformFromTitle(String(r.name ?? '')),
+    }))
+    .filter((r) => r.type !== null);
+
   const counts = new Map<GamePlatformGen, number>();
-  for (const r of rows) {
-    if (r.product_type !== 'game' || r.game_platform_gen === 'unknown') continue;
-    counts.set(r.game_platform_gen, (counts.get(r.game_platform_gen) ?? 0) + 1);
+  for (const r of visible) {
+    if (r.type !== 'game' || r.platform === 'unknown') continue;
+    counts.set(r.platform, (counts.get(r.platform) ?? 0) + 1);
   }
   const platforms = PLATFORM_ORDER.filter((p) => (counts.get(p) ?? 0) > 0).map((p) => ({
     platform: p,
@@ -57,8 +72,8 @@ async function compute(): Promise<HomeSearchData> {
     count: counts.get(p) ?? 0,
   }));
 
-  const games = [...rows]
-    .filter((r) => r.product_type === 'game' && !isBundleTitle(r.name))
+  const games = visible
+    .filter((r) => r.type === 'game' && !isBundleTitle(r.name))
     .sort((a, b) => Number(b.offers) - Number(a.offers) || String(a.name).localeCompare(String(b.name)));
   const seen = new Set<string>();
   const popular: HomeSearchData['popular'] = [];
@@ -74,7 +89,7 @@ async function compute(): Promise<HomeSearchData> {
     seen.add(key);
     popular.push({
       term,
-      platformLabel: g.game_platform_gen === 'unknown' ? '' : GAME_PLATFORM_GEN_LABELS[g.game_platform_gen],
+      platformLabel: g.platform === 'unknown' ? '' : GAME_PLATFORM_GEN_LABELS[g.platform],
     });
     if (popular.length >= 6) break;
   }
@@ -82,11 +97,11 @@ async function compute(): Promise<HomeSearchData> {
   return {
     platforms,
     popular,
-    totals: { products: rows.length, stores: Number(stores[0]?.n ?? 0) },
+    totals: { products: visible.length, stores: Number(stores[0]?.n ?? 0) },
   };
 }
 
-const cached = createCachedQuery(async (): Promise<HomeSearchData> => compute(), ['home-search-v4'], { revalidate: 600 });
+const cached = createCachedQuery(async (): Promise<HomeSearchData> => compute(), ['home-search-v5'], { revalidate: 600 });
 
 /**
  * FONTE ÚNICA dos totais públicos do site (home, ofertas, tabela de preços, sobre).

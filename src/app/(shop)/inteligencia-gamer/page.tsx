@@ -185,7 +185,7 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
             <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
               {currentItem.categoryLabel}
             </span>
-            <span className="text-[11px] font-mono text-zinc-400">⚡ Carrossel 2s</span>
+            <span className="text-[11px] font-mono text-zinc-400">Carrossel 2s</span>
           </div>
 
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white leading-tight">
@@ -276,7 +276,7 @@ function InteligenciaGamerPageContent() {
       {/* Faixa Superior */}
       <div className="w-full bg-[#0c0906] border-b border-amber-900/30 py-3 px-4 lg:px-8 text-center">
         <span className="text-xs tracking-[0.25em] font-black text-amber-400 uppercase">
-          Arkos Intelligence — Portal de Informação e Decisão Gamer
+          Arkos Intelligence: informação sobre o mercado gamer
         </span>
       </div>
 
@@ -286,7 +286,7 @@ function InteligenciaGamerPageContent() {
             Observatório Gamer
           </h1>
           <p className="text-body-md text-[var(--color-text-secondary)] max-w-3xl font-medium">
-            O hub central de análise acadêmica e pesquisas do Espaço Geek 86. Dados teóricos, descritivos e empíricos aplicados ao mercado e cultura dos jogos.
+            Análises e pesquisas do Espaço Geek 86 sobre o mercado e a cultura dos jogos.
           </p>
         </div>
 
@@ -337,7 +337,7 @@ function InteligenciaGamerPageContent() {
           <div className="flex flex-col gap-6">
             <h2 className="text-xl font-black tracking-tight text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2 mb-2 flex items-center gap-2">
               <BookOpen className="size-5 text-amber-500" />
-              Artigos de Inteligência e Pesquisas
+              Artigos e pesquisas
             </h2>
 
             {filteredItems.length === 0 ? (
@@ -403,7 +403,7 @@ function InteligenciaGamerPageContent() {
                   <Filter className="size-4" />
                 </div>
                 <h3 className="text-base font-black tracking-tight text-zinc-900 dark:text-white">
-                  Divisão de Inteligência
+                  Equipe de pesquisa
                 </h3>
               </div>
 
@@ -461,7 +461,7 @@ function InteligenciaGamerPageContent() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-xs font-black text-white">Renato Silva de Assis</span>
-                    <span className="text-[10px] text-amber-400 font-mono">Direção de Inteligência</span>
+                    <span className="text-[10px] text-amber-400 font-mono">Direção de pesquisa</span>
                   </div>
                 </div>
               </div>

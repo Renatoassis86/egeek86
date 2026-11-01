@@ -301,7 +301,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
             <ShoppingBag className="size-8 text-[var(--color-text-tertiary)]" />
             <Text variant="heading-sm">Nenhum pedido registrado</Text>
             <Text variant="body-sm" color="secondary" className="max-w-[44ch]">
-              Explore as ofertas de jogos e consoles na vitrine.
+              Veja as ofertas de jogos e consoles.
             </Text>
             <Button asChild variant="primary" className="mt-2">
               <Link href="/ofertas">Explorar ofertas</Link>

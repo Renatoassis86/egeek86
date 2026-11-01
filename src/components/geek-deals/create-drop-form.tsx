@@ -303,7 +303,7 @@ export function CreateDropForm() {
                         <div className="relative size-12 rounded border border-[var(--color-border-subtle)] overflow-hidden bg-[var(--color-bg-inset)] shrink-0 flex items-center justify-center">
                           {url ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={url} alt="Preview" className="h-full w-full object-cover" onError={(e) => { (e.target as any).src = '/images/emblem/6-collectibles.png'; }} />
+                            <img src={url} alt="Preview" className="h-full w-full object-cover" onError={(e) => { (e.target as any).style.visibility = 'hidden'; }} />
                           ) : (
                             <ImageIcon className="size-5 text-[var(--color-text-tertiary)]" />
                           )}

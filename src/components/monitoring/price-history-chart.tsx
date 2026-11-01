@@ -85,7 +85,7 @@ function computePriceSignal(history: PriceHistoryResult): PriceSignal {
     return {
       level: 'good',
       label: 'Bom momento',
-      detail: `${pct}% abaixo da média do período — já compensa, mas já esteve mais barato.`,
+      detail: `${pct}% abaixo da média do período. Já compensa, mas já esteve mais barato.`,
     };
   }
 
@@ -93,7 +93,7 @@ function computePriceSignal(history: PriceHistoryResult): PriceSignal {
   return {
     level: 'watch',
     label: 'Considere esperar',
-    detail: `${pct}% acima da média do período — histórico mostra preço melhor em outros momentos.`,
+    detail: `${pct}% acima da média do período. O histórico mostra preço melhor em outros momentos.`,
   };
 }
 
@@ -479,7 +479,7 @@ export function PriceHistoryChart({
             color="tertiary"
             className="absolute right-2 top-2 rounded-[var(--radius-xs)] bg-[var(--color-bg-elevated)] px-2 py-1"
           >
-            Falha ao atualizar — tentando de novo
+            Falha ao atualizar. Tentando de novo
           </Text>
         )}
       </div>

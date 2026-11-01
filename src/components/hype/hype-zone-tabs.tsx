@@ -168,7 +168,7 @@ export function HypeZoneTabs({
                       {/* Contador de Visualizadores */}
                       {activeTab === 'live' && collectorsViewing > 0 && (
                         <Text variant="caption" className="text-[10px] font-mono text-[var(--color-accent-hype)] bg-[var(--color-accent-hype)]/5 border border-[var(--color-accent-hype)]/20 px-2 py-0.5 rounded-full">
-                          🔥 {collectorsViewing} colecionadores assistindo agora
+                          {collectorsViewing} colecionadores assistindo agora
                         </Text>
                       )}
 
@@ -234,7 +234,7 @@ export function HypeZoneTabs({
                     {/* Velocidade de venda (Cofre Histórico) */}
                     {activeTab === 'past' && velocityMessage && (
                       <div className="bg-[var(--color-accent-success)]/5 border border-[var(--color-accent-success)]/20 text-[var(--color-accent-success)] rounded-[var(--radius-sm)] p-2.5 text-xs font-mono">
-                        ⚡ {velocityMessage}
+                        {velocityMessage}
                       </div>
                     )}
 

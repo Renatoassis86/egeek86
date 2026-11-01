@@ -11,6 +11,7 @@ import {
   type MasterProductPriceStats,
 } from '@/server/queries/product-price-stats';
 import { publicOffersCtes } from '@/server/queries/public-offers';
+import { catalogDimensionFilter, catalogHiddenFilter } from '@/server/queries/catalog-dimensions';
 import {
   checkEligibility,
   computeLowBadge,
@@ -201,18 +202,18 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
     // com item sem preço nenhum em vez de ofertas de verdade.
     gt(affiliateOffers.currentPriceCents, 0),
   ];
-  if (filter.productType) {
-    conditions.push(eq(masterProducts.productType, filter.productType));
-    if (filter.productType === 'console') {
-      // Leitura pública NÃO escreve (EG-04/N3, 2026-10-31): havia aqui um
-      // UPDATE master_products SET product_type='game' por ILIKE de nome, que
-      // reclassificava consoles a cada visita. Reclassificação é script
-      // dedicado com dry-run (EG-04); aqui só se filtra na leitura.
-      conditions.push(
-        sql`NOT (${masterProducts.name} ILIKE '%jogo%' OR ${masterProducts.name} ILIKE '%game%' OR ${masterProducts.name} ILIKE '%físico%' OR ${masterProducts.name} ILIKE '%fisico%' OR ${masterProducts.name} ILIKE '%mídia%' OR ${masterProducts.name} ILIKE '%midia%' OR ${masterProducts.name} ILIKE '%resident evil%' OR ${masterProducts.name} ILIKE '%madden%' OR ${masterProducts.name} ILIKE '%zelda%' OR ${masterProducts.name} ILIKE '%mario%' OR ${masterProducts.name} ILIKE '%gta%' OR ${masterProducts.name} ILIKE '%fifa%' OR ${masterProducts.name} ILIKE '%call of duty%' OR ${masterProducts.name} ILIKE '%god of war%' OR ${masterProducts.name} ILIKE '%cyberpunk%' OR ${masterProducts.name} ILIKE '%elden ring%')`
-      );
-    }
-  }
+  // Dimensão (cartela pública, src/lib/catalog/dimensions.ts): aba pedida = só
+  // o tipo EFETIVO daquela aba; sem aba, esconde o que está fora da cartela.
+  // Leitura pública NÃO escreve (EG-04/N3, 2026-10-31). Substitui o filtro
+  // ILIKE por palavras ('zelda', 'mario'...) que escondia console de edição
+  // Zelda legítimo; agora a regra é o classificador de título centralizado.
+  conditions.push(
+    await catalogDimensionFilter({
+      idCol: sql`${masterProducts.id}`,
+      typeCol: sql`${masterProducts.productType}`,
+      type: filter.productType,
+    })
+  );
   if (filter.gameFormat) {
     conditions.push(eq(masterProducts.gameFormat, filter.gameFormat));
   }
@@ -395,11 +396,14 @@ export interface PlatformStats {
  * carregamento da página.
  */
 async function getPlatformStatsUncached(): Promise<PlatformStats> {
+  // Contadores só contam o que está na cartela pública (sem merchandise, peças, outras verticais).
+  const inCatalogPo = await catalogHiddenFilter(sql`po.master_product_id`);
+  const inCatalogPlain = await catalogHiddenFilter(sql`master_product_id`);
   const [products, sellers, networks, quotes, avgPrice, lowestEver, belowAverage] = await Promise.all([
     // Só ofertas PÚBLICAS (ADR 0002): contador não conta oferta sem coleta real nem preço implausível.
     db.execute<{ count: string }>(sql`
       WITH ${publicOffersCtes()}
-      SELECT COUNT(DISTINCT master_product_id)::bigint AS count FROM public_offers
+      SELECT COUNT(DISTINCT master_product_id)::bigint AS count FROM public_offers WHERE ${inCatalogPlain}
     `),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_sellers`),
     db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_networks`),
@@ -408,10 +412,10 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
     `),
     db.execute<{ avg_cents: string | null }>(sql`
       WITH ${publicOffersCtes()},
-      raw_avg AS (SELECT AVG(current_price_cents) AS v FROM public_offers)
+      raw_avg AS (SELECT AVG(current_price_cents) AS v FROM public_offers WHERE ${inCatalogPlain})
       SELECT AVG(po.current_price_cents)::bigint AS avg_cents
       FROM public_offers po, raw_avg
-      WHERE po.current_price_cents <= raw_avg.v * 2
+      WHERE po.current_price_cents <= raw_avg.v * 2 AND ${inCatalogPo}
     `),
     getPlatformLowestPriceCentsEver(),
     // "Abaixo da média" = preço público mais barato do produto abaixo da faixa
@@ -422,7 +426,7 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
       WITH ${publicOffersCtes()},
       current_lowest AS (
         SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
-        FROM public_offers GROUP BY master_product_id
+        FROM public_offers WHERE ${inCatalogPlain} GROUP BY master_product_id
       ),
       -- Mesmas cotações plausíveis (piso, ADR 0001 revisada) da fonte única.
       ${priceQuotesCtes(sql`o.master_product_id IN (SELECT master_product_id FROM current_lowest)`)},
@@ -1084,10 +1088,11 @@ async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): 
     sql`o.current_price_cents > 0`
   ];
 
-  if (filter.productType) {
-    conditions.push(sql`mp.product_type = ${filter.productType}`);
-  }
-  
+  // Dimensão (cartela pública): aba pedida = tipo EFETIVO; sem aba, esconde o fora da cartela.
+  conditions.push(
+    await catalogDimensionFilter({ idCol: sql`mp.id`, typeCol: sql`mp.product_type`, type: filter.productType })
+  );
+
   // Se for jogo e o formato não foi especificado, força 'physical' por padrão (destaques apenas físicos)
   const isGameFeatured = !filter.productType || filter.productType === 'game';
   if (isGameFeatured && !filter.gameFormat) {

@@ -52,7 +52,7 @@ export function ProductStoresTable({
                   <td className="px-2 py-2">
                     <span className="font-medium text-[var(--color-text-primary)]">{s.storeName}</span>
                     {s.priceCents === lowest && (
-                      <span className="ml-2 rounded-[var(--radius-full)] bg-[var(--color-accent-primary-muted)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--color-accent-primary)]">
+                      <span className="mt-1 block w-fit whitespace-nowrap rounded-[var(--radius-full)] bg-[var(--color-accent-primary-muted)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--color-accent-primary)]">
                         Menor preço
                       </span>
                     )}
@@ -72,7 +72,7 @@ export function ProductStoresTable({
                         href={`/go/${s.offerSlug}`}
                         target="_blank"
                         rel="noopener noreferrer nofollow sponsored"
-                        className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-accent-primary)] px-3 text-[14px] font-semibold text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
+                        className="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-[var(--radius-md)] bg-[var(--color-accent-primary)] px-3 text-[14px] font-semibold text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
                       >
                         Ir à loja
                       </a>

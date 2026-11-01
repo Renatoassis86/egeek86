@@ -52,7 +52,7 @@ const mainMarketModules = [
 const hypeZoneModules = [
   { href: '/hype-zone', label: 'Hype Zone e Drops', icon: Flame, highlight: true },
   { href: '/leiloes', label: 'Leilões Geek (Hammer)', icon: Gavel, highlight: true },
-  { href: '/conta/vendedor/novo-drop', label: '✨ Cadastrar Novo Drop', icon: Sparkles, highlight: true },
+  { href: '/conta/vendedor/novo-drop', label: 'Cadastrar novo drop', icon: Sparkles, highlight: true },
 ];
 
 const observatorioModules = [

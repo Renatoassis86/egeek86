@@ -23,7 +23,7 @@ export default function PesquisaPage() {
         </Text>
         <Text variant="body-md" color="secondary" className="mt-3 max-w-[62ch]">
           Leva menos de 2 minutos. Não precisa estar logado. As respostas entram na nossa pesquisa
-          de mercado de forma agregada — nunca identificadas publicamente.
+          de mercado de forma agregada e nunca são identificadas publicamente.
         </Text>
       </Reveal>
 

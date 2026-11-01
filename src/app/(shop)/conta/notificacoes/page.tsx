@@ -92,10 +92,10 @@ export default async function NotificacoesPage() {
                 <MessageCircle className="size-5 mt-0.5 text-[var(--color-text-tertiary)]" aria-hidden />
                 <div>
                   <Text variant="body-md" className="font-medium">
-                    WhatsApp — links do carrinho
+                    WhatsApp: links do carrinho
                   </Text>
                   <Text variant="caption" color="tertiary">
-                    Enviado pra {profile.phone ?? 'o número cadastrado'} quando os links de afiliado dos itens do
+                    Enviado pra {profile.phone ?? 'o número cadastrado'} quando os links de compra dos itens do
                     seu carrinho estiverem prontos.
                   </Text>
                 </div>

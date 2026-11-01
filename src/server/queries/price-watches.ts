@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { affiliatePriceWatches, masterProducts, affiliateOffers, affiliateNetworks, affiliateSellers } from '@/db/schema';
 import { getMasterProductMetricsBatch, type OfferMetrics } from './affiliate';
 import { publicOffersCtes } from './public-offers';
+import { catalogHiddenFilter } from './catalog-dimensions';
 import { suggestTargetPriceCents } from '@/lib/affiliate/price-verdict';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import type { GameFormat, GamePlatformGen } from '@/db/schema';
@@ -176,7 +177,8 @@ export async function searchMasterProductsToWatch(query: string, userId?: string
     db
       .select({ id: masterProducts.id, name: masterProducts.name, defaultImages: masterProducts.defaultImages })
       .from(masterProducts)
-      .where(fuzzy)
+      // Monitoramento só oferece itens da cartela pública (sem merchandise/peças)
+      .where(and(fuzzy, await catalogHiddenFilter(sql`${masterProducts.id}`)))
       .limit(limit * 4),
     userId ? getWatchedMasterProductIds(userId) : Promise.resolve(new Set<string>()),
   ]);

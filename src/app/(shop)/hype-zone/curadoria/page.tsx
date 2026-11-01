@@ -181,7 +181,7 @@ export default async function CurationPage() {
               {/* Coluna 1: Como Acumular */}
               <div className="flex flex-col gap-2 p-4 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  📥 1. Como Acumular XP e Pontos
+                  1. Como acumular XP e pontos
                 </span>
                 <ul className="list-disc pl-4 flex flex-col gap-1.5 text-[11px] leading-relaxed">
                   <li><strong className="font-bold text-[var(--color-text-primary)]">+10 XP imediato</strong> por participar de qualquer curadoria de drop ou auditoria de review.</li>
@@ -193,7 +193,7 @@ export default async function CurationPage() {
               {/* Coluna 2: Regra de Conversão */}
               <div className="flex flex-col gap-2 p-4 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  💸 2. Regra de Resgate (Milhas)
+                  2. Regra de resgate (milhas)
                 </span>
                 <ul className="list-disc pl-4 flex flex-col gap-1.5 text-[11px] leading-relaxed">
                   <li><strong className="font-bold text-[var(--color-text-primary)]">Taxa Conversora</strong>: 100 Geek Coins = R$ 1,00 de desconto na loja do administrador.</li>
@@ -205,7 +205,7 @@ export default async function CurationPage() {
               {/* Coluna 3: Níveis de Classificação */}
               <div className="flex flex-col gap-2 p-4 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded">
                 <span className="font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                  🎖️ 3. Níveis de Reputação
+                  3. Níveis de reputação
                 </span>
                 <ul className="list-disc pl-4 flex flex-col gap-1 text-[11px] leading-relaxed">
                   <li><strong className="font-bold text-[var(--color-text-primary)]">Iniciante</strong>: 0 a 199 XP (Votos não-oficiais).</li>

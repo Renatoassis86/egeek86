@@ -6,6 +6,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { ChevronLeft, ChevronRight, Flame } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { ProductImage } from '@/components/ui/product-image';
 import { Text } from '@/components/ui/text';
 import { Glow } from '@/components/motion/glow';
 import { formatBRL } from '@/lib/format';
@@ -124,18 +125,7 @@ function PromoCard({ slide }: { slide: CarouselSlide }) {
       href={`/ofertas/${slide.slug}`}
       className="group flex items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)]/60 p-4 backdrop-blur-sm transition-colors hover:border-[var(--color-border-strong)]"
     >
-      <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-[var(--radius-md)] bg-[var(--color-bg-elevated)] sm:h-32 sm:w-28">
-        {slide.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={slide.imageUrl}
-            alt={slide.title}
-            className="h-full w-full object-contain p-2 transition-transform duration-[var(--duration-medium)] group-hover:scale-[1.05]"
-          />
-        ) : (
-          <div className="h-full w-full bg-[var(--color-bg-inset)]" aria-hidden />
-        )}
-      </div>
+      <ProductImage src={slide.imageUrl} alt={slide.title} hoverZoom padding="sm" className="size-28 sm:size-32" />
 
       <div className="min-w-0 flex-1">
         <Badge variant="outline" size="sm" className="mb-2">

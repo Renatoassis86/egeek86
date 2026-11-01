@@ -26,7 +26,7 @@ interface MarketplaceHeroBannerProps {
 export function MarketplaceHeroBanner({
   title,
   subtitle,
-  categoryTag = 'Geek Deals · Inteligência de Preço',
+  categoryTag = 'Geek Deals · Comparador de preços',
   stats,
   coupons,
 }: MarketplaceHeroBannerProps) {

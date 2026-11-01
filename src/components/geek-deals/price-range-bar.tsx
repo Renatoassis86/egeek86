@@ -35,12 +35,18 @@ export function PriceRangeBar({
     <div className="mt-1">
       <div className="relative pt-6">
         <div
-          className="absolute top-0 -translate-x-1/2 whitespace-nowrap"
-          style={{ left: `${labelPct}%` }}
+          className="absolute top-0 whitespace-nowrap"
+          style={
+            currentPct < 35
+              ? { left: 0 }
+              : currentPct > 65
+                ? { right: 0 }
+                : { left: `${labelPct}%`, transform: 'translateX(-50%)' }
+          }
           aria-hidden
         >
           <Text variant="label" color="accent" className="font-semibold">
-            {formatBRL(currentPriceCents)} hoje
+            Hoje: {formatBRL(currentPriceCents)}
           </Text>
         </div>
 
@@ -64,7 +70,7 @@ export function PriceRangeBar({
 
       <div className="mt-1.5 flex items-center justify-between gap-2">
         <Text variant="caption" color="success" className="font-medium whitespace-nowrap">
-          {formatBRL(low)} · menor já visto
+          Menor já visto: {formatBRL(low)}
         </Text>
         <Text variant="caption" color="tertiary" className="whitespace-nowrap">
           {formatBRL(high)}

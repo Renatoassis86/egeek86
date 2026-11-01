@@ -1,9 +1,8 @@
-import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingBag, Clock, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
-import { Badge } from '@/components/ui/badge';
+import { ProductImage } from '@/components/ui/product-image';
 import { Button } from '@/components/ui/button';
 import { Reveal } from '@/components/motion/reveal';
 import { RemoveCartItemButton } from '@/components/affiliate/remove-cart-item-button';
@@ -25,8 +24,7 @@ export default async function CarrinhoPage() {
           Carrinho
         </Text>
         <Text variant="body-md" color="secondary" className="mt-1">
-          Itens que você marcou interesse — nosso time vai buscar o link de afiliado de cada um e te
-          avisar pelo WhatsApp assim que estiverem prontos.
+          Os jogos que você separou para comprar. Clique em Ir à loja para finalizar a compra direto no site da loja.
         </Text>
       </Reveal>
 
@@ -45,37 +43,28 @@ export default async function CarrinhoPage() {
           <div className="mt-8 flex flex-col gap-3">
             {items.map((item) => (
               <Card key={item.cartItemId}>
-                <CardContent className="flex items-center gap-3 p-4">
-                  <div className="relative size-14 shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)]">
-                    {item.imageUrl && (
-                      <Image src={item.imageUrl} alt={item.title} fill className="object-cover" sizes="56px" />
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <Text variant="body-sm" className="line-clamp-1">
-                      {item.title}
-                    </Text>
-                    <Text variant="caption" color="tertiary" className="line-clamp-1">
-                      {item.networkName} · {item.masterProductName}
-                    </Text>
-                    <div className="mt-1 flex items-center gap-2">
-                      <Text variant="mono-md" className="tabular">
+                <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <ProductImage src={item.imageUrl} alt={item.title} padding="sm" className="size-20 shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <Text variant="body-sm" className="line-clamp-2 font-medium">
+                        {item.title}
+                      </Text>
+                      <Text variant="caption" color="tertiary" className="mt-0.5">
+                        {item.networkName}
+                      </Text>
+                      <Text variant="mono-md" className="tabular mt-1">
                         {formatBRL(item.currentPriceCents)}
                       </Text>
-                      {item.affiliateLinkPending ? (
-                        <Badge variant="outline" size="sm" className="gap-1">
-                          <Clock className="size-3" />
-                          Aguardando link
-                        </Badge>
-                      ) : (
-                        <Badge variant="primary" size="sm" className="gap-1">
-                          <CheckCircle2 className="size-3" />
-                          Pronto
-                        </Badge>
-                      )}
                     </div>
+                    <RemoveCartItemButton cartItemId={item.cartItemId} />
                   </div>
-                  <RemoveCartItemButton cartItemId={item.cartItemId} />
+                  <Button asChild size="md" className="w-full sm:w-auto">
+                    <a href={`/go/${item.offerSlug}`} target="_blank" rel="noopener noreferrer nofollow sponsored">
+                      <ExternalLink className="size-4" />
+                      Ir à loja
+                    </a>
+                  </Button>
                 </CardContent>
               </Card>
             ))}

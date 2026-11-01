@@ -138,8 +138,8 @@ export default async function AuctionsPage({
           </Reveal>
           <Reveal delay={0.1}>
             <Text variant="body-sm" color="secondary" className="max-w-[50ch] leading-relaxed text-xs md:text-sm">
-              Participe de leilões ao vivo conduzidos pela comunidade. Lances protegidos com garantia 
-              de caução contra inadimplência, prorrogação inteligente de tempo e integridade auditada.
+              Leilões conduzidos pela comunidade, com caução nos lances 
+              e prorrogação automática do tempo.
             </Text>
           </Reveal>
 
@@ -157,7 +157,7 @@ export default async function AuctionsPage({
                 </>
               ) : seller?.status === 'active' || profile?.role === 'admin' ? (
                 <Button asChild size="lg" variant="primary" className="font-bold shadow-lg" rightIcon={<Plus className="size-4" />}>
-                  <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote de Leilão</Link>
+                  <Link href="/hype-zone/leiloes?aba=novo">Cadastrar novo lote de leilão</Link>
                 </Button>
               ) : seller?.status === 'pending_kyc' ? (
                 <Button asChild size="lg" variant="outline" className="border-amber-500/60 text-amber-400 font-bold">
@@ -202,7 +202,7 @@ export default async function AuctionsPage({
                 Quer Cadastrar Lotes de Leilão no Geek Hammer?
               </Text>
               <Text variant="body-sm" color="secondary" className="text-xs md:text-sm leading-relaxed">
-                Para cadastrar e abrir leilões ao vivo, é necessário realizar o cadastro de leiloeiro e efetuar o login. O envio de novos lotes é exclusivo para membros autenticados e validados.
+                Para abrir leilões, faça o cadastro de leiloeiro e entre na sua conta. Só membros validados podem enviar novos lotes.
               </Text>
             </div>
 
@@ -222,7 +222,7 @@ export default async function AuctionsPage({
                 </Button>
               ) : seller?.status === 'active' || profile?.role === 'admin' ? (
                 <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<Plus className="size-4" />}>
-                  <Link href="/hype-zone/leiloes?aba=novo">🔨 Cadastrar Novo Lote de Leilão</Link>
+                  <Link href="/hype-zone/leiloes?aba=novo">Cadastrar novo lote de leilão</Link>
                 </Button>
               ) : (
                 <>

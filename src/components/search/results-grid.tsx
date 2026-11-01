@@ -196,7 +196,8 @@ function ResultCard({
             src={item.imageUrl}
             alt=""
             fallbackLabel={PLATFORM_SHORT[item.platform] || 'Produto'}
-            className="size-24 sm:size-28"
+            dimension={item.productType}
+            className="w-24 sm:w-28"
           />
         </Link>
         <div className="flex min-w-0 flex-1 flex-col gap-1">

@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { TrendingUp, TrendingDown, Minus, Plus, Search, Check, Gamepad2, Lock, Trash2 } from 'lucide-react';
+import { ProductImage } from '@/components/ui/product-image';
+import { TrendingUp, TrendingDown, Minus, Plus, Search, Check, Lock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/cn';
 import { Text } from '@/components/ui/text';
@@ -374,7 +375,7 @@ function AddToWatchlistDialog({
         <DialogHeader>
           <DialogTitle>Adicionar à sua lista</DialogTitle>
           <DialogDescription>
-            Busca um jogo pra começar a acompanhar — o preço mostrado é sempre o menor entre todos os
+            Busque um jogo para acompanhar. O preço mostrado é sempre o menor entre todos os
             vendedores monitorados, não de uma loja só.
           </DialogDescription>
         </DialogHeader>
@@ -446,16 +447,5 @@ function AddToWatchlistDialog({
 
 /** Capa em miniatura (símbolo do jogo, igual ícone de ativo em tela de bolsa) — ícone de fallback quando não há imagem. */
 function WatchThumb({ src, alt }: { src: string | null; alt: string }) {
-  if (!src) {
-    return (
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-[var(--radius-xs)] bg-[var(--color-bg-inset)]">
-        <Gamepad2 className="size-4 text-[var(--color-text-tertiary)]" aria-hidden />
-      </div>
-    );
-  }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element -- miniatura de CDN externa (mesmo padrão de offer-card.tsx)
-    <img src={src} alt={alt} className="size-8 shrink-0 rounded-[var(--radius-xs)] object-cover" />
-  );
+  return <ProductImage src={src} alt={alt} padding="sm" className="size-10" />;
 }

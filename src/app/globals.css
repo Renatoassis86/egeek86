@@ -476,3 +476,27 @@ rect, svg rect {
   rx: 0 !important;
   ry: 0 !important;
 }
+
+/* ===========================================================
+ * Carrossel vertical de notícias do Hero (CSS puro, transform)
+ * Rola de baixo para cima em loop; a lista é duplicada no DOM
+ * (cópia aria-hidden) e a trilha anda -50% = um ciclo exato.
+ * Pausa em hover/foco; sem movimento vira lista rolável estática.
+ * =========================================================== */
+.news-ticker-track {
+  animation: news-ticker-up var(--ticker-duration, 48s) linear infinite;
+  will-change: transform;
+}
+.news-ticker:hover .news-ticker-track,
+.news-ticker:focus-within .news-ticker-track {
+  animation-play-state: paused;
+}
+@keyframes news-ticker-up {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .news-ticker { overflow-y: auto !important; }
+  .news-ticker-track { animation: none !important; transform: none !important; }
+  .news-ticker-dup { display: none !important; }
+}

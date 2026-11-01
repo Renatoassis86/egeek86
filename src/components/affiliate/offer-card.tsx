@@ -1,7 +1,9 @@
 import Link from 'next/link';
-import { Flame, ShieldCheck, Tag, TrendingDown, ArrowUpRight } from 'lucide-react';
+import { Flame, ShieldCheck, TrendingDown, ArrowUpRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { ProductImage } from '@/components/ui/product-image';
 import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/cn';
 import { formatBRL } from '@/lib/format';
@@ -47,24 +49,14 @@ export function OfferCard({
         interactive
         className={cn('h-full overflow-hidden', isFeature ? 'flex flex-col sm:flex-row' : 'flex flex-col')}
       >
-        <div
-          className={cn(
-            'relative shrink-0 bg-white overflow-hidden',
-            isFeature ? 'aspect-[4/3] sm:aspect-square sm:w-[42%]' : 'aspect-[4/5]'
-          )}
+        <ProductImage
+          src={image}
+          alt={offer.title}
+          hoverZoom
+          dimension={offer.masterProduct.productType}
+          bundle={isBundleTitle(offer.title)}
+          className={cn('border-0 border-b', isFeature ? 'w-full sm:w-[42%] sm:border-b-0 sm:border-r' : 'w-full')}
         >
-          {image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={image}
-              alt={offer.title}
-              className="absolute inset-0 m-auto max-h-[92%] max-w-[92%] object-contain transition-transform duration-[var(--duration-medium)] group-hover:scale-[1.05]"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center bg-[var(--color-bg-inset)]">
-              <Tag className="size-10 text-[var(--color-text-tertiary)]" aria-hidden />
-            </div>
-          )}
 
           {/* Tag de Variação de Preço (Positiva = Vermelha, Negativa = Verde) */}
           {(() => {
@@ -105,8 +97,7 @@ export function OfferCard({
           >
             {offer.network.name}
           </Badge>
-
-        </div>
+        </ProductImage>
 
         <CardContent className={cn('flex flex-1 flex-col gap-2 min-w-0', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-3.5 sm:p-4')}>
           <div className="flex flex-row items-center justify-between gap-1.5 w-full min-w-0">

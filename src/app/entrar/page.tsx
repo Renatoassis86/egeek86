@@ -49,7 +49,7 @@ function EntrarForm() {
             Espaço Geek 86
           </Text>
           <Text as="p" variant="heading-md" className="mt-2 max-w-[22ch]">
-            Sua conta, seu painel de dado.
+            Sua conta no Espaço Geek 86.
           </Text>
         </div>
       </div>
@@ -190,7 +190,7 @@ function RegisterForm({ next }: { next: string }) {
     reader.onload = () => {
       if (typeof reader.result === 'string') {
         setCollectorFacePhoto(reader.result);
-        toast.success('Foto da coleção com seu rosto carregada com sucesso!');
+        toast.success('Foto enviada.');
       }
     };
     reader.readAsDataURL(file);
@@ -343,7 +343,7 @@ function RegisterForm({ next }: { next: string }) {
       {/* Seleção do Tipo de Acesso */}
       <div className="flex flex-col gap-2 pt-2 border-t border-[var(--color-border-subtle)]">
         <Text variant="caption" color="tertiary" className="font-bold">
-          Qual seu objetivo na plataforma?
+          Como você vai usar o site?
         </Text>
         <div className="grid grid-cols-1 gap-2">
           <Button
@@ -353,7 +353,7 @@ function RegisterForm({ next }: { next: string }) {
             className="justify-start text-left"
             onClick={() => setRoleChoice('comprador')}
           >
-            🛒 Comprador (Acompanhar ofertas e compras)
+            Comprador (acompanhar ofertas e preços)
           </Button>
           <Button
             type="button"
@@ -362,7 +362,7 @@ function RegisterForm({ next }: { next: string }) {
             className="justify-start text-left"
             onClick={() => setRoleChoice('afiliado')}
           >
-            🔗 Afiliado (Gerar links e comissões)
+            Divulgador (gerar links e acompanhar cliques)
           </Button>
           <Button
             type="button"
@@ -371,7 +371,7 @@ function RegisterForm({ next }: { next: string }) {
             className="justify-start text-left"
             onClick={() => setRoleChoice('colecionador')}
           >
-            🏆 Colecionador / Leiloeiro (Vender e curadoria)
+            Colecionador / Leiloeiro (vender e fazer curadoria)
           </Button>
         </div>
       </div>
@@ -380,7 +380,7 @@ function RegisterForm({ next }: { next: string }) {
       {roleChoice === 'afiliado' && (
         <div className="flex flex-col gap-3 p-3 rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)]/40 border border-[var(--color-border-subtle)]">
           <Text variant="caption" className="font-bold text-[var(--color-accent-primary)]">
-            Credenciais do Afiliado
+            Dados do divulgador
           </Text>
           <Input
             type="url"
@@ -408,7 +408,7 @@ function RegisterForm({ next }: { next: string }) {
       {roleChoice === 'colecionador' && (
         <div className="flex flex-col gap-3 p-3 rounded-[var(--radius-sm)] bg-[var(--color-bg-inset)]/40 border border-[var(--color-border-subtle)]">
           <Text variant="caption" className="font-bold text-[var(--color-accent-hype)]">
-            Credenciamento do Colecionador
+            Cadastro do colecionador
           </Text>
           <Input
             type="number"
@@ -442,7 +442,7 @@ function RegisterForm({ next }: { next: string }) {
               size="sm"
               onClick={() => document.getElementById('collectorFacePhotoInput')?.click()}
             >
-              📸 {collectorFacePhoto ? 'Trocar Foto Selecionada' : 'Upload Foto de Rosto + Coleção'}
+              {collectorFacePhoto ? 'Trocar foto' : 'Enviar foto do rosto com a coleção'}
             </Button>
             {collectorFacePhoto && (
               <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-sm)] border border-[var(--color-border-subtle)]">

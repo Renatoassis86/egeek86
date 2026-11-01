@@ -149,7 +149,7 @@ export default async function OffersPage({
       <MarketplaceHeroBanner
         title="Vitrine de Ofertas"
         subtitle="Preços monitorados nos principais marketplaces, histórico de cotações autêntico e cupons ativos para você comprar na hora certa."
-        categoryTag="Geek Deals · Inteligência de Mercado"
+        categoryTag="Geek Deals · Comparador de preços"
         stats={{
           // Mesmos totais da home (getPublicTotals); broadPool é só a amostra exibida.
           monitoredProducts: publicTotals.products,

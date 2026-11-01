@@ -5,6 +5,7 @@ import { fuzzyMatchRaw } from '@/lib/db/fuzzy-search';
 import { type ProductType, type GameFormat, type GamePlatformGen } from '@/db/schema';
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { priceQuotesCtes } from '@/server/queries/product-price-stats';
+import { catalogDimensionFilter } from '@/server/queries/catalog-dimensions';
 import {
   INLINE_BAND_PERCENT,
   MIN_HISTORY_DAYS_FOR_VERDICT,
@@ -160,9 +161,11 @@ async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ ite
 
   const conditions: SQL[] = [sql`o.status = 'active'`, sql`o.current_price_cents > 0`];
 
-  if (filter.productType) {
-    conditions.push(sql`mp.product_type = ${filter.productType}`);
-  }
+  // Dimensão (cartela pública): aba pedida = só o tipo EFETIVO daquela aba;
+  // sem aba, esconde o que está fora da cartela (merchandise, peças, outras verticais).
+  conditions.push(
+    await catalogDimensionFilter({ idCol: sql`mp.id`, typeCol: sql`mp.product_type`, type: filter.productType })
+  );
   if (filter.gameFormat && filter.gameFormat !== 'unknown') {
     conditions.push(sql`mp.game_format = ${filter.gameFormat}`);
   }

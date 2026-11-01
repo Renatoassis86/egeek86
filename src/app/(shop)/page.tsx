@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -60,6 +60,19 @@ import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated
 
 export const dynamic = 'force-dynamic';
 
+// Uma única leitura de notícias por requisição, compartilhada entre o carrossel
+// do Hero e a seção de notícias (React cache). Só entra notícia com fonte
+// registrada (EG-16): sem fonte, não há como conferir a afirmação.
+const getHomeArticles = cache(async () => {
+  try {
+    const { items } = await getPublishedArticles({ pageSize: 30 });
+    return items.filter((a) => (a.sourceName ?? '').trim() !== '');
+  } catch (e) {
+    console.error('Erro ao carregar notícias na home:', e);
+    return [];
+  }
+});
+
 export default async function HomePage() {
   const [stats, surveyData, searchData] = await Promise.all([
     getPlatformStats(),
@@ -70,7 +83,7 @@ export default async function HomePage() {
   return (
     <>
       <Hero data={searchData} />
-      <StatementBand />
+      <StatementBand products={searchData.totals.products} stores={searchData.totals.stores} quotes={stats.totalQuotes} />
       <Suspense fallback={null}>
         <WeeklyPromosSection />
       </Suspense>
@@ -203,8 +216,8 @@ function CategoriesSection() {
           word="GAMER"
           src="/images/categorias/gamer-mask-light.png"
           label="O lado do jogo"
-          heading="Jogo, console e o que equipa a experiência."
-          text="Tudo que é produto de verdade, com preço monitorado e histórico real por trás de cada item."
+          heading="Jogos, consoles e acessórios."
+          text="Jogos físicos, consoles e acessórios, cada um com preço monitorado e histórico de preços."
           cards={gamerCards}
           accentColor="gold"
         />
@@ -214,8 +227,8 @@ function CategoriesSection() {
           word="GEEK"
           src="/images/categorias/geek-mask-light.png"
           label="O lado da cultura"
-          heading="Franquia, lançamento e o que move a comunidade."
-          text="A parte do site que não é sobre comprar, é sobre acompanhar o que importa pra quem vive cultura geek."
+          heading="Franquias, lançamentos e comunidade."
+          text="Notícias, lançamentos e conteúdo sobre cultura geek."
           cards={geekCards}
           accentColor="emerald"
         />
@@ -236,13 +249,13 @@ function MarketStatsSection() {
               className="text-[160px] leading-none sm:text-[240px] lg:text-[320px] xl:text-[360px] font-black"
             />
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
-              Painel Analítico
+              Dados do mercado
             </span>
             <Text as="h2" variant="display-lg" className="font-black tracking-tight text-white">
-              Estatísticas reais da indústria de games.
+              Números da indústria de games.
             </Text>
             <Text variant="body-lg" className="leading-relaxed text-zinc-300">
-              Navegue pelos dados consolidados do nosso Relatório de Inteligência de Mercado. Métricas oficiais de comportamento e receita do mercado nacional e internacional.
+              Dados do nosso relatório de mercado: receita e comportamento dos jogadores no Brasil e no mundo.
             </Text>
           </div>
         </Reveal>
@@ -297,12 +310,11 @@ function MarketNumbersSection() {
               O mercado gamer em números
             </span>
             <Text as="h2" variant="display-lg" className="max-w-[20ch] font-black tracking-tight text-zinc-900">
-              Games já é a maior indústria de entretenimento do mundo, e o Brasil lidera a América Latina.
+              Games é a maior indústria de entretenimento do mundo, e o Brasil lidera a América Latina.
             </Text>
             <Text variant="body-md" className="leading-relaxed text-zinc-700 font-medium">
-              Mais gente joga do que assiste streaming ou vai ao cinema — e o Brasil é o maior mercado
-              consumidor da América Latina desde 2021. Sempre com fonte citada, nunca projeção sem
-              dizer de onde veio.
+              Mais gente joga do que assiste streaming ou vai ao cinema. O Brasil é o maior mercado
+              consumidor da América Latina desde 2021. Todo número vem com a fonte citada.
             </Text>
             <div className="mt-2">
               <AnimatedStatBars items={MARKET_NUMBERS} />
@@ -334,10 +346,10 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
               Voz da Comunidade
             </span>
             <Text as="h2" variant="display-lg" className="font-black text-zinc-900 tracking-tight">
-              Participe das enquetes de mercado gamer.
+              Responda às enquetes sobre games.
             </Text>
             <Text variant="body-lg" className="leading-relaxed text-zinc-700 font-medium">
-              Queremos ouvir suas preferências. Os resultados mostrados ao lado são a contagem real das respostas gravadas na pesquisa.
+              Os resultados ao lado são a contagem das respostas já enviadas na pesquisa.
             </Text>
           </div>
         </Reveal>
@@ -356,10 +368,10 @@ function IndicatorsSection({ stats, activeMarketplaces, activeProducts }: { stat
             Métricas da nossa plataforma
           </span>
           <Text as="h2" variant="display-lg" className="mt-3 font-black text-white tracking-tight">
-            Dados reais e transparentes.
+            Números do site.
           </Text>
           <Text variant="body-lg" className="mt-3 max-w-[52ch] mx-auto text-emerald-100/80 font-medium leading-relaxed">
-            Sem aproximações: são contagens do nosso banco de dados, recalculadas a cada poucos minutos.
+            São contagens do nosso banco de dados, atualizadas a cada poucos minutos.
           </Text>
         </Reveal>
 
@@ -377,7 +389,7 @@ function IndicatorsSection({ stats, activeMarketplaces, activeProducts }: { stat
           <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full rounded-[var(--radius-xl)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-2xl">
             <Image
               src="/images/home/painel-analitico-86.png"
-              alt="Cockpit analítico e gráficos de métricas do Espaço Geek 86"
+              alt="Gráficos de métricas do Espaço Geek 86"
               fill
               className="object-cover object-center"
             />
@@ -390,41 +402,70 @@ function IndicatorsSection({ stats, activeMarketplaces, activeProducts }: { stat
 
 
 // ----- Statement band ------------------------------------------
-// Banda em formato "cartela" (cartão contido, não full-bleed de ponta a
-// ponta da viewport) — a composição da foto foi pensada pra uma proporção
-// mais fechada; esticada em 100vw ela sobra espaço negativo demais do lado
-// direito. Como cartão com aspect-ratio fixo, a imagem cobre o container de
-// canto a canto de verdade (object-cover garante isso em qualquer tela).
-function StatementBand() {
+// Foto escura tratada (brilho/contraste/saturação + brilho âmbar direcionado)
+// para ganhar presença; painel de texto em vidro com borda âmbar nítida, CTA
+// para a busca e 3 números reais já carregados pela home (sem query nova).
+function StatementBand({ products, stores, quotes }: { products: number; stores: number; quotes: number }) {
+  const numbers = [
+    { value: products, label: 'produtos com oferta' },
+    { value: stores, label: 'lojas monitoradas' },
+    { value: quotes, label: 'cotações registradas' },
+  ].filter((n) => n.value > 0);
   return (
-    <section data-theme="dark" className="w-full bg-[#0F0C08] border-b border-[var(--color-border-subtle)] py-10 lg:py-16">
+    <section data-theme="dark" className="w-full border-b border-[var(--color-border-subtle)] bg-[#0F0C08] py-10 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <Reveal>
-          <div className="relative isolate min-h-[340px] sm:aspect-[21/9] overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805] flex flex-col justify-center">
+          <div className="relative isolate flex min-h-[460px] flex-col justify-center overflow-hidden border border-amber-400/50 bg-[#140d05] shadow-2xl lg:aspect-[21/9] lg:min-h-0">
             <Image
               src="/images/home/hero-watermark.png"
               alt="Mesa gamer com painéis de gráfico de preço em tons de dourado"
               fill
               sizes="(min-width: 1280px) 1280px, 100vw"
-              className="object-cover object-left"
+              className="object-cover object-left [filter:brightness(1.7)_contrast(1.15)_saturate(1.25)]"
             />
-            {/* Gradiente escuro para contraste cristalino sob o texto */}
-            <div className="absolute inset-0 bg-gradient-to-l from-[#0B0805] via-[#0B0805]/90 to-[#0B0805]/40 md:to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0805] via-transparent to-transparent" />
+            {/* Brilho âmbar atrás do gráfico + vinheta só no lado do texto */}
+            <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_25%_40%,rgba(245,158,11,0.28),transparent_55%)] mix-blend-screen" />
+            <div aria-hidden className="absolute inset-0 bg-gradient-to-l from-[#0F0C08]/95 via-[#0F0C08]/55 to-transparent md:from-[#0F0C08]/90 md:via-[#0F0C08]/30" />
             <CornerBrackets inset={16} size={20} />
 
-            <div className="relative flex h-full items-center justify-end p-4 sm:p-8 lg:p-14 z-10">
-              <div className="w-full max-w-xl rounded-[var(--radius-xl)] border border-amber-500/30 bg-[#0F0C08]/90 p-5 sm:p-8 backdrop-blur-xl shadow-2xl">
-                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-400">
-                  <History className="size-4 text-amber-400" aria-hidden />
+            <div className="relative z-10 flex h-full items-center justify-end p-4 sm:p-8 lg:p-12">
+              <div className="w-full max-w-xl border border-amber-400/60 bg-[#0F0C08]/75 p-5 shadow-[0_0_0_1px_rgba(245,158,11,0.15),0_24px_60px_-20px_rgba(0,0,0,0.8)] backdrop-blur-xl sm:p-8">
+                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-300">
+                  <History className="size-4" aria-hidden />
                   <span>Por trás de cada preço</span>
                 </div>
-                <Text as="h2" variant="display-md" className="mt-2 font-black text-white tracking-tight text-xl sm:text-3xl lg:text-4xl leading-snug">
-                  Um cockpit de dado pra cada jogo que você acompanha.
+                <div aria-hidden className="mt-3 h-0.5 w-14 bg-amber-400" />
+                <Text as="h2" variant="display-md" className="mt-3 font-black !text-white tracking-tight text-2xl sm:text-3xl lg:text-4xl leading-tight">
+                  Preço, média e menor preço de cada jogo.
                 </Text>
-                <Text variant="body-md" className="mt-2.5 font-medium text-zinc-200 text-xs sm:text-base leading-relaxed">
-                  Preço atual, média e menor preço registrado de cada jogo, para você não comprar no escuro.
+                <Text variant="body-md" className="mt-3 font-medium !text-zinc-100 text-sm sm:text-base leading-relaxed">
+                  Veja o preço atual, a média e o menor preço já registrado antes de comprar.
                 </Text>
+
+                {numbers.length > 0 && (
+                  <dl className="mt-5 grid grid-cols-3 gap-px border border-white/15 bg-white/15">
+                    {numbers.map((n) => (
+                      <div key={n.label} className="flex flex-col-reverse bg-[#0F0C08]/80 px-2 py-2.5 text-center sm:px-3">
+                        <dt className="text-[11px] font-semibold leading-tight text-zinc-300">{n.label}</dt>
+                        <dd className="font-mono text-lg font-black text-amber-300 sm:text-xl">
+                          {n.value.toLocaleString('pt-BR')}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+
+                <div className="mt-5 flex flex-wrap items-center gap-3">
+                  <Button asChild size="lg" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/ofertas">Buscar preços</Link>
+                  </Button>
+                  <Link
+                    href="/entrar"
+                    className="inline-flex min-h-11 items-center px-2 text-sm font-bold text-amber-200 underline decoration-amber-400/60 underline-offset-4 hover:text-amber-100"
+                  >
+                    Monitorar um jogo
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -468,7 +509,7 @@ function DividerEmblem() {
               Espaço Geek 86
             </Text>
             <Text as="p" variant="heading-md" className="mt-2">
-              Dado, curadoria e cultura geek — a mesma vitrine, num só lugar.
+              Preços, curadoria e cultura geek no mesmo site.
             </Text>
           </div>
         </div>
@@ -478,69 +519,43 @@ function DividerEmblem() {
 }
 
 // ----- Hero ---------------------------------------------------
-// Primeira tela = a função principal do site: BUSCAR PREÇOS. Campo grande com
-// autocomplete (motor `suggestProducts`), chips de plataforma e termos mais
-// cotados vindos do banco (`getHomeSearchData`); nada fixo nem inventado.
-// Segue o tema (claro/escuro) pelos tokens; sem imagem decorativa.
+// Primeira tela = a função principal do site: BUSCAR PREÇOS. Sempre dark
+// (data-theme="dark"), foto real tratada com overlay em gradiente (contraste
+// AA do texto), busca à esquerda e carrossel vertical de notícias reais à
+// direita (some se não houver notícia; nada é inventado).
 function Hero({ data }: { data: HomeSearchData }) {
-  const { platforms, popular, totals } = data;
+  const { platforms } = data;
   return (
     <section
+      data-theme="dark"
       aria-labelledby="hero-title"
-      className="relative w-full overflow-hidden border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)]"
+      className="relative isolate w-full overflow-hidden border-b border-amber-500/20 bg-gradient-to-b from-[#1a1033] via-[#120b26] to-[#0c0616] text-white"
     >
-      <Glow color="gold" size="xl" intensity={0.22} className="-top-64 -left-48" />
+      <Glow color="gold" size="xl" intensity={0.2} className="-top-64 -left-48" />
+      <Glow color="hype" size="xl" intensity={0.18} className="-bottom-72 -right-40" />
 
-      <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-6 lg:px-8 lg:pb-16 lg:pt-10">
-        <div className="max-w-4xl">
-          <span className="inline-flex items-center gap-2 bg-[var(--color-accent-primary-muted)] px-3 py-1.5 text-[14px] font-semibold text-[var(--color-text-primary)]">
-            <Sparkles aria-hidden className="size-4 text-[var(--color-accent-primary)]" />
-            Ofertas reais. Decisões inteligentes.
+      <div className="relative mx-auto max-w-4xl px-4 pb-16 pt-12 text-center lg:px-8 lg:pb-24 lg:pt-20">
+        <span className="inline-flex items-center gap-2 border border-amber-400/40 bg-white/10 px-3 py-1.5 text-[14px] font-semibold text-amber-100">
+          <Sparkles aria-hidden className="size-4 text-amber-400" />
+          Ofertas reais. Decisões inteligentes.
+        </span>
+        <Text
+          as="h1"
+          id="hero-title"
+          variant="display-xl"
+          className="mt-5 !font-black tracking-tight !text-white !text-[36px] !leading-[40px] sm:!text-[44px] sm:!leading-[48px] lg:!text-[56px] lg:!leading-[60px]"
+        >
+          Informação real sobre games{' '}
+          <span className="bg-gradient-to-r from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] bg-clip-text text-transparent">
+            Decisões inteligentes.
           </span>
-          <Text
-            as="h1"
-            id="hero-title"
-            variant="display-xl"
-            className="mt-3 !font-black tracking-tight !text-[44px] !leading-[48px] lg:!text-[56px] lg:!leading-[60px]"
-          >
-            Informação real sobre games{' '}
-            <span className="bg-gradient-to-r from-[var(--color-accent-primary)] to-[var(--color-accent-hype)] bg-clip-text text-transparent">
-              Decisões inteligentes.
-            </span>
-          </Text>
+        </Text>
 
-          <div className="mt-5">
-            <SearchBox
-              variant="hero"
-              platforms={platforms.map((p) => ({ platform: p.platform, label: PLATFORM_SHORT[p.platform] || p.label }))}
-            />
-          </div>
-
-          <Text variant="body-lg" color="secondary" className="mt-4 max-w-[52ch]">
-            Ache o menor preço do seu próximo jogo: preço atual, média histórica e menor preço já registrado, para saber se hoje é um bom dia de comprar.
-          </Text>
-
-          {popular.length > 0 && (
-            <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="text-[14px] font-semibold text-[var(--color-text-secondary)]">Mais cotados:</span>
-              {popular.slice(0, 5).map((t) => (
-                <Link
-                  key={t.term}
-                  href={`/ofertas?q=${encodeURIComponent(t.term)}`}
-                  className="inline-flex min-h-11 items-center rounded-[var(--radius-md)] px-2 text-[14px] text-[var(--color-text-primary)] underline decoration-[var(--color-border-strong)] underline-offset-4 hover:text-[var(--color-accent-primary)] hover:decoration-[var(--color-accent-primary)]"
-                >
-                  {t.term}
-                </Link>
-              ))}
-            </div>
-          )}
-
-          {totals.products > 0 && (
-            <Text variant="caption" color="tertiary" className="mt-2">
-              {totals.products.toLocaleString('pt-BR')} produtos com preço atual em {totals.stores}{' '}
-              {totals.stores === 1 ? 'loja monitorada' : 'lojas monitoradas'}.
-            </Text>
-          )}
+        <div className="mx-auto mt-8 max-w-3xl text-left">
+          <SearchBox
+            variant="hero"
+            platforms={platforms.map((p) => ({ platform: p.platform, label: PLATFORM_SHORT[p.platform] || p.label }))}
+          />
         </div>
       </div>
     </section>
@@ -587,11 +602,10 @@ function PriceIntelligence() {
                 O diferencial
               </Text>
               <Text as="h2" variant="display-lg" className="mt-2 max-w-[14ch]">
-                Compre no momento certo, não no impulso.
+                Saiba se o preço está bom antes de comprar.
               </Text>
               <Text variant="body-lg" color="secondary" className="mt-4 max-w-[42ch]">
-                Preços monitorados nos principais marketplaces, com histórico e cupons,
-                pra você saber se aquele preço é bom antes de clicar.
+                Acompanhamos os preços nos principais marketplaces, com histórico e cupons.
               </Text>
               <Button
                 asChild
@@ -722,10 +736,10 @@ function InteligenciaGamerTeaserSection() {
                 Arkos Intelligence
               </Text>
               <Text as="h2" variant="display-lg" className="mt-2">
-                Observatório Gamer: Dados, Análises e Notícias.
+                Observatório Gamer: dados, análises e notícias.
               </Text>
               <Text variant="body-lg" color="secondary" className="leading-relaxed mt-2">
-                Conheça o nosso portal de pesquisa econômica e comportamental aplicada à indústria de jogos. Análises empíricas, estudos descritivos e colunas opinativas para apoiar suas decisões de mercado.
+                Pesquisas sobre preços e comportamento do público gamer, análises e colunas de opinião.
               </Text>
               <div className="mt-6 flex flex-wrap gap-4">
                 <Button asChild size="lg" rightIcon={<ArrowRight className="size-4" />}>
@@ -746,7 +760,7 @@ function InteligenciaGamerTeaserSection() {
                     </div>
                     <Text variant="heading-sm" className="font-bold">Pesquisas Empíricas</Text>
                     <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                      Modelagem econométrica, regressão estatística e oscilação histórica de preços reais de mercado.
+                      Análises estatísticas da variação histórica dos preços.
                     </Text>
                   </CardContent>
                 </Card>
@@ -760,7 +774,7 @@ function InteligenciaGamerTeaserSection() {
                     </div>
                     <Text variant="heading-sm" className="font-bold">Pesquisas Teóricas</Text>
                     <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                      Ensaios conceituais abordando gamificação, comportamento social e história das gerações de consoles.
+                      Ensaios sobre gamificação, comportamento social e a história das gerações de consoles.
                     </Text>
                   </CardContent>
                 </Card>
@@ -774,7 +788,7 @@ function InteligenciaGamerTeaserSection() {
                     </div>
                     <Text variant="heading-sm" className="font-bold">Pesquisas Descritivas</Text>
                     <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                      Relatórios populacionais e segmentações demográficas sobre o público gamer regional e nacional.
+                      Relatórios sobre o perfil do público gamer no Brasil e por região.
                     </Text>
                   </CardContent>
                 </Card>
@@ -788,7 +802,7 @@ function InteligenciaGamerTeaserSection() {
                     </div>
                     <Text variant="heading-sm" className="font-bold">Notícias e Artigos</Text>
                     <Text variant="body-sm" color="secondary" className="text-xs leading-relaxed">
-                      Novidades da indústria de jogos e colunas dos idealizadores.
+                      Novidades da indústria de jogos e colunas dos fundadores.
                     </Text>
                   </CardContent>
                 </Card>
@@ -818,8 +832,7 @@ async function HomeNewsSection() {
   try {
     // Só entra na home notícia com fonte registrada (EG-16): sem fonte, não há como
     // conferir a afirmação, então o bloco some até o dono publicar matéria com fonte.
-    const { items: published } = await getPublishedArticles({ pageSize: 30 });
-    const articles = published.filter((a) => (a.sourceName ?? '').trim() !== '').slice(0, 6);
+    const articles = (await getHomeArticles()).slice(0, 6);
     if (articles.length === 0) return null;
 
     return (
@@ -831,7 +844,7 @@ async function HomeNewsSection() {
                 Portal de Notícias Geek
               </Text>
               <Text as="h2" variant="display-lg" className="mt-2">
-                Últimas novidades do ecossistema.
+                Últimas notícias.
               </Text>
             </div>
             <Link

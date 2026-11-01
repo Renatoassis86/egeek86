@@ -44,7 +44,7 @@ export default async function ContatosPage() {
           </Reveal>
           <Reveal delay={0.1}>
             <Text variant="body-md" color="secondary" className="leading-relaxed">
-              Dúvidas sobre credenciamento de colecionadores, leilões, drops ou parceria de inteligência? Fale diretamente com nossa equipe oficial.
+              Dúvidas sobre cadastro de colecionadores, leilões, drops ou parcerias? Fale com a nossa equipe.
             </Text>
           </Reveal>
         </div>
