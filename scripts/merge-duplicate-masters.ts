@@ -47,6 +47,7 @@ const argValue = (name: string): string | undefined => {
 };
 const LIMIT = argValue('--limit-groups') ? Number(argValue('--limit-groups')) : undefined;
 const ONLY = argValue('--only-canonical');
+const PAIRS = argValue('--pairs');
 const MAX_AGE = argValue('--backup-max-age-hours') ? Number(argValue('--backup-max-age-hours')) : 12;
 
 const OFFERS_FK = 'affiliate_offers.master_product_id';
@@ -78,7 +79,25 @@ async function main() {
     const { groups, fks, totals } = await sql.begin('read only', async (tx) => {
       const rows = await loadMasterRows(tx);
       const analysis = analyzeDuplicates(rows);
-      const groups = selectGroups(analysis.autoGroups);
+      let groups = selectGroups(analysis.autoGroups);
+      if (PAIRS) {
+        const pairs = JSON.parse(fs.readFileSync(path.resolve(process.cwd(), PAIRS), 'utf8')) as Array<{ canonicalId: string; mergeIds: string[] }>;
+        const byId = new Map(rows.map((r) => [r.id, r]));
+        groups = pairs.map((pr): AutoGroup => {
+          const ids = [pr.canonicalId, ...pr.mergeIds];
+          const members = ids.map((id) => {
+            const r = byId.get(id);
+            if (!r) throw new Error(`Master ${id} não encontrado.`);
+            if (r.mergedInto) throw new Error(`Master ${id} já está arquivado.`);
+            return { ...r, role: id === pr.canonicalId ? ('canonical' as const) : ('merge' as const) };
+          });
+          const canon = members[0];
+          if (members.some((m) => m.gamePlatformGen !== canon.gamePlatformGen || m.productType !== canon.productType)) {
+            throw new Error(`Par ${pr.canonicalId}: plataforma ou tipo diferentes, não é duplicata.`);
+          }
+          return { key: pr.canonicalId, platform: canon.gamePlatformGen, productType: canon.productType, coreTitle: canon.name, markers: [], members, canonicalId: pr.canonicalId, platformFixNeeded: false };
+        });
+      }
       const fks = await listMasterFks(tx);
       const mergeIds = groups.flatMap((g) => g.members.filter((m) => m.role === 'merge').map((m) => m.id));
       const counts = await countFkRows(tx, fks, mergeIds);

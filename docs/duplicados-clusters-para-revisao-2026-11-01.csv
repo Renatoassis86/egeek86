@@ -1,0 +1,44 @@
+tipo;cluster;papel;id;nome;plataforma_db;ofertas_ativas;ofertas_total;cotacoes
+near_duplicate;1;arquivar;2b93d982-c77f-4ff4-ae7d-ed9b5bc5cb46;"Super Mario Bros .U Deluxe - Nintendo Switch Envio Imediato";switch_1;1;1;1
+near_duplicate;1;CANONICO_SUGERIDO;b7376b02-b667-4a3c-8e41-2bcfa52e07ec;"New Super Mario Bros U Deluxe Nintendo Switch Mídia Fisico";switch_1;1;6;6
+near_duplicate;2;arquivar;0a6a2cf7-1bbe-443d-bd01-4de491543399;"Gran Turismo Sport - PS4 Mídia física Português Br";ps4;1;4;4
+near_duplicate;2;CANONICO_SUGERIDO;86e72df6-3873-4fd6-aacc-6c19caf5d048;"Jogo Ps4 Gran Turismo Sport Hite";ps4;2;3;10
+near_duplicate;3;arquivar;18b97f9a-e764-4030-8022-1d7772f535cf;"Super Mario Party Jamboree Nintendo Switch (Digital)";switch_1;1;1;2
+near_duplicate;3;CANONICO_SUGERIDO;43f8e55b-b7b9-4cb0-8157-a0953a0fe6c8;"Super Mario Party Nintendo Switch (Digital)";switch_1;1;2;3
+unknown_platform;4;arquivar;4767b067-f4d6-41b3-97e6-643975be65ed;"Mortal Kombat 1";unknown;0;14;0
+unknown_platform;4;CANONICO_SUGERIDO;1788e58c-f4dc-4745-8592-36197fe6867c;"Mortal Kombat 1 - PS5 Standard";ps5;3;24;13319
+unknown_platform;4;arquivar;8f87346f-7a62-4289-8f26-290fef326cea;"Mortal Kombat 1 - Nintendo Switch";switch_1;2;3;168
+unknown_platform;4;arquivar;b474e496-a6e8-4cf8-94ba-ead16f71242c;"Mortal Kombat 1 Xbox Series X Mídia Física Pronta Entrega";xbox_series;0;2;2
+unknown_platform;5;arquivar;a0a24597-d16d-446c-bf5d-55e2016e8bc5;"Hollow Knight Standard Edition";unknown;0;2;0
+unknown_platform;5;arquivar;2b317119-5992-4d4f-b1de-7719e368079a;"Hollow Knight PS5 Midia Fisica";ps5;0;2;841
+unknown_platform;5;arquivar;f57d9a9b-f7d3-45b7-93a7-7899b5db5b9c;"Hollow Knight Switch Standard Edition (Físico)";switch_1;9;14;14442
+unknown_platform;5;CANONICO_SUGERIDO;2a986660-a072-409e-82b6-ad8a6f9e1d29;"HOLLOW KNIGHT - PS4";ps4;13;14;15
+unknown_platform;5;arquivar;c020f5fe-c912-4d18-bbd7-e83d9c91dfce;"Hollow Knight Nintendo Switch 2 Standard";switch_2;0;1;0
+unknown_platform;6;arquivar;07c06d49-2d4c-4db0-ba45-f8daf93467ed;"Gta 5";unknown;1;2;5
+unknown_platform;6;CANONICO_SUGERIDO;10072eb7-4e1f-42c0-9374-14aa36d0c5df;"Gta 5";ps4;6;8;18
+unknown_platform;6;arquivar;d1d5da8b-7908-4be3-b83d-3eadc2973f60;"GTA 5 Ps5 Lacrado Mídia Física";ps5;0;15;15
+unknown_platform;7;arquivar;668646f9-625d-41ff-b05a-033102a3b20c;"Street Fighter 6";unknown;1;10;176
+unknown_platform;7;arquivar;319317e4-9d81-4464-929a-694d2b7d6a22;"Street Fighter 6 (mídia Física) - Xbox Series X";xbox_series;0;1;1
+unknown_platform;7;CANONICO_SUGERIDO;7b41c25e-90c9-441a-86ae-91c87084096c;"Street Fighter 6 Ps5 Midia Fisica";ps5;26;35;4888
+unknown_platform;8;CANONICO_SUGERIDO;7ca37f56-edb2-499e-9c12-a131f71fecac;"Cyberpunk 2077 Projekt Red";unknown;5;13;48
+unknown_platform;8;arquivar;24ab009c-6c49-4055-8960-3c23d57b6fb8;"Cyberpunk 2077 CD Projekt Red PS4";ps4;3;15;192
+platform_conflict;9;arquivar;61c8c89d-6b60-4f6f-9bb1-bcf376727d2b;"[Direct From Japan] Nintendo Switch 2025.9.3Week Release Japan NEW GAME";switch_2;0;5;5
+platform_conflict;9;arquivar;94bea44a-73e6-4307-aed2-1ec76dc5a802;"[Direct From Japan] Switch  2024.10.5Week Release Japan NEW GAME Nintendo Switch";switch_2;0;1;1
+platform_conflict;9;arquivar;3e714c6d-42a9-4fb7-9232-3019115a2a20;"[Direct From Japan] Switch 2024.11.5Week Japan NEW GAME Nintendo";switch_2;0;2;2
+platform_conflict;9;arquivar;c5fedf84-f055-4fd8-8e68-aa70c266818a;"Jogo eletrônico Orbitals Nintendo Switch 2";switch_1;4;4;4
+platform_conflict;9;arquivar;68947b99-b18d-46a9-87f6-96a2d7a63a67;"Jogo Cronos The New Dawn Terror Switch 2 Nintendo Bloober Team";switch_1;7;7;7
+platform_conflict;9;arquivar;3c85c9df-fd01-4900-87bf-70a469adbed2;"Jogo Ps4 The Dark Pictures Little Hope Midia Fisica";ps5;7;7;7
+platform_conflict;9;arquivar;683f2471-bcb5-4c4d-89cc-8c09159f1466;"Gran Turismo 7 PS4 Jogo de Corrida Sony Simulador 2022 110GB";ps5;6;6;6
+platform_conflict;9;arquivar;ee0cafa3-a866-4ff8-afab-5507c8164c04;"Jogo Clash: Artifacts Of Chaos Zeno Edition Xbox One Xbox X";xbox_series;2;2;2
+platform_conflict;9;CANONICO_SUGERIDO;42cf1a66-b402-429c-b3ce-9c08c1dd8761;"Terraria Xbox One Mídia Física Jogo Aventura Multijogador";xbox_series;9;9;9
+platform_conflict;9;arquivar;d1603740-a802-4ed6-81e9-d3d52b9c887d;"Sleeping Dogs Xbox 360 Mídia Física Jogo Aventura Square Enix";xbox_series;2;2;2
+platform_conflict;9;arquivar;eedd4076-619b-495c-9e33-64255bd0ede8;"Minecraft Standard Edition Xbox 360 Físico Jogo De Aventura E Construção";xbox_one;5;5;5
+platform_conflict;9;arquivar;d91a8ec5-4d41-412d-93b2-46045a4af252;"Halo Wars Xbox 360 Mídia Física Microsoft";xbox_one;0;1;0
+platform_conflict;9;arquivar;0dee1dcd-aeed-4655-9ee5-59edee091d68;"Coleção Mario kart deluxe mc donals mc lanche feliz Nintendo switch 2024  Mario Peach Bowser Toadette Yoshi Luigi Toad";switch_2;0;1;1
+platform_conflict;9;arquivar;2bb612be-f3ed-44da-b8a6-3df91651a117;"Carro super mario kart mcdonalds nintendo switch 2024";switch_2;0;1;1
+platform_conflict;9;arquivar;2e88c8f7-15be-4af7-91a7-f33457470a51;"Coleção Castlevania Advance Deluxe Nintendo Switch - Prata";ps4;0;1;0
+platform_conflict;9;arquivar;565752e3-e987-40b8-8454-236dcc0bff84;"Halo Infinite Xbox Série X|S, Xbox One e PC (Digital)";xbox_one;0;1;0
+platform_conflict;9;arquivar;93ee6990-37bd-4355-83d3-855a3e9b369a;"Nintendo Nintendo Switch OLED White Nintendo Switch 2021";switch_2;0;1;0
+platform_conflict;9;arquivar;9dcbdeef-10f0-454e-bc4f-044863dec19e;"Tekken 8 Standard Edition PS5 Fisico Bandai Namco";ps4;0;1;0
+platform_conflict;9;arquivar;b87a02f6-f8bc-46f4-a167-9d290c0a6f15;"Nba 2k26 - Nintendo Switch 2 Físico Europeu";switch_1;0;1;2
+platform_conflict;9;arquivar;e24fd149-c613-44e2-aed7-8dddb7c0990a;"Nintendo Nintendo Switch Switch NINTENDO SWITCH 2DA VERSION 2ª edição";switch_2;0;1;0
