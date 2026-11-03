@@ -379,7 +379,7 @@ export function comparePreference(a: ProductType, b: ProductType): number {
 const CONSOLE_PLATFORM =
   /\b(?:ps ?[1-5]|psp|vita|playstation|x ?box|x ?360|xone|switch|nintendo|wii|wii ?u|3ds|2ds|gamecube|n64|snes|game ?boy|gba|sega|mega ?drive|atari|dreamcast|dualsense|dualshock|joy ?con)\b/;
 const PHYSICAL_SIGNAL = /\bfisic[oa]\b|\bmidia fisica\b|\bblu ?ray\b|\bcartucho\b|\bdisco\b|\blacrad[oa]\b/;
-const USED_RE = /\busad[oa]s?\b|\bseminov[oa]s?\b|\bopen ?box\b|\brecondicionad[oa]s?\b|\brevisad[oa]\b/;
+const USED_RE = /\busad[oa]s?\b|\bused\b(?! cars?\b)|\bpre[ -]?(?:owned|played)\b|\bseminov[oa]s?\b|\bopen ?box\b|\brecondicionad[oa]s?\b|\brevisad[oa]\b/;
 const CLONE_RE = /\bclones?\b|\bgame ?stick\b|\bretro (?:game|console|arcade)\b|\bconsole (?:retro|portatil) .*\b(?:4k|hdmi)\b|\bsem fio portatil 4k\b|\b\d{3,5} jogos? (?:embutidos|inclusos)\b|\bemulador\b/;
 const DIGITAL_RE = /\bdigital\b(?! devil)|\bcodigo\b|\bgift ?card\b|\bcartao presente\b|\bpsn\b|\bchave de ativacao\b/;
 const CONSOLE_MOD_RE = /\bdesbl\w*|\bdesb\b|\bgoldhen\b|\blojinha\b|\bbdj\b|\bbaixar jogos\b|\bjogos digitais\b|\bpirat\w*|\bdisco de desbloqueio\b/;
@@ -422,6 +422,11 @@ const CONSOLE_MANY_GAMES = /\+ ?\d{2,3} jogos?\b|\bcom \d{2,3} jogos?\b/;
 const ENCLOSURE_WORD = /\bgabinete\b|\benclosure\b|\bcaddy\b|\bhost de jogo\b|\bcaso\b|\bcase\b|\bcaixa\b/;
 const STORAGE_WORD = /\bhdd\b|\bdisco rigido\b|\bssd\b|\bhd\b/;
 const CAPACITY = /\b\d{1,4} ?(?:gb|tb|mb)\b/;
+
+/** Estojo/saco de armazenamento de jogos: acessório mesmo quando o título começa com "Jogo" ou "Console". */
+const STRONG_ACCESSORY_RE = /\bsacos? de armazenamento\b|\b\d{1,3} slots? (?:de |para )?(?:cartao|cartoes|cartuchos?|jogos?)\b|\bcaixas? protetoras?\b/;
+/** Suporte vertical do console (PT e EN) quando o título não cita "console" nem é kit ("com"/"+"). */
+const VERTICAL_STAND_RE = /\bvertical stand\b|\bstand vertical\b|\bsuporte vertical\b|\bbase vertical\b/;
 
 /** Substantivo de controle (para checar clone). */
 const CONTROLLER_WORD = /\bcontrol(?:e|es|ador|adores|ler)\b|\bjoysticks?\b|\bgamepads?\b|\bjoy ?cons?\b|\bmanetes?\b/;
@@ -507,6 +512,15 @@ export function classifyCatalogItem(name: string, dbType: ProductType, gameForma
   // Colecionável/steelbook sem disco, jogo nem mídia: peça de coleção, não jogo
   if (COLLECTOR_RE.test(t) && !physical && !GAME_WORD.test(t) && !/\b(?:ps ?[45]|xbox|switch|nintendo|playstation)\b/.test(t)) {
     return hide('merchandise', 'colecionavel_sem_midia', 'colecionador/steelbook');
+  }
+
+  // Acessório de armazenamento/suporte que o título declara de forma inequívoca: vence "Jogo"/"Console" no começo do
+  // título e o tipo gravado (QA 2026-11-03, P2: saco de armazenamento Zelda tipado game; suporte vertical tipado console).
+  const strong = STRONG_ACCESSORY_RE.exec(t);
+  if (strong) return { dimension: 'accessory', source: dbType === 'accessory' ? 'db' : 'title', reason: 'acessorio_inequivoco', matched: strong[0], bundle };
+  const stand = VERTICAL_STAND_RE.exec(t);
+  if (stand && !/\bconsole\b/.test(t) && !/ com |\+/.test(t)) {
+    return { dimension: 'accessory', source: dbType === 'accessory' ? 'db' : 'title', reason: 'suporte_vertical', matched: stand[0], bundle };
   }
 
   const core = classifyCore(name, dbType);

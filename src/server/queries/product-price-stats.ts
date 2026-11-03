@@ -1,7 +1,7 @@
 import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { swrBatch } from '@/lib/cache/swr';
+import { swrBatch, withTimeout } from '@/lib/cache/swr';
 import { publicOffersCtes, medianSql, weakSellerSql, catalogGateVisibleSql, offerIdentityVisibleSql } from '@/server/queries/public-offers';
 import {
   AGGREGATE_CEILING_MEDIAN_MULTIPLE,
@@ -291,7 +291,9 @@ function emptyStats(masterProductId: string): MasterProductPriceStats {
 
 /** Versão sem cache; use `getMasterProductPriceStatsBatch` nas telas. */
 export async function getMasterProductPriceStatsBatchRaw(
-  masterProductIds: string[]
+  masterProductIds: string[],
+  /** Recebe as linhas cruas de `product_stats` (colunas canônicas) da MESMA consulta; usado pelo cron para persistir sem recalcular. */
+  onAggRows?: (rows: Row[]) => void
 ): Promise<Map<string, MasterProductPriceStats>> {
   const result = new Map<string, MasterProductPriceStats>();
   const ids = [...new Set(masterProductIds.filter(Boolean))];
@@ -368,6 +370,8 @@ export async function getMasterProductPriceStatsBatchRaw(
         ) * ${bandHi} / ${bandLo}
     `),
   ]);
+
+  onAggRows?.(aggRows as unknown as Row[]);
 
   type LowRef = { win: 'all' | '1y' | '3m'; productId: string; offerId: string; price: number; at: string };
   const lowRefs: LowRef[] = [];
@@ -521,15 +525,87 @@ async function fetchStatsChunk(ids: string[]): Promise<Record<string, MasterProd
   return Object.fromEntries(await getMasterProductPriceStatsBatchRaw(ids));
 }
 
-/** Em lote, com cache SWR por produto (fresco 10 min; vencido é servido e recalculado por trás). */
+/**
+ * Idade máxima do pré-cálculo persistido (`product_price_stats`, escrito pelo cron a cada ~15 min) que as
+ * telas aceitam. Passou disso (cron parado), a tela volta ao cálculo ao vivo abaixo.
+ */
+export const STATS_PERSIST_MAX_AGE_MS = 3 * 3600_000;
+
+/** Linhas do pré-cálculo com idade <= STATS_PERSIST_MAX_AGE_MS (cláusula SQL da tabela `product_price_stats`, alias `ps`). */
+export const STATS_PERSIST_FRESH_SQL = sql`ps.computed_at > now() - (${sql.raw(String(Math.round(STATS_PERSIST_MAX_AGE_MS / 1000)))} * interval '1 second')`;
+
+const readyMemo = (globalThis as unknown as { __egeekStatsReady?: { at: number; ok: boolean } });
+
+/**
+ * O pré-cálculo está utilizável? (>= 80 % das linhas dentro da idade máxima, e pelo menos uma). Só então a
+ * tabela de preços lê as estatísticas de `product_price_stats` em vez de varrer ~3 M de cotações. Não
+ * pronto (migration não aplicada, cron parado) => comportamento anterior, sem nenhum valor inventado.
+ * `PRICE_STATS_LIVE=1` força o cálculo ao vivo (comparação de equivalência). Memo de 30 s por processo.
+ */
+export async function statsSnapshotReady(): Promise<boolean> {
+  if (process.env.PRICE_STATS_LIVE === '1') return false;
+  const memo = readyMemo.__egeekStatsReady;
+  if (memo && Date.now() - memo.at < 30_000) return memo.ok;
+  let ok = false;
+  try {
+    const rows = await withTimeout(
+      db.execute<{ fresh: number; total: number }>(sql`
+        SELECT COUNT(*) FILTER (WHERE ${STATS_PERSIST_FRESH_SQL})::int AS fresh, COUNT(*)::int AS total FROM product_price_stats ps
+      `),
+      4_000,
+      'product_price_stats pronto?'
+    );
+    const fresh = Number(rows[0]?.fresh ?? 0);
+    const total = Number(rows[0]?.total ?? 0);
+    ok = fresh > 0 && fresh >= total * 0.8;
+  } catch {
+    ok = false;
+  }
+  readyMemo.__egeekStatsReady = { at: Date.now(), ok };
+  return ok;
+}
+
+/**
+ * Lê as estatísticas já calculadas pelo cron (FONTE ÚNICA: o payload é o resultado de
+ * `getMasterProductPriceStatsBatchRaw`, byte a byte o que a tela calcularia). Produto ausente/velho,
+ * tabela inexistente ou leitura lenta => fica fora do Map e o chamador calcula ao vivo.
+ */
+export async function readPersistedStats(ids: string[]): Promise<Map<string, MasterProductPriceStats>> {
+  const out = new Map<string, MasterProductPriceStats>();
+  if (!ids.length) return out;
+  try {
+    const rows = await withTimeout(
+      db.execute<{ master_product_id: string; payload: MasterProductPriceStats }>(sql`
+        SELECT master_product_id, payload FROM product_price_stats
+        WHERE master_product_id IN (${idList(ids)})
+          AND computed_at > now() - (${Math.round(STATS_PERSIST_MAX_AGE_MS / 1000)} * interval '1 second')
+      `),
+      6_000,
+      'product_price_stats'
+    );
+    for (const r of rows) out.set(String(r.master_product_id), r.payload);
+  } catch (err) {
+    console.error('[stats] leitura do pré-cálculo falhou (calcula ao vivo):', err instanceof Error ? err.message : err);
+  }
+  return out;
+}
+
+/**
+ * Em lote: primeiro o pré-cálculo persistido (1 consulta por PK); só o que faltar (produto novo, cron parado)
+ * cai no cache SWR por produto (fresco 10 min; vencido é servido e recalculado por trás).
+ */
 export async function getMasterProductPriceStatsBatch(
   masterProductIds: string[],
   opts: { coldTimeoutMs?: number; direct?: boolean; partialOnTimeout?: boolean } = {}
 ): Promise<Map<string, MasterProductPriceStats>> {
   const ids = [...new Set(masterProductIds.filter(Boolean))].sort();
   if (!ids.length) return new Map();
-  const rec = await swrBatch('mp-price-stats-v1', ids, fetchStatsChunk, { ttlMs: STATS_FRESH_MS, maxStaleMs: STATS_MAX_STALE_MS, chunkSize: 30, coldTimeoutMs: opts.coldTimeoutMs, direct: opts.direct, partialOnTimeout: opts.partialOnTimeout });
-  return new Map(Object.entries(rec));
+  const persisted = await readPersistedStats(ids);
+  const missing = ids.filter((id) => !persisted.has(id));
+  if (!missing.length) return persisted;
+  const rec = await swrBatch('mp-price-stats-v1', missing, fetchStatsChunk, { ttlMs: STATS_FRESH_MS, maxStaleMs: STATS_MAX_STALE_MS, chunkSize: 30, coldTimeoutMs: opts.coldTimeoutMs, direct: opts.direct, partialOnTimeout: opts.partialOnTimeout });
+  for (const [id, v] of Object.entries(rec)) persisted.set(id, v);
+  return persisted;
 }
 
 /** Um produto. Produto sem nenhuma cotação devolve estatística vazia (quoteCount 0), nunca valores inventados. */

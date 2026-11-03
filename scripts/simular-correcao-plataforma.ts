@@ -13,7 +13,7 @@ import { connect } from './_dup-shared';
   const fix: Array<{ id: string; from: string; to: string }> = [];
   for (const r of rows) {
     const t = derivePlatformFromTitle(r.name as string);
-    const ambiguo = mentionsMultipleGenerations(String(r.name)) || /(one|360).*(series|x)|one.*\/.*series|ps4.*ps5|ps5.*ps4/i.test(String(r.name));
+    const ambiguo = mentionsMultipleGenerations(String(r.name)) || /\b(one|360)\b.*\b(series|x)\b|\bone\b.*\/.*series|ps4.*ps5|ps5.*ps4/i.test(String(r.name));
     const soJogo = classifyCatalogItem(String(r.name), 'game').dimension === 'game';
     if (t !== 'unknown' && t !== r.gen && r.gen !== 'unknown' && !ambiguo && soJogo) {
       out.push([r.id, `"${String(r.name).replace(/"/g, "'")}"`, r.gen, t, r.ativas].join(';'));

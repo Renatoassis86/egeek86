@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, eq, gt, ne } from 'drizzle-orm';
+import { and, eq, gt, isNull, ne } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers } from '@/db/schema';
 
@@ -32,6 +32,7 @@ export async function getMasterReferencePrices(masterProductId: string, excludeO
         eq(affiliateOffers.masterProductId, masterProductId),
         eq(affiliateOffers.status, 'active'),
         gt(affiliateOffers.currentPriceCents, 0),
+        isNull(affiliateOffers.quarantinedAt), // preço absurdo em quarentena não serve de referência
         ...(excludeOfferId ? [ne(affiliateOffers.id, excludeOfferId)] : [])
       )
     );

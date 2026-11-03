@@ -1,7 +1,7 @@
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createCachedQuery, createPersistedQuery } from '@/lib/cache/server-cache';
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { catalogDimensionFilter } from '@/server/queries/catalog-dimensions';
 import { getPriceTableProductCount, getPriceTableBadgeCounters } from '@/server/queries/price-table';
@@ -42,7 +42,7 @@ export interface PublicMetrics {
  * em "mil", então vive em cache próprio: fresco 15 min, recalculado por trás
  * (SWR), igual em TODAS as telas porque só existe esta função.
  */
-const getQuoteCount = createCachedQuery(
+export const getQuoteCount = createPersistedQuery(
   async (): Promise<number> => {
     const rows = await db.execute<{ quotes: string }>(sql`
       SELECT COUNT(*)::bigint AS quotes FROM affiliate_price_snapshots WHERE price_cents > 0
@@ -50,7 +50,7 @@ const getQuoteCount = createCachedQuery(
     return Number(rows[0]?.quotes ?? 0);
   },
   ['public-quote-count-v1'],
-  { revalidate: 900, maxStaleSeconds: 24 * 3600, coldTimeoutSeconds: 40 }
+  { revalidate: 900, maxStaleSeconds: 24 * 3600, coldTimeoutSeconds: 40, persist: { maxAgeSeconds: 3600 } }
 );
 
 /** Rótulos ÚNICOS dos contadores (todas as telas usam estes; ver docs/modelo-indicadores.md, seção 9). */
@@ -63,7 +63,8 @@ async function compute(): Promise<PublicMetrics> {
   const inCatalog = await catalogDimensionFilter({ idCol: sql`mp.id`, typeCol: sql`mp.product_type` });
   const [productCount, badges, offerRows, quotes] = await Promise.all([
     getPriceTableProductCount(),
-    getPriceTableBadgeCounters(),
+    // Contadores de selo ainda não calculados (sem snapshot e varredura ao vivo lenta): null, a tela omite o número.
+    getPriceTableBadgeCounters().catch(() => null),
     db.execute<{ stores: number; sellers: number }>(sql`
       WITH ${publicOffersCtes()}
       SELECT COUNT(DISTINCT o.network_id)::int AS stores,
@@ -86,7 +87,8 @@ async function compute(): Promise<PublicMetrics> {
   };
 }
 
-const cached = createCachedQuery(compute, ['public-metrics-v2'], {
+export const publicMetricsCached = createPersistedQuery(compute, ['public-metrics-v2'], {
+  persist: { maxAgeSeconds: 1800 },
   revalidate: 300,
   maxStaleSeconds: 24 * 3600,
   coldTimeoutSeconds: 60,
@@ -106,7 +108,7 @@ const EMPTY: PublicMetrics = {
 /** Contadores públicos do site (cache de 5 min, uma chave só). Nunca lança: sem banco, devolve zeros. */
 export async function getPublicMetrics(): Promise<PublicMetrics> {
   try {
-    return await cached();
+    return await publicMetricsCached();
   } catch (err) {
     console.error('[public-metrics] falha', err);
     return EMPTY;

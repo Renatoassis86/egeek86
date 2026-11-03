@@ -49,7 +49,7 @@ const NOISE_WORDS = new Set([
   'br', 'ptbr', 'pt', 'brasil', 'brasileira', 'brasileiro', 'nacional', 'nsc',
   'brinde', 'promocao', 'promo', 'oferta', 'imperdivel', 'lancamento', 'pronta', 'pronto',
   'entrega', 'envio', 'imediato', 'imediata', 'rapido', 'rapida', 'frete', 'gratis', 'garantia',
-  'oficial', 'cartucho', 'disco', 'cd', 'versao', 'nfe', 'nota', 'fiscal', 'full', 'juros',
+  'oficial', 'formato', 'cartucho', 'disco', 'cd', 'versao', 'nfe', 'nota', 'fiscal', 'full', 'juros',
   'de', 'do', 'da', 'dos', 'das', 'para', 'com', 'the', 'of', 'and', 'em', 'no', 'na', 'um', 'uma',
   'nintendo', 'playstation', 'xbox', 'sony', 'microsoft',
 ]);
@@ -143,7 +143,7 @@ const PHRASE_RULES: Array<[RegExp, string]> = [
   [/\bnintendo switch\s+sports\b|\bswitch\s+sports\b/g, ' switchsports '],
   // condição: Open Box e usado/seminovo/recondicionado são condição própria, nunca "novo"
   [/\bopen[\s-]?box\b/g, ' openbox '],
-  [/\b(?:usad[oa]s?|seminov[oa]s?|recondicionad[oa]s?|refurbished|pre[\s-]?owned|segunda mao|vitrine|mostruario)\b/g, ' usado '],
+  [/\b(?:usad[oa]s?|seminov[oa]s?|recondicionad[oa]s?|refurbished|pre[\s-]?owned|pre[\s-]?played|second[\s-]?hand|used(?! cars?\b)|segunda mao|vitrine|mostruario)\b/g, ' usado '],
   // defeito, sucata e peças também não são "novo" (achado do guardião, 2026-11-03)
   [/\b(?:com )?defeito\b|\bsucata\b|\b(?:para )?retirada de pecas\b|\bquebrad[oa]s?\b|\bnao liga\b|\bconserto\b|\bdesbloquead[oa]s?\b/g, ' usado '],
   // relançamentos
@@ -339,6 +339,8 @@ export function normalizeTitle(title: string, options: NormalizeOptions = {}): N
   text = text.replace(CAPACITY_RE, ' ');
 
   text = text.replace(/[^a-z0-9\s]+/g, ' ');
+  // Erro de digitação comum do vendedor: "Breath Of Thewild" -> "the wild" (separava o mesmo Zelda BOTW em 2 masters).
+  text = text.replace(/\bthewild\b/g, 'the wild');
   // "fc25" -> "fc 25": o mesmo jogo aparece colado e separado nos anúncios.
   text = text.replace(/\b([a-z]{2,})(\d{1,3})\b/g, '$1 $2');
   // "2k25" -> "2k 25" (NBA 2K25 e NBA 2K 25 são o mesmo jogo)
@@ -474,6 +476,23 @@ const SOFT_WHEN_MASTER_ONLY = new Set([
   'controle', 'console', 'volante', 'cabo', 'dock', 'headset', 'suporte', 'carregador', 'case', 'capa', 'cartao', 'manual', 'sem', 'somente', 'apenas',
 ]);
 
+/**
+ * Remake que é a ÚNICA versão do jogo na plataforma (regra de identidade, delegação 2026-11-03): o "Remake" só
+ * separa do original quando o original existe NA MESMA plataforma. Resident Evil 2 e 3 originais são de PS1 (e
+ * PC/Dreamcast/GameCube); em PS4/PS5 o jogo vendido é o remake, com ou sem a palavra no anúncio. Lista curta e
+ * explícita: ampliar só com conferência (Demon's Souls PS5, Dead Space 2023...). Núcleo = `coreTitle` normalizado.
+ */
+const CANONICAL_REMAKE_CORES = new Set(['resident evil 2', 'resident evil 3']);
+const CANONICAL_REMAKE_PLATFORMS = new Set(['ps4', 'ps5']);
+
+function remakeIsCanonical(a: NormalizedTitle, b: NormalizedTitle): boolean {
+  return (
+    a.kind === 'game' && b.kind === 'game' &&
+    a.platform === b.platform && CANONICAL_REMAKE_PLATFORMS.has(a.platform) &&
+    a.coreTitle === b.coreTitle && CANONICAL_REMAKE_CORES.has(a.coreTitle)
+  );
+}
+
 export function markerAxis(marker: string): IdentityAxis {
   return MARKER_AXIS[marker] ?? 'edicao';
 }
@@ -506,10 +525,13 @@ export function compareIdentity(a: NormalizedTitle, b: NormalizedTitle): Identit
 
   const aSet = new Set(a.markers);
   const bSet = new Set(b.markers);
+  const canonicalRemake = remakeIsCanonical(a, b);
   for (const m of a.markers) {
+    if (canonicalRemake && m === 'remake') continue;
     if (!bSet.has(m)) out.push({ axis: markerAxis(m), detail: `${m} só no título A`, hard: true });
   }
   for (const m of b.markers) {
+    if (canonicalRemake && m === 'remake') continue;
     // O master tem a edição/região/relançamento/modelo e o título não diz: a oferta "padrão" silenciosa não é essa edição.
     // Só substantivos que o anúncio costuma omitir (controle, console, cabo...) não pesam.
     if (!aSet.has(m)) out.push({ axis: markerAxis(m), detail: `${m} só no master`, hard: !SOFT_WHEN_MASTER_ONLY.has(m) });

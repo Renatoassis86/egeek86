@@ -8,7 +8,7 @@ import { sql, type SQL } from 'drizzle-orm';
  * (`[aã]`, `[eé]`), enquanto a função TS dobra os acentos antes. A paridade com a função TS é
  * medida pelo dry-run da etapa 1 (ADR 0006).
  */
-const OFFER_CONDITION_RE = String.raw`(open[ -]?box|\yusad[oa]s?\y|seminov[oa]s?|recondicionad[oa]s?|refurbished|pre[ -]?owned|segunda m[aã]o|\yvitrine\y|mostru[aá]rio|\yloose\y|defeito|sucata|retirada de pe[cç]as|quebrad[oa]|n[aã]o liga|conserto|desbloquead[oa])`;
+const OFFER_CONDITION_RE = String.raw`(open[ -]?box|\yusad[oa]s?\y|seminov[oa]s?|recondicionad[oa]s?|refurbished|pre[ -]?(?:owned|played)|second[ -]?hand|\yused\y(?! cars?\y)|segunda m[aã]o|\yvitrine\y|mostru[aá]rio|\yloose\y|defeito|sucata|retirada de pe[cç]as|quebrad[oa]|n[aã]o liga|conserto|desbloquead[oa])`;
 const OFFER_HARDWARE_USED_RE = String.raw`\yrevisad[oa]s?\y`;
 const OFFER_CROSSGEN_PS = [String.raw`(\yps ?4\y|playstation ?4\y)`, String.raw`(\yps ?5\y|playstation ?5\y)`];
 const OFFER_CROSSGEN_XBOX = [
@@ -31,7 +31,7 @@ export function offerExcludedTitleSql(lowerTitle: string, masterTypeCol: string)
   const has = (re: string) => sql`${t} ~ ${lit(re)}`;
   const like = (pattern: string) => sql`${t} LIKE ${lit(pattern)}`;
   // O CASE força o pré-filtro barato (LIKE) a rodar antes: a regex só roda nos poucos títulos que passam.
-  const pre = sql`${t} LIKE ANY (ARRAY['%open%box%','%usad%','%seminov%','%recondicion%','%refurb%','%owned%','%segunda m%','%vitrine%','%mostru%','%loose%','%defeito%','%sucata%','%pe_as%','%quebrad%','%liga%','%conserto%','%desbloquead%'])`;
+  const pre = sql`${t} LIKE ANY (ARRAY['%open%box%','%usad%','%seminov%','%recondicion%','%refurb%','%owned%','%played%','%second%hand%','%used%','%segunda m%','%vitrine%','%mostru%','%loose%','%defeito%','%sucata%','%pe_as%','%quebrad%','%liga%','%conserto%','%desbloquead%'])`;
   const crossPre = sql`((${like('%ps%4%')} AND ${like('%ps%5%')}) OR ${like('%xbox%')} OR ${like('%xone%')} OR ${like('%switch%2%')})`;
   return sql`(
     CASE WHEN ${pre} THEN ${has(OFFER_CONDITION_RE)} ELSE false END

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, analyticsEvents } from '@/db/schema';
 
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const [offer] = await db
     .select()
     .from(affiliateOffers)
-    .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active')))
+    .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
     .limit(1);
 
   if (!offer) {

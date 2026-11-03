@@ -3,7 +3,7 @@ import { cache } from 'react';
 import { and, count, desc, asc, eq, gt, gte, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createCachedQuery, createPersistedQuery } from '@/lib/cache/server-cache';
 import { swrBatch, withTimeout } from '@/lib/cache/swr';
 
 /** Teto de espera das leituras ao vivo das vitrines (uma conexão presa não pode segurar a página). */
@@ -177,7 +177,7 @@ const isMasterInCatalogCached = createCachedQuery(isMasterInCatalog, ['offer-pag
 export const getOfferBySlug = cache(async (slug: string): Promise<OfferWithRelations | null> => {
   const [row] = await withTimeout(
     baseOfferQuery()
-      .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active')))
+      .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
       .limit(1),
     8_000,
     'getOfferBySlug'
@@ -273,7 +273,7 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   if (ids.length === 0) return [];
   // status 'active' relido ao vivo: oferta que saiu do ar depois do ranking em cache não aparece.
   const rows = await readOfferRowsLive(
-    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, ids), eq(affiliateOffers.status, 'active'))),
+    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, ids), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt))),
     ids,
     'listRankedOffers (linhas)'
   );
@@ -313,6 +313,7 @@ export async function countRankedOffers(
 async function rankOfferIds(filter: RankedOffersFilter): Promise<RankedRow[]> {
   const conditions: SQL[] = [
     eq(affiliateOffers.status, 'active'),
+    isNull(affiliateOffers.quarantinedAt),
     // current_price_cents = 0 é "ainda não coletado" (placeholder da
     // descoberta automática) — nunca um preço real. Sem isso, esses itens
     // sempre "vencem" qualquer ordenação por menor preço (0 é sempre o
@@ -376,7 +377,9 @@ async function rankOfferIds(filter: RankedOffersFilter): Promise<RankedRow[]> {
     .map(({ id, gen }) => ({ id, gen }));
 }
 
-const rankedOfferListCached = createCachedQuery(rankOfferIds, ['ranked-offer-list-v2'], {
+/** Ranking por filtro (lista de ids): pré-calculado pelo cron e lido do banco (ver snapshot-store.ts). */
+export const rankedOfferListCached = createPersistedQuery(rankOfferIds, ['ranked-offer-list-v2'], {
+  persist: { maxAgeSeconds: 1800 },
   revalidate: 60,
   tags: ['affiliate-offers', 'price-snapshots'],
 });
@@ -490,7 +493,7 @@ export async function searchOffersForAdmin(query: string, limit = 8): Promise<Ad
     .from(affiliateOffers)
     .innerJoin(masterProducts, eq(affiliateOffers.masterProductId, masterProducts.id))
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-    .where(and(fuzzy, eq(affiliateOffers.status, 'active')))
+    .where(and(fuzzy, eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
     .orderBy(asc(affiliateOffers.currentPriceCents))
     .limit(limit);
 
@@ -1065,7 +1068,7 @@ export async function getAdminDashboardMetrics(): Promise<AdminDashboardMetrics>
     [{ value: messagesThisWeek }],
     [{ value: couponsExpiringSoon }],
   ] = await Promise.all([
-    db.select({ value: count() }).from(affiliateOffers).where(eq(affiliateOffers.status, 'active')),
+    db.select({ value: count() }).from(affiliateOffers).where(and(eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt))),
     db.select({ value: count() }).from(affiliateOffers),
     db.select({ value: count() }).from(affiliateCoupons).where(eq(affiliateCoupons.status, 'active')),
     db
@@ -1245,6 +1248,7 @@ export async function getFeaturedOffers(
 async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): Promise<string[]> {
   const conditions: SQL[] = [
     sql`o.status = 'active'`,
+    sql`o.quarantined_at IS NULL`,
     sql`o.current_price_cents > 0`
   ];
 
@@ -1337,8 +1341,8 @@ async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): 
   return scored.slice(0, limit).map((r) => r.offerId);
 }
 
-const rankFeaturedOfferIdsCached = createCachedQuery(
+export const rankFeaturedOfferIdsCached = createPersistedQuery(
   rankFeaturedOfferIds,
   ['featured-offer-ids'],
-  { revalidate: 120, tags: ['affiliate-offers', 'price-snapshots'], coldTimeoutSeconds: 9 }
+  { revalidate: 120, tags: ['affiliate-offers', 'price-snapshots'], coldTimeoutSeconds: 9, persist: { maxAgeSeconds: 1800 } }
 );

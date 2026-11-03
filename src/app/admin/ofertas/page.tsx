@@ -14,6 +14,7 @@ import { GAME_FORMAT_LABELS, GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/la
 import { formatBRL } from '@/lib/format';
 import { listOffersForAdminFiltered, listNetworks, type AdminOffersFilter } from '@/server/queries/affiliate';
 import type { AffiliateOffer, GameFormat, GamePlatformGen, GameEditionType } from '@/db/schema';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 const STATUS_VALUES: readonly AffiliateOffer['status'][] = ['draft', 'active', 'paused', 'expired', 'archived'];
 const FORMAT_VALUES: readonly GameFormat[] = ['physical', 'digital', 'unknown'];
@@ -55,6 +56,7 @@ export default async function AdminOffersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  await requireAdmin();
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.pagina) || 1);
 

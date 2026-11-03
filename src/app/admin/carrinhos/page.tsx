@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/button';
 import { SendCartMessageButton } from '@/components/admin/send-cart-message-button';
 import { formatBRL } from '@/lib/format';
 import { getPendingCartsForAdmin } from '@/server/queries/cart';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 export const metadata = { title: 'Admin: Listas de interesse' };
 export const dynamic = 'force-dynamic';
 
 export default async function AdminCartsPage() {
+  await requireAdmin();
   const groups = await getPendingCartsForAdmin();
 
   return (

@@ -7,6 +7,7 @@ import { Text } from '@/components/ui/text';
 import { getAdminArticles } from '@/server/queries/news';
 import { ARTICLE_CATEGORY_LABELS } from '@/lib/news/labels';
 import type { ArticleStatus, ArticleKind } from '@/db/schema';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
 export const dynamic = 'force-dynamic';
@@ -29,6 +30,7 @@ const KIND_LABEL: Record<ArticleKind, string> = {
 };
 
 export default async function AdminNoticiasPage() {
+  await requireAdmin();
   const { items } = await getAdminArticles({});
 
   return (

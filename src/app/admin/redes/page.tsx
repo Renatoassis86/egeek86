@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Text } from '@/components/ui/text';
 import { listNetworks } from '@/server/queries/affiliate';
 import { createNetwork, toggleNetworkActive } from '@/server/actions/affiliate';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
 export const dynamic = 'force-dynamic';
 
 export default async function AdminNetworksPage() {
+  await requireAdmin();
   const networks = await listNetworks();
 
   return (

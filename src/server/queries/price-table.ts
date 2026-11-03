@@ -4,9 +4,9 @@ import { db } from '@/lib/db';
 import { fuzzyMatchRaw } from '@/lib/db/fuzzy-search';
 import { type ProductType, type GameFormat, type GamePlatformGen } from '@/db/schema';
 import { publicOffersCtes, weakSellerSql } from '@/server/queries/public-offers';
-import { statsAggCtes } from '@/server/queries/product-price-stats';
+import { statsAggCtes, statsSnapshotReady, STATS_PERSIST_FRESH_SQL } from '@/server/queries/product-price-stats';
 import { catalogDimensionFilter } from '@/server/queries/catalog-dimensions';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createCachedQuery, createPersistedQuery } from '@/lib/cache/server-cache';
 import {
   DISPERSION_LOW_CONFIDENCE_RATIO,
   INLINE_BAND_PERCENT,
@@ -95,7 +95,7 @@ export interface PriceTableRow {
  * discount_percent_raw (não arredondado, pra ordenar/filtrar com precisão;
  * arredondar só na hora de exibir).
  */
-function buildCtes(whereClause: SQL) {
+function buildCtes(whereClause: SQL, useSnapshot = false) {
   const minQ = sql.raw(String(MIN_QUOTES_FOR_VERDICT));
   const minD = sql.raw(String(MIN_HISTORY_DAYS_FOR_VERDICT));
   const band = sql.raw(String(INLINE_BAND_PERCENT));
@@ -133,7 +133,21 @@ function buildCtes(whereClause: SQL) {
     ),
     -- Agregados da fonte única (product-price-stats.ts, statsAggCtes): piso estrito,
     -- teto só nos agregados, mínimo sem vendedor fraco. Mesma definição da página do produto.
-    ${statsAggCtes(sql`o.master_product_id IN (SELECT mp_id FROM distinct_products)`)},
+    ${
+      useSnapshot
+        ? // Pré-cálculo (cron): as MESMAS colunas de `product_stats`, gravadas por statsAggCtes. Só produtos com
+          // cotação plausível (quote_count > 0), como a CTE ao vivo; produto sem linha cai em "histórico insuficiente".
+          sql`product_stats AS (
+      SELECT ps.master_product_id, ps.quote_count, ps.avg_quote_count, ps.avg_cents, ps.raw_avg_cents,
+             ps.max_cents, ps.max_raw_cents, ps.history_since, ps.history_until, ps.history_days,
+             ps.min_all, ps.min_1y, ps.min_3m, ps.median_cents, ps.dispersion_ratio, ps.n_all, ps.raw_min,
+             ps.floor_cents, ps.pf_median
+      FROM product_price_stats ps
+      WHERE ${STATS_PERSIST_FRESH_SQL} AND ps.quote_count > 0
+        AND ps.master_product_id IN (SELECT mp_id FROM distinct_products)
+    )`
+        : statsAggCtes(sql`o.master_product_id IN (SELECT mp_id FROM distinct_products)`)
+    },
     base AS (
       SELECT
         dp.mp_id, dp.mp_name, dp.mp_slug, dp.product_type, dp.game_format, dp.game_platform_gen,
@@ -217,7 +231,7 @@ async function fetchPriceTableData(filter: PriceTableFilter = {}): Promise<{ ite
   }
 
   const whereClause = sql.join(conditions, sql` AND `);
-  const ctes = buildCtes(whereClause);
+  const ctes = buildCtes(whereClause, await statsSnapshotReady());
 
   // "Apenas Itens Abaixo da Média" filtra por desconto real (já livre de
   // outliers) e só com histórico elegível; "abaixo" = fora da faixa "em linha"
@@ -315,10 +329,10 @@ export async function getPriceTableData(filter: PriceTableFilter = {}): Promise<
   return priceTableDataCached(filter);
 }
 
-const priceTableDataCached = createCachedQuery(
+export const priceTableDataCached = createPersistedQuery(
   async (filter: PriceTableFilter) => fetchPriceTableData(filter),
   ['price-table-data'],
-  { revalidate: 60, tags: ['price-table'] }
+  { revalidate: 60, tags: ['price-table'], persist: { maxAgeSeconds: 1800 } }
 );
 
 
@@ -338,7 +352,8 @@ async function fetchPriceTableCounters(): Promise<PriceTableCounters> {
     sql`NOT (mp.attributes ? 'mergedInto')`,
     await catalogDimensionFilter({ idCol: sql`mp.id`, typeCol: sql`mp.product_type` }),
   ];
-  const ctes = buildCtes(sql.join(conditions, sql` AND `));
+  const snapshot = await statsSnapshotReady();
+  const ctes = buildCtes(sql.join(conditions, sql` AND `), snapshot);
   // Varre as estatísticas do catálogo inteiro (~3 M cotações): pode passar dos 2 min do
   // statement_timeout padrão do banco quando há carga. Roda só em segundo plano (SWR, 30 min),
   // então ganha um teto próprio, restrito a esta transação (SET LOCAL).
@@ -380,9 +395,10 @@ async function fetchPriceTableProductCount(): Promise<number> {
 }
 
 /** Total de produtos da tabela sem filtro (cache SWR de 5 min). Fonte do número "produtos" de TODAS as telas. */
-export const getPriceTableProductCount = createCachedQuery(fetchPriceTableProductCount, ['price-table-product-count-v1'], {
+export const getPriceTableProductCount = createPersistedQuery(fetchPriceTableProductCount, ['price-table-product-count-v1'], {
   revalidate: 300,
   maxStaleSeconds: 24 * 3600,
+  persist: { maxAgeSeconds: 1800 },
 });
 
 /**
@@ -391,11 +407,14 @@ export const getPriceTableProductCount = createCachedQuery(fetchPriceTableProduc
  * SÓ em segundo plano (SWR: fresco 30 min, recalculado por trás). Enquanto não houver o
  * primeiro cálculo devolve `null` (a tela omite o número em vez de mostrar zero).
  */
-export const getPriceTableBadgeCounters = createCachedQuery(
+export const getPriceTableBadgeCounters = createPersistedQuery(
   async (): Promise<{ lowestEver: number; belowAverage: number }> => {
     const c = await fetchPriceTableCounters();
     return { lowestEver: c.lowestEver, belowAverage: c.belowAverage };
   },
   ['price-table-badge-counters-v1'],
-  { revalidate: 1800, maxStaleSeconds: 24 * 3600, coldTimeoutSeconds: 0, slot: true, hardTimeoutSeconds: 600 }
-) as () => Promise<{ lowestEver: number; belowAverage: number } | null>;
+  // coldTimeout 8 s (antes 0): com o pré-cálculo a leitura é de 1 linha; se não houver nenhum snapshot e o
+  // cálculo ao vivo (~70 s) não couber em 8 s, o chamador recebe erro, trata como "não calculado" (null) e a
+  // tela omite o número. O cálculo segue por trás e grava o snapshot.
+  { revalidate: 1800, maxStaleSeconds: 24 * 3600, coldTimeoutSeconds: 8, slot: true, hardTimeoutSeconds: 600, persist: { maxAgeSeconds: 1800 } }
+);

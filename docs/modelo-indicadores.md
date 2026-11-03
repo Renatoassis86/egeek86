@@ -358,3 +358,7 @@ Edição (Deluxe, Gold, Limitada, Especial, Colecionador, Aniversário, qualquer
 - 9.092 de 9.540 ofertas ativas herdam o título do master: o banco não guarda o título do vendedor, então Open Box/usado hoje medem 0 por falta de dado, não por ausência real. A rechecagem na coleta é o que passa a medir (proposta de coluna `seller_title` no ADR 0006).
 - Filtro SQL por regex custa ~150-260 ms por consulta (medido no pooler); a coluna persistida elimina o custo.
 - Remake como marcador esvazia cestas cujo master omite "Remake" (ex.: RE3 PS5): decisão pendente do dono.
+
+
+## 11. Quarentena de preço absurdo (2026-11-03)
+Oferta com `affiliate_offers.quarantined_at` preenchido não entra em nenhum indicador de produto (atual, mínimo, média, mediana, máximo, contagem, variação, vitrine, busca, sitemap), nem como referência de plausibilidade do coletor. As cotações dela permanecem no banco. Quebra de série: a média e o máximo históricos de produtos com oferta quarentenada (por exemplo PS4 Slim 1TB, Xbox One S, Switch 2 Nacional) deixam de incluir os valores absurdos. Fonte: ADR 0002, emenda de 2026-11-03.

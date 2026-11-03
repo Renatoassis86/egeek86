@@ -3,6 +3,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function proxy(request: NextRequest) {
+  // Barreira barata: /admin sem cookie de sessão do Supabase redireciona para /login antes de renderizar
+  // (evita que o corpo RSC da página vaze junto com o redirect do layout). A autorização real segue em requireAdmin.
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    const hasSession = request.cookies.getAll().some((c) => /^sb-.+-auth-token/.test(c.name));
+    if (!hasSession) return NextResponse.redirect(new URL('/login', request.url));
+  }
   try {
     return await updateSession(request);
   } catch (e) {

@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { getAdminCatalogMetrics } from '@/server/queries/admin-metrics';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 export const metadata = { title: 'Admin: Ciência de dados' };
 export const dynamic = 'force-dynamic';
@@ -30,6 +31,7 @@ const PLANNED = [
 ];
 
 export default async function AdminDataSciencePage() {
+  await requireAdmin();
   const catalog = await getAdminCatalogMetrics();
 
   const kpis = [

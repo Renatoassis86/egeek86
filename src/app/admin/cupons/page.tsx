@@ -6,6 +6,7 @@ import { Text } from '@/components/ui/text';
 import { formatDiscountLabel } from '@/lib/format';
 import { listCouponsForAdmin, listNetworks } from '@/server/queries/affiliate';
 import { updateCouponStatus } from '@/server/actions/affiliate';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,7 @@ const statusVariant = {
 } as const;
 
 export default async function AdminCouponsPage() {
+  await requireAdmin();
   const [coupons, networks] = await Promise.all([listCouponsForAdmin(), listNetworks()]);
   const networkNameById = new Map(networks.map((n) => [n.id, n.name]));
 

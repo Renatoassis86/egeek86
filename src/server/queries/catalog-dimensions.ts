@@ -1,7 +1,7 @@
 import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createPersistedQuery } from '@/lib/cache/server-cache';
 import type { ProductType } from '@/db/schema';
 import { dimensionToProductType } from '@/lib/catalog/dimensions';
 import { evaluateCatalogGate } from '@/lib/catalog/gate';
@@ -43,7 +43,7 @@ async function loadOverrides(): Promise<DimensionOverrides> {
              array_agg(DISTINCT o.title) AS titles,
              percentile_cont(0.5) WITHIN GROUP (ORDER BY o.current_price_cents) FILTER (WHERE o.current_price_cents > 0) AS median_cents
       FROM affiliate_offers o
-      WHERE o.status = 'active'
+      WHERE o.status = 'active' AND o.quarantined_at IS NULL
       GROUP BY o.master_product_id
     )
     SELECT m.id, m.name, m.product_type, m.game_format, m.game_platform_gen,
@@ -82,7 +82,8 @@ async function loadOverrides(): Promise<DimensionOverrides> {
   return out;
 }
 
-const overridesCached = createCachedQuery(loadOverrides, ['catalog-dimension-overrides-v4'], {
+export const overridesCached = createPersistedQuery(loadOverrides, ['catalog-dimension-overrides-v4'], {
+  persist: { maxAgeSeconds: 1800 },
   revalidate: 300,
   tags: ['affiliate-offers'],
 });

@@ -459,6 +459,8 @@ async function applySnapshotsToGroup(
     // a mais aqui seria puro desperdício (o pool de conexão roda com max:1,
     // cada round-trip a menos importa de verdade pro tempo total da execução).
     if (!isNewOffer) {
+      // QUARENTENA (migration 0023): `quarantined_at` é independente de `status`. Reativar 'expired' -> 'active'
+      // aqui NÃO tira a oferta da quarentena (nenhum coletor escreve essa coluna); só `--revert` do script tira.
       // Achou vendedor de novo pra essa oferta — zera a sequência de falhas
       // (ver MAX_CONSECUTIVE_MISSES). Também reativa quem tinha sido
       // marcada 'expired' por engano numa falha passageira e voltou a

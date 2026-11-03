@@ -257,6 +257,9 @@ function FilterPanel({
   const platforms = (Object.entries(result.facets.platforms) as Array<[GamePlatformGen, number]>)
     .filter(([k, n]) => k !== 'unknown' && n > 0)
     .sort((a, b) => b[1] - a[1]);
+  // Itens sem plataforma identificada (ex.: legado fora do enum) contam na aba, então a soma das plataformas
+  // precisa mostrá-los, senão a lista "soma 22" contra 23 na aba (QA 2026-11-03). Linha informativa, sem filtro.
+  const unknownPlatformCount = result.facets.platforms.unknown ?? 0;
   const stores = result.facets.stores;
 
   return (
@@ -281,6 +284,12 @@ function FilterPanel({
               </Link>
             );
           })}
+          {unknownPlatformCount > 0 && (
+            <div className="flex min-h-11 items-center justify-between px-3 text-[15px] text-[var(--color-text-tertiary)]">
+              <span>Outras plataformas</span>
+              <span className="text-[13px] tabular-nums">{unknownPlatformCount}</span>
+            </div>
+          )}
         </fieldset>
       )}
 

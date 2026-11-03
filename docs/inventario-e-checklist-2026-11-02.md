@@ -61,3 +61,18 @@ Escrito para o responsável do projeto. Estado em 2026-11-02, manhã. "Verificad
 
 ## 6. Pendências antigas (não esquecidas)
 Sinopses (heurística do Spider-Man 2); produtos de plataforma `unknown` (GTA V, SF6, Cyberpunk); Hype Zone e leilões na navegação; revisão jurídica do texto de LGPD e comissão; credenciais IGDB (você); desligar a Vercel Toolbar (você, no painel); migrations RLS 0019 a 0021 não aplicadas; validação da Shopee; cron de descoberta desligado até a classificação estar certa; mesclar a branch na main; ADR 0003 (gamificação); apagar componentes órfãos; total de ofertas que cresceu de 12.560 para 16.013 (conferir); Retrospectiva das atas.
+
+## 7. Atualização de 2026-11-03: decisões do §4 adotadas por delegação (reversíveis)
+O dono mandou "fazer tudo o que falta". Adotada a recomendação registrada em cada item; ver ata `docs/conselho/atas/2026-11-03-quarentena-e-decisoes-pendentes.md`.
+| # | Decisão | Estado |
+|---|---|---|
+| 1 | Usado fora | Adotada; corrigida a lacuna do "Used" em inglês |
+| 2 | Bundle de console | Adotada (já implementada) |
+| 3 | Amiibo fora | Adotada (já implementada) |
+| 4 | Acessório de marca sem plataforma | Adotada; revisão para qualquer marca conhecida |
+| 5 | Porta-cartão e Anbernic/Retroid | Adotada; porta-cartão com marca e plataforma aprovado, emulação rejeitada |
+| 6 | Piso PS2 R$ 60 | Adotada (já era) |
+| 7 | Tela de revisão no admin | Construída: `/admin/catalogo-revisao` (somente leitura) |
+| 8 | Quarentena | Coluna `quarantined_at` (migration 0023 aplicada); 83 + 1 ofertas quarentenadas |
+| 9 | Média diária/mediana | ADR 0004 aceita por delegação; implementação em plano (não feita) |
+

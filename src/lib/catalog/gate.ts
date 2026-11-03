@@ -133,7 +133,16 @@ const OUT_OF_SCOPE: Rule[] = [
 // ---------------------------------------------------------------------------
 // Revisão por julgamento (nunca rejeição automática)
 // ---------------------------------------------------------------------------
-/** Hardware de emulação de marca (não é "console original de fabricante de jogos"): decisão do dono. */
+/**
+ * Fabricantes conhecidos de acessório de game (decisão 4/5 do dono, adotada por delegação em 2026-11-03).
+ * NÃO inclui Sony/Microsoft/Nintendo: esses nomes também são plataforma e provariam "marca" para qualquer
+ * porta-cartão com "Nintendo Switch" no título.
+ */
+const ACCESSORY_MAKER = /\b(?:redragon|havit|logitech|corsair|thrustmaster|hyperx|razer|steelseries|8bitdo|powera|hori|turtle beach|astro gaming|jbl|anker|elgato|sandisk|kingston|hyperkin|nacon|pdp|snakebyte|gamesir|ipega|dobe|bigben|orzly|case logic|dreamgear|brook|scuf|nyko)\b/;
+/** Marca oficial/licenciadora, aceita como "marca legítima" só no caso de acessório SEM plataforma (decisão 4). */
+const OFFICIAL_BRAND = /\b(?:sony|microsoft|nintendo)\b/;
+
+/** Hardware de emulação de marca (Anbernic, Retroid...): FORA do escopo (decisão 5 do dono, adotada por delegação em 2026-11-03, reversível). */
 const EMULATION_BRANDS = /\banbernic\b|\bretroid\b|\bpowkiddy\b|\bmiyoo\b|\bretro ?fun\b|\bstation\b.*\bretro\b|\bretro\b.*\b(?:portatil|handheld)\b|\bhandheld\b.*\bretro\b/;
 /** Estojo/porta de cartões e jogos: acessório de armazenamento SE tiver plataforma; marca "Mario" decorativa não prova original. */
 const PORTA_CARTAO = /\bporta ?(?:cartao|cartoes|cartucho|cartuchos|jogos?)\b|\bestojo (?:para |de )?(?:cartuchos?|cartoes|jogos)\b|\borganizador de (?:cartuchos?|jogos|cartoes)\b/;
@@ -204,6 +213,13 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
     const blocked = haystacks.some((h) => first(OUT_OF_SCOPE, h) || first(NOT_ORIGINAL, h) || GENERIC_BRAND.test(h));
     if (!blocked) return result('review', 'owner_decision', 'headset_sem_plataforma', 'headset', 'accessory', bundle);
   }
+  // Decisão 4 generalizada (delegação 2026-11-03): qualquer acessório de MARCA LEGÍTIMA conhecida sem plataforma no
+  // título vai à REVISÃO (não rejeita). Marca desconhecida continua rejeitada pela regra de dimensão.
+  if (base.reason === 'acessorio_sem_plataforma') {
+    const brand = ACCESSORY_MAKER.exec(t) ?? OFFICIAL_BRAND.exec(t);
+    const blocked = haystacks.some((h) => first(OUT_OF_SCOPE, h) || first(NOT_ORIGINAL, h) || GENERIC_BRAND.test(h));
+    if (brand && !blocked) return result('review', 'owner_decision', 'acessorio_marca_sem_plataforma', brand[0], 'accessory', bundle);
+  }
 
   // 2. Regras de dimensão já existentes (merch, peça, off-catalog, usado, clone de controle...)
   if (baseDim !== 'game' && baseDim !== 'console' && baseDim !== 'accessory') {
@@ -257,7 +273,9 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
 
   // Hardware de emulação de marca e clones Tectoy: julgamento do dono
   for (const h of haystacks) {
-    const em = EMULATION_BRANDS.exec(h) ?? TECTOY_CLONE.exec(h);
+    const emu = EMULATION_BRANDS.exec(h);
+    if (emu) return result('rejected', 'out_of_scope', 'hardware_emulacao_marca', emu[0], 'off_catalog', false);
+    const em = TECTOY_CLONE.exec(h);
     if (em) return result('review', 'owner_decision', 'hardware_emulacao_ou_clone_tectoy', em[0], dimension, bundle);
   }
 
@@ -266,6 +284,9 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
     const pc = PORTA_CARTAO.exec(h);
     if (pc) {
       if (!mentionsPlatform) return result('rejected', 'out_of_scope', 'porta_cartao_sem_plataforma', pc[0], 'off_catalog', false);
+      // Decisão 5 (delegação 2026-11-03): com plataforma E fabricante de acessório conhecido = aceita; só plataforma = revisão.
+      const maker = haystacks.map((x) => ACCESSORY_MAKER.exec(x)).find(Boolean);
+      if (maker) return result('approved', 'ok', 'porta_cartao_marca_e_plataforma', maker[0], 'accessory', false);
       return result('review', 'owner_decision', 'porta_cartao_organizador', pc[0], 'accessory', false);
     }
   }

@@ -50,7 +50,8 @@ const cases: C[] = [
   { name: 'Réplica 1:1 Nintendo Switch Joy-Con', db: 'accessory', expect: 'rejected' },
   { name: 'Console Genérico Retro Portátil Nintendo Switch Style', db: 'console', expect: 'rejected' },
   { name: 'Somente a capa Zelda Tears of the Kingdom Nintendo Switch', db: 'game', expect: 'rejected' },
-  { name: 'Anbernic RG35XX Console Portátil Retro', db: 'console', expect: 'review' },
+  { name: 'Anbernic RG35XX Console Portátil Retro', db: 'console', expect: 'rejected' },
+  { name: 'Retroid Pocket 4 Pro Handheld Android', db: 'console', expect: 'rejected' },
   // --- Legitimos que NAO podem sumir
   { name: 'Lego Star Wars The Complete Saga Xbox 360 Jogo Físico', db: 'game', expect: 'approved', fmt: 'physical' },
   { name: 'Hot Wheels Monster Trucks PS4 Jogo Físico', db: 'game', expect: 'approved', fmt: 'physical' },
@@ -82,6 +83,15 @@ const cases: C[] = [
   { name: 'Headset Havit H2002d Gamer', db: 'accessory', expect: 'review' },
   { name: 'Headset Logitech G335 Gamer', db: 'accessory', expect: 'review' },
   { name: 'Headset Gamer Sem Fio PlayStation 5 Pulse 3D', db: 'accessory', expect: 'approved' },
+  // --- Decisoes 3-5 adotadas por delegacao (2026-11-03): marca legitima sem plataforma -> revisao; porta-cartao com marca+plataforma -> aprovado
+  { name: 'Mouse Gamer Logitech G203 Lightsync', db: 'accessory', expect: 'rejected' }, // periferico de PC: fora do escopo (nao e acessorio de console)
+  { name: 'Controle Sem Fio 8BitDo Ultimate Bluetooth', db: 'accessory', expect: 'review' },
+  { name: 'Controle Sem Fio Generico Sem Marca', db: 'accessory', expect: 'rejected' },
+  { name: 'Porta Cartucho PowerA Nintendo Switch 24 Jogos', db: 'accessory', expect: 'approved', dim: 'accessory' },
+  { name: 'Estojo Porta Jogos Hori para Nintendo Switch', db: 'accessory', expect: 'approved', dim: 'accessory' },
+  { name: 'Porta Cartucho 24 Jogos Nintendo Switch', db: 'accessory', expect: 'review' },
+  { name: 'Porta Cartucho PowerA 24 Jogos', db: 'accessory', expect: 'review' },
+  { name: 'Amiibo Mario Super Smash Bros Nintendo', db: 'accessory', expect: 'rejected' },
   { name: 'Headset Gamer Generico Sem Marca', db: 'accessory', expect: 'rejected' },
   { name: 'Headset Gamer Replica 1:1 Sony', db: 'accessory', expect: 'rejected' },
   // pecas genericas aprovadas pelo porteiro (QA 2026-11-03)

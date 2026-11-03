@@ -30,3 +30,11 @@ Com a coluna, `offerIdentityVisibleSql` passa a ler `identity_state` (sem regex)
 ## Consequências
 - Cestas menores e mais puras; masters cross-gen e com Remake omitido somem da vitrine até triagem.
 - Quebra de série em médias de masters afetados (mediana muda >10% em poucos).
+
+## Emenda de 2026-11-03: Remake (decisão adotada por delegação, reversível)
+- Regra §11 mantida: Remake/Remaster separa do original **quando o original existe na MESMA plataforma** (RE4 Remake x RE4 de PS4/PS5, Final Fantasy VII Remake x original continuam separados).
+- Exceção explícita e curta (`CANONICAL_REMAKE_CORES` em `dedup.ts`): Resident Evil 2 e 3 em PS4/PS5. O original é de PS1; em PS4/PS5 o único RE2/RE3 vendido é o remake, com ou sem a palavra no anúncio. Separar criaria dois masters para o mesmo produto físico e violaria "um jogo, uma média".
+- Aplicação ao RE3 PS5: as 12 ofertas de RE3 que a etapa 2 deixou ativas (11 ativas e 1 expirada) já estavam no master certo `6813e83f` ("Resident Evil 3 Ps5 Midia Fisica"); as 2 restantes das 14 do CSV são de outros jogos. Com o motor corrigido as 37 ofertas ativas desse master passam na identidade (0 divergentes), portanto **nenhuma oferta precisou ser movida**. O master duplicado vazio `d0c7e9ee` ("Resident evil 3 Remake Em português Ps5") foi fundido ao canônico (log abaixo).
+- Ruído do motor corrigido: "formato" entra no ruído comercial ("em formato físico"); typo "thewild" vira "the wild".
+- Fusão do Zelda BOTW legado: 4 masters (3ff650a6, a66ab30f, 82ccba58, c6d29ace) arquivados em `7929b6eb`; 23 ofertas reapontadas com cotações. Nenhum DELETE.
+- Logs: `backup/dados/merge-log-2026-11-03T15-43-44-556Z.json`. Reverter: `npx tsx --conditions=react-server --env-file=.env.local scripts/revert-merge-masters.ts <log>`.

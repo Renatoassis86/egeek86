@@ -14,6 +14,7 @@ type Expect = 'hidden' | ProductType;
 type Case = { name: string; db: ProductType; expect: Expect; bundle?: boolean };
 
 const HIDDEN: Array<[string, ProductType]> = [
+  ['Nintendo Switch Super Mario Bros. Wonder Japanese Game Card, Used & Tested', 'game'], // condicao em ingles
   ['Nintendo Switch Lite Desbloqueado Novo Com Jogos + Garantia', 'game'],
   ['Disco de desbloqueio para PS4 BDJ GoldHEN + LOJINHA E APLICATIVOS', 'console'],
   ['Console Nintendo Switch OLED desbloqueado com lojinha VIP', 'console'],
@@ -114,6 +115,10 @@ const HIDDEN: Array<[string, ProductType]> = [
 ];
 
 const MOVED: Array<[string, ProductType, ProductType]> = [
+  // QA 2026-11-03 (P2): armazenamento e suporte vertical
+  ["Para Nintendo Switch/OLED Console Jogo Saco De Armazenamento Tema Zelda Shekah Slate Caso Difícil À Prova D'água Com 12 Slots De Cartão", 'game', 'accessory'],
+  ['PS4 Slim (Playstation 4 Slim) vertical stand', 'console', 'accessory'],
+  ['Suporte Vertical PS5 Slim Base Com Cooler', 'console', 'accessory'],
   ['Console Xbox 360 Com 250 GB e Jogo Grand Theft Auto V', 'game', 'console'],
   ['Bundle Nintendo Switch 2 – Nintendo Switch Sports Resort', 'game', 'console'],
   ['Microsoft Xbox One S 500GB Forza Horizon 3 Bundle cor branco', 'game', 'console'],

@@ -11,6 +11,8 @@ import { evaluateOfferIdentity, offerTitleFlags, type OfferIdentityReason } from
 import { reconcilePlatform, readPlatform } from '../src/lib/catalog/platform';
 import { derivePlatformFromTitle, mentionsMultipleGenerations } from '../src/lib/affiliate/game-classification';
 
+import { absurdReason } from './quarentena-precos-absurdos';
+
 let fail = 0;
 let total = 0;
 function check(ok: boolean, label: string, extra = ''): void {
@@ -26,6 +28,14 @@ function check(ok: boolean, label: string, extra = ''): void {
 // ---------------------------------------------------------------------------
 type Pair = [string, string, boolean, string?];
 const PAIRS: Pair[] = [
+  ['Zelda:breath Of Thewild Nintendo Switch', 'Zelda Breath of The Wild Switch Midia Fisica', true], // typo "thewild"
+  // --- Remake canonico (delegacao 2026-11-03): em PS4/PS5 o RE2/RE3 vendido E o remake; "Remake" so separa quando o original existe na MESMA plataforma
+  ['Resident Evil 3 Remake PS5 - mídia física novo lacrado', 'Resident Evil 3 Ps5 Midia Fisica', true],
+  ['Resident Evil 3 em formato físico Ps5', 'Resident Evil 3 Ps5 Midia Fisica', true], // "formato" e ruido de anuncio
+  ['Resident Evil 2 Remake PS4 Mídia Física', 'Resident Evil 2 PS4 Mídia Física', true],
+  ['Resident Evil 3 PS4 Mídia Física', 'Resident Evil 3 Remake PS5 Mídia Física', false], // geracao continua separando
+  ['Resident Evil 4 Remake PS5 Mídia Física', 'Resident Evil 4 PS5 Mídia Física', false], // RE4 original existe em PS5/PS4: Remake separa
+  ['Final Fantasy VII Remake PS4', 'Final Fantasy VII PS4', false], // fora da lista canonica: continua separando
   // --- capacidade (825GB x 1TB) e console de nucleo vazio
   ['Console PlayStation 5 Slim 825GB', 'Console PlayStation 5 Slim 1TB', false],
   ['Nintendo Switch OLED 64GB', 'Nintendo Switch OLED 256GB', false],
@@ -113,7 +123,7 @@ const PAIRS: Pair[] = [
   ['Console PlayStation 5 Slim 1TB', 'Console PlayStation 5 Slim 1TB Revisado', false],
   // --- conteudo: remake, remaster, HD, collection, trilogia, DLC, bundle
   ['The Last of Us PS4', 'The Last of Us Remastered PS4', false],
-  ['Resident Evil 3 PS5', 'Resident Evil 3 Remake PS5', false],
+  ['Resident Evil 3 PS5', 'Resident Evil 3 Remake PS5', true], // era false: em PS5 so existe o remake (original = PS1); lista canonica em dedup.ts (delegacao 2026-11-03)
   ['Metal Gear Solid PS3', 'Metal Gear Solid HD Collection PS3', false],
   ['Jogo The Walking Dead: A Telltale Game Series - Xbox One', 'Jogo The Walking Dead Collection Telltale Series Xbox One', false],
   ['Crash Bandicoot 4 PS4', 'Crash Bandicoot N. Sane Trilogy PS4', false],
@@ -188,6 +198,11 @@ const FLAGS: Array<[string, 'new' | 'open_box' | 'used', boolean]> = [
   ['Jogo God of War PS4 Usado', 'used', false],
   ['Console Xbox Series S Seminovo', 'used', false],
   ['Jogo Mario Kart 8 Deluxe Switch Lacrado', 'new', false],
+  // QA 2026-11-03 (P2): condicao em INGLES passava como novo e entrava na media
+  ['Nintendo Switch Super Mario Bros. Wonder Japanese Game Card, Used & Tested', 'used', false],
+  ['The Legend of Zelda Breath of the Wild Nintendo Switch Game Japanese Version Used Tested Working', 'used', false],
+  ['Nintendo Switch Pre-Owned Game', 'used', false],
+  ['Used Cars Simulator Switch', 'new', false],
   ['EA FC 25 PS4 PS5', 'new', true],
   ['EA FC 25 PS4 (compatível com PS5)', 'new', false],
 ];
@@ -299,5 +314,12 @@ for (const [db, title, want] of RECON) {
 }
 check(readPlatform('switch_1' as never, 'Jogo Nintendo Wii : Sonic Unleashed').legacyLabel === 'Wii', 'readPlatform rotulo Wii');
 
+// Quarentena de preco absurdo (regra pura): acima de 3x, abaixo de 0,35x ou >= R$ 50.000
+check(absurdReason(228500000, 207680) === 'acima_de_R$50.000', 'quarentena: PS4 Slim R$ 2.285.000');
+check(absurdReason(89900, 22900) === 'razao_acima_de_3', 'quarentena: 3,9x a mediana');
+check(absurdReason(990, 11750) === 'razao_abaixo_de_0.35', 'quarentena: 0,08x a mediana');
+check(absurdReason(30000, 22900) === null, 'quarentena: 1,3x a mediana nao entra');
+check(absurdReason(8100, 22900) === null, 'quarentena: preco baixo plausivel (0,354x) nao entra');
+check(absurdReason(5000, null) === null, 'quarentena: sem mediana nao julga');
 console.log(`${total} verificacoes (${PAIRS.length} pares de identidade, ${NUM.length} numerais, ${FLAGS.length} condicoes, ${OFFERS.length} ofertas); falhas: ${fail}`);
 process.exit(fail ? 1 : 0);

@@ -68,7 +68,18 @@ export function offerIdentityVisibleSql(offerIdCol: string, options: { activeOnl
   // activeOnly: quem só olha ofertas ativas (fresh_offers) não precisa varrer as ~8 mil encerradas (~45% menos tempo).
   const scope = options.activeOnly ? sql`xo.status = 'active' AND ` : sql``;
   const c = sql.raw(offerIdCol.replace(/[^a-z0-9_.]/gi, ''));
-  return sql`${c} NOT IN (SELECT xo.id FROM affiliate_offers xo INNER JOIN master_products xm ON xm.id = xo.master_product_id CROSS JOIN LATERAL (SELECT lower(xo.title) AS lt) xl WHERE ${scope}${offerExcludedTitleSql('xl.lt', 'xm.product_type')})`;
+  // QUARENTENA DE PREÇO ABSURDO (migration 0023, delegação 2026-11-03): `quarantined_at` preenchido tira a
+  // oferta e as cotações dela de TODO consumidor desta função (ofertas públicas, estatísticas, histórico).
+  // Vale para qualquer status (histórico absurdo de oferta encerrada também), por isso fica fora do `scope`.
+  return sql`${c} NOT IN (SELECT xo.id FROM affiliate_offers xo INNER JOIN master_products xm ON xm.id = xo.master_product_id CROSS JOIN LATERAL (SELECT lower(xo.title) AS lt) xl WHERE (${scope}${offerExcludedTitleSql('xl.lt', 'xm.product_type')}) OR xo.quarantined_at IS NOT NULL)`;
+}
+
+/**
+ * Oferta fora de quarentena (migration 0023). Para consultas que NÃO passam por `offerIdentityVisibleSql`
+ * nem por `publicOffersCtes`. `alias` = alias de affiliate_offers na consulta.
+ */
+export function notQuarantinedSql(alias: string): SQL {
+  return sql`${sql.raw(alias.replace(/[^a-z0-9_]/gi, ''))}.quarantined_at IS NULL`;
 }
 
 /**

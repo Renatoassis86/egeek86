@@ -1,7 +1,7 @@
 import 'server-only';
-import { sql, eq, and, asc, gt, inArray } from 'drizzle-orm';
+import { sql, eq, and, asc, gt, inArray, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { offerIdentityVisibleSql } from '@/server/queries/public-offers';
+import { offerIdentityVisibleSql, notQuarantinedSql } from '@/server/queries/public-offers';
 import { catalogHiddenFilter } from '@/server/queries/catalog-dimensions';
 import { affiliateOffers, affiliateNetworks, affiliateSellers, masterProducts } from '@/db/schema';
 
@@ -497,7 +497,7 @@ export async function getMasterProductChangePercent(
       -- current_price_cents = 0 é "ainda não coletado" (placeholder da
       -- descoberta automática) — nunca um preço real, nunca deixar vencer
       -- como "menor preço" de um produto.
-      WHERE master_product_id IN (${idList}) AND status = 'active' AND current_price_cents > 0
+      WHERE master_product_id IN (${idList}) AND status = 'active' AND current_price_cents > 0 AND quarantined_at IS NULL
     ),
     current_lowest AS (
       SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
@@ -586,7 +586,7 @@ export async function getTopMovers({
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       -- current_price_cents = 0 é "ainda não coletado", nunca um preço real.
-      WHERE o.status = 'active' AND o.current_price_cents > 0
+      WHERE o.status = 'active' AND o.current_price_cents > 0 AND ${notQuarantinedSql('o')}
     ),
     cheapest AS (
       SELECT DISTINCT ON (master_product_id) master_product_id, offer_id, current_price_cents, slug, image_url, network_name
@@ -696,7 +696,8 @@ export async function getOfferComparisonForMasterProduct(masterProductId: string
         eq(affiliateOffers.masterProductId, masterProductId),
         eq(affiliateOffers.status, 'active'),
         // current_price_cents = 0 é "ainda não coletado", nunca um preço real.
-        gt(affiliateOffers.currentPriceCents, 0)
+        gt(affiliateOffers.currentPriceCents, 0),
+        isNull(affiliateOffers.quarantinedAt)
       )
     )
     .orderBy(asc(affiliateOffers.currentPriceCents));

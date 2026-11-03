@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { getDimensionOverrides } from '@/server/queries/catalog-dimensions';
-import { and, desc, eq, gt, isNotNull, ne, sql } from 'drizzle-orm';
+import { and, desc, eq, gt, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, masterProducts, newsArticles } from '@/db/schema';
 import { siteBaseUrl } from '@/lib/site-url';
@@ -37,6 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       and(
         eq(affiliateOffers.status, 'active'),
         gt(affiliateOffers.currentPriceCents, 0),
+        isNull(affiliateOffers.quarantinedAt), // preço absurdo em quarentena (migration 0023)
         isNotNull(affiliateOffers.imageUrl),
         ne(affiliateOffers.imageUrl, ''),
         sql`NOT (${masterProducts.attributes} ? 'mergedInto')`,

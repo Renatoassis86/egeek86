@@ -1,7 +1,7 @@
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createPersistedQuery } from '@/lib/cache/server-cache';
 import type { GamePlatformGen } from '@/db/schema';
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
@@ -96,12 +96,12 @@ async function compute(): Promise<HomeSearchData> {
   };
 }
 
-const cached = createCachedQuery(async (): Promise<HomeSearchData> => compute(), ['home-search-v6'], { revalidate: 600 });
+export const homeSearchCached = createPersistedQuery(async (): Promise<HomeSearchData> => compute(), ['home-search-v6'], { revalidate: 600, persist: { maxAgeSeconds: 3600 } });
 
 /** Chips de plataforma e termos mais cotados do hero (cache de 10 min). Nunca lança: sem banco, devolve vazio. */
 export async function getHomeSearchData(): Promise<HomeSearchData> {
   try {
-    return await cached();
+    return await homeSearchCached();
   } catch (err) {
     console.error('[home-search] falha', err);
     return { platforms: [], popular: [] };

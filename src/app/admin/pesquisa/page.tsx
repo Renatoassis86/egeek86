@@ -4,11 +4,13 @@ import { Text } from '@/components/ui/text';
 import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated-stat-bars';
 import { getSurveyAggregation, getGamerSurveysForAdmin } from '@/server/queries/survey';
 import { AdminSurveysManager } from '@/components/admin/admin-surveys-manager';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPesquisaPage() {
+  await requireAdmin();
   const { totalResponses, questions } = await getSurveyAggregation();
   const gamerSurveys = await getGamerSurveysForAdmin();
 

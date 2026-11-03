@@ -26,4 +26,4 @@ Quatro cálculos divergentes de menor preço e média (`getOfferMetrics`, `getMa
 - Item 2: somado ao filtro 2x, teto de 3 x a mediana só em média e máximo. Produto com máximo/mínimo limpo > 3 é de baixa confiança (sem selo, sem "abaixo do normal").
 - A mediana é exposta como `medianCents` ("preço típico", só elegível). A média continua sendo a referência do veredito.
 - Implementação única dos agregados: `statsAggCtes` (`product-price-stats.ts`), usada pela página, cards e busca e pela tabela de preços. Contadores públicos: `getPublicMetrics`.
-- Pendente (decisão do dono): cotação por oferta por dia, ADR 0004.
+- Cotação por oferta por dia: ADR 0004 aceita por delegação em 2026-11-03 (mediana diária); implementação em plano.

@@ -5,6 +5,7 @@ import { ClicksSparkline } from '@/components/admin/clicks-sparkline';
 import { getAdminDashboardMetrics, getDailyClicks } from '@/server/queries/affiliate';
 import { AdminAnalyticsDashboard } from '@/components/admin/admin-analytics-dashboard';
 import { getAdminCatalogMetrics } from '@/server/queries/admin-metrics';
+import { requireAdmin } from '@/lib/auth/require-admin';
 
 export const metadata = { title: 'Admin: Painel' };
 
@@ -13,6 +14,7 @@ export const metadata = { title: 'Admin: Painel' };
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
+  await requireAdmin();
   const [metrics, dailyClicks, catalog] = await Promise.all([
     getAdminDashboardMetrics(),
     getDailyClicks(14),

@@ -72,6 +72,9 @@ export const affiliateOffers = pgTable(
     lastPriceChangeAt: timestamp('last_price_change_at', { withTimezone: true }),
     previousPriceCents: bigint('previous_price_cents', { mode: 'number' }),
     currency: text('currency').notNull().default('BRL'),
+    // Quarentena de preco absurdo (migration 0023). NULL = normal. Preenchida = a oferta sai de
+    // TODA leitura publica e indicador (filtros em public-offers.ts); nada e apagado. Reversivel.
+    quarantinedAt: timestamp('quarantined_at', { withTimezone: true }),
     status: affiliateOfferStatus('status').notNull().default('draft'),
     highlightNote: text('highlight_note'),
     publishedAt: timestamp('published_at', { withTimezone: true }),
@@ -97,6 +100,9 @@ export const affiliateOffers = pgTable(
     uniqueIndex('affiliate_offers_network_external_ref_uq')
       .on(t.networkId, t.externalRef)
       .where(sql`external_ref IS NOT NULL AND seller_id IS NULL`),
+    index('affiliate_offers_quarantined_idx')
+      .on(t.quarantinedAt)
+      .where(sql`quarantined_at IS NOT NULL`),
     index('affiliate_offers_master_idx').on(t.masterProductId),
     index('affiliate_offers_network_idx').on(t.networkId),
     index('affiliate_offers_status_published_idx')

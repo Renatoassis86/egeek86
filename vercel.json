@@ -11,6 +11,14 @@
     {
       "path": "/api/cron/collect-shopee",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-snapshots?part=stats",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/refresh-snapshots?part=showcase",
+      "schedule": "4-59/15 * * * *"
     }
   ]
 }

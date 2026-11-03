@@ -1,6 +1,6 @@
 # ADR 0004: Cotação por oferta por dia
 
-Data: 2026-11-01. Status: **Proposta** (nada implementado; depende de aprovação do dono). Item: F-26 da auditoria Cowork; pareceres do Estatístico Sênior e do DBA em `docs/conselho/pareceres-2026-11-01/`.
+Data: 2026-11-01. Status: **Aceita por delegação em 2026-11-03, reversível** (o dono mandou "fazer tudo o que falta"; adotada a recomendação registrada abaixo). Implementação em código: NÃO feita nesta rodada (ver Plano). Item: F-26 da auditoria Cowork; pareceres do Estatístico Sênior e do DBA em `docs/conselho/pareceres-2026-11-01/`.
 
 ## Contexto
 A regra inegociável diz que a média do jogo é o somatório de TODAS as cotações dividido pelo total. Hoje cada linha de `affiliate_price_snapshots` é uma cotação. O coletor antigo gravava uma linha por checagem e o legado ficou. Medido em 2026-11-01 (somente leitura):
@@ -34,5 +34,17 @@ A mediana muda até 5,4% (RE Village), o bastante para cruzar a faixa de ±5% em
 - Leituras estatísticas passam de 3,25 milhões para cerca de 67 mil linhas (consultas hoje de 9 s, 18,7 s e 8 s).
 - Risco: a mudança de média (72 produtos acima de 10%) altera vereditos; fuso e regra do dia precisam de decisão.
 
-## Decisão
-Pendente do responsável do projeto. Até lá, `getPublicMetrics().quotes` continua contando snapshots brutos com preço > 0.
+## Decisão (adotada por delegação em 2026-11-03, reversível)
+1. Cotação = **uma por oferta por dia** (fuso America/Sao_Paulo), derivada; `affiliate_price_snapshots` segue append-only e intocada.
+2. Valor do dia = **mediana diária** (`percentile_disc(0.5)`, preço realmente observado; recomendação do Estatístico Sênior). A tabela diária guarda também último, mínimo, máximo e `n_collected` (recomendação do DBA), para que a regra possa ser trocada sem recoletar nada.
+3. Média, mediana, contagem, máximo e piso leem a cotação diária; o **mínimo histórico continua lendo o snapshot bruto** (com piso e quarentena).
+4. Elegibilidade (5 cotações e 14 dias) conta oferta-dias; rótulo "N cotações (oferta-dia)".
+5. Ofertas em quarentena (migration 0023) e fora do porteiro/identidade ficam fora da tabela diária, como já ficam de todo indicador.
+6. Reversão: a decisão não altera dado; desligar a leitura diária (flag) volta ao cálculo por snapshot bruto. Emenda ao texto "cotações" do `AGENTS.md` fica para o dono quando a leitura diária for ligada.
+
+## Plano de implementação (NÃO executado)
+Por que não foi implementado agora: exige tabela nova (`affiliate_price_daily`), função `refresh_price_daily(dia)`, view/CTE de estatística e 7 dias de execução em sombra; o parecer do DBA já aponta que a migration deve ser desenhada com a outra frente de desempenho (pré-computação) em andamento, e as medições do estatístico e do DBA divergem no Switch 2 (R$ 4.453,21 contra R$ 5.009,88), o que pede a comparação lado a lado antes de ligar. Fazê-lo agora sem esse cruzamento mudaria 72 vereditos sem validação.
+1. Migration aditiva (número livre após a 0023) com `affiliate_price_daily(offer_id, day, median_cents, last_cents, min_cents, max_cents, n_collected)`, PK (offer_id, day).
+2. `refresh_price_daily(dia)` idempotente, alimentada só por snapshots de ofertas fora de quarentena/porteiro.
+3. Sombra de 7 dias: calcular os dois métodos (mediana do dia e último do dia) e comparar produto a produto; liberar só se a divergência do Switch 2 for explicada.
+4. Trocar a fonte de `priceQuotesCtes` (`product-price-stats.ts`) por flag; manter o mínimo no snapshot bruto.

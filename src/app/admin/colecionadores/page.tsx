@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { getUpcomingDrops } from '@/server/queries/hype';
-import { getCurrentProfile } from '@/lib/auth/require-admin';
+import { getCurrentProfile, requireAdmin } from '@/lib/auth/require-admin';
 import { DeleteSellerButton } from '@/components/admin/delete-seller-button';
 
 export const metadata: Metadata = {
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function AdminCollectorsPage() {
+  await requireAdmin();
   const profile = await getCurrentProfile();
   const isAdmin = profile?.role === 'admin';
 
