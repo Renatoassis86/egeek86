@@ -246,3 +246,76 @@ export function legacyPlatformsMentioned(title: string | null | undefined): stri
   if (/\bmega ?drive\b|\bmaster system\b|\bsaturn\b|\bdreamcast\b|\batari\b/.test(t)) out.push('sega_atari');
   return out.sort();
 }
+
+// ---------------------------------------------------------------------------
+// Formato do jogo: mídia FÍSICA x DIGITAL (decisão do dono, 2026-11-03)
+// ---------------------------------------------------------------------------
+
+/** Texto sem acento, minúsculo, pontuação virando espaço ("e-mail" vira "e mail"). */
+function foldFormatText(title: string): string {
+  return title
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[®™©'’´`]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/**
+ * Digital que acompanha um jogo físico como brinde ("bônus digital", "DLC digital", "código de resgate",
+ * "item digital", "pré-venda ... digital"). Removido antes de decidir: não faz o jogo ser digital.
+ */
+const DIGITAL_BONUS_RE =
+  /\b(?:bonus|brinde|brindes|dlc|extras?|conteudos?|itens?|skins?|pre ?order|pre ?venda|pack|pacote)\s+(?:\w+\s+){0,2}(?:digital|digitais|codigo)\b|\b(?:digital|digitais|codigo)\s+(?:de |do |da |para )?(?:bonus|brinde|brindes|dlc|extras?|conteudos?|itens?|skins?|pre ?order|pre ?venda|resgate)\b/g;
+/** Prova de mídia digital (código, chave, loja, download). "Digital Devil/Eclipse/Extremes" são nomes, não formato. */
+const DIGITAL_STRONG_RE =
+  /(?<!polyphony |bluepoint |sucker |bad )\bdigital\b(?! devil| eclipse| extremes| foundry| dreams)|\bdigitais\b|\bpsn\b|\be ?shop\b|\bdownload\b|\bbaixar\b|\bchave de ativacao\b|\bgift ?card\b|\bcartao presente\b|\blicenca\b|\benvio (?:por|via) e ?mail\b|\bxbox live\b|\bstore code\b/;
+/** Código/chave soltos: digital só se NENHUM sinal físico aparece (jogo físico costuma trazer código de bônus). */
+const DIGITAL_WEAK_RE = /\bcodigo\b|\bkey\b|\bchave\b/;
+/** Prova de mídia física. "Disco Elysium" é nome de jogo. */
+const PHYSICAL_RE =
+  /\bfisic[oa]s?\b|\bphysical\b|\bmidia fisica\b|\bblu ?ray\b|\bcartucho\b|\bdisco\b(?! elysium)|\bsteelbook\b|\blacrad[oa]s?\b|\bformato fisico\b|\bcd ?rom\b/;
+
+export type TitleGameFormat = 'physical' | 'digital' | 'unknown';
+
+/**
+ * Formato do jogo provado pelo TÍTULO. Nunca chuta: sem prova (ou com provas contraditórias) devolve 'unknown'.
+ * Físico: físico/física, mídia física, disco, cartucho, blu-ray, steelbook, lacrado. Digital: digital, mídia digital,
+ * PSN, eShop, download, chave de ativação, gift card, e (sem sinal físico) código/key. Bônus digital de jogo físico
+ * não conta. Vale só para JOGO; console e acessório não têm formato.
+ */
+export function deriveGameFormat(title: string | null | undefined): TitleGameFormat {
+  if (!title) return 'unknown';
+  const t = foldFormatText(title).replace(DIGITAL_BONUS_RE, ' ');
+  const physical = PHYSICAL_RE.test(t);
+  const strongDigital = DIGITAL_STRONG_RE.test(t);
+  if (physical && strongDigital) return 'unknown'; // contraditório: não prova nada
+  if (physical) return 'physical';
+  if (strongDigital || DIGITAL_WEAK_RE.test(t)) return 'digital';
+  return 'unknown';
+}
+
+/**
+ * Formato efetivo: o que o título prova; sem prova, o atributo estruturado gravado (FORMAT do Mercado Livre /
+ * `master_products.game_format`); sem nenhum, 'unknown'. O título vence o atributo quando divergem.
+ */
+/** `attributes.formatEvidence` de master com formato físico ASSUMIDO (evidência fraca e auditável). Ausente = formato provado. */
+export const FORMAT_EVIDENCE_ASSUMED = 'assumed_no_digital_marker';
+
+/**
+ * true = o título traz QUALQUER marcador digital (digital, código, key, PSN, eShop, download, gift card, licença), mesmo
+ * misturado a sinal físico. Só se ASSUME físico quando nenhum título do master o tem. Bônus digital de jogo físico não conta.
+ */
+export function hasDigitalMarker(title: string | null | undefined): boolean {
+  if (!title) return false;
+  const t = foldFormatText(title).replace(DIGITAL_BONUS_RE, ' ');
+  return DIGITAL_STRONG_RE.test(t) || DIGITAL_WEAK_RE.test(t);
+}
+
+export function resolveGameFormat(title: string | null | undefined, structured?: string | null): TitleGameFormat {
+  const fromTitle = deriveGameFormat(title);
+  if (fromTitle !== 'unknown') return fromTitle;
+  const s = String(structured ?? '').toLowerCase();
+  return s === 'physical' || s === 'digital' ? s : 'unknown';
+}

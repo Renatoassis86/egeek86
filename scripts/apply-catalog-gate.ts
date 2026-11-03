@@ -169,9 +169,9 @@ async function main() {
         }
       }
       // duplicata: outro master (nao fundido) ja existente com mesma plataforma/tipo finais e mesmo produto => NAO aplica, so reporta
-      const norm = new Map(rows.map((r) => [r.id, normalizeTitle(r.name, { productType: r.product_type })]));
+      const norm = new Map(rows.map((r) => [r.id, normalizeTitle(r.name, { productType: r.product_type, gameFormat: r.game_format })]));
       for (const c of reclass) {
-        const nc = normalizeTitle(c.name, { productType: c.after.product_type as ProductType });
+        const nc = normalizeTitle(c.name, { productType: c.after.product_type as ProductType, gameFormat: rows.find((r) => r.id === c.id)?.game_format });
         const twin = rows.find((o) => o.id !== c.id && o.product_type === c.after.product_type && (o.game_platform_gen ?? 'unknown') === c.after.game_platform_gen && isSameProduct(nc, norm.get(o.id)!));
         if (twin) { c.dup = `${twin.id} ${twin.name}`; c.twinId = twin.id; }
       }

@@ -71,7 +71,7 @@ export function offerIdentityVisibleSql(offerIdCol: string, options: { activeOnl
   // QUARENTENA DE PREÇO ABSURDO (migration 0023, delegação 2026-11-03): `quarantined_at` preenchido tira a
   // oferta e as cotações dela de TODO consumidor desta função (ofertas públicas, estatísticas, histórico).
   // Vale para qualquer status (histórico absurdo de oferta encerrada também), por isso fica fora do `scope`.
-  return sql`${c} NOT IN (SELECT xo.id FROM affiliate_offers xo INNER JOIN master_products xm ON xm.id = xo.master_product_id CROSS JOIN LATERAL (SELECT lower(xo.title) AS lt) xl WHERE (${scope}${offerExcludedTitleSql('xl.lt', 'xm.product_type')}) OR xo.quarantined_at IS NOT NULL)`;
+  return sql`${c} NOT IN (SELECT xo.id FROM affiliate_offers xo INNER JOIN master_products xm ON xm.id = xo.master_product_id CROSS JOIN LATERAL (SELECT lower(xo.title) AS lt) xl WHERE (${scope}${offerExcludedTitleSql('xl.lt', 'xm.product_type', 'xm.game_format')}) OR xo.quarantined_at IS NOT NULL)`;
 }
 
 /**

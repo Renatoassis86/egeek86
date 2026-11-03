@@ -8,7 +8,7 @@ import { generateShopeeAffiliateLink, isShopeeAffiliateConfigured, ShopeeApiErro
 import { parseShopeeNode, queryProductOffers, shopeePublicUrl, type ShopeeOfferNode } from './sources/shopee';
 import { classifyFromAttributes } from './sources/mercado-livre-classify';
 import { resolveProductTypeFromTitle } from '@/lib/affiliate/product-type-classifier';
-import { derivePlatformFromTitle } from '@/lib/affiliate/game-classification';
+import { derivePlatformFromTitle, resolveGameFormat } from '@/lib/affiliate/game-classification';
 import { findExistingMasterProduct } from '@/lib/affiliate/dedup';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory, isUsedCondition } from './discover-products';
@@ -139,10 +139,13 @@ export async function discoverShopeeProducts(): Promise<{
             summary.discarded++;
             continue;
           }
-          const classified = { ...classification, gamePlatformGen: platform };
+          // A Shopee não manda formato estruturado: só o título prova físico x digital (nunca chuta). Auditoria
+          // 2026-11-03: 209 dos ~434 jogos Shopee aprovados diziam "mídia física" no título e estavam 'unknown'.
+          const gameFormat = productType === 'game' ? resolveGameFormat(item.productName, classification.gameFormat) : classification.gameFormat;
+          const classified = { ...classification, gamePlatformGen: platform, gameFormat };
 
           // Dedup obrigatório (título+plataforma normalizados) antes de qualquer master novo.
-          const existingMaster = await findExistingMasterProduct(item.productName, platform, { productType });
+          const existingMaster = await findExistingMasterProduct(item.productName, platform, { productType, gameFormat: productType === 'game' ? gameFormat : null });
 
           // Anti-isca: preço < 35% da mediana. Contra as cotações do master existente; se for master novo
           // (sem referência), contra a mediana do lote da busca.

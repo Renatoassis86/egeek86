@@ -1,9 +1,10 @@
 ﻿verdict;categoria;motivo;trecho;ofertas_ativas;menor_preco_brl;tipo;master_id;nome
 review;suspect_price;fisico_abaixo_do_piso;mediana 2800c;1;28.00;game;008f2224-5aa8-4639-9536-736297d5ce5d;Resident Evil Origins Deluxe 0 e 1 Jogo Xbox Series e One
 rejected;out_of_scope;reparo_reposicao;pecas;1;84.15;accessory;0092e672-935b-4b31-b4b3-a662a9797a01;cbbltls5j8pn 40 Peças Para PS4 3D Analógico Joystick Polegar Stick Switch Pro/XBOX ONE/PS4 Controlador De Jogo Potenciômetro De
-review;owner_decision;headset_sem_plataforma;headset;12;301.33;accessory;00b1bdfa-9147-4fa6-91f6-d13a516a3198;Headset Gamer Logitech G335 Branco
-rejected;out_of_scope;digital_codigo;digital;2;4500.00;game;0107f39e-4f24-437b-b3bf-d433165f320d;Consola digital Ps5 Play Station 5 Ragnarok
-rejected;out_of_scope;medida_figura;14cm;12;170.00;game;010c9bc2-d1de-4517-b26b-f10d56a0b443;Atreus God Of War Ragnarok 14cm Playstation 100%
+review;owner_decision;headset_sem_plataforma;headset;12;305.20;accessory;00b1bdfa-9147-4fa6-91f6-d13a516a3198;Headset Gamer Logitech G335 Branco
+rejected;out_of_scope;digital_formato;game_format=digital;2;4500.00;game;0107f39e-4f24-437b-b3bf-d433165f320d;Consola digital Ps5 Play Station 5 Ragnarok
+rejected;out_of_scope;medida_figura;14cm;12;147.00;game;010c9bc2-d1de-4517-b26b-f10d56a0b443;Atreus God Of War Ragnarok 14cm Playstation 100%
+review;owner_decision;acessorio_plataforma_legada;;6;346.00;accessory;01d87d54-8ffb-4152-8c08-5a2e837a7be1;Volante De Vibração Gamer Pro Kp-5815a P/ Xbox360 Pc Ps2 Ps3 Cor Preto
 rejected;out_of_scope;digital_parenteses;(digital);2;299.95;game;022790a3-0302-4435-b22f-7689bf220c84;"Persona 5 Royal Xbox Series X|S, Xbox One (Digital)"
 rejected;out_of_scope;filme_em_disco;blu-ray/dvd;2;599.99;game;023d19f3-d82e-4321-ba57-eeff55f9fd9c;Mortal Kombat Aniquilação Dvd
 rejected;out_of_scope;peca_interna;ventoinha interna;1;26.00;console;03045a8e-0a7a-41b2-a889-f6a5dc8a5444;"Cooler Ventoinha Interna para PS4 Fat (CUH-121x, CUH-1011/11xx, 10xx) – Original"
@@ -27,7 +28,6 @@ rejected;not_original;clone_controle_compativel;compativel;3;187.42;game;0cf4292
 rejected;not_original;clone_controle_rgb_programavel;rgb;2;347.52;accessory;0d100875-a686-4150-8d2a-721ca1080cb2;"Controle sem fio para PS5/PS5 Slim/PS5 Pro, celular e PC, controlador de joystick LED Bluetooth 5.3 RGB para PS5 com bateria de 1000mAh, botões programáveis, com áudio de 3,5 mm, 6 eixos, preto"
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;0e7601dc-4972-4db9-a3b7-aee0bdd35137;Pokémon Brilliant Diamond Nintendo Switch (Digital)
 rejected;out_of_scope;mobiliario;cadeira;2;900.00;accessory;0eecd752-24e7-4259-91e8-54bd4ebb0110;Cadeira Gamer Profissional Ergonômica Giratória Vermelha para Escritório
-review;unverified;jogo_sem_plataforma_nem_formato_fisico;;1;139.90;game;0fb55bf4-495e-4051-8efe-1eaaff7d5cd9;Resident Evil: Revelations
 rejected;not_original;clone_controle_compativel;compativel;1;75.49;accessory;0fd4f58a-9bb8-4d11-94d1-f82c1b60b825;Carregador Dock Duplo Compatível com Controle Manete Xbox One Séries S / X + 2 Pack de Energia 800mah
 review;unverified;jogo_sem_plataforma_nem_formato_fisico;;2;399.00;game;110d94ee-5d8d-4cb2-a8aa-3da3a9487b64;Elden Ring 06. La Senda Del Arbol Aureo
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;11715ce1-88a4-4892-9f1b-6be2d947033f;Fire Emblem Engage Nintendo Switch (Digital)
@@ -56,7 +56,7 @@ review;unverified;jogo_sem_plataforma_nem_formato_fisico;;1;128.05;game;1b50588c
 rejected;out_of_scope;botao_gatilho;botao;1;19.90;accessory;1c357fad-c208-4f71-a774-3c08446cbd1a;Kit 2 Botão Gatilho Rb Lb Xbox Series X S - Branco
 review;owner_decision;acessorio_plataforma_legada;;14;18.74;accessory;1dcae12d-b922-4c59-ab31-389c297756e8;Memory Card 16mb Para Playstation 2 - Ps2- Console Salvar
 rejected;out_of_scope;botao_gatilho;botoes;6;14.00;accessory;1dfbcd7e-fb25-4779-aa33-93ed25a0eecf;Kit 2 Botões Analógicos PS5 Controle Dualsense PlayStation 5 Preto
-review;owner_decision;headset_sem_plataforma;headset;2;44.57;accessory;1e9356c1-cea0-4617-9af1-13e94e8a5875;Headset gamer Headset Headset inova fon-8679 cinza-escuro
+review;owner_decision;headset_sem_plataforma;headset;1;49.90;accessory;1e9356c1-cea0-4617-9af1-13e94e8a5875;Headset gamer Headset Headset inova fon-8679 cinza-escuro
 review;owner_decision;acessorio_marca_sem_plataforma;ipega;4;119.90;accessory;1f3ea400-71c8-4689-b3bc-2fddd59597d4;Controle Ipega Joystick Gamer Bluetooth Preto para Android iOS PC
 rejected;out_of_scope;reparo_reposicao;peca;1;12.90;accessory;1f4b60d8-c567-4143-ac1a-ead2c2818ca3;Kit 2 botões Analógicos PS5 DualSense Joystick Controle Playstation 5 Peça de Reposição Premium Preto
 rejected;out_of_scope;botao_gatilho;thumbsticks;1;19.00;accessory;1fb5aea8-bc5f-4021-b38d-49d2a555d7ea;THUMBSTICKS Preto Black Para Xbox ( One e Series S/X )
@@ -96,6 +96,7 @@ rejected;out_of_scope;cabo_flat;flat do leitor;1;20.00;console;2eef002f-d480-415
 review;owner_decision;acessorio_marca_sem_plataforma;thrustmaster;2;3799.00;accessory;2f47ea63-c5c4-4db8-ab8e-4ac851f1d2a2;Volante Thrustmaster T300rs - Preto
 rejected;out_of_scope;kit_sem_plataforma;kit;2;55.29;game;2fb1870c-b3ae-4f3e-8382-26e03ee8a39a;Kit Combo - Final Fantasy Vii Remake
 rejected;out_of_scope;acessorio_sem_plataforma;sem plataforma;5;4299.00;accessory;3143a859-336e-4890-b588-04dfbe2bcbbb;Base Direct Drive Moza Racing R9 V3 Para Volante Gamer Pc Black
+review;owner_decision;acessorio_plataforma_legada;;3;49.00;accessory;31a43f42-af35-49d7-a29a-adb0dfdd146e;Volante Para Nintendo Wii E Wii U Preto
 rejected;not_original;clone_controle_compativel;compativel;1;139.90;accessory;3221c6df-a295-4ae9-9cfc-fd41e0d69a7d;Base Carregamento Controle Dualsense Compatível Ps5 Dock
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;32691d85-ce31-430e-8471-fc37192f7b97;Pokémon Shining Pearl Nintendo Switch (Digital)
 rejected;not_original;console_modificado;desbl;1;1849.99;console;338b6034-9a5a-42c5-8312-b19a500b331d;NINTENDO SWITCH DESBL. Zelda Tears Of The Kingdom - Pokémon Violet - Mario Wonder
@@ -170,7 +171,6 @@ rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;5357ee59-bd1c-4
 rejected;out_of_scope;digital_parenteses;(digital);2;649.90;game;55068269-67d7-4c23-9a1d-e0996c5e5891;WWE 2K25: The Bloodline Edition Jogo Xbox Series X|S One (Digital)
 rejected;out_of_scope;reparo_reposicao;pecas;1;108.00;accessory;553e0b9c-5f68-4907-8c83-b578baff049b;"2 Peças de Botões de Substituição Brancos RB LB, Thumbsticks para Controle Xbox Series X & S (Modelo 1914), Botões de Ga"
 rejected;out_of_scope;digital_parenteses;(digital);2;249.00;game;556e0e29-55e0-4096-b537-92530abade4a;"Cyberpunk 2077 Xbox Series X|S, Xbox One (Digital)"
-review;unverified;jogo_sem_plataforma_nem_formato_fisico;;4;3299.00;game;56190408-9def-4aa4-99bb-1bcd627a9a3a;God of War Ragnarök Collector's Editions
 rejected;out_of_scope;acessorio_sem_plataforma;sem plataforma;14;99.90;accessory;562bc8f9-4ee8-4012-9052-722ee7d6e1e4;Controle Para Jogos Bluetooth Usb 3 Em 1 Joystick Pc Celular Cor Preto
 rejected;out_of_scope;digital_parenteses;(digital);2;329.90;game;5880c81a-8a6a-4e34-88e7-4bc7f34034d6;"Pokémon™: Let’s Go, Pikachu! Nintendo Switch (Digital)"
 rejected;out_of_scope;colecionavel_nao_jogo;totaku;2;299.00;game;58f25eaa-1acf-466e-97e0-4e281fcd7af9;Totaku God Of War Kratos 07
@@ -188,7 +188,7 @@ rejected;not_original;clone_controle_compativel;compativel;2;49.00;accessory;5bd
 rejected;out_of_scope;digital_parenteses;(digital);1;309.00;game;5c375aa2-d893-4860-8854-d33f94a70d2a;"Forza Horizon 5: Deluxe Edition Xbox Series X|S, Xbox One (Digital)"
 rejected;out_of_scope;reparo_reposicao;substituicao;1;24.89;accessory;5c7e33a6-942b-490f-a0c7-dc6be6aa04c8;Alças De Pulso Para Nintendo Switch & Oled Joycon Lanyard Acessórios De Substituição De Peças NS Joy-Con Controller
 rejected;out_of_scope;botao_gatilho;botoes;3;12.99;accessory;5d20205b-0613-48f7-a080-78e5edb2aabc;2 Botões Analógico Emborrachado Para Controle Ps5 Dualsense
-review;owner_decision;headset_sem_plataforma;headset;9;209.90;accessory;5d3f14ed-d2ef-4810-9a4c-8b37a1af9c0e;Headset Gamer Wireless Warrior - Ph704 Preto
+review;owner_decision;headset_sem_plataforma;headset;9;199.41;accessory;5d3f14ed-d2ef-4810-9a4c-8b37a1af9c0e;Headset Gamer Wireless Warrior - Ph704 Preto
 rejected;out_of_scope;analogico_3d;analogicos 3d;1;31.50;accessory;5d403144-2907-4324-82f5-f384e1a915c1;"2 Analógicos 3d Magnéticos Hall Effect Para Dualsense De Ps5 , PS4 , Xbox One e Series e Xbox 360"
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;5d71a79f-8995-4d9b-9bd1-5cb50ef3c334;Mario Kart™ 8 Deluxe Nintendo Switch (Digital)
 rejected;out_of_scope;digital_parenteses;(digital);1;499.00;game;5dadf7b6-5948-4be3-b8e5-7cd00a360b72;Forza Premium Edition Xbox Series X|S (Digital)
@@ -217,7 +217,7 @@ rejected;out_of_scope;digital_parenteses;(digital);2;329.90;game;663494e3-aed7-4
 rejected;not_original;clone_controle_rgb_programavel;rgb;1;209.61;accessory;664f9b79-a9a3-4b41-b6b6-761f0592c2f1;"Controle Mini com Fio 8Bitdo Ultimate com Anel de Luz RGB, Joysticks e Gatilhos com Efeito Hall, para Xbox Series X | S,"
 review;owner_decision;headset_sem_plataforma;headset;2;259.00;accessory;6706bfc7-9ab7-4d37-b800-c9ab0f3001c3;Headset Gamer Msi Ds501 Preto/vermelho
 rejected;out_of_scope;analogico;analogico;1;26.50;accessory;6719652d-bc39-4f90-994d-e4ef5e92f866;FPS Freek Galaxy Para Playstation PS4 High-Rise Analógico Vara PS5 Joystick Controlador Desempenho Comando Jogo Silicone
-review;owner_decision;headset_sem_plataforma;headset;14;332.00;accessory;67d84d38-ed60-4039-9031-e8e958d95a28;Headset Gamer Redragon Arrow H858 Preto
+review;owner_decision;headset_sem_plataforma;headset;13;414.90;accessory;67d84d38-ed60-4039-9031-e8e958d95a28;Headset Gamer Redragon Arrow H858 Preto
 rejected;out_of_scope;digital_parenteses;(digital);2;279.00;game;684c0ab5-5b1b-419e-9baf-0465191f526b;Street Fighter 6 Xbox Series X|S (Digital)
 rejected;out_of_scope;brinde_bonus;bones;21;104.90;game;68f828c4-f6b4-4fed-bbab-14977d0281cf;Skull And Bones Ps5 Lacrado
 rejected;out_of_scope;teclado;teclado;2;420.00;accessory;6a6f99d2-0e3d-4450-bc2e-d289c97a4938;"Teclado Mecânico Gamer Bright Tank, Led Gtc560"
@@ -254,7 +254,6 @@ review;suspect_price;fisico_abaixo_do_piso;mediana 1997c;3;19.97;game;7b790d22-6
 rejected;out_of_scope;gabinete_hd;gabinete/hdd;1;85.21;console;7c343fd9-1cc6-4f87-9300-ba65615f5161;Host De Jogo Disco Rígido Externo HDD Gabinete Transmissão De Alta Velocidade Dados Caso Para Xbox Série X & S
 rejected;out_of_scope;digital_parenteses;(digital);2;329.90;game;7c42a455-3464-40cc-850c-eaa011d7d839;The Legend of Zelda: Breath of the Wild Nintendo Switch (Digital)
 rejected;out_of_scope;decoracao_festa;adadesivo;1;28.41;console;7c9f328e-183f-441b-a5e9-62e50af3d255;Adadesivo Ps4 Slim Joker Coringa Batman Hahaha  Ps36
-review;unverified;jogo_sem_plataforma_nem_formato_fisico;;4;179.90;game;7ca37f56-edb2-499e-9c12-a131f71fecac;Cyberpunk 2077 Projekt Red
 rejected;out_of_scope;digital_parenteses;(digital);1;389.90;game;7d0adab4-85a3-43b2-bcb3-49b492c8f238;Mario Tennis Fever Nintendo Switch 2 (Digital)
 rejected;out_of_scope;digital_parenteses;(digital);2;164.90;game;7d28bd25-f8a5-4357-99d9-628c53726cb8;Pokémon™ Sword Expansion Pass Nintendo Switch (Digital)
 rejected;out_of_scope;teclado;teclado;2;439.52;accessory;7dd28d47-a9c4-4a77-a191-6a7aefe0c0bc;"Teclado Mecanico Gamer Pichau Sonne, Rgb Switch Vermelho"
@@ -277,6 +276,7 @@ rejected;out_of_scope;digital_parenteses;(digital);1;279.90;game;877034d8-e210-4
 rejected;out_of_scope;digital_parenteses;(digital);1;119.00;game;87d5e985-0bdb-4f95-aa12-05ba4caa8f77;Forza Horizon 5: Car Pass Xbox Series X|S (Digital)
 rejected;out_of_scope;brinde_diverso;relogio;1;126.32;accessory;87d9046c-7510-4709-b93b-9dd96dff6c5d;Base Carregadora Controle Xbox Series S X Dock de Recarga USB Tipo C com Relógio e Alarme KP-LC10
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;8830d1e2-6d3f-44bf-af95-843cc82e4455;Princess Peach Showtime Nintendo Switch (Digital)
+review;owner_decision;acessorio_plataforma_legada;;2;130.00;accessory;884124c6-03bf-4fa9-bd41-31cb1667f872;Controle Gamer Joystick Para Pc Ou Ps3 Com Fio Usb Fr-218a
 rejected;out_of_scope;condutiva_flat;cabo flat;1;14.70;accessory;8853f95b-8a28-4e16-86b0-e11b5773b15c;Cabo Flat Reparo Botões Controle Joy-con Para Nintendo Switch - L - SR - SL - ZL - ZR
 review;owner_decision;acessorio_marca_sem_plataforma;logitech;2;2599.99;accessory;8882d274-43c5-46df-8704-1e22cf67ba70;Volante Gamer Logitech G920 com Pedais para Simulação
 rejected;not_original;clone_controle_compativel;compativel;3;13.08;accessory;889bbcd8-5aab-4fa7-948a-c57680094a59;8 Grip Analógicos De Controle Compatível Ps3 Ps4 Ps5 Xbox
@@ -289,15 +289,14 @@ rejected;out_of_scope;brinde_diverso;detonados;2;73.00;game;8b37704d-0f61-480a-a
 rejected;not_original;destravado_modificado;desbloqueado;1;3990.00;console;8cf01908-cb28-4dce-803e-c256d20d921e;Nintendo switch OLED desbloqueado novo  256 GB versão Zelda
 review;unverified;jogo_sem_plataforma_nem_formato_fisico;;2;329.00;game;8cfb6f87-b7ae-4f39-ae37-5e0208baaea3;Resident Evil Archives: Resident Evil Zero
 rejected;not_original;clone_controle_nfc_seis_eixos;wakeup;1;148.99;accessory;8e4375c8-a4a9-472c-af5e-5d464267043d;"Controlador Pro Sem Fio Para Nintendo Switch/2/OLED/Lite , De Com Joystick LED/Movimento/Vibração/Turbo/Wakeup-Gengar"
-review;unverified;jogo_sem_plataforma_nem_formato_fisico;;4;139.99;game;91616a3d-3e63-4451-9e54-4dfaa6bae06d;God of War: Saga
 rejected;out_of_scope;condutiva_flat;cabo flat;1;13.78;accessory;91ac3899-6d0d-4c43-a98e-d50677673567;Placas USB + cabo flat para Controle Ps4 - Jdm040 Jdm001 Jdm030 Jdm050  Jdm011
 review;suspect_price;fisico_abaixo_do_piso;mediana 3490c;2;34.90;game;925b4fa1-3bf2-42f4-9a0b-560cd3d0aeb7;Mortal Kombat Deadly Alliance - Playstatio 2
 rejected;out_of_scope;action_figure;diorama;2;232.40;game;93555ca8-13a4-41c0-9d70-0baffc012fec;Diorama Street Fighter Ken Stage
 rejected;out_of_scope;digital_parenteses;(digital);1;389.90;game;9475528e-a8ba-4511-ac2e-ed792972a653;Donkey Kong Bananza Nintendo Switch 2 (Digital)
 rejected;out_of_scope;periferico_pc;mouse;1;79.90;accessory;947f30a4-e422-43fe-9c61-3474096a9e00;Kit Mouse LED RGB E Fone Headset Para Ps4 XBOX Celular Gamer USB P2 Computador Note Jogos
-rejected;not_original;clone_controle_compativel;compativel;1;115.71;accessory;94d6ddb4-dca4-4763-a461-e0c536b593d9;"Acessórios para jogos: Controle para Nintendo Switch Black Myth Goku — Compatível com Nintendo OLED, Controle Bluetooth"
+rejected;not_original;clone_controle_compativel;compativel;1;116.38;accessory;94d6ddb4-dca4-4763-a461-e0c536b593d9;"Acessórios para jogos: Controle para Nintendo Switch Black Myth Goku — Compatível com Nintendo OLED, Controle Bluetooth"
 rejected;out_of_scope;botao_gatilho;botao;1;20.00;accessory;94d84771-c393-4f9c-b478-1320bcecedb9;Botão LB RB para controle de Xbox One Series X/S
-rejected;not_original;clone_controle_compativel;compativel;2;126.15;accessory;9518b39e-cd1d-455d-8c91-3477b6f0dce5;Bateria Extra Externa Power Bank Compatível Com Controle Dualsense Do Ps5 E Edge
+rejected;not_original;clone_controle_compativel;compativel;2;94.10;accessory;9518b39e-cd1d-455d-8c91-3477b6f0dce5;Bateria Extra Externa Power Bank Compatível Com Controle Dualsense Do Ps5 E Edge
 review;unverified;jogo_sem_plataforma_nem_formato_fisico;;3;80.00;game;95a1d829-f074-4983-a2a9-af99635dc093;Mortal Kombat vs. DC Universe Standard Edition
 rejected;out_of_scope;condutiva_flat;condutiva;1;18.90;accessory;95b6da46-c4d6-47c6-ad20-afac4cc8bfb5;Manta Condutiva para Controle PS5 DualSense – Compatível BDM-010 / BDM-020 / BDM-030 (L e R)
 rejected;out_of_scope;volume_sem_plataforma;vol;2;369.00;game;95f71139-ba94-4d86-a09c-747360fd8332;Super Street Fighter Vol 2 Hyper (english)
@@ -341,6 +340,7 @@ rejected;out_of_scope;brinde_diverso;mascara de dormir;1;33.90;game;a8ae643d-ec7
 rejected;not_original;clone_controle_plataformas_demais;pc/android/ios;1;133.00;accessory;a8c312ed-3e7c-4f81-b0af-2f27bb746777;"Novo Controle  Sem Fio NS21 Multifuncional PARA Switch, Android/iOS, Windows 7/8/10-PC, PS3 e PS4"
 rejected;out_of_scope;brinquedo;playset;3;353.62;game;a99804b4-6ed7-4ae9-86ce-bc4234fddd0a;Jogo Playset Super Mario Nintendo 3 Jakks Pacific
 rejected;not_original;clone_controle_nfc_seis_eixos;seis eixos;1;126.12;accessory;a9a26f4b-c8f6-486f-abb3-42658f59ab92;Kit com 2 Unidades Controles de Jogo Sem Fio para PS4 com Função Vibração e Sensor Seis Eixos
+review;owner_decision;acessorio_marca_sem_plataforma;thrustmaster;3;2615.25;accessory;a9ce5ff6-dea8-4647-a49d-981a503cc1a3;Thrustmaster T248r Volante Com Force Feedback E Pedal Preto
 rejected;out_of_scope;mobiliario;cadeira;1;629.00;accessory;aa55b0d3-9cd3-4b56-8b70-451eb8b9d2c6;"Vshiny Cadeira Ergonômica para Jogos,cadeira Gamer,cadeira de Computador, Cadeira de Escritório, Confortável Cadeira Gamer Giratória Reclinável com Apoio para os Pés. (camo)"
 rejected;out_of_scope;acessorio_sem_plataforma;sem plataforma;2;3485.28;accessory;aaa51af0-0bd1-48c1-b4bb-2f02ea0f5565;"Volante Gamer Simagic GT Neo USB de 300mm, em Fibra de Carbono"
 rejected;out_of_scope;teclado;teclado;1;1500.00;accessory;ac403265-f016-46cd-af03-32798b8db8e5;Teclado mecânico Gamer Redragon Kumara K552-RGB Switch Blue Teclado mecânico preto Idioma espanhol Espanha
@@ -352,7 +352,8 @@ rejected;out_of_scope;digital_parenteses;(digital);2;389.90;game;ad7fc8b4-8ffd-4
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;aeca093a-9de2-4dd1-b23e-e2119a46f4ba;Pokémon™ Violet Nintendo Switch (Digital)
 rejected;out_of_scope;filme_em_disco;blu-ray/dvd;3;139.99;game;af827c19-fc07-408c-ab3b-bf0db52f3fb0;Blu-ray - Mortal Kombat e Mortal Kombat: A Aniquilação - Edição De Colecionador
 rejected;out_of_scope;brinde_diverso;detonado;5;45.99;game;afe1e5fb-7005-41bd-97d5-c4d8bfcaf87c;Silent Hill - Super Detonado Retro - Editora Europa
-review;owner_decision;headset_sem_plataforma;headset;14;187.00;accessory;b05a325c-9dc0-4d73-b1a3-3ed56e18889f;Headset Gamer Havit Gamenote H2015e Preto
+review;owner_decision;headset_sem_plataforma;headset;14;175.00;accessory;b05a325c-9dc0-4d73-b1a3-3ed56e18889f;Headset Gamer Havit Gamenote H2015e Preto
+rejected;out_of_scope;digital_formato;game_format=digital;3;99.97;game;b10d3b4a-b29e-42fb-8f75-174ad38ad9cc;Jogo Playerunknowns Battlegrounds Xbox One Cartao Download
 rejected;out_of_scope;volume_sem_plataforma;vol;32;19.00;game;b12748b7-b7ce-45e7-92db-c27a8a844146;Street Fighter: Sakura Ganbaru! - Vol. 01
 rejected;not_original;clone_controle_rgb_programavel;rgb;1;329.40;accessory;b14ed51d-a758-4520-a2c7-9b807b441609;Controle Rgb Funlab Com Hall Effect Para Nintendo Switch/pc
 review;suspect_price;fisico_abaixo_do_piso;mediana 2000c;8;19.90;game;b1e1be28-017a-4541-9d9e-8ab03b3df666;God of War II Standard Edition Formato físico para PS2
@@ -381,11 +382,12 @@ rejected;out_of_scope;acessorio_sem_plataforma;sem plataforma;2;649.99;accessory
 rejected;out_of_scope;brinde_diverso;quebra cabeca;2;97.00;game;bcebd5f3-4f8f-43ac-a315-d2033bf3e31a;Angry Birds Trilogy Xbox 360 Jogo Aventura Quebra-cabeça Activision Rovio
 rejected;out_of_scope;brinquedo;ioio;3;159.00;game;be3bd3a4-3d4d-4f64-b945-6da678382752;Ioiô Capcom Luxo Profissional Ed.limitad Street Fighter 30th
 rejected;out_of_scope;digital_formato;game_format=digital;4;22.00;game;be4180eb-247e-4906-922b-808c95cdd516;Mortal Kombat 11 PC
+review;owner_decision;acessorio_marca_sem_plataforma;thrustmaster;2;547.00;accessory;be46aa4b-b490-4f9d-8532-c52b0ad8b3a0;Volante Thrustmaster T300 Couro Tarja Vermelha Lotse
 rejected;out_of_scope;brinde_diverso;quebra cabeca;4;49.00;game;bf4cab24-13b5-4f53-984d-89b1e640fb38;Quebra Cabeça Puzzle Halo 5 Jogo Do Xbox One Com 150 Peças
 rejected;out_of_scope;digital_parenteses;(digital);1;349.00;game;c03873ab-6216-4036-9a8c-6a03a2e2b239;Forza Standard Edition Xbox Series X|S (Digital)
 rejected;not_original;clone_controle_compativel;compativel;1;169.90;accessory;c03ebfb7-2ef7-498b-b05b-7e6dd2973954;Controle Compatível Xbox One Series E X Pc C/ Fio Top
 rejected;out_of_scope;livro_artbook;art book;2;1064.00;game;c0cd3419-3932-42b5-9b81-9d5f46e5d378;Elden Ring Official Art Book Volume Iii Jp (japan)
-review;owner_decision;acessorio_plataforma_legada;;3;49.00;accessory;c15e0526-796e-43ba-9e46-1184c9cbb9ce;Volante Direção Corrida Racing Nintendo Wii Cor Branco
+review;owner_decision;acessorio_plataforma_legada;;2;49.00;accessory;c15e0526-796e-43ba-9e46-1184c9cbb9ce;Volante Direção Corrida Racing Nintendo Wii Cor Branco
 rejected;out_of_scope;digital_parenteses;(digital);1;349.90;game;c1dd00e4-7a7c-44ca-a1c0-241cf85f11a0;TEKKEN 8 - Standard Edition Xbox Series X|S (Digital)
 review;suspect_price;fisico_abaixo_do_piso;mediana 2800c;3;28.00;game;c25ff0dc-67b4-4f41-b358-94030eee0078;Resident Evil Code Veronica X - Ps2
 review;unverified;jogo_sem_plataforma_nem_formato_fisico;;2;657.00;game;c2d9e154-280a-4916-a058-0a61ac6350ad;Final Fantasy Xiv Online: Shadowbringers - Battle (japan)
@@ -397,7 +399,7 @@ rejected;not_original;destravado_modificado;desbloqueiado;1;3650.00;console;c4f8
 rejected;not_original;clone_controle_compativel;compativel;1;79.99;accessory;c5229183-2ac4-4ffc-8474-87d2013cbf29;Base Dock Carregador Duplo Compatível com Controle Manete Xbox One Series S/X + 2 Baterias
 rejected;out_of_scope;digital_parenteses;(digital);1;279.90;game;c592a0f8-ccef-4ad9-8706-cce91decc0cd;Miitopia Nintendo Switch Jogo Aventura RPG (Digital)
 rejected;not_original;clone_controle_compativel;compativel;2;78.99;accessory;c5c31644-0d00-4574-9a97-b06a00b0e334;Dock Base Carregador Duplo Para 2 Controle Manete Compatível Com Controle Dualsense Ps5 Playstations 5 - Marca Flatshop
-rejected;out_of_scope;digital_parenteses;(digital);11;310.38;game;c6c9b020-21ec-46eb-9f8b-8a9b9ff21586;The Legend of Zelda: Echoes of Wisdom Nintendo Switch (Digital)
+rejected;out_of_scope;digital_parenteses;(digital);12;314.36;game;c6c9b020-21ec-46eb-9f8b-8a9b9ff21586;The Legend of Zelda: Echoes of Wisdom Nintendo Switch (Digital)
 rejected;out_of_scope;teclado;teclado;7;199.75;accessory;c70ff3bd-31d2-4146-90c0-5dcebfdbd3d5;Teclado Mecânico Para Jogadores Hp Gk100 Led Rgb Gamer
 rejected;out_of_scope;analogico_3d;analogico 3d;1;16.00;accessory;c76da392-e9d6-4e62-a49f-013e83841f07;Botão Analógico 3D ALPS original para  controle do PS4
 rejected;out_of_scope;mobiliario;cadeira;2;1649.90;accessory;c81dfdc1-36d7-4fa7-897c-933c31564e29;Cadeira Gamer Dt3 Elise Maxpro Azul
@@ -408,6 +410,7 @@ review;owner_decision;headset_sem_plataforma;headset;3;170.00;accessory;cadd86c5
 review;suspect_price;fisico_abaixo_do_piso;mediana 4490c;2;44.90;game;cb098dd7-ebad-4e6c-a329-57354b4de8b7;Final Fantasy Xii Para Ps2
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;cb612472-11ab-499c-84cb-97973129f539;"Pokémon: Let’s Go, Eevee! Nintendo Switch (Digital)"
 rejected;not_original;clone_controle_compativel;compativel;1;37.89;accessory;cc9d10e4-0706-45ce-8b17-8698ea0ace04;Carregador Duplo Controle Manete Ps5 Compatível Console Playstation 5 + Cabo USB para Alimentação
+rejected;out_of_scope;digital_formato;game_format=digital;2;200.00;game;ccb0d66a-4a7e-4207-9d66-18ae6354073b;Assinatura Xbox Live Gold de 1 Mês para Xbox One e Xbox 360
 rejected;out_of_scope;volume_sem_plataforma;vol;30;19.00;game;ccd0040b-c9ad-46f9-8bab-e566a0a99af6;Street Fighter: Alpha - Volume 02: Street Fighter: Alpha - V
 rejected;out_of_scope;condutiva_flat;condutiva;1;11.99;accessory;ccd5ff5f-5e24-4768-ac8b-ca77164ab882;Manta Condutiva para PS4 Controle Reparo Todos os Modelos
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;cd099359-a1cd-405e-8175-b721b580c12c;Metroid Prime 4: Beyond Nintendo Switch (Digital)
@@ -419,8 +422,7 @@ rejected;out_of_scope;acessorio_sem_plataforma;sem plataforma;2;3819.99;accessor
 rejected;out_of_scope;brinde_diverso;super fa;1;129.01;game;cfbd6dc5-4868-4cab-b570-73d828823be6;Kit - Elden Ring - Super Fã
 rejected;out_of_scope;digital_parenteses;(digital);2;329.90;game;cfd49088-d109-44bf-a546-d9abb6553858;Super Mario 3D World + Bowser’s Fury Nintendo Switch (Digital)
 rejected;out_of_scope;poster_quadro;poster;3;27.56;game;d01f574a-805c-43c1-a400-46263e330301;Cyberpunk Mercenários - Pôster Gigante
-review;unverified;jogo_sem_plataforma_nem_formato_fisico;;12;38.14;game;d2672739-437b-4312-9289-53da5f934da1;Elden Ring: O Caminho Para Térvore 05
-review;unverified;jogo_sem_plataforma_nem_formato_fisico;;2;119.79;game;d36627dc-d144-452d-a60f-1ed7e7137e49;God of War: Ascension
+review;unverified;jogo_sem_plataforma_nem_formato_fisico;;13;38.14;game;d2672739-437b-4312-9289-53da5f934da1;Elden Ring: O Caminho Para Térvore 05
 rejected;not_original;clone_controle_compativel;compativel;1;249.00;accessory;d383d9a2-a3a7-482c-8a07-d04fbfc49969;Kit Controle Compatível Nitendo Switch Oled Preto Top
 rejected;out_of_scope;acessorio_sem_plataforma;sem plataforma;2;4749.99;accessory;d3abbd5d-62a2-44e6-af0c-b6e4e5b74fca;Volante Gamer Pxn Wdsr2 300mm Direct Drive Vd6 Torque 6nm
 rejected;out_of_scope;livro_artbook;art book;2;536.00;game;d404c683-ba8c-46a6-bd46-7c986727b2c0;Elden Ring Official Art Book Volume I (japan)
@@ -450,7 +452,7 @@ rejected;out_of_scope;teclado;teclado;2;157.00;accessory;dcd08f08-3a0a-4885-8d9a
 rejected;out_of_scope;teclado;teclado;2;256.49;accessory;dd06b07c-ada0-4009-98b9-51d41557d306;Combo Teclado Mecânico Rgb + Mouse Gamer 10000dpi Sem Fio Preto
 rejected;out_of_scope;guia_livro;character making;2;1118.00;game;dd9e7243-fa1f-4dd1-be04-685f44e3efc0;Street Fighter Character Making (japan)
 rejected;out_of_scope;digital_parenteses;(digital);2;219.90;game;dde45e9c-7f3d-4045-af45-8ad3a3c15ea0;Nintendo Switch™ Sports Nintendo Switch (Digital)
-review;suspect_price;fisico_abaixo_do_piso;mediana 2595c;4;22.00;game;df101c5e-3baa-4656-94bb-5170ec2eefcb;Jogo Silent Hill Shattered Memories para Sony em Formato Físico
+review;suspect_price;fisico_abaixo_do_piso;mediana 2990c;3;29.90;game;df101c5e-3baa-4656-94bb-5170ec2eefcb;Jogo Silent Hill Shattered Memories para Sony em Formato Físico
 rejected;out_of_scope;condutiva_flat;molas;2;6.00;accessory;df7fe511-dcf6-4f9b-8cf6-4622b8f28758;Par de Molas Botões Gatilho PS5 L2 R2 Controle Dualsense
 review;owner_decision;headset_sem_plataforma;headset;21;70.00;accessory;e0bc7430-200e-4e70-847e-3a532c7e2819;Headset Gamer Redragon Pelias Preto - H130
 rejected;out_of_scope;teclado;teclado;1;67.53;accessory;e121fea8-e02c-45ac-8f56-074067ec7a44;Teclado Sem Fio Bluetooth para PS4/PS4 Slim  | Compacto 1 Mão | 10m Alcance | 20h Bateria
@@ -501,7 +503,7 @@ rejected;out_of_scope;periferico_pc;notebook;2;129.00;console;f6a2d27b-19f7-45f6
 rejected;out_of_scope;digital_parenteses;(digital);2;329.90;game;f73651f3-27ba-448b-bf07-30462e20e244;Paper Mario: The Thousand-Year Door Nintendo Switch (Digital)
 rejected;out_of_scope;guia_livro;ultimania;2;828.00;game;f7e73f7b-5c71-4672-9b38-f034e04a232b;Final Fantasy Vii 10th Anniversary Ultimania (japan)
 rejected;out_of_scope;action_figure;figura;2;1199.00;game;f7f923e8-b3a3-4062-a355-9f0111411961;Figura Jin Kazama - Tekken 8 - Sh Figuarts - Bandai
-rejected;out_of_scope;periferico_pc;mouse;4;78.90;accessory;f9856cef-0a29-4fe2-af66-9f752efda152;Mouse gamer Onikuma CW905 pink
+rejected;out_of_scope;periferico_pc;mouse;4;62.70;accessory;f9856cef-0a29-4fe2-af66-9f752efda152;Mouse gamer Onikuma CW905 pink
 rejected;not_original;clone_controle_compativel;compativel;2;189.00;accessory;fa09de00-87d7-4619-a6c0-84585c59432c;Controle Compatível Joy-con Para Nintendo Switch Gamepad Rgb Roxo
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;fa552d8f-fb90-4185-af98-a4893f5abe52;New Pokémon Snap™ Nintendo Switch (Digital)
 rejected;out_of_scope;digital_parenteses;(digital);2;329.90;game;fa9a624e-036d-4d3b-8f58-9cd0cfd55bc9;Paper Mario™: The Origami King Nintendo Switch (Digital)
@@ -517,6 +519,7 @@ rejected;out_of_scope;teclado;teclado;5;1499.00;accessory;fecae158-cdd6-4ff4-8da
 rejected;out_of_scope;action_figure;figure;2;76.99;accessory;fef26ba9-a1e0-47bb-ae9d-2f6ff02defd8;Hollow Knight Shade 15cm Figure Grande Gamer Geek 3d
 rejected;out_of_scope;digital_parenteses;(digital);1;329.90;game;ff2b1482-628b-4954-97cd-e0247506c717;Pokémon™ Shield Nintendo Switch (Digital)
 rejected;out_of_scope;digital_parenteses;(digital);2;329.90;game;ff4571b8-44ac-4edb-a496-f899e62cdbc7;Pokémon™ Legends Z-A Nintendo Switch (Digital)
+review;owner_decision;acessorio_marca_sem_plataforma;thrustmaster;2;547.00;accessory;ff4ab5a8-cfad-431a-afaa-65e8df94e795;Volante Thrustmaster T300 Camurça Tarja Vermelha Lotse
 review;owner_decision;headset_sem_plataforma;headset;2;49.00;accessory;ff790623-e10b-4b80-95c5-7253f4a60115;Headset Gamer G-fire Vermelho - Eph220fgse
 rejected;out_of_scope;acessorio_sem_plataforma;sem plataforma;6;58.98;accessory;ff93916e-550b-42fd-8f96-eeb0f499b84b;Controle Gamer para celular Kap-g7 Joystick Android Celular Pc Bluetooth Preto
 rejected;out_of_scope;medida_figura;35 cm;1;150.00;game;ffb15c1d-7779-47a1-9f2e-e85483985aea;Mario Bros Nintendo em 3D – Aproximadamente 35 cm

@@ -158,7 +158,10 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
       classification?.gamePlatformGen && classification.gamePlatformGen !== 'unknown'
         ? classification.gamePlatformGen
         : normalizeGamePlatformGen(null, name);
-    const existingBySimilarity = await findExistingMasterProduct(name, platformForDedup);
+    // Formato (físico x digital): o título prova; sem prova, o atributo FORMAT do catálogo; nunca chuta.
+    const { resolveGameFormat } = await import('@/lib/affiliate/game-classification');
+    const gameFormat = resolveGameFormat(name, classification?.gameFormat);
+    const existingBySimilarity = await findExistingMasterProduct(name, platformForDedup, { gameFormat });
     if (existingBySimilarity) return existingBySimilarity;
 
     const baseSlug = slugify(name);
@@ -172,6 +175,7 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
         slug,
         meliCatalogId: externalRef,
         ...(classification ?? {}),
+        gameFormat,
         // Coluna não aceita null — categoria não reconhecida (productType
         // null) deve cair no default da coluna ('game'), não virar erro.
         productType: classification?.productType ?? undefined,

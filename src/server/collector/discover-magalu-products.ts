@@ -198,10 +198,13 @@ export async function discoverMagaluProducts(): Promise<{
           }
 
           const classification = classifyFromAttributes([], item.title);
+          // A Magalu não manda formato estruturado: só o título prova físico x digital (nunca chuta).
+          const { resolveGameFormat } = await import('@/lib/affiliate/game-classification');
+          classification.gameFormat = resolveGameFormat(item.title, classification.gameFormat);
 
           // Dedup por similaridade de título e plataforma
           const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
-          const existingBySimilarity = await findExistingMasterProduct(item.title, classification.gamePlatformGen);
+          const existingBySimilarity = await findExistingMasterProduct(item.title, classification.gamePlatformGen, { gameFormat: classification.gameFormat });
 
           let masterProduct;
           if (existingBySimilarity) {

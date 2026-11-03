@@ -1,0 +1,197 @@
+import type { Metadata } from 'next';
+import { Eye, ShieldCheck } from 'lucide-react';
+import { Text } from '@/components/ui/text';
+import { Reveal } from '@/components/motion/reveal';
+import { Glow } from '@/components/motion/glow';
+import { Card, CardContent } from '@/components/ui/card';
+
+export const metadata: Metadata = {
+  title: 'Política de Privacidade',
+  description: 'Como o Espaço Geek 86 coleta, usa, compartilha e protege seus dados pessoais, e como você exerce seus direitos pela LGPD.',
+};
+
+// Minuta técnica em revisão jurídica. Os trechos [PREENCHER: ...] dependem de informação do controlador e
+// não podem ser inventados. Lista completa em docs/revisao-legal-lgpd-comissao-2026-11-03.md.
+
+interface Section {
+  title: string;
+  intro?: string;
+  items?: React.ReactNode[];
+  outro?: string;
+}
+
+const SECTIONS: Section[] = [
+  {
+    title: '1. Quem é o responsável pelos dados',
+    intro:
+      'O responsável pelo tratamento dos seus dados pessoais (controlador, na LGPD) é o Espaço Geek 86: [PREENCHER: razão social ou nome completo do titular, CNPJ ou CPF e endereço]. Para falar com a gente sobre dados pessoais, escreva para contato@egeek86.com.',
+  },
+  {
+    title: '2. Dados que coletamos',
+    intro: 'Só coletamos o que a funcionalidade que você usa precisa. Navegar pelo site, ver preços e pesquisar não exige conta.',
+    items: [
+      <><strong>Conta:</strong> nome, e-mail, número de WhatsApp com DDD, senha (guardada pelo serviço de autenticação, nunca em texto aberto) e as plataformas de jogo que você marcou.</>,
+      <><strong>Uso da conta:</strong> jogos que você acompanha e o preço-alvo escolhido, itens do carrinho (uma lista de interesse; a compra acontece no site da loja), lances em leilões, inscrição em listas de espera de drops, pontos Geek Coins e respostas da pesquisa quando você está logado.</>,
+      <><strong>Notificações:</strong> suas preferências de alerta, o identificador do seu chat no Telegram (quando você vincula o bot) e o registro dos avisos enviados a você (canal, destinatário e conteúdo).</>,
+      <><strong>Credenciamento de colecionador e de divulgador (opcional):</strong> para colecionadores, quantidade e foco da coleção e uma foto da coleção que mostra o seu rosto; para quem vende, CPF ou CNPJ e uma apresentação; para divulgadores, o link de rede social e a faixa de audiência informados.</>,
+      <><strong>Dados técnicos:</strong> ao clicar em &quot;Ir à loja&quot; ou em uma notícia indicada, registramos data e hora, a oferta ou matéria, o endereço da página de origem e o navegador usado. Esse registro não guarda seu IP nem sua identificação de conta. Nas áreas de drops, guardamos também uma versão embaralhada (hash) do IP, o navegador e, se você estiver logado, a sua conta, para detectar robôs e fraude.</>,
+      <><strong>Sem conta:</strong> a lista de jogos que você acompanha como visitante fica somente no seu navegador. Os termos digitados na busca não são gravados por nós.</>,
+      <><strong>Pesquisa de mercado:</strong> pode ser respondida sem login; quando respondida logado, a resposta fica ligada à sua conta.</>,
+    ],
+    outro:
+      'Também podem existir registros técnicos de acesso (IP, data, página) mantidos pelos provedores de infraestrutura que usamos, descritos na seção 4.',
+  },
+  {
+    title: '3. Para que usamos e em qual base legal',
+    intro: 'Cada uso tem uma finalidade e uma base legal da LGPD (art. 7º e, para dados sensíveis, art. 11):',
+    items: [
+      <><strong>Criar e manter sua conta, acompanhar jogos, carrinho e alertas pedidos por você:</strong> execução do serviço que você solicitou (art. 7º, V).</>,
+      <><strong>Enviar alertas por e-mail, Telegram ou WhatsApp:</strong> você escolhe os canais em Notificações e pode desligar a qualquer momento; mensagens pelo WhatsApp dependem do seu consentimento (art. 7º, I).</>,
+      <><strong>Leilões e drops:</strong> executar a participação que você pediu. Seu nome de cadastro aparece nos lances que você dá, para a auditoria coletiva do leilão.</>,
+      <><strong>Credenciamento de colecionador e vendedor:</strong> verificar identidade e autenticidade antes de liberar a venda. A foto com o rosto é usada só para essa conferência, vista apenas pela equipe administrativa. [PREENCHER: base legal confirmada pelo advogado para a foto do rosto e o CPF/CNPJ, e prazo de guarda].</>,
+      <><strong>Medir cliques, entender o que funciona no site e prevenir robôs e fraude:</strong> legítimo interesse (art. 7º, IX), sempre com o mínimo de dados.</>,
+      <><strong>Cumprir obrigação legal:</strong> guarda de registros de acesso quando a lei exigir (art. 7º, II).</>,
+    ],
+    outro: 'Não vendemos seus dados e não os usamos para publicidade de terceiros.',
+  },
+  {
+    title: '4. Com quem compartilhamos',
+    intro: 'Usamos prestadores para o site funcionar. Cada um recebe apenas o necessário:',
+    items: [
+      <><strong>Vercel</strong> (hospedagem do site) e <strong>Supabase</strong> (banco de dados e autenticação): armazenam e processam os dados da plataforma. Região do banco: [PREENCHER: região do projeto Supabase].</>,
+      <><strong>Resend</strong> (envio de e-mails), <strong>Telegram</strong> (alertas, se você vincular o bot) e <strong>Meta/WhatsApp</strong> (mensagens, quando você autoriza): recebem seu endereço, identificador ou número e o texto da mensagem.</>,
+      <><strong>Lojas parceiras</strong> (Mercado Livre, Shopee, Magalu, Amazon e outras): consultamos preços e ofertas por canais oficiais sem enviar dados dos nossos usuários. Quando você clica em &quot;Ir à loja&quot;, você sai do nosso site e a loja trata seus dados pela política dela. As imagens de produtos podem ser carregadas direto dos servidores das lojas, que enxergam o IP do seu navegador.</>,
+      <><strong>Autoridades:</strong> quando houver ordem judicial ou obrigação legal.</>,
+    ],
+  },
+  {
+    title: '5. Transferência internacional',
+    intro:
+      'Alguns prestadores acima processam dados fora do Brasil, em especial nos Estados Unidos. Esses envios seguem as hipóteses do art. 33 da LGPD e a regulamentação da ANPD. [PREENCHER: mecanismo adotado por prestador (cláusulas-padrão, adequação ou outro), conforme análise do advogado].',
+  },
+  {
+    title: '6. Por quanto tempo guardamos',
+    intro:
+      'Guardamos os dados da conta enquanto ela estiver ativa. Ao pedir a exclusão, eliminamos o que a lei não nos obriga a manter. Os registros de cliques não identificam você. Prazos por tipo de dado: [PREENCHER: prazos de retenção para conta, foto do rosto, CPF/CNPJ, registros de notificação, registros de acesso e respostas da pesquisa].',
+  },
+  {
+    title: '7. Seus direitos',
+    intro: 'Pelo art. 18 da LGPD você pode pedir, a qualquer momento e gratuitamente:',
+    items: [
+      'Confirmação de que tratamos dados seus e acesso a eles.',
+      'Correção de dados incompletos, inexatos ou desatualizados.',
+      'Anonimização, bloqueio ou eliminação de dados desnecessários, excessivos ou tratados fora da lei.',
+      'Portabilidade dos dados, nos termos da regulamentação.',
+      'Eliminação dos dados tratados com o seu consentimento.',
+      'Informação sobre com quem compartilhamos seus dados.',
+      'Informação sobre a possibilidade de não consentir e suas consequências.',
+      'Revogação do consentimento, a qualquer momento.',
+    ],
+    outro:
+      'Envie o pedido para o canal da seção 8. Confirmamos o recebimento e respondemos no prazo legal. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).',
+  },
+  {
+    title: '8. Encarregado de dados (DPO)',
+    intro:
+      'Encarregado: [PREENCHER: nome ou função]. Canal para pedidos e dúvidas: [PREENCHER: e-mail dedicado do encarregado]. Enquanto esse canal dedicado não existir, use contato@egeek86.com.',
+  },
+  {
+    title: '9. Cookies e armazenamento no navegador',
+    intro: 'O site usa apenas o que é necessário para funcionar ou que você escolheu. Não usamos cookies de publicidade nem de análise de audiência.',
+    items: [
+      <><strong>Sessão de autenticação (sb-…-auth-token):</strong> mantém você conectado depois do login. Só existe para quem entra na conta. Necessário.</>,
+      <><strong>Tema (theme):</strong> lembra se você escolheu o visual claro ou escuro, por até 1 ano.</>,
+      <><strong>Armazenamento local (eg86_guest_watchlist):</strong> guarda no seu navegador a lista de jogos que você acompanha sem estar logado.</>,
+    ],
+    outro:
+      'Você pode apagar tudo isso nas configurações do navegador; será preciso entrar de novo e escolher o tema outra vez. Como não usamos cookies opcionais, não há banner de consentimento. Se isso mudar, pediremos sua autorização antes, com a opção de recusar já marcada. Lojas e serviços para os quais você é levado ao clicar em um link usam os cookies deles.',
+  },
+  {
+    title: '10. Menores de idade',
+    intro:
+      'O Espaço Geek 86 é destinado a maiores de 18 anos, e leilões e vendas exigem capacidade para contratar. Não pedimos dados de crianças de propósito. Se soubermos que uma conta é de menor, vamos encerrá-la e eliminar os dados. [PREENCHER: avaliação do advogado sobre o ECA Digital (Lei 15.211/2025) e verificação de idade].',
+  },
+  {
+    title: '11. Segurança e incidentes',
+    intro:
+      'Usamos acesso restrito, conexão criptografada e separação entre áreas públicas e administrativas. Nenhum sistema é infalível. Se ocorrer um incidente que possa causar risco ou dano relevante, comunicaremos você e a ANPD nos termos do art. 48 da LGPD.',
+  },
+  {
+    title: '12. Mudanças nesta política',
+    intro: 'Quando algo mudar, atualizamos esta página e a data no topo. Mudanças relevantes serão avisadas por e-mail ou no site.',
+  },
+];
+
+export default function PrivacidadePage() {
+  return (
+    <section className="relative w-full mx-auto max-w-4xl px-4 lg:px-8 py-14 lg:py-20 overflow-hidden">
+      {/* Background Glows */}
+      <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.10} />
+      <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.06} />
+
+      {/* Header */}
+      <div className="flex flex-col gap-3 mb-10 relative z-10">
+        <Reveal>
+          <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
+            <Eye className="size-3.5" aria-hidden />
+            Institucional
+          </Text>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <Text as="h1" variant="display-xl" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+            Política de Privacidade
+          </Text>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <Text variant="body-sm" color="secondary" className="max-w-[62ch]">
+            Última atualização: 3 de novembro de 2026. Explicamos aqui, em linguagem direta, quais dados tratamos, para quê,
+            com quem compartilhamos e como você exerce seus direitos pela Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).
+          </Text>
+        </Reveal>
+      </div>
+
+      <div className="flex flex-col gap-8 relative z-10">
+        {/* Intro Card */}
+        <Reveal delay={0.12}>
+          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/15">
+            <CardContent className="p-6 text-xs text-[var(--color-text-secondary)] leading-relaxed flex items-start gap-3">
+              <ShieldCheck className="size-5 shrink-0 text-[var(--color-accent-primary)] mt-0.5" />
+              <span>
+                <strong>Resumo:</strong> não vendemos seus dados, não usamos cookies de publicidade nem de análise, e você
+                navega, pesquisa e compara preços sem criar conta. Os dados da conta servem para os alertas, o carrinho, os
+                leilões e os recursos que você pedir.
+              </span>
+            </CardContent>
+          </Card>
+        </Reveal>
+
+        {SECTIONS.map((section, i) => (
+          <Reveal key={section.title} delay={0.15 + i * 0.02}>
+            <div className="flex flex-col gap-3">
+              <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+                {section.title}
+              </Text>
+              {section.intro && (
+                <Text variant="body-sm" color="secondary" className="leading-relaxed">
+                  {section.intro}
+                </Text>
+              )}
+              {section.items && (
+                <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+                  {section.items.map((item, j) => (
+                    <li key={j}>{item}</li>
+                  ))}
+                </ul>
+              )}
+              {section.outro && (
+                <Text variant="body-sm" color="secondary" className="leading-relaxed">
+                  {section.outro}
+                </Text>
+              )}
+            </div>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}

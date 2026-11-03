@@ -30,7 +30,7 @@ function statsValues(id: string, r: Row | undefined, payload: unknown) {
     ${num(r?.n_all)}, ${num(r?.raw_min)}, ${num(r?.floor_cents)}, ${num(r?.pf_median)}, ${JSON.stringify(payload)}::jsonb, now())`;
 }
 
-async function persistStatsChunk(ids: string[]): Promise<void> {
+export async function persistStatsChunk(ids: string[]): Promise<void> {
   let agg: Row[] = [];
   const stats = await getMasterProductPriceStatsBatchRaw(ids, (rows) => {
     agg = rows;

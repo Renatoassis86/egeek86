@@ -366,12 +366,13 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
       // colar aqui um link de um catalog_product_id "gêmeo" recria a mesma
       // quebra de regra de negócio.
       const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
-      const { normalizeGamePlatformGen } = await import('@/lib/affiliate/game-classification');
+      const { normalizeGamePlatformGen, resolveGameFormat } = await import('@/lib/affiliate/game-classification');
+      const gameFormat = resolveGameFormat(itemData.name, classification.gameFormat);
       const platformForDedup =
         classification.gamePlatformGen !== 'unknown'
           ? classification.gamePlatformGen
           : normalizeGamePlatformGen(null, itemData.name);
-      const existingBySimilarity = await findExistingMasterProduct(itemData.name, platformForDedup);
+      const existingBySimilarity = await findExistingMasterProduct(itemData.name, platformForDedup, { gameFormat });
 
       // Catalog_product_id "gêmeo" pro mesmo jogo real — anexa como nova
       // oferta do produto já existente em vez de criar um master_product
@@ -389,6 +390,7 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
             meliCatalogId: itemData.id,
             defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
             ...classification,
+            gameFormat,
             attributes: entryGateAttributes(itemData.name, (classification as { productType?: ProductType }).productType ?? 'game'),
             classifiedAt: new Date(),
           })

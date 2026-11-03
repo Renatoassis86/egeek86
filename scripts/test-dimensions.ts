@@ -76,6 +76,9 @@ const HIDDEN: Array<[string, ProductType]> = [
   ['Playstation Vr Demo Disc 1.0', 'console'],
   ['Street Fighter 6 PS5 Not For Resale', 'game'],
   ['Gta 5 Digital', 'game'],
+  ['Zelda Tears of the Kingdom Nintendo eShop Download', 'game'], // formato digital: master proprio, mas fora da cartela publica (D1)
+  ['Minecraft Nintendo Switch Key Digital', 'game'],
+  ['Elden Ring PS5 Código PSN', 'game'],
   ['Gran Turismo 7 PS5 (Digital)', 'game'],
   ['Minecraft Legends Console Agency Nintendo Switch (Digital)', 'console'],
   ['Console Nintendo Switch 2 + EA SPORTS FC 27 (Digital)', 'console'],
@@ -222,6 +225,7 @@ const LEGIT: Array<[string, boolean?]> = [
   ['Advance Wars Days Of Ruin Jogo Nintendo DS Mídia Física'],
   ['Steelbook Resident Evil 4 PS5 Jogo Mídia Física Lacrado'],
   ['Digital Devil Saga Nintendo Switch Físico'],
+  ['Hogwarts Legacy PS5 Mídia Física + Bônus Digital'], // bônus digital de jogo físico não esconde
   // --- falsos positivos a evitar nesta rodada ---
   ['G.O.R.E. Nintendo Switch Físico'],
   ['S.T.A.L.K.E.R. 2 Heart of Chornobyl PS5 Mídia Física'],

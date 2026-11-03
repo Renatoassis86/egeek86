@@ -9,7 +9,7 @@
 import { isSameProduct, normalizeTitle, numeralsOf } from '../src/lib/affiliate/dedup';
 import { evaluateOfferIdentity, offerTitleFlags, type OfferIdentityReason } from '../src/lib/affiliate/offer-identity';
 import { reconcilePlatform, readPlatform } from '../src/lib/catalog/platform';
-import { derivePlatformFromTitle, mentionsMultipleGenerations } from '../src/lib/affiliate/game-classification';
+import { derivePlatformFromTitle, deriveGameFormat, hasDigitalMarker, mentionsMultipleGenerations } from '../src/lib/affiliate/game-classification';
 
 import { absurdReason } from './quarentena-precos-absurdos';
 
@@ -37,11 +37,16 @@ const PAIRS: Pair[] = [
   ['Resident Evil 4 Remake PS5 Mídia Física', 'Resident Evil 4 PS5 Mídia Física', false], // RE4 original existe em PS5/PS4: Remake separa
   ['Final Fantasy VII Remake PS4', 'Final Fantasy VII PS4', false], // fora da lista canonica: continua separando
   // --- capacidade (825GB x 1TB) e console de nucleo vazio
-  ['Console PlayStation 5 Slim 825GB', 'Console PlayStation 5 Slim 1TB', false],
+  ['Console PlayStation 5 Slim 825GB', 'Console PlayStation 5 Slim 1TB', true], // PS5: capacidade NAO separa (dono, 2026-11-03)
+  ['Console PlayStation 5 Slim Digital 825GB', 'Console PlayStation 5 Slim Digital 1TB', true],
+  ['Console PlayStation 5 Slim 825GB', 'Console PlayStation 5 Pro 2TB', false], // modelo continua separando
+  ['Console PlayStation 5 Slim Digital 1TB', 'Console PlayStation 5 Slim 1TB com Leitor de Disco', false], // Digital x disco
+  ['Console PlayStation 4 500GB', 'Console PlayStation 4 1TB', false], // PS4 mantem capacidade
+  ['SSD NVMe 1TB para PS5', 'SSD NVMe 2TB para PS5', false], // acessorio PS5 mantem capacidade
   ['Nintendo Switch OLED 64GB', 'Nintendo Switch OLED 256GB', false],
   ['Console Xbox Series S 512GB', 'Console Xbox Series S 512GB', true], // controle: antes nem ele mesmo casava
   ['Console Xbox Series S 512GB', 'Console Xbox Series S 512GB Branco', true],
-  ['Console Sony PlayStation 5 Slim Edicao Digital Branco 825GB', 'Console Sony PlayStation 5 Slim Edicao Digital Branco 1TB', false],
+  ['Console Sony PlayStation 5 Slim Edicao Digital Branco 825GB', 'Console Sony PlayStation 5 Slim Edicao Digital Branco 1TB', true],
   ['Console PlayStation 5 Slim 1TB', 'Console PlayStation 5 Slim 1000GB', true],
   ['Cartão de Memória SD 128GB Switch', 'Cartão de Memória SD 256GB Switch', false],
   ['Console PlayStation 5 Slim', 'Console PlayStation 5 Slim 1TB', true], // capacidade ausente de um lado nao separa
@@ -142,9 +147,11 @@ const PAIRS: Pair[] = [
   ['Nintendo Switch Sports Nintendo Switch (digital)', 'Nintendo Switch® Sports Nintendo Switch (Digital)', true], // ® nao separa
 
 ];
+// Os pares de JOGO supõem masters com game_format gravado 'physical' (o título que não diz nada herda o formato gravado);
+// o que o título prova ("Digital", "Mídia Digital", código...) vence o gravado. Pares de formato desconhecido: seção F.
 for (const [a, b, same, type] of PAIRS) {
-  const na = normalizeTitle(a, { productType: type });
-  const nb = normalizeTitle(b, { productType: type });
+  const na = normalizeTitle(a, { productType: type, gameFormat: 'physical' });
+  const nb = normalizeTitle(b, { productType: type, gameFormat: 'physical' });
   const got = isSameProduct(na, nb);
   check(got === same, `identidade esperado=${same ? 'MESMO' : 'SEPARA'} obtido=${got ? 'MESMO' : 'SEPARA'}`, `${a}  x  ${b}`);
 }
@@ -215,7 +222,8 @@ for (const [title, cond, cross] of FLAGS) {
 type O = [string, string, string, OfferIdentityReason];
 const OFFERS: O[] = [
   // --- os contaminados da auditoria (titulos reais; sheet ofertas-suspeitas)
-  ['Console Playstation 5 Digital Slim 1TB', 'Console PlayStation 5 Slim Digital 825GB', 'console', 'divergencia'],
+  ['Console Playstation 5 Digital Slim 1TB', 'Console PlayStation 5 Slim Digital 825GB', 'console', 'ok'], // PS5: capacidade nao separa (2026-11-03)
+  ['Console Playstation 5 Pro 2TB', 'Console PlayStation 5 Slim Digital 825GB', 'console', 'divergencia'],
   ['Controle Stelf Xbox Series com Grip (Black) Elite', 'Controle Stelf Xbox Series com Grip - 2 Paddles (Black)', 'accessory', 'divergencia'],
   ['Jogo The Walking Dead Collection Telltale Series Xbox One', 'Jogo The Walking Dead: A Telltale Game Series - Xbox One', 'game', 'divergencia'],
   ['Jogo The Legend of Zelda: Breath of the Wild Edição Especial para Nintendo Switch', 'The Legend of Zelda Breath of The Wild Switch Midia Fisica', 'game', 'divergencia'],
@@ -285,9 +293,130 @@ OFFERS.push(
   ['Pokémon Escarlate Switch', 'Pokémon Scarlet Switch', 'game', 'ok'],
 );
 for (const [offer, master, type, want] of OFFERS) {
-  const r = evaluateOfferIdentity(offer, { name: master, productType: type });
+  // master de jogo com game_format gravado 'physical' (herdado pela oferta que não prova o formato); demais: seção F
+  const r = evaluateOfferIdentity(offer, { name: master, productType: type, gameFormat: type === 'game' ? 'physical' : null });
   check(r.reason === want, `oferta esperado=${want} obtido=${r.reason}`, `"${offer}" no master "${master}" [${r.summary}]`);
   check(r.excluded === (want !== 'ok'), `oferta excluida=${want !== 'ok'}`, `"${offer}"`);
+}
+
+
+// ---------------------------------------------------------------------------
+// F. FORMATO: jogo em mídia FÍSICA x DIGITAL são produtos diferentes (decisão do dono, 2026-11-03)
+// ---------------------------------------------------------------------------
+// F1. Formato provado pelo título: [titulo, esperado]
+const FMT: Array<[string, 'physical' | 'digital' | 'unknown']> = [
+  ['Jogo God Of War Ragnarok PS4 Midia Fisica Novo Original', 'physical'],
+  ['Marvel Spider-man 2 (MÍDIA FÍSICA) - Jogo Novo Original e Lacrado - PS5', 'physical'],
+  ['Pokémon Violet Nintendo Switch – Lacrado e Novo', 'physical'], // lacrado prova mídia
+  ['Resident Evil Requiem - Nintendo Switch 2 Físico Lacrado Novo', 'physical'],
+  ['Mario Kart 8 Deluxe Cartucho Nintendo Switch', 'physical'],
+  ['Cyberpunk 2077 Blu-ray PS4', 'physical'],
+  ['Gran Turismo 7 PS5 (Digital)', 'digital'],
+  ['Hogwarts Legacy PS5 Mídia Digital', 'digital'],
+  ['Elden Ring PS5 Código PSN', 'digital'],
+  ['Zelda Tears of the Kingdom Nintendo eShop Download', 'digital'],
+  ['Minecraft Switch Key Digital', 'digital'],
+  ['EA FC 25 Xbox Series Código Digital', 'digital'],
+  ['Gift Card PSN R$ 100', 'digital'],
+  ['Pentiment Xbox Series X|S, Xbox One (Digital)', 'digital'],
+  // sem prova: NUNCA vira físico por padrão
+  ['Mortal Kombat 1 - PS5 Standard', 'unknown'],
+  ['Mario & Luigi: Brothership - Nintendo Switch - Original', 'unknown'],
+  ['Jogo Gran Turismo 7 - PS5 - Novo - Original', 'unknown'],
+  // contraditório: não prova nada
+  ['Jogo PS5 Mídia Física e Mídia Digital', 'unknown'],
+  // bônus digital de jogo físico não faz o jogo ser digital
+  ['Jogo Hogwarts Legacy PS5 Mídia Física + Bônus Digital', 'physical'],
+  ['Jogo Cyberpunk 2077 PS4 Físico com Código de Resgate DLC', 'physical'],
+  // nomes que contêm as palavras
+  ['Disco Elysium The Final Cut PS5', 'unknown'],
+  ['Digital Devil Saga Nintendo Switch Físico', 'physical'],
+  ['Jogo Ps4 Polyphony Digital Gran Turismo Sport', 'unknown'], // Polyphony Digital é a desenvolvedora
+];
+for (const [title, want] of FMT) {
+  const got = deriveGameFormat(title);
+  check(got === want, `formato de "${title}" esperado=${want}`, `obtido ${got}`);
+}
+
+// F2. Mesmo jogo, mesma plataforma: físico x digital SEPARAM; físico x físico JUNTA. Opções = formato gravado de cada lado.
+// [A, B, formato gravado A, formato gravado B, mesmo?]
+const FPAIRS: Array<[string, string, string, string, boolean]> = [
+  ['Hogwarts Legacy PS5 Mídia Física', 'Hogwarts Legacy PS5 Mídia Digital', 'unknown', 'unknown', false],
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5 (Digital)', 'physical', 'digital', false], // gravado + título
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5', 'physical', 'digital', false], // só a coluna
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5 Mídia Física Lacrado', 'physical', 'unknown', true], // silencioso herda o gravado
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5 Mídia Física Lacrado', 'unknown', 'unknown', false], // sem formato provado no A: não mistura com físico provado
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5 Lacrado', 'unknown', 'unknown', false], // lacrado prova físico; o outro não prova nada
+  ['God of War Ragnarok PS5 Standard', 'God of War Ragnarok PS5', 'unknown', 'unknown', true], // desconhecido só se junta a desconhecido
+  ['God of War Ragnarok PS5 Standard', 'God of War Ragnarok PS5', 'unknown', 'physical', false],
+  // edição física x edição digital do mesmo jogo
+  ['Hogwarts Legacy Deluxe Edition PS5 Mídia Física', 'Hogwarts Legacy Deluxe Edition PS5 Digital', 'unknown', 'unknown', false],
+  ['Hogwarts Legacy Deluxe Edition PS5 Mídia Física', 'Hogwarts Legacy Deluxe Edition PS5 Mídia Física Lacrado', 'unknown', 'unknown', true],
+  ['Hogwarts Legacy Deluxe PS5 Mídia Digital', 'Hogwarts Legacy Deluxe Edition PS5 Código PSN', 'unknown', 'unknown', true], // digital x digital junta
+  ['Hogwarts Legacy Deluxe PS5 Mídia Digital', 'Hogwarts Legacy PS5 Mídia Digital', 'unknown', 'unknown', false], // edição continua separando dentro do digital
+  ['Mario Kart World Switch 2 Mídia Física', 'Mario Kart World Switch 2 (Digital)', 'unknown', 'unknown', false],
+];
+for (const [a, b, fa, fb, same] of FPAIRS) {
+  const got = isSameProduct(normalizeTitle(a, { productType: 'game', gameFormat: fa }), normalizeTitle(b, { productType: 'game', gameFormat: fb }));
+  check(got === same, `formato: esperado=${same ? 'MESMO' : 'SEPARA'} obtido=${got ? 'MESMO' : 'SEPARA'}`, `${a} [${fa}]  x  ${b} [${fb}]`);
+}
+
+// F2b. hasDigitalMarker: qualquer marcador digital (mesmo misto com sinal físico) impede ASSUMIR físico; bônus digital não conta
+for (const [t, want] of [
+  ['Mario Kart World Nintendo Switch 2', false],
+  ['Until Dawn PS5', false],
+  ['EA Sports FC 25 PS5 Standard Edition', false],
+  ['Pokémon Violet Nintendo Switch', false],
+  ['Mario Kart 8 Deluxe Switch (Digital)', true],
+  ['Zelda TOTK Switch 2 Código', true],
+  ['Minecraft Switch Key', true],
+  ['God of War PS5 Mídia Física + Código Digital', true], // misto: não se assume nada
+  ['Hogwarts Legacy PS5 Mídia Física + Bônus Digital', false],
+  ['Gran Turismo 7 PS5 PSN', true],
+  ['Jogo Ps4 Polyphony Digital Gran Turismo Sport', false],
+] as Array<[string, boolean]>) check(hasDigitalMarker(t) === want, `hasDigitalMarker esperado=${want}`, t);
+
+// F3. Console e acessório NÃO são afetados pelo formato (PS5 Digital continua sendo modelo de console, não formato)
+for (const [t, type] of [['Console PlayStation 5 Slim Digital 1TB', 'console'], ['Console PlayStation 5 Slim 1TB com Leitor de Disco', 'console'], ['Controle DualSense PS5 Branco', 'accessory']] as const) {
+  check(normalizeTitle(t, { productType: type }).format === 'na', `console/acessório sem eixo formato: "${t}"`);
+}
+check(
+  isSameProduct(
+    normalizeTitle('Console PlayStation 5 Slim 825GB', { productType: 'console', gameFormat: 'digital' }),
+    normalizeTitle('Console PlayStation 5 Slim 1TB', { productType: 'console', gameFormat: 'physical' })
+  ),
+  'console: game_format gravado é ignorado'
+);
+
+// F3b. Console cadastrado como 'game' (tipo errado, real: "Console Playstation 5 Slim Digital - Pacote Astro Bot..."): sem eixo formato
+check(normalizeTitle('Console Playstation®5 Slim Digital - Pacote Astro Bot E Gran Turismo 7 - Branco', { productType: 'game', gameFormat: 'unknown' }).format === 'na', 'console tipado game: formato nao se aplica');
+check(
+  evaluateOfferIdentity('Console Playstation®5 Slim Digital - Pacote Astro Bot E Gran Turismo 7 - Branco', { name: 'Console Playstation®5 Slim Digital - Pacote Astro Bot E Gran Turismo 7 - Branco', productType: 'game', gameFormat: 'unknown' }).reason !== 'formato_desconhecido',
+  'console tipado game nao vai para revisao de formato'
+);
+
+// F4. Oferta x master: [titulo da oferta, nome do master, formato gravado do master, esperado]
+const FOFFERS: Array<[string, string, string, OfferIdentityReason]> = [
+  ['Jogo God of War Ragnarok PS5 Digital Código PSN', 'God of War Ragnarok PS5 Mídia Física', 'physical', 'divergencia'], // oferta digital no master físico
+  ['God of War Ragnarok PS5 Mídia Física Lacrado', 'God of War Ragnarok PS5 (Digital)', 'digital', 'divergencia'], // oferta física no master digital
+  ['God of War Ragnarok PS5 Lacrado Novo', 'God of War Ragnarok PS5', 'physical', 'ok'], // título da oferta prova físico, master gravado físico
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5', 'physical', 'ok'], // oferta silenciosa herda o master
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5', 'digital', 'ok'], // idem no master digital
+  ['God of War Ragnarok PS5', 'God of War Ragnarok PS5 Standard', 'unknown', 'formato_desconhecido'], // master sem formato: oferta em revisão
+  ['God of War Ragnarok PS5 Mídia Física', 'God of War Ragnarok PS5 Standard', 'unknown', 'formato_desconhecido'], // até a oferta que prova: o master não tem prova
+  ['Console PlayStation 5 Slim Digital 1TB', 'Console PlayStation 5 Slim Digital 825GB', 'unknown', 'ok'], // console: formato não se aplica
+  // Master com físico ASSUMIDO (game_format='physical' + attributes.formatEvidence='assumed_no_digital_marker', QA rodada 8):
+  // para o motor é físico; oferta com marcador digital continua FORA (não abre a porta para digital)
+  ['Mario Kart World Nintendo Switch 2', 'Mario Kart World Nintendo Switch 2', 'physical', 'ok'],
+  ['Mario Kart World Nintendo Switch 2 Digital', 'Mario Kart World Nintendo Switch 2', 'physical', 'divergencia'],
+  ['Mario Kart World Switch 2 Código de Resgate', 'Mario Kart World Nintendo Switch 2', 'physical', 'divergencia'],
+  ['Mario Kart World Switch 2 eShop Download', 'Mario Kart World Nintendo Switch 2', 'physical', 'divergencia'],
+  ['Until Dawn PS5 Key PSN', 'Until Dawn PS5', 'physical', 'divergencia'],
+  ['Until Dawn PS5 Lacrado', 'Until Dawn PS5', 'physical', 'ok'],
+];
+for (const [offer, master, fmt, want] of FOFFERS) {
+  const r = evaluateOfferIdentity(offer, { name: master, productType: offer.startsWith('Console') ? 'console' : 'game', gameFormat: fmt });
+  check(r.reason === want, `oferta/formato esperado=${want} obtido=${r.reason}`, `"${offer}" no master "${master}" [${fmt}] ${r.summary}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -321,5 +450,5 @@ check(absurdReason(990, 11750) === 'razao_abaixo_de_0.35', 'quarentena: 0,08x a 
 check(absurdReason(30000, 22900) === null, 'quarentena: 1,3x a mediana nao entra');
 check(absurdReason(8100, 22900) === null, 'quarentena: preco baixo plausivel (0,354x) nao entra');
 check(absurdReason(5000, null) === null, 'quarentena: sem mediana nao julga');
-console.log(`${total} verificacoes (${PAIRS.length} pares de identidade, ${NUM.length} numerais, ${FLAGS.length} condicoes, ${OFFERS.length} ofertas); falhas: ${fail}`);
+console.log(`${total} verificacoes (${PAIRS.length} pares de identidade, ${FMT.length + FPAIRS.length + FOFFERS.length} de formato, ${NUM.length} numerais, ${FLAGS.length} condicoes, ${OFFERS.length} ofertas); falhas: ${fail}`);
 process.exit(fail ? 1 : 0);

@@ -3,6 +3,8 @@ import { masterProducts } from '@/db/schema';
 import {
   derivePlatformFromTitle,
   fixPlatformTypos,
+  resolveGameFormat,
+  type TitleGameFormat,
   generationsMentioned,
   legacyPlatformsMentioned,
   mentionsMultipleGenerations,
@@ -30,7 +32,7 @@ export { mentionsMultipleGenerations };
 //   região/importado (USA, EUR, Japão, Ásia) e idioma estrangeiro,
 //   condição (usado/seminovo, Open Box), cross-gen (uma geração por produto),
 //   conteúdo (remake, remaster, HD, collection, trilogia, director's cut),
-//   hardware: capacidade (825GB x 1TB), modelo (Slim/Pro/OLED/Lite/Digital/Edge/Elite)
+//   hardware: capacidade (825GB x 1TB; exceto console PS5), modelo (Slim/Pro/OLED/Lite/Digital/Edge/Elite)
 //   e variante (Series S x X, One S x X), numeral (4 = IV, 2024 = 24).
 // NÃO separam: cor comum (junta), ruído comercial (lacrado, frete, garantia...).
 
@@ -49,7 +51,7 @@ const NOISE_WORDS = new Set([
   'br', 'ptbr', 'pt', 'brasil', 'brasileira', 'brasileiro', 'nacional', 'nsc',
   'brinde', 'promocao', 'promo', 'oferta', 'imperdivel', 'lancamento', 'pronta', 'pronto',
   'entrega', 'envio', 'imediato', 'imediata', 'rapido', 'rapida', 'frete', 'gratis', 'garantia',
-  'oficial', 'formato', 'cartucho', 'disco', 'cd', 'versao', 'nfe', 'nota', 'fiscal', 'full', 'juros',
+  'oficial', 'formato', 'cartucho', 'disco', 'cd', 'physical', 'versao', 'nfe', 'nota', 'fiscal', 'full', 'juros',
   'de', 'do', 'da', 'dos', 'das', 'para', 'com', 'the', 'of', 'and', 'em', 'no', 'na', 'um', 'uma',
   'nintendo', 'playstation', 'xbox', 'sony', 'microsoft',
 ]);
@@ -86,6 +88,9 @@ const EDITION_IGNORE = new Set([
   'brasil', 'com', 'para', 'the', 'and', 'por', 'uma', 'dos', 'das', 'sem', 'nova', 'novo', 'lacrada', 'lacrado', 'regular',
 ]);
 
+/** Palavras de código/loja que, num jogo DIGITAL, são só o formato (não o nome nem composição). */
+const DIGITAL_FORMAT_TOKENS = new Set(['codigo', 'key', 'chave', 'psn', 'eshop', 'download', 'baixar', 'licenca']);
+
 /** Marcadores só para jogo ("HD" em hardware é descrição de tela/disco, não edição). */
 const GAME_ONLY_MARKERS = new Set(['hd']);
 /** Modelos de hardware (console/acessório): DualSense Edge, Xbox Elite, PS5 Slim/Pro, PS4 Fat... */
@@ -111,6 +116,7 @@ const PHRASE_RULES: Array<[RegExp, string]> = [
   [/\bjogo do ano\b/g, ' goty '],
   [/\bcaixa vazia\b/g, ' caixavazia '],
   [/\bsteel ?book\b/g, ' steelbook '],
+  [/\bblu[\s-]?ray\b/g, ' '],
   [/\bcollector'?s?\b/g, ' collector '],
   [/\bcolecionadores?\b/g, ' collector '],
   [/\bcolecionador\b/g, ' collector '],
@@ -281,11 +287,22 @@ export interface NormalizedTitle {
   capacityGb: number | null;
   /** Variante de console (series_s, series_x, series_sx, one_s, one_x); null se não citada. */
   variant: string | null;
+  /**
+   * Formato do JOGO (mídia física x digital): provado pelo título; sem prova, o atributo estruturado informado em
+   * `NormalizeOptions.gameFormat`; sem nenhum, 'unknown'. 'na' = console/acessório (sem formato). Eixo de identidade:
+   * físico, digital e desconhecido NUNCA compartilham produto (decisão do dono, 2026-11-03).
+   */
+  format: TitleGameFormat | 'na';
 }
 
 export interface NormalizeOptions {
   /** Tipo do cadastro (master/oferta): evita inferir pelo título. */
   productType?: string | null;
+  /**
+   * Formato estruturado gravado (`master_products.game_format`, FORMAT do Mercado Livre), usado quando o TÍTULO não
+   * prova o formato. Para uma oferta, passe o formato do master a que ela foi ligada (o catálogo do ML é um por formato).
+   */
+  gameFormat?: string | null;
 }
 
 /**
@@ -300,6 +317,12 @@ export function normalizeTitle(title: string, options: NormalizeOptions = {}): N
       ? options.productType
       : titleHardwareKind(title);
   const hardware = kind !== 'game';
+  // Formato do JOGO: lido do título CRU antes de qualquer remoção ("Mídia Física", "Digital", "código", "PSN"...).
+  // Master tipado 'game' mas cujo TÍTULO é console/acessório ("Console PS5 Slim Digital ..."): tipo errado no cadastro;
+  // formato não se aplica (console não é afetado). Só consulta o título quando o tipo gravado é 'game'.
+  const hardwareTitleInGame = !hardware && titleHardwareKind(title) !== 'game';
+  const format: TitleGameFormat | 'na' = hardware || hardwareTitleInGame ? 'na' : resolveGameFormat(title, options.gameFormat);
+  const digitalGame = format === 'digital';
 
   // "USA"/"EUR" em MAIÚSCULAS é a região; "usa" minúsculo é o verbo ("usa pilhas"). Lido antes do lowercase.
   const caseAware = title.replace(/\bUSA\b/g, ' regiaousa ').replace(/\bEUR\b/g, ' regiaoeur ');
@@ -332,7 +355,10 @@ export function normalizeTitle(title: string, options: NormalizeOptions = {}): N
   }
 
   // Eixos de hardware lidos ANTES de a plataforma ser removida do texto.
-  const capacityGb = hardware ? parseCapacityGb(text) : null;
+  // Decisão do dono (2026-11-03): no CONSOLE PS5 a capacidade (825GB, 1TB...) NÃO separa produto.
+  // Xbox, Switch, PS4 e acessórios (SSD/cartão) mantêm a capacidade como eixo.
+  const capacityIgnored = kind === 'console' && platform === 'ps5';
+  const capacityGb = hardware && !capacityIgnored ? parseCapacityGb(text) : null;
   const variant = kind === 'console' ? parseConsoleVariant(text) : null;
 
   for (const pattern of PLATFORM_STRIP) text = text.replace(pattern, ' ');
@@ -356,6 +382,8 @@ export function normalizeTitle(title: string, options: NormalizeOptions = {}): N
     // letras soltas são sobra de pontuação ("Link's" -> "link s").
     if (token.length < 2 && !/^[0-9vx]$/.test(token)) continue;
     if (NOISE_WORDS.has(token)) continue;
+    // Jogo: "digital" é o eixo formato (não marcador nem parte do nome); em jogo digital, as palavras de loja/código também.
+    if (!hardware && (token === 'digital' || token === 'digitais' || (digitalGame && DIGITAL_FORMAT_TOKENS.has(token)))) continue;
     if (hardware && COLOR_WORDS.has(token)) continue;
     // "console" é só o substantivo quando o item já é console; "premium" em acessório é adjetivo de anúncio.
     if ((kind === 'console' && token === 'console') || (hardware && token === 'premium')) continue;
@@ -390,6 +418,7 @@ export function normalizeTitle(title: string, options: NormalizeOptions = {}): N
     legacy: legacyPlatformsMentioned(title),
     capacityGb,
     variant,
+    format,
   };
 }
 
@@ -508,6 +537,11 @@ export function compareIdentity(a: NormalizedTitle, b: NormalizedTitle): Identit
   if (a.platform !== 'unknown' && b.platform !== 'unknown' && a.platform !== b.platform) {
     out.push({ axis: 'plataforma', detail: `${a.platform} x ${b.platform}`, hard: true });
   }
+  // FORMATO (decisão do dono, 2026-11-03): jogo em mídia física, digital e de formato não provado são produtos
+  // diferentes, cada um com master e média próprios. 'unknown' não se mistura com nenhum dos dois.
+  if (a.kind === 'game' && b.kind === 'game' && a.format !== b.format) {
+    out.push({ axis: 'formato', detail: `${a.format} x ${b.format}`, hard: true });
+  }
   // Cross-gen só importa para JOGO (o disco é de uma geração). Acessório/console cita PS4 e PS5 por compatibilidade.
   if (a.kind === 'game' && b.kind === 'game' && a.gens.length > 0 && b.gens.length > 0 && !sameList(a.gens, b.gens)) {
     out.push({ axis: 'geracao_cruzada', detail: `[${a.gens.join(',')}] x [${b.gens.join(',')}]`, hard: true });
@@ -602,9 +636,10 @@ export function isSameProduct(a: NormalizedTitle, b: NormalizedTitle, threshold 
 export async function findExistingMasterProduct(
   name: string,
   platformGen: string,
-  options: { productType?: 'game' | 'console' | 'accessory' } = {}
+  options: { productType?: 'game' | 'console' | 'accessory'; gameFormat?: string | null } = {}
 ): Promise<any | null> {
-  const normInput = normalizeTitle(name, { productType: options.productType });
+  // `gameFormat` = formato estruturado do marketplace (FORMAT do ML); o título, quando prova, vence.
+  const normInput = normalizeTitle(name, { productType: options.productType, gameFormat: options.gameFormat });
   if (!normInput.coreTitle) return null;
 
   const platform =
@@ -626,6 +661,7 @@ export async function findExistingMasterProduct(
       name: masterProducts.name,
       gamePlatformGen: masterProducts.gamePlatformGen,
       productType: masterProducts.productType,
+      gameFormat: masterProducts.gameFormat,
     })
     .from(masterProducts)
     .where(and(...conditions));
@@ -633,7 +669,7 @@ export async function findExistingMasterProduct(
   const crossGenInput = mentionsMultipleGenerations(name);
 
   for (const candidate of candidates) {
-    const normCand = normalizeTitle(candidate.name, { productType: candidate.productType });
+    const normCand = normalizeTitle(candidate.name, { productType: candidate.productType, gameFormat: candidate.gameFormat });
 
     if (candidate.gamePlatformGen === 'unknown') {
       // Candidato sem plataforma estruturada: só vale se o título dele
@@ -642,6 +678,7 @@ export async function findExistingMasterProduct(
         if (normCand.platform !== 'unknown') continue;
         if (
           normCand.coreTitle === normInput.coreTitle &&
+          normCand.format === normInput.format &&
           sameList(normCand.markers, normInput.markers)
         ) {
           return candidate;
@@ -754,7 +791,7 @@ export function analyzeDuplicates(allRows: MasterRow[]): DupAnalysis {
   const unknownPlatform = { total: 0, games: 0, derivableFromTitle: 0, gamesDerivable: 0 };
 
   for (const r of rows) {
-    const n = normalizeTitle(r.name, { productType: r.productType });
+    const n = normalizeTitle(r.name, { productType: r.productType, gameFormat: r.gameFormat });
     norm.set(r.id, n);
     const db = r.gamePlatformGen;
     let eff = db;
@@ -774,8 +811,8 @@ export function analyzeDuplicates(allRows: MasterRow[]): DupAnalysis {
     effPlatform.set(r.id, eff);
   }
 
-  const formatClass = (r: MasterRow, n: NormalizedTitle) =>
-    r.gameFormat === 'digital' || n.markers.includes('digital') ? 'digital' : 'phys';
+  // Formato efetivo (título, senão game_format): físico, digital e desconhecido nunca se fundem.
+  const formatClass = (_r: MasterRow, n: NormalizedTitle): string => n.format;
 
   // --- Fusão automática: chave exata -----------------------------------
   const exact = new Map<string, MasterRow[]>();

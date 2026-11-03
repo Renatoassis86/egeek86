@@ -38,3 +38,19 @@ Com a coluna, `offerIdentityVisibleSql` passa a ler `identity_state` (sem regex)
 - Ruído do motor corrigido: "formato" entra no ruído comercial ("em formato físico"); typo "thewild" vira "the wild".
 - Fusão do Zelda BOTW legado: 4 masters (3ff650a6, a66ab30f, 82ccba58, c6d29ace) arquivados em `7929b6eb`; 23 ofertas reapontadas com cotações. Nenhum DELETE.
 - Logs: `backup/dados/merge-log-2026-11-03T15-43-44-556Z.json`. Reverter: `npx tsx --conditions=react-server --env-file=.env.local scripts/revert-merge-masters.ts <log>`.
+
+## Emenda de 2026-11-03: formato do jogo (mídia física x digital) é eixo de identidade (decisão do dono)
+- Jogo digital e jogo físico (mesmo título, plataforma e edição) são produtos diferentes: master e média próprios. Console e acessório não têm formato.
+- `NormalizedTitle.format` (`physical | digital | unknown | na`) vem de `deriveGameFormat` (prova no título) e, sem prova, do `game_format` gravado (`NormalizeOptions.gameFormat`). `compareIdentity` ganha a divergência dura `formato`; `isSameProduct`, `findExistingMasterProduct` (opção `gameFormat`), `analyzeDuplicates` (classe de formato = a efetiva, não só o marcador "digital") e `evaluateOfferIdentity` (razão nova `formato_desconhecido`) herdam. O marcador "digital" deixa de existir para jogo (continua em console: modelo).
+- Formato desconhecido não se mistura com nenhum: master de jogo sem formato provado fica fora das médias. Espelho SQL: `offerExcludedTitleSql(..., masterFormatCol)` exclui (a) oferta de master `game_format = unknown`, (b) título que prova digital em master físico, (c) título que prova físico em master digital. Sem migration: usa a coluna `game_format` que já existia.
+- Coleta e cadastro (ML, Magalu, Shopee, admin) gravam `game_format = resolveGameFormat(título, atributo)` e passam o formato à checagem de duplicata.
+- Porteiro (ADR 0005) reconciliado: o digital já era rejeitado do escopo público (decisão D1, 2026-10-31); isso NÃO muda. `classifyCatalogItem` passa a usar a mesma prova de formato (eShop, download, key, licença além de "(Digital)", código e PSN). O master digital é criado separado e nasce com `catalogGate` rejeitado (invisível), de modo que o digital nunca contamina o físico mesmo fora da vitrine.
+- Dados: `scripts/separar-formato-digital-fisico.ts` (dry-run, `--apply`, backup <= 12 h, log) e `scripts/enriquecer-formato-ml.ts` (atributo FORMAT da API oficial); reversão `scripts/revert-separar-formato.ts <log> [--dry-run]`.
+- Testes: `scripts/test-identity.ts` (seção F), `scripts/test-dimensions.ts`, `scripts/test-gate.ts`.
+
+## Emenda de 2026-11-03: capacidade não separa o console PS5 (decisão do dono)
+- Para o console PS5, 825GB, 1TB (e demais capacidades) são o MESMO produto. Continuam separando: modelo (Slim/Standard/Pro), Digital x com disco, bundle, região e edição limitada.
+- Xbox, Switch, PS4 e acessórios (SSD, cartão) mantêm a capacidade como eixo de identidade.
+- Código: `normalizeTitle` em `src/lib/affiliate/dedup.ts` zera `capacityGb` quando `kind === 'console'` e `platform === 'ps5'`; `compareIdentity`, `isSameProduct`, a chave de `analyzeDuplicates` e `offer-identity.ts` herdam isso. `offer-identity-sql.ts` não tinha eixo de capacidade (nada a mudar). `cleanTitle` do console PS5 deixa de conter a capacidade.
+- Testes: `scripts/test-identity.ts` (PS5 825GB = 1TB; Slim x Pro; Digital x disco; PS4 500GB x 1TB; SSD 1TB x 2TB continuam separados).
+- Dados: ver ata e log de fusão dos masters de console PS5 (reversível por `scripts/revert-merge-masters.ts`).

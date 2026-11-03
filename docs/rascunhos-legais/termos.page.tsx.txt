@@ -1,0 +1,190 @@
+import type { Metadata } from 'next';
+import { FileText, ShieldAlert } from 'lucide-react';
+import { Text } from '@/components/ui/text';
+import { Reveal } from '@/components/motion/reveal';
+import { Glow } from '@/components/motion/glow';
+import { Card, CardContent } from '@/components/ui/card';
+
+export const metadata: Metadata = {
+  title: 'Termos de Uso',
+  description: 'Regras de funcionamento, direitos e obrigações para usuários e colecionadores do Espaço Geek 86.',
+};
+
+// Minuta técnica em revisão jurídica. Trechos [PREENCHER: ...] dependem de informação do responsável.
+// Lista completa em docs/revisao-legal-lgpd-comissao-2026-11-03.md.
+
+export default function TermosPage() {
+  return (
+    <section className="relative w-full mx-auto max-w-4xl px-4 lg:px-8 py-14 lg:py-20 overflow-hidden">
+      {/* Background Glows */}
+      <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.10} />
+      <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.06} />
+
+      {/* Header */}
+      <div className="flex flex-col gap-3 mb-10 relative z-10">
+        <Reveal>
+          <Text variant="label" color="hype" className="inline-flex items-center gap-1.5">
+            <FileText className="size-3.5" aria-hidden />
+            Institucional
+          </Text>
+        </Reveal>
+        <Reveal delay={0.05}>
+          <Text as="h1" variant="display-xl" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+            Termos de Uso
+          </Text>
+        </Reveal>
+        <Reveal delay={0.1}>
+          <Text variant="body-sm" color="secondary" className="max-w-[62ch]">
+            Última atualização: 3 de novembro de 2026. Estas são as regras para usar a comparação de preços, a conta, os
+            drops e os leilões comunitários do Espaço Geek 86.
+          </Text>
+        </Reveal>
+      </div>
+
+      <div className="flex flex-col gap-8 relative z-10">
+        {/* Intro Card */}
+        <Reveal delay={0.12}>
+          <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/15">
+            <CardContent className="p-6 text-xs text-[var(--color-text-secondary)] leading-relaxed flex items-start gap-3">
+              <ShieldAlert className="size-5 shrink-0 text-[var(--color-accent-primary)] mt-0.5" />
+              <span>
+                <strong>Antes de continuar:</strong> ao criar uma conta ou usar as áreas de leilão e drops, você declara que leu e
+                aceita estes termos e a <a href="/privacidade" className="underline underline-offset-2">Política de Privacidade</a>.
+                Se não concordar, não use essas áreas. Consultar preços e pesquisar não exige conta.
+              </span>
+            </CardContent>
+          </Card>
+        </Reveal>
+
+        {/* Section 1 */}
+        <Reveal delay={0.15}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              1. Visão Geral e Propósito do Serviço
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              O Espaço Geek 86 é uma plataforma do universo geek e dos games. Reunimos:
+            </Text>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+              <li><strong>Geek Deals:</strong> histórico e comparação de preços e ofertas, obtidos por canais oficiais das lojas parceiras.</li>
+              <li><strong>Hype Zone &amp; Leilões (entre colecionadores):</strong> drops, lançamentos e leilões de itens raros, com auditoria feita pela comunidade e pela equipe.</li>
+            </ul>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed mt-1">
+              No Geek Deals não vendemos produtos nem recebemos pagamento de compra: somos uma vitrine de informação. Não controlamos o estoque, o preço final nem a entrega das lojas parceiras. Responsável pelo serviço: [PREENCHER: razão social ou nome, CNPJ ou CPF e endereço].
+            </Text>
+          </div>
+        </Reveal>
+
+        {/* Section 2 */}
+        <Reveal delay={0.18}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              2. Cadastro e Qualificação de Contas
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              O cadastro exige dados verdadeiros e é pessoal e intransferível. O serviço é destinado a maiores de 18 anos; leilões e vendas exigem capacidade para contratar. Para atuar como <strong>Colecionador Vendedor</strong> e criar lotes ou drops na Hype Zone, o usuário deve:
+            </Text>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+              <li>Passar pelo credenciamento de vendedor e ter o cadastro aprovado pela equipe. A aprovação pode exigir documento (CPF ou CNPJ) e a foto da coleção, tratados conforme a Política de Privacidade.</li>
+              <li>Anunciar apenas itens originais e correspondentes às descrições e mídias enviadas.</li>
+              <li>Aceitar a auditoria das suas postagens antes e durante o período ativo dos lotes.</li>
+            </ul>
+          </div>
+        </Reveal>
+
+        {/* Section 3 */}
+        <Reveal delay={0.21}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              3. Sistema de Lances e Martelo Hype
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              A Hype Zone usa a regra de <strong>Soft Close (fechamento suave)</strong>: lance dado nos últimos 2 minutos de um leilão prorroga o cronômetro por mais 2 minutos. Isso protege os participantes contra robôs de última hora e instabilidade de rede. O nome do seu cadastro aparece nos lances que você der.
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              O lance vencedor é uma proposta de compra firme. Se o lote arrematado não for pago no prazo combinado, a conta pode sofrer:
+            </Text>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+              <li>Redução de 500 pontos Geek Coins no perfil.</li>
+              <li>Registro de inadimplência e possível suspensão da conta de colecionador, após análise da equipe.</li>
+            </ul>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              Pagamento e entrega do lote acontecem entre comprador e vendedor. [PREENCHER: prazo de pagamento, forma de pagamento e regra de arrependimento ou cancelamento aplicável aos leilões, conforme o advogado].
+            </Text>
+          </div>
+        </Reveal>
+
+        {/* Section 4 */}
+        <Reveal delay={0.24}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              4. Propriedade Intelectual e Confiabilidade dos Dados
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              Os textos, as imagens do site, os algoritmos de preço médio, os históricos e os gráficos são do Espaço Geek 86. Marcas, nomes e imagens dos produtos pertencem aos seus titulares. É proibida a extração automatizada de dados (scraping) do site sem autorização prévia por escrito.
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              Os preços da vitrine Geek Deals são atualizados em intervalos regulares e podem mudar antes de você chegar à loja. Se houver diferença, vale o preço mostrado no carrinho da loja parceira no momento da compra. Avise-nos se encontrar divergência.
+            </Text>
+          </div>
+        </Reveal>
+
+        {/* Section 5 */}
+        <Reveal delay={0.27}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              5. Responsabilidade sobre Itens Negociados
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              O Espaço Geek 86 oferece a infraestrutura e a informação que aproximam compradores, lojas parceiras e colecionadores vendedores.
+            </Text>
+            <div className="p-4 border border-amber-500/30 bg-[var(--color-bg-inset)]/40 flex flex-col gap-2 my-1">
+              <Text variant="body-sm" className="font-bold text-amber-400">
+                Limite da nossa responsabilidade
+              </Text>
+              <Text variant="caption" color="secondary" className="leading-relaxed">
+                Na medida permitida pela lei, não respondemos por defeitos, vícios, avarias de transporte, atrasos de entrega, falsificação ou divergência de estado de conservação de itens vendidos por lojas parceiras ou por colecionadores. Isso não afasta direitos que a lei garante ao consumidor.
+              </Text>
+            </div>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+              <li><strong>Responsabilidade do vendedor:</strong> a veracidade das informações, a qualidade, a autenticidade, o envio e a garantia dos itens anunciados ou leiloados são do vendedor ou colecionador que fez o anúncio.</li>
+              <li><strong>Problemas com a compra:</strong> trocas, devoluções e reclamações sobre produtos comprados em loja parceira seguem as regras da loja de destino (Amazon, Shopee, Mercado Livre, Magalu e outras). Para itens de colecionador, o contato é direto com o vendedor, e a equipe pode ajudar na mediação.</li>
+            </ul>
+          </div>
+        </Reveal>
+
+        {/* Section 6 */}
+        <Reveal delay={0.30}>
+          <div id="divulgacao" className="flex flex-col gap-3 scroll-mt-24">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              6. Divulgação: como o site é remunerado
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              Podemos receber uma comissão pelas compras feitas pelos nossos links, sem custo extra para você. O valor que você paga na loja é o mesmo, com ou sem o nosso link.
+            </Text>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+              <li>Os botões &quot;Ir à loja&quot; e &quot;Ver oferta&quot; levam a lojas parceiras por links que podem gerar essa comissão. Esses links são identificados como patrocinados para os buscadores.</li>
+              <li>A comissão não define a ordem nem o destaque do preço: a comparação mostra o menor preço ativo encontrado, venha de loja com ou sem comissão. [PREENCHER: confirmar com o responsável que isso vale para todas as listagens].</li>
+              <li>Há conteúdo editorial e curadoria; quando houver parceria paga ou patrocínio, ele será identificado como tal.</li>
+            </ul>
+          </div>
+        </Reveal>
+
+        {/* Section 7 */}
+        <Reveal delay={0.33}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              7. Foro e Contato
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              Aplica-se a lei brasileira. Fica eleito o foro da comarca de João Pessoa/PB, ressalvado o direito do consumidor de propor ação no foro do seu domicílio.
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              Dúvidas sobre estes termos: contato@egeek86.com. Assuntos de dados pessoais seguem o canal da <a href="/privacidade" className="underline underline-offset-2">Política de Privacidade</a>.
+            </Text>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}

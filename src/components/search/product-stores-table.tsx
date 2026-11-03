@@ -1,4 +1,5 @@
 import { formatBRL } from '@/lib/format';
+import { CommissionNotice } from '@/components/legal/commission-notice';
 import type { ProductStoreRow } from '@/server/queries/product-stores';
 
 /** "há 3 h", "há 2 dias" a partir de um ISO; vazio se inválido. */
@@ -84,6 +85,7 @@ export function ProductStoresTable({
           </tbody>
         </table>
       </div>
+      <CommissionNotice className="px-4 pb-4" />
     </section>
   );
 }

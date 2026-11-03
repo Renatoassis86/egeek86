@@ -2,7 +2,7 @@
 // servidor, scripts tsx e testes.
 import type { ProductType } from '@/db/schema';
 import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
-import { fixPlatformTypos } from '@/lib/affiliate/game-classification';
+import { deriveGameFormat, fixPlatformTypos } from '@/lib/affiliate/game-classification';
 
 /**
  * DIMENSÕES DO CATÁLOGO PÚBLICO (decisão do dono, 2026-10-31).
@@ -529,6 +529,8 @@ export function classifyCatalogItem(name: string, dbType: ProductType, gameForma
   if (out.dimension === 'game') {
     if (DLC_RE.test(t) && !physical) return { ...hide('off_catalog', 'dlc_isolado', DLC_RE.exec(t)![0]), bundle };
     if (DIGITAL_RE.test(t) && !physical) return { ...hide('off_catalog', 'digital_codigo', DIGITAL_RE.exec(t)![0]), bundle };
+    // Mesma prova usada na identidade (eShop, download, key, licença...): digital provado pelo título fica fora da cartela pública.
+    if (!physical && deriveGameFormat(name) === 'digital') return { ...hide('off_catalog', 'digital_titulo', 'formato digital'), bundle };
   }
   // Console modificado/desbloqueado ou com loja de jogos baixados não é o aparelho de varejo
   if (out.dimension === 'console') {

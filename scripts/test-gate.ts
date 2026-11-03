@@ -58,6 +58,16 @@ const cases: C[] = [
   { name: 'Jogo Xbox 360 Grand Theft Auto IV Físico', db: 'game', expect: 'approved', fmt: 'physical', median: 4500 },
   { name: 'Pirates of the Caribbean PS3 Jogo Físico', db: 'game', expect: 'approved' },
   { name: 'Lego Piratas do Caribe Xbox 360 Jogo Aventura CD', db: 'game', expect: 'approved' },
+  // --- FORMATO fisico x digital (decisao do dono, 2026-11-03): digital tem master proprio, mas segue FORA do escopo publico (D1, ADR 0005)
+  { name: 'Hogwarts Legacy PS5 Midia Digital', db: 'game', expect: 'rejected', gen: 'ps5' },
+  { name: 'Gran Turismo 7 PS5 (Digital)', db: 'game', expect: 'rejected', gen: 'ps5' },
+  { name: 'God of War Ragnarok PS5', db: 'game', expect: 'rejected', gen: 'ps5', fmt: 'digital' },
+  { name: 'Minecraft Nintendo Switch Key Digital', db: 'game', expect: 'rejected' },
+  { name: 'Zelda Tears of the Kingdom Nintendo eShop Download', db: 'game', expect: 'rejected' },
+  { name: 'Hogwarts Legacy PS5 Midia Fisica', db: 'game', expect: 'approved', gen: 'ps5', fmt: 'physical' },
+  { name: 'Hogwarts Legacy PS5 Midia Fisica + Bonus Digital', db: 'game', expect: 'approved', gen: 'ps5', fmt: 'physical' },
+  { name: 'Console PlayStation 5 Slim Digital 1TB', db: 'console', expect: 'approved', dim: 'console' }, // console: Digital e modelo, nao formato
+
   { name: 'Steam Deck OLED 512GB Console Portátil', db: 'console', expect: 'approved' },
   { name: 'Console Sony PlayStation 5 Slim 1TB Mídia Física', db: 'console', expect: 'approved' },
   { name: 'Controle Sem Fio DualSense PS5 Branco Sony', db: 'accessory', expect: 'approved' },
@@ -173,5 +183,12 @@ for (const [t, review] of born) {
     console.log(`FALHA cadastro cross-gen: ${t} esperado revisao=${review}`);
   }
 }
-console.log(`${cases.length + entry.length + born.length} casos; falhas: ${fail}`);
+// master digital novo (criado pela separacao fisico x digital) nasce com veredito gravado: invisivel ate decisao do dono
+{
+  const a = entryGateAttributes('Hogwarts Legacy PS5 Midia Digital', 'game', { gameFormat: 'digital', gamePlatformGen: 'ps5' }) as { catalogGate?: { verdict?: string } };
+  if (a.catalogGate?.verdict !== 'rejected') { fail++; console.log('FALHA master digital novo deveria nascer rejected'); }
+  const b = entryGateAttributes('Hogwarts Legacy PS5 Midia Fisica', 'game', { gameFormat: 'physical', gamePlatformGen: 'ps5' }) as { catalogGate?: unknown };
+  if (b.catalogGate) { fail++; console.log('FALHA master fisico novo nao deveria ter veredito gravado'); }
+}
+console.log(`${cases.length + entry.length + born.length + 2} casos; falhas: ${fail}`);
 process.exit(fail ? 1 : 0);

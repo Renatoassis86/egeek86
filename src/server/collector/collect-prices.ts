@@ -264,17 +264,17 @@ async function applySnapshotsToGroup(
   group: OfferGroup,
   rawResults: PriceSnapshotResult[]
 ): Promise<{ updated: number; created: number; reviewed: IdentityReviewEntry[] }> {
-  let masterCache: { name: string; productType: string; defaultImages: string[] } | null = null;
+  let masterCache: { name: string; productType: string; gameFormat: string; defaultImages: string[] } | null = null;
   const loadMaster = async () => {
     if (masterCache) return masterCache;
     const [row] = await db
-      .select({ name: masterProducts.name, productType: masterProducts.productType, defaultImages: masterProducts.defaultImages })
+      .select({ name: masterProducts.name, productType: masterProducts.productType, gameFormat: masterProducts.gameFormat, defaultImages: masterProducts.defaultImages })
       .from(masterProducts)
       .where(eq(masterProducts.id, group.masterProductId))
       .limit(1);
     masterCache = row
-      ? { name: row.name, productType: row.productType, defaultImages: (row.defaultImages as unknown as string[]) ?? [] }
-      : { name: 'Produto', productType: 'game', defaultImages: [] };
+      ? { name: row.name, productType: row.productType, gameFormat: row.gameFormat, defaultImages: (row.defaultImages as unknown as string[]) ?? [] }
+      : { name: 'Produto', productType: 'game', gameFormat: 'unknown', defaultImages: [] };
     return masterCache;
   };
 
@@ -283,7 +283,7 @@ async function applySnapshotsToGroup(
   if (rawResults.some((r) => r.sellerTitle)) {
     const m = await loadMaster();
     for (const r of rawResults) {
-      if (r.sellerTitle) verdicts.set(r.externalItemId, evaluateOfferIdentity(r.sellerTitle, { name: m.name, productType: m.productType }));
+      if (r.sellerTitle) verdicts.set(r.externalItemId, evaluateOfferIdentity(r.sellerTitle, { name: m.name, productType: m.productType, gameFormat: m.gameFormat }));
     }
   }
   const isExcluded = (r: PriceSnapshotResult) => verdicts.get(r.externalItemId)?.excluded === true;

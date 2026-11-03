@@ -1,0 +1,4035 @@
+{
+ "termsSearched": 4,
+ "totalTerms": 123,
+ "cursorStart": 93,
+ "found": 800,
+ "alreadyExisted": 602,
+ "created": 0,
+ "skippedNoOffers": 100,
+ "skippedProbeCap": 68,
+ "dryRun": true,
+ "preview": [],
+ "errors": [],
+ "skipReasons": {
+  "ja_existe_master_por_catalog_id": 579,
+  "ja_existe_oferta_por_external_ref": 23,
+  "sem_vendedor_novo_ativo": 100,
+  "filtro_titulo_nao_produto_ou_porteiro": 30,
+  "teto_de_sondas_do_termo": 68
+ },
+ "skipSamples": [
+  {
+   "catalogId": "MLB36263352",
+   "title": "Jogo Xbox 360 Batman",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29471084",
+   "title": "2k Bioshock 2, Xbox 360, Esp - Jogo (xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39292084",
+   "title": "Jogo Xbox 360 Dirt Showdown Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44911945",
+   "title": "Jogo Xbox 360 Metro 2033 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44806487",
+   "title": "Jogo Xbox 360 Wwe 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29235637",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB41248989",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB74510105",
+   "title": "Jogo Xbox 360 Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41153198",
+   "title": "Jogo Xbox 360 Madden 15 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41107470",
+   "title": "Jogo Xbox 360 Pes 2008 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79232954",
+   "title": "Jogo Xbox 360 Dance Paradise Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22923015",
+   "title": "Jogo Xbox 360 Dead Island Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39417470",
+   "title": "Jogo Xbox 360 Nba 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45351789",
+   "title": "Jogo Xbox 360 Motionsports Adrenaline Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28052479",
+   "title": "Dance Central 2 - Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37102869",
+   "title": "Bethesda The Elder Scrolls V: Skyrim, Xbox 360 Xbox 360 - Jogo (xbox 360, Xbox 360, Rpg (jogo De Papel), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42451024",
+   "title": "Jogo Xbox 360 Spider-man 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47402844",
+   "title": "Jogo Xbox 360 Lego Batman The Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20610095",
+   "title": "Jogo Xbox 360 The Lego Movie Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42335521",
+   "title": "Jogo Xbox 360 Far Cry 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41425747",
+   "title": "Electronic Arts Dragon Age: Inquisition, Xbox 360 Básico Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Rpg (jogo De Rol), Modo Multijogador, M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37525183",
+   "title": "Jogo Xbox 360 Shrek Forever After Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB70238450",
+   "title": "Jogo Xbox 360 Hitman Hd Trilogy Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB65065494",
+   "title": "Jogo Xbox 360 Mass Effect 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21703102",
+   "title": "Jogo Xbox 360 Lego The Movie Sellado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21793813",
+   "title": "Jogo Xbox 360 Tekken Tag Tournament 2",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39111178",
+   "title": "Jogo Xbox 360 Madden Nfl 09 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43807885",
+   "title": "Jogo Xbox 360 Fallout New Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46341038",
+   "title": "Jogo Xbox 360 Perfect Dark Zero Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB48255329",
+   "title": "Jogo Xbox 360 Splinter Cell Conviction Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44189311",
+   "title": "Jogo Xbox 360 Motogp 09/10 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26750250",
+   "title": "Jogo Mídia Física James Cameron Avatar O Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41973683",
+   "title": "Jogo The Surge Jogo Xbox- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41644240",
+   "title": "Atari Soulcalibur V, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Luta, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB53052439",
+   "title": "Jogo Xbox 360 Need For Speed Shift Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49832992",
+   "title": "Jogo Xbox 360 Assassin's Creed 3 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24592318",
+   "title": "Jogo Xbox 360 Guitar Hero World Tour Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27770981",
+   "title": "Jogo Xbox 360 Prototype 2 Mídia Física - Activision",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50546025",
+   "title": "Jogo Xbox 360 Silent Hill Downpour Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37103030",
+   "title": "Ubisoft Tom Clancy's Rainbow Six Vegas (xbox 360) Video - Jogo (xbox 360, Ação)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22356287",
+   "title": "Jogo Xbox One Crackdown 3",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79052269",
+   "title": "Jogo Xbox 360 Assassins Creed Black Flag Steelbook Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45232076",
+   "title": "Jogo Xbox 360 Shaun White Snowboarding Ubisoft Físico Multijogador",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37088078",
+   "title": "Activision Call Of Duty 3, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39317061",
+   "title": "Jogo Xbox 360 Tdu Test Drive Unlimited 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40045862",
+   "title": "Jogo Xbox 360 Tom Clancys Rainbow Six Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38378310",
+   "title": "Jogo Xbox 360 Sniper Ghost Warrior Double Pack Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41362394",
+   "title": "Jogo Xbox 360 Dmc Devil May Cry E Capcom",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB34288315",
+   "title": "Jogo Xbox 360 Castlevania: Lords Os Shadow 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49211956",
+   "title": "Jogo Xbox 360 Assassin's Creed Revelations -leia A Descrição",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37190067",
+   "title": "Activision Guitar Hero Iii: Legends Of Rock - Xbox 360 - Jogo (xbox 360, Música, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37105519",
+   "title": "Sega Condemned 2: Bloodshot, Xbox 360 Vídeo - Jogo (xbox 360, Xbox 360, Fps (tiro em primeira pessoa), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20577502",
+   "title": "Jogo Xbox One Titanfall Fisico-lacrado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23763805",
+   "title": "Jogo Xbox One Forza Horizon 4",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47278096",
+   "title": "Jogo Xbox Virtua Tennis 4 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49600856",
+   "title": "Jogo Xbox One Battlefield 1- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB30469086",
+   "title": "Jogo Xbox 360 Lego Star Wars The Complete Saga Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52964342",
+   "title": "Jogo Xbox 360 Combo Banjo Kazooie E Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40898495",
+   "title": "Jogo Xbox 360 Pure Futbol Authentic Soccer Mídia Física Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39309010",
+   "title": "Jogo Xbox 360 Kane E Lynch 2 Dog Days Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39115048",
+   "title": "Jogo Xbox 360 Deadliest Warrior Ancient Combat Spike Games Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29414215",
+   "title": "Far Cry Ubisoft Jogo Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45353940",
+   "title": "Jogo Xbox One 2k19 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45412803",
+   "title": "Jogo Xbox 360 Tony Hawk´s Preject 8 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25875413",
+   "title": "Jogo Xbox 360 One Red Dead Redemption Undead Nightmare Físic",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24837455",
+   "title": "Zumba Fitness Core Jogo Xbox 360 Mídia Física Majesco 2012",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52875700",
+   "title": "Jogo Xbox 360 Grand Theft Auto Iv Gta Iv Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24830073",
+   "title": "Jogo Xbox One Xbox Series Battlefield 2042 Game Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38580172",
+   "title": "Jogo Xbox 360 Need for Speed Shift 2 Unleashed Edição Limitada",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47397718",
+   "title": "Jogo Xbox One Need For Speed Rivals",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37796452",
+   "title": "Jogo Xbox One L.a. Noire - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36413526",
+   "title": "Jogo Xbox One Borderlands The Handsome Collection",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40520457",
+   "title": "Sexta-feira 13: O Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013961",
+   "title": "Jogo Xbox Dead Or Alive 5 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41536319",
+   "title": "Square Enix Final Fantasy Xiii-2 - Jogo (Xbox 360, Ação/Aventura, Inglês)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24863101",
+   "title": "Jogo Xbox 360 EA Games Command And Conquer Red Alert 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37114368",
+   "title": "Square Enix Nascar The Game 2014 - Jogo (xbox 360, Corrida, E (para ))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB35853548",
+   "title": "Playerunknown's Battlegrounds Edição Preliminar Do Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41811297",
+   "title": "Jogo Xbox One Dragon Age Inquisition Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50868024",
+   "title": "Hellblade: Senua's Sacrifice | Jogo Xbox One - 25 Dígitos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39926899",
+   "title": "Jogo Xbox One Moto Racer 4 Kalypso Media",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39015347",
+   "title": "Jogo Xbox One Game Of Thrones Telltale Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB57376503",
+   "title": "Jogo Demon Slayer Domina o Jogo Xbox One SEGA Ação Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013798",
+   "title": "Jogo Xbox Series X Skull And Bones Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36910412",
+   "title": "Jogo Xbox One/series X Phoenix Point Behemoth Edition",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21010772",
+   "title": "Jogo Xbox One Hellblade Senua's Sacrifice Mídia Física 4k",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28807605",
+   "title": "Jogo Xbox One Farming Simulator 17 Platinum Edition Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22705882",
+   "title": "Jogo Xbox One Wolfenstein: The Two-pack 2 Jogos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26912517",
+   "title": "Jogo Xbox Series X Vampire The Masquerade Swansong Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19719502",
+   "title": "Jogo Xbox One Hotel Transylvania 3 Monsters Overboard Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22772543",
+   "title": "Jogo Xbox One Just Cause 4 Game Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23004129",
+   "title": "Jogo Rayman Origins - Xbox 360/xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40013390",
+   "title": "Jogo Xbox 360 Vila Sésamo Era Uma Vez Um Monstro Wb Games Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36808219",
+   "title": "Jogo Xbox One Terra-Média Sombras De Mordor Físico Ação",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25435100",
+   "title": "Jogo Xbox One The Dark Pictures Little Hope Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37121726",
+   "title": "Activision Call Of Duty Ghosts - Jogo - Xbox One Edição Padrão",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45874940",
+   "title": "Jogo Xbox One Rpg Tales Of Symphonia Remastered Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB66791005",
+   "title": "Sega Alien: Isolation, Xbox One - Jogo (Xbox One, Xbox One, Survival/Horror, M (adulto))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37158741",
+   "title": "2k Wwe 2k16, Xbox One Básico Xbox One Eng, Fre Video - Jogo (xbox One, Xbox One, Esportes, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43001425",
+   "title": "Jogo Lego Marvel - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39076947",
+   "title": "Jogo Blackwater Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45773751",
+   "title": "Jogo Nhl 15 Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20334265",
+   "title": "Jogo Nascar Unleashed - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38362066",
+   "title": "Jogo Battlefield 4 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22914540",
+   "title": "Jogo Xbox One WWE 2K22 Físico Standard Edition Multijogador Online/Offline",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25912298",
+   "title": "Dishonored Death Of The Outsider Jogo Xbox One Mídia Física Bethesda",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27735832",
+   "title": "Jogo Xbox One/series X Ea Sports Fc 24 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51205978",
+   "title": "South of Midnight: Premium Edition Jogo Xbox Series X|S (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24434991",
+   "title": "Jogo Xbox One E Series X Crash Team Rumble Deluxe Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44627243",
+   "title": "The Wolf Among Us Jogo Xbox One Mídia Física Telltale Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB23649125",
+   "title": "Shovel Knight Treasure Trove Jogo Xbox One Mídia Física Ação Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6084097",
+   "title": "Jogo Xbox 360nCall of Duty: Black Ops II Standard Edition (Físico)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42168594",
+   "title": "Jogo Assassin's Creed Rogue - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42176918",
+   "title": "Jogo Assassin's Creed: Revelations - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45024099",
+   "title": "Jogo Sonic Generations - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45774761",
+   "title": "Jogo Mafia 2 Xbox 360 Xbox One Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36687211",
+   "title": "Jogo Crackdown Xbox 360 Xbox One Xbox Series X Retrocompatível Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51210118",
+   "title": "WWE 2K25: The Bloodline Edition Jogo Xbox Series X|S One (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25210822",
+   "title": "Jogo Assassins Creed Iv Black Flag - Xbox One & Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19743225",
+   "title": "Saints Row Day One Edition - Jogo Xbox Series X E One Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19855828",
+   "title": "Jogo Hitman Absolution Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6159641",
+   "title": "Jogo Assassin's Creed para Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22580524",
+   "title": "Jogo Diablo 3 Cd Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46669664",
+   "title": "Jogo Kinectimals - Xbox 360 - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39172691",
+   "title": "Jogo Rise Of Nightmares Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38119892",
+   "title": "Jogo Lego Batman 2 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39062395",
+   "title": "Jogo Batman Arkham City Xbox 360 Edição Jogo Do Ano",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23112874",
+   "title": "Jogo Xbox One Mídia Física LEGO Star Wars The Skywalker Saga Wb Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22210972",
+   "title": "Jogo Doom 3 - Bfg Edition - Xbox One/xbox 360 - Míd Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29783035",
+   "title": "Jogo Kingdoms Of Amalur Reckoning Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45424520",
+   "title": "Jogo Batman The Telltale Series Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB23042682",
+   "title": "Jogo Assassin's Creed Brotherhood para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25971509",
+   "title": "Jogo Screamride Xbox 360 Midia Fisica original",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38120154",
+   "title": "Jogo Lego Senhor Dos Aneis - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39133246",
+   "title": "Jogo Magna Carta 2 Xbox 360 Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22495959",
+   "title": "Jogo Assassin's Creed Revelations para Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB38530896",
+   "title": "Skate 3 Xbox 360 Jogo Físico Rimo",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39112105",
+   "title": "Jogo Heroes Over Europe Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28482532",
+   "title": "Jogo Motogp 14 Xbox 360 Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47087167",
+   "title": "Jogo Halo 3 Xbox 360 Missões Épicas",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37898513",
+   "title": "Jogo Activision Blur Xbox 360 corrida arcade",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29045072",
+   "title": "Jogo Dragon Age Xbox 360 Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26846868",
+   "title": "Jogo Brink Game Xbox 360 Bethesda Microsoft",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37970869",
+   "title": "Jogo Tron Evolution Xbox 360 Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38095209",
+   "title": "Jogo Alien: Isolation Físico para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29528275",
+   "title": "Jogo Rock Of The Dead Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45881871",
+   "title": "Jogo Grid 2 Xbox 360 Mídia Física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37522035",
+   "title": "Tomb Raider Jogo do Ano - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB46056728",
+   "title": "Jogo Sonic Unleashed Para Xbox 360 E10",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB38581855",
+   "title": "Jogo Young Justice Legacy para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB26094231",
+   "title": "Jogo Dark Souls II para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39018833",
+   "title": "Jogo Kinect Sports Ultimate Collection Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB45657062",
+   "title": "Jogo Just Dance 3 Xbox 360 Fisico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39024131",
+   "title": "Jogo Kameo Xbox 360 Classics Completo Pal",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39113953",
+   "title": "Jogo Driver San Francisco Game Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB50622718",
+   "title": "Dragon Age Inquisition Xbox 360 Jogo 2014",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB40023564",
+   "title": "Jogo Seminovo Toy Story Mania! Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB20334303",
+   "title": "Jogo The Darkness Xbox 360 Midia Fisica",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB44808454",
+   "title": "Jogo NBA Street Homecourt para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB38403440",
+   "title": "Jogo Turbo: Super Stunt Squad - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB49291822",
+   "title": "Jogo Avatar: The Game Xbox 360 Completo",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB45456336",
+   "title": "Jogo Spider-Man: Shattered Dimensions Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB21268835",
+   "title": "Jogo Kinect Sports: Segunda Temporada - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37161389",
+   "title": "Tecmo Dead Or Alive Xtreme 2, Xbox 360 Xbox 360 Eng,ita Vídeo - Jogo (xbox 360, Xbox 360, Esportes, Modo Multijogador, T (teen))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB47774235",
+   "title": "Jogo Xbox 360 Vila Sesamo Once Upon A Monster Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB29470961",
+   "title": "Take-Two Interactive Bully - Jogo (Xbox 360) - Edição para Bolsistas",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB32365043",
+   "title": "Jogo Xbox 360 Sniper Elite V2 Silver Star Edition Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB36668258",
+   "title": "Jogo Xbox 360 Hot Wheels O Melhor Piloto Do Mundo Fisico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37102301",
+   "title": "Activision Call Of Duty: Modern Warfare 2 Classics, Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, M (maduro))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37099620",
+   "title": "Activision Call Of Duty 5: World At War - Xbox 360 Básico Xbox 360 Vídeo - Jogo (xbox 360, Fps (tiro em primeira pessoa), Modo Multijogador, M (maduro))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB42458426",
+   "title": "Microsoft Kinect Sports: Season Two Xbox 360 Vídeo - Jogo (xbox 360, Esportes, Rp (classificação Pendente))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB20914748",
+   "title": "Kit Xbox 360 Jogo Borderlands 2 & Dishonored Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB28748118",
+   "title": "Kit 15 Case Estojo Original Para Reposição Jogo Xbox One",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB20559147",
+   "title": "Headset Fone Converse Online E Escute O Jogo Xbox 360 Nanus Cor Preto",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB69909296",
+   "title": "100 Protetor Dvd Caixa Protetora Para Jogo Xbox 360 Clássico",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB42181254",
+   "title": "Jogo Transformers Devastation - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB25972014",
+   "title": "Jogo Xbox One Double Dragon Gaiden Rise Of The Dragons Fisic",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB36208942",
+   "title": "Jogo Xbox One The Sims 4 + Star Wars Bundle Midia Fisica",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB61862086",
+   "title": "Microsoft Assinatura Passe De Jogo Xbox Final Ultimate",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB21876770",
+   "title": "Jogo The Sims 3 - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB45749638",
+   "title": "Jogo Far Cry 3 Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB47780409",
+   "title": "Jogo Seminovo Asuras Wrath - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB45605467",
+   "title": "Jogo Vampire Rain Para Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB52938852",
+   "title": "Jogo The Cursed Crusade Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB38150073",
+   "title": "Jogo Seminovo End War Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38277788",
+   "title": "Jogo Seminovo Wipeout 3 Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB29531499",
+   "title": "Jogo Virtua Tennis 2009 Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB22730795",
+   "title": "Jogo Far Cry Compilation Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB42184868",
+   "title": "Jogo Seminovo Bad Company - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38667285",
+   "title": "Jogo Seminovo Fable Iii Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB37101500",
+   "title": "Jogo Eletrônico Arts Tiger Woods Pga Tour 14, Xbox 360 Xbox 360 Eng (xbox 360, Xbox 360, Esportes, Modo Multijogador, E (para ))",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB43000976",
+   "title": "Jogo Formula 1 F1 2014 - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB22637936",
+   "title": "Jogo Assassin's Creed 4 Iv Black Flag Xbox 360 / Xbox One",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB37699998",
+   "title": "Cabo e bateria do kit de carregamento e jogo Xbox 360 /e",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB44915739",
+   "title": "Passe de Jogo Xbox Game Pass Ultimat 2 meses",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB51879569",
+   "title": "Jogo Xbox One de edição limitada de 2016 da Fórmula 1 - Ibushak Gaming",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB36165126",
+   "title": "Jogo Ghost Recon Advanced Warfighter Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB50858671",
+   "title": "Jogo Medal Of Honor Warfighter Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB23063523",
+   "title": "Jogo Diablo 3 xbox 360 Mídia física",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB39031293",
+   "title": "Transformers Devastation Xbox 360 Jogo Ação Multijogador",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB37102869",
+   "title": "Bethesda The Elder Scrolls V: Skyrim, Xbox 360 Xbox 360 - Jogo (xbox 360, Xbox 360, Rpg (jogo De Papel), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41425747",
+   "title": "Electronic Arts Dragon Age: Inquisition, Xbox 360 Básico Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Rpg (jogo De Rol), Modo Multijogador, M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36263352",
+   "title": "Jogo Xbox 360 Batman",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29471084",
+   "title": "2k Bioshock 2, Xbox 360, Esp - Jogo (xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39292084",
+   "title": "Jogo Xbox 360 Dirt Showdown Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44911945",
+   "title": "Jogo Xbox 360 Metro 2033 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44806487",
+   "title": "Jogo Xbox 360 Wwe 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29235637",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB41248989",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB74510105",
+   "title": "Jogo Xbox 360 Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41153198",
+   "title": "Jogo Xbox 360 Madden 15 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41107470",
+   "title": "Jogo Xbox 360 Pes 2008 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79232954",
+   "title": "Jogo Xbox 360 Dance Paradise Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22923015",
+   "title": "Jogo Xbox 360 Dead Island Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39417470",
+   "title": "Jogo Xbox 360 Nba 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45351789",
+   "title": "Jogo Xbox 360 Motionsports Adrenaline Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28052479",
+   "title": "Dance Central 2 - Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42451024",
+   "title": "Jogo Xbox 360 Spider-man 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47402844",
+   "title": "Jogo Xbox 360 Lego Batman The Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20610095",
+   "title": "Jogo Xbox 360 The Lego Movie Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42335521",
+   "title": "Jogo Xbox 360 Far Cry 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37525183",
+   "title": "Jogo Xbox 360 Shrek Forever After Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB70238450",
+   "title": "Jogo Xbox 360 Hitman Hd Trilogy Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB65065494",
+   "title": "Jogo Xbox 360 Mass Effect 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21703102",
+   "title": "Jogo Xbox 360 Lego The Movie Sellado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21793813",
+   "title": "Jogo Xbox 360 Tekken Tag Tournament 2",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39111178",
+   "title": "Jogo Xbox 360 Madden Nfl 09 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43807885",
+   "title": "Jogo Xbox 360 Fallout New Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46341038",
+   "title": "Jogo Xbox 360 Perfect Dark Zero Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB48255329",
+   "title": "Jogo Xbox 360 Splinter Cell Conviction Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44189311",
+   "title": "Jogo Xbox 360 Motogp 09/10 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26750250",
+   "title": "Jogo Mídia Física James Cameron Avatar O Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41973683",
+   "title": "Jogo The Surge Jogo Xbox- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41644240",
+   "title": "Atari Soulcalibur V, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Luta, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB53052439",
+   "title": "Jogo Xbox 360 Need For Speed Shift Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49832992",
+   "title": "Jogo Xbox 360 Assassin's Creed 3 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24592318",
+   "title": "Jogo Xbox 360 Guitar Hero World Tour Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27770981",
+   "title": "Jogo Xbox 360 Prototype 2 Mídia Física - Activision",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50546025",
+   "title": "Jogo Xbox 360 Silent Hill Downpour Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45874940",
+   "title": "Jogo Xbox One Rpg Tales Of Symphonia Remastered Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37103030",
+   "title": "Ubisoft Tom Clancy's Rainbow Six Vegas (xbox 360) Video - Jogo (xbox 360, Ação)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22356287",
+   "title": "Jogo Xbox One Crackdown 3",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79052269",
+   "title": "Jogo Xbox 360 Assassins Creed Black Flag Steelbook Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45232076",
+   "title": "Jogo Xbox 360 Shaun White Snowboarding Ubisoft Físico Multijogador",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37088078",
+   "title": "Activision Call Of Duty 3, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39317061",
+   "title": "Jogo Xbox 360 Tdu Test Drive Unlimited 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40045862",
+   "title": "Jogo Xbox 360 Tom Clancys Rainbow Six Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38378310",
+   "title": "Jogo Xbox 360 Sniper Ghost Warrior Double Pack Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41362394",
+   "title": "Jogo Xbox 360 Dmc Devil May Cry E Capcom",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB34288315",
+   "title": "Jogo Xbox 360 Castlevania: Lords Os Shadow 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49211956",
+   "title": "Jogo Xbox 360 Assassin's Creed Revelations -leia A Descrição",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37190067",
+   "title": "Activision Guitar Hero Iii: Legends Of Rock - Xbox 360 - Jogo (xbox 360, Música, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37105519",
+   "title": "Sega Condemned 2: Bloodshot, Xbox 360 Vídeo - Jogo (xbox 360, Xbox 360, Fps (tiro em primeira pessoa), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20577502",
+   "title": "Jogo Xbox One Titanfall Fisico-lacrado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23763805",
+   "title": "Jogo Xbox One Forza Horizon 4",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47278096",
+   "title": "Jogo Xbox Virtua Tennis 4 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49600856",
+   "title": "Jogo Xbox One Battlefield 1- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB30469086",
+   "title": "Jogo Xbox 360 Lego Star Wars The Complete Saga Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52964342",
+   "title": "Jogo Xbox 360 Combo Banjo Kazooie E Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40898495",
+   "title": "Jogo Xbox 360 Pure Futbol Authentic Soccer Mídia Física Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39309010",
+   "title": "Jogo Xbox 360 Kane E Lynch 2 Dog Days Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39115048",
+   "title": "Jogo Xbox 360 Deadliest Warrior Ancient Combat Spike Games Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29414215",
+   "title": "Far Cry Ubisoft Jogo Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45353940",
+   "title": "Jogo Xbox One 2k19 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45412803",
+   "title": "Jogo Xbox 360 Tony Hawk´s Preject 8 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25875413",
+   "title": "Jogo Xbox 360 One Red Dead Redemption Undead Nightmare Físic",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24837455",
+   "title": "Zumba Fitness Core Jogo Xbox 360 Mídia Física Majesco 2012",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52875700",
+   "title": "Jogo Xbox 360 Grand Theft Auto Iv Gta Iv Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24830073",
+   "title": "Jogo Xbox One Xbox Series Battlefield 2042 Game Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38580172",
+   "title": "Jogo Xbox 360 Need for Speed Shift 2 Unleashed Edição Limitada",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47397718",
+   "title": "Jogo Xbox One Need For Speed Rivals",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37796452",
+   "title": "Jogo Xbox One L.a. Noire - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36413526",
+   "title": "Jogo Xbox One Borderlands The Handsome Collection",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40520457",
+   "title": "Sexta-feira 13: O Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013961",
+   "title": "Jogo Xbox Dead Or Alive 5 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41536319",
+   "title": "Square Enix Final Fantasy Xiii-2 - Jogo (Xbox 360, Ação/Aventura, Inglês)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24863101",
+   "title": "Jogo Xbox 360 EA Games Command And Conquer Red Alert 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37114368",
+   "title": "Square Enix Nascar The Game 2014 - Jogo (xbox 360, Corrida, E (para ))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB35853548",
+   "title": "Playerunknown's Battlegrounds Edição Preliminar Do Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41811297",
+   "title": "Jogo Xbox One Dragon Age Inquisition Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50868024",
+   "title": "Hellblade: Senua's Sacrifice | Jogo Xbox One - 25 Dígitos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39926899",
+   "title": "Jogo Xbox One Moto Racer 4 Kalypso Media",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39015347",
+   "title": "Jogo Xbox One Game Of Thrones Telltale Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB57376503",
+   "title": "Jogo Demon Slayer Domina o Jogo Xbox One SEGA Ação Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013798",
+   "title": "Jogo Xbox Series X Skull And Bones Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36910412",
+   "title": "Jogo Xbox One/series X Phoenix Point Behemoth Edition",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21010772",
+   "title": "Jogo Xbox One Hellblade Senua's Sacrifice Mídia Física 4k",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28807605",
+   "title": "Jogo Xbox One Farming Simulator 17 Platinum Edition Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22705882",
+   "title": "Jogo Xbox One Wolfenstein: The Two-pack 2 Jogos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26912517",
+   "title": "Jogo Xbox Series X Vampire The Masquerade Swansong Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19719502",
+   "title": "Jogo Xbox One Hotel Transylvania 3 Monsters Overboard Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22772543",
+   "title": "Jogo Xbox One Just Cause 4 Game Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23004129",
+   "title": "Jogo Rayman Origins - Xbox 360/xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40013390",
+   "title": "Jogo Xbox 360 Vila Sésamo Era Uma Vez Um Monstro Wb Games Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38736504",
+   "title": "Mass Effect 2 Xbox 360 Jogo Físico Ação RPG BioWare EA",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36808219",
+   "title": "Jogo Xbox One Terra-Média Sombras De Mordor Físico Ação",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25435100",
+   "title": "Jogo Xbox One The Dark Pictures Little Hope Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37121726",
+   "title": "Activision Call Of Duty Ghosts - Jogo - Xbox One Edição Padrão",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB66791005",
+   "title": "Sega Alien: Isolation, Xbox One - Jogo (Xbox One, Xbox One, Survival/Horror, M (adulto))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37158741",
+   "title": "2k Wwe 2k16, Xbox One Básico Xbox One Eng, Fre Video - Jogo (xbox One, Xbox One, Esportes, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43001425",
+   "title": "Jogo Lego Marvel - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39076947",
+   "title": "Jogo Blackwater Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45773751",
+   "title": "Jogo Nhl 15 Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20334265",
+   "title": "Jogo Nascar Unleashed - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38362066",
+   "title": "Jogo Battlefield 4 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22914540",
+   "title": "Jogo Xbox One WWE 2K22 Físico Standard Edition Multijogador Online/Offline",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25912298",
+   "title": "Dishonored Death Of The Outsider Jogo Xbox One Mídia Física Bethesda",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27735832",
+   "title": "Jogo Xbox One/series X Ea Sports Fc 24 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51205978",
+   "title": "South of Midnight: Premium Edition Jogo Xbox Series X|S (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24434991",
+   "title": "Jogo Xbox One E Series X Crash Team Rumble Deluxe Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44627243",
+   "title": "The Wolf Among Us Jogo Xbox One Mídia Física Telltale Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB23649125",
+   "title": "Shovel Knight Treasure Trove Jogo Xbox One Mídia Física Ação Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6084097",
+   "title": "Jogo Xbox 360nCall of Duty: Black Ops II Standard Edition (Físico)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42168594",
+   "title": "Jogo Assassin's Creed Rogue - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42176918",
+   "title": "Jogo Assassin's Creed: Revelations - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45024099",
+   "title": "Jogo Sonic Generations - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45774761",
+   "title": "Jogo Mafia 2 Xbox 360 Xbox One Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36687211",
+   "title": "Jogo Crackdown Xbox 360 Xbox One Xbox Series X Retrocompatível Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51210118",
+   "title": "WWE 2K25: The Bloodline Edition Jogo Xbox Series X|S One (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25210822",
+   "title": "Jogo Assassins Creed Iv Black Flag - Xbox One & Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19743225",
+   "title": "Saints Row Day One Edition - Jogo Xbox Series X E One Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19855828",
+   "title": "Jogo Hitman Absolution Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6159641",
+   "title": "Jogo Assassin's Creed para Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22580524",
+   "title": "Jogo Diablo 3 Cd Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46669664",
+   "title": "Jogo Kinectimals - Xbox 360 - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39172691",
+   "title": "Jogo Rise Of Nightmares Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38119892",
+   "title": "Jogo Lego Batman 2 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39062395",
+   "title": "Jogo Batman Arkham City Xbox 360 Edição Jogo Do Ano",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23112874",
+   "title": "Jogo Xbox One Mídia Física LEGO Star Wars The Skywalker Saga Wb Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22210972",
+   "title": "Jogo Doom 3 - Bfg Edition - Xbox One/xbox 360 - Míd Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29783035",
+   "title": "Jogo Kingdoms Of Amalur Reckoning Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45424520",
+   "title": "Jogo Batman The Telltale Series Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB23042682",
+   "title": "Jogo Assassin's Creed Brotherhood para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25971509",
+   "title": "Jogo Screamride Xbox 360 Midia Fisica original",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38120154",
+   "title": "Jogo Lego Senhor Dos Aneis - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39133246",
+   "title": "Jogo Magna Carta 2 Xbox 360 Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22495959",
+   "title": "Jogo Assassin's Creed Revelations para Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB38530896",
+   "title": "Skate 3 Xbox 360 Jogo Físico Rimo",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39112105",
+   "title": "Jogo Heroes Over Europe Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28482532",
+   "title": "Jogo Motogp 14 Xbox 360 Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47087167",
+   "title": "Jogo Halo 3 Xbox 360 Missões Épicas",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37898513",
+   "title": "Jogo Activision Blur Xbox 360 corrida arcade",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29045072",
+   "title": "Jogo Dragon Age Xbox 360 Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26846868",
+   "title": "Jogo Brink Game Xbox 360 Bethesda Microsoft",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37970869",
+   "title": "Jogo Tron Evolution Xbox 360 Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38095209",
+   "title": "Jogo Alien: Isolation Físico para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45881871",
+   "title": "Jogo Grid 2 Xbox 360 Mídia Física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37522035",
+   "title": "Tomb Raider Jogo do Ano - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB46056728",
+   "title": "Jogo Sonic Unleashed Para Xbox 360 E10",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB38581855",
+   "title": "Jogo Young Justice Legacy para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB26094231",
+   "title": "Jogo Dark Souls II para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39018833",
+   "title": "Jogo Kinect Sports Ultimate Collection Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB45657062",
+   "title": "Jogo Just Dance 3 Xbox 360 Fisico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39024131",
+   "title": "Jogo Kameo Xbox 360 Classics Completo Pal",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39113953",
+   "title": "Jogo Driver San Francisco Game Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB50622718",
+   "title": "Dragon Age Inquisition Xbox 360 Jogo 2014",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB40023564",
+   "title": "Jogo Seminovo Toy Story Mania! Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB20334303",
+   "title": "Jogo The Darkness Xbox 360 Midia Fisica",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB44808454",
+   "title": "Jogo NBA Street Homecourt para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB38403440",
+   "title": "Jogo Turbo: Super Stunt Squad - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB49291822",
+   "title": "Jogo Avatar: The Game Xbox 360 Completo",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB45456336",
+   "title": "Jogo Spider-Man: Shattered Dimensions Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB21268835",
+   "title": "Jogo Kinect Sports: Segunda Temporada - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37161389",
+   "title": "Tecmo Dead Or Alive Xtreme 2, Xbox 360 Xbox 360 Eng,ita Vídeo - Jogo (xbox 360, Xbox 360, Esportes, Modo Multijogador, T (teen))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB47774235",
+   "title": "Jogo Xbox 360 Vila Sesamo Once Upon A Monster Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB29470961",
+   "title": "Take-Two Interactive Bully - Jogo (Xbox 360) - Edição para Bolsistas",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB32365043",
+   "title": "Jogo Xbox 360 Sniper Elite V2 Silver Star Edition Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB36668258",
+   "title": "Jogo Xbox 360 Hot Wheels O Melhor Piloto Do Mundo Fisico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37102301",
+   "title": "Activision Call Of Duty: Modern Warfare 2 Classics, Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, M (maduro))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37099620",
+   "title": "Activision Call Of Duty 5: World At War - Xbox 360 Básico Xbox 360 Vídeo - Jogo (xbox 360, Fps (tiro em primeira pessoa), Modo Multijogador, M (maduro))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB42458426",
+   "title": "Microsoft Kinect Sports: Season Two Xbox 360 Vídeo - Jogo (xbox 360, Esportes, Rp (classificação Pendente))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB20914748",
+   "title": "Kit Xbox 360 Jogo Borderlands 2 & Dishonored Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB28748118",
+   "title": "Kit 15 Case Estojo Original Para Reposição Jogo Xbox One",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB20559147",
+   "title": "Headset Fone Converse Online E Escute O Jogo Xbox 360 Nanus Cor Preto",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB69909296",
+   "title": "100 Protetor Dvd Caixa Protetora Para Jogo Xbox 360 Clássico",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB42181254",
+   "title": "Jogo Transformers Devastation - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB25972014",
+   "title": "Jogo Xbox One Double Dragon Gaiden Rise Of The Dragons Fisic",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB36208942",
+   "title": "Jogo Xbox One The Sims 4 + Star Wars Bundle Midia Fisica",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB61862086",
+   "title": "Microsoft Assinatura Passe De Jogo Xbox Final Ultimate",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB21876770",
+   "title": "Jogo The Sims 3 - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB45749638",
+   "title": "Jogo Far Cry 3 Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB47780409",
+   "title": "Jogo Seminovo Asuras Wrath - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB45605467",
+   "title": "Jogo Vampire Rain Para Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB52938852",
+   "title": "Jogo The Cursed Crusade Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB38150073",
+   "title": "Jogo Seminovo End War Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38277788",
+   "title": "Jogo Seminovo Wipeout 3 Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB29531499",
+   "title": "Jogo Virtua Tennis 2009 Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB22730795",
+   "title": "Jogo Far Cry Compilation Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB42184868",
+   "title": "Jogo Seminovo Bad Company - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38667285",
+   "title": "Jogo Seminovo Fable Iii Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB37101500",
+   "title": "Jogo Eletrônico Arts Tiger Woods Pga Tour 14, Xbox 360 Xbox 360 Eng (xbox 360, Xbox 360, Esportes, Modo Multijogador, E (para ))",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB43000976",
+   "title": "Jogo Formula 1 F1 2014 - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB22637936",
+   "title": "Jogo Assassin's Creed 4 Iv Black Flag Xbox 360 / Xbox One",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB37699998",
+   "title": "Cabo e bateria do kit de carregamento e jogo Xbox 360 /e",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB44915739",
+   "title": "Passe de Jogo Xbox Game Pass Ultimat 2 meses",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB51879569",
+   "title": "Jogo Xbox One de edição limitada de 2016 da Fórmula 1 - Ibushak Gaming",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB36165126",
+   "title": "Jogo Ghost Recon Advanced Warfighter Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB50858671",
+   "title": "Jogo Medal Of Honor Warfighter Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB23063523",
+   "title": "Jogo Diablo 3 xbox 360 Mídia física",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB39031293",
+   "title": "Transformers Devastation Xbox 360 Jogo Ação Multijogador",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB36263352",
+   "title": "Jogo Xbox 360 Batman",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39115048",
+   "title": "Jogo Xbox 360 Deadliest Warrior Ancient Combat Spike Games Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29471084",
+   "title": "2k Bioshock 2, Xbox 360, Esp - Jogo (xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39292084",
+   "title": "Jogo Xbox 360 Dirt Showdown Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44911945",
+   "title": "Jogo Xbox 360 Metro 2033 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44806487",
+   "title": "Jogo Xbox 360 Wwe 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29235637",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB41248989",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB74510105",
+   "title": "Jogo Xbox 360 Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41153198",
+   "title": "Jogo Xbox 360 Madden 15 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41107470",
+   "title": "Jogo Xbox 360 Pes 2008 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79232954",
+   "title": "Jogo Xbox 360 Dance Paradise Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22923015",
+   "title": "Jogo Xbox 360 Dead Island Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39417470",
+   "title": "Jogo Xbox 360 Nba 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45351789",
+   "title": "Jogo Xbox 360 Motionsports Adrenaline Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28052479",
+   "title": "Dance Central 2 - Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37102869",
+   "title": "Bethesda The Elder Scrolls V: Skyrim, Xbox 360 Xbox 360 - Jogo (xbox 360, Xbox 360, Rpg (jogo De Papel), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42451024",
+   "title": "Jogo Xbox 360 Spider-man 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47402844",
+   "title": "Jogo Xbox 360 Lego Batman The Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20610095",
+   "title": "Jogo Xbox 360 The Lego Movie Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42335521",
+   "title": "Jogo Xbox 360 Far Cry 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41425747",
+   "title": "Electronic Arts Dragon Age: Inquisition, Xbox 360 Básico Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Rpg (jogo De Rol), Modo Multijogador, M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37525183",
+   "title": "Jogo Xbox 360 Shrek Forever After Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB70238450",
+   "title": "Jogo Xbox 360 Hitman Hd Trilogy Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB65065494",
+   "title": "Jogo Xbox 360 Mass Effect 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21703102",
+   "title": "Jogo Xbox 360 Lego The Movie Sellado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21793813",
+   "title": "Jogo Xbox 360 Tekken Tag Tournament 2",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39111178",
+   "title": "Jogo Xbox 360 Madden Nfl 09 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43807885",
+   "title": "Jogo Xbox 360 Fallout New Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46341038",
+   "title": "Jogo Xbox 360 Perfect Dark Zero Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB48255329",
+   "title": "Jogo Xbox 360 Splinter Cell Conviction Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44189311",
+   "title": "Jogo Xbox 360 Motogp 09/10 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41536319",
+   "title": "Square Enix Final Fantasy Xiii-2 - Jogo (Xbox 360, Ação/Aventura, Inglês)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26750250",
+   "title": "Jogo Mídia Física James Cameron Avatar O Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41973683",
+   "title": "Jogo The Surge Jogo Xbox- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41644240",
+   "title": "Atari Soulcalibur V, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Luta, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB53052439",
+   "title": "Jogo Xbox 360 Need For Speed Shift Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49832992",
+   "title": "Jogo Xbox 360 Assassin's Creed 3 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24592318",
+   "title": "Jogo Xbox 360 Guitar Hero World Tour Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27770981",
+   "title": "Jogo Xbox 360 Prototype 2 Mídia Física - Activision",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50546025",
+   "title": "Jogo Xbox 360 Silent Hill Downpour Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB57376503",
+   "title": "Jogo Demon Slayer Domina o Jogo Xbox One SEGA Ação Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37103030",
+   "title": "Ubisoft Tom Clancy's Rainbow Six Vegas (xbox 360) Video - Jogo (xbox 360, Ação)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22356287",
+   "title": "Jogo Xbox One Crackdown 3",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79052269",
+   "title": "Jogo Xbox 360 Assassins Creed Black Flag Steelbook Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45232076",
+   "title": "Jogo Xbox 360 Shaun White Snowboarding Ubisoft Físico Multijogador",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37088078",
+   "title": "Activision Call Of Duty 3, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39317061",
+   "title": "Jogo Xbox 360 Tdu Test Drive Unlimited 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40045862",
+   "title": "Jogo Xbox 360 Tom Clancys Rainbow Six Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38378310",
+   "title": "Jogo Xbox 360 Sniper Ghost Warrior Double Pack Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41362394",
+   "title": "Jogo Xbox 360 Dmc Devil May Cry E Capcom",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40013390",
+   "title": "Jogo Xbox 360 Vila Sésamo Era Uma Vez Um Monstro Wb Games Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB34288315",
+   "title": "Jogo Xbox 360 Castlevania: Lords Os Shadow 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49211956",
+   "title": "Jogo Xbox 360 Assassin's Creed Revelations -leia A Descrição",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37190067",
+   "title": "Activision Guitar Hero Iii: Legends Of Rock - Xbox 360 - Jogo (xbox 360, Música, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37105519",
+   "title": "Sega Condemned 2: Bloodshot, Xbox 360 Vídeo - Jogo (xbox 360, Xbox 360, Fps (tiro em primeira pessoa), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20577502",
+   "title": "Jogo Xbox One Titanfall Fisico-lacrado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23763805",
+   "title": "Jogo Xbox One Forza Horizon 4",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47278096",
+   "title": "Jogo Xbox Virtua Tennis 4 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49600856",
+   "title": "Jogo Xbox One Battlefield 1- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB30469086",
+   "title": "Jogo Xbox 360 Lego Star Wars The Complete Saga Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52964342",
+   "title": "Jogo Xbox 360 Combo Banjo Kazooie E Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40898495",
+   "title": "Jogo Xbox 360 Pure Futbol Authentic Soccer Mídia Física Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39309010",
+   "title": "Jogo Xbox 360 Kane E Lynch 2 Dog Days Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29414215",
+   "title": "Far Cry Ubisoft Jogo Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45353940",
+   "title": "Jogo Xbox One 2k19 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45412803",
+   "title": "Jogo Xbox 360 Tony Hawk´s Preject 8 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25875413",
+   "title": "Jogo Xbox 360 One Red Dead Redemption Undead Nightmare Físic",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24837455",
+   "title": "Zumba Fitness Core Jogo Xbox 360 Mídia Física Majesco 2012",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52875700",
+   "title": "Jogo Xbox 360 Grand Theft Auto Iv Gta Iv Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24830073",
+   "title": "Jogo Xbox One Xbox Series Battlefield 2042 Game Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38580172",
+   "title": "Jogo Xbox 360 Need for Speed Shift 2 Unleashed Edição Limitada",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47397718",
+   "title": "Jogo Xbox One Need For Speed Rivals",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37796452",
+   "title": "Jogo Xbox One L.a. Noire - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36413526",
+   "title": "Jogo Xbox One Borderlands The Handsome Collection",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40520457",
+   "title": "Sexta-feira 13: O Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013961",
+   "title": "Jogo Xbox Dead Or Alive 5 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24863101",
+   "title": "Jogo Xbox 360 EA Games Command And Conquer Red Alert 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37114368",
+   "title": "Square Enix Nascar The Game 2014 - Jogo (xbox 360, Corrida, E (para ))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB35853548",
+   "title": "Playerunknown's Battlegrounds Edição Preliminar Do Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41811297",
+   "title": "Jogo Xbox One Dragon Age Inquisition Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50868024",
+   "title": "Hellblade: Senua's Sacrifice | Jogo Xbox One - 25 Dígitos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39926899",
+   "title": "Jogo Xbox One Moto Racer 4 Kalypso Media",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39015347",
+   "title": "Jogo Xbox One Game Of Thrones Telltale Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36642477",
+   "title": "Lego Piratas do Caribe Xbox 360 Jogo Aventura CD",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28890385",
+   "title": "Prototype 2 Xbox 360 Jogo Ação Aventura Activision Offline",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47639988",
+   "title": "Jogo Far Cry 4 Xbox 360 Ação E Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB31007276",
+   "title": "Banjo Kazooie Nuts & Bolts Xbox 360 Jogo Aventura Offline",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20684300",
+   "title": "Fantastic Pets Xbox 360 Jogo Aventura Kinect Multijogador Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24900252",
+   "title": "Jogo Alan Wake Físico Xbox 360 Aventura Remedy Microsoft",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29101918",
+   "title": "Mass Effect Classics Xbox 360 Jogo Ação Aventura BioWare",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38087376",
+   "title": "Darksiders II Xbox 360 Jogo Ação Aventura Vigil Games",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013798",
+   "title": "Jogo Xbox Series X Skull And Bones Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36910412",
+   "title": "Jogo Xbox One/series X Phoenix Point Behemoth Edition",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21010772",
+   "title": "Jogo Xbox One Hellblade Senua's Sacrifice Mídia Física 4k",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28807605",
+   "title": "Jogo Xbox One Farming Simulator 17 Platinum Edition Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22705882",
+   "title": "Jogo Xbox One Wolfenstein: The Two-pack 2 Jogos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26912517",
+   "title": "Jogo Xbox Series X Vampire The Masquerade Swansong Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19719502",
+   "title": "Jogo Xbox One Hotel Transylvania 3 Monsters Overboard Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22772543",
+   "title": "Jogo Xbox One Just Cause 4 Game Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23004129",
+   "title": "Jogo Rayman Origins - Xbox 360/xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24066799",
+   "title": "Sleeping Dogs Xbox 360 Mídia Física Jogo Aventura Square Enix",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24993839",
+   "title": "Jogo The First Templar Xbox 360 Kalypso Mídia Física Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36482498",
+   "title": "Tom Clancy's Splinter Cell Blacklist Xbox 360 Jogo Aventura Furtividade",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36808219",
+   "title": "Jogo Xbox One Terra-Média Sombras De Mordor Físico Ação",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25435100",
+   "title": "Jogo Xbox One The Dark Pictures Little Hope Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37121726",
+   "title": "Activision Call Of Duty Ghosts - Jogo - Xbox One Edição Padrão",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45874940",
+   "title": "Jogo Xbox One Rpg Tales Of Symphonia Remastered Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB66791005",
+   "title": "Sega Alien: Isolation, Xbox One - Jogo (Xbox One, Xbox One, Survival/Horror, M (adulto))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37158741",
+   "title": "2k Wwe 2k16, Xbox One Básico Xbox One Eng, Fre Video - Jogo (xbox One, Xbox One, Esportes, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37481356",
+   "title": "Forza Horizon Xbox 360 Edição Standard Jogo Físico Ação Aventura Corrida",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6084255",
+   "title": "Minecraft Standard Edition Xbox 360 Físico Jogo De Aventura E Construção",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28532019",
+   "title": "Angry Birds Trilogy Xbox 360 Jogo Aventura Quebra-cabeça Activision Rovio",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43001425",
+   "title": "Jogo Lego Marvel - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39076947",
+   "title": "Jogo Blackwater Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45773751",
+   "title": "Jogo Nhl 15 Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20334265",
+   "title": "Jogo Nascar Unleashed - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38362066",
+   "title": "Jogo Battlefield 4 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22914540",
+   "title": "Jogo Xbox One WWE 2K22 Físico Standard Edition Multijogador Online/Offline",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25912298",
+   "title": "Dishonored Death Of The Outsider Jogo Xbox One Mídia Física Bethesda",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27735832",
+   "title": "Jogo Xbox One/series X Ea Sports Fc 24 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51205978",
+   "title": "South of Midnight: Premium Edition Jogo Xbox Series X|S (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24434991",
+   "title": "Jogo Xbox One E Series X Crash Team Rumble Deluxe Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44627243",
+   "title": "The Wolf Among Us Jogo Xbox One Mídia Física Telltale Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB23649125",
+   "title": "Shovel Knight Treasure Trove Jogo Xbox One Mídia Física Ação Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6084097",
+   "title": "Jogo Xbox 360nCall of Duty: Black Ops II Standard Edition (Físico)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42168594",
+   "title": "Jogo Assassin's Creed Rogue - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42176918",
+   "title": "Jogo Assassin's Creed: Revelations - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45024099",
+   "title": "Jogo Sonic Generations - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45774761",
+   "title": "Jogo Mafia 2 Xbox 360 Xbox One Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36687211",
+   "title": "Jogo Crackdown Xbox 360 Xbox One Xbox Series X Retrocompatível Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25972141",
+   "title": "Jogo Victorious Time To Shine Xbox 360 Kinect Sensor D3 Publisher Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51210118",
+   "title": "WWE 2K25: The Bloodline Edition Jogo Xbox Series X|S One (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25210822",
+   "title": "Jogo Assassins Creed Iv Black Flag - Xbox One & Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19743225",
+   "title": "Saints Row Day One Edition - Jogo Xbox Series X E One Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19855828",
+   "title": "Jogo Hitman Absolution Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6159641",
+   "title": "Jogo Assassin's Creed para Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22580524",
+   "title": "Jogo Diablo 3 Cd Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46669664",
+   "title": "Jogo Kinectimals - Xbox 360 - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39172691",
+   "title": "Jogo Rise Of Nightmares Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38119892",
+   "title": "Jogo Lego Batman 2 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23325828",
+   "title": "Terraria Xbox One Mídia Física Jogo Aventura Multijogador",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39094992",
+   "title": "Jogo Destiny Xbox One - Ação e Aventura Cinematográfica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB35564893",
+   "title": "Subnautica Below Zero Xbox One Jogo Físico Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39062395",
+   "title": "Jogo Batman Arkham City Xbox 360 Edição Jogo Do Ano",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29437423",
+   "title": "Jogo Vampyr Xbox One Mídia Física Dontnod Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23112874",
+   "title": "Jogo Xbox One Mídia Física LEGO Star Wars The Skywalker Saga Wb Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22210972",
+   "title": "Jogo Doom 3 - Bfg Edition - Xbox One/xbox 360 - Míd Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29783035",
+   "title": "Jogo Kingdoms Of Amalur Reckoning Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45424520",
+   "title": "Jogo Batman The Telltale Series Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB23042682",
+   "title": "Jogo Assassin's Creed Brotherhood para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25971509",
+   "title": "Jogo Screamride Xbox 360 Midia Fisica original",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38120154",
+   "title": "Jogo Lego Senhor Dos Aneis - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39133246",
+   "title": "Jogo Magna Carta 2 Xbox 360 Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22495959",
+   "title": "Jogo Assassin's Creed Revelations para Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB38530896",
+   "title": "Skate 3 Xbox 360 Jogo Físico Rimo",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29531499",
+   "title": "Jogo Virtua Tennis 2009 Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB22730795",
+   "title": "Jogo Far Cry Compilation Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB42184868",
+   "title": "Jogo Seminovo Bad Company - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38667285",
+   "title": "Jogo Seminovo Fable Iii Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB37158374",
+   "title": "Activision Spider-Man 3: The Game, Jogo de videogame para Xbox 360 (Xbox 360, Ação/Aventura, Classificação Indicativa: T (Adolescentes))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37101500",
+   "title": "Jogo Eletrônico Arts Tiger Woods Pga Tour 14, Xbox 360 Xbox 360 Eng (xbox 360, Xbox 360, Esportes, Modo Multijogador, E (para ))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB43000976",
+   "title": "Jogo Formula 1 F1 2014 - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB22637936",
+   "title": "Jogo Assassin's Creed 4 Iv Black Flag Xbox 360 / Xbox One",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37699998",
+   "title": "Cabo e bateria do kit de carregamento e jogo Xbox 360 /e",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB44915739",
+   "title": "Passe de Jogo Xbox Game Pass Ultimat 2 meses",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB51879569",
+   "title": "Jogo Xbox One de edição limitada de 2016 da Fórmula 1 - Ibushak Gaming",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB36165126",
+   "title": "Jogo Ghost Recon Advanced Warfighter Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB50858671",
+   "title": "Jogo Medal Of Honor Warfighter Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB23063523",
+   "title": "Jogo Diablo 3 xbox 360 Mídia física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39031293",
+   "title": "Transformers Devastation Xbox 360 Jogo Ação Multijogador",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB45881871",
+   "title": "Jogo Grid 2 Xbox 360 Mídia Física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37522035",
+   "title": "Tomb Raider Jogo do Ano - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB46056728",
+   "title": "Jogo Sonic Unleashed Para Xbox 360 E10",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB38581855",
+   "title": "Jogo Young Justice Legacy para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB26094231",
+   "title": "Jogo Dark Souls II para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39018833",
+   "title": "Jogo Kinect Sports Ultimate Collection Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37161389",
+   "title": "Tecmo Dead Or Alive Xtreme 2, Xbox 360 Xbox 360 Eng,ita Vídeo - Jogo (xbox 360, Xbox 360, Esportes, Modo Multijogador, T (teen))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB47774235",
+   "title": "Jogo Xbox 360 Vila Sesamo Once Upon A Monster Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB29470961",
+   "title": "Take-Two Interactive Bully - Jogo (Xbox 360) - Edição para Bolsistas",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB32365043",
+   "title": "Jogo Xbox 360 Sniper Elite V2 Silver Star Edition Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB36668258",
+   "title": "Jogo Xbox 360 Hot Wheels O Melhor Piloto Do Mundo Fisico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37102301",
+   "title": "Activision Call Of Duty: Modern Warfare 2 Classics, Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, M (maduro))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37099620",
+   "title": "Activision Call Of Duty 5: World At War - Xbox 360 Básico Xbox 360 Vídeo - Jogo (xbox 360, Fps (tiro em primeira pessoa), Modo Multijogador, M (maduro))",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB42458426",
+   "title": "Microsoft Kinect Sports: Season Two Xbox 360 Vídeo - Jogo (xbox 360, Esportes, Rp (classificação Pendente))",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB20914748",
+   "title": "Kit Xbox 360 Jogo Borderlands 2 & Dishonored Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB28748118",
+   "title": "Kit 15 Case Estojo Original Para Reposição Jogo Xbox One",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB20559147",
+   "title": "Headset Fone Converse Online E Escute O Jogo Xbox 360 Nanus Cor Preto",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB69909296",
+   "title": "100 Protetor Dvd Caixa Protetora Para Jogo Xbox 360 Clássico",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB42181254",
+   "title": "Jogo Transformers Devastation - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB25972014",
+   "title": "Jogo Xbox One Double Dragon Gaiden Rise Of The Dragons Fisic",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB36208942",
+   "title": "Jogo Xbox One The Sims 4 + Star Wars Bundle Midia Fisica",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB61862086",
+   "title": "Microsoft Assinatura Passe De Jogo Xbox Final Ultimate",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB21876770",
+   "title": "Jogo The Sims 3 - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB45749638",
+   "title": "Jogo Far Cry 3 Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB47780409",
+   "title": "Jogo Seminovo Asuras Wrath - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB45605467",
+   "title": "Jogo Vampire Rain Para Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB52938852",
+   "title": "Jogo The Cursed Crusade Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB38150073",
+   "title": "Jogo Seminovo End War Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38277788",
+   "title": "Jogo Seminovo Wipeout 3 Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB36263352",
+   "title": "Jogo Xbox 360 Batman",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37103030",
+   "title": "Ubisoft Tom Clancy's Rainbow Six Vegas (xbox 360) Video - Jogo (xbox 360, Ação)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29471084",
+   "title": "2k Bioshock 2, Xbox 360, Esp - Jogo (xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39292084",
+   "title": "Jogo Xbox 360 Dirt Showdown Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44911945",
+   "title": "Jogo Xbox 360 Metro 2033 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44806487",
+   "title": "Jogo Xbox 360 Wwe 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29235637",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB41248989",
+   "title": "2k Mafia Ii, Xbox 360, Esp - Jogo (Xbox 360, Esp)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB74510105",
+   "title": "Jogo Xbox 360 Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41153198",
+   "title": "Jogo Xbox 360 Madden 15 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41107470",
+   "title": "Jogo Xbox 360 Pes 2008 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79232954",
+   "title": "Jogo Xbox 360 Dance Paradise Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22923015",
+   "title": "Jogo Xbox 360 Dead Island Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39417470",
+   "title": "Jogo Xbox 360 Nba 2k16 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45351789",
+   "title": "Jogo Xbox 360 Motionsports Adrenaline Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28052479",
+   "title": "Dance Central 2 - Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37102869",
+   "title": "Bethesda The Elder Scrolls V: Skyrim, Xbox 360 Xbox 360 - Jogo (xbox 360, Xbox 360, Rpg (jogo De Papel), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42451024",
+   "title": "Jogo Xbox 360 Spider-man 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47402844",
+   "title": "Jogo Xbox 360 Lego Batman The Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20610095",
+   "title": "Jogo Xbox 360 The Lego Movie Videogame",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42335521",
+   "title": "Jogo Xbox 360 Far Cry 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41425747",
+   "title": "Electronic Arts Dragon Age: Inquisition, Xbox 360 Básico Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Rpg (jogo De Rol), Modo Multijogador, M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37525183",
+   "title": "Jogo Xbox 360 Shrek Forever After Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB70238450",
+   "title": "Jogo Xbox 360 Hitman Hd Trilogy Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB65065494",
+   "title": "Jogo Xbox 360 Mass Effect 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21703102",
+   "title": "Jogo Xbox 360 Lego The Movie Sellado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21793813",
+   "title": "Jogo Xbox 360 Tekken Tag Tournament 2",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39111178",
+   "title": "Jogo Xbox 360 Madden Nfl 09 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43807885",
+   "title": "Jogo Xbox 360 Fallout New Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46341038",
+   "title": "Jogo Xbox 360 Perfect Dark Zero Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB48255329",
+   "title": "Jogo Xbox 360 Splinter Cell Conviction Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44189311",
+   "title": "Jogo Xbox 360 Motogp 09/10 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26750250",
+   "title": "Jogo Mídia Física James Cameron Avatar O Jogo Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41536319",
+   "title": "Square Enix Final Fantasy Xiii-2 - Jogo (Xbox 360, Ação/Aventura, Inglês)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41973683",
+   "title": "Jogo The Surge Jogo Xbox- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41644240",
+   "title": "Atari Soulcalibur V, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Luta, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB53052439",
+   "title": "Jogo Xbox 360 Need For Speed Shift Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49832992",
+   "title": "Jogo Xbox 360 Assassin's Creed 3 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24592318",
+   "title": "Jogo Xbox 360 Guitar Hero World Tour Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27770981",
+   "title": "Jogo Xbox 360 Prototype 2 Mídia Física - Activision",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50546025",
+   "title": "Jogo Xbox 360 Silent Hill Downpour Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB57376503",
+   "title": "Jogo Demon Slayer Domina o Jogo Xbox One SEGA Ação Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22356287",
+   "title": "Jogo Xbox One Crackdown 3",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB79052269",
+   "title": "Jogo Xbox 360 Assassins Creed Black Flag Steelbook Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45232076",
+   "title": "Jogo Xbox 360 Shaun White Snowboarding Ubisoft Físico Multijogador",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37088078",
+   "title": "Activision Call Of Duty 3, Xbox 360 Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39317061",
+   "title": "Jogo Xbox 360 Tdu Test Drive Unlimited 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40045862",
+   "title": "Jogo Xbox 360 Tom Clancys Rainbow Six Vegas Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38378310",
+   "title": "Jogo Xbox 360 Sniper Ghost Warrior Double Pack Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41362394",
+   "title": "Jogo Xbox 360 Dmc Devil May Cry E Capcom",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB34288315",
+   "title": "Jogo Xbox 360 Castlevania: Lords Os Shadow 2 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49211956",
+   "title": "Jogo Xbox 360 Assassin's Creed Revelations -leia A Descrição",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36808219",
+   "title": "Jogo Xbox One Terra-Média Sombras De Mordor Físico Ação",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37190067",
+   "title": "Activision Guitar Hero Iii: Legends Of Rock - Xbox 360 - Jogo (xbox 360, Música, T (adolescente))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37105519",
+   "title": "Sega Condemned 2: Bloodshot, Xbox 360 Vídeo - Jogo (xbox 360, Xbox 360, Fps (tiro em primeira pessoa), M (maduro))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20577502",
+   "title": "Jogo Xbox One Titanfall Fisico-lacrado",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23763805",
+   "title": "Jogo Xbox One Forza Horizon 4",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47278096",
+   "title": "Jogo Xbox Virtua Tennis 4 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB49600856",
+   "title": "Jogo Xbox One Battlefield 1- Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB30469086",
+   "title": "Jogo Xbox 360 Lego Star Wars The Complete Saga Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52964342",
+   "title": "Jogo Xbox 360 Combo Banjo Kazooie E Viva Piñata Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40898495",
+   "title": "Jogo Xbox 360 Pure Futbol Authentic Soccer Mídia Física Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39309010",
+   "title": "Jogo Xbox 360 Kane E Lynch 2 Dog Days Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39115048",
+   "title": "Jogo Xbox 360 Deadliest Warrior Ancient Combat Spike Games Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29414215",
+   "title": "Far Cry Ubisoft Jogo Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45353940",
+   "title": "Jogo Xbox One 2k19 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45412803",
+   "title": "Jogo Xbox 360 Tony Hawk´s Preject 8 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25875413",
+   "title": "Jogo Xbox 360 One Red Dead Redemption Undead Nightmare Físic",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24837455",
+   "title": "Zumba Fitness Core Jogo Xbox 360 Mídia Física Majesco 2012",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52875700",
+   "title": "Jogo Xbox 360 Grand Theft Auto Iv Gta Iv Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23649125",
+   "title": "Shovel Knight Treasure Trove Jogo Xbox One Mídia Física Ação Multiplayer",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24830073",
+   "title": "Jogo Xbox One Xbox Series Battlefield 2042 Game Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38580172",
+   "title": "Jogo Xbox 360 Need for Speed Shift 2 Unleashed Edição Limitada",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47397718",
+   "title": "Jogo Xbox One Need For Speed Rivals",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37796452",
+   "title": "Jogo Xbox One L.a. Noire - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36413526",
+   "title": "Jogo Xbox One Borderlands The Handsome Collection",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40520457",
+   "title": "Sexta-feira 13: O Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013961",
+   "title": "Jogo Xbox Dead Or Alive 5 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24863101",
+   "title": "Jogo Xbox 360 EA Games Command And Conquer Red Alert 3 Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37114368",
+   "title": "Square Enix Nascar The Game 2014 - Jogo (xbox 360, Corrida, E (para ))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB35853548",
+   "title": "Playerunknown's Battlegrounds Edição Preliminar Do Jogo - Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41811297",
+   "title": "Jogo Xbox One Dragon Age Inquisition Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB50868024",
+   "title": "Hellblade: Senua's Sacrifice | Jogo Xbox One - 25 Dígitos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39926899",
+   "title": "Jogo Xbox One Moto Racer 4 Kalypso Media",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39015347",
+   "title": "Jogo Xbox One Game Of Thrones Telltale Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB41013798",
+   "title": "Jogo Xbox Series X Skull And Bones Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36910412",
+   "title": "Jogo Xbox One/series X Phoenix Point Behemoth Edition",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21010772",
+   "title": "Jogo Xbox One Hellblade Senua's Sacrifice Mídia Física 4k",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28807605",
+   "title": "Jogo Xbox One Farming Simulator 17 Platinum Edition Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22705882",
+   "title": "Jogo Xbox One Wolfenstein: The Two-pack 2 Jogos",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB26912517",
+   "title": "Jogo Xbox Series X Vampire The Masquerade Swansong Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19719502",
+   "title": "Jogo Xbox One Hotel Transylvania 3 Monsters Overboard Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22772543",
+   "title": "Jogo Xbox One Just Cause 4 Game Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51339100",
+   "title": "Jogo Remember Me Xbox 360 Físico Ação Capcom Inglês",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB28890385",
+   "title": "Prototype 2 Xbox 360 Jogo Ação Aventura Activision Offline",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47639988",
+   "title": "Jogo Far Cry 4 Xbox 360 Ação E Aventura",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46191136",
+   "title": "Rage Anarchy Edition Xbox 360 Jogo Ação Bethesda Multijogador",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29101918",
+   "title": "Mass Effect Classics Xbox 360 Jogo Ação Aventura BioWare",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20777643",
+   "title": "Jogo Blood Stone 007 Xbox 360 Físico Activision Ação",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38087376",
+   "title": "Darksiders II Xbox 360 Jogo Ação Aventura Vigil Games",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23004129",
+   "title": "Jogo Rayman Origins - Xbox 360/xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB40013390",
+   "title": "Jogo Xbox 360 Vila Sésamo Era Uma Vez Um Monstro Wb Games Aventura Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25435100",
+   "title": "Jogo Xbox One The Dark Pictures Little Hope Midia Fisica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37121726",
+   "title": "Activision Call Of Duty Ghosts - Jogo - Xbox One Edição Padrão",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45874940",
+   "title": "Jogo Xbox One Rpg Tales Of Symphonia Remastered Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38397346",
+   "title": "Jogo Battlefield 4 Xbox 360 EA Games Ação Multijogador Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB66791005",
+   "title": "Sega Alien: Isolation, Xbox One - Jogo (Xbox One, Xbox One, Survival/Horror, M (adulto))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37158741",
+   "title": "2k Wwe 2k16, Xbox One Básico Xbox One Eng, Fre Video - Jogo (xbox One, Xbox One, Esportes, Modo Multijogador, T (teen))",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB43001425",
+   "title": "Jogo Lego Marvel - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39076947",
+   "title": "Jogo Blackwater Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45773751",
+   "title": "Jogo Nhl 15 Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20334265",
+   "title": "Jogo Nascar Unleashed - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38362066",
+   "title": "Jogo Battlefield 4 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB22914540",
+   "title": "Jogo Xbox One WWE 2K22 Físico Standard Edition Multijogador Online/Offline",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25912298",
+   "title": "Dishonored Death Of The Outsider Jogo Xbox One Mídia Física Bethesda",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB27735832",
+   "title": "Jogo Xbox One/series X Ea Sports Fc 24 Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51205978",
+   "title": "South of Midnight: Premium Edition Jogo Xbox Series X|S (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB24434991",
+   "title": "Jogo Xbox One E Series X Crash Team Rumble Deluxe Fisico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB44627243",
+   "title": "The Wolf Among Us Jogo Xbox One Mídia Física Telltale Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB6084097",
+   "title": "Jogo Xbox 360nCall of Duty: Black Ops II Standard Edition (Físico)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB20940516",
+   "title": "Jogo Risen 3 Titan Lords Xbox 360 Piranha Bytes Ação Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38619114",
+   "title": "Alien Crisis MIB Standard Edition Xbox 360 Jogo Físico Ação 2012",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25089627",
+   "title": "Jogo The Elder Scrolls V: Skyrim Xbox 360 Bethesda Ação Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38736504",
+   "title": "Mass Effect 2 Xbox 360 Jogo Físico Ação RPG BioWare EA",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB37481356",
+   "title": "Forza Horizon Xbox 360 Edição Standard Jogo Físico Ação Aventura Corrida",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42168594",
+   "title": "Jogo Assassin's Creed Rogue - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB42176918",
+   "title": "Jogo Assassin's Creed: Revelations - Xbox 360 E Xbox One",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45024099",
+   "title": "Jogo Sonic Generations - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45774761",
+   "title": "Jogo Mafia 2 Xbox 360 Xbox One Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36687211",
+   "title": "Jogo Crackdown Xbox 360 Xbox One Xbox Series X Retrocompatível Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB51210118",
+   "title": "WWE 2K25: The Bloodline Edition Jogo Xbox Series X|S One (Digital)",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25210822",
+   "title": "Jogo Assassins Creed Iv Black Flag - Xbox One & Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19743225",
+   "title": "Saints Row Day One Edition - Jogo Xbox Series X E One Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19855828",
+   "title": "Jogo Hitman Absolution Para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB36060598",
+   "title": "Call of Juarez: The Cartel para Xbox 360 - Jogo de Ação Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB6159641",
+   "title": "Jogo Assassin's Creed para Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22580524",
+   "title": "Jogo Diablo 3 Cd Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB46669664",
+   "title": "Jogo Kinectimals - Xbox 360 - Mídia Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39172691",
+   "title": "Jogo Rise Of Nightmares Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38119892",
+   "title": "Jogo Lego Batman 2 - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39062395",
+   "title": "Jogo Batman Arkham City Xbox 360 Edição Jogo Do Ano",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB23112874",
+   "title": "Jogo Xbox One Mídia Física LEGO Star Wars The Skywalker Saga Wb Games",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB22210972",
+   "title": "Jogo Doom 3 - Bfg Edition - Xbox One/xbox 360 - Míd Física",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38116568",
+   "title": "Saints Row: Gat Out Of Hell Xbox 360 Jogo Ação Volition Deep Silver",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29542008",
+   "title": "Armored Core Verdict Day para Xbox 360, Jogo de Ação e Estratégia Físico",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB19791818",
+   "title": "Devil May Cry 4 Xbox 360 Jogo Físico Ação Capcom Edição Platinum Hits",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB21423377",
+   "title": "Jogo Físico Doom Xbox One Bethesda Multiplayer Ação",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB39094992",
+   "title": "Jogo Destiny Xbox One - Ação e Aventura Cinematográfica",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB47226534",
+   "title": "Resident Evil 6 Xbox 360 Jogo Físico Terror Ação Capcom Legendas PT-BR",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB29783035",
+   "title": "Jogo Kingdoms Of Amalur Reckoning Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB45424520",
+   "title": "Jogo Batman The Telltale Series Xbox 360",
+   "reason": "ja_existe_oferta_por_external_ref"
+  },
+  {
+   "catalogId": "MLB23042682",
+   "title": "Jogo Assassin's Creed Brotherhood para Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB25971509",
+   "title": "Jogo Screamride Xbox 360 Midia Fisica original",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB38120154",
+   "title": "Jogo Lego Senhor Dos Aneis - Xbox 360",
+   "reason": "ja_existe_master_por_catalog_id"
+  },
+  {
+   "catalogId": "MLB52938852",
+   "title": "Jogo The Cursed Crusade Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB38150073",
+   "title": "Jogo Seminovo End War Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38277788",
+   "title": "Jogo Seminovo Wipeout 3 Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB29531499",
+   "title": "Jogo Virtua Tennis 2009 Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB22730795",
+   "title": "Jogo Far Cry Compilation Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB42184868",
+   "title": "Jogo Seminovo Bad Company - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB38667285",
+   "title": "Jogo Seminovo Fable Iii Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB37101500",
+   "title": "Jogo Eletrônico Arts Tiger Woods Pga Tour 14, Xbox 360 Xbox 360 Eng (xbox 360, Xbox 360, Esportes, Modo Multijogador, E (para ))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37158374",
+   "title": "Activision Spider-Man 3: The Game, Jogo de videogame para Xbox 360 (Xbox 360, Ação/Aventura, Classificação Indicativa: T (Adolescentes))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB43000976",
+   "title": "Jogo Formula 1 F1 2014 - Xbox 360 - Xbox One - Mídia Física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB22637936",
+   "title": "Jogo Assassin's Creed 4 Iv Black Flag Xbox 360 / Xbox One",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37699998",
+   "title": "Cabo e bateria do kit de carregamento e jogo Xbox 360 /e",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB44915739",
+   "title": "Passe de Jogo Xbox Game Pass Ultimat 2 meses",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB51879569",
+   "title": "Jogo Xbox One de edição limitada de 2016 da Fórmula 1 - Ibushak Gaming",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB36165126",
+   "title": "Jogo Ghost Recon Advanced Warfighter Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB50858671",
+   "title": "Jogo Medal Of Honor Warfighter Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB23063523",
+   "title": "Jogo Diablo 3 xbox 360 Mídia física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB45881871",
+   "title": "Jogo Grid 2 Xbox 360 Mídia Física",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37522035",
+   "title": "Tomb Raider Jogo do Ano - Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB46056728",
+   "title": "Jogo Sonic Unleashed Para Xbox 360 E10",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB38581855",
+   "title": "Jogo Young Justice Legacy para Xbox 360",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37161389",
+   "title": "Tecmo Dead Or Alive Xtreme 2, Xbox 360 Xbox 360 Eng,ita Vídeo - Jogo (xbox 360, Xbox 360, Esportes, Modo Multijogador, T (teen))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB47774235",
+   "title": "Jogo Xbox 360 Vila Sesamo Once Upon A Monster Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB29470961",
+   "title": "Take-Two Interactive Bully - Jogo (Xbox 360) - Edição para Bolsistas",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB32365043",
+   "title": "Jogo Xbox 360 Sniper Elite V2 Silver Star Edition Físico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB36668258",
+   "title": "Jogo Xbox 360 Hot Wheels O Melhor Piloto Do Mundo Fisico",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB39031293",
+   "title": "Transformers Devastation Xbox 360 Jogo Ação Multijogador",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37102301",
+   "title": "Activision Call Of Duty: Modern Warfare 2 Classics, Xbox 360 Eng Vídeo - Jogo (xbox 360, Xbox 360, Shooter, Modo Multijogador, M (maduro))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB37099620",
+   "title": "Activision Call Of Duty 5: World At War - Xbox 360 Básico Xbox 360 Vídeo - Jogo (xbox 360, Fps (tiro em primeira pessoa), Modo Multijogador, M (maduro))",
+   "reason": "sem_vendedor_novo_ativo"
+  },
+  {
+   "catalogId": "MLB46058393",
+   "title": "Lollipop Chainsaw Para Xbox 360 Jogo de Ação",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB42458426",
+   "title": "Microsoft Kinect Sports: Season Two Xbox 360 Vídeo - Jogo (xbox 360, Esportes, Rp (classificação Pendente))",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB51878121",
+   "title": "Lost Planet Extreme Condition Xbox 360 Jogo Ação Capcom",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB20914748",
+   "title": "Kit Xbox 360 Jogo Borderlands 2 & Dishonored Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB28748118",
+   "title": "Kit 15 Case Estojo Original Para Reposição Jogo Xbox One",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB41302357",
+   "title": "Jogo Crysis 3 Hunter Edition Xbox 360 Crytek Ação Multijogador",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB22950667",
+   "title": "Dragon Age Ii Xbox 360 Jogo Ação Marca Electronic Arts",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB20559147",
+   "title": "Headset Fone Converse Online E Escute O Jogo Xbox 360 Nanus Cor Preto",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB69909296",
+   "title": "100 Protetor Dvd Caixa Protetora Para Jogo Xbox 360 Clássico",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB42181254",
+   "title": "Jogo Transformers Devastation - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB25972014",
+   "title": "Jogo Xbox One Double Dragon Gaiden Rise Of The Dragons Fisic",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB36208942",
+   "title": "Jogo Xbox One The Sims 4 + Star Wars Bundle Midia Fisica",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB61862086",
+   "title": "Microsoft Assinatura Passe De Jogo Xbox Final Ultimate",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB21876770",
+   "title": "Jogo The Sims 3 - Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB45749638",
+   "title": "Jogo Far Cry 3 Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  },
+  {
+   "catalogId": "MLB47780409",
+   "title": "Jogo Seminovo Asuras Wrath - Xbox 360",
+   "reason": "filtro_titulo_nao_produto_ou_porteiro"
+  },
+  {
+   "catalogId": "MLB45605467",
+   "title": "Jogo Vampire Rain Para Xbox 360",
+   "reason": "teto_de_sondas_do_termo"
+  }
+ ],
+ "bornReview": 0,
+ "bornApproved": 0,
+ "createdMasterIds": [],
+ "limits": {
+  "maxNewMasters": 10,
+  "probesPerTerm": 25,
+  "termsPerRun": 4,
+  "timeBudgetMs": 100000,
+  "maxConsecutiveProbeErrors": 4,
+  "mode": "doubt"
+ },
+ "stoppedReason": null,
+ "elapsedMs": 29013
+}

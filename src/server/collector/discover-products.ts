@@ -2,17 +2,27 @@ import 'server-only';
 import { entryGateAttributes, isRejectedByGate } from '@/lib/catalog/gate';
 import type { ProductType } from '@/db/schema';
 import { randomUUID } from 'node:crypto';
-import { and, eq, sql, TransactionRollbackError } from 'drizzle-orm';
+import { and, eq, inArray, sql, TransactionRollbackError } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts, systemConfig } from '@/db/schema';
 import type { GamePlatformGen } from '@/db/schema';
 import { getValidAccessToken } from './sources/mercado-livre-auth';
 import { classifyFromAttributes, resolveMeliCategoryProductType, type MeliAttribute } from './sources/mercado-livre-classify';
-import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
+import { normalizeGamePlatformGen, resolveGameFormat } from '@/lib/affiliate/game-classification';
 import { slugify } from '@/lib/slugify';
 import { isPartOrPackagingTitle } from '@/lib/affiliate/product-type-classifier';
 import { mapWithConcurrency } from '@/lib/concurrency';
 import { recordPriceSnapshot } from './record-price-snapshot';
+import { getMasterReferencePrices } from './price-plausibility';
+import {
+  attachPriceVerdict,
+  buildNewMasterAttributes,
+  discoveryDoubts,
+  medianOf,
+  resolveLimits,
+  type DiscoveryLimits,
+  type KindSource,
+} from './discover-policy';
 
 const PLATFORM_TERMS = ['nintendo switch', 'nintendo switch 2', 'ps4', 'ps5', 'xbox one', 'xbox series', 'xbox 360'];
 
@@ -347,6 +357,17 @@ export interface DiscoveryPreviewItem {
   existingMasterId?: string;
   sellers: number;
   bestPriceCents: number;
+  /** Só para create_master: como o master NASCERIA (approved = visível, review = invisível até conferência). */
+  bornAs?: 'approved' | 'review';
+  gateReason?: string;
+  doubts?: string[];
+}
+
+/** Candidato descartado, com o motivo (só preenchido no dry-run, amostra limitada). */
+export interface DiscoverySkipSample {
+  catalogId: string;
+  title: string;
+  reason: string;
 }
 
 export interface DiscoverProductsSummary {
@@ -363,6 +384,18 @@ export interface DiscoverProductsSummary {
   dryRun: boolean;
   preview: DiscoveryPreviewItem[];
   errors: { term: string; message: string }[];
+  /** Contagem de descartes por motivo (sempre preenchido). */
+  skipReasons: Record<string, number>;
+  /** Amostra de descartes com título (só dry-run). */
+  skipSamples: DiscoverySkipSample[];
+  /** Masters novos que nasceram em review / aprovados (no dry-run: simulados). */
+  bornReview: number;
+  bornApproved: number;
+  createdMasterIds: string[];
+  limits: DiscoveryLimits;
+  /** Por que a execução parou antes de percorrer todos os termos (rate limit, tempo). */
+  stoppedReason: string | null;
+  elapsedMs: number;
 }
 
 /** GET autenticado na API oficial com 1 retry em 429 (respeita Retry-After, teto 5s). */
@@ -451,6 +484,36 @@ async function saveCursor(index: number): Promise<void> {
     .onConflictDoUpdate({ target: systemConfig.key, set: { value: { index }, updatedAt: new Date() } });
 }
 
+const LAST_RUN_CONFIG_KEY = 'discover_products_last_run';
+
+/** Resumo da última execução real (system_config; 1 linha, sobrescrita) para auditoria rápida. */
+async function saveLastRun(summary: DiscoverProductsSummary): Promise<void> {
+  const value = {
+    at: new Date().toISOString(),
+    cursorStart: summary.cursorStart,
+    termsSearched: summary.termsSearched,
+    found: summary.found,
+    created: summary.created,
+    bornReview: summary.bornReview,
+    bornApproved: summary.bornApproved,
+    alreadyExisted: summary.alreadyExisted,
+    skipReasons: summary.skipReasons,
+    errors: summary.errors.length,
+    stoppedReason: summary.stoppedReason,
+    elapsedMs: summary.elapsedMs,
+    createdMasterIds: summary.createdMasterIds,
+    limits: summary.limits,
+  };
+  try {
+    await db
+      .insert(systemConfig)
+      .values({ key: LAST_RUN_CONFIG_KEY, value, description: 'Resumo da última execução real da descoberta (discover-products.ts). Auditoria: ver attributes->discovery nos masters.' })
+      .onConflictDoUpdate({ target: systemConfig.key, set: { value, updatedAt: new Date() } });
+  } catch (e) {
+    console.error('discover-products: falha ao gravar discover_products_last_run', (e as Error).message);
+  }
+}
+
 /**
  * Descobre produto NOVO no catálogo do Mercado Livre e cadastra sozinho,
  * já publicado (status='active') — decisão explícita do usuário
@@ -481,10 +544,30 @@ interface TermIngestResult {
   skippedProbeCap: number;
   preview: DiscoveryPreviewItem[];
   errors: { term: string; message: string }[];
+  skipReasons: Record<string, number>;
+  skipSamples: DiscoverySkipSample[];
+  bornReview: number;
+  bornApproved: number;
+  createdMasterIds: string[];
 }
 
 function emptyTermResult(): TermIngestResult {
-  return { found: 0, created: 0, alreadyExisted: 0, createdTitles: [], skippedNoOffers: 0, skippedProbeCap: 0, preview: [], errors: [] };
+  return {
+    found: 0, created: 0, alreadyExisted: 0, createdTitles: [], skippedNoOffers: 0, skippedProbeCap: 0, preview: [], errors: [],
+    skipReasons: {}, skipSamples: [], bornReview: 0, bornApproved: 0, createdMasterIds: [],
+  };
+}
+
+/** Estado compartilhado entre os termos de UMA execução (JS é single-thread: reservar antes do await basta). */
+interface RunState {
+  newMasters: number;
+  deadline: number;
+  /** Preenchido quando a execução deve parar (429 persistente, tempo). */
+  stop: string | null;
+}
+
+function freshRunState(limits: DiscoveryLimits): RunState {
+  return { newMasters: 0, deadline: Date.now() + limits.timeBudgetMs, stop: null };
 }
 
 /**
@@ -499,12 +582,20 @@ async function searchAndIngestTerm(
   searchTerm: SearchTerm,
   network: { id: string },
   accessToken: string,
-  options: { dryRun?: boolean } = {}
+  options: { dryRun?: boolean; limits?: DiscoveryLimits; state?: RunState } = {}
 ): Promise<TermIngestResult> {
   const dryRun = options.dryRun === true;
+  const limits = options.limits ?? resolveLimits();
+  const state = options.state ?? freshRunState(limits);
   const result = emptyTermResult();
   let results: MeliSearchResult[] = [];
   let probesUsed = 0;
+  let consecutiveProbeErrors = 0;
+  const skip = (item: MeliSearchResult, reason: string) => {
+    result.skipReasons[reason] = (result.skipReasons[reason] ?? 0) + 1;
+    if (dryRun && result.skipSamples.length < 400) result.skipSamples.push({ catalogId: item.id, title: item.name, reason });
+  };
+  if (state.stop) return result;
 
   try {
     // Só API oficial de catálogo. /sites/MLB/search (busca aberta) devolve
@@ -515,12 +606,58 @@ async function searchAndIngestTerm(
     result.found = results.length;
   } catch (err) {
     result.errors.push({ term: searchTerm.term, message: (err as Error).message });
+    // 429 na busca: respeitar a cota e encerrar a execução inteira (o cursor não passa deste trecho).
+    if (/HTTP 429/.test((err as Error).message)) state.stop = 'rate_limit_429';
     return result;
   }
 
   // Try/catch por item: um produto com dado inesperado (ex: hierarquia de
   // variação do catálogo) não deve derrubar o resto dos resultados desse termo.
-  for (const item of results) {
+  // Pré-checagem em LOTE (2 consultas por termo, em vez de 2 por candidato): quem já tem master pelo
+  // catalog_product_id ou oferta pelo external_ref sai antes de qualquer outro custo. O índice único e a
+  // transação do INSERT continuam sendo a garantia final contra corrida.
+  const knownMasterCatalogIds = new Set<string>();
+  const knownOfferRefs = new Set<string>();
+  if (results.length > 0) {
+    try {
+      const ids = results.map((r) => r.id);
+      const masters = await db.select({ c: masterProducts.meliCatalogId }).from(masterProducts).where(inArray(masterProducts.meliCatalogId, ids));
+      for (const m of masters) if (m.c) knownMasterCatalogIds.add(m.c);
+      const offers = await db
+        .select({ r: affiliateOffers.externalRef })
+        .from(affiliateOffers)
+        .where(and(eq(affiliateOffers.networkId, network.id), inArray(affiliateOffers.externalRef, ids)));
+      for (const o of offers) if (o.r) knownOfferRefs.add(o.r);
+    } catch (err) {
+      result.errors.push({ term: searchTerm.term, message: `pré-checagem em lote: ${(err as Error).message}` });
+      return result;
+    }
+  }
+
+  // Rotação por hora: sem estado, cada execução começa em um ponto diferente da lista de candidatos. Sem isso, os
+  // primeiros ~N candidatos SEM oferta ativa (≈75-85% do catálogo) consumiriam sempre o teto de sondas e os demais
+  // nunca seriam alcançados.
+  const hourSlot = Math.floor(Date.now() / 3_600_000);
+  const pending = results.filter((r) => !knownMasterCatalogIds.has(r.id) && !knownOfferRefs.has(r.id));
+  const rot = pending.length ? (hourSlot * 37) % pending.length : 0;
+  const ordered = [...pending.slice(rot), ...pending.slice(0, rot)];
+  for (const r of results) {
+    if (knownMasterCatalogIds.has(r.id)) {
+      result.alreadyExisted++;
+      skip(r, 'ja_existe_master_por_catalog_id');
+    } else if (knownOfferRefs.has(r.id)) {
+      result.alreadyExisted++;
+      skip(r, 'ja_existe_oferta_por_external_ref');
+    }
+  }
+
+  for (const item of ordered) {
+    if (state.stop) break;
+    if (Date.now() > state.deadline) {
+      state.stop = 'orcamento_de_tempo';
+      break;
+    }
+    let reservedSlot = false;
     try {
       // Busca textual do Mercado Livre pra termo de console/acessório não é
       // filtro exato — às vezes devolve jogo junto ("Jogo X Para Console
@@ -529,9 +666,11 @@ async function searchAndIngestTerm(
       // fora do escopo pedido: jogo, console, joystick/controle avulso,
       // tecnologia de experiência de jogo.
       if (searchTerm.kind !== 'game' && /^jogo\b/i.test(item.name)) {
+        skip(item, 'jogo_em_busca_de_console_ou_acessorio');
         continue;
       }
       if (isNonProductAccessory(item.name)) {
+        skip(item, 'filtro_titulo_nao_produto_ou_porteiro');
         continue;
       }
       // Só item NOVO — decisão explícita do cliente (2026-07-18, ver
@@ -543,41 +682,11 @@ async function searchAndIngestTerm(
       // ausente (resultado do catálogo buy-box) passa — catálogo buy-box é
       // por definição sempre item novo.
       if (item.condition === 'used' || isUsedCondition(item.name)) {
+        skip(item, 'usado_ou_open_box');
         continue;
       }
 
-      const [existing] = await db
-        .select({ id: masterProducts.id })
-        .from(masterProducts)
-        .where(eq(masterProducts.meliCatalogId, item.id))
-        .limit(1);
-
-      if (existing) {
-        result.alreadyExisted++;
-        continue;
-      }
-
-      // Achado real (2026-07-30): esse `existing` acima só pega repetição
-      // exata de meliCatalogId — não pega o caso (comum) do Mercado Livre
-      // catalogar o mesmo jogo físico sob um catalog_product_id "gêmeo": aí
-      // o dedup por similaridade abaixo reaproveita certo o master_product,
-      // mas sem checar se JÁ existe uma oferta pra esse item.id específico,
-      // toda vez que o mesmo anúncio reaparecia numa busca (72 termos rodam
-      // em paralelo, itens populares casam com vários termos ao mesmo
-      // tempo) nascia mais uma oferta placeholder duplicada. 28.800 ofertas
-      // duplicadas encontradas num total de 29.804 (96% da tabela) até essa
-      // correção — ver também o índice único em affiliate_offers (network_id,
-      // external_ref) que agora garante isso no nível do banco.
-      const [existingOffer] = await db
-        .select({ id: affiliateOffers.id })
-        .from(affiliateOffers)
-        .where(and(eq(affiliateOffers.networkId, network.id), eq(affiliateOffers.externalRef, item.id)))
-        .limit(1);
-
-      if (existingOffer) {
-        result.alreadyExisted++;
-        continue;
-      }
+      // (já existe master/oferta: tratado em lote acima; o índice único garante contra corrida)
 
       const detectedPlatform = normalizeGamePlatformGen(null, item.name);
       const isGameMedia = isGameTitleOrMedia(item.name);
@@ -599,9 +708,17 @@ async function searchAndIngestTerm(
       // catálogo como productType='game'. Agora exige pelo menos um sinal
       // positivo (categoria OU título) antes de assumir 'game' — sem sinal
       // nenhum, `resolvedKind` fica null e o item é descartado abaixo.
-      let resolvedKind: 'game' | 'console' | 'accessory' | null =
-        categoryKind ??
-        (searchTerm.kind !== 'game' ? (!isGameMedia ? searchTerm.kind : 'game') : (isGameMedia ? 'game' : null));
+      let kindSource: KindSource = 'category';
+      let resolvedKind: 'game' | 'console' | 'accessory' | null = categoryKind;
+      if (!resolvedKind) {
+        if (searchTerm.kind !== 'game') {
+          resolvedKind = !isGameMedia ? searchTerm.kind : 'game';
+          kindSource = !isGameMedia ? 'term' : 'title';
+        } else if (isGameMedia) {
+          resolvedKind = 'game';
+          kindSource = 'title';
+        }
+      }
 
       // Terceiro sinal, só consultado quando os dois primeiros (categoria
       // real do Mercado Livre + heurística de título) ficaram em silêncio —
@@ -617,11 +734,13 @@ async function searchAndIngestTerm(
         const [topPrediction] = classifyProductType(item.name, model);
         if (topPrediction && topPrediction.probability >= 0.65) {
           resolvedKind = topPrediction.label;
+          kindSource = 'classifier';
         }
       }
 
       if (!resolvedKind) {
-        result.errors.push({ term: searchTerm.term, message: `${item.id}: descartado — sem categoria reconhecida, título de jogo nem confiança do classificador ("${item.name}")` });
+        skip(item, 'sem_categoria_titulo_nem_classificador');
+        if (!dryRun) result.errors.push({ term: searchTerm.term, message: `${item.id}: descartado — sem categoria reconhecida, título de jogo nem confiança do classificador ("${item.name}")` });
         continue;
       }
 
@@ -636,7 +755,10 @@ async function searchAndIngestTerm(
               // não dá pra confiar cegamente no termo de busca. Deriva a
               // plataforma de verdade a partir do título de cada resultado;
               // só cai pro termo de busca se o título não deixar claro.
-              gamePlatformGen: detectedPlatform !== 'unknown' ? detectedPlatform : (searchTerm.platform ?? 'unknown'),
+              // Console: SÓ a plataforma do título (a busca "console nintendo switch" traz Wii/DS/3DS/Game Boy; herdar
+              // o termo cadastrava console legado como switch_1 — visto no dry-run de 2026-11-03). Acessório pode
+              // herdar do termo, mas isso gera dúvida (platformFromTerm) e o master nasce em review.
+              gamePlatformGen: detectedPlatform !== 'unknown' ? detectedPlatform : resolvedKind === 'accessory' ? (searchTerm.platform ?? 'unknown') : 'unknown',
               gameEditionType: 'unknown' as const,
               gameEditionSource: null,
               gameCollection: null,
@@ -646,30 +768,101 @@ async function searchAndIngestTerm(
       // a plataforma, deriva do título antes de desistir (regra de negócio).
       const classification = {
         ...baseClassification,
+        // Formato do JOGO (físico x digital): o título prova; sem prova, o atributo FORMAT do catálogo; nunca chuta.
+        gameFormat: resolvedKind === 'game' ? resolveGameFormat(item.name, baseClassification.gameFormat) : baseClassification.gameFormat,
         gamePlatformGen:
           baseClassification.gamePlatformGen !== 'unknown' ? baseClassification.gamePlatformGen : detectedPlatform,
       };
 
-      // Dedup por título+plataforma normalizados (obrigatório antes de
-      // cadastrar qualquer master_product).
-      const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
-      const existingBySimilarity = await findExistingMasterProduct(item.name, classification.gamePlatformGen, {
-        productType: classification.productType,
-      });
-
       // Sonda oficial de preço antes de cadastrar: sem vendedor ativo novo
       // não há cotação real, e criar o produto só geraria master morto.
-      if (probesUsed >= MAX_PROBES_PER_TERM) {
+      if (probesUsed >= Math.min(MAX_PROBES_PER_TERM, limits.probesPerTerm)) {
         result.skippedProbeCap++;
+        skip(item, 'teto_de_sondas_do_termo');
         continue;
       }
+      // Teto de masters novos atingido: encerra a execução (poupa cota da API; o resto fica para a próxima rotação).
+      if (state.newMasters >= limits.maxNewMasters) {
+        state.stop = state.stop ?? 'teto_de_masters_novos_da_execucao';
+        break;
+      }
       probesUsed++;
-      const sellerPrices = await probeSellerPrices(item.id, accessToken);
+      let sellerPrices: Awaited<ReturnType<typeof probeSellerPrices>>;
+      try {
+        sellerPrices = await probeSellerPrices(item.id, accessToken);
+        consecutiveProbeErrors = 0;
+      } catch (probeErr) {
+        consecutiveProbeErrors++;
+        const msg = (probeErr as Error).message;
+        // 429 persistente (já houve 1 retry em meliGet): respeitar a cota e parar a execução inteira.
+        if (/HTTP 429/.test(msg)) state.stop = 'rate_limit_429';
+        else if (consecutiveProbeErrors >= limits.maxConsecutiveProbeErrors) state.stop = 'erros_consecutivos_de_sonda';
+        throw probeErr;
+      }
       if (sellerPrices.length === 0) {
         result.skippedNoOffers++;
+        skip(item, 'sem_vendedor_novo_ativo');
         continue;
       }
       const bestSeller = sellerPrices.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
+      const sellerCents = sellerPrices.map((s) => s.priceCents);
+
+      // Dedup por título+plataforma normalizados (OBRIGATÓRIO antes de cadastrar qualquer master_product).
+      // Roda depois da sonda só por custo (varre todos os masters da plataforma); a sonda não depende dele,
+      // então o número de chamadas à API é o mesmo de antes.
+      const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
+      const existingBySimilarity = await findExistingMasterProduct(item.name, classification.gamePlatformGen, {
+        gameFormat: classification.gameFormat,
+        productType: classification.productType,
+      });
+
+      // Preço absurdo / isca: ao anexar a master existente, o menor preço precisa caber na faixa real do master
+      // (mesma régua do ADR 0002 e da quarentena); sem 2+ referências, aceita.
+      if (existingBySimilarity) {
+        const refs = await getMasterReferencePrices(existingBySimilarity.id);
+        const verdict = attachPriceVerdict(bestSeller.priceCents, refs);
+        if (verdict !== 'ok') {
+          skip(item, verdict === 'low' ? 'preco_isca_vs_master_existente' : 'preco_absurdo_alto_vs_master_existente');
+          continue;
+        }
+      }
+
+      // Veredito do porteiro com TUDO que a descoberta sabe (tipo resolvido, formato, plataforma, mediana dos
+      // vendedores para o piso de plausibilidade). rejected = não cadastra; review = nasce invisível.
+      const gateAttrs = entryGateAttributes(item.name, classification.productType, {
+        gameFormat: classification.gameFormat,
+        gamePlatformGen: classification.gamePlatformGen,
+        medianPriceCents: medianOf(sellerCents),
+      });
+      const gateInfo = gateAttrs.catalogGate as { verdict?: string; reason?: string } | undefined;
+      if (gateInfo?.verdict === 'rejected') {
+        skip(item, `porteiro_rejeita:${gateInfo.reason ?? 'sem_motivo'}`);
+        continue;
+      }
+      const doubts = existingBySimilarity
+        ? []
+        : discoveryDoubts({
+            kindSource,
+            productType: classification.productType as 'game' | 'console' | 'accessory',
+            platform: classification.gamePlatformGen,
+            gameFormat: classification.gameFormat,
+            sellerPricesCents: sellerCents,
+            // Plataforma que veio SÓ do termo de busca (o título não a revela): a busca textual do ML não é filtro
+            // exato (um "console nintendo switch" traz Wii/DS/3DS), então esse valor não é confiável.
+            platformFromTerm: detectedPlatform === 'unknown' && resolvedKind === 'accessory' && !!searchTerm.platform,
+          });
+      const newAttributes = buildNewMasterAttributes(gateAttrs, doubts, limits.mode, new Date().toISOString());
+      const bornAs = (newAttributes.discovery as { bornAs: 'approved' | 'review' }).bornAs;
+
+      if (!existingBySimilarity) {
+        // Reserva a vaga ANTES de qualquer await seguinte (os termos rodam em paralelo).
+        if (state.newMasters >= limits.maxNewMasters) {
+          skip(item, 'teto_de_masters_novos_da_execucao');
+          continue;
+        }
+        state.newMasters++;
+        reservedSlot = true;
+      }
 
       if (dryRun) {
         result.preview.push({
@@ -681,6 +874,9 @@ async function searchAndIngestTerm(
           existingMasterId: existingBySimilarity?.id,
           sellers: sellerPrices.length,
           bestPriceCents: bestSeller.priceCents,
+          ...(existingBySimilarity
+            ? {}
+            : { bornAs, gateReason: (newAttributes.catalogGate as { reason?: string } | undefined)?.reason ?? 'sem_sinal_de_risco', doubts }),
         });
         continue;
       }
@@ -768,7 +964,7 @@ async function searchAndIngestTerm(
                 meliCatalogId: item.id,
                 defaultImages: item.pictures?.map((p) => p.url) ?? [],
                 ...classification,
-                attributes: entryGateAttributes(item.name, (classification as { productType?: ProductType }).productType ?? 'game'),
+                attributes: newAttributes,
                 classifiedAt: new Date(),
               })
               .returning();
@@ -788,9 +984,15 @@ async function searchAndIngestTerm(
         if (!txResult) {
           // Perdemos a corrida — o item já está catalogado pela iteração
           // concorrente que venceu; nada a criar aqui.
+          state.newMasters--; // devolve a vaga reservada
+          reservedSlot = false;
           result.alreadyExisted++;
           continue;
         }
+        reservedSlot = false;
+        result.createdMasterIds.push(txResult.masterProduct.id);
+        if (bornAs === 'review') result.bornReview++;
+        else result.bornApproved++;
         masterProduct = txResult.masterProduct;
         insertedOffer = txResult.offer;
       }
@@ -812,6 +1014,7 @@ async function searchAndIngestTerm(
         result.alreadyExisted++;
       }
     } catch (err) {
+      if (reservedSlot) state.newMasters--; // erro depois da reserva: devolve a vaga
       result.errors.push({ term: searchTerm.term, message: `${item.id}: ${(err as Error).message}` });
     }
   }
@@ -844,10 +1047,21 @@ export async function searchAndIngestMeliTerm(term: string): Promise<TermIngestR
  * não avança o cursor de rotação. `termsLimit` restringe quantos termos o
  * dry-run percorre (default: TERMS_PER_RUN).
  */
-export async function discoverNewProducts(options: { dryRun?: boolean; termsLimit?: number } = {}): Promise<DiscoverProductsSummary> {
+export async function discoverNewProducts(
+  options: { dryRun?: boolean; termsLimit?: number; limits?: Partial<DiscoveryLimits>; cursorStart?: number } = {}
+): Promise<DiscoverProductsSummary> {
   const dryRun = options.dryRun === true;
-  const termsPerRun = options.termsLimit ?? TERMS_PER_RUN;
-  const cursorStart = await getCursor();
+  const startedAt = Date.now();
+  const limits = resolveLimits({
+    termsPerRun: options.termsLimit ?? options.limits?.termsPerRun,
+    ...options.limits,
+    // env: ajuste operacional sem deploy de código (DISCOVER_MODE=review_all força tudo novo em review)
+    mode: options.limits?.mode ?? process.env.DISCOVER_MODE,
+  });
+  const termsPerRun = limits.termsPerRun;
+  const state = freshRunState(limits);
+  // cursorStart explícito só para dry-run/diagnóstico (amostrar outro trecho da lista); o cron usa o cursor salvo.
+  const cursorStart = dryRun && options.cursorStart != null ? options.cursorStart : await getCursor();
   const terms = Array.from(
     { length: termsPerRun },
     (_, i) => SEARCH_TERMS[(cursorStart + i) % SEARCH_TERMS.length]
@@ -865,6 +1079,14 @@ export async function discoverNewProducts(options: { dryRun?: boolean; termsLimi
     dryRun,
     preview: [],
     errors: [],
+    skipReasons: {},
+    skipSamples: [],
+    bornReview: 0,
+    bornApproved: 0,
+    createdMasterIds: [],
+    limits,
+    stoppedReason: null,
+    elapsedMs: 0,
   };
 
   const [network] = await db
@@ -886,10 +1108,18 @@ export async function discoverNewProducts(options: { dryRun?: boolean; termsLimi
   // conexão do banco (max:5) pro trabalho de escrita de cada termo.
   // Concorrência 2 (era 4): cada termo agora faz até 2 buscas + até
   // MAX_PROBES_PER_TERM sondas, e a cota do app é desconhecida (429 já visto).
-  const TERM_CONCURRENCY = 2;
+  // 1 (sequencial) desde 2026-11-03: dois termos criando em paralelo podiam cadastrar o mesmo jogo sob dois
+  // catalog_product_id 'gêmeos' antes de qualquer um commitar (o dedup por título só enxerga o que já foi gravado).
+  const TERM_CONCURRENCY = 1;
   await mapWithConcurrency(terms, TERM_CONCURRENCY, async (searchTerm) => {
+    if (state.stop) return;
     summary.termsSearched++;
-    const termResult = await searchAndIngestTerm(searchTerm, network, accessToken, { dryRun });
+    const termResult = await searchAndIngestTerm(searchTerm, network, accessToken, { dryRun, limits, state });
+    for (const [k, v] of Object.entries(termResult.skipReasons)) summary.skipReasons[k] = (summary.skipReasons[k] ?? 0) + v;
+    summary.skipSamples.push(...termResult.skipSamples);
+    summary.bornReview += termResult.bornReview;
+    summary.bornApproved += termResult.bornApproved;
+    summary.createdMasterIds.push(...termResult.createdMasterIds);
     summary.found += termResult.found;
     summary.created += termResult.created;
     summary.alreadyExisted += termResult.alreadyExisted;
@@ -899,7 +1129,36 @@ export async function discoverNewProducts(options: { dryRun?: boolean; termsLimi
     summary.errors.push(...termResult.errors);
   });
 
-  if (!dryRun) await saveCursor((cursorStart + termsPerRun) % SEARCH_TERMS.length);
+  summary.stoppedReason = state.stop;
+  summary.elapsedMs = Date.now() - startedAt;
+  if (!dryRun) {
+    // Em 429/erros em série o cursor NÃO avança para o trecho não percorrido? Simples e seguro: avança só o
+    // que foi efetivamente buscado (termsSearched), para reprocessar o resto na próxima rodada.
+    const advanced = summary.stoppedReason ? Math.max(1, summary.termsSearched) : termsPerRun;
+    await saveCursor((cursorStart + advanced) % SEARCH_TERMS.length);
+    await saveLastRun(summary);
+  }
+  // Log estruturado (uma linha JSON por execução) para o log da Vercel; sem amostras longas.
+  console.log(
+    JSON.stringify({
+      event: 'discover-products',
+      dryRun,
+      at: new Date().toISOString(),
+      cursorStart,
+      termsSearched: summary.termsSearched,
+      found: summary.found,
+      created: summary.created,
+      bornReview: summary.bornReview,
+      bornApproved: summary.bornApproved,
+      alreadyExisted: summary.alreadyExisted,
+      skipReasons: summary.skipReasons,
+      errors: summary.errors.length,
+      stoppedReason: summary.stoppedReason,
+      elapsedMs: summary.elapsedMs,
+      createdMasterIds: summary.createdMasterIds,
+      limits: summary.limits,
+    })
+  );
 
   return summary;
 }

@@ -8,6 +8,7 @@ import { Reveal } from '@/components/motion/reveal';
 import { RemoveCartItemButton } from '@/components/affiliate/remove-cart-item-button';
 import { formatBRL } from '@/lib/format';
 import { requireCustomer } from '@/lib/auth/require-customer';
+import { CommissionNotice } from '@/components/legal/commission-notice';
 import { getCartItemsForUser } from '@/server/queries/cart';
 
 export const metadata = { title: 'Carrinho' };
@@ -26,6 +27,7 @@ export default async function CarrinhoPage() {
         <Text variant="body-md" color="secondary" className="mt-1">
           Os jogos que você separou para comprar. Clique em Ir à loja para finalizar a compra direto no site da loja.
         </Text>
+        <CommissionNotice className="mt-2" />
       </Reveal>
 
       <Reveal delay={0.05}>

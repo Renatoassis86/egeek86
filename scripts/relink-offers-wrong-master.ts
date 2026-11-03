@@ -191,12 +191,13 @@ function effectivePlatform(name: string, dbPlatform: string): string {
 }
 
 function toInfo(m: MasterFull): MasterInfo {
-  const n = normalizeTitle(m.name);
+  // Formato (físico x digital x não provado) é eixo de identidade: vem do nome, senão do game_format gravado.
+  const n = normalizeTitle(m.name, { gameFormat: m.gameFormat });
   return {
     m,
     n,
     platform: effectivePlatform(m.name, m.gamePlatformGen),
-    digital: m.gameFormat === 'digital' || n.markers.includes('digital'),
+    digital: n.format === 'digital',
   };
 }
 
@@ -327,7 +328,8 @@ function findIdenticalDestinations(
   current: MasterInfo,
   masters: MasterInfo[]
 ): { matches: MasterInfo[]; unresolvedPlatform: boolean } {
-  const o = normalizeTitle(offer.title);
+  // A oferta sem prova de formato no título herda o do master a que está ligada (o catálogo do ML é um por formato).
+  const o = normalizeTitle(offer.title, { gameFormat: current.m.gameFormat });
   if (!o.coreTitle) return { matches: [], unresolvedPlatform: false };
   // Plataforma do título da oferta; se o título não diz, a do master atual quando
   // NÃO contradita (nunca 'unknown' por padrão).
@@ -337,14 +339,12 @@ function findIdenticalDestinations(
     platform = mentionsMultipleGenerations(current.m.name) ? 'unknown' : current.platform;
   }
   if (platform === 'unknown') return { matches: [], unresolvedPlatform: true };
-  const oDigital = o.markers.includes('digital');
   const matches: MasterInfo[] = [];
   for (const c of masters) {
     if (c.m.id === current.m.id) continue;
     if (c.m.mergedInto) continue;
     if (c.m.productType !== current.m.productType) continue;
     if (c.platform !== platform) continue;
-    if (c.digital !== oDigital) continue;
     if (!isSameProduct(o, c.n, 0.8)) continue;
     // O destino não pode ser, ele próprio, contraditado pelo título da oferta.
     if (analyzeOffer(offer.title, c).some((r) => CONF_RANK[r.confidence] >= CONF_RANK.media)) continue;

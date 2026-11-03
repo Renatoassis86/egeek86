@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Text } from '@/components/ui/text';
 import { Separator } from '@/components/ui/separator';
 import { Send } from 'lucide-react';
+import { CommissionNotice } from '@/components/legal/commission-notice';
 
 function InstagramIcon({ className }: { className?: string }) {
   return (
@@ -115,6 +116,8 @@ export function SiteFooter() {
         </div>
 
         <Separator className="my-8" />
+
+        <CommissionNotice className="mb-4" />
 
         <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
           <Text variant="caption" color="tertiary">

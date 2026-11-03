@@ -22,7 +22,7 @@ import { mentionsMultipleGenerations } from '@/lib/affiliate/game-classification
 export type OfferCondition = 'new' | 'open_box' | 'used';
 
 /** Por que a oferta ficou fora dos indicadores ('ok' = entra normalmente). */
-export type OfferIdentityReason = 'ok' | 'open_box' | 'used' | 'geracao_ambigua' | 'divergencia';
+export type OfferIdentityReason = 'ok' | 'open_box' | 'used' | 'geracao_ambigua' | 'formato_desconhecido' | 'divergencia';
 
 export interface OfferIdentityResult {
   /** true = fora de média/mediana/menor preço/selo/vitrine até conferência humana. */
@@ -79,9 +79,12 @@ export function offerTitleFlags(
  */
 export function evaluateOfferIdentity(
   offerTitle: string,
-  master: { name: string; productType?: string | null }
+  master: { name: string; productType?: string | null; gameFormat?: string | null }
 ): OfferIdentityResult {
-  const o = normalizeTitle(offerTitle, { productType: master.productType });
+  // Formato (físico x digital, decisão do dono 2026-11-03): o do master é o título dele, senão o atributo gravado.
+  // O da oferta é o do próprio título; sem prova, herda o do master (o catálogo do ML é um por formato).
+  const m = normalizeTitle(master.name, { productType: master.productType, gameFormat: master.gameFormat });
+  const o = normalizeTitle(offerTitle, { productType: master.productType, gameFormat: m.format === 'na' ? null : m.format });
   const flags = offerTitleFlags(offerTitle, master.productType);
 
   if (flags.condition !== 'new') {
@@ -99,7 +102,16 @@ export function evaluateOfferIdentity(
     };
   }
 
-  const m = normalizeTitle(master.name, { productType: master.productType });
+  // Master de jogo sem formato provado: nada que se ligue a ele tem formato provado; fica em revisão (fora das médias).
+  if (isGame && m.format === 'unknown') {
+    return {
+      excluded: true,
+      reason: 'formato_desconhecido',
+      condition: 'new',
+      divergences: [{ axis: 'formato', detail: 'master sem formato provado (físico/digital)', hard: true }],
+      summary: 'formato físico/digital não provado',
+    };
+  }
   const hard = compareIdentity(o, m).filter((d) => d.hard);
 
   // Franquia/título. O núcleo de reserva ("accessory", "console") de item sem nome não conta como palavra.
