@@ -154,6 +154,16 @@ const PHYSICAL_EVIDENCE = /\bfisic[oa]\b|\bmidia fisica\b|\bblu ?ray\b|\bcartuch
 /** Plataformas legadas (PS2 e anteriores, portáteis antigos) cujo jogo NOVO original tem piso de preço. */
 const LEGACY_PLATFORM = /\b(?:ps ?[12]|psone|playstation ?[12]|psp|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|nes|game ?boy|gba|mega ?drive|master system|dreamcast|saturn|atari|(?:nintendo )?ds|3ds)\b/;
 
+/**
+ * Console RETRÔ (decisão do dono, 2026-11-03): o monitoramento de preço de mercado trabalha só com itens NOVOS;
+ * retrô fica para drops e leilões. Gerações antigas (PS1 a PS3, PSP/Vita, Xbox clássico/360, Wii/Wii U, DS/3DS,
+ * GameCube, N64, SNES/NES, Game Boy, Sega, Atari). PS4/Xbox One/Switch seguem no escopo (ainda vendidos novos).
+ * Vale só para a dimensão console e para o nome do master; título que cita geração atual (bundle, "compatível") não rejeita.
+ */
+const RETRO_CONSOLE =
+  /\b(?:ps ?[123]|psone|playstation ?[123]|playstation (?:fat|portatil|classic)|psp|ps vita|playstation vita|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|nintendo nes|nes classic|game ?boy|gba|nintendo ds|ds lite|dsi|3ds|2ds|mega ?drive|master system|dreamcast|saturn|atari)\b/;
+const MODERN_CONSOLE = /\b(?:ps ?[45]|playstation ?[45]|xbox one|xbox series|series [sx]|switch)\b/;
+
 const RAW_ONE_TO_ONE = /(?<![\d:])1\s*:\s*1(?![\d:])/;
 /** "Genérico/sem marca": imitação em console/jogo é rejeição; em acessório (cabo, case) vai à revisão (genérico não é cópia por si). */
 /** Escala de boneco/estátua (1/12, 1/6, 1:7, "One:12") no texto CRU: o fold apaga a pontuação. "1/12 meses"/"12x" não contam. */
@@ -204,6 +214,12 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
   }
   if (input.manual === 'rejected') {
     return result('rejected', 'owner_decision', 'rejeitado_manualmente', null, baseDim, bundle);
+  }
+
+  // Console retrô: fora do monitoramento de novos (drops e leilões). Reversível: override manual 'approved' passa acima.
+  if (baseDim === 'console') {
+    const retro = RETRO_CONSOLE.exec(t);
+    if (retro && !MODERN_CONSOLE.test(t)) return result('rejected', 'out_of_scope', 'console_retro_fora_do_escopo', retro[0], 'off_catalog', false);
   }
 
   // Decisão 4 do dono (2026-11-03): headset legítimo sem plataforma no título (Redragon, Havit,
