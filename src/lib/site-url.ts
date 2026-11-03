@@ -8,5 +8,7 @@ export function siteBaseUrl(): string {
   const raw = (process.env.NEXT_PUBLIC_APP_URL ?? '').trim().replace(/\/+$/, '');
   const isLocal = !raw || /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:\d+)?(\/|$)/i.test(raw);
   if (isLocal && process.env.VERCEL_ENV === 'production') return PRODUCTION_URL;
+  // O apex (egeek86.com) redireciona 308 para o www: publicar sempre o domínio canônico.
+  if (process.env.VERCEL_ENV === 'production' && /^https?:\/\/egeek86\.com$/i.test(raw)) return PRODUCTION_URL;
   return raw || 'http://localhost:3000';
 }
