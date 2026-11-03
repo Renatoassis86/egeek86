@@ -45,6 +45,8 @@ export default async function NoticiasPage({
 
   const isDefaultView = !category && page === 1;
   const secondaryItems = isDefaultView ? items.slice(1) : items;
+  const owners = buildCoverOwners([featured, items]);
+  const featuredUnique = featured.map((a) => ({ ...a, coverImageUrl: coverFor(a, owners) }));
 
   return (
     <section data-theme="light" className="w-full bg-[var(--color-bg-canvas)]">
@@ -74,7 +76,7 @@ export default async function NoticiasPage({
           do texto inicial acima (mesma seção de abertura da página). */}
       <div className="mb-10">
         <Reveal delay={0.06}>
-          <FeaturedArticlesCarousel articles={featured} />
+          <FeaturedArticlesCarousel articles={featuredUnique} />
         </Reveal>
       </div>
 
@@ -161,11 +163,11 @@ export default async function NoticiasPage({
                   primeira página): destaque real pra matéria mais recente, no
                   espírito de home de portal (Globo/UOL), não mais um card igual
                   aos outros. */}
-              <LeadArticleCard article={items[0]} />
+              <LeadArticleCard article={items[0]} owners={owners} />
               {secondaryItems.length > 0 && (
                 <div className="grid gap-5 sm:grid-cols-2">
                   {secondaryItems.map((article) => (
-                    <ArticleCard key={article.id} article={article} />
+                    <ArticleCard key={article.id} article={article} owners={owners} />
                   ))}
                 </div>
               )}
@@ -173,7 +175,7 @@ export default async function NoticiasPage({
           ) : (
             <div className="grid gap-5 sm:grid-cols-2">
               {items.map((article) => (
-                <ArticleCard key={article.id} article={article} />
+                <ArticleCard key={article.id} article={article} owners={owners} />
               ))}
             </div>
           )}
@@ -326,19 +328,25 @@ export default async function NoticiasPage({
   );
 }
 
-const CLEAN_NEWS_IMAGES = [
-  '/images/noticias-hub/news-gta6.png',
-  '/images/noticias-hub/news-xmen.png',
-  '/images/noticias-hub/news-esports.png',
-  '/images/noticias-hub/news-gaming-setup.png',
-  '/images/noticias-hub/news-retro-console.png',
-];
-
-function getCleanNewsImage(coverUrl?: string | null, index = 0) {
-  if (coverUrl && coverUrl.startsWith('/images/noticias-hub/news-')) {
-    return coverUrl;
+/**
+ * Uma imagem, um lugar só: cada URL de capa pertence ao primeiro artigo que a
+ * usa na página (carrossel primeiro, depois a grade). Outro artigo com a mesma
+ * capa recebe null e o SceneImage mostra o fallback, em vez de repetir a foto.
+ * O mesmo artigo aparecendo no carrossel e na grade continua com a própria capa.
+ */
+function buildCoverOwners(groups: NewsArticle[][]): Map<string, string> {
+  const owners = new Map<string, string>();
+  for (const group of groups) {
+    for (const a of group) {
+      if (a.coverImageUrl && !owners.has(a.coverImageUrl)) owners.set(a.coverImageUrl, a.id);
+    }
   }
-  return CLEAN_NEWS_IMAGES[index % CLEAN_NEWS_IMAGES.length];
+  return owners;
+}
+
+function coverFor(article: NewsArticle, owners: Map<string, string>): string | null {
+  const url = article.coverImageUrl;
+  return url && owners.get(url) === article.id ? url : null;
 }
 
 /**
@@ -347,7 +355,7 @@ function getCleanNewsImage(coverUrl?: string | null, index = 0) {
  * editoria e etiqueta de categoria embaixo (mesmo padrão do card menor,
  * só maior).
  */
-function LeadArticleCard({ article }: { article: NewsArticle }) {
+function LeadArticleCard({ article, owners }: { article: NewsArticle; owners: Map<string, string> }) {
   const isCurated = article.kind === 'curated_link';
   const style = ARTICLE_CATEGORY_STYLES[article.category];
 
@@ -355,7 +363,7 @@ function LeadArticleCard({ article }: { article: NewsArticle }) {
     <Link href={`/noticias/${article.slug}`} className="group block">
       <div className={cn('overflow-hidden rounded-[var(--radius-xl)] border bg-white shadow-sm transition-shadow hover:shadow-md', style.border)}>
         <div className="relative aspect-[16/9] sm:aspect-[21/9] w-full overflow-hidden bg-[var(--color-bg-inset)]">
-          <SceneImage src={getCleanNewsImage(article.coverImageUrl, 0)} alt={article.title} tone="ember" />
+          <SceneImage src={coverFor(article, owners)} alt={article.title} tone="ember" />
         </div>
         <div className="flex flex-col gap-2 p-5 sm:p-6">
           <Text as="h2" variant="heading-lg" className={cn('line-clamp-3 font-black leading-snug', style.heading)}>
@@ -381,7 +389,7 @@ function LeadArticleCard({ article }: { article: NewsArticle }) {
 }
 
 /** Card de matéria — mesmo padrão do LeadArticleCard, em tamanho menor pra grade. */
-function ArticleCard({ article, index = 0 }: { article: NewsArticle; index?: number }) {
+function ArticleCard({ article, owners }: { article: NewsArticle; owners: Map<string, string> }) {
   const isCurated = article.kind === 'curated_link';
   const style = ARTICLE_CATEGORY_STYLES[article.category];
   const href = `/noticias/${article.slug}`;
@@ -390,7 +398,7 @@ function ArticleCard({ article, index = 0 }: { article: NewsArticle; index?: num
     <Link href={href} className="group block h-full">
       <div className={cn('flex h-full flex-col overflow-hidden rounded-[var(--radius-lg)] border bg-white shadow-sm transition-shadow hover:shadow-md', style.border)}>
         <div className="relative aspect-[16/9] shrink-0 overflow-hidden bg-[var(--color-bg-inset)]">
-          <SceneImage src={getCleanNewsImage(article.coverImageUrl, index + 1)} alt={article.title} tone="gold" />
+          <SceneImage src={coverFor(article, owners)} alt={article.title} tone="gold" />
         </div>
         <div className="flex flex-1 flex-col gap-2 p-4">
           <Text variant="body-md" className={cn('line-clamp-2 font-bold leading-snug', style.heading)}>

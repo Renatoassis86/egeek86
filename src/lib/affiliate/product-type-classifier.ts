@@ -285,9 +285,13 @@ export function detectNonGameByRules(title: string): NonGameRuleHit | null {
   const part = firstMatch(PART_OR_PACKAGING_PATTERNS, title);
   if (part) return { productType: 'accessory', kind: 'part_or_packaging', matched: part };
 
+  // Título que COMEÇA pelo acessório ("Controle Nintendo Switch Zelda ..."): a franquia é só estampa (QA rodada 5).
+  const lead = /^(?:(?:novo|nova|original|oficial|par de|sony|microsoft|nintendo|playstation|xbox)\s+)*(?:controles?|controlador(?:es)?|joysticks?|gamepads?|joy[\s-]?cons?|headsets?|fones?|carregador(?:es)?|cabos?|volantes?)\b/i.exec(title.trim());
+  if (lead) return { productType: 'accessory', kind: 'accessory', matched: lead[0] };
+
   const hasMedia = GAME_MEDIA_SIGNAL.test(title);
   // "Encarte" sozinho com mídia no título = jogo com encarte reimpresso, não a peça solta.
-  if (!hasMedia && /encartes?/i.test(title)) {
+  if (!hasMedia && /\bencartes?\b/i.test(title)) {
     return { productType: 'accessory', kind: 'part_or_packaging', matched: 'encarte' };
   }
   if (hasMedia) return null;
@@ -302,9 +306,35 @@ export function detectNonGameByRules(title: string): NonGameRuleHit | null {
   return null;
 }
 
-/** Kit/lote/combo: pode misturar itens; não reclassifica sozinho, só sinaliza para revisão humana. */
+/** Kit/lote/combo/bundle: palavra explícita de pacote. Regra estreita (a que esconde bundle da aba Jogos na busca). */
+export function isKitKeywordTitle(title: string): boolean {
+  return /\b(?:kit|lote|combo|bundle)\b/i.test(title);
+}
+
+const BUNDLE_CONSOLE_MENTION =
+  /\b(?:console|videogame|video game|ps ?[1-5]|playstation ?[1-5]?|xbox(?: 360| one| series [sx])?|nintendo switch|switch(?: 2| lite| oled)?|wii(?: u)?|3ds|dualsense)\b/;
+/** Sinal de aparelho/capacidade: com "+" depois, o anúncio traz algo junto do hardware. */
+const BUNDLE_HARDWARE = /\b(?:console|videogame|video game|slim|oled|lite|series [sx]|\d{3,4} ?gb|\d ?tb|ps5 pro|switch 2)\b/;
+const BUNDLE_PLUS_GAME = /\+ ?(?:\d+ |um |uma |dois |duas |tres )?jogos?\b/;
+const BUNDLE_CONSOLE_EXTRA =
+  /\bcom (?:\d+ |um |uma |dois |duas |tres )?jogos?\b|\bcom (?:[2-9]|dois|duas|tres) controles?\b|\b(?:[2-9]|dois|duas|tres) controles?\b|\be (?:um |o )?jogos?\b|\+ ?(?:\d+ |um |uma )?(?:controles?|manetes?|dualsense|joy ?cons?)\b|\bpacote (?!de melhoria)|\bmega pack\b/;
+
+/**
+ * Selo "Bundle": pacote de itens vendido como um anúncio só. Cobre a palavra
+ * kit/lote/combo/bundle, "+ jogo", e console anunciado com jogo(s) ou controle
+ * extra ("PS4 + God of War", "Console com 2 controles"). O console puro vendido
+ * com o controle da caixa NÃO é bundle. Não reclassifica sozinho: só sinaliza.
+ */
 export function isBundleTitle(title: string): boolean {
-  return /\b(?:kit|lote|combo)\b/i.test(title);
+  if (isKitKeywordTitle(title)) return true;
+  const t = title
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9+]+/g, ' ');
+  if (BUNDLE_PLUS_GAME.test(t)) return true;
+  if (BUNDLE_HARDWARE.test(t) && /\+ ?\S/.test(t)) return true;
+  return BUNDLE_CONSOLE_MENTION.test(t) && BUNDLE_CONSOLE_EXTRA.test(t);
 }
 
 export async function resolveProductTypeFromTitle(title: string, priceCents?: number | null): Promise<ProductType | null> {

@@ -195,14 +195,15 @@ function ResultCard({
           <ProductThumb
             src={item.imageUrl}
             alt=""
-            fallbackLabel={PLATFORM_SHORT[item.platform] || 'Produto'}
+            fallbackLabel={PLATFORM_SHORT[item.platform] || item.legacyPlatformLabel || 'Produto'}
             dimension={item.productType}
+            bundle={item.isBundle}
             className="w-24 sm:w-28"
           />
         </Link>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="text-[12px] font-semibold uppercase tracking-wide text-[var(--color-text-tertiary)]">
-            {item.platform !== 'unknown' ? item.platformLabel : 'Produto'}
+            {item.platform !== 'unknown' ? item.platformLabel : (item.legacyPlatformLabel ?? 'Produto')}
           </span>
           <h3 className="line-clamp-2 text-[16px] font-semibold leading-snug text-[var(--color-text-primary)]">
             <Link href={item.href} className="hover:text-[var(--color-accent-primary)] focus-visible:underline">

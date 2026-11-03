@@ -1,5 +1,6 @@
 'use server';
 
+import { entryGateAttributes } from '@/lib/catalog/gate';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
@@ -116,7 +117,7 @@ async function findOrCreateMasterProduct(name: string) {
   const [existing] = await db.select().from(masterProducts).where(eq(masterProducts.slug, slug)).limit(1);
   if (existing) return existing;
 
-  const [created] = await db.insert(masterProducts).values({ name, slug }).returning();
+  const [created] = await db.insert(masterProducts).values({ name, slug, attributes: entryGateAttributes(name) }).returning();
   return created;
 }
 
@@ -174,6 +175,7 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
         // Coluna não aceita null — categoria não reconhecida (productType
         // null) deve cair no default da coluna ('game'), não virar erro.
         productType: classification?.productType ?? undefined,
+        attributes: entryGateAttributes(name, classification?.productType ?? 'game'),
         classifiedAt: classification ? new Date() : null,
       })
       .returning();

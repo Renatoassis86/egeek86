@@ -1,42 +1,36 @@
-import { NextResponse } from 'next/server';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 /**
- * Health check — valida conexões Supabase + Postgres (Drizzle).
- * Acesse: http://localhost:3000/api/health
+ * Health check público: responde só ok/falha, sem detalhe de infraestrutura.
+ * O diagnóstico por componente (mensagens de erro incluídas) só sai com o
+ * mesmo CRON_SECRET das rotas /api/cron (Bearer ou ?key=).
  */
-export async function GET() {
-  const checks: Record<string, { ok: boolean; detail?: string }> = {};
+export async function GET(request: NextRequest) {
+  const secret = process.env.CRON_SECRET;
+  const detailed =
+    !!secret &&
+    (request.headers.get('authorization') === `Bearer ${secret}` ||
+      request.nextUrl.searchParams.get('key') === secret);
 
-  // Supabase client
-  try {
-    const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.getSession();
-    checks.supabase = error ? { ok: false, detail: error.message } : { ok: true };
-  } catch (e) {
-    checks.supabase = { ok: false, detail: (e as Error).message };
-  }
-
-  // Postgres (Drizzle)
+  let dbOk = false;
+  let dbDetail: string | undefined;
   try {
     const result = await db.execute(sql`SELECT 1 AS ok`);
-    checks.postgres = { ok: result.length > 0 };
+    dbOk = result.length > 0;
   } catch (e) {
-    checks.postgres = { ok: false, detail: (e as Error).message };
+    dbDetail = (e as Error).message;
   }
 
-  const allOk = Object.values(checks).every((c) => c.ok);
-
+  const status = dbOk ? 200 : 503;
+  if (!detailed) {
+    return NextResponse.json({ status: dbOk ? 'ok' : 'fail' }, { status });
+  }
   return NextResponse.json(
-    {
-      status: allOk ? 'healthy' : 'degraded',
-      timestamp: new Date().toISOString(),
-      checks,
-    },
-    { status: allOk ? 200 : 503 }
+    { status: dbOk ? 'ok' : 'fail', timestamp: new Date().toISOString(), checks: { postgres: { ok: dbOk, detail: dbDetail } } },
+    { status },
   );
 }

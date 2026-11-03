@@ -29,8 +29,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
 import { StatTile } from '@/components/ui/stat-tile';
-import { getPlatformStats } from '@/server/queries/affiliate';
-import { getPublicTotals } from '@/server/queries/home-search';
+import { getPublicMetrics, PUBLIC_METRIC_LABELS, type PublicMetrics } from '@/server/queries/public-metrics';
 
 export const metadata: Metadata = {
   title: 'História e Ferramentas',
@@ -41,15 +40,15 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function SobrePage() {
-  const [stats, totals] = await Promise.all([getPlatformStats(), getPublicTotals()]);
+  const metrics = await getPublicMetrics();
 
   return (
     <div className="flex flex-col w-full bg-[var(--color-bg-canvas)] text-[var(--color-text-primary)]">
       {/* 1. Hero e Identidade */}
       <HeroSection />
 
-      {/* 2. Métricas do ecossistema (produtos/lojas: mesma fonte da home, getPublicTotals) */}
-      <PlatformMetricsSection stats={stats} totals={totals} />
+      {/* 2. Métricas do ecossistema (mesma fonte de todas as telas: getPublicMetrics) */}
+      <PlatformMetricsSection metrics={metrics} />
 
       {/* 3. Quem Somos (Nossa História e Origem) */}
       <QuemSomosSection />
@@ -112,21 +111,15 @@ function HeroSection() {
 // ----------------------------------------------------------------------
 // 2. Métricas do Ecossistema
 // ----------------------------------------------------------------------
-function PlatformMetricsSection({
-  stats,
-  totals,
-}: {
-  stats: any;
-  totals: { products: number; stores: number };
-}) {
+function PlatformMetricsSection({ metrics }: { metrics: PublicMetrics }) {
   return (
     <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-12 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatTile icon={<Package className="size-5" />} value={totals.products} label="Produtos com preço atual" />
-          <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Vendedores identificados" />
-          <StatTile icon={<Layers className="size-5" />} value={totals.stores} label="Lojas monitoradas" />
-          <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações registradas" />
+          <StatTile icon={<Package className="size-5" />} value={metrics.products} label={PUBLIC_METRIC_LABELS.products} />
+          <StatTile icon={<Store className="size-5" />} value={metrics.sellers} label="Vendedores com oferta ativa" />
+          <StatTile icon={<Layers className="size-5" />} value={metrics.stores} label="Lojas monitoradas" />
+          <StatTile icon={<LineChart className="size-5" />} value={metrics.quotes} label={PUBLIC_METRIC_LABELS.quotes} />
         </div>
       </div>
     </section>
@@ -581,6 +574,9 @@ function IdealizadorSection() {
                 </p>
                 <p>
                   O Espaço Geek 86 está sendo construído para reunir num só lugar o monitoramento de preços atualizado a cada coleta, o histórico de valores, a reputação de vendedores, pesquisas com a comunidade e conteúdo sobre games.
+                </p>
+                <p className="text-xs text-zinc-400">
+                  Podemos receber comissão das lojas parceiras quando você compra por nossos links; isso não altera o preço para você.
                 </p>
                 <blockquote className="p-4 rounded-xl bg-amber-500/10 border-l-4 border-amber-500 italic text-amber-200 text-sm leading-relaxed">
                   &quot;A tecnologia deve servir às pessoas. Queremos que cada compra seja decidida com informação real sobre o preço, e não só com base em publicidade.&quot;

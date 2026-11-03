@@ -1,6 +1,6 @@
-import { getGameSynopsis } from '@/server/queries/synopsis';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import {
   ArrowLeft,
@@ -8,7 +8,6 @@ import {
   ShieldCheck,
   TrendingDown,
   TrendingUp,
-  Minus,
   Star,
   BadgeCheck,
   LineChart,
@@ -24,7 +23,6 @@ import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
 import { ProductImage } from '@/components/ui/product-image';
 import { PriceRangeBar } from '@/components/geek-deals/price-range-bar';
 import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
-import { getProductStores } from '@/server/queries/product-stores';
 import { ProductStoresTable } from '@/components/search/product-stores-table';
 import { CartToggleButton } from '@/components/affiliate/cart-toggle-button';
 import { GameAboutSection } from '@/components/affiliate/game-about-section';
@@ -37,11 +35,20 @@ import {
   getSellerTrustInfo,
   sellerTrustTextColor,
 } from '@/lib/affiliate/labels';
-import { getOfferBySlug, getMasterProductMetrics, listActiveCouponsByNetwork } from '@/server/queries/affiliate';
+import { computeVerdict } from '@/lib/affiliate/price-verdict';
+import { getMasterProductPriceStats } from '@/server/queries/product-price-stats';
+import { ProductPriceChartSection, ProductPriceChartFallback } from './product-price-chart-section';
+import { getOfferBySlug, getMasterProductMetrics } from '@/server/queries/affiliate';
+import {
+  getOfferPageCoupons,
+  getOfferPageStores,
+  getOfferPageSynopsis,
+  getOfferPageMeliDetails,
+  getOfferPageHistory3M,
+} from '@/server/queries/offer-page-data';
 import { getWatchedMasterProductIds } from '@/server/queries/price-watches';
 import { getCartOfferIds } from '@/server/queries/cart';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
-import { getMeliCatalogDetails } from '@/server/collector/sources/mercado-livre-details';
 
 export async function generateMetadata({
   params,
@@ -61,26 +68,41 @@ export async function generateMetadata({
 const TREND_META = {
   down: { label: 'Preço em queda', Icon: TrendingDown, color: 'success' as const },
   up: { label: 'Preço subindo', Icon: TrendingUp, color: 'danger' as const },
-  stable: { label: 'Preço estável', Icon: Minus, color: 'secondary' as const },
 };
+
+const VERDICT_LABEL = {
+  below: 'Abaixo do normal',
+  inline: 'Em linha com o normal',
+  above: 'Acima do normal',
+} as const;
 
 export default async function OfferDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const offer = await getOfferBySlug(slug);
   if (!offer) notFound();
 
-  const [metrics, coupons, profile, meliDetails, stores, synopsis] = await Promise.all([
-    getMasterProductMetrics(offer.masterProductId),
-    listActiveCouponsByNetwork(offer.networkId),
-    getCurrentProfile(),
-    offer.masterProduct.meliCatalogId ? getMeliCatalogDetails(offer.masterProduct.meliCatalogId) : Promise.resolve(null),
-    getProductStores(offer.masterProductId).catch(() => []),
-    getGameSynopsis(offer.masterProductId).catch(() => null),
+  // Tudo em paralelo e protegido por cache SWR/timeout (src/server/queries/offer-page-data.ts); bloco que falha
+  // some ou cai no vazio honesto, nunca vira dado inventado. Observação do usuário e carrinho dependem só do perfil.
+  // Histórico do gráfico (Suspense mais abaixo) começa AGORA, em paralelo; a seção só reaproveita a mesma leitura em cache.
+  void getOfferPageHistory3M(offer.masterProductId).catch(() => null);
+  const profileP = getCurrentProfile();
+  const watchingP = profileP.then((p) =>
+    p ? getWatchedMasterProductIds(p.id).then((ids) => ids.has(offer.masterProductId)).catch(() => false) : false
+  );
+  const inCartP = profileP.then((p) =>
+    p ? getCartOfferIds(p.id).then((ids) => ids.has(offer.id)).catch(() => false) : false
+  );
+  const [metrics, coupons, profile, meliDetails, stores, synopsis, stats, isWatching, isInCart] = await Promise.all([
+    getMasterProductMetrics(offer.masterProductId).catch(() => null),
+    getOfferPageCoupons(offer.networkId).catch(() => []),
+    profileP,
+    offer.masterProduct.meliCatalogId ? getOfferPageMeliDetails(offer.masterProduct.meliCatalogId).catch(() => null) : Promise.resolve(null),
+    getOfferPageStores(offer.masterProductId).catch(() => []),
+    getOfferPageSynopsis(offer.masterProductId).catch(() => null),
+    getMasterProductPriceStats(offer.masterProductId, { coldTimeoutMs: 6_000, direct: true }).catch(() => null),
+    watchingP,
+    inCartP,
   ]);
-  const isWatching = profile
-    ? (await getWatchedMasterProductIds(profile.id)).has(offer.masterProductId)
-    : false;
-  const isInCart = profile ? (await getCartOfferIds(profile.id)).has(offer.id) : false;
 
   const images = offer.masterProduct.defaultImages as unknown as string[];
   const image = offer.imageUrl ?? images?.[0] ?? null;
@@ -88,10 +110,27 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   // aparece quando meliDetails traz conteúdo de verdade; sem isso, a seção
   // inteira fica oculta em vez de mostrar um "sem descrição" pro cliente.
   const galleryImages = (meliDetails?.pictures.length ? meliDetails.pictures : images ?? []).filter((url) => url !== image);
-  const hasAboutSection = Boolean(synopsis) || Boolean(meliDetails?.features.length) || galleryImages.length > 0;
+  const hasAboutSection = Boolean(synopsis) || galleryImages.length > 0;
   // Selo só com histórico elegível (>= 5 cotações e >= 14 dias, ADR 0001/0002): com 1 cotação, atual <= menor é verdade por definição.
   const isLowest = metrics?.isLowestEver === true && isLowestPrice(offer.currentPriceCents, metrics.lowestPriceCents);
-  const trend = metrics ? TREND_META[metrics.trend] : null;
+  // Só queda/alta com histórico elegível; sem movimento confirmado, nenhum rótulo (nunca "estável" fixo).
+  const trend = metrics && metrics.trend !== 'stable' ? TREND_META[metrics.trend] : null;
+  const verdict = stats
+    ? computeVerdict({
+        currentCents: offer.currentPriceCents,
+        avgCents: stats.avgCents,
+        quoteCount: stats.quoteCount,
+        historyDays: stats.historyDays,
+      })
+    : null;
+  // "Menor já visto" nunca fica acima do preço de hoje.
+  const lowestSeenCents =
+    stats?.lowAll && offer.currentPriceCents > 0
+      ? Math.min(stats.lowAll.priceCents, offer.currentPriceCents)
+      : (stats?.lowAll?.priceCents ?? null);
+  const lowestIsToday = stats?.lowAll != null && offer.currentPriceCents > 0 && offer.currentPriceCents < stats.lowAll.priceCents;
+  // medianCents entra na estatística canônica pela frente de preços; opcional até lá.
+  const medianCents = (stats as { medianCents?: number | null } | null)?.medianCents ?? null;
   const trustInfo = getSellerTrustInfo(offer.seller);
 
   const hasClassification =
@@ -118,28 +157,29 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
       </Link>
 
       <div className="mt-5 grid gap-8 lg:gap-14 lg:grid-cols-[minmax(0,440px)_1fr] lg:items-start">
-        <ProductImage src={image} alt={offer.title} dimension={offer.masterProduct.productType} bundle={isBundleTitle(offer.title)} priority padding="sm" className="w-full lg:sticky lg:top-24">
+        <div className="flex min-w-0 flex-col lg:sticky lg:top-24">
+          <ProductImage src={image} alt={offer.title} dimension={offer.masterProduct.productType} bundle={isBundleTitle(offer.title)} priority padding="sm" className="w-full" />
 
-          <div className="absolute left-3 top-3">
+          {/* Loja e selo ficam numa faixa abaixo do quadro, nunca sobre a foto */}
+          <div className="flex min-w-0 flex-wrap items-center gap-2 border border-t-0 border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-2.5">
             <Badge
               variant="outline"
               size="md"
-              className="bg-[var(--color-bg-canvas)]/85 backdrop-blur-sm"
+              className="max-w-full truncate"
               style={offer.network.colorHex ? { borderColor: offer.network.colorHex } : undefined}
             >
               {offer.network.name}
             </Badge>
+            {isLowest && (
+              <span className="inline-flex items-center gap-1.5 bg-[var(--color-accent-hype)] px-2.5 py-1.5">
+                <Flame className="size-4 text-[var(--color-text-inverse)]" aria-hidden />
+                <Text variant="body-sm" color="inverse" className="font-semibold">
+                  Menor preço já registrado
+                </Text>
+              </span>
+            )}
           </div>
-
-          {isLowest && (
-            <div className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1.5 bg-[var(--color-accent-hype)]/95 py-2.5">
-              <Flame className="size-4 text-[var(--color-text-inverse)]" aria-hidden />
-              <Text variant="body-sm" color="inverse" className="font-semibold">
-                Menor preço já registrado
-              </Text>
-            </div>
-          )}
-        </ProductImage>
+        </div>
 
         <Reveal delay={0.06}>
           <div className="flex flex-col gap-5">
@@ -172,8 +212,8 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
               )}
             </div>
 
-            {metrics && (
-              <Card variant="outline" className="border-[var(--color-border-default)]">
+            {stats && stats.quoteCount > 0 && (
+              <Card variant="outline" className="rounded-none border-[var(--color-border-default)]">
                 <CardContent className="p-4 sm:p-5 flex flex-col gap-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <Text variant="label" color="tertiary" className="inline-flex items-center gap-1.5">
@@ -181,25 +221,87 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                       Histórico de preço
                     </Text>
                     {trend && (
-                      <Badge variant={trend.color === 'secondary' ? 'default' : trend.color} size="sm">
+                      <Badge variant={trend.color} size="sm">
                         <trend.Icon className="size-3.5" />
                         {trend.label}
                       </Badge>
                     )}
                   </div>
 
-                  {metrics.eligibility?.eligible ? (
-                    <PriceRangeBar currentPriceCents={offer.currentPriceCents} metrics={metrics} />
+                  {verdict && verdict.kind !== 'insufficient' && verdict.deltaCents != null && verdict.deltaPercent != null ? (
+                    <div className="flex flex-col gap-0.5">
+                      <Text
+                        variant="heading-sm"
+                        color={verdict.kind === 'below' ? 'success' : verdict.kind === 'above' ? 'danger' : 'primary'}
+                      >
+                        {VERDICT_LABEL[verdict.kind]}
+                      </Text>
+                      <Text variant="body-sm" color="secondary">
+                        {verdict.kind === 'inline'
+                          ? `Dentro de 5% da média do produto (${verdict.deltaPercent > 0 ? '+' : ''}${verdict.deltaPercent.toLocaleString('pt-BR')}%).`
+                          : `${formatBRL(Math.abs(verdict.deltaCents))} (${Math.abs(verdict.deltaPercent).toLocaleString('pt-BR')}%) ${verdict.kind === 'below' ? 'abaixo' : 'acima'} da média do produto.`}
+                      </Text>
+                    </div>
                   ) : (
                     <Text variant="caption" color="tertiary">
-                      Histórico ainda curto para comparar com a média.
+                      Histórico ainda curto para comparar com a média (precisa de 5 cotações em 14 dias).
                     </Text>
                   )}
 
+                  {verdict?.eligibility.eligible && lowestSeenCents != null && (
+                    <PriceRangeBar
+                      currentPriceCents={offer.currentPriceCents}
+                      metrics={{ lowestPriceCents: lowestSeenCents, avgPriceCents30d: stats.avgCents }}
+                    />
+                  )}
+
+                  <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
+                    {verdict?.eligibility.eligible && stats.avgCents != null && (
+                      <div>
+                        <dt className="text-caption text-[var(--color-text-tertiary)]">Média do produto</dt>
+                        <dd className="tabular text-body-sm text-[var(--color-text-primary)]">{formatBRL(stats.avgCents)}</dd>
+                      </div>
+                    )}
+                    {verdict?.eligibility.eligible && medianCents != null && (
+                      <div>
+                        <dt className="text-caption text-[var(--color-text-tertiary)]">Preço típico (mediana)</dt>
+                        <dd className="tabular text-body-sm text-[var(--color-text-primary)]">{formatBRL(Math.round(medianCents))}</dd>
+                      </div>
+                    )}
+                    {lowestSeenCents != null && (
+                      <div>
+                        <dt className="text-caption text-[var(--color-text-tertiary)]">Menor já visto</dt>
+                        <dd className="tabular text-body-sm text-[var(--color-text-primary)]">
+                          {formatBRL(lowestSeenCents)}
+                          <span className="block text-caption text-[var(--color-text-tertiary)]">
+                            {lowestIsToday || !stats.lowAll ? 'hoje' : `em ${new Date(stats.lowAll.at).toLocaleDateString('pt-BR')}`}
+                          </span>
+                        </dd>
+                      </div>
+                    )}
+                  </dl>
+
                   <Text variant="caption" color="tertiary">
-                    Menor preço registrado em {metrics.lowestPriceAt.toLocaleDateString('pt-BR')} · {metrics.snapshotCount}{' '}
-                    cotações (todas as lojas)
+                    {stats.quoteCount.toLocaleString('pt-BR')} cotações no histórico (todas as lojas)
                   </Text>
+
+                  {stats.quoteCount >= 2 && (
+                    <Suspense fallback={<ProductPriceChartFallback />}>
+                      <ProductPriceChartSection
+                        masterProductId={offer.masterProductId}
+                        canonical={{
+                          avgCents: stats.avgCents,
+                          quoteCount: stats.quoteCount,
+                          historyDays: stats.historyDays,
+                          lowAll: stats.lowAll ? { priceCents: stats.lowAll.priceCents } : null,
+                          currentLowestActive: stats.currentLowestActive
+                            ? { priceCents: stats.currentLowestActive.priceCents }
+                            : null,
+                        }}
+                        currentPriceCents={stats.currentLowestActive?.priceCents ?? offer.currentPriceCents}
+                      />
+                    </Suspense>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -310,7 +412,6 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
 
             <GameAboutSection
               synopsis={synopsis}
-              features={meliDetails?.features ?? []}
               galleryImages={galleryImages}
             />
           </div>

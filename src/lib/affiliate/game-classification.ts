@@ -32,6 +32,82 @@ export function normalizeGamePlatformGen(consoleVersion: string | null, fallback
 }
 
 /**
+ * Erros de digitação comuns do nome PlayStation ("Playstatio 2", "Play station",
+ * "Playstaion"): o PS2 legado escapava das regexes de plataforma e o jogo caía
+ * em revisão por "sem plataforma". Recebe texto já sem acento e em minúsculas.
+ */
+export function fixPlatformTypos(text: string): string {
+  return text.replace(
+    /\bplay ?station\b|\bplaystatio\b|\bplaystaion\b|\bplaystaton\b|\bplaystion\b|\bplaystatoin\b|\bplaystaiton\b|\bplaystatin\b|\bplaystatio n\b/g,
+    'playstation'
+  );
+}
+
+/**
+ * "Compatível com PS5", "roda no PS5", "retrocompatível com Xbox One X": o
+ * console citado é só a compatibilidade, não o disco. Remove essas menções para
+ * que a geração do DISCO seja a única que sobra. Texto já sem acento/minúsculo.
+ */
+const COMPAT_MENTION =
+  /\b(?:retro ?)?compativel(?:\s+(?:com|c|no|na|em|para|p))?\s+(?:o\s+|a\s+)?(?:nintendo\s+)?(?:playstation\s*\d|ps\s*\d|xbox\s*(?:series\s*[xs]?|serie|one(?:\s*[xs])?|360)|series\s*[xs]|switch\s*2?)\b|\b(?:roda|rodando|jogavel|funciona|executa)\s+(?:no|na|em)\s+(?:o\s+|a\s+)?(?:playstation\s*\d|ps\s*\d|xbox\s*(?:series\s*[xs]?|serie|one(?:\s*[xs])?|360))\b/g;
+
+export function stripCompatMentions(text: string): string {
+  return text.replace(COMPAT_MENTION, ' ');
+}
+
+/**
+ * Versão larga, SÓ para decidir a(s) geração(ões) do disco: remove a cláusula inteira depois de
+ * "compatível com", "retrocompatível com", "roda no", até o próximo separador. "Battlefield 3 Xbox 360
+ * Roda no Xbox One e Series X" cita o 360 como disco. Se tirar a cláusula apagar TODA menção de
+ * plataforma ("Controle Compatível PS5"), vale o texto original (o alvo de compatibilidade é a plataforma).
+ */
+const COMPAT_CLAUSE = /\b(?:retro ?)?compativel\b[^()\-+|;,]*|\b(?:roda|rodando|jogavel|funciona|executa)\s+(?:no|na|em)\b[^()\-+|;,]*/g;
+const ANY_PLATFORM = /\bps\s*[1-5]\b|\bplaystation\b|\bxbox\b|\bswitch\b|\bnsw\b|\bns2\b|\bseries\s*[xs]\b|\bxsx\b|\bwii\b|\b3ds\b/;
+
+export function stripCompatClauses(text: string): string {
+  const stripped = text.replace(COMPAT_CLAUSE, ' ');
+  return ANY_PLATFORM.test(stripped) ? stripped : text;
+}
+
+/** Famílias de console e as gerações (discos) que o título cita, já descontada a "compatibilidade". */
+export function generationsMentioned(title: string | null | undefined): string[] {
+  const t = stripCompatClauses(
+    fixPlatformTypos(
+      (title ?? '')
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+        .toLowerCase()
+    )
+  );
+  const out: string[] = [];
+  if (/\b(playstation\s*4|ps\s*4)\b/.test(t)) out.push('ps4');
+  if (/\b(playstation\s*5|ps\s*5)\b/.test(t)) out.push('ps5');
+  // "Xbox One / Series" (Series sem X/S, depois de One e um separador) também é a geração Series;
+  // "A Telltale Game Series - Xbox One" não (Series ali é nome de coleção).
+  const oneThenSeries = /\bone\s*(?:[/|,&+-]|\be\b|\band\b|\bou\b)\s*(?:xbox\s*)?series\b/;
+  if (/xbox\s*series|xbox\s*serie\b|\b(?:series\s*[xs]|serie\s+[xs])\b|\bxsx\b/.test(t) || oneThenSeries.test(t)) out.push('xbox_series');
+  if (/xbox\s*one|\bxone\b|\bxb1\b/.test(t)) out.push('xbox_one');
+  if (/xbox\s*360|\bx360\b/.test(t)) out.push('xbox_360');
+  const sw2 = /\b(nintendo\s+)?switch\s*2\b|\bns2\b/;
+  if (sw2.test(t)) out.push('switch_2');
+  if (/\bswitch\b|\bnsw\b/.test(t.replace(new RegExp(sw2.source, 'g'), ' '))) out.push('switch_1');
+  return out.sort();
+}
+
+/**
+ * O título cita mais de uma geração da MESMA família (PS4+PS5, Xbox One+Series,
+ * Switch 1+2)? Decisão do dono (2026-11-03): cross-gen são jogos diferentes, um
+ * por geração; anúncio que cita duas sem deixar claro o disco fica "em revisão".
+ */
+export function mentionsMultipleGenerations(title: string | null | undefined): boolean {
+  const g = generationsMentioned(title);
+  const ps = g.filter((x) => x === 'ps4' || x === 'ps5').length;
+  const xbox = g.filter((x) => x.startsWith('xbox')).length;
+  const sw = g.filter((x) => x.startsWith('switch')).length;
+  return ps >= 2 || xbox >= 2 || sw >= 2;
+}
+
+/**
  * Deriva a plataforma a partir do texto livre do título. Regra de negócio:
  * nunca desistir para 'unknown' se o título indica a plataforma (31 jogos
  * 'unknown' no banco, 2026-10-31, já traziam a plataforma no nome).
@@ -47,12 +123,13 @@ export function normalizeGamePlatformGen(consoleVersion: string | null, fallback
  * xbox_series.
  */
 export function derivePlatformFromTitle(title: string | null | undefined): GamePlatformGen {
-  const text = (title ?? '')
+  let text = (title ?? '')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/switch\s+sports/g, 'switchsports');
   if (!text.trim()) return 'unknown';
+  text = stripCompatClauses(fixPlatformTypos(text));
 
   const switch2 = /\b(nintendo\s+)?switch\s*2\b|\bns2\b/;
   const hasSwitch2 = switch2.test(text);
@@ -136,4 +213,36 @@ export function classifyGameEdition(input: EditionClassificationInput): EditionC
   }
 
   return { gameEditionType: 'full_game', source: 'keyword_rule' };
+}
+
+/**
+ * Plataformas legadas (fora do enum game_platform_gen) citadas no título:
+ * "GTA V Xbox X" com oferta "GTA 5 PS3" só é pego se o PS3 for reconhecido.
+ * Wii U e Wii são plataformas diferentes (a oferta de Wii U não entra no master de Wii).
+ */
+export function legacyPlatformsMentioned(title: string | null | undefined): string[] {
+  const t = fixPlatformTypos(
+    (title ?? '')
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+  );
+  const out: string[] = [];
+  const noWiiU = t.replace(/\bwii ?u\b/g, ' ');
+  if (/\bwii ?u\b/.test(t)) out.push('wii_u');
+  if (/\bwii\b/.test(noWiiU)) out.push('wii');
+  if (/\bps ?3\b|\bplaystation ?3\b/.test(t)) out.push('ps3');
+  if (/\bps ?2\b|\bplaystation ?2\b/.test(t)) out.push('ps2');
+  if (/\bps ?1\b|\bpsone\b|\bplaystation ?1\b/.test(t)) out.push('ps1');
+  if (/\bpsp\b/.test(t)) out.push('psp');
+  if (/\bvita\b|\bps ?vita\b/.test(t)) out.push('vita');
+  if (/\b3ds\b/.test(t)) out.push('3ds');
+  if (/\b2ds\b/.test(t)) out.push('2ds');
+  if (/\bnintendo ds\b|\bnds\b/.test(t)) out.push('ds');
+  if (/\bgame ?cube\b/.test(t)) out.push('gamecube');
+  if (/\bn64\b|\bnintendo 64\b/.test(t)) out.push('n64');
+  if (/\bsnes\b|\bsuper nintendo\b/.test(t)) out.push('snes');
+  if (/\bgba\b|\bgame ?boy\b/.test(t)) out.push('gba');
+  if (/\bmega ?drive\b|\bmaster system\b|\bsaturn\b|\bdreamcast\b|\batari\b/.test(t)) out.push('sega_atari');
+  return out.sort();
 }

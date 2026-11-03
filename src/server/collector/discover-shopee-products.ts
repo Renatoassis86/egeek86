@@ -1,4 +1,5 @@
 import 'server-only';
+import { entryGateAttributes } from '@/lib/catalog/gate';
 import { randomUUID } from 'node:crypto';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -166,6 +167,7 @@ export async function discoverShopeeProducts(): Promise<{
                 productType,
                 defaultImages: item.imageUrl ? [item.imageUrl] : [],
                 ...classified,
+                attributes: entryGateAttributes(item.productName, productType ?? 'game'),
                 classifiedAt: new Date(),
               })
               .returning({ id: masterProducts.id });

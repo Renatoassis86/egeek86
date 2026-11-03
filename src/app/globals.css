@@ -31,6 +31,7 @@
   --color-bg-elevated: #201C18;
   --color-bg-inset: #060504;
   --color-bg-overlay: rgb(6 5 4 / 0.72);
+  --color-media-bg: #f7f6f3; /* painel claro só dentro do quadro da foto de produto */
 
   --color-text-primary: #F2E9D8;
   --color-text-secondary: #B8AD98;
@@ -239,6 +240,7 @@
   --color-bg-elevated: #201C18;
   --color-bg-inset: #060504;
   --color-bg-overlay: rgb(6 5 4 / 0.72);
+  --color-media-bg: #f7f6f3; /* painel claro só dentro do quadro da foto de produto */
 
   --color-text-primary: #F2E9D8;
   --color-text-secondary: #B8AD98;
@@ -368,6 +370,10 @@
   .pr-safe { padding-right: env(safe-area-inset-right); }
 
   .h-safe-bottom { height: env(safe-area-inset-bottom); }
+
+  /* Rolagem horizontal sem barra visível (chips, carrosséis) */
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
   /* Touch target enforcement */
   .min-h-touch { min-height: 44px; }

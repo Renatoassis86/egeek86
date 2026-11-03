@@ -2,6 +2,7 @@
 // servidor, scripts tsx e testes.
 import type { ProductType } from '@/db/schema';
 import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { fixPlatformTypos } from '@/lib/affiliate/game-classification';
 
 /**
  * DIMENSÕES DO CATÁLOGO PÚBLICO (decisão do dono, 2026-10-31).
@@ -99,14 +100,24 @@ export interface DimensionResult {
 
 /** Sem acento, minúsculo, pontuação vira espaço (padrões abaixo são ASCII). */
 export function foldTitle(text: string): string {
-  return text
+  const folded = text
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[’'`´]/g, '')
     .replace(/[^a-z0-9+]+/g, ' ')
-    .trim();
+    .trim()
+    .replace(SPACED_LETTERS, (m) => m.replace(/ /g, ''));
+  // "Playstatio 2" (erro de digitação) vira "playstation 2" para as regexes de plataforma legada.
+  return fixPlatformTypos(folded);
 }
+
+/**
+ * Letras soltas separadas por ponto/espaço ("D.E.S.B.L.O.Q" vira "d e s b l o q"
+ * depois do fold): 4 ou mais viram uma palavra só ("desbloq"), para os filtros
+ * de título não serem contornados com pontuação. Só letras; números não entram.
+ */
+const SPACED_LETTERS = /(?<![a-z0-9+])(?:[a-z] ){3,}[a-z](?![a-z0-9+])/g;
 
 interface Rule {
   reason: string;
@@ -163,9 +174,15 @@ const MOVIE_DISC = /\bblu ?ray\b|\bdvd\b|\bfilmes?\b|\bserie completa\b/;
 /** Termos de reparo/reposição: peça em qualquer posição do título. */
 const PART_STRONG: Rule[] = [
   { reason: 'reparo_reposicao', re: /\breposicao\b|\bsubstituicao\b|\breparo\b|\breparos\b|\bferramentas?\b|\bpecas?\b|\bkit de reparo\b|\bconserto\b|\barquivo de personalizacao\b/ },
-  { reason: 'condutiva_flat', re: /\bcondutiv[oa]s?\b|\bflat ?flex\b|\bpotenciometros?\b|\bmolas?\b|\bsensores? (?:hall|analogic)/ },
+  { reason: 'condutiva_flat', re: /\bcondutiv[oa]s?\b|\bflat ?flex\b|\bflat (?:do |da |de )?(?:leitor|laser|cable|power|botao|botoes|blu ?ray)\b|\bcabo flat\b|\bflat cable\b|\bpotenciometros?\b|\bmolas?\b|\bsensores? (?:hall|analogic)/ },
   { reason: 'analogico_3d', re: /\banalogicos? 3d\b|\b3d analogicos?\b|\bhall effect (?:analogic|stick|sensor)/ },
   { reason: 'embalagem_vazia', re: /\bcaixa vazia\b|\bsteelbook (?:vazio|sem)\b|\bsomente (?:o |a |os |as )?(?:encartes?|caixa|capa|manual|case|estojo)\b|\bapenas (?:o |a |os |as )?(?:encartes?|caixa|capa|manual)\b/ },
+  { reason: 'ferramenta_abrir', re: /\btorx\b|\bchaves? (?:de )?(?:fenda|philips|allen|estrela|precisao)\b|\bkit chaves?\b|\b(?:p|para) abrir\b|\bdesmontar\b|\bdesmontagem\b|\bchave t ?\d+\b/ },
+  // QA rodada 4 (P1-A, 2026-11-03): peça de reposição interna/eletrônica NÃO é acessório de jogo.
+  // Bateria de console (código HAC-00x, mAh, chaves de abertura, "do console") fora do escopo; bateria/pilha de CONTROLE segue acessório.
+  { reason: 'bateria_reposicao_console', re: /^(?!.*\b(?:controles?|controllers?|joysticks?|dual ?sense|dual ?shock|joy ?cons?|gamepads?|manetes?)\b)(?=.*\b(?:bateria|baterias|bat)\b)(?=.*(?:\bhac ?\d{3}\b|\b\d{3,5} ?mah\b|\bchaves?\b|\bferramentas?\b|\b(?:do|de) console\b|\bswitch lite\b)).*$/ },
+  { reason: 'dissipador_interno', re: /^(?!.*\b\d{1,4} ?(?:gb|tb)\b).*(?:\bdissipador(?:es)?\b|\bheat ?sinks?\b)/ }, // SSD com capacidade + heatsink é produto de armazenamento, não peça
+  { reason: 'circuito_integrado', re: /\bci (?:hdmi|video|audio|power|de)\b|\bcircuitos? integrados?\b|\bic (?:hdmi|video)\b|\bchip (?:hdmi|ci|ic|bga|encoder|de reparo|reball)\b|\bmn864\d{3}\b|\breball\w*\b/ },
   { reason: 'carcaca_faceplate', re: /\bcarcacas?\b|\bfaceplates?\b|\bdock cover\b|\breplicas?\b|\bplaca frontal\b/ },
 ];
 /** Peças que só valem como "peça" se aparecem ANTES do substantivo principal ("Kit 2 Botões ... para Controle"). */
@@ -182,7 +199,7 @@ const ACCESSORY_NOUNS: Rule[] = [
   { reason: 'audio', re: /\bheadsets?\b|\bfones?\b|\bheadphones?\b|\bfones de ouvido\b/ },
   { reason: 'energia', re: /\bcarregad(?:or|ora|ores|oras)\b|\bfontes?\b|\bbaterias?\b|\bpilhas?\b|\bcabos?\b|\badaptad(?:or|ores)\b|\bdocks?\b|\bestacao de (?:carregamento|acoplamento)\b|\bcharging\b|\bcharger\b|\bhub\b/ },
   { reason: 'armazenamento', re: /\bcartao de memoria\b|\bmemory card\b|\bmicro ?sd\b|\bhd externo\b|\bssd externo\b|\bdisco rigido\b|\bhdd\b|\bexpansao de memoria\b|\bssd nvme\b/ },
-  { reason: 'protecao_suporte', re: /\bcapa (?:protetora|para|de silicone|de protecao|rigida|transparente|case)\b|\bcases? (?:protetor|para|de protecao|rigido|transparente|de transporte|organizador)\b|\bcaixa (?:de|para) (?:transporte|guardar|(?:nintendo )?switch|console|ps ?\d|playstation|xbox)\b|\bsacos? de armazenamento\b|\bestojo\b|\bbolsa (?:para|de transporte)\b|\bcoldre\b|\bprotetor(?:es)?\b|\bpeliculas?\b|\bskins?\b|\bgrips?\b|\bsuportes?\b|\borganizador\b|\bcooler\b|\brefrigerador\b|\bventoinha\b|\bventilador\b|\bresfriamento\b|\bbase (?:vertical|de carregamento)\b/ },
+  { reason: 'protecao_suporte', re: /\balcas?\b|\bdragonete\b|\bwrist ?straps?\b|\bbolsas?\b|\bmaletas?\b|\bcapa (?:protetora|para|de silicone|de protecao|rigida|transparente|case)\b|\bcases? (?:protetor|para|de protecao|rigido|transparente|de transporte|organizador)\b|\bcaixa (?:de|para) (?:transporte|guardar|(?:nintendo )?switch|console|ps ?\d|playstation|xbox)\b|\bsacos? de armazenamento\b|\bestojo\b|\bbolsa (?:para|de transporte)\b|\bcoldre\b|\bprotetor(?:es)?\b|\bpeliculas?\b|\bskins?\b|\bgrips?\b|\bsuportes?\b|\borganizador\b|\bcooler\b|\brefrigerador\b|\bventoinha\b|\bventilador\b|\bresfriamento\b|\bbase (?:vertical|de carregamento)\b/ },
   { reason: 'acessorios_generico', re: /\bacessorios?\b|\bvirtual boy\b|\bplaystation portal\b|\bkinect\b|\bcameras? (?:para|ps|nintendo|switch|playstation|xbox|hd)\b|\bplay ?charge\b|\bmanta\b|\bgrip\b/ },
 ];
 
@@ -194,6 +211,8 @@ const CONSOLE_NOUNS: Rule[] = [
   { reason: 'capacidade', re: /\b\d ?tb\b|\b\d ?tera\b|\b\d{3,4} ?gb\b.*\b(?:ps ?[45]|xbox|switch|playstation)\b|\b(?:ps ?[45]|xbox|switch|playstation)\b.*\b\d{3,4} ?gb\b/ },
   { reason: 'desbloqueado', re: /\bdesbl|\bdesb\b|\bd e s b l o q\b/ },
   { reason: 'bundle_console', re: /\bbundle\b/ },
+  // "Pacote de console Switch 2 + Mario Kart World": o aparelho com jogo (bundle), não o jogo
+  { reason: 'pacote_console', re: /\bpacotes? (?:de )?consoles?\b|\bkit (?:de )?consoles?\b|\bcombo (?:de )?consoles?\b/ },
   { reason: 'ps_original', re: /\b(?:ps ?[123]|playstation ?[123]) (?:super )?(?:original|slim|fat)\b|\bpsone\b|\bplaystation [123]\b.*\bcor\b/ },
   { reason: 'legado_completo', re: /\b(?:playstation|ps) ?[123]\b.*\bcompleto\b|\bcompleto\b.*\b(?:playstation|ps) ?[123]\b/ },
 ];
@@ -209,6 +228,9 @@ const COMPAT_PREFIX = /\b(?:para|compativel(?: com)?|compatible|for|p)\s+(?:o |a
 const BONUS_CONTEXT = /\b(?:pre ?order|bonus|dlc|digital deluxe)\b/;
 /** Título que é só o nome do aparelho ("Xbox Série S", "Nintendo Switch 2") sem jogo nem acessório. */
 const BARE_CONSOLE = /^(?:microsoft |sony |nintendo )?(?:xbox series [sx]|xbox one(?: [sx])?|ps ?[45]|playstation ?[2345]|nintendo switch(?: 2)?|switch 2)$/;
+
+/** Linhas anuais/esportivas que são sempre jogo (título sem a palavra "jogo"). */
+const GAME_LINE_HINT = /\b(?:ea sports|ea fc|fc ?\d{2}|fifa ?\d{2}|pes ?\d{2}|efootball|nba ?(?:2k)?\d{2}|madden|nfl ?\d{2}|ufc ?\d|call of duty|mortal kombat|god of war|mario kart|zelda|pokemon|resident evil|gta|grand theft auto)\b/;
 
 function normalizeForNouns(t: string): string {
   // "Sem controle/cabo/fonte" nega o acessório; não é item do acessório.
@@ -300,7 +322,32 @@ function classifyCore(name: string, dbType: ProductType): DimensionResult {
   // Título que é só o nome do aparelho: console (a menos que o banco diga acessório/jogo com contexto)
   if (BARE_CONSOLE.test(t)) return hit('console', 'nome_nu_de_plataforma', t);
 
+  // Gravado como console, mas o título não cita aparelho nenhum e traz mídia/linha de jogo
+  // ("EA Sports FC 24 PS5 Mídia Física"): é jogo (QA 2026-11-03, P2). Nunca o contrário.
+  if (dbType === 'console' && !con && !acc && mentionsPlatform && (media || GAME_LINE_HINT.test(t))) {
+    return hit('game', 'midia_de_jogo_em_console', media ? media[0] : 'linha de jogo');
+  }
+
   return kept(dbType);
+}
+
+/**
+ * Título que COMEÇA pelo substantivo do acessório ("Controle ... Zelda", "Joystick ... Forza", "Base Vertical PS5"):
+ * o nome da franquia depois dele é só a estampa/licença, o item é acessório (QA rodada 5, P1, 2026-11-03).
+ * Prova inequívoca de tipo: vence o `game` gravado e a palavra "jogo"/"edição" no resto do título.
+ */
+const LEADING_ACCESSORY =
+  /^(?:(?:novo|nova|original|oficial|kit|par de|sony|microsoft|nintendo|playstation|xbox)\s+)*(?:controles?|controlador(?:es)?|joysticks?|gamepads?|joy ?cons?|headsets?|fones?|carregador(?:es)?|cabos?|volantes?|dock|docks|alcas?|grips?|base|stand|suporte|rack|refrigerador|pe horizontal|cartao de memoria|memory card)\b/;
+export function titleLeadsWithAccessory(name: string): boolean {
+  return LEADING_ACCESSORY.test(foldTitle(name));
+}
+
+/** O que o TÍTULO descreve, só para a identidade do produto (dedup). Qualquer coisa fora de console/acessório conta como jogo. */
+export type TitleKind = 'game' | 'console' | 'accessory';
+
+export function titleHardwareKind(name: string): TitleKind {
+  const d = classifyCore(name, 'game').dimension;
+  return d === 'console' || d === 'accessory' ? d : 'game';
 }
 
 /** Tipo efetivo (aba) ou null quando o item está fora da cartela e deve ser escondido. */
@@ -340,7 +387,79 @@ const DLC_RE = /\bdlc\b|\badd ?ons?\b|\bseason pass\b|\bpasse de temporada\b|\be
 const COLLECTOR_RE = /\bsteelbook\b|\b(?:colecionador|collectors?)\b.*\b(?:sem (?:o )?(?:jogo|disco|midia)|apenas|somente)\b/;
 const GAME_WORD = /\bjogos?\b|\bgames?\b|\bmidia\b/;
 
-export function classifyCatalogItem(name: string, dbType: ProductType): DimensionResult {
+// --- Rodada 2026-11-01 (auditoria Cowork F-03, F-04, F-06, F-07) -------------
+/** Título que SEMPRE sai da cartela, em qualquer dimensão e tipo gravado. */
+const ALWAYS_HIDE: Array<{ dimension: CatalogDimension; reason: string; re: RegExp }> = [
+  { dimension: 'off_catalog', reason: 'teclado', re: /\bteclados?\b/ },
+  { dimension: 'merchandise', reason: 'oculos', re: /\boculos\b/ },
+  { dimension: 'merchandise', reason: 'camiseta', re: /\bcamisetas?\b|\bcamisas?\b/ },
+  // "N jogos de sua escolha": conteúdo indeterminado, não é SKU
+  { dimension: 'off_catalog', reason: 'jogos_a_escolha', re: /\b\d{1,3} jogos? (?:de|da|a) (?:sua |seu )?escolha\b|\bjogos? (?:de|da|a) (?:sua )?escolha\b|\bsua escolha\b/ },
+  // disco demo / jam pack / amostra
+  { dimension: 'off_catalog', reason: 'disco_demo', re: /\bjam pack\b|\bdemo disc\b|\bdisco demo\b|\bdemonstrativ[oa]\b|\bsampler\b|\bnot for resale\b|\bdemo\b/ },
+  // desbloqueio/modificação, também com pontuação ("D.E.S.B.L.O.Q" já chega colapsado pelo foldTitle)
+  { dimension: 'off_catalog', reason: 'desbloqueio', re: /\bdesbloq\w*|\bgoldhen\b/ },
+];
+/**
+ * Peças/insumos genéricos que não são acessório de jogo (achados do QA 2026-11-03: "Placas USB + cabo
+ * flat PS4", "Cabo de Energia 2 pinos", "Pilhas AA Philips" estavam aprovados). Não vale quando o
+ * título é de um controle (controle que "usa 2 pilhas AA" continua controle).
+ */
+const GENERIC_PART: Array<{ reason: string; re: RegExp }> = [
+  { reason: 'placa_usb_avulsa', re: /\bplacas? usb\b/ },
+  { reason: 'cabo_flat', re: /\bcabo flat\b|\bflat do leitor\b|\bflat (?:leitor|laser)\b/ },
+  { reason: 'cabo_energia_generico', re: /\bcabo (?:de )?(?:energia|forca|alimentacao)\b.*\b2 pinos?\b|\bcabo (?:de )?(?:energia|forca|alimentacao) (?:de )?2 pinos?\b|\bcabo de forca\b(?!.*\b(?:hdmi|usb)\b)/ },
+  { reason: 'pilha_generica', re: /\bpilhas? (?:aa|aaa|alcalinas?|comuns?)\b|\b(?:aa|aaa) (?:pilhas?|alcalinas?)\b|\bpilhas? (?:philips|duracell|rayovac|panasonic|elgin)\b|\b(?:philips|duracell|rayovac|elgin) (?:pilhas?|aa|aaa)\b/ },
+];
+
+/** "(Digital)" entre parênteses: precisa do título cru, porque o fold apaga a pontuação. */
+const DIGITAL_PAREN_RAW = /\(\s*digital\s*\)/i;
+/** PS Portal é periférico de streaming do PS5: sempre acessório, nunca console. */
+const PS_PORTAL = /\b(?:playstation|ps) ?portal\b/;
+/** Conteúdo de console com N >= 10 jogos (embutidos/baixados): não é SKU de varejo. */
+const CONSOLE_MANY_GAMES = /\+ ?\d{2,3} jogos?\b|\bcom \d{2,3} jogos?\b/;
+/** Gabinete/caixa de HD vazio ("Host de jogo"): peça, não armazenamento. Só vale sem capacidade no título. */
+const ENCLOSURE_WORD = /\bgabinete\b|\benclosure\b|\bcaddy\b|\bhost de jogo\b|\bcaso\b|\bcase\b|\bcaixa\b/;
+const STORAGE_WORD = /\bhdd\b|\bdisco rigido\b|\bssd\b|\bhd\b/;
+const CAPACITY = /\b\d{1,4} ?(?:gb|tb|mb)\b/;
+
+/** Substantivo de controle (para checar clone). */
+const CONTROLLER_WORD = /\bcontrol(?:e|es|ador|adores|ler)\b|\bjoysticks?\b|\bgamepads?\b|\bjoy ?cons?\b|\bmanetes?\b/;
+/**
+ * Sinais de clone/imitação de controle SEM lista de marcas (o guardião
+ * recomendou contra: uma lista permitida marcaria Xbox/PS legítimos "sem marca").
+ * Só dispara com substantivo de controle e dimensão acessório.
+ */
+const CLONE_CONTROLLER: Rule[] = [
+  { reason: 'compativel', re: /\bcompativel\b|\bcompatible\b/ },
+  { reason: 'estilo_tipo', re: /\b(?:estilo|tipo|similar a|inspirado em|semelhante a) (?:nintendo|switch|joy ?con|pro controller|ps ?\d|playstation|xbox|dualsense|dualshock)\b/ },
+  { reason: 'nome_deturpado', re: /\bnitendo\b|\bnintend\b|\bnintedo\b|\bnitedo\b|\bdouble ?sh?ock\b|\bdoubleshok\b|\bdual ?shok\b|\bdual ?shoch\b/ },
+  { reason: 'sem_marca', re: /\bsem marca\b|\bgenerico\b|\bparalelo\b/ },
+  { reason: 'nfc_seis_eixos', re: /\blogotipo nfc\b|\bdespertar nfc\b|\bwake ?up\b|\bseis eixos\b|\b6 eixos\b/ },
+  { reason: 'rgb_programavel', re: /\bbotoes programaveis\b|\brgb\b/ },
+];
+const PC_MOBILE_GROUPS: RegExp[] = [
+  /\bpc\b|\bcomputador\b|\bwindows\b|\bsteam\b/,
+  /\bandroid\b/,
+  /\bios\b|\biphone\b/,
+  /\bcelular(?:es)?\b|\bsmartphone\b|\btv box\b|\btablet\b/,
+];
+
+function cloneControllerSignal(t: string): { reason: string; matched: string } | null {
+  if (!CONTROLLER_WORD.test(t)) return null;
+  const hit = firstIndex(CLONE_CONTROLLER, t);
+  if (hit) return { reason: hit.reason, matched: hit.matched };
+  // título que lista plataformas demais (PC + Android + iOS...) é controle genérico multiuso
+  const groups = PC_MOBILE_GROUPS.filter((r) => r.test(t)).length;
+  if (groups >= 3) return { reason: 'plataformas_demais', matched: 'pc/android/ios' };
+  return null;
+}
+
+/**
+ * `gameFormat` = atributo estruturado FORMAT gravado no master (opcional):
+ * 'digital' tira o item da cartela (exceto console).
+ */
+export function classifyCatalogItem(name: string, dbType: ProductType, gameFormat?: string | null): DimensionResult {
   const t = foldTitle(name);
   const hide = (dimension: CatalogDimension, reason: string, matched: string): DimensionResult => ({
     dimension,
@@ -357,6 +476,33 @@ export function classifyCatalogItem(name: string, dbType: ProductType): Dimensio
   if (clone) return hide('off_catalog', 'clone_generico', clone[0]);
 
   const physical = PHYSICAL_SIGNAL.test(t);
+  const bundle = isBundleTitle(name);
+  const withBundle = (r: DimensionResult): DimensionResult => ({ ...r, bundle });
+
+  // Fora da cartela em qualquer dimensão
+  for (const r of ALWAYS_HIDE) {
+    const m = r.re.exec(t);
+    if (m) return withBundle(hide(r.dimension, r.reason, m[0]));
+  }
+  if (!CONTROLLER_WORD.test(t)) {
+    for (const g of GENERIC_PART) {
+      const m = g.re.exec(t);
+      if (m) return withBundle(hide('part', g.reason, m[0]));
+    }
+  }
+  if (DIGITAL_PAREN_RAW.test(name) && !physical) return withBundle(hide('off_catalog', 'digital_parenteses', '(digital)'));
+  if (String(gameFormat ?? '').toLowerCase() === 'digital' && !physical && dbType !== 'console') {
+    return withBundle(hide('off_catalog', 'digital_formato', 'game_format=digital'));
+  }
+  // Gabinete/caixa de HD sem capacidade: peça
+  if (ENCLOSURE_WORD.test(t) && STORAGE_WORD.test(t) && !CAPACITY.test(t)) {
+    return withBundle(hide('part', 'gabinete_hd', 'gabinete/hdd'));
+  }
+  // PS Portal: acessório, uma dimensão só
+  if (PS_PORTAL.test(t)) {
+    return withBundle({ dimension: 'accessory', source: dbType === 'accessory' ? 'db' : 'title', reason: 'ps_portal', matched: 'playstation portal' });
+  }
+
   const mentionsConsole = CONSOLE_PLATFORM.test(t);
   // Colecionável/steelbook sem disco, jogo nem mídia: peça de coleção, não jogo
   if (COLLECTOR_RE.test(t) && !physical && !GAME_WORD.test(t) && !/\b(?:ps ?[45]|xbox|switch|nintendo|playstation)\b/.test(t)) {
@@ -364,7 +510,6 @@ export function classifyCatalogItem(name: string, dbType: ProductType): Dimensio
   }
 
   const core = classifyCore(name, dbType);
-  const bundle = isBundleTitle(name) || /\bbundle\b/.test(t);
   const out: DimensionResult = { ...core, bundle };
 
   if (out.dimension === 'game') {
@@ -375,10 +520,15 @@ export function classifyCatalogItem(name: string, dbType: ProductType): Dimensio
   if (out.dimension === 'console') {
     const mod = CONSOLE_MOD_RE.exec(t);
     if (mod) return { ...hide('off_catalog', 'console_modificado', mod[0]), bundle };
+    const many = CONSOLE_MANY_GAMES.exec(t);
+    if (many) return { ...hide('off_catalog', 'jogos_a_escolha', many[0]), bundle };
   }
-  // Acessório só vale com plataforma de console no título
-  if (out.dimension === 'accessory' && !mentionsConsole) {
-    return { ...hide('off_catalog', 'acessorio_sem_plataforma', 'sem plataforma'), bundle };
+  if (out.dimension === 'accessory') {
+    // Acessório só vale com plataforma de console no título
+    if (!mentionsConsole) return { ...hide('off_catalog', 'acessorio_sem_plataforma', 'sem plataforma'), bundle };
+    // Controle clone/imitação (sem lista de marcas)
+    const cc = cloneControllerSignal(t);
+    if (cc) return { ...hide('off_catalog', 'clone_controle_' + cc.reason, cc.matched), bundle };
   }
   return out;
 }

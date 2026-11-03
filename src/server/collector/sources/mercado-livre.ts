@@ -11,6 +11,32 @@ interface RawMeliItem {
 }
 
 /**
+ * Títulos originais dos anúncios dos vendedores, pela API OFICIAL de itens
+ * (multiget `/items?ids=...&attributes=id,title`, até 20 ids por chamada). Falha aqui
+ * NUNCA derruba a coleta de preço: sem título, a oferta só não passa pela rechecagem
+ * de identidade nesse ciclo.
+ */
+async function fetchSellerTitles(itemIds: string[], accessToken: string): Promise<Map<string, string>> {
+  const titles = new Map<string, string>();
+  for (let i = 0; i < itemIds.length; i += 20) {
+    const chunk = itemIds.slice(i, i + 20);
+    try {
+      const res = await fetch(`https://api.mercadolibre.com/items?ids=${chunk.join(',')}&attributes=id,title`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (!res.ok) continue;
+      const data = (await res.json()) as Array<{ code?: number; body?: { id?: string; title?: string } }>;
+      for (const row of data) {
+        if (row.code === 200 && row.body?.id && row.body.title) titles.set(row.body.id, row.body.title);
+      }
+    } catch {
+      // sem título neste lote: segue sem rechecagem
+    }
+  }
+  return titles;
+}
+
+/**
  * Coletor do Mercado Livre: usa SOMENTE a API oficial de Catálogo
  * (`/products/{catalog_id}/items`). A busca aberta `/sites/MLB/search` foi
  * removida (2026-10-31): responde 403 sempre, dobrava as chamadas por produto.
@@ -56,6 +82,12 @@ const mercadoLivreSource: PriceSource = {
     if (itemsMap.size === 0 && apiFailures.length > 0) {
       // Resultado vazio + API falhando = desconhecido, não "sem vendedor".
       throw new Error(`Mercado Livre API indisponível pra ${externalRef}: ${apiFailures.join('; ')}`);
+    }
+
+    // Rechecagem de identidade: título original de cada anúncio (best effort, API oficial).
+    if (itemsMap.size > 0) {
+      const titles = await fetchSellerTitles(Array.from(itemsMap.keys()), accessToken);
+      for (const [itemId, snap] of itemsMap) snap.sellerTitle = titles.get(itemId) ?? null;
     }
 
     return Array.from(itemsMap.values());

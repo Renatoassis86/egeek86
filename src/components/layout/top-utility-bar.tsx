@@ -23,7 +23,7 @@ export function TopUtilityBar() {
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-accent-primary)]"
+            className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-accent-primary)]"
           >
             {link.label}
           </a>

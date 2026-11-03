@@ -9,8 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { StatTile } from '@/components/ui/stat-tile';
 import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
-import { getPlatformStats } from '@/server/queries/affiliate';
-import { getPublicTotals } from '@/server/queries/home-search';
+import { getPublicMetrics, PUBLIC_METRIC_LABELS } from '@/server/queries/public-metrics';
 
 export const metadata: Metadata = {
   title: 'Contatos & Suporte',
@@ -20,7 +19,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function ContatosPage() {
-  const [stats, totals] = await Promise.all([getPlatformStats(), getPublicTotals()]);
+  const metrics = await getPublicMetrics();
 
   return (
     <section className="relative mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16 overflow-hidden">
@@ -53,10 +52,10 @@ export default async function ContatosPage() {
       {/* Indicadores Reais da Plataforma — sempre COUNT direto do banco, nunca um número redondo estimado. */}
       <Reveal delay={0.08}>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-12">
-          <StatTile icon={<Package className="size-5" />} value={totals.products} label="Produtos com preço atual" />
-          <StatTile icon={<Store className="size-5" />} value={stats.totalSellers} label="Vendedores identificados" />
-          <StatTile icon={<Layers className="size-5" />} value={totals.stores} label="Lojas monitoradas" />
-          <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de Preço" />
+          <StatTile icon={<Package className="size-5" />} value={metrics.products} label={PUBLIC_METRIC_LABELS.products} />
+          <StatTile icon={<Store className="size-5" />} value={metrics.sellers} label="Vendedores com oferta ativa" />
+          <StatTile icon={<Layers className="size-5" />} value={metrics.stores} label="Lojas monitoradas" />
+          <StatTile icon={<LineChart className="size-5" />} value={metrics.quotes} label={PUBLIC_METRIC_LABELS.quotes} />
         </div>
       </Reveal>
 
@@ -125,6 +124,9 @@ export default async function ContatosPage() {
                 </div>
                 <Text variant="caption" color="secondary" className="leading-relaxed">
                   Quer cadastrar seu acervo para vender drops ou abrir leilões? O credenciamento é feito diretamente pelo cadastro com upload de foto da coleção + rosto e fica sujeito à aprovação administrativa.
+                </Text>
+                <Text variant="caption" color="secondary" className="leading-relaxed">
+                  <strong>Sobre a foto do rosto:</strong> usamos a imagem apenas para conferir que a pessoa que pede o credenciamento é a titular do acervo, e ela é vista somente pela equipe de aprovação. O tratamento depende do seu consentimento, que você pode retirar a qualquer momento. Guardamos a foto apenas pelo tempo necessário ao credenciamento e você pode pedir a exclusão pelos canais desta página.
                 </Text>
               </CardContent>
             </Card>

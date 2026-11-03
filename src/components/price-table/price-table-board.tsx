@@ -23,6 +23,7 @@ import { ProductImage } from '@/components/ui/product-image';
 import { formatBRL } from '@/lib/format';
 import { GAME_FORMAT_LABELS, GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { cn } from '@/lib/cn';
+import { verdictLabel } from '@/lib/affiliate/price-verdict';
 import type { PriceTableRow, NetworkOption } from '@/server/queries/price-table';
 import type { ProductType, GameFormat, GamePlatformGen } from '@/db/schema';
 
@@ -143,7 +144,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
           <select
             value={filters.loja}
             onChange={(e) => setParams({ loja: e.target.value === 'all' ? null : e.target.value })}
-            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
+            className="h-8 px-2.5 text-xs font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
           >
             <option value="all">Toda Loja</option>
             {networks.map((n) => (
@@ -157,7 +158,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
           <select
             value={filters.gen}
             onChange={(e) => setParams({ geracao: e.target.value === 'all' ? null : e.target.value })}
-            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
+            className="h-8 px-2.5 text-xs font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
           >
             <option value="all">Toda Plataforma</option>
             <option value="switch_1">Nintendo Switch</option>
@@ -172,11 +173,10 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
           <select
             value={filters.format}
             onChange={(e) => setParams({ formato: e.target.value === 'all' ? null : e.target.value })}
-            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
+            className="h-8 px-2.5 text-xs font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0"
           >
             <option value="all">Todo Formato</option>
             <option value="physical">Mídia Física</option>
-            <option value="digital">Mídia Digital</option>
           </select>
 
           {/* Ordenação */}
@@ -184,7 +184,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
             value={filters.onlyBelowAvg ? 'discount_desc' : filters.sortBy}
             disabled={filters.onlyBelowAvg}
             onChange={(e) => setParams({ ordenar: e.target.value })}
-            className="h-8 px-2.5 text-[11px] font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0 disabled:opacity-60"
+            className="h-8 px-2.5 text-xs font-semibold rounded-md bg-[var(--color-bg-inset)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] shrink-0 disabled:opacity-60"
           >
             <option value="name_asc">Ordem (A-Z)</option>
             <option value="name_desc">Ordem (Z-A)</option>
@@ -198,7 +198,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
             variant={filters.onlyBelowAvg ? 'hype' : 'outline'}
             size="sm"
             onClick={() => setParams({ desconto: filters.onlyBelowAvg ? null : '1' })}
-            className="h-8 px-2.5 text-[11px] font-bold gap-1.5 shrink-0 border-[var(--color-accent-hype)]/40"
+            className="h-8 px-2.5 text-xs font-bold gap-1.5 shrink-0 border-[var(--color-accent-hype)]/40"
           >
             <Flame className="size-3" />
             <span>Abaixo da Média</span>
@@ -247,15 +247,13 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
                       )}
                       <div className="mt-1 flex items-center gap-1.5 flex-wrap">
                         {item.isLowestEver ? (
-                          <Badge variant="hype" size="sm" className="font-bold text-[10px] py-0 px-1.5">
+                          <Badge variant="hype" size="sm" className="font-bold text-xs py-0 px-1.5">
                             Recorde Histórico
                           </Badge>
-                        ) : item.avgDiscountPercent && item.avgDiscountPercent > 0 ? (
-                          <Badge variant="outline" size="sm" className="border-emerald-500/50 text-emerald-400 text-[10px] py-0 px-1.5">
-                            -{item.avgDiscountPercent}% Média
-                          </Badge>
-                        ) : null}
-                        <span className="text-[10px] text-[var(--color-text-tertiary)] font-mono">
+                        ) : (
+                          <VerdictBadge item={item} compact />
+                        )}
+                        <span className="text-xs text-[var(--color-text-tertiary)] font-mono">
                           {item.networkName}
                         </span>
                       </div>
@@ -264,7 +262,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
 
                   <div className="flex items-center justify-between border-t border-[var(--color-border-subtle)]/60 pt-2.5 min-w-0">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] block">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] block">
                         Preço Atual
                       </span>
                       <Text variant="mono-md" className="font-bold text-[var(--color-accent-gold)] tabular">
@@ -274,7 +272,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
 
                     {item.lowestPriceCents > 0 && (
                       <div className="text-right">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] block">
+                        <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] block">
                           Menor Histórico
                         </span>
                         <Text variant="mono-sm" color="tertiary" className="tabular">
@@ -372,7 +370,7 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
                               {formatBRL(item.avgPriceCents30d)}
                             </Text>
                             {item.avgDiscountPercent && item.avgDiscountPercent > 0 && (
-                              <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400">
+                              <span className="text-xs font-black px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400">
                                 -{item.avgDiscountPercent}%
                               </span>
                             )}
@@ -395,27 +393,22 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
                       <td className="px-4 py-3 text-center">
                         <div className="flex flex-col items-center gap-0.5">
                           <span className="text-xs font-semibold px-2 py-0.5 rounded bg-[var(--color-bg-elevated)] border border-[var(--color-border-subtle)]">
-                            {item.totalQuoteCount} variações
+                            {item.totalQuoteCount.toLocaleString('pt-BR')} cotações
                           </span>
-                          <span className="text-[10px] color-tertiary">{item.networkName}</span>
+                          <span className="text-xs color-tertiary">{item.networkName}</span>
                         </div>
                       </td>
 
                       {/* Indicador do Consumidor */}
                       <td className="px-4 py-3 text-center">
-                        {item.isLowestEver ? (
-                          <Badge variant="hype" size="sm" className="font-bold">
-                            Recorde Histórico
-                          </Badge>
-                        ) : item.avgDiscountPercent && item.avgDiscountPercent > 0 ? (
-                          <Badge variant="outline" size="sm" className="border-emerald-500/50 text-emerald-400">
-                            Preço Excelente
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" size="sm">
-                            Preço Regular
-                          </Badge>
-                        )}
+                        <div className="flex flex-col items-center gap-1">
+                          {item.isLowestEver && (
+                            <Badge variant="hype" size="sm" className="font-bold">
+                              Recorde Histórico
+                            </Badge>
+                          )}
+                          <VerdictBadge item={item} />
+                        </div>
                       </td>
 
                       {/* Ação */}
@@ -436,5 +429,37 @@ export function PriceTableBoard({ items, totalCount, filters, networks }: PriceT
         </>
       )}
     </div>
+  );
+}
+
+
+/**
+ * Veredito único de 3 faixas (computeVerdict, +-5% da média única do produto).
+ * Histórico curto aparece como texto, sem selo. Nunca recalcula nada aqui.
+ */
+function VerdictBadge({ item, compact = false }: { item: PriceTableRow; compact?: boolean }) {
+  const { kind, deltaPercent } = item.verdict;
+  const { label, tone } = verdictLabel(kind);
+  if (kind === 'insufficient') {
+    return <span className="text-xs text-[var(--color-text-tertiary)]">{label}</span>;
+  }
+  const delta =
+    deltaPercent != null && kind !== 'inline' ? ` ${deltaPercent > 0 ? '+' : ''}${deltaPercent.toLocaleString('pt-BR')}%` : '';
+  return (
+    <span className="inline-flex flex-col items-center gap-0.5">
+      <Badge
+        variant="outline"
+        size="sm"
+        className={cn(
+          compact && 'py-0 px-1.5',
+          tone === 'good' && 'border-emerald-500/50 text-emerald-400',
+          tone === 'warn' && 'border-red-500/50 text-red-400'
+        )}
+      >
+        {label}
+        {delta}
+      </Badge>
+      {item.lowConfidence && <span className="text-xs text-[var(--color-text-tertiary)]">preço muito disperso</span>}
+    </span>
   );
 }

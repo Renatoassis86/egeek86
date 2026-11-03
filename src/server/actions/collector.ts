@@ -1,5 +1,7 @@
 'use server';
 
+import { entryGateAttributes } from '@/lib/catalog/gate';
+import type { ProductType } from '@/db/schema';
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
 import { eq, and, sql } from 'drizzle-orm';
@@ -387,6 +389,7 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
             meliCatalogId: itemData.id,
             defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
             ...classification,
+            attributes: entryGateAttributes(itemData.name, (classification as { productType?: ProductType }).productType ?? 'game'),
             classifiedAt: new Date(),
           })
           .returning();

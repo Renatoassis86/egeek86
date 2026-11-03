@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { OfferCard } from '@/components/affiliate/offer-card';
+import { isHighlightEligibleSeller } from '@/lib/affiliate/price-verdict';
 import { listRankedOffers, getFeaturedOffers, getOfferListingMetrics, type RankedOffersFilter, type OfferWithRelations } from '@/server/queries/affiliate';
 
 function deduplicateAndFilterOffers(
@@ -19,9 +20,12 @@ function deduplicateAndFilterOffers(
       continue;
     }
 
+    // Destaque não promove vendedor de reputação baixa (a oferta segue pública e comparável).
+    if (!isHighlightEligibleSeller(offer.seller)) continue;
+
     const metrics = metricsMap.get(offer.id);
-    // Em destaques/melhores ofertas, desconsiderar ofertas com aumento de preço em relação à média
-    if (metrics?.avgPriceCents30d && offer.currentPriceCents > metrics.avgPriceCents30d) {
+    // Em destaques/melhores ofertas, desconsiderar ofertas "acima do normal" (veredito único de 3 faixas)
+    if (metrics?.verdict?.kind === 'above') {
       continue;
     }
 
@@ -35,6 +39,7 @@ function deduplicateAndFilterOffers(
   if (filtered.length < limit) {
     for (const offer of offers) {
       if (filtered.some((f) => f.masterProductId === offer.masterProductId)) continue;
+      if (!isHighlightEligibleSeller(offer.seller)) continue;
       filtered.push(offer);
       if (filtered.length >= limit) break;
     }

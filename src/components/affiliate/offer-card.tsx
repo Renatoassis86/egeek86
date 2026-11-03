@@ -7,6 +7,8 @@ import { ProductImage } from '@/components/ui/product-image';
 import { Text } from '@/components/ui/text';
 import { cn } from '@/lib/cn';
 import { formatBRL } from '@/lib/format';
+import { classifyCatalogItem, dimensionToProductType } from '@/lib/catalog/dimensions';
+import { sellerTier, verdictLabel } from '@/lib/affiliate/price-verdict';
 import {
   GAME_FORMAT_LABELS,
   GAME_PLATFORM_GEN_LABELS,
@@ -15,19 +17,24 @@ import {
 } from '@/lib/affiliate/labels';
 import type { OfferListingMetrics, OfferWithRelations } from '@/server/queries/affiliate';
 
+/** Tipo efetivo (cartela) do item da oferta; cai no tipo gravado se a cartela o esconder. */
+export function effectiveOfferType(offer: OfferWithRelations) {
+  const mp = offer.masterProduct;
+  const dim = classifyCatalogItem(mp.name, mp.productType, mp.gameFormat);
+  return dimensionToProductType(dim.dimension) ?? mp.productType;
+}
+
 export function OfferCard({
   offer,
   metrics,
   variant = 'grid',
 }: {
   offer: OfferWithRelations;
-  /** Métricas em lote (menor histórico, desconto) — opcional, card degrada bem sem elas. */
+  /** Métricas em lote (menor histórico, desconto). Opcional, o card degrada bem sem elas. */
   metrics?: OfferListingMetrics;
   /**
-   * 'feature' = card horizontal maior, reservado pra seção "Melhores ofertas
-   * agora" — dá hierarquia visual real ao diferencial do produto (menor
-   * preço/desconto) em vez de todo card competir igual numa grade uniforme.
-   * 'grid' = card padrão vertical da vitrine.
+   * 'feature' = horizontal a partir de sm (no celular é igual ao grid, para
+   * não ocupar uma tela inteira com uma foto 4:5).
    */
   variant?: 'grid' | 'feature';
 }) {
@@ -35,6 +42,11 @@ export function OfferCard({
   const image = offer.imageUrl ?? images?.[0] ?? null;
   const trust = getSellerTrustInfo(offer.seller);
   const isFeature = variant === 'feature';
+  const type = effectiveOfferType(offer);
+  // Veredito único de 3 faixas (±5% da média única do produto); selo de recorde
+  // não vale para vendedor de reputação baixa (F-24).
+  const verdict = metrics?.verdict ?? null;
+  const showLowBadge = metrics?.isLowestEver === true && sellerTier(offer.seller) !== 'low';
 
   const specLine = [
     offer.masterProduct.gameFormat !== 'unknown' ? GAME_FORMAT_LABELS[offer.masterProduct.gameFormat] : null,
@@ -43,105 +55,89 @@ export function OfferCard({
     .filter(Boolean)
     .join(' · ');
 
+  const showDelta =
+    offer.currentPriceCents > 0 &&
+    verdict != null &&
+    verdict.deltaPercent != null &&
+    (verdict.kind === 'below' || verdict.kind === 'above');
+
   return (
-    <Link href={`/ofertas/${offer.slug}`} className="group block h-full">
+    <Link href={`/ofertas/${offer.slug}`} className="group block h-full min-w-0">
       <Card
         interactive
-        className={cn('h-full overflow-hidden', isFeature ? 'flex flex-col sm:flex-row' : 'flex flex-col')}
+        className={cn('h-full min-w-0 overflow-hidden', isFeature ? 'flex flex-col sm:flex-row' : 'flex flex-col')}
       >
         <ProductImage
           src={image}
           alt={offer.title}
           hoverZoom
-          dimension={offer.masterProduct.productType}
+          dimension={type}
           bundle={isBundleTitle(offer.title)}
           className={cn('border-0 border-b', isFeature ? 'w-full sm:w-[42%] sm:border-b-0 sm:border-r' : 'w-full')}
         >
-
-          {/* Tag de Variação de Preço (Positiva = Vermelha, Negativa = Verde) */}
-          {(() => {
-            let varPercent: number | null = null;
-            if (offer.currentPriceCents > 0) {
-              if (metrics?.avgDiscountPercent) {
-                varPercent = -metrics.avgDiscountPercent;
-              } else if (metrics?.avgPriceCents30d && metrics.avgPriceCents30d > 0) {
-                const diff = offer.currentPriceCents - metrics.avgPriceCents30d;
-                varPercent = Math.round((diff / metrics.avgPriceCents30d) * 100);
-              } else if (metrics?.lowestPriceCents && metrics.lowestPriceCents > 0 && offer.currentPriceCents !== metrics.lowestPriceCents) {
-                const diff = offer.currentPriceCents - metrics.lowestPriceCents;
-                varPercent = Math.round((diff / metrics.lowestPriceCents) * 100);
-              }
-            }
-
-            if (varPercent === null || varPercent === 0) return null;
-
-            const isPositive = varPercent > 0;
-            return (
-              <span
-                className={cn(
-                  "absolute left-3.5 top-3.5 z-10 inline-flex items-center rounded-[var(--radius-sm)] px-2 py-1 text-[12px] font-black leading-none text-white shadow-[var(--shadow-md)]",
-                  isPositive ? "bg-red-600" : "bg-emerald-600"
-                )}
-                title={isPositive ? "Preço acima da média (Variação Positiva)" : "Preço abaixo da média (Desconto)"}
-              >
-                {isPositive ? `+${varPercent}%` : `${varPercent}%`}
-              </span>
-            );
-          })()}
-
-          <Badge
-            variant="outline"
-            size="sm"
-            className="absolute right-3.5 bottom-3.5 z-10 max-w-[70%] truncate bg-[var(--color-bg-canvas)]/90 backdrop-blur-sm shadow-[var(--shadow-sm)]"
-            style={offer.network.colorHex ? { borderColor: offer.network.colorHex } : undefined}
-          >
-            {offer.network.name}
-          </Badge>
+          {/* Desconto: canto superior direito do quadro, sem cobrir o centro da foto */}
+          {showDelta && verdict && verdict.deltaPercent != null && (
+            <span
+              className={cn(
+                'absolute right-0 top-0 z-10 inline-flex items-center px-2 py-1 text-[12px] font-black leading-none text-white',
+                verdict.kind === 'above' ? 'bg-red-600' : 'bg-emerald-600'
+              )}
+              title={verdictLabel(verdict.kind).label}
+            >
+              {verdict.kind === 'above' ? `+${Math.round(verdict.deltaPercent)}%` : `${Math.round(verdict.deltaPercent)}%`}
+            </span>
+          )}
         </ProductImage>
 
-        <CardContent className={cn('flex flex-1 flex-col gap-2 min-w-0', isFeature ? 'p-4 sm:p-5 sm:justify-center' : 'p-3.5 sm:p-4')}>
-          <div className="flex flex-row items-center justify-between gap-1.5 w-full min-w-0">
-            {specLine && (
-              <Text variant="caption" color="tertiary" className="truncate uppercase tracking-[0.04em] flex-1 min-w-0">
-                {specLine}
-              </Text>
-            )}
-            {metrics?.isLowestEver && (
-              <Badge variant="hype" size="sm" className="flex-shrink-0 shrink-0 whitespace-nowrap w-fit text-[10px] px-1.5 py-0">
-                <Flame className="size-3 shrink-0" />
-                <span>Menor já visto</span>
-              </Badge>
-            )}
+        <CardContent className={cn('flex min-w-0 flex-1 flex-col gap-2', isFeature ? 'p-3 sm:p-5 sm:justify-center' : 'p-3 sm:p-4')}>
+          {/* Loja e especificação ficam no corpo, nunca sobre a foto */}
+          <div className="flex w-full min-w-0 items-center justify-between gap-1.5">
+            <Text variant="caption" color="tertiary" className="min-w-0 flex-1 truncate font-semibold uppercase tracking-[0.04em] text-[12px]">
+              <span style={offer.network.colorHex ? { color: offer.network.colorHex } : undefined}>{offer.network.name}</span>
+              {specLine ? ` · ${specLine}` : ''}
+            </Text>
           </div>
 
           <Text
             variant={isFeature ? 'body-md' : 'body-sm'}
-            className={cn('line-clamp-2 overflow-hidden text-ellipsis font-medium break-words min-w-0', isFeature ? 'min-h-11' : 'min-h-10')}
+            className={cn('line-clamp-2 min-w-0 overflow-hidden break-words font-medium', isFeature ? 'min-h-11' : 'min-h-10')}
           >
             {offer.title}
           </Text>
+
+          {showLowBadge && (
+            <Badge variant="hype" size="sm" className="w-fit max-w-full shrink-0 whitespace-nowrap px-1.5 py-0 text-[12px]">
+              <Flame className="size-3 shrink-0" />
+              <span>Menor já visto</span>
+            </Badge>
+          )}
 
           <div className="mt-auto flex flex-col gap-1">
             {offer.currentPriceCents > 0 ? (
               <>
                 {metrics?.avgPriceCents30d != null && (
-                  <Text
-                    variant="caption"
-                    color="tertiary"
-                    className={cn(metrics.avgPriceCents30d > offer.currentPriceCents && 'line-through')}
-                  >
+                  <Text variant="caption" color="tertiary">
                     Preço médio: {formatBRL(metrics.avgPriceCents30d)}
                   </Text>
                 )}
                 <Text
                   variant="mono-lg"
                   color="primary"
-                  className={cn('leading-none', isFeature ? 'text-[26px] sm:text-[30px]' : 'text-[21px]')}
+                  className={cn('leading-none', isFeature ? 'text-[22px] sm:text-[30px]' : 'text-[20px] sm:text-[21px]')}
                 >
                   {formatBRL(offer.currentPriceCents)}
                 </Text>
 
-                {metrics && !metrics.isLowestEver && (
+                {verdict && (
+                  <Text
+                    variant="caption"
+                    color={verdict.kind === 'below' ? 'success' : verdict.kind === 'above' ? 'danger' : 'tertiary'}
+                  >
+                    {verdictLabel(verdict.kind).label}
+                  </Text>
+                )}
+
+                {metrics && metrics.eligibility.eligible && !showLowBadge && (
                   <Text variant="caption" color="secondary" className="inline-flex items-center gap-1">
                     <TrendingDown className="size-3" aria-hidden />
                     Menor já visto: {formatBRL(metrics.lowestPriceCents)}
@@ -150,7 +146,7 @@ export function OfferCard({
               </>
             ) : (
               // Item descoberto automaticamente, ainda sem nenhuma coleta de
-              // preço concluída — nunca mostrar "R$ 0,00" (parece grátis/quebrado).
+              // preço concluída: nunca mostrar "R$ 0,00" (parece grátis/quebrado).
               <Text variant="body-sm" color="tertiary" className="italic">
                 Coletando preço...
               </Text>
@@ -175,7 +171,7 @@ export function OfferCard({
           )}
 
           {isFeature && (
-            <span className="mt-1 inline-flex items-center gap-1 text-caption font-medium text-[var(--color-accent-primary)] opacity-0 transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100">
+            <span className="mt-1 hidden items-center gap-1 text-caption font-medium text-[var(--color-accent-primary)] opacity-0 transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100 sm:inline-flex">
               Ver oferta <ArrowUpRight className="size-3.5" aria-hidden />
             </span>
           )}

@@ -205,7 +205,7 @@ export function HeaderSearchModal() {
                           {item.title}
                         </span>
                         {item.category && (
-                          <span className="text-[10px] text-[var(--color-text-tertiary)] uppercase tracking-wider">
+                          <span className="text-xs text-[var(--color-text-tertiary)] uppercase tracking-wider">
                             {item.category}
                           </span>
                         )}
@@ -226,7 +226,7 @@ export function HeaderSearchModal() {
             </div>
 
             {/* Rodapé do Modal */}
-            <div className="p-3 bg-[var(--color-bg-inset)]/80 border-t border-[var(--color-border-subtle)] flex items-center justify-between text-[11px] text-[var(--color-text-tertiary)]">
+            <div className="p-3 bg-[var(--color-bg-inset)]/80 border-t border-[var(--color-border-subtle)] flex items-center justify-between text-xs text-[var(--color-text-tertiary)]">
               <span>Dica: Use <strong>ESC</strong> para fechar ou <strong>Ctrl + K</strong> para abrir.</span>
               <button 
                 type="button"

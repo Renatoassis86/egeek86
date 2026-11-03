@@ -6,6 +6,7 @@ import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema'
 import { getPriceSource, listOperationalSourceSlugs } from './price-sources';
 import type { PriceSnapshotResult } from './price-sources';
 import { recordPriceSnapshot } from './record-price-snapshot';
+import { evaluateOfferIdentity, type OfferIdentityResult } from '@/lib/affiliate/offer-identity';
 import { upsertSellerFromOffer } from './sources/mercado-livre-seller';
 import { slugify } from '@/lib/slugify';
 import { mapWithConcurrency } from '@/lib/concurrency';
@@ -52,6 +53,24 @@ export interface CollectPricesSummary {
   skippedNoSource: number;
   skippedNoOffer: number;
   errors: { externalRef: string; message: string }[];
+  /**
+   * Rechecagem de identidade (decisões do dono, 2026-11-03): anúncios cujo TÍTULO ORIGINAL do vendedor
+   * diverge do master (ou é Open Box/usado/cross-gen) NÃO foram ligados como 'active': ficam 'draft'
+   * (fora de média, mediana, menor preço e vitrine) até conferência humana. Cada item guarda o título
+   * original, porque o schema atual não tem coluna para ele (ver proposta de migration no ADR 0006).
+   */
+  identityReview: IdentityReviewEntry[];
+}
+
+export interface IdentityReviewEntry {
+  offerId: string;
+  externalItemId: string;
+  sellerTitle: string;
+  masterProductId: string;
+  masterName: string;
+  reason: string;
+  /** Status da oferta antes da coleta ('new' = oferta criada agora). */
+  previousStatus: string;
 }
 
 interface OfferGroup {
@@ -82,7 +101,7 @@ interface OfferGroup {
 export async function collectPrices(): Promise<CollectPricesSummary> {
   const operationalSlugs = listOperationalSourceSlugs();
   if (operationalSlugs.length === 0) {
-    return { checked: 0, updated: 0, offersCreated: 0, skippedNoSource: 0, skippedNoOffer: 0, errors: [] };
+    return { checked: 0, updated: 0, offersCreated: 0, skippedNoSource: 0, skippedNoOffer: 0, errors: [], identityReview: [] };
   }
   const dueOffers = await db
     .select({
@@ -127,6 +146,7 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     skippedNoSource: 0,
     skippedNoOffer: 0,
     errors: [],
+    identityReview: [],
   };
 
   const groups = new Map<string, OfferGroup>();
@@ -181,9 +201,13 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         return;
       }
 
-      const { updated, created } = await applySnapshotsToGroup(group, results);
+      const { updated, created, reviewed } = await applySnapshotsToGroup(group, results);
       summary.updated += updated;
       summary.offersCreated += created;
+      if (reviewed.length > 0) {
+        summary.identityReview.push(...reviewed);
+        console.warn('[identidade] ofertas em revisão (fora dos indicadores):', JSON.stringify(reviewed));
+      }
       // Só chega aqui se a fonte respondeu e os snapshots foram aplicados.
       await stampChecked(group.offerIds);
     } catch (err) {
@@ -203,14 +227,21 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
  * Representa o vendedor pelo anúncio mais barato (desempate: item id), o que é
  * determinístico e é o preço que o comprador realmente pode pagar dele.
  */
-function collapseBySeller(results: PriceSnapshotResult[]): PriceSnapshotResult[] {
+function collapseBySeller(
+  results: PriceSnapshotResult[],
+  verdicts: Map<string, OfferIdentityResult> = new Map()
+): PriceSnapshotResult[] {
+  // Anúncio de identidade duvidosa (Open Box, outro modelo...) nunca representa o vendedor se ele
+  // tem outro anúncio idêntico ao master, mesmo que mais caro.
+  const bad = (r: PriceSnapshotResult) => (verdicts.get(r.externalItemId)?.excluded ? 1 : 0);
   const bySeller = new Map<string, PriceSnapshotResult>();
   for (const r of results) {
     const cur = bySeller.get(r.externalSellerId);
     if (
       !cur ||
-      r.priceCents < cur.priceCents ||
-      (r.priceCents === cur.priceCents && r.externalItemId < cur.externalItemId)
+      bad(r) < bad(cur) ||
+      (bad(r) === bad(cur) &&
+        (r.priceCents < cur.priceCents || (r.priceCents === cur.priceCents && r.externalItemId < cur.externalItemId)))
     ) {
       bySeller.set(r.externalSellerId, r);
     }
@@ -232,11 +263,35 @@ async function stampChecked(offerIds: string[]): Promise<void> {
 async function applySnapshotsToGroup(
   group: OfferGroup,
   rawResults: PriceSnapshotResult[]
-): Promise<{ updated: number; created: number }> {
-  const results = collapseBySeller(rawResults);
+): Promise<{ updated: number; created: number; reviewed: IdentityReviewEntry[] }> {
+  let masterCache: { name: string; productType: string; defaultImages: string[] } | null = null;
+  const loadMaster = async () => {
+    if (masterCache) return masterCache;
+    const [row] = await db
+      .select({ name: masterProducts.name, productType: masterProducts.productType, defaultImages: masterProducts.defaultImages })
+      .from(masterProducts)
+      .where(eq(masterProducts.id, group.masterProductId))
+      .limit(1);
+    masterCache = row
+      ? { name: row.name, productType: row.productType, defaultImages: (row.defaultImages as unknown as string[]) ?? [] }
+      : { name: 'Produto', productType: 'game', defaultImages: [] };
+    return masterCache;
+  };
+
+  // Rechecagem de identidade: título original do anúncio x master (só quando a fonte devolveu o título).
+  const verdicts = new Map<string, OfferIdentityResult>();
+  if (rawResults.some((r) => r.sellerTitle)) {
+    const m = await loadMaster();
+    for (const r of rawResults) {
+      if (r.sellerTitle) verdicts.set(r.externalItemId, evaluateOfferIdentity(r.sellerTitle, { name: m.name, productType: m.productType }));
+    }
+  }
+  const isExcluded = (r: PriceSnapshotResult) => verdicts.get(r.externalItemId)?.excluded === true;
+
+  const results = collapseBySeller(rawResults, verdicts);
   let updated = 0;
   let created = 0;
-  let masterProduct: { name: string; defaultImages: string[] } | null = null;
+  const reviewed: IdentityReviewEntry[] = [];
 
   // O placeholder de catálogo criado por discover-products.ts (sellerId
   // nulo) nunca bate no filtro `eq(sellerId, ...)` abaixo — cada resultado
@@ -270,8 +325,10 @@ async function applySnapshotsToGroup(
     )
     .limit(1);
 
-  if (placeholderOffer) {
-    const bestResult = results.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
+  // O placeholder do catálogo só recebe preço de anúncio com identidade ok (Open Box não vira "menor preço").
+  const okResults = results.filter((r) => !isExcluded(r));
+  if (placeholderOffer && okResults.length > 0) {
+    const bestResult = okResults.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
     await recordPriceSnapshot({
       offerId: placeholderOffer.id,
       priceCents: bestResult.priceCents,
@@ -311,22 +368,16 @@ async function applySnapshotsToGroup(
       )
       .limit(1);
 
+    const excluded = isExcluded(result);
     let offerId: string;
     let isNewOffer = false;
+    let previousStatus = 'new';
     if (existingOffer) {
       offerId = existingOffer.id;
+      previousStatus = existingOffer.status;
     } else {
       isNewOffer = true;
-      if (!masterProduct) {
-        const [row] = await db
-          .select({ name: masterProducts.name, defaultImages: masterProducts.defaultImages })
-          .from(masterProducts)
-          .where(eq(masterProducts.id, group.masterProductId))
-          .limit(1);
-        masterProduct = row
-          ? { name: row.name, defaultImages: (row.defaultImages as unknown as string[]) ?? [] }
-          : { name: 'Produto', defaultImages: [] };
-      }
+      const masterProduct = await loadMaster();
 
       const baseSlug = slugify(`${masterProduct.name}-${result.externalSellerId}`);
       const [collision] = await db
@@ -374,8 +425,9 @@ async function applySnapshotsToGroup(
           // oferta nascia com preço na tela mas zero linha de histórico
           // (achado real: 132 ofertas exatamente nesse estado).
           currentPriceCents: 0,
-          status: 'active',
-          publishedAt: new Date(),
+          // Identidade duvidosa (Open Box, outro modelo, cross-gen): 'draft' = fora dos indicadores e da vitrine.
+          status: excluded ? 'draft' : 'active',
+          publishedAt: excluded ? null : new Date(),
           lastCheckedAt: new Date(),
         })
         .returning();
@@ -384,6 +436,17 @@ async function applySnapshotsToGroup(
     }
 
     updatedOfferIds.add(offerId);
+    if (excluded) {
+      reviewed.push({
+        offerId,
+        externalItemId: result.externalItemId,
+        sellerTitle: result.sellerTitle ?? '',
+        masterProductId: group.masterProductId,
+        masterName: (await loadMaster()).name,
+        reason: verdicts.get(result.externalItemId)?.summary ?? 'identidade',
+        previousStatus,
+      });
+    }
 
     await recordPriceSnapshot({
       offerId,
@@ -403,7 +466,14 @@ async function applySnapshotsToGroup(
       const updateData: Partial<typeof affiliateOffers.$inferInsert> = {
         sellerId,
         consecutiveMissCount: 0,
-        status: existingOffer.status === 'expired' ? 'active' : existingOffer.status,
+        // Identidade duvidosa tira a oferta de 'active' (vai para 'draft'); nunca promove uma 'draft' sozinha.
+        status: excluded
+          ? existingOffer.status === 'active' || existingOffer.status === 'expired'
+            ? 'draft'
+            : existingOffer.status
+          : existingOffer.status === 'expired'
+            ? 'active'
+            : existingOffer.status,
       };
       // Se o link de afiliado ainda está pendente, atualiza o placeholder com a URL do anúncio específico
       if (existingOffer.affiliateLinkPending && result.externalItemId && group.networkSlug === 'mercado-livre') {
@@ -434,5 +504,5 @@ async function applySnapshotsToGroup(
       .where(inArray(affiliateOffers.id, expiredOfferIds));
   }
 
-  return { updated, created };
+  return { updated, created, reviewed };
 }

@@ -7,7 +7,8 @@ import { ArrowUpRight, LineChart } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { WatchlistPanel } from './watchlist-panel';
-import { PriceHistoryChart } from './price-history-chart';
+import { PriceHistoryChart, type PriceChartCanonical } from './price-history-chart';
+import { getSellerTrustInfo, sellerTrustTextColor } from '@/lib/affiliate/labels';
 import { AnimatedPrice } from './animated-price';
 import type { PriceHistoryResult } from '@/server/queries/price-history';
 
@@ -52,11 +53,14 @@ export function MonitoringBoard({
   initialSelectedId,
   initialHistory,
   isGuest = false,
+  canonicalById,
 }: {
   watchlistItems: WatchlistPanelItem[];
   initialSelectedId: string;
   initialHistory: PriceHistoryResult | null;
   isGuest?: boolean;
+  /** Estatística canônica por produto (getMasterProductPriceStats); o selo e as contagens do gráfico leem daqui. */
+  canonicalById?: Record<string, PriceChartCanonical>;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -96,6 +100,13 @@ export function MonitoringBoard({
   }
 
   const active = selectedItem;
+  const trust = active
+    ? getSellerTrustInfo({
+        reputationLevel: active.sellerReputationLevel,
+        powerSellerStatus: active.sellerPowerSellerStatus,
+        totalSales: null,
+      })
+    : null;
 
   return (
     <div className="grid gap-6 grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[320px_1fr] w-full min-w-0 max-w-full overflow-hidden">
@@ -125,12 +136,18 @@ export function MonitoringBoard({
                   <AnimatedPrice cents={active.currentPriceCents} className="text-mono-lg" />
                   <ArrowUpRight className="size-4 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
                 </Link>
-                {(active.sellerNickname || active.sellerReputationLevel) && (
+                {(active.sellerNickname || trust) && (
                   <Text variant="caption" color="tertiary" className="text-right">
                     {active.sellerNickname && <span className="font-medium">{active.sellerNickname}</span>}
-                    {active.sellerReputationLevel && <span> · {active.sellerReputationLevel}</span>}
+                    {trust && (
+                      <span>
+                        {active.sellerNickname ? ' · ' : ''}
+                        <Text as="span" variant="caption" color={sellerTrustTextColor(trust.variant)}>
+                          {trust.label}
+                        </Text>
+                      </span>
+                    )}
                     {active.sellerPositiveRatingPercent && <span> · {active.sellerPositiveRatingPercent}% positivas</span>}
-                    {active.sellerPowerSellerStatus && <span> · {active.sellerPowerSellerStatus}</span>}
                   </Text>
                 )}
               </div>
@@ -140,6 +157,7 @@ export function MonitoringBoard({
               initialHistory={initialHistory ?? EMPTY_PRICE_HISTORY}
               initialTimeframe="1M"
               currentPriceCents={active.currentPriceCents}
+              canonical={canonicalById?.[active.masterProductId]}
             />
             <Text variant="caption" color="tertiary" className="mt-3">
               <Link href={`/monitoramento/comparar/${active.masterProductId}`} className="underline">

@@ -7,9 +7,22 @@ import { getUserWatches } from '@/server/queries/price-watches';
 import { getMasterProductPriceHistory, getMasterProductChangePercent, type PriceHistoryResult } from '@/server/queries/price-history';
 import { getPublicOffers } from '@/server/queries/affiliate';
 import { MonitoringBoard } from '@/components/monitoring/monitoring-board';
+import type { PriceChartCanonical } from '@/components/monitoring/price-history-chart';
+import { getMasterProductPriceStatsBatch, type MasterProductPriceStats } from '@/server/queries/product-price-stats';
 
 export const metadata = { title: 'Bolsa Gamer' };
 export const dynamic = 'force-dynamic';
+
+/** Subconjunto serializável da estatística canônica que o gráfico precisa. */
+function toCanonical(st: MasterProductPriceStats): PriceChartCanonical {
+  return {
+    avgCents: st.avgCents,
+    quoteCount: st.quoteCount,
+    historyDays: st.historyDays,
+    lowAll: st.lowAll ? { priceCents: st.lowAll.priceCents } : null,
+    currentLowestActive: st.currentLowestActive ? { priceCents: st.currentLowestActive.priceCents } : null,
+  };
+}
 
 export default async function MonitoramentoPage({
   searchParams,
@@ -41,6 +54,7 @@ export default async function MonitoramentoPage({
 
   let selectedProductId = jogo ?? '';
   let initialHistory: PriceHistoryResult | null = null;
+  const canonicalById: Record<string, PriceChartCanonical> = {};
 
   try {
     let userWatches = profile ? await getUserWatches(profile.id) : [];
@@ -49,10 +63,12 @@ export default async function MonitoramentoPage({
       const selected = userWatches.find((w) => w.masterProductId === jogo) ?? userWatches[0];
       selectedProductId = selected.masterProductId;
 
-      const [historyData, changeMap] = await Promise.all([
+      const [historyData, changeMap, statsMap] = await Promise.all([
         getMasterProductPriceHistory(selected.masterProductId, '1M').catch(() => null),
         getMasterProductChangePercent(userWatches.map((w) => w.masterProductId)).catch(() => new Map()),
+        getMasterProductPriceStatsBatch(userWatches.map((w) => w.masterProductId)).catch(() => new Map()),
       ]);
+      for (const [id, st] of statsMap) canonicalById[id] = toCanonical(st);
 
       if (historyData) {
         initialHistory = historyData;
@@ -77,10 +93,14 @@ export default async function MonitoramentoPage({
     } else if (jogo) {
       // Se veio um jogo específico via URL (ex: ?jogo=UUID)
       selectedProductId = jogo;
-      const historyData = await getMasterProductPriceHistory(jogo, '1M').catch(() => null);
+      const [historyData, statsMap] = await Promise.all([
+        getMasterProductPriceHistory(jogo, '1M').catch(() => null),
+        getMasterProductPriceStatsBatch([jogo]).catch(() => new Map()),
+      ]);
       if (historyData) {
         initialHistory = historyData;
       }
+      for (const [id, st] of statsMap) canonicalById[id] = toCanonical(st);
     } else {
       initialHistory = null;
       selectedProductId = '';
@@ -150,6 +170,7 @@ export default async function MonitoramentoPage({
         initialSelectedId={selectedProductId}
         initialHistory={initialHistory}
         isGuest={!profile}
+        canonicalById={canonicalById}
       />
     </section>
   );

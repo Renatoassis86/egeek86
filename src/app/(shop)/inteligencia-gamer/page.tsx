@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/text';
 import { Card, CardContent } from '@/components/ui/card';
+import { SceneImage } from '@/components/motion/scene-image';
 
 // Definição de tipos de dados para os itens da Inteligência Gamer
 interface IntelItem {
@@ -185,7 +186,6 @@ function HeroIntelCarousel({ items }: { items: IntelItem[] }) {
             <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 w-fit">
               {currentItem.categoryLabel}
             </span>
-            <span className="text-[11px] font-mono text-zinc-400">Carrossel 2s</span>
           </div>
 
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white leading-tight">
@@ -350,11 +350,12 @@ function InteligenciaGamerPageContent() {
                   <Card key={item.id} className="group overflow-hidden border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#0e0c14] hover:border-amber-400 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between">
                     <CardContent className="p-4 sm:p-5 flex flex-col gap-3 h-full">
                       <div className="relative aspect-[16/10] w-full rounded-md overflow-hidden bg-black shrink-0">
-                        <Image
-                          src={item.imageUrl}
+                        {/* A capa já aparece no destaque acima; o card repete só quando a imagem é exclusiva dele. */}
+                        <SceneImage
+                          src={item.isMainHighlight ? null : item.imageUrl}
                           alt={item.title}
-                          fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          tone="ember"
+                          caption={item.categoryLabel}
                         />
                       </div>
 

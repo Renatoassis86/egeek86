@@ -19,3 +19,11 @@ Quatro cálculos divergentes de menor preço e média (`getOfferMetrics`, `getMa
 - Produtos com histórico curto deixam de ganhar selo (menos vitrine "menor preço histórico"; avisar o dono).
 - Risco de desempenho em produtos com muitos snapshots (3 varreduras por produto); medir com EXPLAIN antes de liberar nas listagens e, se preciso, agregar por dia (possível migration futura).
 - Pendente: auditoria de duplicatas (F4), pois a estatística é por `master_product_id` e duplicatas fragmentam o mínimo.
+
+## Emenda de 2026-11-01 (rodada de indicadores, F-08, F-11, F-13, F-14, F-15)
+- Item 4: o veredito de 3 faixas passa a ser o ÚNICO texto em tabela, cards e página (`verdictLabel`); "Preço Excelente" e "Preço Regular" foram removidos.
+- Item 3: o piso virou **estrito** (preço > 35% da mediana). Cotação de vendedor de reputação baixa (vermelha/laranja ou < 10 vendas) não define o menor preço histórico; segue na média e na contagem. O menor preço inclui a oferta pública atual.
+- Item 2: somado ao filtro 2x, teto de 3 x a mediana só em média e máximo. Produto com máximo/mínimo limpo > 3 é de baixa confiança (sem selo, sem "abaixo do normal").
+- A mediana é exposta como `medianCents` ("preço típico", só elegível). A média continua sendo a referência do veredito.
+- Implementação única dos agregados: `statsAggCtes` (`product-price-stats.ts`), usada pela página, cards e busca e pela tabela de preços. Contadores públicos: `getPublicMetrics`.
+- Pendente (decisão do dono): cotação por oferta por dia, ADR 0004.

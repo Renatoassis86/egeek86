@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     .limit(1);
 
   if (!offer) {
-    return NextResponse.redirect(new URL('/ofertas', request.url), 302);
+    return NextResponse.redirect(new URL('/oferta-encerrada', request.url), 302);
   }
 
   let destinationUrl = safeExternalUrl(offer.affiliateUrl);

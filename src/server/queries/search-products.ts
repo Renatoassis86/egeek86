@@ -17,9 +17,9 @@ import {
   type VerdictKind,
 } from '@/lib/affiliate/price-verdict';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
-import { derivePlatformFromTitle } from '@/lib/affiliate/game-classification';
-import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
+import { isBundleTitle, isKitKeywordTitle } from '@/lib/affiliate/product-type-classifier';
 import { comparePreference, effectiveCatalogType } from '@/lib/catalog/dimensions';
+import { readPlatform } from '@/lib/catalog/platform';
 import {
   analyzeName,
   cleanProductTitle,
@@ -121,6 +121,8 @@ export interface SearchProduct {
   imageUrl: string | null;
   platform: GamePlatformGen;
   platformLabel: string;
+  /** Plataforma legada fora do enum citada no título (Wii U, 3DS, PS2...), só quando platform = 'unknown'. Exibição. */
+  legacyPlatformLabel: string | null;
   productType: SearchProductKind;
   /** Kit/lote/combo/bundle. Console com jogo: selo "Bundle" na aba Consoles e FORA da média/menor preço do console puro. */
   isBundle: boolean;
@@ -219,7 +221,10 @@ export interface ProductSuggestion {
   title: string;
   platform: GamePlatformGen;
   platformLabel: string;
+  legacyPlatformLabel: string | null;
   productType: SearchProductKind;
+  /** Selo Bundle no autocomplete. */
+  isBundle: boolean;
   lowestPriceCents: number;
   offerCount: number;
   storeCount: number;
@@ -239,6 +244,8 @@ export const SEARCH_MAX_PAGE_SIZE = 60;
 export const DISCOUNT_SORT_POOL = 30;
 const CANDIDATE_LIMIT = 800;
 const BROWSE_LIMIT = 1500;
+/** Navegação só por dimensão (termo "console"): sem corte por oferta, a aba inteira. */
+const DIMENSION_BROWSE_LIMIT = 6000;
 const WSIM_STRICT = 0.45;
 const WSIM_RELAXED = 0.3;
 const CACHE_SECONDS = 60;
@@ -445,7 +452,12 @@ async function fetchCandidates(q: ParsedQuery, o: FetchOptions): Promise<Candida
 // ---------------------------------------------------------------------------
 
 function effectivePlatform(c: Candidate): GamePlatformGen {
-  return c.dbPlatform !== 'unknown' ? c.dbPlatform : derivePlatformFromTitle(c.name);
+  return readPlatform(c.dbPlatform, c.name).platform;
+}
+
+/** Selo (qualquer bundle) x regra estreita que tira kit/lote/combo/bundle da aba Jogos. */
+function bundleFlags(name: string): { bundle: boolean; kit: boolean } {
+  return { bundle: isBundleTitle(name) || /\bbundle\b/i.test(name), kit: isKitKeywordTitle(name) };
 }
 
 /**
@@ -476,6 +488,38 @@ function toStoreQuote(s: StoreJson): SearchStoreQuote {
     outboundUrl: url,
     isAffiliateLink: url !== null && s.pending === false,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Termo de dimensão (F-20): "console" e "controle" são nomes de aba, não palavras de título
+// ---------------------------------------------------------------------------
+
+const DIMENSION_WORDS: Record<string, ProductType> = {
+  console: 'console',
+  consoles: 'console',
+  controle: 'accessory',
+  controles: 'accessory',
+  acessorio: 'accessory',
+  acessorios: 'accessory',
+};
+
+/**
+ * Tira do termo as palavras que nomeiam uma dimensão (console, controle,
+ * acessório) e devolve a dimensão pedida. A busca então usa a dimensão
+ * CLASSIFICADA do produto, não a palavra no título: "console" não traz
+ * "Mortal Kombat 1 Para Console" e "controle" não traz "Madden NFL 19 Controle
+ * Real Player Motion". O resto do termo ("controle ps5" -> "ps5") segue a busca normal.
+ */
+export function splitDimensionTerm(term: string): { term: string; intent: ProductType | null } {
+  const words = foldText(term ?? '').split(/\s+/).filter(Boolean);
+  let intent: ProductType | null = null;
+  const rest: string[] = [];
+  for (const w of words) {
+    const d = DIMENSION_WORDS[w];
+    if (d) intent = intent ?? d;
+    else rest.push(w);
+  }
+  return intent ? { term: rest.join(' '), intent } : { term: String(term ?? ''), intent: null };
 }
 
 // ---------------------------------------------------------------------------
@@ -546,7 +590,11 @@ interface Scored {
   relevance: number;
   type: ProductType;
   platform: GamePlatformGen;
+  /** Selo Bundle (regra ampla). */
   bundle: boolean;
+  /** kit/lote/combo/bundle explícito: some da aba Jogos, salvo se o termo pedir. */
+  kit: boolean;
+  legacy: string | null;
 }
 
 function scoreCandidates(q: ParsedQuery, rows: Candidate[], opts: { prefixLast?: boolean; relaxed?: boolean; browse?: boolean }): Scored[] {
@@ -562,7 +610,8 @@ function scoreCandidates(q: ParsedQuery, rows: Candidate[], opts: { prefixLast?:
     if (relevance < (opts.relaxed ? 0.5 : SEARCH_MIN_RELEVANCE)) continue;
     const type = effectiveType(c);
     if (type === null) continue; // fora da cartela pública
-    out.push({ c, relevance, type, platform: effectivePlatform(c), bundle: isBundleTitle(c.name) || /\bbundle\b/i.test(c.name) });
+    const rp = readPlatform(c.dbPlatform, c.name);
+    out.push({ c, relevance, type, platform: rp.platform, legacy: rp.legacyLabel, ...bundleFlags(c.name) });
   }
   return out;
 }
@@ -616,6 +665,7 @@ function buildBaseItems(list: Scored[]): SearchProduct[] {
       imageUrl: c.stores[0].imageUrl || c.defaultImage || null,
       platform: s.platform,
       platformLabel: GAME_PLATFORM_GEN_LABELS[s.platform],
+      legacyPlatformLabel: s.legacy,
       productType: s.type,
       isBundle: s.bundle,
       relevance: Math.round(s.relevance * 1000) / 1000,
@@ -678,7 +728,7 @@ async function computeInsights(ids: string[]): Promise<Record<string, SearchInsi
     const historyDays = st?.historyDays ?? 0;
     const eligible = checkEligibility({ quoteCount, historyDays }).eligible;
     const current = c?.price != null ? Number(c.price) : null;
-    const verdict = computeVerdict({ quoteCount, historyDays, currentCents: current, avgCents: st?.avgCents });
+    const verdict = computeVerdict({ quoteCount, historyDays, currentCents: current, avgCents: st?.avgCents, lowConfidence: st?.lowConfidence });
 
     // Piso de plausibilidade já aplicado na fonte única (product-price-stats.ts).
     const historicLow: SearchHistoricLow | null = st?.lowAll
@@ -710,7 +760,7 @@ async function computeInsights(ids: string[]): Promise<Record<string, SearchInsi
       eligible,
       quoteCount,
       historyDays,
-      lowestEverBadge: computeLowBadge({ quoteCount, historyDays, currentCents: current, lowestCents: historicLow?.priceCents }),
+      lowestEverBadge: computeLowBadge({ quoteCount, historyDays, currentCents: current, lowestCents: historicLow?.priceCents, blocked: (st?.lowBadgeBlock ?? null) !== null }),
       priceDrop,
       priceFalling: priceDrop !== null,
       historicLow,
@@ -763,16 +813,17 @@ async function didYouMean(q: ParsedQuery, n: NormalizedParams): Promise<string[]
 
 async function runSearch(n: NormalizedParams): Promise<SearchProductsResult> {
   const explicitPlatform = n.platforms.length > 0;
-  const q = parseQuery(n.term);
-  const browseMode = !q.hasText && (explicitPlatform || q.platform !== null);
-  if (q.generic && !explicitPlatform) return emptyResult(n, q, 'generic_term');
+  const dim = splitDimensionTerm(n.term);
+  const q = parseQuery(dim.term);
+  const browseMode = !q.hasText && (explicitPlatform || q.platform !== null || dim.intent !== null);
+  if (q.generic && !explicitPlatform && !dim.intent) return emptyResult(n, q, 'generic_term');
   if (!q.hasText && !browseMode) return emptyResult(n, q, 'generic_term');
 
   const platformFromTerm = !explicitPlatform && q.platform !== null;
   const wantedPlatforms: GamePlatformGen[] = explicitPlatform ? n.platforms : q.platform ? [q.platform] : [];
 
   const rows = await fetchCandidates(q, {
-    limit: browseMode ? BROWSE_LIMIT : CANDIDATE_LIMIT,
+    limit: browseMode ? (dim.intent && !q.hasText && !explicitPlatform && !q.platform ? DIMENSION_BROWSE_LIMIT : BROWSE_LIMIT) : CANDIDATE_LIMIT,
     browsePlatform: browseMode ? (wantedPlatforms.length === 1 ? wantedPlatforms[0] : null) : undefined,
     stores: n.stores,
     condition: n.condition ?? undefined,
@@ -780,7 +831,9 @@ async function runSearch(n: NormalizedParams): Promise<SearchProductsResult> {
 
   // 1) relevância (corte) + bundles escondidos nas abas de jogo
   let scored = scoreCandidates(q, rows, { browse: browseMode });
-  scored = scored.filter((s) => q.wantsBundle || s.type !== 'game' || !s.bundle);
+  scored = scored.filter((s) => q.wantsBundle || s.type !== 'game' || !s.kit);
+  // termo de dimensão: só produtos CLASSIFICADOS nela (vale para as abas, facets e total)
+  if (dim.intent) scored = scored.filter((s) => s.type === dim.intent);
 
   if (scored.length === 0) {
     return emptyResult(n, q, 'no_match', {
@@ -869,7 +922,7 @@ async function runSearch(n: NormalizedParams): Promise<SearchProductsResult> {
 
 const searchProductsCached = createCachedQuery(
   async (n: NormalizedParams): Promise<SearchProductsResult> => runSearch(n),
-  ['search-products-v3'],
+  ['search-products-v4'],
   { revalidate: CACHE_SECONDS, tags: CACHE_TAGS }
 );
 
@@ -892,11 +945,13 @@ export async function searchProductsUncached(params: SearchProductsParams): Prom
 
 async function runSuggestSql(term: string, limit: number, types: ProductType[]): Promise<ProductSuggestion[]> {
   const run = async (t: string, partial?: string): Promise<Scored[]> => {
-    const q = parseQuery(t);
+    const dim = splitDimensionTerm(t);
+    const q = parseQuery(dim.term);
     if (!q.hasText) return [];
     const rows = await fetchCandidates(q, { limit: 200 });
     let scored = scoreCandidates(q, rows, { prefixLast: true })
-      .filter((s) => types.includes(s.type) && (q.wantsBundle || s.type !== 'game' || !s.bundle))
+      .filter((s) => !dim.intent || s.type === dim.intent)
+      .filter((s) => types.includes(s.type) && (q.wantsBundle || s.type !== 'game' || !s.kit))
       .filter((s) => !q.platform || s.platform === q.platform);
     if (partial) {
       // última palavra curta ainda sendo digitada ("resident evil v"): vale como prefixo, não como numeral romano
@@ -918,7 +973,9 @@ async function runSuggestSql(term: string, limit: number, types: ProductType[]):
       title: cleanProductTitle(s.c.name, { keepPlatform: s.type !== 'game' }),
       platform: s.platform,
       platformLabel: GAME_PLATFORM_GEN_LABELS[s.platform],
+      legacyPlatformLabel: s.legacy,
       productType: s.type,
+      isBundle: s.bundle,
       lowestPriceCents: Number(best.priceCents),
       offerCount: s.c.offerCount,
       storeCount: s.c.networkCount,
@@ -1053,8 +1110,9 @@ function buildIndex(rows: IndexRow[]): IndexEntry[] {
     };
     const type = effectiveType(c);
     if (type === null) return []; // fora da cartela pública: nunca entra no autocomplete
+    const rp = readPlatform(c.dbPlatform, c.name);
     return [{
-      scored: { c, type, platform: effectivePlatform(c), bundle: isBundleTitle(r.name) },
+      scored: { c, type, platform: rp.platform, legacy: rp.legacyLabel, ...bundleFlags(r.name) },
       info: analyzeName(r.name),
       folded: foldText(r.name).replace(/[^a-z0-9]+/g, ' '),
       title: cleanProductTitle(r.name, { keepPlatform: type !== 'game' }),
@@ -1119,15 +1177,17 @@ export async function reloadSuggestIndexFromDatabaseForMeasurement(): Promise<nu
 
 function suggestFromIndex(index: IndexEntry[], term: string, limit: number, types: ProductType[]): ProductSuggestion[] {
   const run = (t: string, partial?: string): Scored[] => {
-    const q = parseQuery(t);
+    const dim = splitDimensionTerm(t);
+    const q = parseQuery(dim.term);
     if (!q.hasText) {
-      // só plataforma ("ps5", "switch 2 jogos"): os mais cotados daquela plataforma
-      if (!q.platform) return [];
+      // só plataforma ("ps5", "switch 2 jogos") ou só dimensão ("console"): os mais cotados
+      if (!q.platform && !dim.intent) return [];
       const top: Scored[] = [];
       for (const e of index) {
         const s = e.scored;
-        if (!types.includes(s.type) || s.platform !== q.platform) continue;
-        if (s.type === 'game' && s.bundle) continue;
+        if (!types.includes(s.type) || (q.platform && s.platform !== q.platform)) continue;
+        if (dim.intent && s.type !== dim.intent) continue;
+        if (s.type === 'game' && s.kit) continue;
         top.push({ ...s, relevance: 1 });
       }
       return top;
@@ -1137,7 +1197,8 @@ function suggestFromIndex(index: IndexEntry[], term: string, limit: number, type
     for (const e of index) {
       const s = e.scored;
       if (!types.includes(s.type)) continue;
-      if (!q.wantsBundle && s.type === 'game' && s.bundle) continue;
+      if (dim.intent && s.type !== dim.intent) continue;
+      if (!q.wantsBundle && s.type === 'game' && s.kit) continue;
       if (q.platform && s.platform !== q.platform) continue;
       if (re && !re.test(e.folded)) continue;
       const sc = scoreName(q, e.info, { prefixLast: true });
@@ -1161,7 +1222,9 @@ function suggestFromIndex(index: IndexEntry[], term: string, limit: number, type
         title: byId.get(s.c.id)?.title ?? cleanProductTitle(s.c.name, { keepPlatform: s.type !== 'game' }),
         platform: s.platform,
         platformLabel: GAME_PLATFORM_GEN_LABELS[s.platform],
+        legacyPlatformLabel: s.legacy,
         productType: s.type,
+        isBundle: s.bundle,
         lowestPriceCents: Number(best.priceCents),
         offerCount: s.c.offerCount,
         storeCount: s.c.networkCount,

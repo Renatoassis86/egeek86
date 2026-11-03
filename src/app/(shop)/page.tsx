@@ -46,26 +46,32 @@ import { cn } from '@/lib/cn';
 // sozinho — sem isso, o build tenta pré-renderizar como estática e trava
 // buscando no banco no ambiente de build (visto ao vivo no primeiro deploy).
 import { getPublishedArticles } from '@/server/queries/news';
-import { getPlatformStats, type PlatformStats } from '@/server/queries/affiliate';
-import { getSurveyAggregation, type SurveyAggregation } from '@/server/queries/survey';
+import { createCachedQuery } from '@/lib/cache/server-cache';
+import { getPublicMetrics, PUBLIC_METRIC_LABELS, type PublicMetrics } from '@/server/queries/public-metrics';
+import { getSurveyAggregationForHome, type SurveyAggregation } from '@/server/queries/survey';
 import { gamerCards, geekCards } from '@/lib/categories-showcase';
 import { getHomeSearchData, type HomeSearchData } from '@/server/queries/home-search';
 import { SearchBox } from '@/components/search/search-box';
 import { PLATFORM_SHORT } from '@/components/search/platform-short';
-import { PriceChartsShowcase } from '@/components/home/price-charts-showcase';
 import { GamerSurvey } from '@/components/home/gamer-survey';
 import { Package, Store, Layers, LineChart, TrendingDown as TrendingDownIcon } from 'lucide-react';
 import { StatTile } from '@/components/ui/stat-tile';
-import { AnimatedStatBars, type StatBarItem } from '@/components/motion/animated-stat-bars';
 
 export const dynamic = 'force-dynamic';
 
 // Uma única leitura de notícias por requisição, compartilhada entre o carrossel
 // do Hero e a seção de notícias (React cache). Só entra notícia com fonte
 // registrada (EG-16): sem fonte, não há como conferir a afirmação.
+// Cache SWR de 60 s (src/lib/cache/swr.ts): a home nunca espera o banco para as notícias.
+// Datas viajam como string ISO (JSON); o consumidor usa new Date(...).
+const publishedArticlesCached = createCachedQuery(
+  async () => (await getPublishedArticles({ pageSize: 30 })).items,
+  ['home-articles-v1'],
+  { revalidate: 60 }
+);
 const getHomeArticles = cache(async () => {
   try {
-    const { items } = await getPublishedArticles({ pageSize: 30 });
+    const items = await publishedArticlesCached();
     return items.filter((a) => (a.sourceName ?? '').trim() !== '');
   } catch (e) {
     console.error('Erro ao carregar notícias na home:', e);
@@ -74,27 +80,25 @@ const getHomeArticles = cache(async () => {
 });
 
 export default async function HomePage() {
-  const [stats, surveyData, searchData] = await Promise.all([
-    getPlatformStats(),
-    getSurveyAggregation(),
+  const [metrics, surveyData, searchData] = await Promise.all([
+    getPublicMetrics(),
+    getSurveyAggregationForHome(),
     getHomeSearchData(),
   ]);
 
   return (
     <>
       <Hero data={searchData} />
-      <StatementBand products={searchData.totals.products} stores={searchData.totals.stores} quotes={stats.totalQuotes} />
+      <StatementBand products={metrics.products} stores={metrics.stores} quotes={metrics.quotes} />
       <Suspense fallback={null}>
         <WeeklyPromosSection />
       </Suspense>
       <CategoriesSection />
-      <MarketStatsSection />
-      <MarketNumbersSection />
       <Suspense fallback={null}>
         <SalesHighlights />
       </Suspense>
       <SurveySection surveyData={surveyData} />
-      <IndicatorsSection stats={stats} activeMarketplaces={searchData.totals.stores} activeProducts={searchData.totals.products} />
+      <IndicatorsSection metrics={metrics} />
       <InteligenciaGamerTeaserSection />
       <Suspense fallback={null}>
         <HomeNewsSection />
@@ -237,95 +241,6 @@ function CategoriesSection() {
   );
 }
 
-function MarketStatsSection() {
-  return (
-    <section data-theme="dark" className="w-full bg-[#0a0a0d] text-white border-b border-zinc-800 py-20 lg:py-28">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-10 lg:grid-cols-[1fr_1.3fr] lg:gap-14 lg:items-center">
-        <Reveal>
-          <div className="flex flex-col gap-4">
-            <TextImageMask
-              text="86"
-              src="/images/categorias/geek-collage.png"
-              className="text-[160px] leading-none sm:text-[240px] lg:text-[320px] xl:text-[360px] font-black"
-            />
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/40 w-fit">
-              Dados do mercado
-            </span>
-            <Text as="h2" variant="display-lg" className="font-black tracking-tight text-white">
-              Números da indústria de games.
-            </Text>
-            <Text variant="body-lg" className="leading-relaxed text-zinc-300">
-              Dados do nosso relatório de mercado: receita e comportamento dos jogadores no Brasil e no mundo.
-            </Text>
-          </div>
-        </Reveal>
-        <Reveal delay={0.08}>
-          <PriceChartsShowcase />
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
-// Estatísticas reais do mercado gamer, sempre com fonte citada — nunca
-// inventadas nem projetadas sem dizer a origem. Atualizar quando houver
-// relatório mais recente (Newzoo publica novo Global Games Market Report
-// anualmente, geralmente entre jun-set; Pesquisa Game Brasil, anualmente).
-// Vivia em /noticias antes; mudou pra cá porque é contextualização/
-// monitoramento de mercado, o mesmo assunto do Painel Analítico logo acima.
-const MARKET_NUMBERS: StatBarItem[] = [
-  {
-    label: 'Mercado global de games em 2025',
-    fillPercent: 75,
-    displayValue: 'US$ 197 bi (+7,5%)',
-    source: 'Newzoo, Global Games Market Report 2025',
-  },
-  {
-    label: 'Mercado de games no Brasil em 2025',
-    fillPercent: 80,
-    displayValue: 'R$ 12,7 bi (+8%)',
-    source: 'Newzoo / Statista / Abragames',
-  },
-  {
-    label: 'Jogadores ativos no mundo',
-    fillPercent: 61.5,
-    displayValue: '3,6 bi (61,5% da população online)',
-    source: 'Newzoo, 2025',
-  },
-  {
-    label: 'Brasileiros que jogam games',
-    fillPercent: 73.4,
-    displayValue: '73,4%',
-    source: 'Pesquisa Game Brasil',
-  },
-];
-
-function MarketNumbersSection() {
-  return (
-    <section data-theme="light" className="w-full bg-[#faf7f2] text-zinc-900 border-b border-amber-900/10 py-20 lg:py-28">
-      <div className="mx-auto max-w-4xl px-4 lg:px-8">
-        <Reveal>
-          <div className="flex flex-col gap-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-orange-500/15 text-orange-600 border border-orange-500/30 w-fit">
-              O mercado gamer em números
-            </span>
-            <Text as="h2" variant="display-lg" className="max-w-[20ch] font-black tracking-tight text-zinc-900">
-              Games é a maior indústria de entretenimento do mundo, e o Brasil lidera a América Latina.
-            </Text>
-            <Text variant="body-md" className="leading-relaxed text-zinc-700 font-medium">
-              Mais gente joga do que assiste streaming ou vai ao cinema. O Brasil é o maior mercado
-              consumidor da América Latina desde 2021. Todo número vem com a fonte citada.
-            </Text>
-            <div className="mt-2">
-              <AnimatedStatBars items={MARKET_NUMBERS} />
-            </div>
-          </div>
-        </Reveal>
-      </div>
-    </section>
-  );
-}
-
 function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
   const platformQuestion = surveyData.questions.find((q) => q.key === 'platform');
   const initialOptions = (platformQuestion?.options ?? []).map((opt) => ({
@@ -358,7 +273,7 @@ function SurveySection({ surveyData }: { surveyData: SurveyAggregation }) {
   );
 }
 
-function IndicatorsSection({ stats, activeMarketplaces, activeProducts }: { stats: PlatformStats; activeMarketplaces: number; activeProducts: number }) {
+function IndicatorsSection({ metrics }: { metrics: PublicMetrics }) {
   return (
     <section data-theme="dark" className="w-full bg-gradient-to-b from-[#03291e] to-[#011a13] text-white border-y border-emerald-800/40 py-20 lg:py-28 relative overflow-hidden">
       <Glow color="hype" size="xl" intensity={0.15} className="-top-64 -right-48" />
@@ -377,10 +292,12 @@ function IndicatorsSection({ stats, activeMarketplaces, activeProducts }: { stat
 
         <Reveal delay={0.08} className="w-full">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full">
-            <StatTile icon={<Package className="size-5" />} value={activeProducts} label="Produtos com oferta ativa" />
-            <StatTile icon={<Store className="size-5" />} value={activeMarketplaces} label="Marketplaces com oferta ativa" />
-            <StatTile icon={<LineChart className="size-5" />} value={stats.totalQuotes} label="Cotações de preço registradas" />
-            <StatTile icon={<TrendingDownIcon className="size-5" />} value={stats.itemsBelowAverageCount} label="Produtos abaixo da média (histórico elegível)" />
+            <StatTile icon={<Package className="size-5" />} value={metrics.products} label={PUBLIC_METRIC_LABELS.products} />
+            <StatTile icon={<Store className="size-5" />} value={metrics.stores} label="Marketplaces com oferta ativa" />
+            <StatTile icon={<LineChart className="size-5" />} value={metrics.quotes} label={PUBLIC_METRIC_LABELS.quotes} />
+            {metrics.belowAverageCount != null && (
+              <StatTile icon={<TrendingDownIcon className="size-5" />} value={metrics.belowAverageCount} label="Produtos abaixo do normal (histórico elegível)" />
+            )}
           </div>
         </Reveal>
 

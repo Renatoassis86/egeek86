@@ -296,3 +296,65 @@ Unificado nesta etapa: o menor preço (`price_cents > 0`, escopo produto) em `ge
 - `getMasterProductMetrics` (watchlist) agora sai da fonte única; `trend` só vira `down`/`up` com histórico elegível e variação >= 5%.
 - Alerta: com `target_price_cents`, avisa ao atingir; sem alvo, só com histórico elegível (novo menor registrado ou >= 12% abaixo da média única).
 - Legados restantes: `getOfferMetrics` (escopo oferta, admin, depreciado) e `getMasterProductPriceHistory` (`price-history.ts`, EG-12).
+
+## 9. Rodada de indicadores de 2026-11-01 (auditoria Cowork, achados F-08, F-11, F-13, F-14, F-15, F-24, F-26)
+
+Pareceres: `docs/conselho/pareceres-2026-11-01/` (estatístico, especialista em preços, DBA). Esta seção prevalece sobre 2.6, 7.1.1, 7.4 e 7.6 onde houver diferença.
+
+### 9.1 Veredito único de 3 faixas (F-08)
+`computeVerdict` (`price-verdict.ts`) é a única fórmula. Faixa de ±5% da média única do produto: `inline` ("Em linha com o normal"), `below` ("Abaixo do normal"), `above` ("Acima do normal"). Sem histórico elegível: "Histórico curto", sem selo. O texto vem de `verdictLabel(kind)`. Tabela de preços, cards de oferta e vitrines leem o veredito; "Preço Excelente" e "Preço Regular" deixaram de existir. `avgDiscountPercent` passou a ser derivado do veredito (só existe em `below`); em `price-table.ts` o SQL de `discount_percent_raw` aplica a mesma faixa, então coluna, filtro "abaixo da média" e ordenação concordam. A média continua sendo a referência; a mediana não entra no veredito.
+
+### 9.2 Piso, teto e dispersão (F-11, F-13, F-14)
+- Piso duro: cotação ou oferta pública com preço menor ou igual a 35% da mediana sai (antes `>=` deixava passar a borda; o GT7 de R$ 70,00 passava por 3 centavos). Mediana com uma definição só, `medianSql` (`public-offers.ts`), usada na oferta pública e no histórico.
+- Teto: cotação acima de 3 x a mediana do produto sai da **média e do máximo** (somado ao filtro 2x, que continua). Nunca vale para a oferta pública, para o produto não ficar sem preço. O mínimo não depende do teto.
+- Dispersão: `dispersionRatio` = máximo limpo / mínimo limpo. Acima de 3, `lowConfidence`: sem selo de recorde, e "abaixo do normal" é rebaixado para "em linha" com o aviso "preço muito disperso".
+- Zona de suspeita: preço entre o piso e 50% da mediana continua nos indicadores, mas só ganha o selo de recorde com pelo menos 2 vendedores distintos com oferta pública dentro de ±10% dele. A cotação não é removida.
+- F-14: o menor preço (`lowAll`, `low1y`, `low3m`) agora **inclui a oferta pública atual**; "menor já visto" nunca fica acima do preço de hoje. Também na tabela (`lowestPriceCents = min(mínimo, atual)`).
+
+### 9.3 Reputação do vendedor (F-11, F-24)
+`sellerTier` (`price-verdict.ts`, espelhado em SQL por `weakSellerSql`): `low` = reputação vermelha ou laranja, ou vendas conhecidas < 10 sem power seller; `unverified` = sem dado (não exclui nada); `ok` = o resto. Efeitos, todos de leitura: cotação de vendedor `low` não define o menor preço histórico (continua em média e contagem); oferta de vendedor `low` não ganha selo de recorde e não entra em destaque (`isHighlightEligibleSeller`). A oferta segue pública e comparável.
+
+### 9.4 Mediana como "preço típico"
+`MasterProductPriceStats.medianCents`: mediana das cotações limpas, só com histórico elegível (senão `null`). Campo aditivo; informação extra, a média segue sendo a referência.
+
+### 9.5 Contadores (F-15)
+`getPublicMetrics()` (`src/server/queries/public-metrics.ts`) é a única fonte. Home, `/ofertas`, `/sobre`, `/contatos` e o cabeçalho da tabela leem só dela. Definições: produtos = master não mesclado, na cartela, com oferta pública (igual ao total da tabela sem filtro); lojas = redes com oferta pública; vendedores = vendedores distintos com oferta pública (não mais "todos já vistos"); cotações = snapshots com preço > 0; "no menor preço histórico" = linhas da tabela com o selo (catálogo inteiro, não a amostra de 200 ofertas); "abaixo do normal" = linhas com veredito `below`. Selo e "abaixo" vêm das mesmas colunas SQL da tabela (`low_badge_ok`, `discount_percent_raw`). Tela com recorte filtrado usa rótulo próprio ("N itens nesta seleção"). `getPublicTotals` e `HomeSearchData.totals` saíram.
+
+### 9.6 Fora desta rodada
+Cotação por oferta por dia (F-26) está em `docs/08-decisoes-adr/0004-cotacao-por-oferta-por-dia.md`, status Proposta: muda a definição inegociável de cotação e depende do dono. Oferta internacional (F-12) depende de campo de origem na API do Mercado Livre.
+
+## 10. Porteiro do catálogo: só originais, só jogo/console/acessório (decisão do dono, 2026-11-02)
+
+Ata: `docs/conselho/atas/2026-11-02-somente-originais-e-escopo-gamer.md`. Código: `src/lib/catalog/gate.ts` (fonte única), `scripts/apply-catalog-gate.ts`, `scripts/test-gate.ts`.
+
+### 10.1 Regra
+Só entram em vitrine, busca, monitorar, sitemap e **indicadores** itens ORIGINAIS de jogo, console ou acessório de game. Cada master tem um veredito: `approved`, `review` (suspeito ou sem evidência; invisível até um humano aprovar) ou `rejected` (não original ou fora do escopo; invisível). Estado em `master_products.attributes.catalogGate` (`verdict, category, reason, matched, version, at, manual`). `manual: 'approved'` (decisão do dono) vence tudo, menos cópia/pirata determinística. A palavra "original" no anúncio nunca libera nada.
+
+### 10.2 Efeito nos indicadores
+- Master `review`/`rejected` **não entra** em preço atual, média, mediana, mínimo, máximo, contagem de cotações, selos nem comparação: `catalogGateVisibleSql` está em `publicOffersCtes` e em `priceQuotesCtes`. A mediana da plausibilidade (piso de 35%, seção 9.2) agora é calculada SEM os itens barrados, o que corrige a circularidade em que 7 ofertas de R$ 20 de uma suposta cópia definiam a régua.
+- Nada é apagado: ofertas, cotações e histórico continuam no banco. Reverter o veredito traz tudo de volta na hora (cache de até 5 min).
+- Preço baixo **nunca rejeita**; só envia à revisão: mídia física nova abaixo de R$ 30 (qualquer plataforma) ou de R$ 60 (PS1/PS2/PSP/Wii/GameCube/N64/SNES/NES/GBA/Mega Drive/Master System/Dreamcast/Saturn/Atari/DS/3DS). Constantes `ANY_PHYSICAL_PRICE_FLOOR_CENTS`, `LEGACY_PHYSICAL_PRICE_FLOOR_CENTS`; são hipótese de especialista (não medida) e podem ser ajustadas pelo dono.
+- **Quebra de série (2026-11-02):** médias e medianas históricas por produto passam a excluir cotações de masters barrados (510 masters com oferta ativa, 1.559 com veredito gravado). Séries antigas não são reescritas; o histórico bruto está íntegro no banco.
+- Medido: o JOIN com `master_products` no agregador de ~3 M de cotações custou 18,5 s contra 1,5 s; por isso o filtro é `NOT IN (subconsulta)`. Não troque por JOIN.
+
+### 10.3 Operação
+- `npx tsx --conditions react-server scripts/apply-catalog-gate.ts` (dry-run padrão), `--apply` (backup em `backup/dados/catalog-gate-backup-*.ndjson` e log `catalog-gate-log-*.json`), `--revert <log>`. Reaplicar após mudar o léxico ou depois de coletas grandes (o filtro SQL só enxerga o veredito gravado; a camada TS de `catalog-dimensions.ts` avalia ao vivo em ciclos de 5 min).
+- Entrada: `isNonProductAccessory` inclui `isRejectedByGate` (ML, Shopee, Magalu, admin); master novo em revisão nasce com `catalogGate`.
+
+
+## 11. Identidade do produto e da oferta: separar tudo, juntar só o idêntico (decisão do dono, 2026-11-03)
+
+Ata: `docs/conselho/atas/2026-11-03-identidade-da-cesta-etapa-codigo.md`. ADR: `docs/08-decisoes-adr/0006-identidade-da-cesta.md`. Código: `src/lib/affiliate/dedup.ts` (`normalizeTitle`, `compareIdentity`, `isSameProduct`), `offer-identity.ts` (rechecagem da oferta), `offer-identity-sql.ts` (espelho em SQL), `scripts/test-identity.ts`. Dry-run: `docs/impacto-identidade-*-dryrun-2026-11-03.csv`.
+
+### 11.1 Eixos que separam produto (mesma cesta só se TODOS forem iguais)
+Edição (Deluxe, Gold, Limitada, Especial, Colecionador, Aniversário, qualquer "X Edition" não padrão, edição temática de console); relançamento (Greatest Hits, Platinum, Essentials, Player's Choice, Nintendo Selects, Classics); região/importado (USA, EUR, Japão, Ásia) e idioma estrangeiro; condição (usado, seminovo, recondicionado, defeito, Open Box); geração (PS4 ≠ PS5, Xbox One ≠ Series, Switch ≠ Switch 2); conteúdo (remake, remaster, HD, collection, trilogia, director's cut, DLC, bundle); hardware: capacidade (825GB ≠ 1TB), modelo (Slim, Pro, OLED, Lite, Digital, Edge, Elite, com fio), variante Series S ≠ X e One S ≠ X, código de modelo (G435 ≠ G733); numeral (4 = IV, 24 = 2024). **Não separam:** cor comum, ruído de anúncio (lacrado, frete, garantia, "sem juros"), "sem fio" em controle, "compatível com PS5".
+
+### 11.2 Efeito nos indicadores
+- Oferta cujo título é Open Box/usado, ou cita duas gerações de um jogo, ou diverge do master em algum eixo, fica **em revisão**: fora de média, mediana, menor preço, selo e vitrine (`offerIdentityVisibleSql` em `publicOffersCtes`, em `priceQuotesCtes` e nas séries de `price-history.ts`). Nada é apagado. Master `review` continua valendo (seção 10).
+- Cross-gen: cada geração é um produto; anúncio com duas gerações sem disco claro não entra na média de nenhuma até ser conferido. Master novo cross-gen nasce com `catalogGate` em revisão (`geracao_ambigua`).
+- Coleta do Mercado Livre: o título original de cada anúncio é lido pela API oficial (`/items?ids=`, 20 por chamada) e comparado ao master; divergente nasce/passa a `draft` (não `active`) e é listado em `summary.identityReview`. Sem título (falha da API), a oferta segue o fluxo antigo naquele ciclo.
+
+### 11.3 Limites conhecidos
+- 9.092 de 9.540 ofertas ativas herdam o título do master: o banco não guarda o título do vendedor, então Open Box/usado hoje medem 0 por falta de dado, não por ausência real. A rechecagem na coleta é o que passa a medir (proposta de coluna `seller_title` no ADR 0006).
+- Filtro SQL por regex custa ~150-260 ms por consulta (medido no pooler); a coluna persistida elimina o custo.
+- Remake como marcador esvazia cestas cujo master omite "Remake" (ex.: RE3 PS5): decisão pendente do dono.

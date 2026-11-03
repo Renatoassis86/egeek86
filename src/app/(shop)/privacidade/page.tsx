@@ -130,6 +130,25 @@ export default function PrivacidadePage() {
             </Text>
           </div>
         </Reveal>
+
+        {/* Section 6 */}
+        <Reveal delay={0.30}>
+          <div className="flex flex-col gap-3">
+            <Text as="h2" variant="heading-lg" className="font-bold text-[var(--color-text-primary)]">
+              6. Cookies
+            </Text>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              O site grava no seu navegador apenas os cookies abaixo, necessários para o funcionamento:
+            </Text>
+            <ul className="list-disc pl-5 text-xs text-[var(--color-text-secondary)] flex flex-col gap-2 leading-relaxed">
+              <li><strong>Sessão de autenticação (sb-…-auth-token):</strong> mantém você conectado depois do login. Só existe para quem entra na conta.</li>
+              <li><strong>Tema (theme):</strong> lembra se você escolheu o visual claro ou escuro.</li>
+            </ul>
+            <Text variant="body-sm" color="secondary" className="leading-relaxed">
+              Você pode apagar esses cookies pelo navegador; ao fazer isso, será preciso entrar de novo e escolher o tema outra vez.
+            </Text>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

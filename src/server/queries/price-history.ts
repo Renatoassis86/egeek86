@@ -1,6 +1,8 @@
 import 'server-only';
 import { sql, eq, and, asc, gt, inArray } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { offerIdentityVisibleSql } from '@/server/queries/public-offers';
+import { catalogHiddenFilter } from '@/server/queries/catalog-dimensions';
 import { affiliateOffers, affiliateNetworks, affiliateSellers, masterProducts } from '@/db/schema';
 
 export type PriceHistoryTimeframe = '1D' | '1S' | '1M' | '3M' | '6M' | '1A' | 'Tudo';
@@ -42,120 +44,30 @@ const AVG_BUCKET_MS: Record<PriceHistoryTimeframe, number> = {
 };
 
 /**
- * Preço médio real de TODA cotação (toda loja, toda plataforma) dentro de
- * cada balde de tempo — soma de todo price_cents coletado no balde, dividido
- * pela quantidade. Diferente de `points` (menor preço vigente): aqui um
- * vendedor mais caro que nunca chegou a ganhar o "menor preço" ainda pesa na
- * média — é o preço médio de mercado do produto, não só o mais barato de
- * cada instante. Nunca fabrica ponto pra balde sem cotação nenhuma (ao
- * contrário de `points`, que precisa de linha contínua).
- */
-function computeBucketedAverage(rows: { collected_at: string; price_cents: string }[], bucketMs: number): PricePoint[] {
-  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
-  const buckets = new Map<number, { sum: number; count: number }>();
-
-  for (const row of rows) {
-    const timeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
-    const bucketTime = Math.floor(timeSeconds / bucketSeconds) * bucketSeconds;
-    const priceReais = Number(row.price_cents) / 100;
-    const bucket = buckets.get(bucketTime);
-    if (bucket) {
-      bucket.sum += priceReais;
-      bucket.count += 1;
-    } else {
-      buckets.set(bucketTime, { sum: priceReais, count: 1 });
-    }
-  }
-
-  const sortedBuckets = [...buckets.entries()].sort((a, b) => a[0] - b[0]);
-
-  // Achado real (2026-08-03): antes disso aplicava uma média móvel suavizada
-  // (SMA de 5 baldes) por cima da média real — o cliente pediu explicitamente
-  // "a média de TODOS os preços", não uma versão amaciada misturando baldes
-  // vizinhos. Devolve a média real de cada balde, ponto — soma de toda
-  // cotação de toda loja/plataforma naquele intervalo, dividido pela
-  // quantidade, sem nenhum suavizador por cima.
-  return sortedBuckets.map(([time, { sum, count }]) => ({
-    time,
-    value: Math.round((sum / count) * 100) / 100,
-  }));
-}
-
-function computeBucketedFrequency(
-  rows: { offer_id: string; collected_at: string; price_cents: string }[],
-  bucketMs: number
-): PricePoint[] {
-  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
-  const buckets = new Map<number, number>();
-  const lastPriceByOffer = new Map<string, number>();
-
-  // Ordena cronologicamente para acompanhar as mudanças de preço por oferta
-  const sortedRows = [...rows].sort(
-    (a, b) => new Date(a.collected_at).getTime() - new Date(b.collected_at).getTime()
-  );
-
-  for (const row of sortedRows) {
-    const timeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
-    const bucketTime = Math.floor(timeSeconds / bucketSeconds) * bucketSeconds;
-    const currentPrice = Number(row.price_cents);
-
-    const prevPrice = lastPriceByOffer.get(row.offer_id);
-
-    // Se o preço não mudou em relação à raspagem anterior da mesma loja,
-    // não incrementa o histograma de alteração de preços.
-    if (prevPrice !== undefined && prevPrice === currentPrice) {
-      continue;
-    }
-
-    // Registra o novo preço e contabiliza +1 movimentação no histograma
-    lastPriceByOffer.set(row.offer_id, currentPrice);
-    buckets.set(bucketTime, (buckets.get(bucketTime) ?? 0) + 1);
-  }
-
-  return [...buckets.entries()]
-    .sort((a, b) => a[0] - b[0])
-    .map(([time, value]) => ({ time, value }));
-}
-
-/**
- * Um ponto por balde de tempo: o MENOR preço batido entre todos os
- * vendedores/plataformas conhecidos durante aquele balde (herdando o preço
- * de quem já estava "rodando" desde antes do balde começar). Difere de um
- * gráfico por evento (um ponto a cada mudança de preço de qualquer
- * vendedor): aqui N mudanças de preço dentro do mesmo balde colapsam num
- * único ponto — a cada "ingestão" (balde de tempo), marca o menor preço
- * batido naquele intervalo, não uma corrente de pontos por cada pequena
- * oscilação entre vendedores concorrendo entre si (isso virava dezenas de
- * marcadores sobrepostos formando um bloco ilegível em vez de uma linha).
- */
-/**
- * Calcula o menor preço real extraído em cada balde de tempo.
- * Reflete as flutuações reais das cotações coletadas em cada varredura,
- * permitindo que a linha de menor preço suba ou desça conforme o mercado.
+ * Menor preço real em cada balde de tempo, com "carry-forward" por oferta.
+ *
+ * Achado real (2026-08-03): olhar só as cotações que caíram DENTRO de cada
+ * balde criava picos artificiais (a loja barata não foi rechecada naquele
+ * balde e a cara virava o "menor"). Por isso o último preço conhecido de cada
+ * oferta é carregado adiante entre baldes, começando do `baselineByOffer` (a
+ * cotação mais recente de cada oferta ANTES da janela): uma loja barata
+ * continua valendo até uma cotação NOVA dizer o contrário.
+ *
+ * Desde 2026-11-01 recebe `entries` já agregadas no SQL: o ÚLTIMO preço de
+ * cada oferta em cada balde (equivale a processar todas as cotações em ordem
+ * cronológica, pois só o último valor por oferta/balde sobrevive ao carry).
+ * Nenhum valor é inventado: só preços realmente coletados.
  */
 function computeBucketedMinSeries(
-  rows: { offer_id: string; collected_at: string; price_cents: string }[],
+  entries: { offerId: string; bucket: number; priceReais: number; firstSeen: number }[],
   baselineByOffer: Map<string, number>,
-  bucketMs: number,
+  bucketSeconds: number,
   windowStart: number,
   nowTime: number
 ): { points: PricePoint[]; offerByTime: Record<number, string> } {
-  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
-
-  // Achado real (2026-08-03): a versão anterior só olhava as cotações que
-  // caíram DENTRO de cada balde — se a loja mais barata não foi rechecada
-  // naquele balde específico (só uma loja mais cara foi), o "menor preço do
-  // balde" virava o preço da loja cara, mesmo a barata continuando ativa e
-  // barata o tempo todo. Isso criava picos artificiais na linha (sobe
-  // quando a barata simplesmente não foi verificada naquele dia, desce de
-  // volta assim que ela é rechecada). Corrigido: carrega adiante o último
-  // preço conhecido de cada oferta entre baldes (começando do `baselineByOffer`,
-  // a cotação mais recente de cada oferta ANTES da janela) — uma loja barata
-  // continua contando como a mais barata até uma cotação NOVA de verdade
-  // dizer o contrário, nunca "desaparece" do cálculo só por falta de recheque.
-  const sortedRows = [...rows].sort(
-    (a, b) => new Date(a.collected_at).getTime() - new Date(b.collected_at).getTime()
-  );
+  // Desempate por 1ª aparição da oferta na janela: preserva a ordem de inserção
+  // do processamento cronológico (empate de preço entre ofertas vai pra que apareceu antes).
+  const sortedEntries = [...entries].sort((a, b) => a.bucket - b.bucket || a.firstSeen - b.firstSeen);
 
   const lastKnownPriceByOffer = new Map<string, number>(baselineByOffer);
   const points: PricePoint[] = [];
@@ -164,15 +76,13 @@ function computeBucketedMinSeries(
   const startBucket = Math.floor(windowStart / bucketSeconds) * bucketSeconds;
   const endBucket = Math.floor(nowTime / bucketSeconds) * bucketSeconds;
 
-  let rowIndex = 0;
+  let entryIndex = 0;
   for (let bucketTime = startBucket; bucketTime <= endBucket; bucketTime += bucketSeconds) {
-    const bucketEnd = bucketTime + bucketSeconds;
-    while (rowIndex < sortedRows.length) {
-      const row = sortedRows[rowIndex];
-      const rowTimeSeconds = Math.floor(new Date(row.collected_at).getTime() / 1000);
-      if (rowTimeSeconds >= bucketEnd) break;
-      lastKnownPriceByOffer.set(row.offer_id, Number(row.price_cents) / 100);
-      rowIndex++;
+    // Consome toda cotação cujo balde é <= ao atual (== cotação com tempo < fim do balde).
+    while (entryIndex < sortedEntries.length && sortedEntries[entryIndex].bucket <= bucketTime) {
+      const e = sortedEntries[entryIndex];
+      lastKnownPriceByOffer.set(e.offerId, e.priceReais);
+      entryIndex++;
     }
 
     if (lastKnownPriceByOffer.size === 0) continue;
@@ -270,26 +180,16 @@ export interface PriceHistoryResult {
  * gráfico inteiro, não só do ponto em diante. Corrigir com rastreio de
  * status histórico se/quando isso passar a importar.
  */
-function cleanGameName(name: string): string {
-  // Remove termos de plataformas e pontuações do nome do produto para agrupamento cross-plataforma
-  let cleaned = name
-    .replace(/\b(nintendo switch 2|nintendo switch|switch 2|switch 1|switch|playstation 5|playstation 4|playstation 3|ps5|ps4|ps3|xbox series x\|s|xbox series x|xbox series s|xbox series|xbox one|xbox 360|pc|console|jogo)\b/gi, '')
-    .replace(/[\(\)\[\]\-\:\+\/]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-  
-  return cleaned.length >= 3 ? cleaned : name.trim();
-}
-
 export async function getMasterProductPriceHistory(
   masterProductId: string,
   timeframe: PriceHistoryTimeframe
 ): Promise<PriceHistoryResult> {
   const interval = timeframe === 'Tudo' ? null : TIMEFRAME_INTERVALS[timeframe];
 
-  // Carrega o nome e plataforma do produto selecionado
+  // Um jogo, um master_product (regra de negócio): sem agrupamento por nome
+  // (ILIKE). A estatística canônica (getMasterProductPriceStats) cobre só este id.
   const [masterProduct] = await db
-    .select({ name: masterProducts.name, gamePlatformGen: masterProducts.gamePlatformGen })
+    .select({ id: masterProducts.id })
     .from(masterProducts)
     .where(eq(masterProducts.id, masterProductId))
     .limit(1);
@@ -298,87 +198,130 @@ export async function getMasterProductPriceHistory(
     throw new Error('Produto master não encontrado');
   }
 
-  const cleanName = cleanGameName(masterProduct.name);
-
-  // Busca todos os produtos masters do mesmo jogo para o mesmo console
-  const relatedProducts = await db
-    .select({ id: masterProducts.id })
-    .from(masterProducts)
-    .where(
-      and(
-        sql`name ILIKE ${'%' + cleanName + '%'}`,
-        eq(masterProducts.gamePlatformGen, masterProduct.gamePlatformGen)
-      )
-    );
-
-  // O produto selecionado sempre entra, mesmo que o match fuzzy acima não o
-  // encontre — o ILIKE roda sobre o nome JÁ limpo (sem termo de plataforma),
-  // que pode nunca bater com o nome ORIGINAL na coluna quando o termo de
-  // plataforma aparece no meio do nome (ex: "Minecraft Nintendo Switch Mídia
-  // Física" vira "Minecraft Mídia Física" pra busca, que não é substring do
-  // nome original). Sem essa garantia, masterProductIds podia vir vazio e o
-  // `IN ()` resultante quebrava a query com erro de sintaxe.
-  const masterProductIds = Array.from(new Set([masterProductId, ...relatedProducts.map((p) => p.id)]));
+  const masterProductIds = [masterProductId];
   const idsSql = sql.join(masterProductIds.map((id) => sql`${id}`), sql`, `);
 
-  // As 5 consultas abaixo são independentes entre si (todas só dependem de
-  // idsSql/interval, nenhuma do resultado da outra) — rodavam uma atrás da
-  // outra antes, cada uma pagando a latência de rede até o Supabase de novo;
-  // em paralelo, o tempo total cai pra próximo do da consulta mais lenta em
-  // vez da soma de todas (chegava a 8-9s sequencial pra um produto só).
-  const [baselineRows, rows, globalMaxRow, offersCountRow] = await Promise.all([
+  const bucketMs = AVG_BUCKET_MS[timeframe];
+  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
+  const MAX_QUOTES = 2000;
+
+  // Antes: ~300 mil cotações (Switch 2) trafegavam do banco pro Node (~7 s) e
+  // eram agregadas em JS. Agora UMA varredura da janela (CTE materializada) é
+  // agregada no Postgres e só o resumo volta: estatísticas globais, último
+  // preço por (oferta, balde), soma/contagem por balde, mudanças de preço por
+  // balde e uma amostra determinística de no máximo MAX_QUOTES cotações
+  // (1 a cada ceil(n / MAX_QUOTES), em ordem cronológica — a mesma regra de
+  // antes). Todos os valores continuam sendo cotações reais.
+  const windowFilter = interval ? sql`AND s.collected_at >= now() - (${interval})::interval` : sql``;
+
+  type AggRow = {
+    kind: string;
+    bucket: string | null;
+    offer_id: string | null;
+    n1: string | null;
+    n2: string | null;
+    n3: string | null;
+    network_name: string | null;
+    network_color_hex: string | null;
+    seller_nickname: string | null;
+  };
+
+  const [baselineRows, aggRows, globalMaxRow, offersCountRow, activeOffers] = await Promise.all([
     interval
       ? db.execute<{ offer_id: string; price_cents: string }>(sql`
           SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
           FROM affiliate_price_snapshots s
           INNER JOIN affiliate_offers o ON o.id = s.offer_id
-          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
+          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
             AND s.collected_at < now() - (${interval})::interval
           ORDER BY s.offer_id, s.collected_at DESC
         `)
       : Promise.resolve([] as { offer_id: string; price_cents: string }[]),
 
-    db.execute<{
-      offer_id: string;
-      collected_at: string;
-      price_cents: string;
-      network_name: string;
-      network_color_hex: string | null;
-      seller_nickname: string | null;
-    }>(
-      interval
-        ? sql`
-          SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
-          FROM affiliate_price_snapshots s
-          INNER JOIN affiliate_offers o ON o.id = s.offer_id
-          INNER JOIN affiliate_networks n ON n.id = o.network_id
-          LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
-            AND s.collected_at >= now() - (${interval})::interval
-          ORDER BY s.collected_at ASC
-        `
-        : sql`
-          SELECT s.offer_id, s.collected_at, s.price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
-          FROM affiliate_price_snapshots s
-          INNER JOIN affiliate_offers o ON o.id = s.offer_id
-          INNER JOIN affiliate_networks n ON n.id = o.network_id
-          LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
-          ORDER BY s.collected_at ASC
-        `
-    ),
+    db.execute<AggRow>(sql`
+      WITH r AS MATERIALIZED (
+        SELECT s.offer_id, s.collected_at, s.price_cents::bigint AS price_cents,
+               (floor(extract(epoch FROM s.collected_at) / ${bucketSeconds}::numeric) * ${bucketSeconds}::numeric)::bigint AS bucket
+        FROM affiliate_price_snapshots s
+        INNER JOIN affiliate_offers o ON o.id = s.offer_id
+        WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
+          ${windowFilter}
+      ),
+      st AS (
+        SELECT COUNT(*)::bigint AS n, COALESCE(SUM(price_cents), 0)::numeric AS sum_c, MAX(price_cents) AS max_c
+        FROM r
+      ),
+      -- Mesma regra de outlier de antes: descarta cotação > 2x a média bruta.
+      c AS MATERIALIZED (
+        SELECT r.offer_id, r.price_cents, r.bucket,
+               LAG(r.price_cents) OVER (PARTITION BY r.offer_id ORDER BY r.collected_at) AS prev_cents
+        FROM r, st
+        WHERE st.sum_c <= 0 OR r.price_cents::numeric * st.n <= 2 * st.sum_c
+      )
+      SELECT 'stat' AS kind, NULL::bigint AS bucket, NULL::text AS offer_id,
+             st.n::numeric AS n1, st.max_c::numeric AS n2, st.sum_c AS n3,
+             NULL::text AS network_name, NULL::text AS network_color_hex, NULL::text AS seller_nickname
+      FROM st
+      UNION ALL
+      SELECT 'cstat', NULL, NULL, COUNT(*)::numeric, COALESCE(SUM(price_cents), 0)::numeric, NULL, NULL, NULL, NULL
+      FROM c
+      UNION ALL
+      SELECT 'min', x.bucket, x.offer_id::text, x.price_cents::numeric, extract(epoch FROM x.first_at)::numeric, NULL, NULL, NULL, NULL
+      FROM (
+        SELECT DISTINCT ON (offer_id, bucket) offer_id, bucket, price_cents,
+               MIN(collected_at) OVER (PARTITION BY offer_id) AS first_at
+        FROM r
+        ORDER BY offer_id, bucket, collected_at DESC
+      ) x
+      UNION ALL
+      SELECT 'avg', bucket, NULL, SUM(price_cents)::numeric, COUNT(*)::numeric, NULL, NULL, NULL, NULL
+      FROM c
+      GROUP BY bucket
+      UNION ALL
+      SELECT 'freq', bucket, NULL, COUNT(*)::numeric, NULL, NULL, NULL, NULL, NULL
+      FROM c
+      WHERE prev_cents IS NULL OR prev_cents <> price_cents
+      GROUP BY bucket
+      UNION ALL
+      SELECT 'quote', q.bucket, NULL, floor(extract(epoch FROM q.collected_at))::numeric, q.price_cents::numeric, q.rn::numeric,
+             n.name, n.color_hex, sel.nickname
+      FROM (
+        SELECT r.offer_id, r.collected_at, r.price_cents, r.bucket,
+               ROW_NUMBER() OVER (ORDER BY r.collected_at) AS rn
+        FROM r
+      ) q
+      CROSS JOIN st
+      INNER JOIN affiliate_offers o ON o.id = q.offer_id
+      INNER JOIN affiliate_networks n ON n.id = o.network_id
+      LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+      WHERE (q.rn - 1) % GREATEST(1, CEIL(st.n::numeric / ${MAX_QUOTES}::numeric)::bigint) = 0
+    `),
 
     db.execute<{ max_price: string }>(sql`
       SELECT MAX(s.price_cents)::bigint AS max_price
       FROM affiliate_price_snapshots s
       INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
     `),
 
     db.execute<{ total: string }>(sql`
       SELECT COUNT(*)::bigint AS total
       FROM affiliate_offers o
-      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active'
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
+    `),
+
+    db.execute<{
+      offer_id: string;
+      current_price_cents: string;
+      network_name: string;
+      network_color_hex: string | null;
+      seller_nickname: string | null;
+    }>(sql`
+      SELECT o.id AS offer_id, o.current_price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
+      FROM affiliate_offers o
+      INNER JOIN affiliate_networks n ON n.id = o.network_id
+      LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')} AND o.current_price_cents > 0
     `),
   ]);
 
@@ -388,35 +331,74 @@ export async function getMasterProductPriceHistory(
   }
 
   const nowTime = Math.floor(Date.now() / 1000);
-  const bucketMs = AVG_BUCKET_MS[timeframe];
   const windowStart = interval
     ? Math.floor((Date.now() - TIMEFRAME_MS[timeframe as Exclude<PriceHistoryTimeframe, 'Tudo'>]) / 1000)
     : Math.floor((Date.now() - 730 * 86400 * 1000) / 1000);
 
-  const activeOffers = await db.execute<{
-    offer_id: string;
-    current_price_cents: string;
-    network_name: string;
-    network_color_hex: string | null;
-    seller_nickname: string | null;
-  }>(sql`
-    SELECT o.id AS offer_id, o.current_price_cents, n.name AS network_name, n.color_hex AS network_color_hex, sel.nickname AS seller_nickname
-    FROM affiliate_offers o
-    INNER JOIN affiliate_networks n ON n.id = o.network_id
-    LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-    WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND o.current_price_cents > 0
-  `);
+  let totalQuoteCount = 0;
+  let rawMaxCents: number | null = null;
+  let rawSumCents = 0;
+  let cleanCount = 0;
+  let cleanSumCents = 0;
+  const minEntries: { offerId: string; bucket: number; priceReais: number; firstSeen: number }[] = [];
+  const avgPoints: PricePoint[] = [];
+  const frequencyPoints: PricePoint[] = [];
+  const quoteRows: { rn: number; quote: PriceQuotePoint }[] = [];
 
-  const finalRows = [...rows];
+  for (const row of aggRows) {
+    switch (row.kind) {
+      case 'stat':
+        totalQuoteCount = Number(row.n1);
+        rawMaxCents = totalQuoteCount > 0 ? Number(row.n2) : null;
+        rawSumCents = Number(row.n3);
+        break;
+      case 'cstat':
+        cleanCount = Number(row.n1);
+        cleanSumCents = Number(row.n2);
+        break;
+      case 'min':
+        minEntries.push({ offerId: row.offer_id as string, bucket: Number(row.bucket), priceReais: Number(row.n1) / 100, firstSeen: Number(row.n2) });
+        break;
+      case 'avg': {
+        const count = Number(row.n2);
+        avgPoints.push({
+          time: Number(row.bucket),
+          value: Math.round((Number(row.n1) / 100 / count) * 100) / 100,
+        });
+        break;
+      }
+      case 'freq':
+        frequencyPoints.push({ time: Number(row.bucket), value: Number(row.n1) });
+        break;
+      case 'quote':
+        quoteRows.push({
+          rn: Number(row.n3),
+          quote: {
+            time: Number(row.n1),
+            bucketTime: Number(row.bucket),
+            value: Number(row.n2) / 100,
+            networkName: row.network_name as string,
+            networkColorHex: row.network_color_hex,
+            sellerNickname: row.seller_nickname,
+          },
+        });
+        break;
+    }
+  }
 
-  const { points, offerByTime } = computeBucketedMinSeries(finalRows, baselineByOffer, bucketMs, windowStart, nowTime);
+  avgPoints.sort((a, b) => a.time - b.time);
+  frequencyPoints.sort((a, b) => a.time - b.time);
+  quoteRows.sort((a, b) => a.rn - b.rn);
+  const quotes: PriceQuotePoint[] = quoteRows.map((q) => q.quote);
+
+  const { points, offerByTime } = computeBucketedMinSeries(minEntries, baselineByOffer, bucketSeconds, windowStart, nowTime);
 
   // Sincronização 100% exata: Garante que o último ponto do gráfico (hoje) seja rigorosamente igual ao menor preço ativo do produto
   if (points.length > 0 && activeOffers.length > 0) {
     const sortedActiveOffers = [...activeOffers].sort((a, b) => Number(a.current_price_cents) - Number(b.current_price_cents));
     const lowestCurrentOffer = sortedActiveOffers[0];
     const lowestReais = Number(lowestCurrentOffer.current_price_cents) / 100;
-    
+
     if (lowestReais > 0) {
       const lastIndex = points.length - 1;
       points[lastIndex].value = lowestReais;
@@ -452,59 +434,22 @@ export async function getMasterProductPriceHistory(
     }
   }
 
-  const rawPrices = finalRows.map((r) => Number(r.price_cents) / 100);
   const values = points.map((p) => p.value);
   const globalMaxPriceCents = globalMaxRow[0]?.max_price ? Number(globalMaxRow[0].max_price) : null;
 
-  const rawMean = rawPrices.length ? rawPrices.reduce((a, b) => a + b, 0) / rawPrices.length : 0;
-  const outlierThreshold = rawMean > 0 ? rawMean * 2 : Infinity;
-  const cleanRows = finalRows.filter((r) => Number(r.price_cents) / 100 <= outlierThreshold);
-  const cleanPrices = cleanRows.length > 0 ? cleanRows.map((r) => Number(r.price_cents) / 100) : rawPrices;
+  // Média sem outliers (> 2x a média bruta); sem nenhuma cotação limpa, cai na bruta.
+  const avgSumCents = cleanCount > 0 ? cleanSumCents : rawSumCents;
+  const avgCount = cleanCount > 0 ? cleanCount : totalQuoteCount;
 
   const stats: PriceHistoryStats = {
-    avgPriceCents: cleanPrices.length ? Math.round((cleanPrices.reduce((a, b) => a + b, 0) / cleanPrices.length) * 100) : null,
-    minPriceCents: values.length ? Math.round(Math.min(...values) * 100) : null,
-    maxPriceCents: rawPrices.length ? Math.round(Math.max(...rawPrices) * 100) : null,
+    avgPriceCents: avgCount > 0 ? Math.round(avgSumCents / avgCount) : null,
+    // reduce, não Math.min(...arr): evita estouro de pilha com séries grandes.
+    minPriceCents: values.length ? Math.round(values.reduce((m, v) => (v < m ? v : m), Infinity) * 100) : null,
+    maxPriceCents: rawMaxCents,
     globalMaxPriceCents,
   };
 
-  const totalQuoteCount = finalRows.length;
   const totalOffersCount = Number(offersCountRow[0]?.total || 1);
-
-  const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
-
-  // Defesa contra histórico já inflado por checagens redundantes anteriores
-  // (produtos monitorados há tempo podem ter dezenas de milhares de linhas
-  // repetidas) — nunca manda mais que isso pro tooltip, mesmo que `rows`
-  // tenha muito mais; amostragem uniforme ao longo do período pra não
-  // perder a forma da distribuição no tempo. stats/avgPoints/points acima já
-  // foram calculados sobre `rows`/`cleanRows` completos, então essa
-  // amostragem não afeta média/mínimo/máximo — só a quantidade de cotações
-  // listadas no tooltip.
-  const MAX_QUOTES = 2000;
-  const sampledRows =
-    rows.length > MAX_QUOTES
-      ? rows.filter((_, i) => i % Math.ceil(rows.length / MAX_QUOTES) === 0)
-      : rows;
-
-  // Cada cotação carrega o `bucketTime` do mesmo grid de `points`/`avgPoints`
-  // — o tooltip agrupa por esse valor pra mostrar "quem cotou o quê" dentro
-  // do intervalo do ponto sob o cursor, sem depender de bater timestamp
-  // exato (quase nunca bate entre uma cotação individual e o ponto do balde).
-  const quotes: PriceQuotePoint[] = sampledRows.map((row) => {
-    const time = Math.floor(new Date(row.collected_at).getTime() / 1000);
-    return {
-      time,
-      bucketTime: Math.floor(time / bucketSeconds) * bucketSeconds,
-      value: Number(row.price_cents) / 100,
-      networkName: row.network_name,
-      networkColorHex: row.network_color_hex,
-      sellerNickname: row.seller_nickname,
-    };
-  });
-
-  const avgPoints = computeBucketedAverage(cleanRows, bucketMs);
-  const frequencyPoints = computeBucketedFrequency(cleanRows, bucketMs);
 
   return { points, avgPoints, frequencyPoints, pointOffers, stats, quotes, totalQuoteCount, totalOffersCount, bucketSeconds };
 }
@@ -623,6 +568,8 @@ export async function getTopMovers({
 }): Promise<TopMoverItem[]> {
   const interval = PERIOD_INTERVALS[period];
   const orderDirection = direction === 'down' ? 'ASC' : 'DESC';
+  // Cartela pública (F-07): altas e baixas não mostram teclado, peça, jogo digital etc.
+  const inCatalog = await catalogHiddenFilter(sql`mp.id`);
 
   const rows = await db.execute<{
     master_product_id: string;
@@ -675,7 +622,7 @@ export async function getTopMovers({
     FROM cheapest c
     INNER JOIN baseline_lowest bl ON bl.master_product_id = c.master_product_id
     INNER JOIN master_products mp ON mp.id = c.master_product_id
-    WHERE bl.baseline_price_cents > 0
+    WHERE bl.baseline_price_cents > 0 AND ${inCatalog}
     ORDER BY (c.current_price_cents - bl.baseline_price_cents)::float / bl.baseline_price_cents ${sql.raw(orderDirection)}
     LIMIT ${limit}
   `);

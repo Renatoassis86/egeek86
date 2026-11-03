@@ -1,5 +1,6 @@
 import 'server-only';
 import { db } from '@/lib/db';
+import { createCachedQuery } from '@/lib/cache/server-cache';
 import { surveyResponses } from '@/db/schema';
 import { SURVEY_QUESTIONS, type SurveyQuestionType } from '@/lib/survey/questions';
 
@@ -31,7 +32,7 @@ export interface SurveyAggregation {
  * em outra tabela. Perguntas do tipo texto viram lista de comentários, não
  * um percentual (não faz sentido "agregar" texto livre).
  */
-export async function getSurveyAggregation(): Promise<SurveyAggregation> {
+async function computeSurveyAggregation(): Promise<SurveyAggregation> {
   const rows = await db.select({ answers: surveyResponses.answers }).from(surveyResponses);
   const totalResponses = rows.length;
 
@@ -67,6 +68,23 @@ export async function getSurveyAggregation(): Promise<SurveyAggregation> {
   });
 
   return { totalResponses, questions };
+}
+
+/** Agregado ao vivo (admin): sem cache. */
+export async function getSurveyAggregation(): Promise<SurveyAggregation> {
+  return computeSurveyAggregation();
+}
+
+const surveyCached = createCachedQuery(computeSurveyAggregation, ['survey-aggregation-v1'], { revalidate: 30 });
+
+/** Agregado para a home: cache SWR de 30 s; nunca lança (sem banco, devolve vazio honesto, sem votos inventados). */
+export async function getSurveyAggregationForHome(): Promise<SurveyAggregation> {
+  try {
+    return await surveyCached();
+  } catch (err) {
+    console.error('[survey] falha na home', err);
+    return { totalResponses: 0, questions: [] };
+  }
 }
 
 export async function getGamerSurveysForAdmin() {

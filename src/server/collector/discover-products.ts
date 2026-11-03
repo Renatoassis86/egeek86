@@ -1,4 +1,6 @@
 import 'server-only';
+import { entryGateAttributes, isRejectedByGate } from '@/lib/catalog/gate';
+import type { ProductType } from '@/db/schema';
 import { randomUUID } from 'node:crypto';
 import { and, eq, sql, TransactionRollbackError } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -240,6 +242,9 @@ const NON_PRODUCT_KEYWORDS = [
  * Livre, caso o campo estruturado venha ausente nalgum resultado).
  */
 const USED_CONDITION_PATTERNS = [
+  // Open Box é condição própria (decisão do dono, 2026-11-03): fora da cesta de novos.
+  /\bopen.?box\b/i,
+  /refurbished/i,
   /\busados?\b/i,
   /\busadas?\b/i,
   /semi.?novos?\b/i,
@@ -286,7 +291,8 @@ export function isGameTitleOrMedia(title: string): boolean {
 }
 
 export function isNonProductAccessory(title: string): boolean {
-  return NON_PRODUCT_KEYWORDS.some((re) => re.test(title)) || isPartOrPackagingTitle(title);
+  // Porteiro único do catálogo (src/lib/catalog/gate.ts): não original / fora do escopo / usado não entram.
+  return NON_PRODUCT_KEYWORDS.some((re) => re.test(title)) || isPartOrPackagingTitle(title) || isRejectedByGate(title);
 }
 
 /**
@@ -762,6 +768,7 @@ async function searchAndIngestTerm(
                 meliCatalogId: item.id,
                 defaultImages: item.pictures?.map((p) => p.url) ?? [],
                 ...classification,
+                attributes: entryGateAttributes(item.name, (classification as { productType?: ProductType }).productType ?? 'game'),
                 classifiedAt: new Date(),
               })
               .returning();

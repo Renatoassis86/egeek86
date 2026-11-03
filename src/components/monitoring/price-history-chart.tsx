@@ -22,6 +22,7 @@ import { CHART_PALETTES } from '@/lib/chart-colors';
 import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { usePollingRefresh } from '@/hooks/use-polling-refresh';
+import { computeVerdict } from '@/lib/affiliate/price-verdict';
 import { TimeframeSelector } from './timeframe-selector';
 import type {
   PriceHistoryTimeframe,
@@ -43,6 +44,19 @@ const TIMEFRAME_LABELS: Record<PriceHistoryTimeframe, string> = {
   '1A': 'no ano',
   Tudo: 'no período todo',
 };
+
+/**
+ * Estatística canônica do produto (subconjunto serializável de
+ * MasterProductPriceStats, src/server/queries/product-price-stats.ts). Quando
+ * presente, selo e contagens leem dela e não do cálculo por período do gráfico.
+ */
+export interface PriceChartCanonical {
+  avgCents: number | null;
+  quoteCount: number;
+  historyDays: number;
+  lowAll: { priceCents: number } | null;
+  currentLowestActive: { priceCents: number } | null;
+}
 
 type PriceSignalLevel = 'great' | 'good' | 'watch' | 'unknown';
 
@@ -97,6 +111,43 @@ function computePriceSignal(history: PriceHistoryResult): PriceSignal {
   };
 }
 
+/** Selo a partir da estatística canônica: média única do produto, todo o histórico, só com histórico elegível. */
+function computeCanonicalSignal(canonical: PriceChartCanonical, currentCents: number | undefined): PriceSignal {
+  const current = currentCents ?? canonical.currentLowestActive?.priceCents ?? null;
+  const verdict = computeVerdict({
+    currentCents: current,
+    avgCents: canonical.avgCents,
+    quoteCount: canonical.quoteCount,
+    historyDays: canonical.historyDays,
+  });
+  if (verdict.kind === 'insufficient' || verdict.deltaCents == null || verdict.deltaPercent == null || current == null) {
+    return {
+      level: 'unknown',
+      label: 'Histórico ainda curto',
+      detail: 'Precisamos de pelo menos 5 cotações em 14 dias para opinar.',
+    };
+  }
+  const abs = Math.abs(verdict.deltaPercent).toLocaleString('pt-BR');
+  const absBRL = formatBRL(Math.abs(verdict.deltaCents));
+  const low = canonical.lowAll?.priceCents;
+  if (verdict.kind === 'below') {
+    const atLow = low != null && current <= low * 1.02;
+    return {
+      level: atLow ? 'great' : 'good',
+      label: atLow ? 'Comprar agora' : 'Abaixo do normal',
+      detail: `${absBRL} (${abs}%) abaixo da média do produto${atLow ? ', no menor preço já visto' : ''}.`,
+    };
+  }
+  if (verdict.kind === 'inline') {
+    return { level: 'unknown', label: 'Em linha com o normal', detail: `Dentro de 5% da média do produto (${verdict.deltaPercent > 0 ? '+' : ''}${verdict.deltaPercent.toLocaleString('pt-BR')}%).` };
+  }
+  return {
+    level: 'watch',
+    label: 'Acima do normal',
+    detail: `${absBRL} (${abs}%) acima da média do produto. Considere esperar.`,
+  };
+}
+
 import Link from 'next/link';
 import { ShoppingCart, ShoppingBag, Check } from 'lucide-react';
 import { toast } from 'sonner';
@@ -107,10 +158,12 @@ function PriceSignalBadge({
   signal,
   winningOfferId,
   masterProductId,
+  hideActions = false,
 }: {
   signal: PriceSignal;
   winningOfferId?: string | null;
   masterProductId: string;
+  hideActions?: boolean;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [added, setAdded] = useState(false);
@@ -154,7 +207,7 @@ function PriceSignalBadge({
         </div>
       </div>
 
-      {isBuyOpportunity && (
+      {isBuyOpportunity && !hideActions && (
         <div className="flex items-center gap-2">
           <Button
             asChild
@@ -211,11 +264,20 @@ export function PriceHistoryChart({
   initialHistory,
   initialTimeframe = '1M',
   currentPriceCents,
+  canonical,
+  hideActions = false,
+  pollMs = POLL_INTERVAL_MS,
 }: {
   masterProductId: string;
   initialHistory: PriceHistoryResult;
   initialTimeframe?: PriceHistoryTimeframe;
   currentPriceCents?: number;
+  /** Estatística canônica do produto; opcional (sem ela, mantém o cálculo por período). */
+  canonical?: PriceChartCanonical;
+  /** Esconde "Comprar" e "+ Carrinho" (página do produto já tem os próprios botões). */
+  hideActions?: boolean;
+  /** Intervalo de atualização em ms; 0 desliga o polling. */
+  pollMs?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
@@ -410,18 +472,28 @@ export function PriceHistoryChart({
     }
   }, [masterProductId, timeframe]);
 
-  // Refetch ao trocar de produto ou de período.
+  // Refetch ao trocar de produto ou de período. O primeiro render já tem o
+  // histórico inicial do servidor: não refaz a mesma busca ao montar.
+  const skipFirstFetch = useRef(true);
   useEffect(() => {
+    if (skipFirstFetch.current) {
+      skipFirstFetch.current = false;
+      if (initialHistory.points.length > 0 && initialTimeframe === timeframe) return;
+    }
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialHistory só vale no primeiro render
   }, [masterProductId, timeframe, fetchData]);
 
-  usePollingRefresh(fetchData, POLL_INTERVAL_MS);
+  usePollingRefresh(fetchData, pollMs > 0 ? pollMs : POLL_INTERVAL_MS, pollMs > 0);
 
   const hasEnoughData = synchronizedHistory.points.length >= 2;
   const { stats } = synchronizedHistory;
   const variationVsAvgPercent =
     tooltip && stats.avgPriceCents ? Math.round(((tooltip.priceCents - stats.avgPriceCents) / stats.avgPriceCents) * 1000) / 10 : null;
-  const priceSignal = useMemo(() => computePriceSignal(synchronizedHistory), [synchronizedHistory]);
+  const priceSignal = useMemo(
+    () => (canonical ? computeCanonicalSignal(canonical, currentPriceCents) : computePriceSignal(synchronizedHistory)),
+    [canonical, currentPriceCents, synchronizedHistory]
+  );
 
   return (
     <div className="flex flex-col gap-3">
@@ -432,7 +504,8 @@ export function PriceHistoryChart({
             {history.totalOffersCount || 1} {(history.totalOffersCount || 1) === 1 ? 'loja parceira monitorada' : 'lojas parceiras monitoradas'}
           </Badge>
           <Badge variant="outline" className="text-[10px] py-0.5 px-2 bg-[var(--color-bg-inset)] border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] select-none font-bold">
-            {(history.totalQuoteCount || 0).toLocaleString('pt-BR')} cotações de preços coletadas
+            {(canonical ? canonical.quoteCount : history.totalQuoteCount || 0).toLocaleString('pt-BR')}{' '}
+            {canonical ? 'cotações no histórico do produto' : 'cotações de preços coletadas'}
           </Badge>
         </div>
         {hasEnoughData && (
@@ -444,6 +517,7 @@ export function PriceHistoryChart({
                 : null
             }
             masterProductId={masterProductId}
+            hideActions={hideActions}
           />
         )}
       </div>

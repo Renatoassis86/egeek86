@@ -19,7 +19,11 @@ interface MarketplaceHeroBannerProps {
     monitoredProducts?: number;
     lowestPriceCount?: number;
     partnerStores?: number;
+    /** Com filtro ativo: N itens da seleção. Substitui os contadores globais (nunca os dois lado a lado). */
+    selectionCount?: number | string | null;
   };
+  /** false quando a página já tem a busca principal (uma só busca por tela). */
+  showSearch?: boolean;
   coupons: DisplayCoupon[];
 }
 
@@ -28,6 +32,7 @@ export function MarketplaceHeroBanner({
   subtitle,
   categoryTag = 'Geek Deals · Comparador de preços',
   stats,
+  showSearch = true,
   coupons,
 }: MarketplaceHeroBannerProps) {
   const router = useRouter();
@@ -69,7 +74,7 @@ export function MarketplaceHeroBanner({
         {/* Lado Esquerdo: Conteúdo Comercial & Busca */}
         <div className="flex-1 max-w-2xl min-w-0">
           <Reveal>
-            <Text variant="label" color="hype" className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] sm:text-xs">
+            <Text variant="label" color="hype" className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-[12px]">
               <LineChart className="size-3.5 sm:size-4 text-[var(--color-accent-hype)] shrink-0" aria-hidden />
               <span className="truncate">{categoryTag}</span>
             </Text>
@@ -81,7 +86,7 @@ export function MarketplaceHeroBanner({
             </Text>
           </Reveal>
 
-          {/* Barra de Pesquisa Estilo Portal */}
+          {showSearch && (
           <Reveal delay={0.04}>
             <form onSubmit={handleSearch} className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 max-w-xl">
               <div className="relative flex-1 min-w-0">
@@ -100,16 +105,18 @@ export function MarketplaceHeroBanner({
             </form>
           </Reveal>
 
+          )}
+
           {/* Pílulas de Atalho / Categorias Rápidas */}
           <Reveal delay={0.06}>
-            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-semibold">
-              <span className="text-[var(--color-text-tertiary)] text-[11px] uppercase font-bold tracking-wider mr-1">
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-[12px] font-semibold">
+              <span className="text-[var(--color-text-tertiary)] text-[12px] uppercase font-bold tracking-wider mr-1">
                 Atalhos:
               </span>
               <button
                 type="button"
                 onClick={() => handleCategoryShortcut('formato', 'physical')}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 px-3 py-1 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 min-h-11 px-3.5 py-2 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
               >
                 <Layers className="size-3 text-[var(--color-accent-primary)]" />
                 Mídia Física
@@ -117,7 +124,7 @@ export function MarketplaceHeroBanner({
               <button
                 type="button"
                 onClick={() => handleCategoryShortcut('geracao', 'switch_1')}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 px-3 py-1 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 min-h-11 px-3.5 py-2 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
               >
                 <Gamepad2 className="size-3 text-red-500" />
                 Switch
@@ -125,7 +132,7 @@ export function MarketplaceHeroBanner({
               <button
                 type="button"
                 onClick={() => handleCategoryShortcut('geracao', 'ps5')}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 px-3 py-1 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 min-h-11 px-3.5 py-2 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
               >
                 <Monitor className="size-3 text-blue-500" />
                 PS5
@@ -133,7 +140,7 @@ export function MarketplaceHeroBanner({
               <button
                 type="button"
                 onClick={() => handleCategoryShortcut('tipo', 'accessory')}
-                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 px-3 py-1 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border-subtle)] bg-[var(--color-bg-elevated)]/60 min-h-11 px-3.5 py-2 text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)] transition-all"
               >
                 <Headphones className="size-3 text-[var(--color-accent-hype)]" />
                 Acessórios
@@ -144,23 +151,33 @@ export function MarketplaceHeroBanner({
           {/* Métricas do Topo */}
           {stats && (
             <Reveal delay={0.08}>
-              <div className="mt-6 flex flex-wrap items-center gap-6 border-t border-[var(--color-border-subtle)]/60 pt-5">
-                {stats.monitoredProducts != null && (
+              <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-[var(--color-border-subtle)]/60 pt-5">
+                {stats.selectionCount != null && (
                   <div className="flex flex-col">
                     <span className="font-mono text-xl font-black text-[var(--color-accent-primary)]">
-                      {stats.monitoredProducts}
+                      {stats.selectionCount}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                    <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                      Itens nesta seleção
+                    </span>
+                  </div>
+                )}
+                {stats.selectionCount == null && stats.monitoredProducts != null && (
+                  <div className="flex flex-col">
+                    <span className="font-mono text-xl font-black text-[var(--color-accent-primary)]">
+                      {stats.monitoredProducts.toLocaleString("pt-BR")}
+                    </span>
+                    <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
                       Produtos Monitorados
                     </span>
                   </div>
                 )}
-                {stats.lowestPriceCount != null && (
+                {stats.selectionCount == null && stats.lowestPriceCount != null && (
                   <div className="flex flex-col">
                     <span className="font-mono text-xl font-black text-[var(--color-accent-hype)]">
-                      {stats.lowestPriceCount}
+                      {stats.lowestPriceCount.toLocaleString("pt-BR")}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                    <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
                       No Menor Preço Histórico
                     </span>
                   </div>
@@ -170,7 +187,7 @@ export function MarketplaceHeroBanner({
                     <span className="font-mono text-xl font-black text-[var(--color-text-primary)]">
                       {stats.partnerStores}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+                    <span className="text-[12px] font-bold uppercase tracking-wider text-[var(--color-text-tertiary)]">
                       Lojas monitoradas
                     </span>
                   </div>

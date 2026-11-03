@@ -186,7 +186,7 @@ export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number
       {/* Tarja Superior Institucional */}
       <div className="bg-[#050403] border-b border-[#1C1814] py-1 px-4 text-right">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 flex items-center justify-end">
-          <span className="font-mono text-[10px] font-bold tracking-widest uppercase text-[#A39785]">
+          <span className="font-mono text-xs font-bold tracking-widest uppercase text-[#A39785]">
             Espaço Geek 86 · Comparador de preços de games
           </span>
         </div>
@@ -263,7 +263,7 @@ export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number
                     {/* Cabeçalho do Perfil */}
                     <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
                       <span className="text-xs font-bold text-[#F3EFE6] truncate">{viewer.name}</span>
-                      <span className="text-[11px] text-[#A39785]">Acesse seus dados, drops e leilões</span>
+                      <span className="text-xs text-[#A39785]">Acesse seus dados, drops e leilões</span>
                     </div>
 
                     <div className="flex flex-col py-1">
@@ -301,7 +301,7 @@ export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number
                   <>
                     <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
                       <span className="text-xs font-bold text-[#F3EFE6]">Espaço Geek 86</span>
-                      <span className="text-[11px] text-[#A39785]">Entre para acompanhar jogos e receber avisos de preço</span>
+                      <span className="text-xs text-[#A39785]">Entre para acompanhar jogos e receber avisos de preço</span>
                     </div>
                     <div className="flex flex-col gap-1 p-1 pt-2">
                       <Link href="/entrar" className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
@@ -323,7 +323,7 @@ export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number
             <Link href="/carrinho">
               <Bookmark className="size-5" />
               {cartCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[#E0A83B] text-[10px] font-bold text-black">
+                <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-[#E0A83B] text-xs font-bold text-black">
                   {cartCount > 9 ? '9+' : cartCount}
                 </span>
               )}

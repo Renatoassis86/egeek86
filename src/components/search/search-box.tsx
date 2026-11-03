@@ -294,14 +294,15 @@ export function SearchBox({
                 <ProductThumb
                   src={s.imageUrl}
                   alt=""
-                  fallbackLabel={PLATFORM_SHORT[s.platform] || 'Jogo'}
+                  fallbackLabel={PLATFORM_SHORT[s.platform] || s.legacyPlatformLabel || 'Jogo'}
                   dimension={s.productType}
+                  bundle={s.isBundle}
                   className="w-11"
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[15px] font-medium text-[var(--color-text-primary)]">{s.title}</span>
                   <span className="block truncate text-[13px] text-[var(--color-text-tertiary)]">
-                    {s.platformLabel}
+                    {s.platform === 'unknown' && s.legacyPlatformLabel ? s.legacyPlatformLabel : s.platformLabel}
                     {s.storeCount > 1 ? ` · ${s.storeCount} lojas` : ''}
                   </span>
                 </span>

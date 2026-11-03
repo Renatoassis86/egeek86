@@ -69,10 +69,26 @@ export default async function ArtigoPage({ params }: { params: Promise<{ slug: s
     }
   }
 
-  const [authorName, relatedArticles] = await Promise.all([
+  const [authorName, relatedCandidates] = await Promise.all([
     getArticleAuthorName(article.authorId),
-    getRelatedArticles(article.category, article.id, 3),
+    getRelatedArticles(article.category, article.id, 12),
   ]);
+  // "Leia também": sem o próprio artigo, sem título repetido e sem capa que já
+  // aparece na página (a capa repetida cai no fallback do SceneImage).
+  const seenTitles = new Set<string>([article.title.trim().toLowerCase()]);
+  const seenCovers = new Set<string>(coverImageUrl ? [coverImageUrl] : []);
+  const relatedArticles = [];
+  for (const r of relatedCandidates) {
+    if (r.id === article.id || r.slug === article.slug) continue;
+    const key = r.title.trim().toLowerCase();
+    if (seenTitles.has(key)) continue;
+    seenTitles.add(key);
+    let cover = r.coverImageUrl;
+    if (cover && seenCovers.has(cover)) cover = null;
+    if (cover) seenCovers.add(cover);
+    relatedArticles.push({ ...r, coverImageUrl: cover });
+    if (relatedArticles.length === 3) break;
+  }
   const readingMinutes = estimateReadingMinutes(bodyMarkdown);
 
   return (

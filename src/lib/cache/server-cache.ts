@@ -1,53 +1,44 @@
-import { unstable_cache } from 'next/cache';
+import { swr } from '@/lib/cache/swr';
 
 /**
- * Utilitário de alta performance para cache de queries pesadas no Next.js (Data Cache + In-Memory Fallback).
- * Garante que nenhuma navegação ou carregamento de página demore mais de 2 segundos.
+ * Cache de queries pesadas da vitrine: stale-while-revalidate em memória
+ * (src/lib/cache/swr.ts). O chamador NUNCA espera o recálculo de uma chave que
+ * já teve valor: recebe o último valor bom e um único recálculo roda por trás.
+ * `tags` ficou na assinatura por compatibilidade; nenhum ponto do código invoca
+ * `revalidateTag`, então não há invalidação por tag.
  */
 interface CacheOptions {
-  /** Tempo de expiração em segundos (padrão: 60s) */
+  /** Janela fresca em segundos (padrão: 60s) */
   revalidate?: number;
-  /** Tags para invalidação sob demanda */
+  /** Compatibilidade (sem efeito). */
   tags?: string[];
+  /** Quanto o último valor bom pode ser servido depois de vencido, em segundos (padrão: 30 min). */
+  maxStaleSeconds?: number;
+  /** Espera máxima a frio, em segundos (padrão: 60). */
+  coldTimeoutSeconds?: number;
+  /** Ocupa vaga do semáforo global; só para consulta folha (ver swr.ts). */
+  slot?: boolean;
+  /** Teto duro da computação em segundos (padrão 90). */
+  hardTimeoutSeconds?: number;
+  /** Consulta curta de página: pool 'live' em vez de 'bg' (ver swr.ts). */
+  live?: boolean;
 }
-
-const memoryCache = new Map<string, { value: any; expiresAt: number }>();
 
 export function createCachedQuery<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   keyParts: string[],
   options: CacheOptions = {}
 ): T {
-  const revalidate = options.revalidate ?? 60; // 60 segundos por padrão
-  const tags = options.tags ?? [];
-
-  // 1. Tenta usar o cache oficial do Next.js App Router (unstable_cache)
-  const cachedFn = unstable_cache(fn, keyParts, {
-    revalidate,
-    tags,
-  });
-
-  // Wrapper com fallback em memória ultra-rápido (< 2ms)
-  return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
-    try {
-      return await cachedFn(...args);
-    } catch {
-      // Fallback para in-memory cache caso a função seja chamada fora de contexto do Next.js
-      const cacheKey = `${keyParts.join(':')}:${JSON.stringify(args)}`;
-      const now = Date.now();
-      const existing = memoryCache.get(cacheKey);
-
-      if (existing && existing.expiresAt > now) {
-        return existing.value;
-      }
-
-      const result = await fn(...args);
-      memoryCache.set(cacheKey, {
-        value: result,
-        expiresAt: now + revalidate * 1000,
-      });
-
-      return result;
-    }
+  const ttlMs = (options.revalidate ?? 60) * 1000;
+  return (async (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> => {
+    const key = `${keyParts.join(':')}:${JSON.stringify(args)}`;
+    return swr<Awaited<ReturnType<T>>>(key, () => fn(...args), {
+      ttlMs,
+      maxStaleMs: options.maxStaleSeconds != null ? options.maxStaleSeconds * 1000 : undefined,
+      coldTimeoutMs: options.coldTimeoutSeconds != null ? options.coldTimeoutSeconds * 1000 : undefined,
+      slot: options.slot,
+      hardTimeoutMs: options.hardTimeoutSeconds != null ? options.hardTimeoutSeconds * 1000 : undefined,
+      live: options.live,
+    });
   }) as T;
 }

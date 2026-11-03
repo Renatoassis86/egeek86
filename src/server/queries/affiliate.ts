@@ -1,11 +1,18 @@
 import 'server-only';
+import { cache } from 'react';
 import { and, count, desc, asc, eq, gt, gte, inArray, isNull, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import { createCachedQuery } from '@/lib/cache/server-cache';
+import { swrBatch, withTimeout } from '@/lib/cache/swr';
+
+/** Teto de espera das leituras ao vivo das vitrines (uma conexão presa não pode segurar a página). */
+const LIVE_READ_TIMEOUT_MS = 4_000;
+/** Espera máxima da vitrine pelo cálculo de histórico quando o cache está vazio (1ª visita/reinício). */
+const COLD_LISTING_WAIT_MS = 6_000;
+const COLD_LISTING_ROWS_WAIT_MS = 4_000;
 import {
   getMasterProductPriceStatsBatch,
-  getMasterProductPriceStatsBatchRaw,
   getPlatformLowestPriceCentsEver,
   priceQuotesCtes,
   type MasterProductPriceStats,
@@ -134,6 +141,7 @@ export async function getPublicOffers(limit = 24): Promise<OfferWithRelations[]>
     WITH ${publicOffersCtes()}
     SELECT DISTINCT ON (po.master_product_id) po.id AS id
     FROM public_offers po
+    WHERE ${await catalogHiddenFilter(sql`po.master_product_id`)}
     ORDER BY po.master_product_id, po.current_price_cents ASC
   `);
   const dedupedIds = dedupRows.map((r) => r.id);
@@ -147,14 +155,39 @@ export async function getPublicOffers(limit = 24): Promise<OfferWithRelations[]>
   return rows.map(toOfferWithRelations);
 }
 
-/** Detalhe público — só retorna se estiver ativa. */
-export async function getOfferBySlug(slug: string): Promise<OfferWithRelations | null> {
-  const [row] = await baseOfferQuery()
-    .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active')))
-    .limit(1);
-
-  return row ? toOfferWithRelations(row) : null;
+/** Porteiro do catálogo para UM produto (cache SWR 2 min): master em revisão/rejeitado não tem página pública. */
+async function isMasterInCatalog(masterProductId: string): Promise<boolean> {
+  const inCatalog = await catalogHiddenFilter(sql`mp.id`);
+  const visible = await db.execute<{ ok: number }>(
+    sql`SELECT 1 AS ok FROM master_products mp WHERE mp.id = ${masterProductId} AND ${inCatalog} LIMIT 1`,
+  );
+  return visible.length > 0;
 }
+const isMasterInCatalogCached = createCachedQuery(isMasterInCatalog, ['offer-page-in-catalog-v1'], {
+  revalidate: 120,
+  coldTimeoutSeconds: 8,
+  live: true,
+  hardTimeoutSeconds: 20,
+});
+
+/**
+ * Detalhe público — só retorna se estiver ativa. `cache` do React: generateMetadata e a página
+ * compartilham a mesma leitura na requisição (antes eram 3 consultas, em duplicata).
+ */
+export const getOfferBySlug = cache(async (slug: string): Promise<OfferWithRelations | null> => {
+  const [row] = await withTimeout(
+    baseOfferQuery()
+      .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active')))
+      .limit(1),
+    8_000,
+    'getOfferBySlug'
+  );
+
+  if (!row) return null;
+  // Porteiro do catálogo: master em revisão/rejeitado (não original, fora do escopo) não tem página pública.
+  if (!(await isMasterInCatalogCached(row.offer.masterProductId))) return null;
+  return toOfferWithRelations(row);
+});
 
 /** Admin — qualquer status, usado nas telas de edição/geração de mensagem. */
 export async function getOfferByIdForAdmin(id: string): Promise<OfferWithRelations | null> {
@@ -187,12 +220,97 @@ export interface RankedOffersFilter {
   offset?: number;
 }
 
+const LAST_ROWS_MAX_AGE_MS = 10 * 60_000;
+const LAST_ROWS_MAX = 4000;
+const lastRowsStore = globalThis as unknown as { __egeekLastOfferRows?: Map<string, { at: number; row: OfferRow }> };
+
+/**
+ * Leitura ao vivo das linhas das ofertas (preço, título, vendedor) com teto de espera. Se estourar (conexão
+ * presa; o pool é reciclado em src/lib/cache/swr.ts), serve a ÚLTIMA LINHA REAL lida do banco para cada id,
+ * por até 10 min; sem linha boa, a oferta simplesmente não aparece. Nunca inventa dado.
+ */
+async function readOfferRowsLive(
+  build: () => PromiseLike<OfferRow[]>,
+  ids: string[],
+  what: string
+): Promise<OfferRow[]> {
+  const store = (lastRowsStore.__egeekLastOfferRows ??= new Map());
+  try {
+    const rows = await withTimeout(build(), LIVE_READ_TIMEOUT_MS, what);
+    const now = Date.now();
+    for (const r of rows) {
+      store.delete(r.offer.id);
+      store.set(r.offer.id, { at: now, row: r });
+    }
+    while (store.size > LAST_ROWS_MAX) {
+      const oldest = store.keys().next().value;
+      if (oldest === undefined) break;
+      store.delete(oldest);
+    }
+    return rows;
+  } catch (err) {
+    console.error(`[offers] ${what} falhou (serve última leitura boa):`, err instanceof Error ? err.message : err);
+    const now = Date.now();
+    return ids
+      .map((id) => store.get(id))
+      .filter((e): e is { at: number; row: OfferRow } => !!e && now - e.at < LAST_ROWS_MAX_AGE_MS)
+      .map((e) => e.row);
+  }
+}
+
 /**
  * Ranking/filtro pro dashboard — compõe várias chamadas (ex: uma por
  * gameFormat/gamePlatformGen) em vez de tentar uma única query com toda
  * a ordenação embutida; fica mais simples de renderizar em seções/tabs.
  */
 export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise<OfferWithRelations[]> {
+  // O ranking (varredura de todas as ofertas públicas + dedup por produto) é a parte
+  // cara: fica em cache SWR (60 s) só como lista ordenada de ids. As LINHAS (preço,
+  // título, vendedor) são lidas ao vivo a cada chamada, pelo id, no banco.
+  const all = await rankedOfferListCached(rankKeyFilter(filter));
+  const offset = filter.offset ?? 0;
+  const ids = all.slice(offset, offset + (filter.limit ?? 50)).map((r) => r.id);
+  if (ids.length === 0) return [];
+  // status 'active' relido ao vivo: oferta que saiu do ar depois do ranking em cache não aparece.
+  const rows = await readOfferRowsLive(
+    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, ids), eq(affiliateOffers.status, 'active'))),
+    ids,
+    'listRankedOffers (linhas)'
+  );
+  const byId = new Map(rows.map((r) => [r.offer.id, r]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((row): row is OfferRow => row != null)
+    .map(toOfferWithRelations);
+}
+
+/** Filtro sem paginação: a chave do cache não muda com limit/offset (todas as telas dividem a mesma lista completa). */
+function rankKeyFilter(filter: RankedOffersFilter): RankedOffersFilter {
+  const { limit: _limit, offset: _offset, ...rest } = filter;
+  void _limit;
+  void _offset;
+  return rest;
+}
+
+interface RankedRow {
+  id: string;
+  gen: GamePlatformGen;
+}
+
+/**
+ * Contagem REAL do conjunto filtrado (mesma lista, mesmo porteiro e mesmos filtros dos itens listados):
+ * total e total por geração de plataforma. Vem do cache SWR da lista completa, sem consulta nova.
+ */
+export async function countRankedOffers(
+  filter: RankedOffersFilter = {}
+): Promise<{ total: number; byGen: Partial<Record<GamePlatformGen, number>> }> {
+  const all = await rankedOfferListCached(rankKeyFilter(filter));
+  const byGen: Partial<Record<GamePlatformGen, number>> = {};
+  for (const r of all) byGen[r.gen] = (byGen[r.gen] ?? 0) + 1;
+  return { total: all.length, byGen };
+}
+
+async function rankOfferIds(filter: RankedOffersFilter): Promise<RankedRow[]> {
   const conditions: SQL[] = [
     eq(affiliateOffers.status, 'active'),
     // current_price_cents = 0 é "ainda não coletado" (placeholder da
@@ -237,9 +355,12 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   // isso o mesmo jogo, vendido em N lojas/redes diferentes, ocupa N vagas
   // da seção em vez de N produtos distintos (era o motivo do mesmo item
   // repetir várias vezes nos destaques/seções por plataforma).
-  const dedupRows = await db.execute<{ id: string }>(sql`
+  const dedupRows = await db.execute<{ id: string; price: string | number; gen: GamePlatformGen }>(sql`
     WITH ${publicOffersCtes()}
-    SELECT DISTINCT ON (${affiliateOffers.masterProductId}) ${affiliateOffers.id} AS id
+    SELECT DISTINCT ON (${affiliateOffers.masterProductId})
+           ${affiliateOffers.id} AS id,
+           ${affiliateOffers.currentPriceCents} AS price,
+           ${masterProducts.gamePlatformGen} AS gen
     FROM ${affiliateOffers}
     INNER JOIN public_offers po ON po.id = ${affiliateOffers.id}
     INNER JOIN ${masterProducts} ON ${eq(affiliateOffers.masterProductId, masterProducts.id)}
@@ -247,19 +368,18 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
     WHERE ${whereClause}
     ORDER BY ${affiliateOffers.masterProductId}, ${affiliateOffers.currentPriceCents} ASC
   `);
-  const dedupedIds = dedupRows.map((r) => r.id);
-  if (dedupedIds.length === 0) return [];
-
-  const orderColumn = filter.sortBy === 'price_desc' ? desc(affiliateOffers.currentPriceCents) : asc(affiliateOffers.currentPriceCents);
-
-  const rows = await baseOfferQuery()
-    .where(inArray(affiliateOffers.id, dedupedIds))
-    .orderBy(orderColumn)
-    .limit(filter.limit ?? 50)
-    .offset(filter.offset ?? 0);
-
-  return rows.map(toOfferWithRelations);
+  const sign = filter.sortBy === 'price_desc' ? -1 : 1;
+  // Ordena em memória (antes era uma 2ª consulta com IN de milhares de ids); desempate por id = ordem estável.
+  return dedupRows
+    .map((r) => ({ id: r.id, price: Number(r.price), gen: r.gen }))
+    .sort((a, b) => sign * (a.price - b.price) || (a.id < b.id ? -1 : 1))
+    .map(({ id, gen }) => ({ id, gen }));
 }
+
+const rankedOfferListCached = createCachedQuery(rankOfferIds, ['ranked-offer-list-v2'], {
+  revalidate: 60,
+  tags: ['affiliate-offers', 'price-snapshots'],
+});
 
 export interface AdminOffersFilter {
   gameFormat?: GameFormat;
@@ -477,7 +597,7 @@ export const getPlatformStats = createCachedQuery(
 );
 
 export async function listNetworks(): Promise<AffiliateNetwork[]> {
-  return db.select().from(affiliateNetworks).orderBy(affiliateNetworks.name);
+  return withTimeout(db.select().from(affiliateNetworks).orderBy(affiliateNetworks.name), LIVE_READ_TIMEOUT_MS, 'listNetworks');
 }
 
 export async function listActiveCouponsByNetwork(networkId: string): Promise<AffiliateCoupon[]> {
@@ -656,6 +776,7 @@ function buildMasterProductMetrics(
     avgCents: stats.avgCents,
     quoteCount: stats.quoteCount,
     historyDays: stats.historyDays,
+    lowConfidence: stats.lowConfidence,
   });
   const avg = eligibility.eligible ? stats.avgCents : null;
   const prev = previousPriceByOffer.get(stats.currentLowestActive.offerId) ?? null;
@@ -681,9 +802,17 @@ function buildMasterProductMetrics(
       lowestCents: lowest,
       quoteCount: stats.quoteCount,
       historyDays: stats.historyDays,
+      blocked: stats.lowBadgeBlock !== null,
     }),
   };
 }
+
+/** Penúltimo preço de UMA oferta, em cache SWR (60 s). Sem cotação anterior: null. */
+const getPreviousPriceForOfferCached = createCachedQuery(
+  async (offerId: string): Promise<number | null> => (await getPreviousPriceByOffer([offerId])).get(offerId) ?? null,
+  ['previous-price-offer-v1'],
+  { revalidate: 60, coldTimeoutSeconds: 6, live: true, hardTimeoutSeconds: 20 }
+);
 
 /** Penúltimo preço confirmado (cotação anterior, > 0) de cada oferta pedida. */
 async function getPreviousPriceByOffer(offerIds: string[]): Promise<Map<string, number>> {
@@ -728,9 +857,13 @@ export async function getMasterProductMetricsBatch(masterProductIds: string[]): 
  * histórico for elegível. `getOfferMetrics` segue sendo o escopo oferta (admin).
  */
 export async function getMasterProductMetrics(masterProductId: string): Promise<OfferMetrics | null> {
-  const stats = (await getMasterProductPriceStatsBatchRaw([masterProductId])).get(masterProductId);
+  // Estatística pela fonte única COM cache por produto (a página de produto também lê `getMasterProductPriceStats`:
+  // antes eram duas varreduras do histórico, uma sem cache). Mesmos números, calculados uma vez.
+  const stats = (await getMasterProductPriceStatsBatch([masterProductId], { coldTimeoutMs: 6_000, direct: true })).get(masterProductId);
   const offerId = stats?.currentLowestActive?.offerId;
-  const prev = offerId ? await getPreviousPriceByOffer([offerId]) : new Map<string, number>();
+  const prevPrice = offerId ? await getPreviousPriceForOfferCached(offerId).catch(() => null) : null;
+  const prev = new Map<string, number>();
+  if (offerId && prevPrice != null) prev.set(offerId, prevPrice);
   return buildMasterProductMetrics(stats, prev);
 }
 
@@ -826,14 +959,12 @@ async function getOfferListingRowsRaw(offerIds: string[]): Promise<Record<string
   return out;
 }
 
-// unstable_cache serializa o retorno em JSON: um Map volta como objeto vazio e
-// `.get` quebra (erro real em produção na home, 2026-10-30). Por isso o cache
-// guarda um Record e o Map é remontado aqui.
-const getOfferListingRowsCachedAsRecord = createCachedQuery(
-  getOfferListingRowsRaw,
-  ['offer-listing-rows'],
-  { revalidate: 60, tags: ['affiliate-offers', 'price-snapshots'] }
-);
+// Cache SWR POR OFERTA (fresco 60 s): lista de cards diferentes reaproveitam as linhas
+// já lidas; vencida é servida e relida por trás. Oferta sem preço > 0 fica como "sem linha".
+async function getOfferListingRowsCachedAsRecord(ids: string[]): Promise<Record<string, OfferListingRow>> {
+  // A frio, a vitrine espera no máximo COLD_LISTING_WAIT_MS e mostra o que já tem; o resto enche o cache por trás.
+  return swrBatch('offer-listing-row-v1', ids, getOfferListingRowsRaw, { ttlMs: 60_000, chunkSize: 100, coldTimeoutMs: COLD_LISTING_ROWS_WAIT_MS, partialOnTimeout: true });
+}
 
 /** Pura: junta a linha da oferta com a estatística do produto (fonte única). */
 function buildOfferListingMetrics(row: OfferListingRow, stats: MasterProductPriceStats | undefined): OfferListingMetrics {
@@ -841,8 +972,8 @@ function buildOfferListingMetrics(row: OfferListingRow, stats: MasterProductPric
   const quoteCount = stats?.quoteCount ?? 0;
   const historyDays = stats?.historyDays ?? 0;
   const eligibility = checkEligibility({ quoteCount, historyDays });
-  const verdict = computeVerdict({ currentCents: current, avgCents: stats?.avgCents, quoteCount, historyDays });
-  const isLowestEver = computeLowBadge({ currentCents: current, lowestCents: stats?.lowAll?.priceCents, quoteCount, historyDays });
+  const verdict = computeVerdict({ currentCents: current, avgCents: stats?.avgCents, quoteCount, historyDays, lowConfidence: stats?.lowConfidence });
+  const isLowestEver = computeLowBadge({ currentCents: current, lowestCents: stats?.lowAll?.priceCents, quoteCount, historyDays, blocked: (stats?.lowBadgeBlock ?? null) !== null });
   const priceDrop = computePriceDrop({
     currentCents: current,
     previousCents: row.previousPriceCents,
@@ -895,9 +1026,18 @@ export async function getOfferListingMetrics(
   const ids = [...new Set(offerIds)].sort();
   const rows = await getOfferListingRowsCachedAsRecord(ids);
   const list = Object.values(rows);
-  const stats = await getMasterProductPriceStatsBatch(list.map((r) => r.masterProductId));
+  const stats = await getMasterProductPriceStatsBatch(list.map((r) => r.masterProductId), {
+    coldTimeoutMs: COLD_LISTING_WAIT_MS,
+    partialOnTimeout: true,
+  });
   const map = new Map<string, OfferListingMetrics>();
-  for (const row of list) map.set(row.offerId, buildOfferListingMetrics(row, stats.get(row.masterProductId)));
+  // Produto cuja estatística ainda não ficou pronta (só a frio) fica FORA do mapa: sem selo/veredito neste carregamento,
+  // nunca um "histórico curto" falso nem número inventado. A estatística de produto sem cotação existe (quoteCount 0).
+  for (const row of list) {
+    const st = stats.get(row.masterProductId);
+    if (!st) continue;
+    map.set(row.offerId, buildOfferListingMetrics(row, st));
+  }
   return map;
 }
 
@@ -980,9 +1120,15 @@ export interface DisplayCoupon {
  * GAMER50 "Verificado", GEEK12) com validUntil null, ou seja, dado inventado em
  * produção. Nunca reintroduzir cupom de exemplo.
  */
+// Último resultado BOM (dado real já lido do banco). Se a leitura falhar/estourar o tempo, a home serve
+// este valor por até 6 h; sem valor bom, o bloco é omitido (lista vazia). Nunca spinner nem cupom inventado.
+const couponsFallback = globalThis as unknown as { __egeekCoupons?: { at: number; rows: DisplayCoupon[] } };
+const COUPONS_FALLBACK_MAX_AGE_MS = 6 * 60 * 60_000;
+
 export async function getActiveCouponsForDisplay(): Promise<DisplayCoupon[]> {
   try {
-    const rows = await db
+    const rows = await withTimeout(
+      db
       .select({
         id: affiliateCoupons.id,
         code: affiliateCoupons.code,
@@ -1004,9 +1150,12 @@ export async function getActiveCouponsForDisplay(): Promise<DisplayCoupon[]> {
         )
       )
       .orderBy(desc(affiliateCoupons.createdAt))
-      .limit(10);
+      .limit(10),
+      LIVE_READ_TIMEOUT_MS,
+      'getActiveCouponsForDisplay'
+    );
 
-    return rows.map((r) => ({
+    const mapped = rows.map((r) => ({
       id: r.id,
       code: r.code,
       description: r.description,
@@ -1018,8 +1167,15 @@ export async function getActiveCouponsForDisplay(): Promise<DisplayCoupon[]> {
       networkSlug: r.networkSlug,
       networkColorHex: r.networkColorHex,
     }));
+    couponsFallback.__egeekCoupons = { at: Date.now(), rows: mapped };
+    return mapped;
   } catch (err) {
     console.error('getActiveCouponsForDisplay falhou:', (err as Error).message);
+    const last = couponsFallback.__egeekCoupons;
+    if (last && Date.now() - last.at < COUPONS_FALLBACK_MAX_AGE_MS) {
+      // Cupom vencido desde a última leitura boa não é servido.
+      return last.rows.filter((c) => !c.validUntil || new Date(c.validUntil).getTime() > Date.now());
+    }
     return [];
   }
 }
@@ -1072,7 +1228,11 @@ export async function getFeaturedOffers(
   const offerIds = await rankFeaturedOfferIdsCached(filter, limit);
   if (offerIds.length === 0) return [];
 
-  const rows = await baseOfferQuery().where(inArray(affiliateOffers.id, offerIds));
+  const rows = await readOfferRowsLive(
+    () => baseOfferQuery().where(inArray(affiliateOffers.id, offerIds)),
+    offerIds,
+    'getFeaturedOffers (linhas)'
+  );
   const rowById = new Map(rows.map((r) => [r.offer.id, r]));
 
   // Preserva a ordem de ranking (IN não garante ordem).
@@ -1165,8 +1325,8 @@ async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): 
     const current = Number(r.current_price_cents);
     const quoteCount = st?.quoteCount ?? 0;
     const historyDays = st?.historyDays ?? 0;
-    const lowBadge = computeLowBadge({ currentCents: current, lowestCents: st?.lowAll?.priceCents, quoteCount, historyDays });
-    const verdict = computeVerdict({ currentCents: current, avgCents: st?.avgCents, quoteCount, historyDays });
+    const lowBadge = computeLowBadge({ currentCents: current, lowestCents: st?.lowAll?.priceCents, quoteCount, historyDays, blocked: (st?.lowBadgeBlock ?? null) !== null });
+    const verdict = computeVerdict({ currentCents: current, avgCents: st?.avgCents, quoteCount, historyDays, lowConfidence: st?.lowConfidence });
     const belowPct = verdict.kind === 'below' && verdict.deltaPercent != null ? -verdict.deltaPercent : 0;
     return { offerId: r.offer_id, current, lowBadge, belowPct };
   });
@@ -1180,5 +1340,5 @@ async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): 
 const rankFeaturedOfferIdsCached = createCachedQuery(
   rankFeaturedOfferIds,
   ['featured-offer-ids'],
-  { revalidate: 120, tags: ['affiliate-offers', 'price-snapshots'] }
+  { revalidate: 120, tags: ['affiliate-offers', 'price-snapshots'], coldTimeoutSeconds: 9 }
 );

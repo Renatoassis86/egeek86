@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MarketplaceHeroBanner } from '@/components/affiliate/marketplace-hero-banner';
 import { getPriceTableData, getNetworksWithOffers, type PriceTableFilter } from '@/server/queries/price-table';
 import { getActiveCouponsForDisplay } from '@/server/queries/affiliate';
-import { getPublicTotals } from '@/server/queries/home-search';
+import { getPublicMetrics } from '@/server/queries/public-metrics';
 import { PriceTableBoard } from '@/components/price-table/price-table-board';
 import type { ProductType, GameFormat, GamePlatformGen } from '@/db/schema';
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 const AREA_VALUES: readonly ProductType[] = ['game', 'console', 'accessory'];
-const FORMAT_VALUES: readonly GameFormat[] = ['physical', 'digital'];
+const FORMAT_VALUES: readonly GameFormat[] = ['physical'];
 const GEN_VALUES: readonly GamePlatformGen[] = ['switch_1', 'switch_2', 'ps5', 'ps4', 'xbox_series', 'xbox_one'];
 const SORT_VALUES = ['name_asc', 'name_desc', 'price_asc', 'price_desc', 'discount_desc'] as const;
 const PAGE_SIZE = 40;
@@ -58,11 +58,11 @@ export default async function TabelaDePrecosPage({
     offset: showAll ? 0 : (page - 1) * PAGE_SIZE,
   };
 
-  const [{ items, totalCount }, coupons, networks, publicTotals] = await Promise.all([
+  const [{ items, totalCount }, coupons, networks, publicMetrics] = await Promise.all([
     getPriceTableData(filter),
     getActiveCouponsForDisplay(),
     getNetworksWithOffers(),
-    getPublicTotals(),
+    getPublicMetrics(),
   ]);
 
   const paginationParams = new URLSearchParams();
@@ -100,8 +100,9 @@ export default async function TabelaDePrecosPage({
           // Totais do site inteiro (mesma fonte da home: produtos com oferta pública
           // ativa e marketplaces com oferta pública ativa). totalCount é o recorte
           // filtrado da tabela e aparece só na paginação/contador da própria tabela.
-          monitoredProducts: publicTotals.products,
-          partnerStores: publicTotals.stores,
+          monitoredProducts: publicMetrics.products,
+          lowestPriceCount: publicMetrics.lowestEverCount ?? undefined,
+          partnerStores: publicMetrics.stores,
         }}
         coupons={coupons}
       />

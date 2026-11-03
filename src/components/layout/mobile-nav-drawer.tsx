@@ -97,7 +97,7 @@ function NavGroup({
   return (
     <div className="flex flex-col gap-0.5">
       {subheading && (
-        <span className="px-2 pt-3 pb-1 text-[10px] font-black uppercase tracking-wider text-[var(--color-text-tertiary)]">
+        <span className="px-2 pt-3 pb-1 text-xs font-black uppercase tracking-wider text-[var(--color-text-tertiary)]">
           {subheading}
         </span>
       )}
@@ -180,7 +180,7 @@ export function MobileNavDrawer({ viewer = null, isOpen, onClose }: MobileNavDra
               <Sparkles className="size-4 text-[var(--color-accent-gold)]" />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-[var(--color-text-primary)]">Menu da Plataforma</span>
-                <span className="text-[10px] text-[var(--color-text-secondary)]">Todas as seções do site</span>
+                <span className="text-xs text-[var(--color-text-secondary)]">Todas as seções do site</span>
               </div>
             </div>
             <ThemeToggle />

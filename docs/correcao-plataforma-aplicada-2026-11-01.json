@@ -1,0 +1,100 @@
+[
+ {
+  "id": "c5fedf84-f055-4fd8-8e68-aa70c266818a",
+  "name": "Jogo eletrônico Orbitals Nintendo Switch 2",
+  "from": "switch_1",
+  "to": "switch_2",
+  "ativas": 4
+ },
+ {
+  "id": "68947b99-b18d-46a9-87f6-96a2d7a63a67",
+  "name": "Jogo Cronos The New Dawn Terror Switch 2 Nintendo Bloober Team",
+  "from": "switch_1",
+  "to": "switch_2",
+  "ativas": 7
+ },
+ {
+  "id": "3c85c9df-fd01-4900-87bf-70a469adbed2",
+  "name": "Jogo Ps4 The Dark Pictures Little Hope Midia Fisica",
+  "from": "ps5",
+  "to": "ps4",
+  "ativas": 7
+ },
+ {
+  "id": "42cf1a66-b402-429c-b3ce-9c08c1dd8761",
+  "name": "Terraria Xbox One Mídia Física Jogo Aventura Multijogador",
+  "from": "xbox_series",
+  "to": "xbox_one",
+  "ativas": 9
+ },
+ {
+  "id": "d1603740-a802-4ed6-81e9-d3d52b9c887d",
+  "name": "Sleeping Dogs Xbox 360 Mídia Física Jogo Aventura Square Enix",
+  "from": "xbox_series",
+  "to": "xbox_360",
+  "ativas": 2
+ },
+ {
+  "id": "eedd4076-619b-495c-9e33-64255bd0ede8",
+  "name": "Minecraft Standard Edition Xbox 360 Físico Jogo De Aventura E Construção",
+  "from": "xbox_one",
+  "to": "xbox_360",
+  "ativas": 5
+ },
+ {
+  "id": "a77489c2-960e-433d-a31c-530226203828",
+  "name": "God of War Standard Edition Sony PS4 Mídia Física",
+  "from": "ps5",
+  "to": "ps4",
+  "ativas": 16
+ },
+ {
+  "id": "39006b9a-bd20-4826-9a7c-1e19a1927782",
+  "name": "Microsoft Mortal Kombat XL PS4 Fisico",
+  "from": "ps5",
+  "to": "ps4",
+  "ativas": 5
+ },
+ {
+  "id": "c85fb19b-ba3d-4f73-b234-d9f396f9729c",
+  "name": "Street Fighter V Champions edition PS4 (Físico)",
+  "from": "ps5",
+  "to": "ps4",
+  "ativas": 5
+ },
+ {
+  "id": "d91a8ec5-4d41-412d-93b2-46045a4af252",
+  "name": "Halo Wars Xbox 360 Mídia Física Microsoft",
+  "from": "xbox_one",
+  "to": "xbox_360",
+  "ativas": 0
+ },
+ {
+  "id": "2e88c8f7-15be-4af7-91a7-f33457470a51",
+  "name": "Coleção Castlevania Advance Deluxe Nintendo Switch - Prata",
+  "from": "ps4",
+  "to": "switch_1",
+  "ativas": 0
+ },
+ {
+  "id": "9dcbdeef-10f0-454e-bc4f-044863dec19e",
+  "name": "Tekken 8 Standard Edition PS5 Fisico Bandai Namco",
+  "from": "ps4",
+  "to": "ps5",
+  "ativas": 0
+ },
+ {
+  "id": "b87a02f6-f8bc-46f4-a167-9d290c0a6f15",
+  "name": "Nba 2k26 - Nintendo Switch 2 Físico Europeu",
+  "from": "switch_1",
+  "to": "switch_2",
+  "ativas": 0
+ },
+ {
+  "id": "683f2471-bcb5-4c4d-89cc-8c09159f1466",
+  "name": "Gran Turismo 7 PS4 Jogo de Corrida Sony Simulador 2022 110GB",
+  "from": "ps5",
+  "to": "ps4",
+  "ativas": 6
+ }
+]

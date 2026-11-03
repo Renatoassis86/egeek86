@@ -10,6 +10,13 @@ export interface PriceSnapshotResult {
   /** ID do anúncio/listing específico desse vendedor na rede (ex: item_id do
    * Mercado Livre) — usado como referência ao criar a oferta desse vendedor. */
   externalItemId: string;
+  /**
+   * Título ORIGINAL do anúncio do vendedor (ex.: Mercado Livre, multiget oficial
+   * /items). O catálogo do ML agrupa anúncios sob um catalog_product_id, mas o
+   * título de cada vendedor pode dizer "Open Box", "PS4/PS5", "1TB" etc. Usado só
+   * para a rechecagem de identidade da oferta (offer-identity.ts); ausente = sem rechecagem.
+   */
+  sellerTitle?: string | null;
 }
 
 /**

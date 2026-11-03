@@ -1,0 +1,61 @@
+﻿Métrica;Valor
+Masters no banco;6320
+Masters ativos (sem mergedInto);6194
+Ofertas no banco (todos os status);17620
+Ofertas ativas;9540
+"Ofertas ativas, preço > 0, master vivo e aprovado no porteiro (universo U)";8209
+Ofertas ativas avaliadas (master vivo);9540
+  com título próprio (diferente do nome do master);448
+  com título herdado do master (a identidade do anúncio real do vendedor NÃO é visível no banco);9092
+OFERTAS ATIVAS QUE SAIRIAM DOS INDICADORES (em revisão / Open Box / usado);461
+  dentro do universo U (as que hoje entram nos indicadores);407
+  motivo open_box (ativas);0
+  motivo open_box (universo U);0
+  motivo used (ativas);9
+  motivo used (universo U);0
+  motivo geracao_ambigua (ativas);390
+  motivo geracao_ambigua (universo U);353
+  motivo divergencia (ativas);62
+  motivo divergencia (universo U);54
+  eixo da divergência: titulo (ativas / universo U);17 / 17
+  eixo da divergência: numeral (ativas / universo U);11 / 9
+  eixo da divergência: geracao_cruzada (ativas / universo U);10 / 10
+  eixo da divergência: conteudo (ativas / universo U);8 / 8
+  eixo da divergência: plataforma (ativas / universo U);7 / 6
+  eixo da divergência: edicao (ativas / universo U);6 / 5
+  eixo da divergência: modelo (ativas / universo U);4 / 4
+  eixo da divergência: formato (ativas / universo U);4 / 1
+  eixo da divergência: regiao (ativas / universo U);3 / 3
+  eixo da divergência: composicao (ativas / universo U);2 / 1
+  eixo da divergência: capacidade (ativas / universo U);2 / 2
+  em revisão na rede Mercado Livre;328
+  em revisão na rede Shopee;133
+Ofertas Open Box ATIVAS (título contém Open Box);0
+  Open Box ativas no universo U (hoje contaminam média/mediana/menor preço);0
+  Open Box ativas: masters distintos;0
+Ofertas usado/seminovo/recondicionado ATIVAS;9
+  no universo U;0
+Masters cujo NOME contém Open Box;0
+Paridade SQL x TS (todas as ofertas): excluídas pelos dois;819
+Paridade SQL x TS: divergências (aproximação do regex);3
+"Tempo da regex SQL sobre todas as ofertas (ms, uma vez)";1297
+Consulta NOT IN (como nas queries): ofertas visíveis / ms;16801 / 1034
+Masters com pelo menos 1 oferta do universo U saindo dos indicadores;173
+  masters que ficariam SEM nenhuma oferta nos indicadores (somem da vitrine);150
+  variação mediana da mediana do master (mediana entre masters afetados com sobra);2.1%
+  masters cuja mediana muda mais de 10% (ou mais);7
+  masters cujo MENOR PREÇO atual muda;5
+Divergências com título próprio: têm UM master destino idêntico (poderiam ser movidas);6
+Divergências com título próprio: destino ambíguo (2+ masters idênticos);5
+"Divergências com título próprio: sem master idêntico (ficam em revisão; master novo só com aprovação)";51
+"Duplicatas de jogo com chave idêntica, REGRA ANTIGA (grupos / masters excedentes)";2 / 2
+"Duplicatas de jogo com chave idêntica, REGRA NOVA (grupos / masters excedentes)";26 / 26
+"  grupos que a regra nova passa a reconhecer (ex.: FC 24 = FC 2024, RE 4 = IV)";24
+  grupos antigos que a regra nova DESFAZ (eram fundidos e são produtos distintos: região/edição/etc.);0
+Clusters de revisão (regra antiga);near_duplicate=72 unknown_platform=49 platform_conflict=1 non_game_exact=12
+Clusters de revisão (regra nova);near_duplicate=63 unknown_platform=50 platform_conflict=1 non_game_exact=46
+Jogos cujo nome cita 2+ gerações (cross-gen no NOME do master);365
+Masters ativos de jogo com nome cross-gen e aprovados no porteiro hoje;330
+amostra de paridade;só TS: Bully Scholarship Edition XBox 360 Xbox Series X Xbox X Retrocompatível Original Completo
+amostra de paridade;só TS: Jogo Crackdown Xbox 360 Xbox One Xbox Series X Retrocompatível Mídia Física
+amostra de paridade;só TS: Jogo Crackdown Xbox 360 Xbox One Xbox Series X Retrocompatível Mídia Física

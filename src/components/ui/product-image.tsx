@@ -61,7 +61,7 @@ export function ProductImage({
       className={cn(
         'group/pimg relative flex shrink-0 items-center justify-center overflow-hidden border',
         show
-          ? 'border-[var(--color-border-subtle)] bg-[#f7f6f3]'
+          ? 'border-[var(--color-border-subtle)] bg-[var(--color-media-bg)]'
           : 'border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]',
         finalRatio === 'square' && 'aspect-square',
         finalRatio === 'portrait' && 'aspect-[4/5]',
@@ -79,7 +79,7 @@ export function ProductImage({
           referrerPolicy="no-referrer"
           onError={() => setFailed(true)}
           className={cn(
-            'size-full object-contain object-center',
+            'absolute inset-0 h-full w-full max-w-full object-contain object-center',
             padding === 'md' ? 'p-[8%]' : 'p-[4%]',
             hoverZoom &&
               'transition-transform duration-[var(--duration-medium)] group-hover:scale-[1.04] group-hover/pimg:scale-[1.04]'

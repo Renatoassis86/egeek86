@@ -1,4 +1,5 @@
 import 'server-only';
+import { entryGateAttributes } from '@/lib/catalog/gate';
 import { randomUUID } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -224,6 +225,7 @@ export async function discoverMagaluProducts(): Promise<{
                 productType,
                 defaultImages: item.imageUrl ? [item.imageUrl] : [],
                 ...classification,
+                attributes: entryGateAttributes(item.title, productType ?? 'game'),
                 classifiedAt: new Date(),
               })
               .returning();

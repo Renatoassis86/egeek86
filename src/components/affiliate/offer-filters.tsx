@@ -63,7 +63,8 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  const hasFilters = [format, gen, rede].some((v) => v !== ALL) || q !== '';
+  const hasFilters =
+    [format, gen, rede].some((v) => v !== ALL) || q !== '' || searchParams.has('tipo') || searchParams.has('fabricante');
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -90,25 +91,27 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
     params.delete('geracao');
     params.delete('rede');
     params.delete('q');
+    params.delete('tipo');
+    params.delete('fabricante');
     setSearchInput('');
     router.push(`${pathname}${params.toString() ? `?${params.toString()}` : ''}`, { scroll: false });
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/90 backdrop-blur-md p-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 w-full max-w-full overflow-hidden shadow-sm">
+    <div className="flex w-full min-w-0 max-w-full flex-col gap-1 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]/95 p-2 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-3">
       {/* 1. Busca compacta e contagem */}
-      <div className="flex items-center gap-2.5 w-full sm:w-auto">
+      <div className="flex w-full items-center gap-2.5 sm:w-auto">
         {typeof resultCount === 'number' && (
-          <Text variant="caption" color="tertiary" className="shrink-0 whitespace-nowrap text-[11px] font-semibold px-1">
-            {resultCount} {resultCount === 1 ? 'oferta' : 'ofertas'}
+          <Text variant="caption" color="tertiary" className="shrink-0 whitespace-nowrap px-1 text-[12px] font-semibold">
+            {resultCount} {resultCount === 1 ? 'item' : 'itens'} nesta seleção
           </Text>
         )}
       </div>
 
       {/* 2. Chips de Filtro em linha horizontal deslizante no mobile */}
-      <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar whitespace-nowrap w-full sm:w-auto sm:ml-auto">
+      <div className="no-scrollbar flex w-full min-w-0 items-center gap-2 overflow-x-auto overscroll-x-contain whitespace-nowrap pr-6 sm:ml-auto sm:w-auto sm:pr-0 max-sm:[mask-image:linear-gradient(to_right,black_calc(100%-28px),transparent)]">
         <Select value={format} onValueChange={(v) => setParam('formato', v)}>
-          <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[96px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
+          <SelectTrigger size="xs" className="h-11 text-[13px] font-semibold shrink-0 w-auto min-w-[96px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
             <SelectValue placeholder="Formato" />
           </SelectTrigger>
           <SelectContent>
@@ -122,7 +125,7 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
         </Select>
 
         <Select value={gen} onValueChange={(v) => setParam('geracao', v)}>
-          <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[100px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
+          <SelectTrigger size="xs" className="h-11 text-[13px] font-semibold shrink-0 w-auto min-w-[100px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
             <SelectValue placeholder="Geração" />
           </SelectTrigger>
           <SelectContent>
@@ -137,7 +140,7 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
 
         {networks.length > 0 && (
           <Select value={rede} onValueChange={(v) => setParam('rede', v)}>
-            <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[90px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
+            <SelectTrigger size="xs" className="h-11 text-[13px] font-semibold shrink-0 w-auto min-w-[90px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
               <SelectValue placeholder="Loja" />
             </SelectTrigger>
             <SelectContent>
@@ -152,7 +155,7 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
         )}
 
         <Select value={sort} onValueChange={(v) => setParam('ordenar', v)}>
-          <SelectTrigger size="xs" className="h-8 text-[11px] font-semibold shrink-0 w-auto min-w-[105px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
+          <SelectTrigger size="xs" className="h-11 text-[13px] font-semibold shrink-0 w-auto min-w-[105px] bg-[var(--color-bg-inset)] border-[var(--color-border-default)]">
             <SelectValue placeholder="Ordenar por" />
           </SelectTrigger>
           <SelectContent>
@@ -169,9 +172,9 @@ export function OfferFilters({ networks, resultCount }: OfferFiltersProps) {
             variant="ghost"
             size="sm"
             onClick={clearAll}
-            className="h-8 px-2 text-[11px] font-bold text-[var(--color-accent-hype)] hover:bg-[var(--color-accent-hype)]/10 shrink-0 border border-[var(--color-accent-hype)]/30 rounded-md"
+            className="h-11 px-3 text-[13px] font-bold text-[var(--color-accent-hype)] hover:bg-[var(--color-accent-hype)]/10 shrink-0 border border-[var(--color-accent-hype)]/30"
           >
-            <RotateCcw className="size-3" />
+            <RotateCcw className="size-3.5" />
             Limpar
           </Button>
         )}
