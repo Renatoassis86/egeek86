@@ -34,11 +34,11 @@ const cases: C[] = [
   // --- Print 2: porta cartao = duvida do dono -> review (nunca publico)
   { name: 'Porta Cartão de memória Super Mario Bross Porta Cartão SD Porta Jogo Nintendo Switch Cartão', db: 'game', expect: 'review' },
   // --- Print 1: PS2 fisico novo a R$19,90-22 -> review (sinal auxiliar de preco)
-  { name: 'God of War II Standard Edition Formato físico para PS2', db: 'game', expect: 'review', fmt: 'physical', median: 2000 },
-  { name: 'God of War Jogo PS2 Português Físico Ação Santa Monica', db: 'game', expect: 'review', median: 2200 },
+  { name: 'God of War II Standard Edition Formato físico para PS2', db: 'game', expect: 'rejected', fmt: 'physical', median: 2000 },
+  { name: 'God of War Jogo PS2 Português Físico Ação Santa Monica', db: 'game', expect: 'rejected', median: 2200 },
   { name: 'Jogo Silent Hill Shattered Memories para Sony em Formato Físico', db: 'game', expect: 'review', fmt: 'physical', median: 2595 },
   // mesmo titulo com preco normal NAO e barrado so por titulo
-  { name: 'God of War II Standard Edition Formato físico para PS2', db: 'game', expect: 'approved', fmt: 'physical', median: 18000 },
+  { name: 'God of War II Standard Edition Formato físico para PS2', db: 'game', expect: 'rejected', fmt: 'physical', median: 18000 },
   // --- Nao original lexical
   { name: 'Jogo PS2 Cópia Pirata Mídia Gravada', db: 'game', expect: 'rejected' },
   { name: 'Réplica Controle Dualshock 4 Primeira Linha', db: 'accessory', expect: 'rejected' },
@@ -70,13 +70,13 @@ const cases: C[] = [
   { name: 'Console Nintendo Switch 2 + Mario Kart World Bundle', db: 'console', expect: 'approved' },
   { name: 'Console Nintendo Switch Oled Edição Wii Sports Club', db: 'console', expect: 'approved' },
   // jogo de plataforma legada NAO e afetado pela regra de console
-  { name: 'Jogo Xbox 360 Grand Theft Auto IV Físico', db: 'game', expect: 'approved', fmt: 'physical', median: 4500 },
+  { name: 'Jogo Xbox 360 Grand Theft Auto IV Físico', db: 'game', expect: 'rejected', fmt: 'physical', median: 4500 },
   // --- Legitimos que NAO podem sumir
-  { name: 'Lego Star Wars The Complete Saga Xbox 360 Jogo Físico', db: 'game', expect: 'approved', fmt: 'physical' },
+  { name: 'Lego Star Wars The Complete Saga Xbox 360 Jogo Físico', db: 'game', expect: 'rejected', fmt: 'physical' },
   { name: 'Hot Wheels Monster Trucks PS4 Jogo Físico', db: 'game', expect: 'approved', fmt: 'physical' },
-  { name: 'Jogo Xbox 360 Grand Theft Auto IV Físico', db: 'game', expect: 'approved', fmt: 'physical', median: 4500 },
-  { name: 'Pirates of the Caribbean PS3 Jogo Físico', db: 'game', expect: 'approved' },
-  { name: 'Lego Piratas do Caribe Xbox 360 Jogo Aventura CD', db: 'game', expect: 'approved' },
+  { name: 'Jogo Xbox 360 Grand Theft Auto IV Físico', db: 'game', expect: 'rejected', fmt: 'physical', median: 4500 },
+  { name: 'Pirates of the Caribbean PS3 Jogo Físico', db: 'game', expect: 'rejected' },
+  { name: 'Lego Piratas do Caribe Xbox 360 Jogo Aventura CD', db: 'game', expect: 'rejected' },
   // --- FORMATO fisico x digital (decisao do dono, 2026-11-03): digital tem master proprio, mas segue FORA do escopo publico (D1, ADR 0005)
   { name: 'Hogwarts Legacy PS5 Midia Digital', db: 'game', expect: 'rejected', gen: 'ps5' },
   { name: 'Gran Turismo 7 PS5 (Digital)', db: 'game', expect: 'rejected', gen: 'ps5' },
@@ -128,8 +128,8 @@ const cases: C[] = [
   { name: 'Cabo de Energia 2 pinos', db: 'accessory', expect: 'rejected' },
   { name: 'Pilhas AA Philips', db: 'accessory', expect: 'rejected' },
   // PS2 legado com erro de digitacao tem plataforma (nao cai em "sem plataforma")
-  { name: 'Jogo Playstatio 2 God of War', db: 'game', expect: 'approved' },
-  { name: 'God of War II Playstatio 2 Fisico', db: 'game', expect: 'review', fmt: 'physical', median: 2000 },
+  { name: 'Jogo Playstatio 2 God of War', db: 'game', expect: 'rejected' },
+  { name: 'God of War II Playstatio 2 Fisico', db: 'game', expect: 'rejected', fmt: 'physical', median: 2000 },
   // --- QA rodada 4 (P1-A, 2026-11-03): peca de reposicao fora do escopo; memory card/controle seguem como acessorio
   { name: 'Dissipador Calor Ssd M2 2280 Ps5 Playstation 5 Cinza Prata', db: 'console', expect: 'rejected' },
   { name: 'Ci Hdmi Vídeo Mn864739 Panasonic Para Ps5 Playstation 5', db: 'console', expect: 'rejected' },
@@ -137,7 +137,7 @@ const cases: C[] = [
   { name: 'Bateria Switch Lite + Chaves', db: 'console', expect: 'rejected' },
   { name: 'Memory Card 16mb Para Playstation 2 - Ps2- Console Salvar', db: 'accessory', expect: 'review', dim: 'accessory' },
   { name: 'Nintendo Switch 2 Pro Controlador A Lenda de Zelda', db: 'game', expect: 'approved', dim: 'accessory' },
-  { name: 'Jogo Nintendo Wii : Sonic Unleashed', db: 'game', expect: 'approved', fmt: 'physical', median: 9000, dim: 'game' },
+  { name: 'Jogo Nintendo Wii : Sonic Unleashed', db: 'game', expect: 'rejected', fmt: 'physical', median: 9000, dim: 'off_catalog' },
   { name: 'Disco Blu-ray automático PS BDJ PS 4 GEZINE Lapse Poops off-line Gold hen 9.00-12.52', db: 'console', expect: 'rejected' },
   // --- QA rodada 5 (P1, 2026-11-03): boneco/estatua por escala ou marca; acessorio so de plataforma legada vai a revisao
   { name: 'Pyramid Head (executioner) Silent Hill 2 1/12 Mezco One:12', db: 'game', expect: 'rejected' },

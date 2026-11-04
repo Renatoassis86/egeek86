@@ -162,6 +162,7 @@ const LEGACY_PLATFORM = /\b(?:ps ?[12]|psone|playstation ?[12]|psp|wii|gamecube|
  */
 const RETRO_CONSOLE =
   /\b(?:ps ?[123]|psone|playstation ?[123]|playstation (?:fat|portatil|classic)|psp|ps vita|playstation vita|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|nintendo nes|nes classic|game ?boy|gba|nintendo ds|ds lite|dsi|3ds|2ds|mega ?drive|master system|dreamcast|saturn|atari)\b/;
+const RETRO_GAME_PLATFORM = /\b(?:ps ?[123]|psone|playstation ?[123]|psp|ps vita|playstation vita|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|game ?boy|gba|nintendo ds|nds|dsi|3ds|2ds|mega ?drive|master system|dreamcast)\b/;
 const MODERN_CONSOLE = /\b(?:ps ?[45]|playstation ?[45]|xbox one|xbox series|series [sx]|switch)\b/;
 
 const RAW_ONE_TO_ONE = /(?<![\d:])1\s*:\s*1(?![\d:])/;
@@ -220,6 +221,12 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
   if (baseDim === 'console') {
     const retro = RETRO_CONSOLE.exec(t);
     if (retro && !MODERN_CONSOLE.test(t)) return result('rejected', 'out_of_scope', 'console_retro_fora_do_escopo', retro[0], 'off_catalog', false);
+  }
+
+  // Jogo de plataforma retrô (PS1-PS3, PSP/Vita, Xbox 360 e anteriores, Wii, DS/3DS, GameCube...): fora do monitoramento (dono, 2026-11-04).
+  if (baseDim === 'game') {
+    const rg = RETRO_GAME_PLATFORM.exec(t);
+    if (rg && !MODERN_CONSOLE.test(t)) return result('rejected', 'out_of_scope', 'jogo_plataforma_retro_fora_do_escopo', rg[0], 'off_catalog', false);
   }
 
   // Decisão 4 do dono (2026-11-03): headset legítimo sem plataforma no título (Redragon, Havit,

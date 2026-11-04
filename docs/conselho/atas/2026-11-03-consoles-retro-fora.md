@@ -9,3 +9,6 @@
 **Efeito na descoberta:** consoles retrô novos já nascem rejeitados (porteiro na entrada).
 
 **Fora desta decisão (aguarda o dono):** jogos de plataforma legada e acessórios retrô seguem como estavam. Destino futuro: seções de Drops e Leilões.
+
+## Adendo 2026-11-04: jogos antigos também saem
+Dono: "pode tirar jogos antigos. Mantenha tudo o que for considerado apenas como produto novo." Porteiro rejeita jogo cujo nome cita só plataforma retrô (PS1-PS3, PSP/Vita, Xbox 360 e anteriores, Wii, DS/3DS, GameCube, N64, SNES, Game Boy, Mega Drive...) sem citar plataforma atual (`jogo_plataforma_retro_fora_do_escopo`). 291 masters / 468 ofertas ativas; nada apagado. Log: `backup/dados/catalog-gate-log-2026-11-04T23-44-06-848Z.json` (backup .ndjson ao lado). 33 promoções não pedidas revertidas (`...NAO-RETRO-reverter.json`). Acessório só de plataforma legada já estava em revisão (invisível).
