@@ -28,11 +28,12 @@ async function main() {
     SELECT count(*)::int AS total,
            count(*) FILTER (WHERE ${eligibleOfferSql('o')})::int AS novo,
            count(*) FILTER (WHERE ${offerIdentityVisibleSql('o.id')} AND ${catalogGateVisibleSql('o.master_product_id')})::int AS antigo,
-           count(*) FILTER (WHERE (${eligibleOfferSql('o')}) <> (${offerIdentityVisibleSql('o.id')} AND ${catalogGateVisibleSql('o.master_product_id')} AND NOT ${redund}))::int AS divergentes,
+           count(*) FILTER (WHERE (${eligibleOfferSql('o')}) <> (${offerIdentityVisibleSql('o.id')} AND ${catalogGateVisibleSql('o.master_product_id')} AND NOT ${redund} AND o.status <> 'draft'))::int AS divergentes,
            count(*) FILTER (WHERE ${redund} AND ${eligibleOfferSql('o')})::int AS redundante_elegivel,
            count(*) FILTER (WHERE o.quarantined_at IS NOT NULL AND ${eligibleOfferSql('o')})::int AS quarentena_elegivel
     FROM affiliate_offers o`);
   check('elegibilidade nova == identidade+porteiro do site, menos placeholder redundante (0 divergentes)', Number(eq.divergentes) === 0, eq);
+  check('nenhum rascunho é elegível', Number((await one(sql`SELECT count(*)::int AS n FROM affiliate_offers o WHERE o.status = 'draft' AND ${eligibleOfferSql('o')}`)).n) === 0);
   check('nenhum placeholder redundante é elegível', Number(eq.redundante_elegivel) === 0, eq);
   check('nenhuma oferta em quarentena é elegível', Number(eq.quarentena_elegivel) === 0);
 

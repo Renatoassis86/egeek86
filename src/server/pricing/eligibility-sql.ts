@@ -26,8 +26,11 @@ export function eligibleOfferSql(alias = 'o'): SQL {
           AND rs.seller_id IS NOT NULL AND rs.status = 'active' AND rs.quarantined_at IS NULL
       ))`
     : sql``;
+  // Rascunho ('draft') = identidade duvidosa ou ainda não publicado: fora das médias/mediana (decisão 2026-11-05).
+  // A coleta continua registrando preço dele (histórico preservado se o admin promover a 'active').
   return sql`(
     ${col('quarantined_at')} IS NULL
+    AND ${col('status')} <> 'draft'
     ${redundantPlaceholder}
     AND ${catalogGateVisibleSql(`${a}.master_product_id`)}
     AND NOT EXISTS (
