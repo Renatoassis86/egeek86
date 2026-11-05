@@ -37,6 +37,9 @@ import {
 } from '@/lib/affiliate/labels';
 import { computeVerdict } from '@/lib/affiliate/price-verdict';
 import { getMasterProductPriceStats } from '@/server/queries/product-price-stats';
+import { isPriceMetricsV2Enabled } from '@/lib/pricing/price-metrics-config';
+import { getPriceMetricsV2 } from '@/server/pricing/price-metrics-v2';
+import { PriceMetricsV2Block } from '@/components/affiliate/price-metrics-v2-block';
 import { ProductPriceChartSection, ProductPriceChartFallback } from './product-price-chart-section';
 import { getOfferBySlug, getMasterProductMetrics } from '@/server/queries/affiliate';
 import {
@@ -92,7 +95,9 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const inCartP = profileP.then((p) =>
     p ? getCartOfferIds(p.id).then((ids) => ids.has(offer.id)).catch(() => false) : false
   );
-  const [metrics, coupons, profile, meliDetails, stores, synopsis, stats, isWatching, isInCart] = await Promise.all([
+  // Métricas V2 (fase 2, ata 2026-11-05) atrás da flag PRICE_METRICS_V2 (desligada por padrão). Falha ou flag desligada => null => comportamento anterior.
+  const v2P = isPriceMetricsV2Enabled() ? getPriceMetricsV2(offer.masterProductId).catch(() => null) : Promise.resolve(null);
+  const [metrics, coupons, profile, meliDetails, stores, synopsis, stats, isWatching, isInCart, v2] = await Promise.all([
     getMasterProductMetrics(offer.masterProductId).catch(() => null),
     getOfferPageCoupons(offer.networkId).catch(() => []),
     profileP,
@@ -102,6 +107,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
     getMasterProductPriceStats(offer.masterProductId, { coldTimeoutMs: 6_000, direct: true }).catch(() => null),
     watchingP,
     inCartP,
+    v2P,
   ]);
 
   const images = offer.masterProduct.defaultImages as unknown as string[];
@@ -112,9 +118,14 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const galleryImages = (meliDetails?.pictures.length ? meliDetails.pictures : images ?? []).filter((url) => url !== image);
   const hasAboutSection = Boolean(synopsis) || galleryImages.length > 0;
   // Selo só com histórico elegível (>= 5 cotações e >= 14 dias, ADR 0001/0002): com 1 cotação, atual <= menor é verdade por definição.
-  const isLowest = metrics?.isLowestEver === true && isLowestPrice(offer.currentPriceCents, metrics.lowestPriceCents);
+  const isLowestLegacy = metrics?.isLowestEver === true && isLowestPrice(offer.currentPriceCents, metrics.lowestPriceCents);
+  // V2: o selo "Menor preço do período" só existe com o juízo ligado (VERDICT_JUDGEMENT_ENABLED) e corroborado.
+  const isLowest = v2 ? v2.judgement?.lowestPeriod === true : isLowestLegacy;
+  // Aviso de transição: o selo novo difere do antigo.
+  const sealTransition = v2 != null && isLowest !== isLowestLegacy;
   // Só queda/alta com histórico elegível; sem movimento confirmado, nenhum rótulo (nunca "estável" fixo).
-  const trend = metrics && metrics.trend !== 'stable' ? TREND_META[metrics.trend] : null;
+  // Com PRICE_METRICS_V2 ligada o selo antigo de tendência não existe (histórico curto não sustenta "subindo/em queda"; D3).
+  const trend = !isPriceMetricsV2Enabled() && metrics && metrics.trend !== 'stable' ? TREND_META[metrics.trend] : null;
   const verdict = stats
     ? computeVerdict({
         currentCents: offer.currentPriceCents,
@@ -132,6 +143,28 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   // medianCents entra na estatística canônica pela frente de preços; opcional até lá.
   const medianCents = (stats as { medianCents?: number | null } | null)?.medianCents ?? null;
   const trustInfo = getSellerTrustInfo(offer.seller);
+  // Com PRICE_METRICS_V2 ligada a seção do gráfico sempre existe (sem dado medido ela mostra o cartão "sem histórico medido").
+  const chartNode =
+    isPriceMetricsV2Enabled() || (stats && stats.quoteCount >= 2) ? (
+      <Suspense fallback={<ProductPriceChartFallback />}>
+        <ProductPriceChartSection
+          masterProductId={offer.masterProductId}
+          canonical={
+            stats
+              ? {
+                  avgCents: stats.avgCents,
+                  quoteCount: stats.quoteCount,
+                  historyDays: stats.historyDays,
+                  lowAll: stats.lowAll ? { priceCents: stats.lowAll.priceCents } : null,
+                  currentLowestActive: stats.currentLowestActive ? { priceCents: stats.currentLowestActive.priceCents } : null,
+                }
+              : null
+          }
+          currentPriceCents={stats?.currentLowestActive?.priceCents ?? offer.currentPriceCents}
+        />
+      </Suspense>
+    ) : null;
+
 
   const hasClassification =
     offer.masterProduct.gameFormat !== 'unknown' ||
@@ -199,10 +232,21 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                   <Text variant="display-lg" color="primary" className="tabular leading-none">
                     {formatBRL(offer.currentPriceCents)}
                   </Text>
-                  {metrics?.avgPriceCents != null && (
-                    <Text variant="body-sm" color="secondary">
-                      Média do produto (todas as lojas): {formatBRL(metrics.avgPriceCents)}
-                    </Text>
+                  {v2 ? (
+                    <>
+                      <Text variant="caption" color="tertiary">
+                        Preço desta oferta ({offer.network.name})
+                        {v2.now && v2.now.cents < offer.currentPriceCents
+                          ? `. O menor preço agora entre as lojas é ${formatBRL(v2.now.cents)}, no quadro abaixo.`
+                          : ''}
+                      </Text>
+                    </>
+                  ) : (
+                    metrics?.avgPriceCents != null && (
+                      <Text variant="body-sm" color="secondary">
+                        Média do produto (todas as lojas): {formatBRL(metrics.avgPriceCents)}
+                      </Text>
+                    )
                   )}
                 </>
               ) : (
@@ -212,7 +256,15 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
               )}
             </div>
 
-            {stats && stats.quoteCount > 0 && (
+            {v2 ? (
+              <Card variant="outline" className="rounded-none border-[var(--color-border-default)]">
+                <CardContent className="p-4 sm:p-5 flex flex-col gap-3">
+                  <PriceMetricsV2Block data={v2} sealTransition={sealTransition} />
+                  {chartNode}
+                </CardContent>
+              </Card>
+            ) : (
+              stats && stats.quoteCount > 0 && (
               <Card variant="outline" className="rounded-none border-[var(--color-border-default)]">
                 <CardContent className="p-4 sm:p-5 flex flex-col gap-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -285,25 +337,10 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                     {stats.quoteCount.toLocaleString('pt-BR')} cotações no histórico (todas as lojas)
                   </Text>
 
-                  {stats.quoteCount >= 2 && (
-                    <Suspense fallback={<ProductPriceChartFallback />}>
-                      <ProductPriceChartSection
-                        masterProductId={offer.masterProductId}
-                        canonical={{
-                          avgCents: stats.avgCents,
-                          quoteCount: stats.quoteCount,
-                          historyDays: stats.historyDays,
-                          lowAll: stats.lowAll ? { priceCents: stats.lowAll.priceCents } : null,
-                          currentLowestActive: stats.currentLowestActive
-                            ? { priceCents: stats.currentLowestActive.priceCents }
-                            : null,
-                        }}
-                        currentPriceCents={stats.currentLowestActive?.priceCents ?? offer.currentPriceCents}
-                      />
-                    </Suspense>
-                  )}
+                  {chartNode}
                 </CardContent>
               </Card>
+              )
             )}
 
             {coupons.length > 0 && (
@@ -352,7 +389,8 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
 
             <ProductStoresTable
               stores={stores}
-              avgPriceCents={metrics?.eligibility?.eligible ? metrics.avgPriceCents ?? null : null}
+              avgPriceCents={v2 ? v2.stores.medianCents : metrics?.eligibility?.eligible ? metrics.avgPriceCents ?? null : null}
+              referenceLabel={v2 ? 'Vs. mediana das lojas hoje' : undefined}
             />
 
             {offer.highlightNote && (

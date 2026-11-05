@@ -34,7 +34,9 @@ export interface RecordSnapshotInput {
 /** Batimento: mesmo sem mudança de preço, grava 1 snapshot a cada 24h para provar que a coleta segue viva. */
 const HEARTBEAT_MS = 24 * 60 * 60 * 1000;
 
-export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<void> {
+/** Devolve true quando uma linha nova entrou em affiliate_price_snapshots (preco mudou ou batimento de 24 h). */
+export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<boolean> {
+  let inserted = false;
   await db.transaction(async (tx) => {
     // Serializa escritas concorrentes da mesma oferta (ticks do cron que se
     // sobrepõem): o lock vale até o fim da transação, então a segunda
@@ -71,6 +73,7 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<v
       Date.now() - lastSnap.collectedAt.getTime() >= HEARTBEAT_MS;
 
     if (needsSnapshot) {
+      inserted = true;
       await tx.insert(affiliatePriceSnapshots).values({
         offerId: input.offerId,
         priceCents: input.priceCents,
@@ -90,4 +93,15 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<v
       })
       .where(eq(affiliateOffers.id, input.offerId));
   });
+  // SOMBRA (flag PRICE_DAILY_SHADOW=1, desligada por padrão): cotação nova => atualiza a oferta-dia de hoje e
+  // detecta mudança do menor preço do produto (price_min_events). Melhor esforço: NUNCA derruba a coleta.
+  if (inserted && process.env.PRICE_DAILY_SHADOW === '1') {
+    try {
+      const { shadowAfterSnapshot } = await import('@/server/pricing/shadow-hook');
+      await shadowAfterSnapshot(input.offerId);
+    } catch (err) {
+      console.error('[price-daily] gancho da coleta falhou (ignorado):', err instanceof Error ? err.message : err);
+    }
+  }
+  return inserted;
 }

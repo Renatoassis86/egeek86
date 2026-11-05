@@ -6,6 +6,7 @@ import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks } from '@/db/schema';
 import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-auth';
 import { recordPriceSnapshot } from '@/server/collector/record-price-snapshot';
+import { confirmOfferPrices } from '@/server/collector/collector-runs';
 
 /**
  * Receptor de notificações (webhook) do Mercado Livre — substitui polling
@@ -84,6 +85,8 @@ async function processNotification(notification: MeliNotification) {
 
     const priceCents = Math.round(item.price * 100);
     await recordPriceSnapshot({ offerId: offer.id, priceCents, source: 'api' });
+    // last_price_confirmed_at (flag COLLECTOR_RUNS=1; no-op sem a flag): a API devolveu preço do item.
+    await confirmOfferPrices([offer.id]);
     await db
       .update(affiliateOffers)
       .set({ lastCheckedAt: new Date(), consecutiveMissCount: 0 })

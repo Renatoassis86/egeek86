@@ -161,8 +161,8 @@ export function ExitButton({
       target="_blank"
       rel="noopener noreferrer nofollow sponsored"
       className={cn(
-        'inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-accent-primary)] font-semibold text-[var(--color-text-inverse)] transition-colors',
-        'hover:bg-[var(--color-accent-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)]',
+        'inline-flex items-center justify-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-accent-cta)] font-semibold text-[var(--color-text-inverse)] transition-colors',
+        'hover:bg-[var(--color-accent-cta-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-bg-surface)]',
         size === 'md' ? 'min-h-11 px-4 text-[15px]' : 'min-h-11 px-3 text-[14px]',
         className
       )}

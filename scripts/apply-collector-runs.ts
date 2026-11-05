@@ -1,0 +1,47 @@
+/**
+ * Aplica a migration 0025 (collector_runs, collector_alert_state, affiliate_offers.last_price_confirmed_at).
+ *   npx tsx --env-file=.env.local scripts/apply-collector-runs.ts            # dry-run (so confere o estado)
+ *   npx tsx --env-file=.env.local scripts/apply-collector-runs.ts --apply    # aplica (transacao unica)
+ *   npx tsx --env-file=.env.local scripts/apply-collector-runs.ts --rollback # desfaz
+ * Aditiva e reversivel. NAO rodar sem aprovacao do dono. Sem --apply/--rollback nada e escrito.
+ */
+import fs from 'node:fs';
+import path from 'node:path';
+import { connect } from './_dup-shared';
+
+const APPLY = process.argv.includes('--apply');
+const ROLLBACK = process.argv.includes('--rollback');
+const dir = path.resolve(process.cwd(), 'drizzle/migrations');
+
+async function estado(sql: ReturnType<typeof connect>) {
+  const tabs = await sql<{ t: string }[]>`
+    SELECT table_name AS t FROM information_schema.tables
+    WHERE table_schema = 'public' AND table_name IN ('collector_runs', 'collector_alert_state')`;
+  const cols = await sql<{ c: string }[]>`
+    SELECT column_name AS c FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'affiliate_offers' AND column_name = 'last_price_confirmed_at'`;
+  return { tabelas: tabs.map((r) => r.t), colunas: cols.map((r) => r.c) };
+}
+
+async function main() {
+  const sql = connect();
+  try {
+    console.log('Estado atual:', JSON.stringify(await estado(sql)));
+    const file = ROLLBACK ? '0025_collector_runs.rollback.sql' : '0025_collector_runs.sql';
+    const text = fs.readFileSync(path.join(dir, file), 'utf8');
+    if (!APPLY && !ROLLBACK) {
+      console.log(`DRY-RUN: executaria ${file}. Use --apply (ou --rollback).`);
+      return;
+    }
+    await sql.begin(async (tx) => {
+      await tx.unsafe(text);
+    });
+    console.log(`${file} executado. Estado agora:`, JSON.stringify(await estado(sql)));
+  } finally {
+    await sql.end();
+  }
+}
+main().catch((e) => {
+  console.error(e instanceof Error ? e.message : e);
+  process.exit(1);
+});

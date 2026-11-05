@@ -1,6 +1,6 @@
 # ADR 0004: Cotação por oferta por dia
 
-Data: 2026-11-01. Status: **Aceita por delegação em 2026-11-03, reversível** (o dono mandou "fazer tudo o que falta"; adotada a recomendação registrada abaixo). Implementação em código: NÃO feita nesta rodada (ver Plano). Item: F-26 da auditoria Cowork; pareceres do Estatístico Sênior e do DBA em `docs/conselho/pareceres-2026-11-01/`.
+Data: 2026-11-01. Status: **Aceita por delegação em 2026-11-03, reversível; confirmada pelo dono em 2026-11-05 (D1, D2, D3) e emendada em 2026-11-05 (ver Emenda 2026-11-05). Fase 1 implementada em SOMBRA (nenhuma tela lê as tabelas novas)** (o dono mandou "fazer tudo o que falta"; adotada a recomendação registrada abaixo). Implementação em código: NÃO feita nesta rodada (ver Plano). Item: F-26 da auditoria Cowork; pareceres do Estatístico Sênior e do DBA em `docs/conselho/pareceres-2026-11-01/`.
 
 ## Contexto
 A regra inegociável diz que a média do jogo é o somatório de TODAS as cotações dividido pelo total. Hoje cada linha de `affiliate_price_snapshots` é uma cotação. O coletor antigo gravava uma linha por checagem e o legado ficou. Medido em 2026-11-01 (somente leitura):
@@ -48,3 +48,13 @@ Por que não foi implementado agora: exige tabela nova (`affiliate_price_daily`)
 2. `refresh_price_daily(dia)` idempotente, alimentada só por snapshots de ofertas fora de quarentena/porteiro.
 3. Sombra de 7 dias: calcular os dois métodos (mediana do dia e último do dia) e comparar produto a produto; liberar só se a divergência do Switch 2 for explicada.
 4. Trocar a fonte de `priceQuotesCtes` (`product-price-stats.ts`) por flag; manter o mínimo no snapshot bruto.
+
+## Emenda 2026-11-05 (fase 1 em sombra)
+Aprovação do dono (2026-11-05): média por OFERTA-DIA (cada oferta vale 1 por dia), selo e gráfico na mesma base, legado anterior a 31/10 com aviso, e regra nova: TODA mudança do menor preço do momento é registrada e apresentada (evento com horário, valor e loja). O que mudou em relação ao plano acima:
+1. **Tabelas** (migration 0024, em vez de `affiliate_price_daily`): `price_daily_offer` (uma linha por oferta-dia medida: mediana, última, mín, máx, n_collected), `price_daily_state` (estado do dia por produto, com `closed`) e `price_min_events` (cada mudança do menor preço elegível). Derivadas, sem FK, RLS ligada e REVOKE de anon/authenticated.
+2. **`price_daily_offer` guarda todas as ofertas com preço > 0**; a elegibilidade (quarentena, identidade, porteiro) é aplicada na LEITURA (`src/server/pricing/eligibility-sql.ts`, equivalente à regra do site), para uma oferta que deixe a quarentena não ter buraco no passado. Isto revisa o item 5 da decisão ("fora da tabela diária"): o efeito para o usuário é o mesmo (fora de todo indicador).
+3. **Preço da oferta no dia** = mediana do dia (como decidido). **Média do dia M_d** = média simples dos preços oferta-dia das ofertas vigentes ao fim do dia, com carry-forward do último preço só dentro de 48 h; só com 3 ou mais ofertas (senão NULL e quality 'partial'); sem imputação além de 48 h (a oferta sai e n cai); dia sem oferta fresca = 'gap'; anterior a 31/10 = 'legacy'.
+4. **Média do período** = soma dos preços oferta-dia / nº de oferta-dias (não a média das médias diárias). Elegibilidade a veredito: 3 ofertas distintas, 5 oferta-dias, 14 dias.
+5. **Decomposição**: `matched_change_pct` (variação das mesmas ofertas entre dias consecutivos, M_C(t2)/M_C(t1) - 1) e `composition_flag` (efeito composição > 50% da variação de M_d).
+6. **Mínimo continua no bruto elegível** (menor do dia = mínimo das cotações brutas elegíveis do dia; menor de 30/90 dias e de sempre, com data e loja, no bruto).
+7. **Flag**: `PRICE_DAILY_SHADOW=1` liga o gancho da coleta e o job; desligada por padrão. Desligar = nada novo roda; as tabelas ficam inertes. A emenda ao `AGENTS.md` continua para quando a leitura for ligada.

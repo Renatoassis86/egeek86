@@ -21,6 +21,10 @@
       "schedule": "4-59/15 * * * *"
     },
     {
+      "path": "/api/cron/refresh-snapshots?part=daily",
+      "schedule": "9-59/15 * * * *"
+    },
+    {
       "path": "/api/cron/discover-products?source=meli&maxNew=10&terms=4&probes=25",
       "schedule": "17 * * * *"
     }

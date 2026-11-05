@@ -20,8 +20,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary: [
-          'bg-[var(--color-accent-primary)] text-[var(--color-text-inverse)]',
-          'hover:bg-[var(--color-accent-primary-hover)]',
+          'bg-[var(--color-accent-cta)] text-[var(--color-text-inverse)]',
+          'hover:bg-[var(--color-accent-cta-hover)]',
           'shadow-[var(--shadow-glow-primary)]',
         ],
         secondary: [

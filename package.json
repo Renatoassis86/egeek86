@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "train:classifier": "tsx src/scripts/train-product-classifier.ts"
+    "train:classifier": "tsx src/scripts/train-product-classifier.ts",
+    "test:collector": "tsx --test src/lib/collector-runs/collector-runs.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
+import { startCollectorRun } from '@/server/collector/collector-runs';
 import { discoverNewProducts } from '@/server/collector/discover-products';
 import { discoverShopeeProducts } from '@/server/collector/discover-shopee-products';
 import { discoverMagaluProducts } from '@/server/collector/discover-magalu-products';
@@ -32,13 +33,27 @@ export async function GET(request: NextRequest) {
   const wantShopee = source === 'shopee' || source === 'all';
   const wantMagalu = source === 'all';
 
+  // Registro de execução (flag COLLECTOR_RUNS=1; no-op sem a flag; nunca lança). Só a descoberta real, não o dry-run.
+  const run = dryRun ? null : await startCollectorRun('discover-products', source);
+
   // Mercado Livre, Shopee e Magalu são serviços externos separados, cada um com seu limite: rodam em paralelo.
   // Shopee e Magalu NÃO têm modo dry-run; com ?dry=1 ficam de fora.
-  const [discoverySummary, shopeeSummary, magaluSummary] = await Promise.all([
-    wantMeli ? discoverNewProducts({ dryRun, limits }) : Promise.resolve(null),
-    wantShopee && !dryRun ? discoverShopeeProducts() : Promise.resolve(null),
-    wantMagalu && !dryRun ? discoverMagaluProducts() : Promise.resolve(null),
-  ]);
+  let discoverySummary, shopeeSummary, magaluSummary;
+  try {
+    [discoverySummary, shopeeSummary, magaluSummary] = await Promise.all([
+      wantMeli ? discoverNewProducts({ dryRun, limits }) : Promise.resolve(null),
+      wantShopee && !dryRun ? discoverShopeeProducts() : Promise.resolve(null),
+      wantMagalu && !dryRun ? discoverMagaluProducts() : Promise.resolve(null),
+    ]);
+  } catch (err) {
+    await run?.finish({ fatal: true, meta: { error: err instanceof Error ? err.message.slice(0, 200) : 'erro' } });
+    throw err;
+  }
+  if (run) {
+    const stopped = discoverySummary?.stoppedReason ?? null;
+    if (stopped && /429/.test(stopped)) run.counters.rateLimited++;
+    await run.finish({ stoppedBecause: stopped, meta: { source, discoverySummary, shopeeSummary, magaluSummary } });
+  }
 
   return NextResponse.json({
     discoverySummary,

@@ -22,9 +22,12 @@ function ago(iso: string | null): string {
 export function ProductStoresTable({
   stores,
   avgPriceCents,
+  referenceLabel = 'Vs. média',
 }: {
   stores: ProductStoreRow[];
+  /** Valor de referência da coluna de diferença: média única do produto; com a flag V2, a mediana das lojas hoje (menor preço de cada loja, só com 3 ou mais lojas distintas). null = sem coluna. */
   avgPriceCents: number | null;
+  referenceLabel?: string;
 }) {
   if (stores.length === 0) return null;
   const lowest = stores[0].priceCents;
@@ -40,7 +43,7 @@ export function ProductStoresTable({
             <tr>
               <th scope="col" className="px-2 py-2 font-medium">Loja</th>
               <th scope="col" className="px-2 py-2 text-right font-medium">Preço</th>
-              {avgPriceCents != null && <th scope="col" className="hidden px-2 py-2 text-right font-medium sm:table-cell">Vs. média</th>}
+              {avgPriceCents != null && <th scope="col" className="hidden px-2 py-2 text-right font-medium sm:table-cell">{referenceLabel}</th>}
               <th scope="col" className="px-2 py-2"><span className="sr-only">Ação</span></th>
             </tr>
           </thead>
@@ -64,7 +67,7 @@ export function ProductStoresTable({
                   </td>
                   {avgPriceCents != null && (
                     <td className="hidden px-2 py-2 text-right tabular-nums text-[var(--color-text-secondary)] sm:table-cell">
-                      {diff == null ? '' : diff === 0 ? 'na média' : `${diff > 0 ? '+' : ''}${diff}%`}
+                      {diff == null ? '' : s.priceCents === avgPriceCents ? 'igual' : diff === 0 ? 'quase igual' : `${diff > 0 ? '+' : ''}${diff}%`}
                     </td>
                   )}
                   <td className="px-2 py-2 text-right">
@@ -73,7 +76,7 @@ export function ProductStoresTable({
                         href={`/go/${s.offerSlug}`}
                         target="_blank"
                         rel="noopener noreferrer nofollow sponsored"
-                        className="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-[var(--radius-md)] bg-[var(--color-accent-primary)] px-3 text-[14px] font-semibold text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-primary-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
+                        className="inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-[var(--radius-md)] bg-[var(--color-accent-cta)] px-3 text-[14px] font-semibold text-[var(--color-text-inverse)] hover:bg-[var(--color-accent-cta-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
                       >
                         Ir à loja
                       </a>

@@ -71,8 +71,8 @@ const a3 = buildNewMasterAttributes(gateOk, [], 'review_all', NOW) as any;
 eq('review_all força review', a3.catalogGate.verdict, 'review');
 eq('review_all motivo', a3.catalogGate.reason, 'descoberta_duvida:modo_review_all');
 
-// review do próprio porteiro (piso de preço de mídia física PS2) é preservado
-const gateRev = entryGateAttributes('God of War II Standard Edition Formato físico para PS2', 'game', { gameFormat: 'physical', medianPriceCents: 2000 });
+// review do próprio porteiro (piso de preço de mídia física; jogo retrô agora é rejeitado) é preservado
+const gateRev = entryGateAttributes('God of War Ragnarok Standard Edition Formato físico para PS5', 'game', { gameFormat: 'physical', medianPriceCents: 500 });
 const a4 = buildNewMasterAttributes(gateRev, ['formato_desconhecido'], 'doubt', NOW) as any;
 eq('review do porteiro preservado', a4.catalogGate.reason, (gateRev.catalogGate as any).reason);
 eq('review do porteiro: bornAs', a4.discovery.bornAs, 'review');

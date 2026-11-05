@@ -9,7 +9,9 @@ import { recordPriceSnapshot } from './record-price-snapshot';
 import { evaluateOfferIdentity, type OfferIdentityResult } from '@/lib/affiliate/offer-identity';
 import { upsertSellerFromOffer } from './sources/mercado-livre-seller';
 import { slugify } from '@/lib/slugify';
+import { pickCatalogPlaceholder } from '@/lib/affiliate/catalog-placeholder';
 import { mapWithConcurrency } from '@/lib/concurrency';
+import { NOOP_RUN, collectorRunsEnabled, startCollectorRun, type CollectorRunHandle } from './collector-runs';
 import './sources'; // registra os adapters disponíveis (efeito colateral do import)
 
 /**
@@ -43,6 +45,31 @@ const isWatchedExpr = sql`EXISTS (
   SELECT 1 FROM affiliate_price_watches w
   WHERE w.master_product_id = ${affiliateOffers.masterProductId} AND w.is_active = true
 )`;
+
+/** Ofertas devidas para coleta (mesma condicao usada na selecao e na medicao de backlog da observabilidade). */
+function dueWhere(operationalSlugs: string[]) {
+  return and(
+        // 'draft' entra aqui de propósito: publicação e rastreamento de preço
+        // são decisões independentes — mesmo uma oferta ainda não publicada
+        // (ex: rascunho criado manualmente pelo admin) já acumula histórico.
+        // Descoberta automática hoje já entra direto como 'active' (ver
+        // discover-products.ts), então 'draft' aqui cobre principalmente o
+        // fluxo manual do admin.
+        inArray(affiliateOffers.status, ['active', 'draft']),
+        // Só redes com coleta oficial operacional (EG-03): stubs (Shopee,
+        // Amazon, AliExpress) sempre lançam erro e, sem renovar o carimbo,
+        // ficariam no topo da fila e starvariam o Mercado Livre.
+        inArray(affiliateNetworks.slug, operationalSlugs),
+        isNotNull(affiliateOffers.externalRef),
+        or(
+          isNull(affiliateOffers.lastCheckedAt),
+          lt(
+            affiliateOffers.lastCheckedAt,
+            sql`now() - CASE WHEN ${isWatchedExpr} THEN ${WATCHED_REFRESH_INTERVAL} ELSE ${REFRESH_INTERVAL} END`
+          )
+        )
+      );
+}
 
 export interface CollectPricesSummary {
   checked: number;
@@ -113,29 +140,7 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     })
     .from(affiliateOffers)
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-    .where(
-      and(
-        // 'draft' entra aqui de propósito: publicação e rastreamento de preço
-        // são decisões independentes — mesmo uma oferta ainda não publicada
-        // (ex: rascunho criado manualmente pelo admin) já acumula histórico.
-        // Descoberta automática hoje já entra direto como 'active' (ver
-        // discover-products.ts), então 'draft' aqui cobre principalmente o
-        // fluxo manual do admin.
-        inArray(affiliateOffers.status, ['active', 'draft']),
-        // Só redes com coleta oficial operacional (EG-03): stubs (Shopee,
-        // Amazon, AliExpress) sempre lançam erro e, sem renovar o carimbo,
-        // ficariam no topo da fila e starvariam o Mercado Livre.
-        inArray(affiliateNetworks.slug, operationalSlugs),
-        isNotNull(affiliateOffers.externalRef),
-        or(
-          isNull(affiliateOffers.lastCheckedAt),
-          lt(
-            affiliateOffers.lastCheckedAt,
-            sql`now() - CASE WHEN ${isWatchedExpr} THEN ${WATCHED_REFRESH_INTERVAL} ELSE ${REFRESH_INTERVAL} END`
-          )
-        )
-      )
-    )
+    .where(dueWhere(operationalSlugs))
     .orderBy(sql`${isWatchedExpr} DESC`, sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`)
     .limit(MAX_OFFERS_PER_RUN);
 
@@ -148,6 +153,9 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     errors: [],
     identityReview: [],
   };
+
+  // Observabilidade (flag COLLECTOR_RUNS=1; no-op sem a flag): uma execucao registrada por rede operacional.
+  const runs = await startRuns(operationalSlugs, dueOffers);
 
   const groups = new Map<string, OfferGroup>();
   for (const offer of dueOffers) {
@@ -177,10 +185,14 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       summary.skippedNoSource += group.offerIds.length;
       return;
     }
+    const run = runs.get(group.networkSlug) ?? NOOP_RUN;
+    run.counters.queries++;
 
     try {
       const results = await source.fetchSnapshots(group.externalRef);
+      run.counters.checked++;
       if (results.length === 0) {
+        run.counters.misses++;
         // Resposta bem-sucedida da API dizendo "sem vendedor ativo": é uma
         // checagem real, então o carimbo é renovado (diferente de exceção).
         await stampChecked(group.offerIds);
@@ -201,9 +213,13 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         return;
       }
 
-      const { updated, created, reviewed } = await applySnapshotsToGroup(group, results);
+      const { updated, created, reviewed, pricedOfferIds, snapshotsWritten } = await applySnapshotsToGroup(group, results);
       summary.updated += updated;
       summary.offersCreated += created;
+      run.counters.offersCreated += created;
+      run.counters.snapshotsWritten += snapshotsWritten;
+      // last_price_confirmed_at: SO as ofertas em que a API devolveu preco (nunca o stampChecked do grupo inteiro).
+      await run.confirmPrices(pricedOfferIds);
       if (reviewed.length > 0) {
         summary.identityReview.push(...reviewed);
         console.warn('[identidade] ofertas em revisão (fora dos indicadores):', JSON.stringify(reviewed));
@@ -213,10 +229,54 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     } catch (err) {
       // Sem finally: falha NÃO grava last_checked_at (EG-03).
       summary.errors.push({ externalRef: group.externalRef, message: (err as Error).message });
+      run.addError((err as Error).message);
     }
   });
 
+  for (const run of runs.values()) {
+    await run.finish({ meta: { errorSamples: summary.errors.slice(0, 3).map((e) => e.message.slice(0, 160)) } });
+  }
+
   return summary;
+}
+
+/**
+ * Abre uma execucao por rede (so com COLLECTOR_RUNS=1) e mede o backlog ANTES do teto por execucao: quantas ofertas
+ * estao devidas e a idade da checagem da mais velha. Falha aqui (ex.: tabela ainda nao criada) nunca afeta a coleta.
+ */
+async function startRuns(
+  operationalSlugs: string[],
+  dueOffers: { networkSlug: string }[]
+): Promise<Map<string, CollectorRunHandle>> {
+  const runs = new Map<string, CollectorRunHandle>();
+  const backlog = new Map<string, { total: number; oldestS: number | null }>();
+  try {
+    if (collectorRunsEnabled()) {
+      const rows = await db
+        .select({
+          slug: affiliateNetworks.slug,
+          total: sql<number>`count(*)::int`,
+          oldest: sql<number | null>`max(extract(epoch from now() - coalesce(${affiliateOffers.lastCheckedAt}, ${affiliateOffers.createdAt})))::int`,
+        })
+        .from(affiliateOffers)
+        .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
+        .where(dueWhere(operationalSlugs))
+        .groupBy(affiliateNetworks.slug);
+      for (const r of rows) backlog.set(r.slug, { total: r.total, oldestS: r.oldest });
+    }
+  } catch (err) {
+    console.error('[collector-runs] backlog falhou (ignorado):', err instanceof Error ? err.message : err);
+  }
+  for (const slug of operationalSlugs) {
+    const b = backlog.get(slug);
+    const run = await startCollectorRun('collect-prices', slug, {
+      selected: dueOffers.filter((o) => o.networkSlug === slug).length,
+      dueTotal: b?.total ?? 0,
+      oldestDueAgeS: b?.oldestS ?? null,
+    });
+    runs.set(slug, run);
+  }
+  return runs;
 }
 
 /**
@@ -263,7 +323,7 @@ async function stampChecked(offerIds: string[]): Promise<void> {
 async function applySnapshotsToGroup(
   group: OfferGroup,
   rawResults: PriceSnapshotResult[]
-): Promise<{ updated: number; created: number; reviewed: IdentityReviewEntry[] }> {
+): Promise<{ updated: number; created: number; reviewed: IdentityReviewEntry[]; pricedOfferIds: string[]; snapshotsWritten: number }> {
   let masterCache: { name: string; productType: string; gameFormat: string; defaultImages: string[] } | null = null;
   const loadMaster = async () => {
     if (masterCache) return masterCache;
@@ -291,6 +351,8 @@ async function applySnapshotsToGroup(
   const results = collapseBySeller(rawResults, verdicts);
   let updated = 0;
   let created = 0;
+  let snapshotsWritten = 0;
+  const pricedOfferIds: string[] = [];
   const reviewed: IdentityReviewEntry[] = [];
 
   // O placeholder de catálogo criado por discover-products.ts (sellerId
@@ -313,8 +375,13 @@ async function applySnapshotsToGroup(
   // linha própria em affiliate_price_snapshots — o preço "atual" exibido
   // pro cliente vinha desse placeholder, enquanto o gráfico (que só lê
   // affiliate_price_snapshots) nunca sabia que esse preço existiu.
-  const [placeholderOffer] = await db
-    .select({ id: affiliateOffers.id })
+  //
+  // Colisão (2026-11-05, Mario vs. Donkey Kong): master com N catálogos ML tem N grupos mas 1 placeholder;
+  // sem filtrar external_ref todos os grupos sobrescreviam o mesmo placeholder (preço alternava a cada ciclo).
+  // Agora o placeholder é escolhido pelo external_ref do catálogo do grupo (pickCatalogPlaceholder). Grupo sem
+  // placeholder próprio NÃO grava em placeholder alheio: o preço dele vive nas ofertas por vendedor abaixo.
+  const placeholderCandidates = await db
+    .select({ id: affiliateOffers.id, externalRef: affiliateOffers.externalRef })
     .from(affiliateOffers)
     .where(
       and(
@@ -322,19 +389,24 @@ async function applySnapshotsToGroup(
         eq(affiliateOffers.networkId, group.networkId),
         isNull(affiliateOffers.sellerId)
       )
-    )
-    .limit(1);
+    );
+  const placeholderOffer = pickCatalogPlaceholder(placeholderCandidates, group.externalRef);
 
   // O placeholder do catálogo só recebe preço de anúncio com identidade ok (Open Box não vira "menor preço").
   const okResults = results.filter((r) => !isExcluded(r));
   if (placeholderOffer && okResults.length > 0) {
     const bestResult = okResults.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
-    await recordPriceSnapshot({
-      offerId: placeholderOffer.id,
-      priceCents: bestResult.priceCents,
-      listPriceCents: bestResult.listPriceCents,
-      source: 'api',
-    });
+    if (
+      await recordPriceSnapshot({
+        offerId: placeholderOffer.id,
+        priceCents: bestResult.priceCents,
+        listPriceCents: bestResult.listPriceCents,
+        source: 'api',
+      })
+    ) {
+      snapshotsWritten++;
+    }
+    pricedOfferIds.push(placeholderOffer.id); // a API devolveu preco para o placeholder (melhor entre os vendedores)
     await db
       .update(affiliateOffers)
       .set({ lastCheckedAt: new Date(), consecutiveMissCount: 0 })
@@ -448,12 +520,17 @@ async function applySnapshotsToGroup(
       });
     }
 
-    await recordPriceSnapshot({
-      offerId,
-      priceCents: result.priceCents,
-      listPriceCents: result.listPriceCents,
-      source: 'api',
-    });
+    if (
+      await recordPriceSnapshot({
+        offerId,
+        priceCents: result.priceCents,
+        listPriceCents: result.listPriceCents,
+        source: 'api',
+      })
+    ) {
+      snapshotsWritten++;
+    }
+    pricedOfferIds.push(offerId);
     // sellerId só pode ter mudado na oferta EXISTENTE (buy box trocou de
     // vendedor) — numa recém-criada já foi setado no insert acima, round-trip
     // a mais aqui seria puro desperdício (o pool de conexão roda com max:1,
@@ -506,5 +583,5 @@ async function applySnapshotsToGroup(
       .where(inArray(affiliateOffers.id, expiredOfferIds));
   }
 
-  return { updated, created, reviewed };
+  return { updated, created, reviewed, pricedOfferIds, snapshotsWritten };
 }
