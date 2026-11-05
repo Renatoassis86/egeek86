@@ -24,6 +24,15 @@ export function isPriceMetricsV2Enabled(): boolean {
 export const LOWS_INCLUDE_WEAK_SELLER = false;
 
 /**
+ * Placeholder redundante (decisão 2026-11-05, ata do plano de métricas): a oferta-placeholder do catálogo do ML
+ * (seller_id NULL) NÃO entra nas métricas oferta-dia quando já existe, no mesmo produto e na mesma rede, oferta
+ * ATIVA com vendedor (senão o mesmo anúncio conta duas vezes). Se o vendedor sai do ar, o placeholder volta a contar.
+ * Medição: docs/medicao-regra-placeholder-2026-11-04.csv (906 produtos; 175 perdem o piso de 3 ofertas).
+ * Reverter = false (nenhuma linha de dado é tocada).
+ */
+export const EXCLUDE_REDUNDANT_PLACEHOLDER = true;
+
+/**
  * SEGUNDO PONTO ÚNICO (decisão D-A do dono, 2026-11-05): rótulo de JUÍZO ("Abaixo do usual / Preço normal / Acima do usual"
  * e o selo "Menor preço do período"). DESLIGADO enquanto não existir backtest contra o baseline "preço <= mínimo de 30 dias".
  * Desligado, o topo mostra só fatos (preço agora, comparação com a mediana das lojas hoje, cobertura). Ligado (mudar para true
