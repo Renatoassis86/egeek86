@@ -11,8 +11,10 @@ import { verificadoHaTexto } from '../src/lib/pricing/verificado-ha';
 import { PARECER_PERCENTUAL_EXTREMO } from '../src/lib/pricing/price-metrics-config';
 import { PriceChartV2 } from '../src/components/monitoring/price-chart-v2';
 import { buildChartModel, computePeriodRef, CHART_TFS, TF_DAYS, isChartMeasuredDay } from '../src/lib/pricing/chart-model';
-import { buildLojasHoje, linhasReservadas, LOJAS_LINHAS_VISIVEIS, ofertaFresca, type OfertaLojaInput } from '../src/lib/pricing/lojas-hoje';
-import { computeLiveMinFromOffers } from '../src/lib/pricing/daily-state';
+import { FRESH_MAX_AGE_MS } from '../src/lib/pricing/daily-state';
+import { AGGREGATE_CEILING_MEDIAN_MULTIPLE, PLAUSIBILITY_FLOOR_PERCENT } from '../src/lib/affiliate/price-verdict';
+import { buildLojasHoje, contarForaDaFaixa, linhasReservadas, LOJAS_LINHAS_VISIVEIS, ofertaFresca, type OfertaLojaInput } from '../src/lib/pricing/lojas-hoje';
+import { computeLiveMinFromOffers, type LiveOfferInput } from '../src/lib/pricing/daily-state';
 import { storesToday } from '../src/lib/pricing/price-verdict-v2';
 import { chartLiveProps, resumoGrafico } from '../src/lib/pricing/chart-props';
 import type { ChartInput } from '../src/lib/pricing/chart-model';
@@ -38,7 +40,7 @@ const NOW = { cents: 34990, store: 'Loja A (Mercado Livre)', lastChangeAt: null,
 const lowAll = (cents: number, day = '2026-11-01') => ({ cents, day, store: 'Loja B (Mercado Livre)', coverageDays: 5 });
 
 function fonte(over: Partial<ParecerFonte> & { count?: number; median?: number | null; networks?: string[] } = {}): ParecerFonte {
-  const extra = { lastEvent: over.lastEvent, dataBase: over.dataBase, measuredDaysTotal: over.measuredDaysTotal };
+  const extra = { lastEvent: over.lastEvent, dataBase: over.dataBase, measuredDaysTotal: over.measuredDaysTotal, outOfBandOffers: over.outOfBandOffers };
   const count = over.count ?? 3;
   const median = over.median === undefined ? (count >= 3 ? 38000 : null) : over.median;
   const now = over.now === undefined ? NOW : over.now;
@@ -52,12 +54,13 @@ function fonte(over: Partial<ParecerFonte> & { count?: number; median?: number |
     ...(extra.lastEvent !== undefined ? { lastEvent: extra.lastEvent } : {}),
     ...(extra.dataBase !== undefined ? { dataBase: extra.dataBase } : {}),
     ...(extra.measuredDaysTotal !== undefined ? { measuredDaysTotal: extra.measuredDaysTotal } : {}),
+    ...(extra.outOfBandOffers !== undefined ? { outOfBandOffers: extra.outOfBandOffers } : {}),
   };
 }
 
 /** Todo texto que o cartão pode exibir a partir do contrato. */
 function textosDe(p: ParecerProduto): string {
-  return [p.titulo, p.rotuloEstado, p.comparacao?.frase, p.comparacao?.apoio, p.cobertura.lojasTexto, p.cobertura.acompanhamentoTexto, p.cobertura.linha, p.menorRegistrado?.texto, p.ultimaMudanca?.texto, p.preco?.empateTexto, ...p.camada.sabemos, ...p.camada.falta, p.camada.lojasHoje?.texto, p.camada.qualidade.rotulo, p.camada.qualidade.resumo, ...p.camada.comoCalculamos]
+  return [p.titulo, p.rotuloEstado, p.comparacao?.frase, p.comparacao?.apoio, p.cobertura.lojasTexto, p.cobertura.acompanhamentoTexto, p.cobertura.linha, p.menorRegistrado?.texto, p.ultimaMudanca?.texto, p.preco?.empateTexto, ...p.camada.sabemos, ...p.camada.falta, p.camada.lojasHoje?.texto, p.camada.qualidade.rotulo, p.camada.qualidade.resumo, ...(p.camada.metodo?.blocos.flatMap((b) => [b.titulo, b.texto]) ?? []), ...(p.camada.metodo?.avisos ?? [])]
     .filter(Boolean)
     .join(' | ')
     .toLowerCase();
@@ -388,7 +391,7 @@ function textosDe(p: ParecerProduto): string {
   const modeloR = buildChartModel(entradaR, 'Tudo', new Date('2026-11-05T15:00:00.000Z').getTime());
   check('R1: a contagem do painel é a MESMA do gráfico (isChartMeasuredDay == measuredDays do modelo)', dias.filter(isChartMeasuredDay).length === modeloR.measuredDays && modeloR.measuredDays === 3, { n: dias.filter(isChartMeasuredDay).length, m: modeloR.measuredDays });
   const srvM = lerR('src/server/pricing/price-metrics-v2.ts');
-  check('R1: o servidor conta com isChartMeasuredDay (mesma regra) e a chave de cache foi renovada', srvM.includes('measuredDaysTotal: measured.filter(isChartMeasuredDay).length') && srvM.includes("'price-metrics-v2-7'"));
+  check('R1: o servidor conta com isChartMeasuredDay (mesma regra) e a chave de cache foi renovada', srvM.includes('measuredDaysTotal: measured.filter(isChartMeasuredDay).length') && srvM.includes("'price-metrics-v2-8'"));
   check('R1: o contrato não usa mais trackingDays para o gráfico', !/graficoDisponivel: dias >=/.test(lerR('src/lib/pricing/parecer-produto.ts')) && lerR('src/lib/pricing/parecer-produto.ts').includes('(fonte.measuredDaysTotal ?? 0) >= GRAFICO_MIN_DIAS'));
 
   // R2/R3/S3: gráfico neutro (camada) x gráfico da página (inalterado), renderizados de verdade.
@@ -457,6 +460,93 @@ function textosDe(p: ParecerProduto): string {
 
   // S1: rótulo de loja genérico.
   check('S1: "menor já visto" sem metadados não diz mais só "Loja"', srvM.includes("?.label ?? 'Loja não identificada', coverageDays"));
+}
+
+
+// --- Fase 3, painel 3: "Qualidade e método" (explica de onde vem o número; só o que o DTO expõe) ---
+{
+  const lerM = (rel: string) => readFileSync(join(__dirname, '..', rel), 'utf8');
+  const base = buildParecerProduto({ ...fonte({ count: 3, trackingDays: 5, measuredDaysTotal: 5, dataBase: { level: 'medium', measuredDays30: 4, stores: 3, range: null } }), legacyDays: 0 });
+  const m = base.camada.metodo;
+  check('método: existe com preço, dias e lojas', m != null && m.blocos.length === 5);
+  const tit = (mm: typeof m) => (mm ? mm.blocos.map((b) => b.titulo) : []);
+  check('método: títulos dos blocos', tit(m).join(' | ') === 'De onde vem o preço agora | O que conta como loja | O número de cada dia | Há quanto tempo acompanhamos | Dias medidos', tit(m));
+  const txt = (mm: typeof m, t: string) => mm?.blocos.find((b) => b.titulo === t)?.texto ?? '';
+  check('método: preço agora = menor preço de oferta ativa verificada nas últimas 48 horas (da constante de frescor)', txt(m, 'De onde vem o preço agora').includes('menor preço entre as ofertas') && txt(m, 'De onde vem o preço agora').includes('últimas 48 horas') && FRESH_MAX_AGE_MS === 48 * 3_600_000);
+  check('método: loja = vendedor distinto, e o texto de hoje é o mesmo do cartão', txt(m, 'O que conta como loja').includes('Cada vendedor diferente conta como uma loja') && txt(m, 'O que conta como loja').endsWith(`Hoje: ${base.cobertura.lojasTexto}.`));
+  check('método: dado do dia = cada oferta vale 1 por dia, com o valor do meio explicado', txt(m, 'O número de cada dia').includes('cada oferta vale 1 por dia') && txt(m, 'O número de cada dia').includes('metade ficou abaixo, metade acima'));
+  check('método: acompanhamento é o mesmo texto do cartão e cita a data de corte do regime', txt(m, 'Há quanto tempo acompanhamos').startsWith(base.cobertura.acompanhamentoTexto) && txt(m, 'Há quanto tempo acompanhamos').includes('anteriores a 31/10/2026'));
+  check('método: sem dias legados, não cita legado; com legado, cita a quantidade', !txt(m, 'Há quanto tempo acompanhamos').includes('nessa situação') && txt(buildParecerProduto({ ...fonte({ count: 3, measuredDaysTotal: 5 }), legacyDays: 2 }).camada.metodo, 'Há quanto tempo acompanhamos').includes('este produto tem 2 dias nessa situação'));
+  check('método: dias medidos e dias com 3+ lojas (do DTO)', txt(m, 'Dias medidos') === '5 dias com preço medido, e 4 dias dos últimos 30 com preço de 3 ou mais lojas (o mínimo para comparar entre lojas).', txt(m, 'Dias medidos'));
+  check('método: sem a contagem de dias medidos no DTO, o bloco some (nada presumido)', !tit(buildParecerProduto(fonte({ count: 3 })).camada.metodo).includes('Dias medidos'));
+  check('método: 1 dia medido no singular', txt(buildParecerProduto(fonte({ count: 3, measuredDaysTotal: 1 })).camada.metodo, 'Dias medidos') === '1 dia com preço medido.');
+
+  // Avisos só quando valem para o produto.
+  const av = (mm: typeof m) => (mm ? mm.avisos : []);
+  check('aviso: poucos dias medidos (<14)', av(m).some((t) => t.startsWith('Poucos dias medidos (5)')) && !av(buildParecerProduto(fonte({ count: 3, measuredDaysTotal: 20 })).camada.metodo).some((t) => t.startsWith('Poucos dias')));
+  check('aviso: 1 loja só', av(buildParecerProduto(fonte({ count: 1, measuredDaysTotal: 5 })).camada.metodo).includes('Só uma loja tem preço verificado hoje: não há como comparar com outras lojas.') && !av(m).some((t) => t.startsWith('Só uma loja')));
+  check('aviso: 2 lojas', av(buildParecerProduto(fonte({ count: 2, measuredDaysTotal: 5 })).camada.metodo).some((t) => t.startsWith('Só duas lojas') && t.includes('precisa de 3 ou mais')));
+  // Item 1 (QA): o aviso da faixa plausível só existe quando há oferta DE FATO fora da faixa para o produto.
+  const comFora = (k: number | undefined) => av(buildParecerProduto(fonte({ count: 3, now: { ...NOW, freshOffers: 7 }, measuredDaysTotal: 5, ...(k === undefined ? {} : { outOfBandOffers: k }) })).camada.metodo).find((t) => /fora do normal/.test(t)) ?? '';
+  check('aviso: faixa plausível NÃO aparece sem oferta fora da faixa (0), nem sem a contagem no DTO', comFora(0) === '' && comFora(undefined) === '');
+  check('aviso: faixa plausível NÃO aparece só porque há 3+ ofertas', av(buildParecerProduto(fonte({ count: 4, now: { ...NOW, freshOffers: 9 }, measuredDaysTotal: 20, outOfBandOffers: 0 })).camada.metodo).length === 0);
+  const faixa1 = comFora(1);
+  check('aviso: 1 oferta fora da faixa (singular, limites vêm das constantes da regra)', faixa1.startsWith('Há 1 oferta com preço muito fora do normal') && faixa1.includes(`abaixo de ${PLAUSIBILITY_FLOOR_PERCENT}%`) && faixa1.includes(`acima de ${AGGREGATE_CEILING_MEDIAN_MULTIPLE} vezes`) && faixa1.includes('ela aparece na lista de lojas, marcada, mas não entra na contagem de lojas nem no valor do meio'), faixa1);
+  const faixa3 = comFora(3);
+  check('aviso: 3 ofertas fora da faixa (plural)', faixa3.startsWith('Há 3 ofertas com preço muito fora do normal') && faixa3.includes('elas aparecem na lista de lojas, marcadas, mas não entram'), faixa3);
+  check('aviso: sem preço agora, sem aviso de faixa', av(buildParecerProduto(fonte({ now: null, count: 0, trackingDays: 3, measuredDaysTotal: 3, outOfBandOffers: 2 })).camada.metodo).every((t) => !/fora do normal/.test(t)));
+
+  // Item 2 (QA): "o menor preço registrado ignora..." só quando a linha "Menor preço registrado" está visível (mesma condição do cartão).
+  const lowsVisiveis = { d30: null, d90: null, all: lowAll(32990) };
+  const comLinha = buildParecerProduto({ ...fonte({ count: 2, trackingDays: 5, measuredDaysTotal: 5, lows: lowsVisiveis }), weakNotice: 'footer' });
+  const semLinha = buildParecerProduto({ ...fonte({ count: 3, measuredDaysTotal: 5 }), weakNotice: 'footer' });
+  const AVISO_FRACO = 'O "menor preço registrado" ignora vendedores de baixa reputação.';
+  check('aviso: menor registrado visível + weakNotice => aviso aparece e a linha do cartão também', comLinha.menorRegistrado !== null && comLinha.menorIgnoraBaixaReputacao === true && av(comLinha.camada.metodo).includes(AVISO_FRACO));
+  check('aviso: menor registrado AUSENTE (null) => sem o aviso (a linha não existe)', semLinha.menorRegistrado === null && semLinha.menorIgnoraBaixaReputacao === false && !av(semLinha.camada.metodo).includes(AVISO_FRACO));
+  check('aviso: em `fato` a linha do menor registrado não existe, então o aviso também não', !av(buildParecerProduto({ ...fonte({ count: 3, trackingDays: 5, measuredDaysTotal: 5, lows: lowsVisiveis }), weakNotice: 'prominent' }).camada.metodo).includes(AVISO_FRACO));
+  check('aviso: weakNotice none => sem o aviso mesmo com a linha visível', !av(buildParecerProduto({ ...fonte({ count: 2, trackingDays: 5, measuredDaysTotal: 5, lows: lowsVisiveis }), weakNotice: 'none' }).camada.metodo).includes(AVISO_FRACO));
+  check('aviso: o aviso e a linha do cartão saem da MESMA variável (nunca divergem)', lerM('src/lib/pricing/parecer-produto.ts').includes('menorIgnoraBaixaReputacao: menorIgnoraFraco') && lerM('src/lib/pricing/parecer-produto.ts').includes('if (!LOWS_INCLUDE_WEAK_SELLER && menorIgnoraFraco)'));
+  check('aviso: baixa reputação no menor preço agora', av(buildParecerProduto(fonte({ count: 3, now: { ...NOW, weakSeller: true }, measuredDaysTotal: 5 })).camada.metodo).some((t) => t.startsWith('O menor preço agora é de um vendedor de baixa reputação')) && !av(m).some((t) => /baixa reputação/.test(t)));
+
+  // Item 4 (QA): dia sem cotação vale o último preço por até 48 horas.
+  check('método: "número de cada dia" diz que sem cotação no dia vale o último preço por até 48 horas', txt(m, 'O número de cada dia').endsWith('Se ela não teve cotação naquele dia, vale o último preço dela por até 48 horas.') && txt(m, 'O número de cada dia').includes('cada oferta vale 1 por dia'), txt(m, 'O número de cada dia'));
+
+  // Item 3 (QA): uma única régua de frescor para a contagem de lojas e o preço agora.
+  const hoje = new Date('2026-11-05T12:00:00.000Z');
+  const hh = (horas: number) => new Date(hoje.getTime() - horas * 3_600_000);
+  const velhaCotacao: LiveOfferInput[] = [
+    { offerId: 'a', networkId: 'n', sellerId: 's1', priceCents: 8000, quotedAt: hh(2), checkedAt: hh(1) },
+    { offerId: 'b', networkId: 'n', sellerId: 's2', priceCents: 8100, quotedAt: hh(60), checkedAt: hh(1) },
+    { offerId: 'c', networkId: 'n', sellerId: 's3', priceCents: 8200, quotedAt: null, checkedAt: hh(1) },
+  ];
+  const liveV = computeLiveMinFromOffers(velhaCotacao, hoje);
+  check('frescor: o preço agora só enxerga 1 das 3 ofertas (cotação velha ou ausente fica fora)', liveV?.freshOffers === 1);
+  check('frescor: a contagem de lojas com o MESMO filtro também enxerga 1 (antes contava 3)', storesToday(velhaCotacao.filter((o) => ofertaFresca(o, hoje)).map((o) => ({ storeKey: o.sellerId as string, priceCents: o.priceCents }))).storeCount === 1 && storesToday(velhaCotacao.map((o) => ({ storeKey: o.sellerId as string, priceCents: o.priceCents }))).storeCount === 3);
+  check('frescor: o servidor filtra por ofertaFresca antes de contar lojas e redes', lerM('src/server/pricing/price-metrics-v2.ts').includes('const freshLive = liveOffers.filter((o) => ofertaFresca(o, now));') && lerM('src/server/pricing/price-metrics-v2.ts').includes('const storeOffers = freshLive.map('));
+  const ofr = (id: string, cents: number): LiveOfferInput => ({ offerId: id, networkId: 'n', sellerId: `s-${id}`, priceCents: cents, quotedAt: hh(2), checkedAt: hh(1) });
+  check('faixa: contarForaDaFaixa usa a mesma régua do painel de lojas (outlier baixo = 1; sem outlier = 0; menos de 3 ofertas = 0)', contarForaDaFaixa([ofr('a', 1000), ofr('b', 7800), ofr('c', 8000), ofr('d', 8200)], hoje) === 1 && contarForaDaFaixa([ofr('a', 7500), ofr('b', 7800), ofr('c', 8000)], hoje) === 0 && contarForaDaFaixa([ofr('a', 1000), ofr('b', 7800)], hoje) === 0);
+  check('faixa: o DTO expõe a contagem e a chave de cache foi renovada', lerM('src/server/pricing/price-metrics-v2.ts').includes('outOfBandOffers: contarForaDaFaixa(liveOffers, now)') && lerM('src/server/pricing/price-metrics-v2.ts').includes("'price-metrics-v2-8'"));
+
+  // Ocultar quando não há o que dizer.
+  check('método: sem preço, sem dias e sem lojas => oculto (null)', buildParecerProduto(fonte({ now: null, count: 0, trackingDays: 0, firstDay: null })).camada.metodo === null);
+  check('método: só com preço (sem dias) já explica', buildParecerProduto(fonte({ count: 1, trackingDays: 0, firstDay: null })).camada.metodo !== null && buildParecerProduto(fonte({ now: null, count: 0, trackingDays: 3 })).camada.metodo !== null);
+
+  // Linguagem simples e termos proibidos em TODO o texto do painel.
+  const todos = [base, buildParecerProduto(fonte({ count: 1, measuredDaysTotal: 1 })), buildParecerProduto({ ...fonte({ count: 2, now: { ...NOW, weakSeller: true, freshOffers: 3 }, measuredDaysTotal: 3 }), weakNotice: 'prominent', legacyDays: 1 })]
+    .map((p) => (p.camada.metodo ? [...p.camada.metodo.blocos.flatMap((b) => [b.titulo, b.texto]), ...p.camada.metodo.avisos].join(' | ') : ''))
+    .join(' || ')
+    .toLowerCase();
+  for (const proibido of [...TEXTOS_PROIBIDOS, 'oferta-dia', 'oferta dia', 'mediana', 'backtest', 'quarentena', 'api']) check(`método: sem "${proibido}" (linguagem simples)`, !todos.includes(proibido), proibido);
+
+  // Componente: estático (sem fetch, altura previsível), tom secundário, antes do gráfico.
+  const prodM = lerM('src/components/affiliate/camada-produto.tsx');
+  const ordemM = [...prodM.matchAll(/data-panel="([a-z-]+)"/g)].map((x) => x[1]);
+  check('método: painel sem busca de dados (vem do contrato, não desloca) e só quando há conteúdo', prodM.includes('{camada.metodo && (') && !prodM.includes('fetch(') && !prodM.includes('useEffect'));
+  check('método: o gráfico segue como ÚLTIMO painel e o método vem antes', ordemM.at(-1) === 'grafico' && ordemM.indexOf('qualidade') > -1 && ordemM.indexOf('qualidade') < ordemM.indexOf('grafico'), ordemM);
+  const blocoPainel = prodM.slice(prodM.indexOf('{camada.metodo && ('), prodM.indexOf('{camada.graficoDisponivel && produtoId'));
+  check('método: sem tom terciário, sem cor semântica, sem raio, sem botão', !/tertiary|accent-(success|danger|hype)|rounded|<button/.test(blocoPainel) && blocoPainel.includes('--color-text-secondary'));
+  const htmlM = n(renderToStaticMarkup(createElement(ProductCardV1, { parecer: base, produtoNome: 'P' })));
+  check('método: o cartão não carrega o painel (só a camada)', !htmlM.includes('De onde vem o preço agora'));
 }
 
 

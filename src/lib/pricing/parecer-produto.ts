@@ -10,7 +10,9 @@
 //  - Textos proibidos: "parecer" e "afiliado/afiliada/affiliate" (ver `TEXTOS_PROIBIDOS`).
 import { formatBRL } from '@/lib/format';
 import { DATA_BASE_LABEL, MIN_STORES_FOR_MEDIAN, type DataBaseLevel } from '@/lib/pricing/price-verdict-v2';
-import { JUDGEMENT_MEASURED_WINDOW_DAYS, PARECER_PERCENTUAL_EXTREMO } from '@/lib/pricing/price-metrics-config';
+import { JUDGEMENT_MEASURED_WINDOW_DAYS, LOWS_INCLUDE_WEAK_SELLER, PARECER_PERCENTUAL_EXTREMO } from '@/lib/pricing/price-metrics-config';
+import { AGGREGATE_CEILING_MEDIAN_MULTIPLE, PLAUSIBILITY_FLOOR_PERCENT } from '@/lib/affiliate/price-verdict';
+import { FRESH_MAX_AGE_MS, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
 import type { PriceMetricsV2 } from '@/server/pricing/price-metrics-v2';
 
 export const PARECER_TITULO = 'O que sabemos hoje';
@@ -26,7 +28,7 @@ export type ParecerEstado = 'formacao' | 'fato' | 'juizo';
 
 /** Subconjunto de `PriceMetricsV2` que o contrato lê (facilita o teste puro sem montar o DTO inteiro). */
 export type ParecerFonte = Pick<PriceMetricsV2, 'now' | 'stores' | 'storesComparison' | 'trackingDays' | 'firstDay' | 'lows'> &
-  Partial<Pick<PriceMetricsV2, 'weakNotice' | 'lastEvent' | 'dataBase' | 'measuredDaysTotal'>>;
+  Partial<Pick<PriceMetricsV2, 'weakNotice' | 'lastEvent' | 'dataBase' | 'measuredDaysTotal' | 'legacyDays' | 'outOfBandOffers'>>;
 
 export interface ParecerProduto {
   estado: ParecerEstado;
@@ -101,8 +103,13 @@ export interface ParecerProduto {
     lojasHoje: { quantidade: number; texto: string; valorDoMeioTexto: string | null; /** Ofertas frescas elegíveis (= `now.freshOffers`): o painel reserva essa quantidade de linhas e o teste confere com a rota. */ ofertas: number } | null;
     /** Qualidade do dado: nível da base e resumo. */
     qualidade: { nivel: DataBaseLevel; rotulo: string; resumo: string };
-    /** "Como calculamos", em frases curtas. */
-    comoCalculamos: string[];
+    /**
+     * Painel "Qualidade e método": de onde vem cada número, em linguagem simples, só com o que o DTO já expõe (nada recalculado).
+     * `blocos` = como é obtido (preço agora, o que conta como loja, dado do dia, tempo de acompanhamento, dias medidos);
+     * `avisos` = só os que valem para ESTE produto (histórico curto, 1 ou 2 lojas, faixa plausível, baixa reputação).
+     * null = nada a explicar (sem preço, sem dias e sem lojas): painel oculto.
+     */
+    metodo: { blocos: Array<{ titulo: string; texto: string }>; avisos: string[] } | null;
     /** Painel do gráfico (Fase 3): só com 2+ dias MEDIDOS (`measuredDaysTotal`, mesma fonte do gráfico). false = painel oculto. */
     graficoDisponivel: boolean;
   };
@@ -220,11 +227,41 @@ export function buildParecerProduto(fonte: ParecerFonte, _opts: { judgementEnabl
         : `${diasBase} ${plural(diasBase, 'dia', 'dias')} com 3 ou mais lojas, ${stores.count} ${plural(stores.count, 'loja distinta', 'lojas distintas')} hoje.`,
   };
 
-  const comoCalculamos = [
-    'O preço agora é o menor preço entre as ofertas ativas e verificadas nas últimas 48 horas.',
-    'O valor do meio é a mediana dos menores preços de cada loja hoje. Só existe com 3 ou mais lojas e muda a cada coleta.',
-    'Cada oferta vale 1 por dia nas medidas de histórico. Dados anteriores a 31/10/2026 ficam fora, porque foram coletados em outro regime.',
+  // --- painel "Qualidade e método" (só o que o DTO expõe; sem recalcular) ---
+  const horas = Math.round(FRESH_MAX_AGE_MS / 3_600_000);
+  const medidos = fonte.measuredDaysTotal;
+  const legacy = fonte.legacyDays ?? 0;
+  const regime = diaMes(PRICE_DAILY_REGIME_START);
+  const regimeAno = `${regime}/${PRICE_DAILY_REGIME_START.slice(0, 4)}`;
+  const blocos: Array<{ titulo: string; texto: string }> = [
+    { titulo: 'De onde vem o preço agora', texto: `É o menor preço entre as ofertas deste produto que estão ativas e foram verificadas nas últimas ${horas} horas. Só entram ofertas de item novo, aprovadas no nosso catálogo.` },
+    { titulo: 'O que conta como loja', texto: `Cada vendedor diferente conta como uma loja; se o mesmo vendedor tem duas ofertas, ele conta uma vez. Hoje: ${lojasTexto}.` },
+    { titulo: 'O número de cada dia', texto: `No histórico, cada oferta vale 1 por dia: usamos o valor do meio das cotações que ela teve naquele dia (metade ficou abaixo, metade acima). Assim, a oferta consultada mais vezes não pesa mais que as outras. Se ela não teve cotação naquele dia, vale o último preço dela por até ${horas} horas.` },
+    {
+      titulo: 'Há quanto tempo acompanhamos',
+      texto: `${acompanhamentoTexto}. Preços anteriores a ${regimeAno} ficam de fora, porque foram coletados de outro jeito${legacy > 0 ? ` (este produto tem ${legacy} ${plural(legacy, 'dia', 'dias')} nessa situação)` : ''}.`,
+    },
   ];
+  if (medidos != null) {
+    const em30 = fonte.dataBase ? `, e ${diasBase} ${plural(diasBase, 'dia', 'dias')} dos últimos 30 com preço de 3 ou mais lojas (o mínimo para comparar entre lojas)` : '';
+    blocos.push({ titulo: 'Dias medidos', texto: `${medidos} ${plural(medidos, 'dia', 'dias')} com preço medido${em30}.` });
+  }
+  const avisos: string[] = [];
+  if (medidos != null && medidos < JUDGEMENT_MEASURED_WINDOW_DAYS) avisos.push(`Poucos dias medidos (${medidos}): as comparações com o histórico ainda são frágeis.`);
+  if (now && stores.count === 1) avisos.push('Só uma loja tem preço verificado hoje: não há como comparar com outras lojas.');
+  if (now && stores.count === 2) avisos.push(`Só duas lojas têm preço verificado hoje: o valor do meio entre as lojas precisa de ${MIN_STORES_FOR_MEDIAN} ou mais.`);
+  // Só com oferta DE FATO fora da faixa para este produto (contagem do DTO); sem descarte, sem aviso.
+  const fora = fonte.outOfBandOffers ?? 0;
+  if (now && fora > 0) {
+    avisos.push(
+      `${fora === 1 ? 'Há 1 oferta com preço muito fora do normal' : `Há ${fora} ofertas com preço muito fora do normal`} (abaixo de ${PLAUSIBILITY_FLOOR_PERCENT}% ou acima de ${AGGREGATE_CEILING_MEDIAN_MULTIPLE} vezes o valor do meio das ofertas): ${fora === 1 ? 'ela aparece' : 'elas aparecem'} na lista de lojas, marcada${fora === 1 ? '' : 's'}, mas não ${fora === 1 ? 'entra' : 'entram'} na contagem de lojas nem no valor do meio.`
+    );
+  }
+  if (baixaReputacao) avisos.push('O menor preço agora é de um vendedor de baixa reputação: confira a reputação antes de comprar.');
+  // Mesma condição da linha do cartão (`menorIgnoraBaixaReputacao`): só quando "Menor preço registrado" está visível.
+  const menorIgnoraFraco = menorRegistrado != null && fonte.weakNotice != null && fonte.weakNotice !== 'none';
+  if (!LOWS_INCLUDE_WEAK_SELLER && menorIgnoraFraco) avisos.push('O "menor preço registrado" ignora vendedores de baixa reputação.');
+  const metodo: ParecerProduto['camada']['metodo'] = !now && dias === 0 && stores.count === 0 ? null : { blocos, avisos };
 
   return {
     estado,
@@ -237,8 +274,8 @@ export function buildParecerProduto(fonte: ParecerFonte, _opts: { judgementEnabl
     menorRegistrado,
     ultimaMudanca,
     baixaReputacao,
-    menorIgnoraBaixaReputacao: menorRegistrado != null && fonte.weakNotice != null && fonte.weakNotice !== 'none',
-    camada: { sabemos, falta, lojasHoje, qualidade, comoCalculamos, graficoDisponivel: (fonte.measuredDaysTotal ?? 0) >= GRAFICO_MIN_DIAS },
+    menorIgnoraBaixaReputacao: menorIgnoraFraco,
+    camada: { sabemos, falta, lojasHoje, qualidade, metodo, graficoDisponivel: (fonte.measuredDaysTotal ?? 0) >= GRAFICO_MIN_DIAS },
     juizo: null,
   };
 }

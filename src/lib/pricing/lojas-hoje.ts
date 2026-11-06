@@ -26,6 +26,16 @@ export function ofertaFresca(l: LiveOfferInput, now: Date): boolean {
   return now.getTime() - l.quotedAt.getTime() <= FRESH_MAX_AGE_MS && now.getTime() - l.checkedAt.getTime() <= FRESH_MAX_AGE_MS;
 }
 
+/**
+ * Quantas ofertas frescas estão FORA da faixa de preço plausível do dia (mesma régua de `buildLojasHoje` e de `storesToday`).
+ * 0 = nenhuma oferta descartada: o aviso "preços muito fora do normal" não deve aparecer.
+ */
+export function contarForaDaFaixa(ofertas: LiveOfferInput[], now: Date): number {
+  const frescas = ofertas.filter((o) => ofertaFresca(o, now));
+  const band = plausibleBand(frescas.map((o) => o.priceCents));
+  return frescas.filter((o) => !inBand(o.priceCents, band)).length;
+}
+
 export function buildLojasHoje(ofertas: OfertaLojaInput[], now: Date): LojasHoje {
   const frescas = ofertas.filter((o) => ofertaFresca(o, now));
   const band = plausibleBand(frescas.map((o) => o.priceCents));

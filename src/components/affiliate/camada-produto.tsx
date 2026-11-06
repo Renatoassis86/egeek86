@@ -117,16 +117,33 @@ export default function CamadaProduto({ parecer, produtoNome, identidade, compra
         </Painel>
       )}
 
-      <Painel titulo="Qualidade do dado e como calculamos" data-panel="qualidade">
-        <p className="text-body-md text-[var(--color-text-primary)]">
-          {camada.qualidade.rotulo}. <span className="text-[var(--color-text-secondary)]">{camada.qualidade.resumo}</span>
-        </p>
-        <ul className="flex flex-col gap-1 text-body-sm text-[var(--color-text-secondary)]">
-          {camada.comoCalculamos.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-      </Painel>
+      {camada.metodo && (
+        <Painel titulo="Qualidade e método" data-panel="qualidade">
+          <p className="text-body-md text-[var(--color-text-primary)]">
+            {camada.qualidade.rotulo}. <span className="text-[var(--color-text-secondary)]">{camada.qualidade.resumo}</span>
+          </p>
+          <dl className="flex flex-col gap-3">
+            {camada.metodo.blocos.map((b) => (
+              <div key={b.titulo} className="flex flex-col gap-0.5">
+                <dt className="text-body-sm font-medium text-[var(--color-text-primary)]">{b.titulo}</dt>
+                <dd className="text-body-sm text-[var(--color-text-secondary)]">{b.texto}</dd>
+              </div>
+            ))}
+          </dl>
+          {camada.metodo.avisos.length > 0 && (
+            <div className="mt-2 flex flex-col gap-1.5">
+              <p className="text-body-sm font-medium text-[var(--color-text-primary)]">O que pede cuidado</p>
+              <ul className="flex flex-col gap-1.5 text-body-sm text-[var(--color-text-secondary)]">
+                {camada.metodo.avisos.map((t) => (
+                  <li key={t} className="border-l-2 border-[var(--color-border-strong)] pl-3">
+                    {t}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </Painel>
+      )}
 
       {camada.graficoDisponivel && produtoId && (
         <Painel titulo="Histórico do menor preço" data-panel="grafico">

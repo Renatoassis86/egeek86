@@ -24,7 +24,7 @@ A tela de produto entregava medição, não decisão. O dono pediu um cartão-pa
 - Rotas públicas sem limite próprio: recomendado limite por IP no WAF da Vercel para `/api/produtos/*` (ação do dono).
 
 ## O que fica de fora
-Juízo (Bom/Menor/Acima), alerta de preço (fase própria, com jurídico/LGPD), extremos de 30 e 90 dias (aguardam histórico, ~14 a 17/11), painéis de qualidade/método e identidade da mídia ainda não construídos, previsão de preço, nota composta.
+Juízo (Bom/Menor/Acima), alerta de preço (fase própria, com jurídico/LGPD), extremos de 30 e 90 dias (aguardam histórico, ~14 a 17/11), identidade da mídia no cabeçalho (o painel "Qualidade e método" já foi construído), previsão de preço, nota composta.
 
 ## Reversão
 Desligar `PRODUCT_CARD_V1` restaura a tela anterior sem efeito colateral; as rotas voltam a dar 404.

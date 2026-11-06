@@ -45,6 +45,7 @@ import {
 } from '@/lib/pricing/price-verdict-v2';
 import { loadOffers } from '@/server/pricing/price-daily';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
+import { contarForaDaFaixa, ofertaFresca } from '@/lib/pricing/lojas-hoje';
 import { weakSellerSql } from '@/server/queries/public-offers';
 
 /**
@@ -117,6 +118,8 @@ export interface PriceMetricsV2 {
   trackingDays: number;
   /** Dias MEDIDOS de fato no regime atual (qualidade complete/partial com menor preço): a mesma contagem que o gráfico V2 usa para decidir se desenha. */
   measuredDaysTotal: number;
+  /** Ofertas frescas fora da faixa de preço plausível hoje (descartadas da contagem de lojas e do valor do meio). 0 = nenhuma. */
+  outOfBandOffers: number;
   /** Faixa observada dos menores preços diários dos últimos 30 dias (inclui hoje). */
   observed: ObservedRange | null;
   /** Base de dados (substitui "confiança"): nível, dias medidos nos últimos 30 e faixa observada. */
@@ -339,7 +342,10 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
   const median30 = pm.medianOfferDayCents != null ? Math.round(pm.medianOfferDayCents) : null;
 
   // Fato: preço agora vs mediana das lojas HOJE (lojas distintas, não anúncios).
-  const storeOffers = liveOffers.map((o) => ({ storeKey: o.sellerId ?? o.networkId ?? o.offerId, priceCents: o.priceCents }));
+  // MESMA régua de frescor do preço agora (cotação E checagem <= 48 h): `loadLiveOffers` filtra só pela checagem, então aqui a oferta sem
+  // cotação recente não conta como loja (nunca divergir de `computeLiveMinFromOffers` e da lista "Lojas de hoje").
+  const freshLive = liveOffers.filter((o) => ofertaFresca(o, now));
+  const storeOffers = freshLive.map((o) => ({ storeKey: o.sellerId ?? o.networkId ?? o.offerId, priceCents: o.priceCents }));
   const storesNow = storesToday(storeOffers);
   // Menor preço de vendedor de baixa reputação não é comparado em percentual com a mediana (só fatos, com a nota).
   // Redes das lojas contadas: ofertas frescas dentro da faixa de preços que `storesToday` manteve (as descartadas por outlier ficam fora da faixa).
@@ -347,7 +353,7 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
   const storeMax = storesNow.storePrices.length ? storesNow.storePrices[storesNow.storePrices.length - 1] : null;
   const storeNetworks = [
     ...new Set(
-      liveOffers
+      freshLive
         .filter((o) => storeMin != null && storeMax != null && o.priceCents >= storeMin && o.priceCents <= storeMax)
         .map((o) => meta.get(o.offerId)?.network ?? '')
         .filter((n) => n !== '')
@@ -428,6 +434,7 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
     shortReasons,
     trackingDays,
     measuredDaysTotal: measured.filter(isChartMeasuredDay).length,
+    outOfBandOffers: contarForaDaFaixa(liveOffers, now),
     observed,
     dataBase,
     median30Cents: median30,
@@ -445,6 +452,6 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
 /** Versão em cache SWR (60 s fresco). A página trata falha/timeout com `.catch(() => null)` e cai no comportamento anterior. */
 export const getPriceMetricsV2: (masterProductId: string) => Promise<PriceMetricsV2> = createCachedQuery(
   loadPriceMetricsV2,
-  ['price-metrics-v2-7'],
+  ['price-metrics-v2-8'],
   { revalidate: 60, coldTimeoutSeconds: 5, live: true, hardTimeoutSeconds: 20 }
 );
