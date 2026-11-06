@@ -1,5 +1,7 @@
 import 'server-only';
 
+import type { CatalogPage } from '@/lib/affiliate/master-consolidation';
+
 export interface PriceSnapshotResult {
   priceCents: number;
   listPriceCents?: number | null;
@@ -48,6 +50,12 @@ export interface PriceSource {
    */
   dedicatedCollector?: boolean;
   fetchSnapshots(externalRef: string): Promise<PriceSnapshotResult[]>;
+  /**
+   * OPCIONAL, só para a coleta por master (flag COLLECT_MASTER_GROUPING): UMA página do catálogo com limit/offset e o
+   * paging devolvido pela API. Quem pagina e decide se a lista está completa é fetchCatalogAllPages (função pura).
+   * Fonte sem este método NÃO pode ser coletada por master (falha fechada: nada gravado).
+   */
+  fetchCatalogPage?(externalRef: string, offset: number, limit: number): Promise<CatalogPage<PriceSnapshotResult>>;
 }
 
 const registry = new Map<string, PriceSource>();

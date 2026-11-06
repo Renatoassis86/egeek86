@@ -13,7 +13,14 @@
 import assert from 'node:assert/strict';
 import { mapWithConcurrency } from '../src/lib/concurrency';
 import { pickCatalogPlaceholder } from '../src/lib/affiliate/catalog-placeholder';
+import fs from 'node:fs';
 import {
+  CatalogPagingError,
+  fetchCatalogAllPages,
+  parseMeliCatalogPage,
+  withExemptRetry,
+  sanitizeErrorForSummary,
+  type CatalogPage,
   collapseBySeller,
   consolidateMasterResults,
   createCallBudget,
@@ -497,6 +504,573 @@ t('resposta invertida: catalogos que respondem na ordem inversa (atrasos opostos
   const a = await fetchMasterCatalogs(refs, mk({ MLB46308238: 1, MLB46286520: 6, MLB45004754: 12 }));
   const b = await fetchMasterCatalogs([...refs].reverse(), mk({ MLB46308238: 12, MLB46286520: 6, MLB45004754: 1 }));
   assert.equal(ser(consolidateMasterResults(a.outcomes, noVerdicts)), ser(consolidateMasterResults(b.outcomes, noVerdicts)));
+});
+
+
+// =============== 10. PAGINACAO de /products/{catalog}/items (so no caminho por master; ata 2026-11-06, secao de implementacao) ===============
+// Fatos medidos na API oficial: resposta traz paging {total, offset, limit}; limit padrao 100; limit/offset funcionam
+// (limit=10&offset=95 -> 2 itens de total 97). Teto maximo de limit DESCONHECIDO: nunca pedimos mais que 100.
+// Aqui o "servidor" e um mock em memoria (sem API real, sem banco). Itens sao estruturais.
+const mkItems = (count: number, seller = (i: number) => `s${i}`, prefix = 'it'): Listing[] =>
+  Array.from({ length: count }, (_, i) => L(seller(i), `${prefix}${i}`, 1000 + i));
+
+interface MockOpts {
+  /** o servidor limita a pagina a este tamanho (menor que o pedido) */
+  serverCap?: number;
+  /** falha (throw) nestas chamadas (1-based, contando tentativas) */
+  failCalls?: number[];
+  /** devolve paging nulo */
+  noPaging?: boolean;
+  /** mexe na pagina devolvida */
+  mutate?: (page: CatalogPage<Listing>, call: number, offset: number) => CatalogPage<Listing>;
+  reverseItems?: boolean;
+  jitter?: boolean;
+}
+function mockServer(all: Listing[], opts: MockOpts = {}) {
+  const log: Array<{ ref: string; offset: number; limit: number }> = [];
+  let call = 0;
+  const fetchPage = async (ref: string, offset: number, limit: number): Promise<CatalogPage<Listing>> => {
+    call++;
+    log.push({ ref, offset, limit });
+    if (opts.jitter) await new Promise((r) => setTimeout(r, Math.floor(Math.random() * 4)));
+    if (opts.failCalls?.includes(call)) throw new Error('HTTP 500');
+    const eff = Math.min(limit, opts.serverCap ?? limit);
+    let slice = all.slice(offset, offset + eff);
+    if (opts.reverseItems) slice = [...slice].reverse();
+    let page: CatalogPage<Listing> = {
+      items: slice,
+      rawIds: slice.map((x) => x.externalItemId),
+      paging: opts.noPaging ? null : { total: all.length, offset, limit: eff },
+    };
+    if (opts.mutate) page = opts.mutate(page, call, offset);
+    return page;
+  };
+  return { fetchPage, log, calls: () => call };
+}
+const kindOf = async (p: Promise<unknown>) => {
+  try { await p; return 'ok'; } catch (e) { return e instanceof CatalogPagingError ? e.kind : `outro:${(e as Error).message}`; }
+};
+
+t('paginacao: total<=100 -> 1 chamada (limit=100, offset=0), todos os itens', async () => {
+  const srv = mockServer(mkItems(40));
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 40);
+  assert.equal(r.pages, 1);
+  assert.deepEqual(srv.log, [{ ref: 'MLB1', offset: 0, limit: 100 }]);
+});
+
+t('paginacao: catalogo vazio (total 0, 0 itens) -> 1 chamada, resultado vazio legitimo (nao e falha)', async () => {
+  const srv = mockServer([]);
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 0);
+  assert.equal(r.total, 0);
+  assert.equal(srv.calls(), 1);
+});
+
+t('paginacao: total=100 EXATO -> 1 chamada (nao pede pagina vazia)', async () => {
+  const srv = mockServer(mkItems(100));
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 100);
+  assert.equal(srv.calls(), 1);
+});
+
+t('paginacao: total=101 -> 2 chamadas (offsets 0 e 100)', async () => {
+  const srv = mockServer(mkItems(101));
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 101);
+  assert.deepEqual(srv.log.map((x) => x.offset), [0, 100]);
+});
+
+t('paginacao: total=250 -> 3 paginas (offsets 0,100,200; limit sempre 100, nunca acima), 250 itens, total e paginas reportados', async () => {
+  const srv = mockServer(mkItems(250));
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 250);
+  assert.deepEqual(srv.log.map((x) => [x.offset, x.limit]), [[0, 100], [100, 100], [200, 100]]);
+  assert.equal(r.total, 250);
+  assert.equal(r.pages, 3);
+  assert.equal(r.calls, 3);
+});
+
+t('paginacao: servidor que limita a pagina (60 < 100) -> avanca pelo que veio ate completar, sem perder item', async () => {
+  const srv = mockServer(mkItems(250), { serverCap: 60 });
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 250);
+  assert.deepEqual(srv.log.map((x) => x.offset), [0, 60, 120, 180, 240]);
+});
+
+t('paginacao: paging AUSENTE -> falha paging-ausente (nao assume lista completa), sem retry (nao e falha de rede)', async () => {
+  const srv = mockServer(mkItems(30), { noPaging: true });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'paging-ausente');
+  assert.equal(srv.calls(), 1);
+});
+
+t('paginacao: paging inconsistente (total negativo / nao inteiro / NaN / offset diferente do pedido / total muda entre paginas) -> falha', async () => {
+  const bad = (mut: (p: CatalogPage<Listing>, call: number) => CatalogPage<Listing>) =>
+    kindOf(fetchCatalogAllPages('MLB1', mockServer(mkItems(250), { mutate: (p, c) => mut(p, c) }).fetchPage));
+  assert.equal(await bad((p) => ({ ...p, paging: { ...p.paging!, total: -1 } })), 'paging-inconsistente');
+  assert.equal(await bad((p) => ({ ...p, paging: { ...p.paging!, total: 250.5 } })), 'paging-inconsistente');
+  assert.equal(await bad((p) => ({ ...p, paging: { ...p.paging!, total: Number.NaN } })), 'paging-inconsistente');
+  assert.equal(await bad((p, c) => (c === 2 ? { ...p, paging: { ...p.paging!, offset: 5 } } : p)), 'paging-inconsistente');
+  assert.equal(await bad((p, c) => (c === 2 ? { ...p, paging: { ...p.paging!, total: 260 } } : p)), 'paging-inconsistente');
+});
+
+t('paginacao: pagina do MEIO falha de forma persistente -> 1 retry nela e FALHA (3 chamadas: ok, falha, retry); nada devolvido', async () => {
+  const srv = mockServer(mkItems(250), { failCalls: [2, 3] });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'pagina-falhou');
+  assert.equal(srv.calls(), 3);
+});
+
+t('paginacao: pagina do meio falha UMA vez e passa no retry -> completo; as chamadas (inclusive o retry) sao contadas', async () => {
+  const srv = mockServer(mkItems(250), { failCalls: [2] });
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 250);
+  assert.equal(r.pages, 3);
+  assert.equal(r.calls, 4);
+});
+
+t('paginacao: ULTIMA pagina devolve menos que o esperado (200 de 250) -> falha incompleto (nunca lista parcial)', async () => {
+  const srv = mockServer(mkItems(250), { mutate: (p, c) => (c === 3 ? { ...p, items: [], rawIds: [] } : p) });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'incompleto');
+});
+
+t('paginacao: pagina devolve 0 itens no meio (sem progresso) -> falha incompleto, sem laco infinito', async () => {
+  const srv = mockServer(mkItems(250), { mutate: (p, c) => (c === 2 ? { ...p, items: [], rawIds: [] } : p) });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'incompleto');
+  assert.ok(srv.calls() <= 10);
+});
+
+t('paginacao: itens REPETIDOS entre paginas deslocando a lista (faltam itens) -> falha incompleto', async () => {
+  const items = mkItems(250);
+  const srv = mockServer(items, { mutate: (p, c) => (c === 2 ? { ...p, items: items.slice(95, 195), rawIds: items.slice(95, 195).map((x) => x.externalItemId) } : p) });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'incompleto');
+});
+
+t('paginacao: dedupe por item id -- API devolve 1 item a mais repetido (106 brutos, 105 unicos = total) -> completo, 105 itens, sem duplicata', async () => {
+  const items = mkItems(105);
+  const srv = mockServer(items, {
+    mutate: (p, c) => {
+      if (c !== 2) return p;
+      const extra = [items[3], ...p.items]; // repete it3 (ja veio na pagina 1)
+      return { ...p, items: extra, rawIds: extra.map((x) => x.externalItemId) };
+    },
+  });
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.length, 105);
+  assert.equal(new Set(r.items.map((x) => x.externalItemId)).size, 105);
+});
+
+t('paginacao: teto de paginas -- total 1000 (10 paginas) passa; total 1001 (11) FALHA teto-paginas com exatamente 10 chamadas', async () => {
+  const ok10 = mockServer(mkItems(1000));
+  assert.equal((await fetchCatalogAllPages('MLB1', ok10.fetchPage)).items.length, 1000);
+  const over = mockServer(mkItems(1001));
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', over.fetchPage)), 'teto-paginas');
+  assert.equal(over.calls(), 10);
+  const custom = mockServer(mkItems(250));
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', custom.fetchPage, { maxPages: 2 })), 'teto-paginas');
+});
+
+t('paginacao: orcamento -- charge() e consultado ANTES de cada tentativa; recusa no meio do catalogo = falha orcamento (2 chamadas feitas, nada devolvido)', async () => {
+  const srv = mockServer(mkItems(250));
+  let allowed = 2;
+  const checks: number[] = [];
+  const kind = await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage, { charge: () => { checks.push(srv.calls()); return allowed-- > 0; } }));
+  assert.equal(kind, 'orcamento');
+  assert.equal(srv.calls(), 2);
+  assert.deepEqual(checks, [0, 1, 2]); // consultou antes de chamar a 1a, a 2a e a 3a (recusada)
+});
+
+t('paginacao: o retry TAMBEM consome orcamento (cada tentativa cobra 1)', async () => {
+  const srv = mockServer(mkItems(150), { failCalls: [1] });
+  let charged = 0;
+  await fetchCatalogAllPages('MLB1', srv.fetchPage, { charge: () => { charged++; return true; } });
+  assert.equal(charged, 3); // 1a tentativa (falhou) + retry + pagina 2
+});
+
+t('paginacao: tamanho de pagina acima de 100 e limitado a 100 (teto da API desconhecido: nunca pedir > 100)', async () => {
+  const srv = mockServer(mkItems(250));
+  await fetchCatalogAllPages('MLB1', srv.fetchPage, { pageSize: 500 });
+  assert.ok(srv.log.every((x) => x.limit <= 100));
+});
+
+// ---- parse da resposta oficial ----
+t('parseMeliCatalogPage: so condition=new vira anuncio; rawIds contam TODAS as condicoes (offset avanca pelos brutos); paging repassado', () => {
+  const body = {
+    paging: { total: 3, offset: 0, limit: 100 },
+    results: [
+      { item_id: 'MLB1', price: 10.5, original_price: 12, seller_id: 11, condition: 'new' },
+      { item_id: 'MLB2', price: 9, original_price: null, seller_id: 12, condition: 'used' },
+      { item_id: 'MLB3', price: 7.99, original_price: null, seller_id: 13, condition: 'new' },
+    ],
+  };
+  const p = parseMeliCatalogPage(body);
+  assert.deepEqual(p.rawIds, ['MLB1', 'MLB2', 'MLB3']);
+  assert.deepEqual(p.items.map((i) => [i.externalItemId, i.externalSellerId, i.priceCents, i.listPriceCents]), [['MLB1', '11', 1050, 1200], ['MLB3', '13', 799, null]]);
+  assert.deepEqual(p.paging, { total: 3, offset: 0, limit: 100 });
+});
+
+t('parseMeliCatalogPage: paging ausente/malformado -> paging=null (a falha e decidida por fetchCatalogAllPages); results nao-array -> lanca', () => {
+  assert.equal(parseMeliCatalogPage({ results: [] }).paging, null);
+  assert.equal(parseMeliCatalogPage({ results: [], paging: { total: 'x' } }).paging, null);
+  assert.equal(parseMeliCatalogPage({ results: [], paging: null }).paging, null);
+  assert.throws(() => parseMeliCatalogPage({ paging: { total: 1, offset: 0, limit: 100 } }));
+  assert.throws(() => parseMeliCatalogPage(null));
+});
+
+t('parseMeliCatalogPage: item bruto sem item_id ocupa posicao (conta no offset) e nao vira anuncio', () => {
+  const p = parseMeliCatalogPage({ paging: { total: 2, offset: 0, limit: 100 }, results: [{ item_id: null, price: 1, seller_id: 1, condition: 'new' }, { item_id: 'MLB9', price: 2, seller_id: 2, condition: 'new' }] });
+  assert.equal(p.rawIds.length, 2);
+  assert.equal(new Set(p.rawIds).size, 2);
+  assert.equal(p.items.length, 1);
+});
+
+// ---- orcamento (custo = paginas) ----
+t('orcamento por pagina: 1o master e isento do teto (sem starvation); demais so ate o teto; recusa quando used >= cap', () => {
+  const b = createCallBudget(3);
+  assert.equal(b.canAdmit('mA', 2), true); // 1o: isento
+  assert.equal(b.canAdmit('mB', 2), true); // cap 3, usado 0
+  assert.equal(b.tryCharge('mB'), true);
+  assert.equal(b.tryCharge('mB'), true);
+  assert.equal(b.tryCharge('mB'), true);
+  assert.equal(b.tryCharge('mB'), false); // 4a pagina de mB: acabou
+  assert.equal(b.canAdmit('mC', 1), false);
+  for (let i = 0; i < 25; i++) assert.equal(b.tryCharge('mA'), true); // isento: custo real e contado, nunca recusado
+  assert.equal(b.used(), 28);
+  assert.equal(b.canAdmit('mA', 1), true);
+});
+
+t('orcamento por pagina: canAdmit exige folga minima sem consumir', () => {
+  const b = createCallBudget(5);
+  b.canAdmit('first', 0);
+  assert.equal(b.canAdmit('x', 6), false);
+  assert.equal(b.used(), 0);
+  assert.equal(b.canAdmit('x', 5), true);
+  assert.equal(b.used(), 0);
+});
+
+// ---- integracao: master com catalogo paginado ----
+const pagedFetcherFor = (cats: Record<string, Listing[]>, opts: Record<string, MockOpts> = {}, charge?: () => boolean) => {
+  const servers = new Map<string, ReturnType<typeof mockServer>>();
+  const srvOf = (ref: string) => { let s = servers.get(ref); if (!s) { s = mockServer(cats[ref], opts[ref]); servers.set(ref, s); } return s; };
+  const fetchFn = async (ref: string) => (await fetchCatalogAllPages(ref, srvOf(ref).fetchPage, { charge })).items;
+  return { fetchFn, srvOf, servers };
+};
+
+t('master + paginacao: vendedor SO na pagina 3 (item 220 de 250) esta na uniao e NAO e expirado; um corte em 100 o expiraria (o bug evitado)', async () => {
+  const items = mkItems(250, (i) => (i === 220 ? 'vP3' : `s${i}`));
+  const { fetchFn } = pagedFetcherFor({ A: items });
+  const r = await fetchMasterCatalogs(['A'], fetchFn, { retries: 0 });
+  const c = consolidateMasterResults(r.outcomes, noVerdicts);
+  assert.equal(c.complete, true);
+  assert.ok(c.sellers.some((s) => s.externalSellerId === 'vP3'));
+  const offers = [{ id: 'oP3', isPlaceholder: false }, { id: 'o0', isPlaceholder: false }];
+  const updated = new Set(['oP3', 'o0']);
+  assert.deepEqual(decideMasterExpiry({ complete: c.complete, unionSize: c.unionSize, offers, updatedOfferIds: updated, sellerUpsertFailed: false }).expireIds, []);
+  // contraprova (comportamento sem paginacao): so a 1a pagina => vP3 ausente => seria expirado
+  const cut = consolidateMasterResults([ok('A', items.slice(0, 100))], noVerdicts);
+  assert.ok(!cut.sellers.some((s) => s.externalSellerId === 'vP3'));
+  const wrong = decideMasterExpiry({ complete: true, unionSize: cut.unionSize, offers, updatedOfferIds: new Set(['o0']), sellerUpsertFailed: false });
+  assert.deepEqual(wrong.expireIds, ['oP3']);
+});
+
+t('master + paginacao: falha parcial (catalogo B, pagina 2 cai) -> complete=false, NENHUM preco, NENHUMA expiracao; C nem e chamado', async () => {
+  const cats = { A: mkItems(120, (i) => `a${i}`, 'a'), B: mkItems(250, (i) => `b${i}`, 'b'), C: mkItems(10, (i) => `c${i}`, 'c') };
+  const { fetchFn, servers } = pagedFetcherFor(cats, { B: { failCalls: [2, 3] } });
+  const r = await fetchMasterCatalogs(['A', 'B', 'C'], fetchFn, { retries: 0 });
+  assert.equal(r.complete, false);
+  assert.deepEqual(r.outcomes.map((o) => o.status), ['ok', 'failed', 'skipped']);
+  assert.equal(servers.has('C'), false);
+  const c = consolidateMasterResults(r.outcomes, noVerdicts);
+  assert.deepEqual(c.sellers, []);
+  const d = decideMasterExpiry({ complete: c.complete, unionSize: 99, offers: [{ id: 'o', isPlaceholder: false }], updatedOfferIds: new Set(), sellerUpsertFailed: false });
+  assert.deepEqual(d, { action: 'none', expireIds: [], missIds: [] });
+});
+
+t('master + paginacao: orcamento acaba NO MEIO de um catalogo -> outcome failed com errorKind=orcamento, resto skipped, master incompleto', async () => {
+  const cats = { A: mkItems(250, (i) => `a${i}`, 'a'), B: mkItems(10, (i) => `b${i}`, 'b') };
+  const b = createCallBudget(2);
+  b.canAdmit('exempt', 0); // outro master e o isento; este e um master comum
+  const { fetchFn } = pagedFetcherFor(cats, {}, () => b.tryCharge('m'));
+  const r = await fetchMasterCatalogs(['A', 'B'], fetchFn, { retries: 0 });
+  assert.equal(r.complete, false);
+  assert.equal(r.outcomes[0].status, 'failed');
+  assert.equal(r.outcomes[0].errorKind, 'orcamento');
+  assert.equal(r.outcomes[1].status, 'skipped');
+  assert.equal(b.used(), 2);
+  assert.deepEqual(consolidateMasterResults(r.outcomes, noVerdicts).sellers, []);
+});
+
+t('master + paginacao: ordem invertida (itens de cada pagina em ordem oposta) e atrasos aleatorios -> mesma saida', async () => {
+  const cats = { A: mkItems(250, (i) => `s${i % 40}`, 'a'), B: mkItems(130, (i) => `s${i % 25}`, 'b') };
+  const base = ser(consolidateMasterResults((await fetchMasterCatalogs(['A', 'B'], pagedFetcherFor(cats).fetchFn, { retries: 0 })).outcomes, noVerdicts));
+  for (let k = 0; k < 10; k++) {
+    const f = pagedFetcherFor(cats, { A: { reverseItems: true, jitter: true }, B: { reverseItems: true, jitter: true } });
+    const out = ser(consolidateMasterResults((await fetchMasterCatalogs(['B', 'A'], f.fetchFn, { retries: 0 })).outcomes, noVerdicts));
+    assert.equal(out, base);
+  }
+});
+
+t('master + paginacao: concorrencia (masters em paralelo dividindo um catalogo de 250) -> catalogo compartilhado paginado UMA vez (3 chamadas), mesmo resultado do sequencial', async () => {
+  const cats = { X: mkItems(250, (i) => `s${i % 60}`, 'x'), Y: mkItems(30, (i) => `s${i}`, 'y') };
+  const masters: Record<string, string[]> = { m1: ['X', 'Y'], m2: ['X'], m3: ['Y', 'X'], m4: ['X'] };
+  const run = async (conc: number, jitter: boolean) => {
+    const calls = new Map<string, number>();
+    const servers: Record<string, ReturnType<typeof mockServer>> = {};
+    const fetcher = createCatalogFetcher<Listing>(async (ref) => {
+      const srv = (servers[ref] ??= mockServer(cats[ref as 'X' | 'Y'], { jitter }));
+      const r = await fetchCatalogAllPages(ref, srv.fetchPage, { charge: () => { calls.set(ref, (calls.get(ref) ?? 0) + 1); return true; } });
+      return r.items;
+    });
+    const out = await mapWithConcurrency(Object.keys(masters), conc, async (m) => {
+      const r = await fetchMasterCatalogs(masters[m], fetcher, { retries: 0 });
+      return [m, ser(consolidateMasterResults(r.outcomes, noVerdicts))] as const;
+    });
+    return { out, calls };
+  };
+  const seq = await run(1, false);
+  for (let k = 0; k < 8; k++) {
+    const par = await run(4, true);
+    assert.deepEqual(par.out, seq.out);
+    assert.equal(par.calls.get('X'), 3);
+    assert.equal(par.calls.get('Y'), 1);
+  }
+});
+
+t('fetcher com ctx: createCatalogFetcher repassa o contexto ao 1o chamador; falha continua sem cache', async () => {
+  const seen: string[] = [];
+  let k = 0;
+  const f = createCatalogFetcher<Listing, string>(async (ref, ctx) => { seen.push(`${ref}:${ctx}`); if (k++ === 0) throw new Error('x'); return []; });
+  await assert.rejects(f('A', 'm1'));
+  await f('A', 'm2');
+  await f('A', 'm3'); // cache
+  assert.deepEqual(seen, ['A:m1', 'A:m2']);
+});
+
+// ---- flag desligada: legado intocado ----
+t('FLAG OFF: o legado fetchSnapshots NAO pagina (sem limit/offset) -- risco conhecido, registrado na ata (TODO no codigo)', () => {
+  const src = fs.readFileSync(new URL('../src/server/collector/sources/mercado-livre.ts', import.meta.url), 'utf8');
+  const start = src.indexOf('async fetchSnapshots');
+  const end = src.indexOf('async fetchCatalogPage');
+  assert.ok(start > 0 && end > start, 'fetchCatalogPage deve vir depois do legado');
+  const legacy = src.slice(start, end);
+  assert.ok(legacy.includes('/items`'));
+  assert.ok(!/limit=|offset=/.test(legacy));
+  assert.ok(legacy.includes('TODO(paginacao-legado)'));
+});
+
+t('FLAG OFF: collect-prices so usa o caminho paginado dentro de processMasterTarget (legado chama source.fetchSnapshots como antes)', () => {
+  const src = fs.readFileSync(new URL('../src/server/collector/collect-prices.ts', import.meta.url), 'utf8');
+  const legacyFn = src.slice(src.indexOf('const processCatalogGroup'), src.indexOf('const tasks:'));
+  assert.ok(legacyFn.includes('source.fetchSnapshots(group.externalRef)'));
+  assert.ok(!/fetchCatalogPage|fetchCatalogAllPages/.test(legacyFn));
+});
+
+
+// =============== 11. Ressalvas do QA (R1-R4, S1): isencao deterministica, reserva atomica, isento nao herda falha alheia, catalogo vazio sem paging, validacao dura ===============
+t('R1: setExempt elege o master isento ANTES da corrida; a ordem de chegada do canAdmit nao muda quem e isento', () => {
+  const b = createCallBudget(2);
+  b.setExempt('m1');
+  assert.equal(b.isExempt('m1'), true);
+  assert.equal(b.canAdmit('m2', 1), true); // m2 chegou primeiro, mas NAO vira isento
+  assert.equal(b.isExempt('m2'), false);
+  assert.equal(b.tryCharge('m2'), true);
+  assert.equal(b.tryCharge('m2'), true);
+  assert.equal(b.tryCharge('m2'), false); // teto 2 vale para m2
+  for (let i = 0; i < 10; i++) assert.equal(b.tryCharge('m1'), true); // isento nunca recusado
+});
+
+t('R1: sem setExempt o comportamento antigo continua (1o a perguntar e isento)', () => {
+  const b = createCallBudget(1);
+  assert.equal(b.canAdmit('x', 1), true);
+  assert.equal(b.isExempt('x'), true);
+});
+
+t('R1: admissao ATOMICA -- admit reserva a folga minima; 2 masters nao disputam a mesma folga', () => {
+  const b = createCallBudget(5);
+  b.setExempt('iso');
+  assert.equal(b.admit('a', 3), true);
+  assert.equal(b.admit('b', 3), false); // 5 - 3 reservadas < 3
+  assert.equal(b.admit('b', 2), true);
+  assert.equal(b.admit('iso', 99), true); // isento: sempre, sem reservar
+  // a esgota sua reserva (3) e nao consegue pegar a de b
+  assert.equal(b.tryCharge('a'), true);
+  assert.equal(b.tryCharge('a'), true);
+  assert.equal(b.tryCharge('a'), true);
+  assert.equal(b.tryCharge('a'), false); // folga livre = 5 - 3 cobradas - 2 reservadas de b = 0
+  assert.equal(b.tryCharge('b'), true);
+  assert.equal(b.tryCharge('b'), true);
+  assert.equal(b.used(), 5);
+  b.release('a');
+  b.release('b');
+  assert.equal(b.admit('c', 1), false); // teto cheio
+});
+
+t('R1: release devolve a reserva nao usada (master que acabou com menos paginas do que a folga reservada)', () => {
+  const b = createCallBudget(4);
+  b.setExempt('iso');
+  assert.equal(b.admit('a', 3), true);
+  assert.equal(b.tryCharge('a'), true); // usou 1 de 3
+  assert.equal(b.admit('b', 3), false); // 4 - 1 cobrada - 2 reservadas restantes = 1 < 3
+  b.release('a');
+  assert.equal(b.admit('b', 3), true); // sobraram 3
+});
+
+t('R2: o master ISENTO que aguarda promessa em cache disparada por outro master e falhada por ORCAMENTO refaz a busca com isencao', async () => {
+  const b = createCallBudget(1);
+  b.setExempt('iso');
+  const srv = mockServer(mkItems(250));
+  const fetcher = createCatalogFetcher<Listing, string>(async (ref, owner = '') =>
+    (await fetchCatalogAllPages(ref, srv.fetchPage, { charge: () => b.tryCharge(owner) })).items);
+  const wrapped = withExemptRetry(fetcher, (o) => b.isExempt(o));
+  const plain = fetcher('X', 'other'); // outro master dispara: paga 1 pagina e o orcamento acaba na 2a
+  const [iso, other2, otherPlain] = await Promise.allSettled([wrapped('X', 'iso'), wrapped('X', 'other2'), plain]);
+  assert.equal(iso.status, 'fulfilled');
+  assert.equal((iso as PromiseFulfilledResult<Listing[]>).value.length, 250);
+  assert.equal(other2.status, 'rejected'); // master comum que pegou a falha alheia NAO e retentado
+  assert.equal(otherPlain.status, 'rejected');
+  assert.equal(((otherPlain as PromiseRejectedResult).reason as CatalogPagingError).kind, 'orcamento');
+});
+
+t('R2: withExemptRetry nao retenta outras falhas (so orcamento) nem para master comum', async () => {
+  let calls = 0;
+  const f = createCatalogFetcher<Listing, string>(async () => { calls++; throw new CatalogPagingError('incompleto', 'X', 'x'); });
+  const wrapped = withExemptRetry(f, () => true);
+  await assert.rejects(wrapped('X', 'iso'));
+  assert.equal(calls, 1);
+});
+
+t('R3: 200 bem formado com results vazio e SEM paging (catalogo sem vendedores) -> catalogo vazio, 1 chamada, marcado emptyWithoutPaging', async () => {
+  const empty = async (): Promise<CatalogPage<Listing>> => ({ items: [], rawIds: [], paging: null });
+  let calls = 0;
+  const r = await fetchCatalogAllPages('MLB1', async () => { calls++; return empty(); });
+  assert.deepEqual([r.items.length, r.total, r.pages, r.emptyWithoutPaging], [0, 0, 1, true]);
+  assert.equal(calls, 1);
+  const normal = await fetchCatalogAllPages('MLB1', mockServer(mkItems(5)).fetchPage);
+  assert.equal(normal.emptyWithoutPaging, false);
+});
+
+t('R3: qualquer resposta com itens e sem paging continua falhando (itens aproveitaveis OU so brutos nao-new); vazio sem paging fora da 1a pagina tambem falha', async () => {
+  const withItems = mockServer(mkItems(3), { noPaging: true });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', withItems.fetchPage)), 'paging-ausente');
+  const rawOnly = async (): Promise<CatalogPage<Listing>> => ({ items: [], rawIds: ['u1', 'u2'], paging: null });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', rawOnly)), 'paging-ausente');
+  const srv = mockServer(mkItems(250), { mutate: (p, c) => (c === 2 ? { items: [], rawIds: [], paging: null } : p) });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'paging-ausente');
+});
+
+t('R3: parse de {results: []} sem paging -> pagina vazia com paging null (a decisao e do fetchCatalogAllPages); body sem results continua lancando', () => {
+  const p = parseMeliCatalogPage({ results: [] });
+  assert.deepEqual([p.items.length, p.rawIds.length, p.paging], [0, 0, null]);
+  assert.throws(() => parseMeliCatalogPage({}));
+});
+
+t('S1: total 0 com itens presentes -> paging-inconsistente (fecha)', async () => {
+  const srv = mockServer(mkItems(5), { mutate: (p) => ({ ...p, paging: { ...p.paging!, total: 0 } }) });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'paging-inconsistente');
+});
+
+t('S1: mais itens UNICOS que o total (60 ids, total 50) -> paging-inconsistente; mesmo id repetido nao conta como excesso', async () => {
+  const srv = mockServer(mkItems(60), { mutate: (p) => ({ ...p, paging: { ...p.paging!, total: 50 } }) });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'paging-inconsistente');
+});
+
+// ---- mutantes sobreviventes do QA ----
+t('R4a: falha de paginacao NAO repete o catalogo inteiro em fetchMasterCatalogs (mesmo com retries=1): 1 chamada, errorKind preservado', async () => {
+  let calls = 0;
+  const r = await fetchMasterCatalogs(['A'], async () => { calls++; throw new CatalogPagingError('incompleto', 'A', 'x'); }, { retries: 1 });
+  assert.equal(calls, 1);
+  assert.equal(r.attempts, 1);
+  assert.equal(r.outcomes[0].errorKind, 'incompleto');
+  // erro comum (nao de paginacao) continua com retry
+  let c2 = 0;
+  await fetchMasterCatalogs(['A'], async () => { c2++; throw new Error('rede'); }, { retries: 1 });
+  assert.equal(c2, 2);
+});
+
+t('R4b: dedupe por item id -- o PRIMEIRO vale (preco da 1a pagina), mesmo se a repeticao vier com outro preco', async () => {
+  const items = mkItems(105);
+  const srv = mockServer(items, {
+    mutate: (p, c) => {
+      if (c !== 2) return p;
+      const dup = { ...items[3], priceCents: 999999 };
+      return { ...p, items: [dup, ...p.items], rawIds: [dup.externalItemId, ...p.rawIds] };
+    },
+  });
+  const r = await fetchCatalogAllPages('MLB1', srv.fetchPage);
+  assert.equal(r.items.find((x) => x.externalItemId === 'it3')!.priceCents, items[3].priceCents);
+  assert.equal(r.items.length, 105);
+});
+
+
+// =============== 12. Brecha R3 (paging presente mas invalido) e sanitizacao de erro no summary ===============
+const viaParser = (body: unknown) => async (): Promise<CatalogPage<Listing>> => parseMeliCatalogPage(body);
+
+t('R3 brecha: paging PRESENTE mas invalido com results vazio -> FALHA paging-inconsistente (nunca "vazio sem paging"): total string, so total, objeto vazio', async () => {
+  for (const paging of [{ total: '5', offset: 0, limit: 100 }, { total: 5 }, {}]) {
+    assert.equal(await kindOf(fetchCatalogAllPages('MLB1', viaParser({ results: [], paging }))), 'paging-inconsistente', JSON.stringify(paging));
+  }
+});
+
+t('R3 brecha: outros paging invalidos tambem falham fechado (negativo, NaN, nao inteiro, offset/limit faltando ou negativo, string, array, 0, false), com results vazio ou nao', async () => {
+  const bads: unknown[] = [
+    { total: -1, offset: 0, limit: 100 }, { total: Number.NaN, offset: 0, limit: 100 }, { total: 1.5, offset: 0, limit: 100 },
+    { total: 5, offset: 0 }, { total: 5, limit: 100 }, { total: 5, offset: -1, limit: 100 }, { total: 5, offset: 0, limit: -1 },
+    'x', [], 0, false,
+  ];
+  for (const paging of bads) {
+    for (const results of [[], [{ item_id: 'MLB1', price: 1, seller_id: 1, condition: 'new' }]]) {
+      assert.equal(await kindOf(fetchCatalogAllPages('MLB1', viaParser({ results, paging }))), 'paging-inconsistente', JSON.stringify([paging, results.length]));
+    }
+  }
+});
+
+t('R3 brecha: paging AUSENTE de fato (chave ausente ou null) segue valendo vazio SO na 1a pagina com zero itens brutos; com itens continua paging-ausente', async () => {
+  for (const body of [{ results: [] }, { results: [], paging: null }]) {
+    const r = await fetchCatalogAllPages('MLB1', viaParser(body));
+    assert.deepEqual([r.items.length, r.total, r.emptyWithoutPaging], [0, 0, true]);
+  }
+  const one = { results: [{ item_id: 'MLB1', price: 1, seller_id: 1, condition: 'used' }] }; // so bruto nao-new
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', viaParser(one))), 'paging-ausente');
+  const srv = mockServer(mkItems(250), { mutate: (p, c) => (c === 2 ? parseMeliCatalogPage({ results: [] }, 100) : p) });
+  assert.equal(await kindOf(fetchCatalogAllPages('MLB1', srv.fetchPage)), 'paging-ausente'); // vazio sem paging fora da 1a pagina
+});
+
+t('R3 brecha: parse -- paging valido continua passando (inclusive total 0 e offset/limit zero); invalido nao vira null "ausente"', () => {
+  assert.deepEqual(parseMeliCatalogPage({ results: [], paging: { total: 0, offset: 0, limit: 100 } }).paging, { total: 0, offset: 0, limit: 100 });
+  const bad = parseMeliCatalogPage({ results: [], paging: { total: 5 } });
+  assert.equal(bad.pagingInvalid, true);
+  assert.equal(parseMeliCatalogPage({ results: [] }).pagingInvalid ?? false, false);
+});
+
+t('erro no summary: sanitizeErrorForSummary corta em 200 caracteres e REDIGE Bearer/access_token/refresh_token/client_secret antes de cortar', () => {
+  const secret = 'APP_USR-1234567890-abcdef-SECRETVALUE';
+  const raw = `Falha ao renovar token: ${'x'.repeat(50)} {"access_token":"${secret}","refresh_token":"TG-REFRESHSECRET","client_secret":"CS-SECRET"} Authorization: Bearer ${secret} access_token=${secret}`;
+  const out = sanitizeErrorForSummary(raw);
+  assert.ok(out.length <= 200 + 1, `tamanho ${out.length}`);
+  for (const s of ['SECRETVALUE', 'REFRESHSECRET', 'CS-SECRET', 'APP_USR-1234567890']) assert.ok(!out.includes(s), `vazou ${s}`);
+  // segredo logo antes do corte tambem nao vaza pela metade
+  const edge = 'a'.repeat(190) + ' Bearer ' + secret;
+  const outEdge = sanitizeErrorForSummary(edge);
+  assert.ok(!outEdge.includes('APP_USR') && !outEdge.includes('SECRET'));
+  assert.equal(sanitizeErrorForSummary('HTTP 500 (offset 100)'), 'HTTP 500 (offset 100)'); // mensagem curta e inocente intacta
+  assert.equal(sanitizeErrorForSummary(''), '');
+});
+
+t('erro no summary: no caminho paginado, o texto do erro (com token) NAO chega ao outcome.error nem ao CatalogPagingError', async () => {
+  const leak = 'Mercado Livre auth falhou: {"access_token":"APP_USR-LEAKME","message":"' + 'y'.repeat(400) + '"} Bearer APP_USR-LEAKME';
+  const r = await fetchMasterCatalogs(['A'], async (ref) => (await fetchCatalogAllPages(ref, async () => { throw new Error(leak); }, { retries: 0 })).items, { retries: 0 });
+  assert.equal(r.outcomes[0].status, 'failed');
+  assert.ok(!(r.outcomes[0].error ?? '').includes('LEAKME'));
+  assert.ok((r.outcomes[0].error ?? '').length <= 260); // prefixo [kind] ref + ate 200
+  const plain = await fetchMasterCatalogs(['A'], async () => { throw new Error(leak); }, { retries: 0 }); // fetchFn generico (fora da paginacao) tambem
+  assert.ok(!(plain.outcomes[0].error ?? '').includes('LEAKME'));
+});
+
+t('legado intacto: fetchSnapshots/mercado-livre-auth/processCatalogGroup nao usam sanitizeErrorForSummary (comportamento do legado inalterado)', () => {
+  const cp = fs.readFileSync(new URL('../src/server/collector/collect-prices.ts', import.meta.url), 'utf8');
+  const legacyFn = cp.slice(cp.indexOf('const processCatalogGroup'), cp.indexOf('const tasks:'));
+  assert.ok(!legacyFn.includes('sanitizeErrorForSummary'));
+  const ml = fs.readFileSync(new URL('../src/server/collector/sources/mercado-livre.ts', import.meta.url), 'utf8');
+  assert.ok(!ml.includes('sanitizeErrorForSummary'));
 });
 
 Promise.all(pending)

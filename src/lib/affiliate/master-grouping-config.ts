@@ -15,6 +15,11 @@
  *       (lista de ids COMPLETOS de master_products, separados por vírgula; "*" = todos os masters)
  * Flag ligada SEM a lista não agrupa nenhum master (proteção contra ligar o catálogo inteiro por engano).
  *
+ * PAGINAÇÃO (2026-11-06): o caminho por master pagina /products/{id}/items (limit=100, offset crescente, até 10 páginas por
+ * catálogo) e trata lista incompleta como falha do master (nada gravado/expirado). O custo no orçamento de chamadas é
+ * por página. O alarme `summary.masterGrouping.catalogosAcimaDe100` lista catálogos com total > 100. O caminho LEGADO
+ * (flag desligada) NÃO pagina: risco registrado na ata, decisão do dono.
+ *
  * COMO DESLIGAR (rollback, sem migration a desfazer): remover COLLECT_MASTER_GROUPING (ou qualquer valor diferente de
  * "1") e reiniciar. Desligada, o coletor se comporta EXATAMENTE como antes (agrupamento por catálogo).
  */

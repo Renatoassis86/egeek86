@@ -17,9 +17,14 @@ import {
   createCallBudget,
   createCatalogFetcher,
   decideMasterExpiry,
+  fetchCatalogAllPages,
   fetchMasterCatalogs,
   groupDueOffers,
   masterCallCap,
+  withExemptRetry,
+  sanitizeErrorForSummary,
+  CATALOG_ALARM_TOTAL,
+  type CatalogFetchFn,
   type CatalogOutcome,
   type MasterTarget,
 } from '@/lib/affiliate/master-consolidation';
@@ -121,6 +126,25 @@ export interface MasterGroupingStats {
   mastersDeferredByBudget: number;
   /** Masters com falha parcial: nada gravado nem expirado, carimbo não renovado. */
   mastersPartialFailure: number;
+  /** Destes, quantos pararam porque o orçamento de chamadas (custo = páginas) acabou no meio de um catálogo. */
+  mastersPartialByBudget: number;
+  /**
+   * ALARME (mede sem custo extra): catálogos cujo paging.total passou de 100, isto é, que precisam de 2+ páginas.
+   * Lista por catálogo, sem repetição no ciclo. Fica no summary para medir a frequência real da paginação.
+   */
+  catalogosAcimaDe100: { externalRef: string; total: number }[];
+  /** Falhas de paginação do ciclo (lista incompleta, paging ausente/inconsistente, teto de páginas, página caída). */
+  paginationFailures: { externalRef: string; kind: string }[];
+  /**
+   * Catálogos que responderam 200 bem formado com results vazio e SEM paging, tratados como catálogo vazio. Caso NÃO
+   * medido na API real: fica contado para visibilidade (se virar frequente, investigar).
+   */
+  catalogosVaziosSemPaging: { externalRef: string }[];
+  /**
+   * ESTIMATIVA (ceil(anúncios da página / 20)) das chamadas do multiget de títulos /items?ids= feitas por fetchSellerTitles.
+   * NÃO entram no teto de chamadas (subestimação conhecida, igual ao legado); contadas à parte só para dimensionar.
+   */
+  titleMultigetCallsEstimated: number;
 }
 
 export interface IdentityReviewEntry {
@@ -207,20 +231,49 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         catalogCallCap: masterCallCap(masterBaselineCalls),
         mastersDeferredByBudget: 0,
         mastersPartialFailure: 0,
+        mastersPartialByBudget: 0,
+        catalogosAcimaDe100: [],
+        paginationFailures: [],
+        catalogosVaziosSemPaging: [],
+        titleMultigetCallsEstimated: 0,
       }
     : null;
   if (masterStats) summary.masterGrouping = masterStats;
   const callBudget = createCallBudget(masterCallCap(masterBaselineCalls));
+  // Master isento do teto eleito ANTES da corrida entre os slots concorrentes (determinístico: o 1º alvo da fila, que já
+  // vem ordenado por urgência), em vez de depender de quem chega primeiro ao orçamento depois de um await.
+  if (masterTargets.length > 0) callBudget.setExempt(masterTargets[0].masterProductId);
   // Cache de respostas de catálogo POR CICLO (só usado pelo caminho por master): dois masters que dividem um catálogo
   // chamam a API uma vez só. Falha não fica em cache.
-  const catalogFetchers = new Map<string, (externalRef: string) => Promise<PriceSnapshotResult[]>>();
+  // Caminho por master PAGINA o catálogo (limit=100, offset crescente) e só devolve a lista COMPLETA ou falha; cada
+  // página/retry é cobrada do orçamento do master que disparou a busca (o 2º master que divide o catálogo pega do cache).
+  const catalogFetchers = new Map<string, CatalogFetchFn<PriceSnapshotResult, string>>();
   const fetcherFor = (networkSlug: string) => {
     let f = catalogFetchers.get(networkSlug);
     if (!f) {
       const source = getPriceSource(networkSlug)!;
-      f = createCatalogFetcher<PriceSnapshotResult>(async (externalRef) => {
-        if (masterStats) masterStats.catalogApiCalls++;
-        return source.fetchSnapshots(externalRef);
+      f = createCatalogFetcher<PriceSnapshotResult, string>(async (externalRef, owner = '') => {
+        const fetchPage = source.fetchCatalogPage?.bind(source);
+        if (!fetchPage) {
+          // Falha fechada: sem paginação não dá para afirmar que a lista está completa (nada gravado, nada expirado).
+          throw new Error(`fonte ${networkSlug} sem fetchCatalogPage: coleta por master exige paginação`);
+        }
+        const result = await fetchCatalogAllPages(
+          externalRef,
+          async (ref, offset, limit) => {
+            if (masterStats) masterStats.catalogApiCalls++;
+            const page = await fetchPage(ref, offset, limit);
+            if (masterStats) masterStats.titleMultigetCallsEstimated += Math.ceil(page.items.length / 20);
+            const total = page.paging?.total;
+            if (masterStats && typeof total === 'number' && total > CATALOG_ALARM_TOTAL && !masterStats.catalogosAcimaDe100.some((c) => c.externalRef === ref)) {
+              masterStats.catalogosAcimaDe100.push({ externalRef: ref, total });
+            }
+            return page;
+          },
+          { charge: () => callBudget.tryCharge(owner) }
+        );
+        if (masterStats && result.emptyWithoutPaging) masterStats.catalogosVaziosSemPaging.push({ externalRef });
+        return result.items;
       });
       catalogFetchers.set(networkSlug, f);
     }
@@ -258,8 +311,10 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         );
       if (rows.length === 0) return;
       const refs = Array.from(new Set(rows.map((r) => r.externalRef!))).sort();
-      // Teto de chamadas por ciclo (+10% da linha de base). Adiado = não carimba, continua devido no próximo tick.
-      if (!callBudget.tryReserve(refs)) {
+      // Teto de chamadas por ciclo (+10% da linha de base); custo = PÁGINAS (cada página/retry é cobrada antes da chamada
+      // em fetcherFor). Aqui só a admissão: precisa haver folga para ao menos 1 página por catálogo. Adiado = não
+      // carimba, continua devido no próximo tick. Se o orçamento acabar no meio de um catálogo = falha parcial do master.
+      if (!callBudget.admit(target.masterProductId, refs.length)) {
         if (masterStats) masterStats.mastersDeferredByBudget++;
         return;
       }
@@ -272,13 +327,22 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         offerIds: rows.map((r) => r.id),
       };
 
-      const fetched = await fetchMasterCatalogs(refs, fetcherFor(target.networkSlug), { retries: 1 });
+      // retries: 0 porque o retry (1x) já é por PÁGINA dentro de fetchCatalogAllPages; repetir o catálogo inteiro gastaria cota.
+      // O master isento que herdar falha por orçamento de outro master (promessa em cache) refaz a busca com isenção.
+      const catalogFetcher = withExemptRetry(fetcherFor(target.networkSlug), (owner) => callBudget.isExempt(owner));
+      const fetched = await fetchMasterCatalogs(refs, (ref) => catalogFetcher(ref, target.masterProductId), { retries: 0 });
       const attempted = fetched.outcomes.filter((o) => o.status !== 'skipped');
       run.counters.queries += attempted.length;
       if (!fetched.complete) {
         // Falha parcial: NADA gravado, NADA expirado, carimbo NÃO renovado (EG-03).
         if (masterStats) masterStats.mastersPartialFailure++;
         for (const f of fetched.outcomes.filter((o) => o.status === 'failed')) {
+          if (masterStats && f.errorKind) masterStats.paginationFailures.push({ externalRef: f.externalRef, kind: f.errorKind });
+          if (f.errorKind === 'orcamento') {
+            // Orçamento esgotado no meio do catálogo: não é erro da API, é adiamento (o master segue devido).
+            if (masterStats) masterStats.mastersPartialByBudget++;
+            continue;
+          }
           const message = f.error ?? 'falha ao consultar catálogo';
           summary.errors.push({ externalRef: f.externalRef, message: `master ${target.masterProductId}: ${message}` });
           run.addError(message);
@@ -312,8 +376,12 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       }
       await stampChecked(group.offerIds);
     } catch (err) {
-      summary.errors.push({ externalRef: `master:${target.masterProductId}`, message: (err as Error).message });
-      run.addError((err as Error).message);
+      // Texto do erro pode embutir corpo de resposta de auth: sem credencial e no máximo ~200 caracteres (só neste caminho).
+      const safeMessage = sanitizeErrorForSummary((err as Error).message);
+      summary.errors.push({ externalRef: `master:${target.masterProductId}`, message: safeMessage });
+      run.addError(safeMessage);
+    } finally {
+      callBudget.release(target.masterProductId); // devolve a reserva de admissão não usada
     }
   };
 
