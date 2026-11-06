@@ -16,7 +16,7 @@ import {
   type OfferInput,
   type PeriodDay,
 } from '@/lib/pricing/daily-state';
-import { computePeriodRef, type PeriodRef } from '@/lib/pricing/chart-model';
+import { computePeriodRef, isChartMeasuredDay, type PeriodRef } from '@/lib/pricing/chart-model';
 import {
   JUDGEMENT_MEASURED_WINDOW_DAYS,
   JUDGEMENT_MIN_MEASURED_DAYS,
@@ -87,7 +87,12 @@ export interface PriceMetricsV2 {
     weakSeller: boolean;
   } | null;
   /** Lojas DISTINTAS com preço fresco hoje e a mediana dos menores preços por loja (fato; null com menos de 3 lojas distintas). */
-  stores: { count: number; medianCents: number | null };
+  stores: {
+    count: number;
+    medianCents: number | null;
+    /** Nomes DISTINTOS das redes/marketplaces das lojas contadas hoje (ordenados). Serve ao texto "N vendedores no Mercado Livre" vs "N lojas". */
+    networks: string[];
+  };
   /** Preço agora vs mediana das lojas hoje (percentual inteiro). null sem comparação (menos de 3 lojas, ou menor preço de vendedor de baixa reputação). */
   storesComparison: StoreComparison | null;
   /** A frase de decisão do topo (fato, sem juízo). */
@@ -110,6 +115,8 @@ export interface PriceMetricsV2 {
   shortReasons: ShortReason[];
   /** Dias de acompanhamento (do primeiro dia medido até hoje, inclusive). */
   trackingDays: number;
+  /** Dias MEDIDOS de fato no regime atual (qualidade complete/partial com menor preço): a mesma contagem que o gráfico V2 usa para decidir se desenha. */
+  measuredDaysTotal: number;
   /** Faixa observada dos menores preços diários dos últimos 30 dias (inclui hoje). */
   observed: ObservedRange | null;
   /** Base de dados (substitui "confiança"): nível, dias medidos nos últimos 30 e faixa observada. */
@@ -146,8 +153,12 @@ interface StateRow {
   freshOffers: number;
 }
 
-interface OfferMeta {
+export interface OfferMeta {
   label: string;
+  /** Apelido do vendedor (null = não identificado). */
+  seller: string | null;
+  /** Nome da rede/marketplace da oferta. */
+  network: string;
   weak: boolean;
 }
 
@@ -174,7 +185,7 @@ async function loadStates(productId: string, today: string): Promise<StateRow[]>
 }
 
 /** Rótulo de loja e vendedor fraco das ofertas ELEGÍVEIS do produto (mesma elegibilidade das tabelas sombra). */
-async function loadOfferMeta(productId: string): Promise<Map<string, OfferMeta>> {
+export async function loadOfferMeta(productId: string): Promise<Map<string, OfferMeta>> {
   const rows = await db.execute<Row>(sql`
     SELECT o.id AS offer_id, n.name AS network_name, s.nickname, ${weakSellerSql('s')} AS weak
     FROM affiliate_offers o
@@ -186,13 +197,13 @@ async function loadOfferMeta(productId: string): Promise<Map<string, OfferMeta>>
   for (const r of rows) {
     const net = String(r.network_name ?? '');
     const nick = r.nickname ? String(r.nickname) : '';
-    out.set(String(r.offer_id), { label: nick ? `${nick} (${net})` : net, weak: r.weak === true });
+    out.set(String(r.offer_id), { label: nick ? `${nick} (${net})` : net, seller: nick || null, network: net, weak: r.weak === true });
   }
   return out;
 }
 
 /** Ofertas ATIVAS e elegíveis do produto com preço vigente, última cotação e última checagem (frescor aplicado em `computeLiveMinFromOffers`). */
-async function loadLiveOffers(productId: string, now: Date): Promise<LiveOfferInput[]> {
+export async function loadLiveOffers(productId: string, now: Date): Promise<LiveOfferInput[]> {
   const since = new Date(now.getTime() - FRESH_MAX_AGE_MS).toISOString();
   const rows = await db.execute<Row>(sql`
     SELECT o.id AS offer_id, o.network_id, o.seller_id, o.current_price_cents, o.last_checked_at,
@@ -270,7 +281,7 @@ function lowOf(mins: Array<{ day: string; cents: number; offerId: string }>, fro
   // Empate: vale o dia mais antigo (quando o preço apareceu primeiro).
   const best = inWin.reduce((a, b) => (b.cents < a.cents || (b.cents === a.cents && b.day < a.day) ? b : a));
   const span = firstDay ? Math.round((new Date(`${today}T12:00:00Z`).getTime() - new Date(`${firstDay}T12:00:00Z`).getTime()) / 86_400_000) + 1 : 0;
-  return { cents: best.cents, day: best.day, store: meta.get(best.offerId)?.label ?? 'Loja', coverageDays: windowDays ? Math.min(windowDays, span) : span };
+  return { cents: best.cents, day: best.day, store: meta.get(best.offerId)?.label ?? 'Loja não identificada', coverageDays: windowDays ? Math.min(windowDays, span) : span };
 }
 
 async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetricsV2> {
@@ -331,6 +342,17 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
   const storeOffers = liveOffers.map((o) => ({ storeKey: o.sellerId ?? o.networkId ?? o.offerId, priceCents: o.priceCents }));
   const storesNow = storesToday(storeOffers);
   // Menor preço de vendedor de baixa reputação não é comparado em percentual com a mediana (só fatos, com a nota).
+  // Redes das lojas contadas: ofertas frescas dentro da faixa de preços que `storesToday` manteve (as descartadas por outlier ficam fora da faixa).
+  const storeMin = storesNow.storePrices.length ? storesNow.storePrices[0] : null;
+  const storeMax = storesNow.storePrices.length ? storesNow.storePrices[storesNow.storePrices.length - 1] : null;
+  const storeNetworks = [
+    ...new Set(
+      liveOffers
+        .filter((o) => storeMin != null && storeMax != null && o.priceCents >= storeMin && o.priceCents <= storeMax)
+        .map((o) => meta.get(o.offerId)?.network ?? '')
+        .filter((n) => n !== '')
+    ),
+  ].sort();
   const storesComparison = holderWeak ? null : compareToStoresMedian(current, storesNow.medianCents);
 
   // Série dos MÍNIMOS DIÁRIOS dos últimos 30 dias, sem hoje (o preço agora é comparado com o passado), e dias medidos (>= 3 lojas).
@@ -393,7 +415,7 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
           weakSeller: holderWeak,
         }
       : null,
-    stores: { count: storesNow.storeCount, medianCents: storesNow.medianCents },
+    stores: { count: storesNow.storeCount, medianCents: storesNow.medianCents, networks: storeNetworks },
     storesComparison,
     decision: decisionSentence(storesComparison, storesNow.storeCount, { weakHolder: holderWeak }),
     lastEvent: lastEvent ? { at: lastEvent.at, cents: lastEvent.minCents, prevCents: lastEvent.prevMinCents, store: lastEvent.store, matchesNow: eventMatches } : null,
@@ -405,6 +427,7 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
     shortHistory,
     shortReasons,
     trackingDays,
+    measuredDaysTotal: measured.filter(isChartMeasuredDay).length,
     observed,
     dataBase,
     median30Cents: median30,
@@ -422,6 +445,6 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
 /** Versão em cache SWR (60 s fresco). A página trata falha/timeout com `.catch(() => null)` e cai no comportamento anterior. */
 export const getPriceMetricsV2: (masterProductId: string) => Promise<PriceMetricsV2> = createCachedQuery(
   loadPriceMetricsV2,
-  ['price-metrics-v2-5'],
+  ['price-metrics-v2-7'],
   { revalidate: 60, coldTimeoutSeconds: 5, live: true, hardTimeoutSeconds: 20 }
 );

@@ -198,9 +198,14 @@ export function trimSweepStart<T extends { at: string }>(runEvents: T[]): T[] {
   return k > 0 ? runEvents.slice(k) : runEvents;
 }
 
-export function buildChartModel(input: ChartInput, tf: ChartTf, nowMs: number, layers: ChartLayers = { avgDay: true, avgHistorical: true }): ChartModel {
+/** Dia MEDIDO para o gráfico: qualidade complete/partial COM menor preço. Regra única: o gráfico (`buildChartModel`) e o painel da camada (`measuredDaysTotal`) usam esta função. */
+export function isChartMeasuredDay(d: { quality: string; minCents: number | null }): boolean {
+  return (d.quality === 'complete' || d.quality === 'partial') && d.minCents != null;
+}
+
+export function buildChartModel(input: ChartInput, tf: ChartTf, nowMs: number, layers: ChartLayers = { avgDay: true, avgHistorical: true }, extraVals: number[] = []): ChartModel {
   const dayMap = new Map(input.days.map((d) => [d.day, d]));
-  const measured = input.days.filter((d) => (d.quality === 'complete' || d.quality === 'partial') && d.minCents != null).sort((a, b) => (a.day < b.day ? -1 : 1));
+  const measured = input.days.filter(isChartMeasuredDay).sort((a, b) => (a.day < b.day ? -1 : 1));
   const events = [...input.events].sort((a, b) => msOf(a.at) - msOf(b.at));
   // Mesmo instante repetido: vale o último gravado.
   const evs = events.filter((e, i) => i === events.length - 1 || msOf(events[i + 1].at) !== msOf(e.at));
@@ -286,6 +291,8 @@ export function buildChartModel(input: ChartInput, tf: ChartTf, nowMs: number, l
   const vals: number[] = [];
   for (const s of segments) for (const p of s) vals.push(p.v);
   if (stale) vals.push(stale.v);
+  // Valores de referência extras (ex.: mediana das lojas hoje, na camada do cartão): só ampliam o eixo quando já há série.
+  if (vals.length) for (const v of extraVals) if (v > 0) vals.push(v);
   if (layers.avgDay) for (const s of avgSegments) for (const p of s) vals.push(p.v);
   if (vals.length && ref) {
     if (ref.avgCents != null && layers.avgHistorical) vals.push(ref.avgCents);

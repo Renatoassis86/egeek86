@@ -5,6 +5,7 @@ import { PriceChartV2, PriceChartV2Unavailable } from '@/components/monitoring/p
 import { isPriceMetricsV2Enabled } from '@/lib/pricing/price-metrics-config';
 import { getPriceChartV2 } from '@/server/pricing/price-chart-v2';
 import { getPriceMetricsV2 } from '@/server/pricing/price-metrics-v2';
+import { chartLiveProps } from '@/lib/pricing/chart-props';
 
 /**
  * Gráfico de histórico da página do produto. Server component próprio para
@@ -39,15 +40,7 @@ export async function ProductPriceChartSection({
         />
       );
     }
-    return (
-      <PriceChartV2
-        input={input}
-        nowIso={new Date().toISOString()}
-        current={v2?.now ? { cents: v2.now.cents, checkedAt: v2.now.checkedAt, quotedAt: v2.now.quotedAt, store: v2.now.store } : null}
-        lowAll={v2?.lows.all ? { cents: v2.lows.all.cents, day: v2.lows.all.day, store: v2.lows.all.store } : null}
-        weakNotice={v2?.weakNotice ?? 'none'}
-      />
-    );
+    return <PriceChartV2 input={input} nowIso={new Date().toISOString()} {...chartLiveProps(v2)} />;
   }
 
   if (!canonical) return null;

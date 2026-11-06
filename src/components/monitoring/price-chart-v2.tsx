@@ -84,6 +84,8 @@ export function PriceChartV2({
   current,
   lowAll,
   weakNotice,
+  neutro = false,
+  medianaLojasHoje = null,
 }: {
   input: ChartInput;
   nowIso: string;
@@ -91,13 +93,25 @@ export function PriceChartV2({
   lowAll: PriceChartV2Low | null;
   /** Aviso de vendedor fraco nos mínimos (ver `weakSellerNotice`): só com valor diferente de 'none' o texto diz que o menor já visto o ignora. */
   weakNotice: WeakSellerNotice;
+  /** Sem cor semântica de bom/ruim (verde/vermelho): usado na camada do cartão-pai, onde o juízo está desligado. Os números não mudam. */
+  neutro?: boolean;
+  /**
+   * Só no modo neutro: mediana das lojas HOJE (valor do meio entre as lojas com preço verificado agora), a linha pontilhada de referência
+   * da camada. A mediana histórica do período NÃO aparece por padrão nesse modo: fica atrás do botão "Camadas".
+   */
+  medianaLojasHoje?: number | null;
 }) {
   const resolvedTheme = useThemeStore((s) => s.resolvedTheme);
   const palette = CHART_PALETTES[resolvedTheme];
   const avgColor = resolvedTheme === 'light' ? AVG_TEXT_LIGHT : palette.movingAverage;
+  const upColor = neutro ? palette.text : palette.up;
+  const downColor = neutro ? palette.textMuted : palette.down;
+  // Neutro (camada): rótulos do eixo no tom secundário (o terciário medido ficava em 4,36:1 no escuro) e alvos de toque de 44 px.
+  const axisFill = neutro ? 'var(--color-text-secondary)' : palette.textMuted;
+  const touch = neutro ? 'min-h-11' : 'min-h-8';
   const nowMs = useMemo(() => new Date(nowIso).getTime(), [nowIso]);
   const [tf, setTf] = useState<ChartTf>('1M');
-  const [layers, setLayers] = useState({ avgDay: false, avgHistorical: false, drops: false });
+  const [layers, setLayers] = useState({ avgDay: false, avgHistorical: false, medianHist: false, drops: false });
   const [layersOpen, setLayersOpen] = useState(false);
   const [hoverT, setHoverT] = useState<number | null>(null);
   const [width, setWidth] = useState(640);
@@ -112,7 +126,15 @@ export function PriceChartV2({
     return () => ro.disconnect();
   }, []);
 
-  const model = useMemo(() => buildChartModel(input, tf, nowMs, { avgDay: layers.avgDay, avgHistorical: layers.avgHistorical }), [input, tf, nowMs, layers.avgDay, layers.avgHistorical]);
+  const inputUsed = useMemo<ChartInput>(
+    () => (neutro && !layers.medianHist ? { ...input, refs: Object.fromEntries(Object.entries(input.refs).map(([k, r]) => [k, { ...r, medianCents: null }])) as ChartInput['refs'] } : input),
+    [input, neutro, layers.medianHist]
+  );
+  const extraVals = useMemo(() => (neutro && medianaLojasHoje != null ? [medianaLojasHoje] : []), [neutro, medianaLojasHoje]);
+  const model = useMemo(
+    () => buildChartModel(inputUsed, tf, nowMs, { avgDay: layers.avgDay, avgHistorical: layers.avgHistorical }, extraVals),
+    [inputUsed, tf, nowMs, layers.avgDay, layers.avgHistorical, extraVals]
+  );
   const mobile = width < 480;
   const H = mobile ? H_MOBILE : H_DESKTOP;
   const pw = width - M.l - M.r;
@@ -157,7 +179,8 @@ export function PriceChartV2({
     if (model.stale) series.push([{ x: x(model.stale.t0), y: y(model.stale.v) }, { x: x(model.stale.t1), y: y(model.stale.v) }]);
     if (layers.avgDay) for (const sg of model.avgSegments) series.push(sg.map((p) => ({ x: x(p.t), y: y(p.v) })));
     const hLine = (v: number): PxPoint[] => [{ x: M.l, y: y(v) }, { x: width - M.r, y: y(v) }];
-    const med = model.ref?.medianCents ?? null;
+    const med = neutro ? (medianaLojasHoje ?? null) : (model.ref?.medianCents ?? null);
+    const histMed = neutro && layers.medianHist ? (model.ref?.medianCents ?? null) : null;
     const avg = layers.avgHistorical ? (model.ref?.avgCents ?? null) : null;
     const place = (text: string, v: number, extra: PxPoint[][], avoid: PxRect[]) => {
       const w = text.length * 6.1 + 6;
@@ -173,9 +196,12 @@ export function PriceChartV2({
       const k = pickLabelSlot(cands.map((c) => c.rect), [...series, ...extra], avoid);
       return { text, ...cands[k] };
     };
-    const medL = med != null ? place(`${mobile ? 'Mediana' : 'Mediana histórica'} ${formatBRL(med)}`, med, avg != null ? [hLine(avg)] : [], []) : null;
-    const avgL = avg != null ? place(`${mobile ? 'Média' : 'Média histórica'} ${formatBRL(avg)}`, avg, med != null ? [hLine(med)] : [], medL ? [medL.rect] : []) : null;
-    return { medL, avgL };
+    const medText = neutro ? (mobile ? 'Lojas hoje' : 'Mediana das lojas hoje') : mobile ? 'Mediana' : 'Mediana histórica';
+    const others = (...vs: Array<number | null>) => vs.filter((v): v is number => v != null).map(hLine);
+    const medL = med != null ? place(`${medText} ${formatBRL(med)}`, med, others(avg, histMed), []) : null;
+    const avgL = avg != null ? place(`${mobile ? 'Média' : 'Média histórica'} ${formatBRL(avg)}`, avg, others(med, histMed), medL ? [medL.rect] : []) : null;
+    const histL = histMed != null ? place(`${mobile ? 'Mediana hist.' : 'Mediana histórica'} ${formatBRL(histMed)}`, histMed, others(med, avg), [medL?.rect, avgL?.rect].filter((r): r is PxRect => r != null)) : null;
+    return { medL, avgL, histL };
   })();
 
   const summary = model.y
@@ -183,7 +209,7 @@ export function PriceChartV2({
     : 'Sem dado medido.';
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3" style={neutro ? ({ '--color-text-tertiary': 'var(--color-text-secondary)' } as React.CSSProperties) : undefined}>
       <div className="flex flex-wrap items-center justify-between gap-2">
         {model.level !== 'none' && model.level !== 'single' ? (
         <div className="inline-flex items-center gap-0.5 border border-[var(--color-border-subtle)] p-1" role="group" aria-label="Período">
@@ -194,7 +220,8 @@ export function PriceChartV2({
               onClick={() => setTf(opt)}
               aria-pressed={tf === opt}
               className={cn(
-                'min-h-8 px-2.5 py-1 text-caption font-medium transition-colors',
+                touch,
+                'px-2.5 py-1 text-caption font-medium transition-colors',
                 tf === opt ? ACTIVE_BTN : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
               )}
             >
@@ -208,7 +235,7 @@ export function PriceChartV2({
             type="button"
             onClick={() => setLayersOpen((v) => !v)}
             aria-expanded={layersOpen}
-            className="inline-flex min-h-8 items-center gap-1.5 border border-[var(--color-border-subtle)] px-2.5 py-1 text-caption font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+            className={cn(touch, 'inline-flex items-center gap-1.5 border border-[var(--color-border-subtle)] px-2.5 py-1 text-caption font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]')}
           >
             <Layers className="size-3.5" aria-hidden />
             Camadas
@@ -224,6 +251,7 @@ export function PriceChartV2({
       {showChart && layersOpen && (
         <div className="flex flex-wrap gap-2 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] p-2" role="group" aria-label="Camadas do gráfico">
           {([
+            ...(neutro ? ([['medianHist', 'Mediana histórica']] as const) : []),
             ['avgHistorical', 'Média histórica'],
             ['avgDay', 'Média do dia (3+ ofertas)'],
             ['drops', 'Marcadores de queda (3% ou mais)'],
@@ -234,7 +262,8 @@ export function PriceChartV2({
               aria-pressed={layers[key]}
               onClick={() => setLayers((l) => ({ ...l, [key]: !l[key] }))}
               className={cn(
-                'min-h-8 border px-2.5 py-1 text-caption font-medium transition-colors',
+                touch,
+                'border px-2.5 py-1 text-caption font-medium transition-colors',
                 layers[key]
                   ? `border-[var(--color-accent-primary)] ${ACTIVE_BTN}`
                   : 'border-[var(--color-border-default)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
@@ -248,12 +277,15 @@ export function PriceChartV2({
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-medium text-[var(--color-text-secondary)]">
         <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4 bg-[var(--color-accent-primary)]" /> Menor preço (degraus)</span>
-        {model.ref?.medianCents != null && <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dotted border-[var(--color-text-secondary)]" /> Mediana histórica do período</span>}
+        {neutro
+          ? medianaLojasHoje != null && <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dotted border-[var(--color-text-secondary)]" /> Mediana das lojas hoje</span>
+          : model.ref?.medianCents != null && <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dotted border-[var(--color-text-secondary)]" /> Mediana histórica do período</span>}
+        {neutro && layers.medianHist && model.ref?.medianCents != null && <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dashed border-[var(--color-text-secondary)]" /> Mediana histórica do período</span>}
         {layers.avgHistorical && <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dashed" style={{ borderColor: avgColor }} /> Média histórica do período</span>}
         {layers.avgDay && <span className="inline-flex items-center gap-1.5"><span className="h-0.5 w-4" style={{ background: avgColor, opacity: 0.55 }} /> Média do dia</span>}
-        {model.weakSteps.length > 0 && <span className="inline-flex items-center gap-1.5"><span className="h-[3px] w-4" style={{ background: palette.down }} /> Menor preço de vendedor de baixa reputação</span>}
+        {model.weakSteps.length > 0 && <span className="inline-flex items-center gap-1.5"><span className="h-[3px] w-4" style={{ background: downColor }} /> Menor preço de vendedor de baixa reputação</span>}
         {bandsCount > 0 && <span className="inline-flex items-center gap-1.5"><span className={cn('inline-block h-3', mobile ? 'w-px' : 'w-1')} style={{ background: palette.line, opacity: mobile ? 0.3 : 0.4 }} /> Oscilações rápidas (mínimo a máximo)</span>}
-        {layers.drops && <span className="inline-flex items-center gap-1.5"><span className="inline-block size-0 border-x-4 border-t-[7px] border-x-transparent" style={{ borderTopColor: palette.up }} /> Queda de 3% ou mais</span>}
+        {layers.drops && <span className="inline-flex items-center gap-1.5"><span className="inline-block size-0 border-x-4 border-t-[7px] border-x-transparent" style={{ borderTopColor: upColor }} /> Queda de 3% ou mais</span>}
       </div>
       {showChart && model.stale && (
         <Text variant="caption" color="tertiary">
@@ -288,18 +320,20 @@ export function PriceChartV2({
             {model.y.ticks.map((tk) => (
               <g key={tk}>
                 <line x1={M.l} x2={width - M.r} y1={y(tk)} y2={y(tk)} stroke={palette.grid} strokeWidth={1} />
-                <text x={M.l - 6} y={y(tk) + 4} textAnchor="end" fontSize={11} fill={palette.textMuted}>{yLabel(tk, yFmtSpan)}</text>
+                <text x={M.l - 6} y={y(tk) + 4} textAnchor="end" fontSize={11} fill={axisFill}>{yLabel(tk, yFmtSpan)}</text>
               </g>
             ))}
             {xTicks(model.t0, model.t1, mobile ? 3 : 5).map((t, i, a) => (
-              <text key={t} x={x(t)} y={H - 8} textAnchor={i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle'} fontSize={11} fill={palette.textMuted}>
+              <text key={t} x={x(t)} y={H - 8} textAnchor={i === 0 ? 'start' : i === a.length - 1 ? 'end' : 'middle'} fontSize={11} fill={axisFill}>
                 {tf === '1D' ? hourMin(t) : dayMonth(t)}
               </text>
             ))}
 
             {/* referência do período: mediana histórica (padrão); média histórica atrás de "Camadas". Rótulos com contorno do fundo. */}
             {(() => {
-              const ym = model.ref?.medianCents != null ? y(model.ref.medianCents) : null;
+              const medV = neutro ? (medianaLojasHoje ?? null) : (model.ref?.medianCents ?? null);
+              const ym = medV != null ? y(medV) : null;
+              const yh = neutro && layers.medianHist && model.ref?.medianCents != null ? y(model.ref.medianCents) : null;
               const ya = layers.avgHistorical && model.ref?.avgCents != null ? y(model.ref.avgCents) : null;
               const halo = { stroke: palette.background, strokeWidth: 3, paintOrder: 'stroke' } as const;
               return (
@@ -314,6 +348,12 @@ export function PriceChartV2({
                     <>
                       <line x1={M.l} x2={width - M.r} y1={ya} y2={ya} stroke={avgColor} strokeWidth={1.25} strokeDasharray="6 4" />
                       {labels?.avgL && <text x={labels.avgL.x} y={labels.avgL.base} fontSize={11} fill={avgColor} {...halo}>{labels.avgL.text}</text>}
+                    </>
+                  )}
+                  {yh != null && (
+                    <>
+                      <line x1={M.l} x2={width - M.r} y1={yh} y2={yh} stroke={palette.text} strokeWidth={1.25} strokeDasharray="7 4" />
+                      {labels?.histL && <text x={labels.histL.x} y={labels.histL.base} fontSize={11} fill={palette.text} {...halo}>{labels.histL.text}</text>}
                     </>
                   )}
                 </g>
@@ -352,12 +392,12 @@ export function PriceChartV2({
 
             {/* trechos do menor preço de vendedor de baixa reputação: barra sob o degrau (legenda e nota abaixo do gráfico) */}
             {model.weakSteps.map((w) => (
-              <line key={`w${w.t0}`} x1={x(w.t0)} x2={Math.max(x(w.t1), x(w.t0) + 2)} y1={y(w.v) + 5} y2={y(w.v) + 5} stroke={palette.down} strokeWidth={3} />
+              <line key={`w${w.t0}`} x1={x(w.t0)} x2={Math.max(x(w.t1), x(w.t0) + 2)} y1={y(w.v) + 5} y2={y(w.v) + 5} stroke={downColor} strokeWidth={3} />
             ))}
 
             {/* marcadores de queda do menor preço */}
             {layers.drops && shownDrops.map((d) => (
-              <polygon key={d.t} points={`${x(d.t) - 5},${y(d.v) - 10} ${x(d.t) + 5},${y(d.v) - 10} ${x(d.t)},${y(d.v) - 2}`} fill={palette.up} stroke={palette.background} strokeWidth={1}>
+              <polygon key={d.t} points={`${x(d.t) - 5},${y(d.v) - 10} ${x(d.t) + 5},${y(d.v) - 10} ${x(d.t)},${y(d.v) - 2}`} fill={upColor} stroke={palette.background} strokeWidth={1}>
                 <title>{`Queda para ${formatBRL(d.v)} (antes ${formatBRL(d.prev)}) em ${dateTime(d.t)} · ${d.store}`}</title>
               </polygon>
             ))}
@@ -393,14 +433,14 @@ export function PriceChartV2({
 
       {showChart && (
         <Text variant="caption" color="tertiary">
-          O eixo vertical não começa em zero. {model.ref ? `Referência do período: ${model.ref.coveredDays} dia${model.ref.coveredDays === 1 ? '' : 's'} com dado. ` : 'Sem mediana histórica no período (menos de 3 ofertas). '}
+          O eixo vertical não começa em zero. {neutro ? (medianaLojasHoje != null ? 'A linha pontilhada é a mediana das lojas hoje: o valor do meio entre as lojas com preço verificado agora, que muda a cada coleta. ' : '') : model.ref ? `Referência do período: ${model.ref.coveredDays} dia${model.ref.coveredDays === 1 ? '' : 's'} com dado. ` : 'Sem mediana histórica no período (menos de 3 ofertas). '}
           {model.firstMeasuredAt ? `Medição regular desde ${dayMonth(model.firstMeasuredAt)}.` : ''}
         </Text>
       )}
 
       {showChart && model.weakSteps.length > 0 && (
         <Text variant="caption" color="tertiary">
-          A barra vermelha sob o degrau marca o trecho em que o menor preço do gráfico é de vendedor de baixa reputação.
+          {neutro ? 'A barra sob o degrau' : 'A barra vermelha sob o degrau'} marca o trecho em que o menor preço do gráfico é de vendedor de baixa reputação.
           {weakNotice !== 'none' ? ' O "menor já visto" e os mínimos de referência ignoram esse vendedor, por isso podem ser maiores que o ponto mais baixo da linha.' : ''}
         </Text>
       )}
@@ -412,7 +452,7 @@ export function PriceChartV2({
         </Text>
       )}
 
-      <EventList model={model} currentCents={current?.cents ?? null} />
+      <EventList model={model} currentCents={current?.cents ?? null} neutro={neutro} />
 
       {input.legacyDays > 0 && (
         <div className="flex items-start gap-2 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] p-2.5">
@@ -463,7 +503,7 @@ function ReadingBar({ reading, hover, nowMs, showAvg }: { reading: Reading; hove
 }
 
 /** Mudanças do menor preço: a mais recente em destaque, as anteriores recolhidas. "Detectado em" = quando o coletor viu a mudança. */
-function EventList({ model, currentCents }: { model: ChartModel; currentCents: number | null }) {
+function EventList({ model, currentCents, neutro }: { model: ChartModel; currentCents: number | null; neutro: boolean }) {
   if (!model.events.length) return null;
   const [latest, ...rest] = model.events;
   const row = (e: ChartModel['events'][number], strong: boolean) => {
@@ -472,7 +512,7 @@ function EventList({ model, currentCents }: { model: ChartModel; currentCents: n
     return (
       <li key={e.at} className={cn('flex flex-wrap items-baseline justify-between gap-x-3 px-2.5 text-body-sm', strong ? 'py-2.5' : 'py-1.5')}>
         <span className="tabular text-[var(--color-text-tertiary)]">Detectado em {dateTime(new Date(e.at).getTime())}</span>
-        <span className={cn('tabular font-semibold', down ? 'text-[var(--color-accent-success)]' : up ? 'text-[var(--color-accent-danger)]' : 'text-[var(--color-text-primary)]')}>
+        <span className={cn('tabular font-semibold', !neutro && down ? 'text-[var(--color-accent-success)]' : !neutro && up ? 'text-[var(--color-accent-danger)]' : 'text-[var(--color-text-primary)]')}>
           {formatBRL(e.minCents)}{e.prevMinCents != null ? ` (antes ${formatBRL(e.prevMinCents)})` : ' (primeiro registro)'}
         </span>
         <span className="text-[var(--color-text-secondary)]">{e.store}</span>
@@ -490,7 +530,7 @@ function EventList({ model, currentCents }: { model: ChartModel; currentCents: n
       )}
       {rest.length > 0 && (
         <details className="group border border-[var(--color-border-subtle)]">
-          <summary className="cursor-pointer list-none px-2.5 py-1.5 text-caption font-medium text-[var(--color-accent-primary)] marker:content-none [&::-webkit-details-marker]:hidden">
+          <summary className={cn('cursor-pointer list-none px-2.5 py-1.5 text-caption font-medium marker:content-none [&::-webkit-details-marker]:hidden', neutro ? 'min-h-11 py-3 text-[var(--color-text-primary)] underline underline-offset-2' : 'text-[var(--color-accent-primary)]')}>
             <span className="group-open:hidden">Mudanças anteriores no período ({rest.length})</span>
             <span className="hidden group-open:inline">Recolher mudanças anteriores</span>
           </summary>

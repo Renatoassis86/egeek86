@@ -12,6 +12,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "train:classifier": "tsx src/scripts/train-product-classifier.ts",
+    "test:parecer": "tsx scripts/test-parecer-produto.ts",
     "test:collector": "tsx --test src/lib/collector-runs/collector-runs.test.ts"
   },
   "dependencies": {

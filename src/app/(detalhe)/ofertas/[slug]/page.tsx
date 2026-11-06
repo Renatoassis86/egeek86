@@ -37,9 +37,11 @@ import {
 } from '@/lib/affiliate/labels';
 import { computeVerdict } from '@/lib/affiliate/price-verdict';
 import { getMasterProductPriceStats } from '@/server/queries/product-price-stats';
-import { isPriceMetricsV2Enabled } from '@/lib/pricing/price-metrics-config';
+import { isPriceMetricsV2Enabled, isProductCardV1Enabled } from '@/lib/pricing/price-metrics-config';
 import { getPriceMetricsV2 } from '@/server/pricing/price-metrics-v2';
 import { PriceMetricsV2Block } from '@/components/affiliate/price-metrics-v2-block';
+import { ProductCardV1, AvisoTransicaoSelo } from '@/components/affiliate/product-card-v1';
+import { buildParecerProduto } from '@/lib/pricing/parecer-produto';
 import { ProductPriceChartSection, ProductPriceChartFallback } from './product-price-chart-section';
 import { getOfferBySlug, getMasterProductMetrics } from '@/server/queries/affiliate';
 import {
@@ -142,6 +144,8 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
   const lowestIsToday = stats?.lowAll != null && offer.currentPriceCents > 0 && offer.currentPriceCents < stats.lowAll.priceCents;
   // medianCents entra na estatística canônica pela frente de preços; opcional até lá.
   const medianCents = (stats as { medianCents?: number | null } | null)?.medianCents ?? null;
+  // Cartão-pai (Fase 1) atrás de PRODUCT_CARD_V1 (desligada por padrão): só com a leitura V2 disponível; senão o bloco atual.
+  const parecer = v2 && isProductCardV1Enabled() ? buildParecerProduto(v2) : null;
   const trustInfo = getSellerTrustInfo(offer.seller);
   // Com PRICE_METRICS_V2 ligada a seção do gráfico sempre existe (sem dado medido ela mostra o cartão "sem histórico medido").
   const chartNode =
@@ -256,7 +260,20 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
               )}
             </div>
 
-            {v2 ? (
+            {v2 && parecer ? (
+              // Cartão-pai (PRODUCT_CARD_V1): o cartão tem a própria borda (guia visual); sem Card em volta para não duplicar a moldura.
+              <div className="flex flex-col gap-3">
+                <ProductCardV1
+                  parecer={parecer}
+                  produtoNome={offer.title}
+                  identidade={hasClassification ? specLine : null}
+                  produtoId={offer.masterProductId}
+                  compraHref={/^https?:\/\//i.test(offer.affiliateUrl) ? `/go/${offer.slug}` : null}
+                />
+                {sealTransition && <AvisoTransicaoSelo />}
+                {chartNode}
+              </div>
+            ) : v2 ? (
               <Card variant="outline" className="rounded-none border-[var(--color-border-default)]">
                 <CardContent className="p-4 sm:p-5 flex flex-col gap-3">
                   <PriceMetricsV2Block data={v2} sealTransition={sealTransition} />

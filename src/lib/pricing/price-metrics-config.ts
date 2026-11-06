@@ -13,6 +13,16 @@ export function isPriceMetricsV2Enabled(): boolean {
 }
 
 /**
+ * FLAG do cartão-pai "O que sabemos hoje" (Fase 1, ata 2026-11-05), PRÓPRIA e desligada por padrão.
+ * Para LIGAR: variável de ambiente `PRODUCT_CARD_V1=1` (junto de `PRICE_METRICS_V2=1`, de onde vêm os dados; sem ela
+ * a página não lê o DTO V2 e o cartão não aparece) e novo deploy/reinício. Para DESLIGAR: remover a variável ou usar
+ * qualquer valor diferente de "1". Desligada, a página fica IDÊNTICA à anterior. Não liga o juízo (VERDICT_JUDGEMENT_ENABLED).
+ */
+export function isProductCardV1Enabled(): boolean {
+  return process.env.PRODUCT_CARD_V1 === '1';
+}
+
+/**
  * PONTO ÚNICO configurável (decisão do dono pendente, 2026-11-05): vendedor fraco (reputação baixa ou poucas
  * vendas, mesma regra de `weakSellerSql`/`sellerTier`) entra no "menor preço de 30d/90d/sempre" e no selo
  * "Menor preço do período"?
@@ -55,3 +65,10 @@ export const JUDGEMENT_MIN_STORES_PER_DAY = 3;
 export const CORROBORATION_BAND_PERCENT = 10;
 /** Reconfirmação do preço: uma checagem posterior à cotação com pelo menos esta folga (a coleta só grava cotação na mudança). */
 export const CORROBORATION_RECHECK_MIN_MS = 30 * 60_000;
+
+/**
+ * Limite (em %) acima do qual a comparação "abaixo do valor do meio entre as lojas" é marcada como `percentualExtremo` no contrato
+ * `ParecerProduto` (Fase 1/2 do cartão-pai). É SÓ UM SINALIZADOR exposto para decisão do dono: hoje não muda nenhum texto nem esconde nada.
+ * Um preço mais de 50% abaixo do meio costuma ser anúncio errado, kit incompleto ou produto diferente; o que fazer com isso é regra de negócio.
+ */
+export const PARECER_PERCENTUAL_EXTREMO = 50;
