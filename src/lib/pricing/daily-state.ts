@@ -437,17 +437,35 @@ export interface ReconOffer {
 }
 
 /**
+ * Janela de agrupamento de instantes próximos na reconstrução (ms). Cotações de uma mesma varredura chegam com
+ * 0,2 a 0,5 s de intervalo; avaliar o mínimo a cada cotação cria eventos transitórios (o mínimo "pisca" e a
+ * própria oferta regrava outro preço logo depois). Dentro da janela vale só o ESTADO FINAL do lote.
+ * 0 desliga o agrupamento (comportamento antigo: um instante, uma avaliação). Valor definitivo: ver ata/relatório.
+ */
+export const RECON_BATCH_WINDOW_MS = 2000;
+const SP_OFFSET_MS = 3 * 3600_000; // America/Sao_Paulo = UTC-03 fixo (sem horário de verão desde 2019; ver spDayBounds)
+const spDayIndex = (ms: number) => Math.floor((ms - SP_OFFSET_MS) / DAY_MS);
+
+/**
  * Reconstrói os eventos do menor preço SÓ nos instantes em que houve cotação medida (>= fromAt): em cada um,
  * o mínimo elegível entre as ofertas frescas (<= 48 h) e vivas. Altas por expiração/idade entre duas cotações
  * NÃO são observáveis (não há medição naquele instante) e ficam de fora: lacuna fica lacuna.
+ *
+ * AGRUPAMENTO (windowMs): os instantes são divididos em lotes. Um lote começa no primeiro instante livre t0 e
+ * contém todo instante t com t - t0 <= windowMs (âncora fixa, sem crescer por encadeamento) e MESMO dia civil de
+ * Brasília (um lote nunca cruza a meia-noite local: o último estado de cada dia é sempre preservado). Do lote
+ * só interessa o ESTADO FINAL (mínimo elegível no último instante). Gera evento se esse estado final difere do
+ * último evento; o instante do evento é o início da sequência final igual a esse estado (o momento em que o
+ * mínimo chegou ao valor/oferta finais e ficou), nunca um valor intermediário que a própria varredura desfez.
+ * Troca legítima (a oferta muda e fica) continua registrada com o seu horário; o estado final não depende da
+ * ordem do array de ofertas nem da ordem de gravação (vale o instante da cotação). Não toca em eventos live.
  */
-export function reconstructMinEvents(offers: ReconOffer[], fromAt: Date): MinEventDraft[] {
+export function reconstructMinEvents(offers: ReconOffer[], fromAt: Date, opts: { windowMs?: number } = {}): MinEventDraft[] {
+  const windowMs = Math.max(0, opts.windowMs ?? RECON_BATCH_WINDOW_MS);
   const instants = [...new Set(offers.flatMap((o) => o.snaps.map((s) => s.at.getTime())))].filter((t) => t >= fromAt.getTime()).sort((a, b) => a - b);
   const lastEver = new Map(offers.map((o) => [o.offerId, o.snaps.length ? o.snaps[o.snaps.length - 1].at.getTime() : -Infinity]));
   const ptr = new Map(offers.map((o) => [o.offerId, -1]));
-  const out: MinEventDraft[] = [];
-  let last: { at: Date; minCents: number } | null = null;
-  for (const t of instants) {
+  const evalAt = (t: number): LiveMin | null => {
     const cands: Array<{ o: OfferInput; price: number; at: Date }> = [];
     for (const o of offers) {
       let i = ptr.get(o.offerId) as number;
@@ -459,22 +477,65 @@ export function reconstructMinEvents(offers: ReconOffer[], fromAt: Date): MinEve
       if (!(o.active || (lastEver.get(o.offerId) as number) >= t)) continue; // expirada não ressuscita
       cands.push({ o: { offerId: o.offerId, storeKey: '', networkId: o.networkId, sellerId: o.sellerId, active: o.active, rows: [] }, price: s.priceCents, at: s.at });
     }
-    const live = pickMin(cands);
-    if (!live) continue;
-    if (last && last.minCents === live.minCents) continue;
-    const at = new Date(t);
+    return pickMin(cands);
+  };
+  const out: MinEventDraft[] = [];
+  let last: { at: Date; minCents: number } | null = null;
+  for (let a = 0; a < instants.length; ) {
+    const t0 = instants[a];
+    let b = a;
+    while (b + 1 < instants.length && instants[b + 1] - t0 <= windowMs && spDayIndex(instants[b + 1]) === spDayIndex(t0)) b++;
+    // Estado em cada instante do lote (ponteiros avançam em ordem cronológica).
+    const states: Array<{ t: number; live: LiveMin | null }> = [];
+    for (let k = a; k <= b; k++) states.push({ t: instants[k], live: evalAt(instants[k]) });
+    a = b + 1;
+    const final = states[states.length - 1].live;
+    if (!final) continue;
+    if (last && last.minCents === final.minCents) continue;
+    // Início da sequência final: primeiro instante a partir do qual (valor, oferta) já são os finais e não mudam mais.
+    let s = states.length - 1;
+    while (s > 0 && states[s - 1].live && states[s - 1].live!.minCents === final.minCents && states[s - 1].live!.offerId === final.offerId) s--;
+    const at = new Date(states[s].t);
     out.push({
       at,
-      minCents: live.minCents,
+      minCents: final.minCents,
       prevMinCents: last ? last.minCents : null,
-      offerId: live.offerId,
-      networkId: live.networkId,
-      sellerId: live.sellerId,
-      quality: live.quality,
+      offerId: final.offerId,
+      networkId: final.networkId,
+      sellerId: final.sellerId,
+      quality: final.quality,
     });
-    last = { at, minCents: live.minCents };
+    last = { at, minCents: final.minCents };
   }
   return out;
+}
+
+/**
+ * Mesma regra de agrupamento de `reconstructMinEvents`, aplicada a eventos JÁ GRAVADOS (subtração pura: nunca cria
+ * nem move evento, então não ressuscita o que um reprocessamento anterior apagou). Eventos em ordem cronológica.
+ * Lote = âncora no primeiro evento livre, até `windowMs` depois, mesmo dia civil de Brasília. Do lote fica o ÚLTIMO
+ * evento (estado final, no instante em que o mínimo chegou ao valor final); se o valor final é igual ao do último
+ * evento mantido antes do lote (o mínimo piscou e voltou), o lote inteiro é descartado. `prevMinCents` dos mantidos
+ * deve ser religado pelo chamador ao valor do predecessor mantido.
+ */
+export function collapseMinEventBatches<E extends { at: Date; minCents: number }>(events: E[], windowMs: number = RECON_BATCH_WINDOW_MS): { kept: E[]; dropped: E[] } {
+  const w = Math.max(0, windowMs);
+  const kept: E[] = [];
+  const dropped: E[] = [];
+  for (let a = 0; a < events.length; ) {
+    const t0 = events[a].at.getTime();
+    let b = a;
+    while (b + 1 < events.length && events[b + 1].at.getTime() - t0 <= w && spDayIndex(events[b + 1].at.getTime()) === spDayIndex(t0)) b++;
+    const final = events[b];
+    const prevKept = kept.length ? kept[kept.length - 1] : null;
+    if (prevKept && prevKept.minCents === final.minCents) dropped.push(...events.slice(a, b + 1));
+    else {
+      dropped.push(...events.slice(a, b));
+      kept.push(final);
+    }
+    a = b + 1;
+  }
+  return { kept, dropped };
 }
 
 /** Percentil (0 a 100) de um valor entre observações: fração das observações <= valor. null sem amostra. */

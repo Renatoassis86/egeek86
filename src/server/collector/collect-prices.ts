@@ -11,6 +11,19 @@ import { upsertSellerFromOffer } from './sources/mercado-livre-seller';
 import { slugify } from '@/lib/slugify';
 import { pickCatalogPlaceholder } from '@/lib/affiliate/catalog-placeholder';
 import { mapWithConcurrency } from '@/lib/concurrency';
+import {
+  collapseBySeller,
+  consolidateMasterResults,
+  createCallBudget,
+  createCatalogFetcher,
+  decideMasterExpiry,
+  fetchMasterCatalogs,
+  groupDueOffers,
+  masterCallCap,
+  type CatalogOutcome,
+  type MasterTarget,
+} from '@/lib/affiliate/master-consolidation';
+import { getMasterGroupingScope, shouldGroupByMaster } from '@/lib/affiliate/master-grouping-config';
 import { NOOP_RUN, collectorRunsEnabled, startCollectorRun, type CollectorRunHandle } from './collector-runs';
 import './sources'; // registra os adapters disponíveis (efeito colateral do import)
 
@@ -87,6 +100,27 @@ export interface CollectPricesSummary {
    * original, porque o schema atual não tem coluna para ele (ver proposta de migration no ADR 0006).
    */
   identityReview: IdentityReviewEntry[];
+  /**
+   * Presente SOMENTE com COLLECT_MASTER_GROUPING=1 (coleta por master, ata 2026-11-06). Ausente com a flag desligada,
+   * para o retorno ficar idêntico ao anterior.
+   */
+  masterGrouping?: MasterGroupingStats;
+}
+
+export interface MasterGroupingStats {
+  scope: 'lista' | 'todos' | 'vazio';
+  /** Masters que entraram na coleta por master neste ciclo. */
+  mastersProcessed: number;
+  /** Chamadas reais a /products/{id}/items feitas pelos masters agrupados (já descontado o cache do ciclo). */
+  catalogApiCalls: number;
+  /** Chamadas que o agrupamento LEGADO faria para as mesmas ofertas devidas (linha de base). */
+  baselineCatalogCalls: number;
+  /** Teto de chamadas do ciclo para os masters agrupados (linha de base + 10%). */
+  catalogCallCap: number;
+  /** Masters adiados por não caberem no teto de chamadas; ficam devidos para o próximo tick. */
+  mastersDeferredByBudget: number;
+  /** Masters com falha parcial: nada gravado nem expirado, carimbo não renovado. */
+  mastersPartialFailure: number;
 }
 
 export interface IdentityReviewEntry {
@@ -157,29 +191,138 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
   // Observabilidade (flag COLLECTOR_RUNS=1; no-op sem a flag): uma execucao registrada por rede operacional.
   const runs = await startRuns(operationalSlugs, dueOffers);
 
-  const groups = new Map<string, OfferGroup>();
-  for (const offer of dueOffers) {
-    const key = `${offer.networkId}:${offer.externalRef}`;
-    const existing = groups.get(key);
-    if (existing) {
-      existing.offerIds.push(offer.id);
-    } else {
-      groups.set(key, {
-        networkId: offer.networkId,
-        networkSlug: offer.networkSlug,
-        externalRef: offer.externalRef!,
-        masterProductId: offer.masterProductId,
-        offerIds: [offer.id],
+  // Flag COLLECT_MASTER_GROUPING (desligada por padrão): masters-piloto são coletados por (rede, master); todo o
+  // resto segue EXATAMENTE como antes, agrupado por (rede, catálogo). Com a flag desligada `masterTargets` é vazio e
+  // `catalogGroups` é idêntico ao agrupamento original (provado em scripts/test-collector-multicatalog.ts).
+  const scope = getMasterGroupingScope();
+  const { catalogGroups, masterTargets, masterBaselineCalls } = groupDueOffers(dueOffers, (masterId) =>
+    shouldGroupByMaster(masterId, scope)
+  );
+  const masterStats: MasterGroupingStats | null = scope.enabled
+    ? {
+        scope: scope.all ? 'todos' : scope.masterIds.size > 0 ? 'lista' : 'vazio',
+        mastersProcessed: 0,
+        catalogApiCalls: 0,
+        baselineCatalogCalls: masterBaselineCalls,
+        catalogCallCap: masterCallCap(masterBaselineCalls),
+        mastersDeferredByBudget: 0,
+        mastersPartialFailure: 0,
+      }
+    : null;
+  if (masterStats) summary.masterGrouping = masterStats;
+  const callBudget = createCallBudget(masterCallCap(masterBaselineCalls));
+  // Cache de respostas de catálogo POR CICLO (só usado pelo caminho por master): dois masters que dividem um catálogo
+  // chamam a API uma vez só. Falha não fica em cache.
+  const catalogFetchers = new Map<string, (externalRef: string) => Promise<PriceSnapshotResult[]>>();
+  const fetcherFor = (networkSlug: string) => {
+    let f = catalogFetchers.get(networkSlug);
+    if (!f) {
+      const source = getPriceSource(networkSlug)!;
+      f = createCatalogFetcher<PriceSnapshotResult>(async (externalRef) => {
+        if (masterStats) masterStats.catalogApiCalls++;
+        return source.fetchSnapshots(externalRef);
       });
+      catalogFetchers.set(networkSlug, f);
     }
-  }
+    return f;
+  };
+
+  /**
+   * Coleta por (rede, master) — SÓ com COLLECT_MASTER_GROUPING (ata 2026-11-06). Resolve TODOS os catálogos ativos do
+   * master em sequência, consolida (menor anúncio por vendedor entre catálogos) e aplica uma vez. Tudo ou nada: se um
+   * catálogo falha (após 1 retry), nada é gravado, nada expira e o carimbo não é renovado (o master segue devido).
+   */
+  const processMasterTarget = async (target: MasterTarget): Promise<void> => {
+    const source = getPriceSource(target.networkSlug);
+    if (!source) {
+      summary.skippedNoSource += target.dueOfferIds.length;
+      return;
+    }
+    const run = runs.get(target.networkSlug) ?? NOOP_RUN;
+    try {
+      // Todas as ofertas ativas/rascunho do master na rede (as devidas e as irmãs), com o catálogo de cada uma.
+      const rows = await db
+        .select({
+          id: affiliateOffers.id,
+          externalRef: affiliateOffers.externalRef,
+          sellerId: affiliateOffers.sellerId,
+        })
+        .from(affiliateOffers)
+        .where(
+          and(
+            eq(affiliateOffers.masterProductId, target.masterProductId),
+            eq(affiliateOffers.networkId, target.networkId),
+            inArray(affiliateOffers.status, ['active', 'draft']),
+            isNotNull(affiliateOffers.externalRef)
+          )
+        );
+      if (rows.length === 0) return;
+      const refs = Array.from(new Set(rows.map((r) => r.externalRef!))).sort();
+      // Teto de chamadas por ciclo (+10% da linha de base). Adiado = não carimba, continua devido no próximo tick.
+      if (!callBudget.tryReserve(refs)) {
+        if (masterStats) masterStats.mastersDeferredByBudget++;
+        return;
+      }
+      if (masterStats) masterStats.mastersProcessed++;
+      const group: OfferGroup = {
+        networkId: target.networkId,
+        networkSlug: target.networkSlug,
+        externalRef: refs[0],
+        masterProductId: target.masterProductId,
+        offerIds: rows.map((r) => r.id),
+      };
+
+      const fetched = await fetchMasterCatalogs(refs, fetcherFor(target.networkSlug), { retries: 1 });
+      const attempted = fetched.outcomes.filter((o) => o.status !== 'skipped');
+      run.counters.queries += attempted.length;
+      if (!fetched.complete) {
+        // Falha parcial: NADA gravado, NADA expirado, carimbo NÃO renovado (EG-03).
+        if (masterStats) masterStats.mastersPartialFailure++;
+        for (const f of fetched.outcomes.filter((o) => o.status === 'failed')) {
+          const message = f.error ?? 'falha ao consultar catálogo';
+          summary.errors.push({ externalRef: f.externalRef, message: `master ${target.masterProductId}: ${message}` });
+          run.addError(message);
+        }
+        return;
+      }
+      run.counters.checked += attempted.length;
+      run.counters.misses += fetched.outcomes.filter((o) => o.results.length === 0).length;
+      const flat = fetched.outcomes.flatMap((o) => o.results);
+
+      if (flat.length === 0) {
+        // Todos os catálogos responderam OK e vazios: mesma regra do coletor atual (carimbo + contador de faltas).
+        await stampChecked(group.offerIds);
+        summary.skippedNoOffer += group.offerIds.length;
+        await registerMiss(group.offerIds);
+        return;
+      }
+
+      const { updated, created, reviewed, pricedOfferIds, snapshotsWritten } = await applySnapshotsToGroup(group, flat, {
+        outcomes: fetched.outcomes,
+        offers: rows.map((r) => ({ id: r.id, sellerId: r.sellerId })),
+      });
+      summary.updated += updated;
+      summary.offersCreated += created;
+      run.counters.offersCreated += created;
+      run.counters.snapshotsWritten += snapshotsWritten;
+      await run.confirmPrices(pricedOfferIds);
+      if (reviewed.length > 0) {
+        summary.identityReview.push(...reviewed);
+        console.warn('[identidade] ofertas em revisão (fora dos indicadores):', JSON.stringify(reviewed));
+      }
+      await stampChecked(group.offerIds);
+    } catch (err) {
+      summary.errors.push({ externalRef: `master:${target.masterProductId}`, message: (err as Error).message });
+      run.addError((err as Error).message);
+    }
+  };
 
   // Cada grupo = 1 chamada de API externa (I/O, não CPU) — processar em
   // paralelo é o que faz a rota caber no maxDuration com mais ofertas por
   // execução. Concorrência 4: deixa folga no pool de conexão do banco
   // (max:5) pro trabalho de escrita (snapshot + upsert de vendedor) de cada grupo.
   const GROUP_CONCURRENCY = 4;
-  await mapWithConcurrency(Array.from(groups.values()), GROUP_CONCURRENCY, async (group) => {
+  const processCatalogGroup = async (group: OfferGroup): Promise<void> => {
     const source = getPriceSource(group.networkSlug);
     if (!source) {
       summary.skippedNoSource += group.offerIds.length;
@@ -199,17 +342,7 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
         summary.skippedNoOffer += group.offerIds.length;
         // Incrementa a sequência de falhas e expira quem já bateu o teto —
         // numa query só (evita ler o valor antes pra decidir o que fazer).
-        await db.execute(sql`
-          UPDATE affiliate_offers
-          SET consecutive_miss_count = consecutive_miss_count + 1,
-              status = CASE
-                WHEN status = 'active' AND consecutive_miss_count + 1 >= ${MAX_CONSECUTIVE_MISSES}
-                THEN 'expired'::affiliate_offer_status
-                ELSE status
-              END,
-              updated_at = now()
-          WHERE id IN (${sql.join(group.offerIds.map((id) => sql`${id}`), sql`, `)})
-        `);
+        await registerMiss(group.offerIds);
         return;
       }
 
@@ -231,7 +364,13 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       summary.errors.push({ externalRef: group.externalRef, message: (err as Error).message });
       run.addError((err as Error).message);
     }
-  });
+  };
+
+  const tasks: Array<() => Promise<void>> = [
+    ...catalogGroups.map((group) => () => processCatalogGroup(group)),
+    ...masterTargets.map((target) => () => processMasterTarget(target)),
+  ];
+  await mapWithConcurrency(tasks, GROUP_CONCURRENCY, (task) => task());
 
   for (const run of runs.values()) {
     await run.finish({ meta: { errorSamples: summary.errors.slice(0, 3).map((e) => e.message.slice(0, 160)) } });
@@ -280,33 +419,25 @@ async function startRuns(
 }
 
 /**
- * A identidade da oferta no banco é (produto, rede, vendedor): não existe
- * coluna de item id. Quando o MESMO vendedor tem 2+ anúncios do mesmo catálogo,
- * cada anúncio gravava seu preço na MESMA oferta, alternando a cada coleta
- * (diagnóstico 2026-10-31: 483 ofertas, 186 mil trocas A-B-A em 7 dias).
- * Representa o vendedor pelo anúncio mais barato (desempate: item id), o que é
- * determinístico e é o preço que o comprador realmente pode pagar dele.
+ * collapseBySeller foi extraída SEM alteração para src/lib/affiliate/master-consolidation.ts (função pura, usada
+ * também pela coleta por master). A identidade da oferta no banco é (produto, rede, vendedor): quando o MESMO vendedor
+ * tem 2+ anúncios, o vendedor é representado pelo mais barato (desempate: item id).
  */
-function collapseBySeller(
-  results: PriceSnapshotResult[],
-  verdicts: Map<string, OfferIdentityResult> = new Map()
-): PriceSnapshotResult[] {
-  // Anúncio de identidade duvidosa (Open Box, outro modelo...) nunca representa o vendedor se ele
-  // tem outro anúncio idêntico ao master, mesmo que mais caro.
-  const bad = (r: PriceSnapshotResult) => (verdicts.get(r.externalItemId)?.excluded ? 1 : 0);
-  const bySeller = new Map<string, PriceSnapshotResult>();
-  for (const r of results) {
-    const cur = bySeller.get(r.externalSellerId);
-    if (
-      !cur ||
-      bad(r) < bad(cur) ||
-      (bad(r) === bad(cur) &&
-        (r.priceCents < cur.priceCents || (r.priceCents === cur.priceCents && r.externalItemId < cur.externalItemId)))
-    ) {
-      bySeller.set(r.externalSellerId, r);
-    }
-  }
-  return Array.from(bySeller.values());
+
+/** Incrementa a sequência de faltas e expira quem já bateu o teto (MAX_CONSECUTIVE_MISSES), numa query só. */
+async function registerMiss(offerIds: string[]): Promise<void> {
+  if (offerIds.length === 0) return;
+  await db.execute(sql`
+    UPDATE affiliate_offers
+    SET consecutive_miss_count = consecutive_miss_count + 1,
+        status = CASE
+          WHEN status = 'active' AND consecutive_miss_count + 1 >= ${MAX_CONSECUTIVE_MISSES}
+          THEN 'expired'::affiliate_offer_status
+          ELSE status
+        END,
+        updated_at = now()
+    WHERE id IN (${sql.join(offerIds.map((id) => sql`${id}`), sql`, `)})
+  `);
 }
 
 async function stampChecked(offerIds: string[]): Promise<void> {
@@ -322,7 +453,12 @@ async function stampChecked(offerIds: string[]): Promise<void> {
  */
 async function applySnapshotsToGroup(
   group: OfferGroup,
-  rawResults: PriceSnapshotResult[]
+  rawResults: PriceSnapshotResult[],
+  /**
+   * Presente SÓ na coleta por master (COLLECT_MASTER_GROUPING): resultados por catálogo e as ofertas do master.
+   * Ausente = caminho legado, inalterado (placeholder do catálogo do grupo e expiração por `group.offerIds`).
+   */
+  master?: { outcomes: CatalogOutcome<PriceSnapshotResult>[]; offers: { id: string; sellerId: string | null }[] }
 ): Promise<{ updated: number; created: number; reviewed: IdentityReviewEntry[]; pricedOfferIds: string[]; snapshotsWritten: number }> {
   let masterCache: { name: string; productType: string; gameFormat: string; defaultImages: string[] } | null = null;
   const loadMaster = async () => {
@@ -348,7 +484,12 @@ async function applySnapshotsToGroup(
   }
   const isExcluded = (r: PriceSnapshotResult) => verdicts.get(r.externalItemId)?.excluded === true;
 
-  const results = collapseBySeller(rawResults, verdicts);
+  // Coleta por master: um resultado por vendedor = o MENOR anúncio dele entre TODOS os catálogos do master (preço real
+  // observado, sem interpolar). Legado: colapso dentro do catálogo do grupo.
+  const consolidated = master ? consolidateMasterResults(master.outcomes, verdicts) : null;
+  const results: Array<PriceSnapshotResult & { catalogRef?: string }> = consolidated
+    ? consolidated.sellers
+    : collapseBySeller(rawResults, verdicts);
   let updated = 0;
   let created = 0;
   let snapshotsWritten = 0;
@@ -390,7 +531,8 @@ async function applySnapshotsToGroup(
         isNull(affiliateOffers.sellerId)
       )
     );
-  const placeholderOffer = pickCatalogPlaceholder(placeholderCandidates, group.externalRef);
+  // Coleta por master: o grupo não tem UM catálogo; cada placeholder é tratado pelo seu catálogo no bloco abaixo.
+  const placeholderOffer = consolidated ? null : pickCatalogPlaceholder(placeholderCandidates, group.externalRef);
 
   // O placeholder do catálogo só recebe preço de anúncio com identidade ok (Open Box não vira "menor preço").
   const okResults = results.filter((r) => !isExcluded(r));
@@ -413,18 +555,50 @@ async function applySnapshotsToGroup(
       .where(eq(affiliateOffers.id, placeholderOffer.id));
   }
 
+  // Coleta por master: cada placeholder recebe o melhor preço do SEU catálogo (mesma regra de pickCatalogPlaceholder,
+  // correção de 05/11 preservada); placeholder cujo catálogo respondeu OK e vazio conta falta (igual ao coletor atual).
+  if (consolidated) {
+    const placeholderMissIds: string[] = [];
+    for (const candidate of placeholderCandidates) {
+      if (!candidate.externalRef) continue;
+      const best = consolidated.bestByCatalog.get(candidate.externalRef);
+      if (best) {
+        if (
+          await recordPriceSnapshot({
+            offerId: candidate.id,
+            priceCents: best.priceCents,
+            listPriceCents: best.listPriceCents,
+            source: 'api',
+          })
+        ) {
+          snapshotsWritten++;
+        }
+        pricedOfferIds.push(candidate.id);
+        await db
+          .update(affiliateOffers)
+          .set({ lastCheckedAt: new Date(), consecutiveMissCount: 0 })
+          .where(eq(affiliateOffers.id, candidate.id));
+      } else if (consolidated.emptyCatalogs.includes(candidate.externalRef)) {
+        placeholderMissIds.push(candidate.id);
+      }
+    }
+    await registerMiss(placeholderMissIds);
+  }
+
   const updatedOfferIds = new Set<string>();
+  let sellerUpsertFailed = false;
 
   for (const result of results) {
     let sellerId: string;
     try {
       sellerId = await upsertSellerFromOffer(group.networkId, result.externalSellerId);
     } catch (err) {
-      console.error(`Falha ao atualizar vendedor ${result.externalSellerId} (${group.externalRef}):`, (err as Error).message);
+      console.error(`Falha ao atualizar vendedor ${result.externalSellerId} (${result.catalogRef ?? group.externalRef}):`, (err as Error).message);
+      sellerUpsertFailed = true;
       continue;
     }
 
-    const [existingOffer] = await db
+    const existingQuery = db
       .select({
         id: affiliateOffers.id,
         affiliateLinkPending: affiliateOffers.affiliateLinkPending,
@@ -437,8 +611,18 @@ async function applySnapshotsToGroup(
           eq(affiliateOffers.networkId, group.networkId),
           eq(affiliateOffers.sellerId, sellerId)
         )
-      )
-      .limit(1);
+      );
+    // Coleta por master: se o vendedor tem linhas duplicadas (master, rede, vendedor), prioriza a ativa/rascunho em vez
+    // de uma expirada arbitrária (o legado não ordena; fica inalterado).
+    const [existingOffer] = await (consolidated
+      ? existingQuery
+          .orderBy(
+            sql`CASE ${affiliateOffers.status} WHEN 'active' THEN 0 WHEN 'draft' THEN 1 ELSE 2 END`,
+            affiliateOffers.createdAt,
+            affiliateOffers.id
+          )
+          .limit(1)
+      : existingQuery.limit(1));
 
     const excluded = isExcluded(result);
     let offerId: string;
@@ -473,7 +657,7 @@ async function applySnapshotsToGroup(
       // configurado (realToolId sempre undefined, todo link ficava pendente).
       const initialUrl = (group.networkSlug === 'mercado-livre' && result.externalItemId)
         ? (realToolId ? `https://produto.mercadolivre.com.br/${formattedMeliId}?matt_tool=${realToolId}` : `https://produto.mercadolivre.com.br/${formattedMeliId}`)
-        : `https://www.mercadolivre.com.br/p/${group.externalRef}`;
+        : `https://www.mercadolivre.com.br/p/${(result.catalogRef ?? group.externalRef)}`;
 
       const [createdRow] = await db
         .insert(affiliateOffers)
@@ -486,7 +670,7 @@ async function applySnapshotsToGroup(
           // Se tivermos o ID de afiliado configurado, a oferta já entra ativa e clicável pro público
           affiliateLinkPending: !realToolId,
           imageUrl: masterProduct.defaultImages[0] ?? null,
-          externalRef: group.externalRef,
+          externalRef: result.catalogRef ?? group.externalRef,
           sellerId,
           // Nunca o preço real aqui — 0 é o mesmo sentinel de "ainda não
           // coletado" usado em discover-products.ts. O recordPriceSnapshot()
@@ -573,9 +757,18 @@ async function applySnapshotsToGroup(
   // Identifica ofertas do grupo que não foram retornadas nesta coleta
   // (vendedores que ficaram sem estoque ou removeram o anúncio).
   // Desconsideramos o placeholderOffer (que tem sellerId nulo) dessa desativação.
-  const expiredOfferIds = group.offerIds.filter(
-    (id) => !updatedOfferIds.has(id) && id !== placeholderOffer?.id
-  );
+  //
+  // Coleta por master: a expiração é decidida sobre a UNIÃO dos catálogos (decideMasterExpiry): só expira o vendedor
+  // que não apareceu em nenhum catálogo; placeholders nunca expiram por aqui (contador de faltas acima).
+  const expiredOfferIds = consolidated
+    ? decideMasterExpiry({
+        complete: consolidated.complete,
+        unionSize: consolidated.unionSize,
+        offers: master!.offers.map((o) => ({ id: o.id, isPlaceholder: o.sellerId === null })),
+        updatedOfferIds,
+        sellerUpsertFailed,
+      }).expireIds
+    : group.offerIds.filter((id) => !updatedOfferIds.has(id) && id !== placeholderOffer?.id);
   if (expiredOfferIds.length > 0) {
     await db
       .update(affiliateOffers)

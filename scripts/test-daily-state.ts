@@ -9,6 +9,7 @@ import {
   computeLiveMinFromOffers,
   matchMinEvent,
   computePeriodMetrics,
+  collapseMinEventBatches,
   legacyDayState,
   medianCont,
   medianDisc,
@@ -237,6 +238,100 @@ function offer(id: string, rows: Array<[string, number, string, number?, number?
   check('evento sem id, sem empate: cai no valor e a loja é a do preço agora', m4.matched && m4.storeOfferId === 'm', m4);
   check('evento: valor diferente não casa', !matchMinEvent({ minCents: 9_000, offerId: 'm' }, liveTie).matched);
   check('evento/vivo ausentes não casam', !matchMinEvent(null, liveTie).matched && !matchMinEvent({ minCents: 1, offerId: 'm' }, null).matched);
+}
+
+// --- 13) reconstrução: agrupamento de instantes próximos (estado final do lote) -----------------------
+{
+  const at = (iso: string) => new Date(iso);
+  const S = (iso: string, priceCents: number) => ({ at: at(iso), priceCents });
+  const base = at('2026-11-05T09:00:00Z');
+  const sig = (evs: Array<{ at: Date; minCents: number; prevMinCents: number | null; offerId: string }>) => evs.map((e) => `${e.at.toISOString()}|${e.minCents}|${e.prevMinCents}|${e.offerId}`);
+  const chainOk = (evs: Array<{ minCents: number; prevMinCents: number | null }>) => evs.every((e, i) => e.prevMinCents === (i === 0 ? null : evs[i - 1].minCents)) && evs.every((e, i) => i === 0 || e.minCents !== evs[i - 1].minCents);
+
+  // A: 30000 às 10:00; no lote A grava 26558 (.552) e regrava 26899 (.854). B: 27000 fixo.
+  const mk = (aSnaps: Array<{ at: Date; priceCents: number }>, bSnaps: Array<{ at: Date; priceCents: number }>) => [
+    { offerId: 'A', active: true, snaps: aSnaps },
+    { offerId: 'B', active: true, snaps: bSnaps },
+  ];
+  const A1 = [S('2026-11-05T10:00:00Z', 30_000), S('2026-11-05T17:45:03.552Z', 26_558), S('2026-11-05T17:45:03.854Z', 26_899)];
+  const B1 = [S('2026-11-05T10:00:00Z', 27_000), S('2026-11-05T17:45:03.600Z', 27_000)];
+
+  // (a) lote transitório colapsado: antes 2 eventos (26558 e 26899), agora 1 (26899 às .854)
+  const old = reconstructMinEvents(mk(A1, B1), base, { windowMs: 0 });
+  const novo = reconstructMinEvents(mk(A1, B1), base, { windowMs: 2000 });
+  check('janela 0 = comportamento antigo (evento transitório 26558 existe)', old.some((e) => e.minCents === 26_558), sig(old));
+  check('lote transitório colapsado: só o estado final 26899 às .854, prev 27000', JSON.stringify(sig(novo.slice(1))) === JSON.stringify(['2026-11-05T17:45:03.854Z|26899|27000|A']), sig(novo));
+  check('padrão (RECON_BATCH_WINDOW_MS) = janela 2000', JSON.stringify(sig(reconstructMinEvents(mk(A1, B1), base))) === JSON.stringify(sig(novo)));
+  check('cadeia prev_min_cents íntegra (lote colapsado)', chainOk(novo) && chainOk(old), { novo: sig(novo) });
+
+  // (b) transitório que volta ao valor anterior: nenhum evento no lote
+  const A2 = [S('2026-11-05T10:00:00Z', 30_000), S('2026-11-05T17:45:03.552Z', 26_558), S('2026-11-05T17:45:03.854Z', 30_000)];
+  const dip = reconstructMinEvents(mk(A2, B1), base);
+  check('dip que volta ao mínimo anterior (27000 de B) não gera evento', dip.length === 1 && dip[0].minCents === 27_000, sig(dip));
+
+  // (c) troca legítima: A cai para 26558 e FICA; B regrava depois dentro do lote -> evento preservado com horário da queda
+  const A3 = [S('2026-11-05T10:00:00Z', 30_000), S('2026-11-05T17:45:03.552Z', 26_558)];
+  const legit = reconstructMinEvents(mk(A3, B1), base);
+  check('troca legítima preservada no instante em que o valor final foi atingido (.552)', JSON.stringify(sig(legit.slice(1))) === JSON.stringify(['2026-11-05T17:45:03.552Z|26558|27000|A']), sig(legit));
+  // troca legítima fora da janela (5 s depois) continua evento próprio
+  const A4 = [...A1.slice(0, 2), S('2026-11-05T17:45:08.900Z', 26_899)];
+  const sep = reconstructMinEvents(mk(A4, B1), base);
+  check('mudanças separadas por mais que a janela seguem separadas (26558 e depois 26899)', sep.map((e) => e.minCents).join() === '27000,26558,26899' && chainOk(sep), sig(sep));
+  // janela maior colapsa; menor não
+  check('janela 5 s NÃO colapsa o par distante 5,348 s (3 eventos)', reconstructMinEvents(mk(A4, B1), base, { windowMs: 5000 }).length === 3);
+  check('janela 6 s colapsa o par', reconstructMinEvents(mk(A4, B1), base, { windowMs: 6000 }).map((e) => e.minCents).join() === '27000,26899');
+
+  // (d) ordem de gravação invertida: ofertas e snaps em ordem diferente (ids/gravação) dão o mesmo resultado
+  const rev = reconstructMinEvents(mk(A1, B1).reverse().map((o) => ({ ...o, snaps: [...o.snaps] })), base);
+  check('ordem do array de ofertas não muda o resultado', JSON.stringify(sig(rev)) === JSON.stringify(sig(novo)), { rev: sig(rev), novo: sig(novo) });
+  // gravação invertida dentro do lote: o preço menor é gravado POR ÚLTIMO e vira o estado final
+  const Ainv = [S('2026-11-05T10:00:00Z', 30_000), S('2026-11-05T17:45:03.552Z', 29_000), S('2026-11-05T17:45:03.854Z', 26_000)];
+  const inv = reconstructMinEvents(mk(Ainv, B1), base);
+  check('gravação invertida: estado final 26000 às .854, sem evento 27000->29000', inv.map((e) => e.minCents).join() === '27000,26000' && inv[1].at.toISOString() === '2026-11-05T17:45:03.854Z', sig(inv));
+
+  // (e) empate de ofertas no estado final: menor offerId vence; sem evento novo se o valor não mudou
+  const T1 = [{ offerId: 'z', active: true, snaps: [S('2026-11-05T17:45:03.100Z', 20_000), S('2026-11-05T17:45:03.900Z', 19_000)] }, { offerId: 'm', active: true, snaps: [S('2026-11-05T17:45:03.500Z', 19_000)] }];
+  const tie = reconstructMinEvents(T1, base);
+  check('empate no estado final: oferta de menor id (m) e um único evento 19000', tie.length === 1 && tie[0].offerId === 'm' && tie[0].minCents === 19_000, sig(tie));
+  check('empate: instante = .500 (m já detinha 19000; z empata em .900 mas m segue o detentor)', tie[0].at.toISOString() === '2026-11-05T17:45:03.500Z', sig(tie));
+
+  // (f) lote que cruza a meia-noite local (00:00 -03:00 = 03:00Z): o lote é dividido; o estado final de cada dia é preservado
+  const mid = reconstructMinEvents(
+    [
+      { offerId: 'A', active: true, snaps: [S('2026-11-06T02:59:59.500Z', 10_000), S('2026-11-06T03:00:00.300Z', 12_000)] },
+      { offerId: 'B', active: true, snaps: [S('2026-11-06T02:00:00Z', 11_000), S('2026-11-06T03:00:00.300Z', 11_000)] },
+    ],
+    at('2026-11-06T00:00:00Z'),
+  );
+  check('meia-noite: dia 05 termina em 10000 (A) e o dia 06 começa com 11000 (B), dois eventos distintos', mid.map((e) => e.minCents).join() === '11000,10000,11000' && mid[1].at.toISOString() === '2026-11-06T02:59:59.500Z' && mid[2].at.toISOString() === '2026-11-06T03:00:00.300Z', sig(mid));
+  check('meia-noite: cadeia íntegra', chainOk(mid));
+
+  // (g) sem ofertas/sem estado: nada; lacuna no fim do lote não vira evento; idempotente
+  check('sem ofertas: nenhum evento', reconstructMinEvents([], base).length === 0);
+  check('idempotente (mesma entrada, mesma saída)', JSON.stringify(sig(reconstructMinEvents(mk(A1, B1), base))) === JSON.stringify(sig(novo)));
+}
+
+// --- 14) colapso de eventos JÁ gravados (subtração pura, mesma regra de lote) ----------------------------
+{
+  const ev = (id: number, iso: string, minCents: number) => ({ id, at: new Date(iso), minCents });
+  const ids = (l: Array<{ id: number }>) => l.map((e) => e.id).join();
+  // transitório 26558 -> 26899 (300 ms): fica só o final
+  const c1 = collapseMinEventBatches([ev(1, '2026-11-05T10:00:00Z', 27_000), ev(2, '2026-11-05T17:45:03.552Z', 26_558), ev(3, '2026-11-05T17:45:03.854Z', 26_899)], 2000);
+  check('colapso: mantém 1 e 3, descarta o transitório 2', ids(c1.kept) === '1,3' && ids(c1.dropped) === '2', c1);
+  // pisca e volta (27000 -> 26558 -> 27000 em 0,3 s): lote inteiro descartado
+  const c2 = collapseMinEventBatches([ev(1, '2026-11-05T10:00:00Z', 27_000), ev(2, '2026-11-05T17:45:03.552Z', 26_558), ev(3, '2026-11-05T17:45:03.854Z', 27_000)], 2000);
+  check('colapso: round-trip do lote some inteiro', ids(c2.kept) === '1' && ids(c2.dropped) === '2,3', c2);
+  // troca legítima (muda e fica; próximo evento 5 s depois): ambos preservados
+  const c3 = collapseMinEventBatches([ev(1, '2026-11-05T10:00:00Z', 27_000), ev(2, '2026-11-05T17:45:03.552Z', 26_558), ev(3, '2026-11-05T17:45:08.900Z', 26_000)], 2000);
+  check('colapso: mudanças separadas por > janela ficam', ids(c3.kept) === '1,2,3' && c3.dropped.length === 0, c3);
+  // âncora fixa: cadeia de eventos a 1,5 s um do outro NÃO vira um lote só
+  const c4 = collapseMinEventBatches([ev(1, '2026-11-05T10:00:00.000Z', 100), ev(2, '2026-11-05T10:00:01.500Z', 90), ev(3, '2026-11-05T10:00:03.000Z', 80), ev(4, '2026-11-05T10:00:04.500Z', 70)], 2000);
+  check('colapso: âncora fixa (1,5 s encadeado não funde tudo)', ids(c4.kept) === '2,4' && ids(c4.dropped) === '1,3', c4);
+  // meia-noite local: lote não cruza o dia (02:59:59.5Z = 23:59:59.5 de 05; 03:00:00.3Z = 00:00:00.3 de 06)
+  const c5 = collapseMinEventBatches([ev(1, '2026-11-06T02:00:00Z', 11_000), ev(2, '2026-11-06T02:59:59.500Z', 10_000), ev(3, '2026-11-06T03:00:00.300Z', 11_000)], 2000);
+  check('colapso: meia-noite divide o lote (os três ficam)', ids(c5.kept) === '1,2,3', c5);
+  check('colapso: janela 0 não descarta nada (exceto repetição de valor)', collapseMinEventBatches([ev(1, '2026-11-05T10:00:00Z', 1), ev(2, '2026-11-05T10:00:00.1Z', 2)], 0).kept.length === 2);
+  check('colapso: idempotente', (() => { const k = collapseMinEventBatches([ev(1, '2026-11-05T10:00:00Z', 27_000), ev(2, '2026-11-05T17:45:03.552Z', 26_558), ev(3, '2026-11-05T17:45:03.854Z', 26_899)]).kept; return collapseMinEventBatches(k).dropped.length === 0; })());
 }
 
 // --- 11) estatística básica --------------------------------------------------------------------
