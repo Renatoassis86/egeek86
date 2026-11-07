@@ -197,3 +197,10 @@ Fecha o risco "Paginação desconhecida". Fatos medidos na API oficial (consulta
 
 ## Retrospectiva
 Preencher após o piloto e após o reprocesso: métrica atingida? falsos positivos? custo de cota e duração do cron? número real de masters multi-catálogo (369 ou 94)? causa do Zelda?
+
+## Decisão 3 (2026-11-06): quarentena das ~51 ofertas oscilantes
+Decidido pelo responsável: **não aplicar quarentena agora.** A correção da coleta por produto está em piloto de 72 h (Celeste PS4 e RE3); a quarentena esconderia a leitura do efeito. Reavaliar depois do piloto, com o resultado medido. Divergência registrada: o estrategista de mercado defendia a quarentena imediata.
+Também em 2026-11-06 (autorização do responsável): `COLLECT_MASTER_GROUPING=1` e `COLLECT_MASTER_GROUPING_MASTERS` (2 ids) ligadas em produção; `PRICE_DAILY_SHADOW=1` ligada em produção. `PRICE_METRICS_V2` e `PRODUCT_CARD_V1` seguem desligadas.
+
+## Reconciliação da contagem de masters multi-catálogo (2026-11-06, somente leitura)
+Script `scripts/medir-masters-multicatalogo.ts`. Masters ML com 2 ou mais `external_ref` distintos, por definição: A) qualquer oferta/qualquer status: **369** (1.030 catálogos, máx. 21); B) só com vendedor: 134; C) com vendedor e active: 92; D) qualquer oferta active: 94; **E) com vendedor, active, fora de quarentena (o que a coleta por master realmente consolida): 91** (210 catálogos; distribuição 2 catálogos: 72, 3: 14, 4: 2, 5: 2, 6: 1). Os 369 incluem 277 masters cujo 2º catálogo só existe como placeholder ou oferta inativa. Base para a decisão 5: o universo operacional é 91, não 369.

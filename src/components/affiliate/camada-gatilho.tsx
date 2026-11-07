@@ -4,6 +4,7 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import { Maximize2 } from 'lucide-react';
 import type { ParecerProduto } from '@/lib/pricing/parecer-produto';
+import type { IdentidadeMidia } from '@/lib/pricing/identidade-midia';
 
 /**
  * Botão do cartão-pai que abre a camada (Fase 2). É o ÚNICO JavaScript do cartão além do "verificado há".
@@ -20,7 +21,7 @@ export interface CamadaGatilhoProps {
   parecer: ParecerProduto;
   produtoNome: string;
   rotulo: string;
-  identidade: string | null;
+  identidade: IdentidadeMidia | null;
   compraHref: string | null;
   produtoId: string | null;
 }

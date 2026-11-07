@@ -9,6 +9,7 @@ import { CamadaGrafico } from '@/components/affiliate/camada-grafico';
 import { CamadaLojas } from '@/components/affiliate/camada-lojas';
 import { formatBRL } from '@/lib/format';
 import type { ParecerProduto } from '@/lib/pricing/parecer-produto';
+import type { IdentidadeMidia } from '@/lib/pricing/identidade-midia';
 
 /**
  * Conteúdo da camada do produto (Fase 2). Carregado SÓ AO ABRIR (importação dinâmica em `camada-gatilho.tsx`).
@@ -20,8 +21,8 @@ import type { ParecerProduto } from '@/lib/pricing/parecer-produto';
 export interface CamadaProdutoProps {
   parecer: ParecerProduto;
   produtoNome: string;
-  /** Identidade da mídia (formato, geração, edição) quando já conhecida; null = não mostra. */
-  identidade: string | null;
+  /** Identidade da mídia por campo; campo sem dado mostra "não informado". null = não mostra. */
+  identidade: IdentidadeMidia | null;
   /** Link de saída da página ("/go/slug"); null = sem botão. */
   compraHref: string | null;
   /** Id do produto mestre para buscar o gráfico (só ao abrir). */
@@ -70,7 +71,19 @@ export default function CamadaProduto({ parecer, produtoNome, identidade, compra
           <h2 id={titleId} className="text-heading-md font-semibold text-[var(--color-text-primary)]">
             {produtoNome}
           </h2>
-          {identidade && <p className="mt-1 text-caption text-[var(--color-text-secondary)]">{identidade}</p>}
+          {identidade && (
+            <div className="mt-2" data-identidade>
+              <dl className="flex flex-wrap gap-x-4 gap-y-1 text-caption text-[var(--color-text-secondary)]">
+                {identidade.itens.map((i) => (
+                  <div key={i.rotulo} className="flex gap-1">
+                    <dt>{i.rotulo}:</dt>
+                    <dd className={i.valor ? 'font-medium text-[var(--color-text-primary)]' : ''}>{i.valor ?? 'não informado'}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-1 text-caption text-[var(--color-text-secondary)]">{identidade.regra}</p>
+            </div>
+          )}
         </>
       }
       rodape={

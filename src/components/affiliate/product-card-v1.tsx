@@ -1,5 +1,6 @@
 import { formatBRL } from '@/lib/format';
 import type { ParecerProduto } from '@/lib/pricing/parecer-produto';
+import type { IdentidadeMidia } from '@/lib/pricing/identidade-midia';
 import { VerificadoHa } from '@/components/affiliate/verificado-ha';
 import { CamadaGatilho } from '@/components/affiliate/camada-gatilho';
 
@@ -44,7 +45,7 @@ export function ProductCardV1({
   parecer: ParecerProduto;
   produtoNome: string;
   /** Identidade da mídia (formato, geração, edição) quando já conhecida; vai ao cabeçalho da camada. */
-  identidade?: string | null;
+  identidade?: IdentidadeMidia | null;
   /** Link de saída já usado pela página ("/go/slug"); vai ao rodapé da camada. */
   compraHref?: string | null;
   /** Id do produto mestre: a camada busca o gráfico por ele, só ao abrir. null = painel do gráfico oculto. */

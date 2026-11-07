@@ -21,5 +21,8 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
 
   const summary = await collectPrices();
+  // Piloto da coleta por master (COLLECT_MASTER_GROUPING): sem este log o resumo só existe na resposta HTTP do cron e
+  // não dá para medir falhas de paginação, catálogos >100 e parciais por orçamento. Só quando a flag produziu estatística.
+  if (summary.masterGrouping) console.log('[collect-prices] masterGrouping', JSON.stringify(summary.masterGrouping));
   return NextResponse.json(summary);
 }

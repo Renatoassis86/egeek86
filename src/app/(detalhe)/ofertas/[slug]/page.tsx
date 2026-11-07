@@ -42,6 +42,7 @@ import { getPriceMetricsV2 } from '@/server/pricing/price-metrics-v2';
 import { PriceMetricsV2Block } from '@/components/affiliate/price-metrics-v2-block';
 import { ProductCardV1, AvisoTransicaoSelo } from '@/components/affiliate/product-card-v1';
 import { buildParecerProduto } from '@/lib/pricing/parecer-produto';
+import { buildIdentidadeMidia } from '@/lib/pricing/identidade-midia';
 import { ProductPriceChartSection, ProductPriceChartFallback } from './product-price-chart-section';
 import { getOfferBySlug, getMasterProductMetrics } from '@/server/queries/affiliate';
 import {
@@ -266,7 +267,7 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                 <ProductCardV1
                   parecer={parecer}
                   produtoNome={offer.title}
-                  identidade={hasClassification ? specLine : null}
+                  identidade={buildIdentidadeMidia(offer.masterProduct)}
                   produtoId={offer.masterProductId}
                   compraHref={/^https?:\/\//i.test(offer.affiliateUrl) ? `/go/${offer.slug}` : null}
                 />
