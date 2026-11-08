@@ -392,7 +392,9 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
       {/* Filtros: linha rolável, alvos de 44 px */}
       <div className="sticky top-[calc(var(--header-mobile)+8px)] z-20 min-w-0 lg:top-[calc(var(--header-desktop)+12px)]">
         <Suspense fallback={null}>
-          <OfferFilters networks={networks} resultCount={anyFilter ? realTotal : undefined} />
+          <OfferFilters
+            networks={networks.map(({ id, name, slug, colorHex }) => ({ id, name, slug, colorHex }))}
+            resultCount={anyFilter ? realTotal : undefined} />
         </Suspense>
       </div>
 
