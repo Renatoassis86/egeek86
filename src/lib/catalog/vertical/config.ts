@@ -122,7 +122,8 @@ export const SEGMENTS: SegmentConfig[] = [
     label: 'Bola de futebol',
     domains: [/FOOTBALL_BALLS/],
     terms: ['bola de futebol campo nike'],
-    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['ALPHANUMERIC_MODEL', 'COLOR'] },
+    // COLOR fora da chave: regra do dono "cor junta" (exceto tênis). Cor segue como atributo do master, não como identidade.
+    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['ALPHANUMERIC_MODEL'] },
     targetRefreshMin: 60,
     seedRank: 6,
     rationale: 'Domínio 8/10 (balão e mochila na busca), GTIN 10/10, 4 ofertas.',

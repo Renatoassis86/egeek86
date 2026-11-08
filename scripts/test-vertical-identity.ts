@@ -10,7 +10,8 @@ import { evaluateIdentity, extractGtins, isbn10to13, isIsbn13, isValidGtin, norm
 import { gateFor, reviewGateFor } from '../src/lib/catalog/vertical/gate';
 import { fetchVerticalCatalog, VerticalPagingError, type FetchRawPage } from '../src/lib/catalog/vertical/paging';
 import { createMlClient, CallBudgetExceeded, RateLimited } from '../src/lib/catalog/vertical/ml-api';
-import { planSeed, type ExistingLookup } from '../src/lib/catalog/vertical/seed-plan';
+import { accessoryIssue, colorlessTitleKey, comboIssue, scopeIssue, splitPlus } from '../src/lib/catalog/vertical/scope';
+import { planSeed,type ExistingLookup } from '../src/lib/catalog/vertical/seed-plan';
 import { VERTICALS } from '../src/lib/catalog/verticais';
 
 let fails = 0;
@@ -145,6 +146,101 @@ check('refresh: livros 60 min; tecnologia 30 min', refreshMinutesFor('livros', {
 check('refresh: override respeitado e limitado pelo teto de 6 h dos termos do ML', refreshMinutesFor('livros', { VERTICAL_LIVROS_REFRESH_MIN: '10' }) === 10 && refreshMinutesFor('livros', { VERTICAL_LIVROS_REFRESH_MIN: '9999' }) === MAX_REFRESH_MIN);
 check('porteiro por vertical NAO importa o porteiro gamer (gate.ts)', ['gate.ts', 'identity.ts', 'config.ts', 'seed-plan.ts', 'paging.ts'].every((f) => !/@\/lib\/catalog\/gate['"]|from ['"]\.\.\/gate['"]/.test(fs.readFileSync(path.resolve('src/lib/catalog/vertical', f), 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, ''))));
 
+// --- Pacotes/combos (achado do dry-run 2): "+" so conta com 2+ produtos ou produto + acessorio ---
+const combos: Array<[string, string]> = [
+  ['soundbar', 'Soundbar Samsung Hw-b450f + Soundbar Hw-b400f'],
+  ['soundbar', 'Soundbar Samsung Hw-b650f + Soundbar Hw-b400f Preto'],
+  ['soundbar', 'Soundbar Samsung Hw-b450f + Hw-b400f'],
+  ['smart-tv', 'Samsung Smart Tv 55 4k U8000h + Samsung Smart Tv 32 Hd.'],
+  ['smart-tv', 'Samsung Smart Tv 55 4k U8000h + Smart Tv 43 Qled Fhd Q5f.'],
+  ['smart-tv', 'Samsung Smart Tv 55 Miniled 4k M75h + Samsung Smart Tv 43 Qled Full Hd Q5f'],
+  ['smart-tv', 'Smart Tv 43 Lg + Suporte de Parede'],
+  ['bola', 'Bola Futebol Campo Nike + Bomba de Ar'],
+  ['bola', 'Kit 2 Bolas de Futebol Campo'],
+  ['air-fryer', 'Air Fryer Mondial 4l Combo com Assadeira'],
+  ['ssd', 'Ssd Kingston 1tb + Hd Seagate 2tb'],
+];
+for (const [seg, nome] of combos) check(`combo detectado [${seg}]: ${nome}`, comboIssue(seg, nome)?.reason === 'combo_pacote', comboIssue(seg, nome));
+const naoCombos: Array<[string, string]> = [
+  ['smart-tv', 'Smart Tv Samsung 55 Crystal 4k Uhd Hdr10+ Wi-fi'],
+  ['smart-tv', 'Samsung Galaxy S23+ 256gb'],
+  ['soundbar', 'Soundbar Samsung Hw-b450f Dolby Atmos + Dts:x 2.1 Canais'],
+  ['soundbar', 'Kit Home Theater 5.1 Samsung Ht-j5500'],
+  ['soundbar', 'Soundbar Jbl Bar 2.1 Deep Bass Wi-fi + Bluetooth'],
+  ['placa-de-video', 'Placa de Video Rtx 4060 8gb Dual + Gddr6'],
+  ['placa-de-video', 'Placa de Video Asus Dual Rtx 4060 Oc Edition 8gb'],
+  ['livros', 'Dungeons & Dragons - Livro do Jogador'],
+  ['livros', 'Livro Harry Potter + A Pedra Filosofal'],
+  ['air-fryer', 'Air Fryer Philips Walita Pro 6.2l Com Cesto Removivel'],
+  ['impressora', 'Impressora Multifuncional Epson Ecotank L3250 Wi-fi'],
+  ['bola', 'Bola de Futebol Campo Nike Pitch Number 5'],
+];
+for (const [seg, nome] of naoCombos) check(`NAO e combo [${seg}]: ${nome}`, comboIssue(seg, nome) === null, comboIssue(seg, nome));
+check('splitPlus: sinal colado (S23+, Hdr10+) nao separa', splitPlus('Galaxy S23+ 256gb').length === 1 && splitPlus('A + B').length === 2);
+
+// --- Acessorio/peca dentro do dominio do aparelho ---
+const acessorios: Array<[string, string]> = [
+  ['air-fryer', 'Assadeira Forma Air Fryer Philips Walita Preto'],
+  ['air-fryer', 'Cesto para Air Fryer Mondial 4l'],
+  ['air-fryer', 'Papel Forro Descartavel para Fritadeira Air Fryer'],
+  ['smart-tv', 'Tela Hdr da Smart TV LG 50uk6090pua Led Uhd 4k Smart TV de 50 polegadas'],
+  ['smart-tv', 'Controle Remoto Samsung Smart Tv'],
+  ['smart-tv', 'Samsung Controle Remoto Tv 4k'],
+  ['smart-tv', 'Capa Protetora para Smart Tv 55'],
+  ['soundbar', 'Suporte para Soundbar Samsung'],
+  ['bola', 'Bomba de Ar para Bola de Futebol'],
+  ['bola', 'Bolsa Porta Bola Futebol'],
+  ['notebook', 'Carregador para Notebook Dell Inspiron'],
+  ['impressora', 'Cartucho de Tinta para Impressora Epson'],
+  ['impressora-3d', 'Filamento Pla 1kg para Impressora 3d'],
+  ['ssd', 'Case para Ssd Nvme M2'],
+];
+for (const [seg, nome] of acessorios) check(`acessorio detectado [${seg}]: ${nome}`, accessoryIssue(seg, nome)?.reason === 'acessorio_ou_peca', accessoryIssue(seg, nome));
+const aparelhos: Array<[string, string]> = [
+  ['air-fryer', 'Air Fryer Philips Walita Pro 6.2l Com Cesto Removivel'],
+  ['air-fryer', 'Fritadeira Air Fryer Forno Oven 12l Mondial'],
+  ['air-fryer', 'Philips Walita Airfryer Forma Antiaderente 4.1l'],
+  ['smart-tv', 'Smart Tv 55 Tela Plana Led Samsung Crystal 4k'],
+  ['smart-tv', 'Tv Tela 4k Lg 50 Polegadas Smart'],
+  ['smart-tv', 'Samsung Smart Tv 55 4k U8000h'],
+  ['soundbar', 'Soundbar Samsung Hw-b450f para Tv 2.1 Canais'],
+  ['soundbar', 'Home Theater Samsung Ht-j5500 com Subwoofer'],
+  ['bola', 'Bola Futebol Campo cor01'],
+  ['bola', 'Bola de Futebol Campo Vinil Vermelho Costurada'],
+  ['notebook', 'Notebook Acer Aspire 5 Tela 15.6 Intel Core i5'],
+  ['placa-de-video', 'Placa de Video Asus Dual Geforce Rtx 4060 8gb Ventilador Duplo'],
+  ['impressora', 'Impressora Multifuncional Hp Smart Tank 584 com Tinta'],
+  ['ssd', 'Ssd Kingston Nv2 1tb Nvme M2'],
+  ['livros', 'Capa Dura - Dom Casmurro'],
+];
+for (const [seg, nome] of aparelhos) check(`aparelho legitimo NAO e acessorio [${seg}]: ${nome}`, scopeIssue(seg, nome) === null, scopeIssue(seg, nome));
+
+// Integracao com a identidade: pacote e acessorio viram REVISAO (nunca strong, nunca rejected), mesmo com GTIN valido.
+const tvSeg = segmentByKey('smart-tv')!;
+const afrSeg = segmentByKey('air-fryer')!;
+const tvPay = (name: string): MlCatalogPayload => P({ id: 'MLBTV', name, domain_id: 'MLB-TELEVISIONS', attributes: [attr('GTIN', gtin('789103326472')), attr('BRAND', 'Samsung')] });
+r = evaluateIdentity(tvPay('Samsung Smart Tv 55 4k U8000h + Samsung Smart Tv 32 Hd.'), tvSeg);
+check('identidade: combo de TVs com GTIN valido => review combo_pacote', r.status === 'review' && r.reason === 'combo_pacote' && r.key === null, r);
+r = evaluateIdentity(P({ id: 'MLBAF', name: 'Assadeira Forma Air Fryer Philips Walita Preto', domain_id: 'MLB-AIR_FRYERS', attributes: [attr('GTIN', gtin('422245952761'))] }), afrSeg);
+check('identidade: assadeira no dominio AIR_FRYERS => review acessorio_ou_peca', r.status === 'review' && r.reason === 'acessorio_ou_peca' && r.matched === 'assadeira', r);
+r = evaluateIdentity(tvPay('Tela Hdr da Smart TV LG 50uk6090pua Led Uhd 4k'), tvSeg);
+check('identidade: tela de reposicao no dominio TELEVISIONS => review', r.status === 'review' && r.reason === 'acessorio_ou_peca', r);
+r = evaluateIdentity(tvPay('Smart Tv Samsung 55 Crystal 4k U8000h'), tvSeg);
+check('identidade: TV legitima continua strong gtin:', r.status === 'strong' && r.keyKind === 'gtin', r);
+r = evaluateIdentity(tvPay('Smart Tv Samsung 55 Usado + Samsung Smart Tv 32'), tvSeg);
+check('identidade: usado continua rejected antes do escopo', r.status === 'rejected', r);
+gv = gateFor('eletroeletronicos').evaluate({ segment: 'smart-tv', name: 'Smart Tv Samsung 55', domainId: 'MLB-TELEVISIONS', identity: evaluateIdentity(tvPay('Smart Tv Samsung 55 Crystal 4k'), tvSeg), offerTitles: ['Smart Tv 55 Samsung + Smart Tv 32 Lg'] });
+check('porteiro: titulo de ANUNCIO com pacote => review out_of_scope', gv.verdict === 'review' && gv.reason === 'combo_pacote', gv);
+
+// --- Cor junta (regra do dono, exceto tenis) ---
+const bolaSeg = segmentByKey('bola')!;
+check('bola: COLOR fora de keyExtras (cor nao separa produto)', !bolaSeg.profile.keyExtras.includes('COLOR'));
+check('so o tenis tem COLOR na config, e e review_only', SEGMENTS.filter((s) => s.profile.keyExtras.includes('COLOR') || s.profile.fallbackAttrs.includes('COLOR')).every((s) => s.key === 'tenis-de-corrida' && s.profile.strategy === 'review_only'));
+const bolaPay = (cor: string): MlCatalogPayload => P({ id: 'MLBB', name: 'Bola Futebol Campo', domain_id: 'MLB-FOOTBALL_BALLS', attributes: [attr('BRAND', 'FLAR IMPORT'), attr('MODEL', 'Numero 5'), attr('COLOR', cor)] });
+check('bola sem GTIN: cores diferentes => MESMA chave bm', evaluateIdentity(bolaPay('Cor 01'), bolaSeg).key === evaluateIdentity(bolaPay('Cor 10'), bolaSeg).key && evaluateIdentity(bolaPay('Cor 01'), bolaSeg).keyKind === 'brand_model');
+check('colorlessTitleKey: cor01/cor10/cor07 colapsam', colorlessTitleKey('Bola Futebol Campo cor01') === colorlessTitleKey('Bola Futebol Campo cor10') && colorlessTitleKey('Bola Futebol Campo cor07') === colorlessTitleKey('Bola Futebol Campo cor 10'));
+check('colorlessTitleKey: nomes de cor colapsam, modelo continua separando', colorlessTitleKey('Soundbar X Preto') === colorlessTitleKey('Soundbar X Branca') && colorlessTitleKey('Soundbar X1 Preto') !== colorlessTitleKey('Soundbar X2 Preto'));
+
 // --- Paginacao (caso 206) ---
 const mkItem = (i: number, extra: Record<string, unknown> = {}) => ({ item_id: `MLB${i}`, seller_id: 1000 + i, price: 100 + i, condition: 'new', original_price: null, ...extra });
 const pager = (pages: Array<{ status: number; body: unknown } | Error>): FetchRawPage & { calls: number } => {
@@ -265,6 +361,37 @@ const run = async () => {
   const cli2 = createMlClient({ token: 't', maxCalls: 2, fetchImpl: fake });
   const rep2 = await planSeed(cli2, segmentByKey('livros')!, lookup, { termsLimit: 1 });
   check('seed: com teto de 2 chamadas para ao faltar folga para /items + detalhe', rep2.stoppedBecause === 'teto_de_chamadas' && cli2.used() <= 2, { s: rep2.stoppedBecause, u: cli2.used() });
+
+  // --- Semeadura: variantes de cor, combos e acessorios vao para REVISAO; aparelhos legitimos seguem planejados ---
+  const bolaAttrs = (g: string, cor: string, modelo = 'Numero 5', brand = 'FLAR IMPORT') => [attr('GTIN', g), attr('BRAND', brand), attr('MODEL', modelo), attr('COLOR', cor)];
+  const catB: Record<string, { name: string; attrs: ReturnType<typeof attr>[] }> = {
+    'MLB-B1': { name: 'Bola Futebol Campo cor01', attrs: bolaAttrs(gtin('789261566663'), 'Cor 01') },
+    'MLB-B2': { name: 'Bola Futebol Campo cor10', attrs: bolaAttrs(gtin('789942336728'), 'COR 10') },
+    'MLB-B3': { name: 'Bola Futebol Campo cor07', attrs: bolaAttrs(gtin('789467492547'), 'Cor 07') },
+    'MLB-B4': { name: 'Bola Futebol Campo Vinil Vermelho Costurada', attrs: bolaAttrs(gtin('790812428226'), 'Vermelho', 'Couro Sintetico', 'DNE') },
+    'MLB-B5': { name: 'Bola Futebol Campo Nike + Bomba de Ar', attrs: bolaAttrs(gtin('789000000011'), 'Branco', 'Pitch', 'Nike') },
+    'MLB-B6': { name: 'Bomba de Ar para Bola de Futebol', attrs: bolaAttrs(gtin('789000000012'), 'Preto', 'Bomba', 'Nike') },
+  };
+  const searchB = { paging: { total: 6, offset: 0, limit: 10 }, results: Object.entries(catB).map(([cid, c]) => ({ id: cid, name: c.name, domain_id: 'MLB-FOOTBALL_BALLS', attributes: c.attrs })) };
+  const chamadasB: string[] = [];
+  const fakeB = (async (url: string) => {
+    const ep = String(url).replace('https://api.mercadolibre.com', '');
+    chamadasB.push(ep);
+    const j = (status: number, body: unknown) => new Response(JSON.stringify(body), { status });
+    if (ep.startsWith('/products/search')) return j(200, searchB);
+    const mi = /^\/products\/(MLB-B\d)\/items/.exec(ep);
+    if (mi) return j(200, { results: [mkItem(Number(mi[1].slice(-1))), mkItem(Number(mi[1].slice(-1)) + 50)], paging: { total: 2, offset: 0, limit: 100 } });
+    const md = /^\/products\/(MLB-B\d)$/.exec(ep);
+    if (md) return j(200, { id: md[1], name: catB[md[1]].name, domain_id: 'MLB-FOOTBALL_BALLS', attributes: catB[md[1]].attrs });
+    return j(500, {});
+  }) as unknown as typeof fetch;
+  const lookupVazio: ExistingLookup = { byCatalogId: async () => null, byGtins: async () => null, byIdentityKey: async () => null, byTitleKey: async () => null };
+  const repB = await planSeed(createMlClient({ token: 't', maxCalls: 40, fetchImpl: fakeB }), bolaSeg, lookupVazio, { termsLimit: 1 });
+  check('bolas: planeja so cor01 (base) e o modelo realmente diferente (2 masters, nao 4)', repB.plans.map((p) => p.catalogId).sort().join() === 'MLB-B1,MLB-B4', repB.plans.map((p) => p.catalogId));
+  const rv = repB.reviews.filter((x) => x.reason === 'variante_de_cor_do_mesmo_modelo');
+  check('bolas: cor10 e cor07 vao para revisao apontando o catalogo-base MLB-B1', rv.length === 2 && rv.every((x) => x.relatedCatalogId === 'MLB-B1') && repB.counts.revisao_variante_de_cor === 2, repB.reviews);
+  check('bolas: pacote (bola + bomba) e acessorio (bomba) vao para revisao, nao viram master', repB.reviews.some((x) => x.catalogId === 'MLB-B5' && x.reason === 'combo_pacote') && repB.reviews.some((x) => x.catalogId === 'MLB-B6' && x.reason === 'acessorio_ou_peca'), repB.reviews);
+  check('bolas: combo/acessorio custam 0 chamadas (barrados na busca)', !chamadasB.some((c) => c.includes('MLB-B5') || c.includes('MLB-B6')), chamadasB);
 };
 
 run()

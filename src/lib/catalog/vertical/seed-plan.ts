@@ -2,6 +2,7 @@
 // injetadas (lookup). Não escreve em lugar nenhum: quem grava é scripts/semear-vertical.ts, e só com --apply.
 import { parseMeliCatalogPage } from '@/lib/affiliate/master-consolidation';
 import { domainMatches, type SegmentConfig } from './config';
+import { colorlessTitleKey } from './scope';
 import { gateFor, type VerticalGateResult } from './gate';
 import { evaluateIdentity, normalizeTitleKey, type IdentityResult, type MlAttribute, type MlCatalogPayload } from './identity';
 import { CallBudgetExceeded, RateLimited, type MlClient } from './ml-api';
@@ -69,7 +70,7 @@ export interface SeedReport {
   plans: SeedPlanEntry[];
   skips: SeedSkip[];
   /** Candidatos sem identidade forte: fila de revisão humana (NUNCA viram master automático). */
-  reviews: Array<{ catalogId: string; name: string; reason: string; missing: string[]; domainId: string | null }>;
+  reviews: Array<{ catalogId: string; name: string; reason: string; missing: string[]; domainId: string | null; relatedCatalogId?: string }>;
   errors: string[];
   stoppedBecause: string | null;
   callsUsed: number;
@@ -221,6 +222,24 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           }
         }
 
+        const attributesSnapshot: Record<string, string | null> = {};
+        for (const id of SNAPSHOT_ATTRS) {
+          const a = (merged.attributes ?? []).find((x) => x?.id === id);
+          const v = (a?.value_name ?? a?.values?.[0]?.name ?? '').toString().trim();
+          if (v) attributesSnapshot[id] = v;
+        }
+
+        // 4b) Variante de cor do MESMO modelo (regra do dono: cor junta, exceto tênis). GTINs diferentes por cor não
+        // criam masters irmãos: o irmão vai para revisão apontando o primeiro. A junção em um master só com decisão do dono.
+        if (seg.profile.strategy !== 'review_only') {
+          const sib = findColorSibling(report.plans, seg, merged.name ?? '', attributesSnapshot);
+          if (sib) {
+            bump(report.counts, 'revisao_variante_de_cor');
+            report.reviews.push({ catalogId: merged.id, name: merged.name ?? '', reason: 'variante_de_cor_do_mesmo_modelo', missing: [], domainId: merged.domain_id ?? null, relatedCatalogId: sib.catalogId });
+            continue;
+          }
+        }
+
         // 5) Porteiro do departamento (evidência positiva).
         const verdict = gate.evaluate({ segment: seg.key, name: merged.name ?? '', domainId: merged.domain_id ?? null, identity });
         if (verdict.verdict === 'rejected') {
@@ -230,12 +249,6 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
 
         const prices = page.items.map((i) => i.priceCents);
         const cheapest = page.items.reduce((a, b) => (b.priceCents < a.priceCents ? b : a));
-        const attributesSnapshot: Record<string, string | null> = {};
-        for (const id of SNAPSHOT_ATTRS) {
-          const a = (merged.attributes ?? []).find((x) => x?.id === id);
-          const v = (a?.value_name ?? a?.values?.[0]?.name ?? '').toString().trim();
-          if (v) attributesSnapshot[id] = v;
-        }
         report.plans.push({
           catalogId: merged.id,
           name: merged.name ?? '',
@@ -270,6 +283,22 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
   }
   report.callsUsed = client.used();
   return report;
+}
+
+/**
+ * Já há, neste plano, um master do MESMO modelo em outra cor? Mesmo título sem palavras de cor E mesmos atributos que
+ * separam variantes (MODEL, ALPHANUMERIC_MODEL, VOLTAGE, capacidade, VERSION...; a cor é a única diferença).
+ * Atributo presente de um lado e ausente do outro => não é irmão (na dúvida, não junta).
+ */
+function findColorSibling(planned: SeedPlanEntry[], seg: SegmentConfig, name: string, attrs: Record<string, string | null>): SeedPlanEntry | null {
+  const ck = colorlessTitleKey(name);
+  if (!ck) return null;
+  const ids = ['MODEL', ...seg.profile.fallbackAttrs, ...seg.profile.keyExtras].filter((id, i, a) => id !== 'COLOR' && a.indexOf(id) === i);
+  for (const p of planned) {
+    if (p.segment !== seg.key || colorlessTitleKey(p.name) !== ck) continue;
+    if (ids.every((id) => (p.attributesSnapshot[id] ?? null) === (attrs[id] ?? null))) return p;
+  }
+  return null;
 }
 
 async function findDuplicate(

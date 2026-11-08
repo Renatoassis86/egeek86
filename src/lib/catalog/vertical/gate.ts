@@ -2,6 +2,7 @@
 // NÃO importa nem altera src/lib/catalog/gate.ts (porteiro gamer, ADR 0005 intacto).
 import { domainMatches, segmentByKey, type NonGamesVertical, type SegmentConfig } from './config';
 import { foldText, type IdentityResult } from './identity';
+import { scopeIssue } from './scope';
 
 /**
  * PORTEIRO POR DEPARTAMENTO (ADR 0008 item 4): `gateFor(vertical)`.
@@ -84,6 +85,12 @@ function evaluateFor(vertical: NonGamesVertical, input: VerticalGateInput): Vert
   for (const t of [input.name, ...(input.offerTitles ?? [])]) {
     const m = re.exec(foldText(t));
     if (m) return mk('review', 'out_of_scope', 'lexico_fora_do_escopo', m[0]);
+  }
+
+  // 4b. Pacote de 2+ produtos ou acessório/peça (nome do catálogo e anúncios): scope.ts.
+  for (const t of [input.name, ...(input.offerTitles ?? [])]) {
+    const issue = scopeIssue(input.segment, t);
+    if (issue) return mk('review', 'out_of_scope', issue.reason, issue.matched);
   }
 
   // 5. Evidência positiva: identidade forte.

@@ -1,5 +1,6 @@
 // Sem 'server-only': função pura (sem banco, sem rede), importável por coletor, scripts tsx e testes.
 import { domainMatches, type SegmentConfig } from './config';
+import { scopeIssue } from './scope';
 
 /**
  * IDENTIDADE POR DEPARTAMENTO (ADR 0008 item 4). Função pura: dado o payload de catálogo do ML
@@ -195,6 +196,7 @@ function result(partial: Partial<IdentityResult> & Pick<IdentityResult, 'status'
  * Avalia o payload de catálogo contra o perfil de identidade do segmento. Ordem (a primeira que dispara decide):
  *  1. domínio fora do segmento => off_domain;
  *  2. usado/recondicionado/Open Box/importado/... => rejected;
+ *  2b. título de pacote ("A + B", "Kit 2...") ou de acessório/peça do aparelho => review (scope.ts);
  *  3. segmento review_only (tênis) => review;
  *  4. isbn_only (livros): ISBN-13 válido => strong; senão review;
  *  5. gtin_then_attrs: GTIN válido => strong (gtin:); MPN+marca => strong (mpn:); atributos obrigatórios completos =>
@@ -212,6 +214,10 @@ export function evaluateIdentity(p: MlCatalogPayload, seg: SegmentConfig): Ident
   }
   const rej = rejectionOf(p);
   if (rej) return result({ status: 'rejected', reason: rej.reason, matched: rej.matched }, base);
+
+  // Pacote de 2+ produtos ou acessório/peça dentro do domínio do aparelho: revisão, nunca master (scope.ts).
+  const issue = scopeIssue(seg.key, p.name ?? '');
+  if (issue) return result({ status: 'review', reason: issue.reason, matched: issue.matched }, base);
 
   const { strategy, fallbackAttrs, keyExtras } = seg.profile;
   if (strategy === 'review_only') {
