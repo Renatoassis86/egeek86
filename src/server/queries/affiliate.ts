@@ -50,6 +50,7 @@ import {
   type GameEditionType,
   type ProductType,
 } from '@/db/schema';
+import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 
 type MasterProductPick = Pick<
   MasterProduct,
@@ -138,7 +139,7 @@ function baseOfferQuery() {
 export async function getPublicOffers(limit = 24): Promise<OfferWithRelations[]> {
   // Só ofertas PÚBLICAS (ADR 0002: coleta real <= 7 dias e piso de plausibilidade).
   const dedupRows = await db.execute<{ id: string }>(sql`
-    WITH ${publicOffersCtes()}
+    WITH ${publicOffersCtes(GAMES)}
     SELECT DISTINCT ON (po.master_product_id) po.id AS id
     FROM public_offers po
     WHERE ${await catalogHiddenFilter(sql`po.master_product_id`)}
@@ -148,22 +149,23 @@ export async function getPublicOffers(limit = 24): Promise<OfferWithRelations[]>
   if (dedupedIds.length === 0) return [];
 
   const rows = await baseOfferQuery()
-    .where(inArray(affiliateOffers.id, dedupedIds))
+    // dedupedIds já vem de publicOffersCtes(GAMES); o predicado repete a allow-list (defesa em profundidade, ADR 0008).
+    .where(and(inArray(affiliateOffers.id, dedupedIds), eq(affiliateOffers.vertical, GAMES)))
     .orderBy(desc(affiliateOffers.publishedAt))
     .limit(limit);
 
   return rows.map(toOfferWithRelations);
 }
 
-/** Porteiro do catálogo para UM produto (cache SWR 2 min): master em revisão/rejeitado não tem página pública. */
+/** Porteiro do catálogo para UM produto (cache SWR 2 min): master em revisão/rejeitado OU de outro departamento (ADR 0008) não tem página pública. */
 async function isMasterInCatalog(masterProductId: string): Promise<boolean> {
   const inCatalog = await catalogHiddenFilter(sql`mp.id`);
   const visible = await db.execute<{ ok: number }>(
-    sql`SELECT 1 AS ok FROM master_products mp WHERE mp.id = ${masterProductId} AND ${inCatalog} LIMIT 1`,
+    sql`SELECT 1 AS ok FROM master_products mp WHERE mp.id = ${masterProductId} AND ${verticalSql('mp', GAMES)} AND ${inCatalog} LIMIT 1`,
   );
   return visible.length > 0;
 }
-const isMasterInCatalogCached = createCachedQuery(isMasterInCatalog, ['offer-page-in-catalog-v1'], {
+const isMasterInCatalogCached = createCachedQuery(isMasterInCatalog, ['offer-page-in-catalog-v2'], {
   revalidate: 120,
   coldTimeoutSeconds: 8,
   live: true,
@@ -177,7 +179,8 @@ const isMasterInCatalogCached = createCachedQuery(isMasterInCatalog, ['offer-pag
 export const getOfferBySlug = cache(async (slug: string): Promise<OfferWithRelations | null> => {
   const [row] = await withTimeout(
     baseOfferQuery()
-      .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
+      // Allow-list (ADR 0008): oferta de outro departamento não tem detalhe na superfície gamer (cai em 404).
+      .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.vertical, GAMES), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
       .limit(1),
     8_000,
     'getOfferBySlug'
@@ -273,7 +276,7 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   if (ids.length === 0) return [];
   // status 'active' relido ao vivo: oferta que saiu do ar depois do ranking em cache não aparece.
   const rows = await readOfferRowsLive(
-    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, ids), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt))),
+    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, ids), eq(affiliateOffers.vertical, GAMES), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt))),
     ids,
     'listRankedOffers (linhas)'
   );
@@ -357,7 +360,7 @@ async function rankOfferIds(filter: RankedOffersFilter): Promise<RankedRow[]> {
   // da seção em vez de N produtos distintos (era o motivo do mesmo item
   // repetir várias vezes nos destaques/seções por plataforma).
   const dedupRows = await db.execute<{ id: string; price: string | number; gen: GamePlatformGen }>(sql`
-    WITH ${publicOffersCtes()}
+    WITH ${publicOffersCtes(GAMES)}
     SELECT DISTINCT ON (${affiliateOffers.masterProductId})
            ${affiliateOffers.id} AS id,
            ${affiliateOffers.currentPriceCents} AS price,
@@ -525,16 +528,23 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
   const [products, sellers, networks, quotes, avgPrice, lowestEver, belowAverage] = await Promise.all([
     // Só ofertas PÚBLICAS (ADR 0002): contador não conta oferta sem coleta real nem preço implausível.
     db.execute<{ count: string }>(sql`
-      WITH ${publicOffersCtes()}
+      WITH ${publicOffersCtes(GAMES)}
       SELECT COUNT(DISTINCT master_product_id)::bigint AS count FROM public_offers WHERE ${inCatalogPlain}
     `),
-    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_sellers`),
-    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_networks`),
+    // Vendedores/redes do departamento Games (ADR 0008): entra quem tem oferta Games OU ainda não tem oferta alguma
+    // (cadastro legado sem oferta, preservado para o número de hoje); sai quem só tem oferta de OUTRO departamento.
+    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_sellers s
+      WHERE EXISTS (SELECT 1 FROM affiliate_offers xo WHERE xo.seller_id = s.id AND ${verticalSql('xo', GAMES)})
+         OR NOT EXISTS (SELECT 1 FROM affiliate_offers xo WHERE xo.seller_id = s.id)`),
+    db.execute<{ count: string }>(sql`SELECT COUNT(*)::bigint AS count FROM affiliate_networks n
+      WHERE EXISTS (SELECT 1 FROM affiliate_offers xo WHERE xo.network_id = n.id AND ${verticalSql('xo', GAMES)})
+         OR NOT EXISTS (SELECT 1 FROM affiliate_offers xo WHERE xo.network_id = n.id)`),
     db.execute<{ count: string }>(sql`
-      SELECT COUNT(*)::bigint AS count FROM affiliate_price_snapshots
+      SELECT COUNT(*)::bigint AS count FROM affiliate_price_snapshots s
+      WHERE s.offer_id IN (SELECT xo.id FROM affiliate_offers xo WHERE ${verticalSql('xo', GAMES)})
     `),
     db.execute<{ avg_cents: string | null }>(sql`
-      WITH ${publicOffersCtes()},
+      WITH ${publicOffersCtes(GAMES)},
       raw_avg AS (SELECT AVG(current_price_cents) AS v FROM public_offers WHERE ${inCatalogPlain})
       SELECT AVG(po.current_price_cents)::bigint AS avg_cents
       FROM public_offers po, raw_avg
@@ -546,13 +556,13 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
     // elegível (>= MIN_QUOTES cotações e >= MIN_DAYS dias). Mesma fórmula de
     // product-price-stats.ts (média de todas as ofertas do produto, filtro 2x).
     db.execute<{ count: string }>(sql`
-      WITH ${publicOffersCtes()},
+      WITH ${publicOffersCtes(GAMES)},
       current_lowest AS (
         SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
         FROM public_offers WHERE ${inCatalogPlain} GROUP BY master_product_id
       ),
       -- Mesmas cotações plausíveis (piso, ADR 0001 revisada) da fonte única.
-      ${priceQuotesCtes(sql`o.master_product_id IN (SELECT master_product_id FROM current_lowest)`)},
+      ${priceQuotesCtes(sql`o.master_product_id IN (SELECT master_product_id FROM current_lowest)`, GAMES)},
       raw AS (
         SELECT master_product_id, AVG(price_cents) AS raw_avg, COUNT(*) AS n,
                MIN(collected_at) AS first_at, MAX(collected_at) AS last_at
@@ -1232,7 +1242,7 @@ export async function getFeaturedOffers(
   if (offerIds.length === 0) return [];
 
   const rows = await readOfferRowsLive(
-    () => baseOfferQuery().where(inArray(affiliateOffers.id, offerIds)),
+    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, offerIds), eq(affiliateOffers.vertical, GAMES))),
     offerIds,
     'getFeaturedOffers (linhas)'
   );
@@ -1301,7 +1311,7 @@ async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): 
     master_product_id: string;
     current_price_cents: string;
   }>(sql`
-    WITH ${publicOffersCtes()},
+    WITH ${publicOffersCtes(GAMES)},
     candidates AS (
       SELECT DISTINCT ON (o.master_product_id)
         o.id AS offer_id, o.master_product_id, o.current_price_cents, o.previous_price_cents

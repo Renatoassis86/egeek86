@@ -11,6 +11,7 @@ import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory } from '@/server/collector/discover-products';
+import { GAMES } from '@/lib/catalog/verticais';
 
 /**
  * Conclui o questionário de qualificação do colecionador e o registra como vendedor ativo.
@@ -387,6 +388,7 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
           .values({
             name: itemData.name,
             slug: baseSlug,
+            vertical: GAMES,
             meliCatalogId: itemData.id,
             defaultImages: itemData.pictures?.map((p: any) => p.url) ?? [],
             ...classification,
@@ -420,6 +422,7 @@ export async function triggerManualMeliExtraction(queryOrUrl: string) {
         .insert(affiliateOffers)
         .values({
           masterProductId: masterProduct.id,
+          vertical: GAMES,
           networkId: network.id,
           title: itemData.name,
           slug: offerSlug,

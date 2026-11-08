@@ -75,6 +75,8 @@ export const affiliateOffers = pgTable(
     // Quarentena de preco absurdo (migration 0023). NULL = normal. Preenchida = a oferta sai de
     // TODA leitura publica e indicador (filtros em public-offers.ts); nada e apagado. Reversivel.
     quarantinedAt: timestamp('quarantined_at', { withTimezone: true }),
+    // Departamento (migration 0027, ADR 0008). Todo registro existente é 'games'.
+    vertical: text('vertical').notNull().default('games'),
     status: affiliateOfferStatus('status').notNull().default('draft'),
     highlightNote: text('highlight_note'),
     publishedAt: timestamp('published_at', { withTimezone: true }),

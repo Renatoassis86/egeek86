@@ -2,6 +2,7 @@ import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { offerExcludedTitleSql } from '@/lib/affiliate/offer-identity-sql';
+import { verticalSql, type Vertical } from '@/lib/catalog/verticais';
 import {
   OFFER_FRESHNESS_DAYS,
   PLAUSIBILITY_FLOOR_PERCENT,
@@ -106,8 +107,13 @@ export function weakSellerSql(alias: string): SQL {
     ), false)`;
 }
 
-/** Definições de CTE para usar em `WITH ${publicOffersCtes()} ...`. Expõe `public_offers(id, master_product_id, current_price_cents)`. */
-export function publicOffersCtes(): SQL {
+/**
+ * Definições de CTE para usar em `WITH ${publicOffersCtes('games')} ...`. Expõe `public_offers(id, master_product_id, current_price_cents)`.
+ * `vertical` é OBRIGATÓRIO (ADR 0008, allow-list): o predicado `vertical = '<v>'` fica DENTRO de `live_networks` e
+ * `fresh_offers` (ponto único); `product_median` e `public_offers` derivam de `fresh_offers` e herdam o filtro.
+ * `live_networks` também filtra: a "rede viva" de um departamento não pode ser provada por coleta de outro.
+ */
+export function publicOffersCtes(vertical: Vertical): SQL {
   const days = sql.raw(String(Math.trunc(OFFER_FRESHNESS_DAYS)));
   const floor = sql.raw(String(PLAUSIBILITY_FLOOR_PERCENT / 100));
   const minOffers = sql.raw(String(Math.trunc(PLAUSIBILITY_MIN_OFFERS)));
@@ -115,13 +121,15 @@ export function publicOffersCtes(): SQL {
     live_networks AS (
       SELECT DISTINCT lo.network_id
       FROM affiliate_offers lo
-      WHERE lo.created_at < now() - interval '${days} days'
+      WHERE ${verticalSql('lo', vertical)}
+        AND lo.created_at < now() - interval '${days} days'
         AND lo.last_price_change_at >= now() - interval '${days} days'
     ),
     fresh_offers AS (
       SELECT fo.id, fo.master_product_id, fo.current_price_cents
       FROM affiliate_offers fo
-      WHERE ${catalogGateVisibleSql('fo.master_product_id')}
+      WHERE ${verticalSql('fo', vertical)}
+        AND ${catalogGateVisibleSql('fo.master_product_id')}
         AND ${offerIdentityVisibleSql('fo.id', { activeOnly: true })}
         AND fo.status = 'active'
         AND fo.current_price_cents > 0
@@ -152,11 +160,11 @@ export function publicOffersCtes(): SQL {
  * Das ofertas pedidas, quais são públicas (mesmo critério acima). Para páginas
  * de detalhe e qualquer lista montada fora das consultas deste módulo.
  */
-export async function filterPublicOfferIds(offerIds: string[]): Promise<Set<string>> {
+export async function filterPublicOfferIds(offerIds: string[], vertical: Vertical): Promise<Set<string>> {
   const ids = [...new Set(offerIds.filter(Boolean))];
   if (!ids.length) return new Set();
   const rows = await db.execute<{ id: string }>(sql`
-    WITH ${publicOffersCtes()}
+    WITH ${publicOffersCtes(vertical)}
     SELECT po.id FROM public_offers po
     WHERE po.id IN (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})
   `);

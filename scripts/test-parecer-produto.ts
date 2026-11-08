@@ -447,7 +447,7 @@ function textosDe(p: ParecerProduto): string {
   check('R4: existência = 1 consulta leve por chave primária, sem cache em memória', /FROM master_products WHERE id = \$\{masterProductId\}::uuid LIMIT 1/.test(existe) && !existe.includes('createCachedQuery') && existe.includes("import 'server-only'"));
   for (const [rota, getter] of [['src/app/api/produtos/[id]/grafico/route.ts', 'getPriceChartV2(id)'], ['src/app/api/produtos/[id]/lojas/route.ts', 'getLojasHoje(id)']] as const) {
     const r = lerR(rota);
-    const iEx = r.indexOf('await produtoExiste(id)');
+    const iEx = r.indexOf('await produtoExiste(id, GAMES)');
     const iGet = r.indexOf(getter);
     check(`R4: ${rota.split('/').slice(-2, -1)[0]}: existência checada ANTES das métricas`, iEx > 0 && iGet > iEx, { iEx, iGet });
     check(`R4: ${rota.split('/').slice(-2, -1)[0]}: 404 e 400 com cache negativo de CDN (s-maxage=300), sem memória`, r.includes("status: 404, headers: NEGATIVO") && r.includes('status: 400, headers: NEGATIVO') && r.includes("s-maxage=300"));

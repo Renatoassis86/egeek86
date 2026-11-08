@@ -9,6 +9,7 @@ import { lookupShopeeItem, shopeeItemIdFromRef, shopeePublicUrl } from './source
 import { getMasterReferencePrices, isImplausiblyLow } from './price-plausibility';
 import { collectorRunsEnabled, startCollectorRun } from './collector-runs';
 import { classifyShopeeKind } from '@/lib/collector-runs/classify-error';
+import { GAMES } from '@/lib/catalog/verticais';
 
 /** Mesma regra do coletor genérico: 3 respostas válidas SEGUIDAS sem preço expiram a oferta ativa. */
 const MAX_CONSECUTIVE_MISSES = 3;
@@ -22,6 +23,8 @@ const MAX_CONSECUTIVE_ERRORS = 10;
 /** Ofertas Shopee devidas (mesma condicao da selecao e da medicao de backlog da observabilidade). */
 function shopeeDueWhere() {
   return and(
+    // Coletor Shopee GAMER: só oferta Games (ADR 0008); outras verticais têm fila própria.
+    eq(affiliateOffers.vertical, GAMES),
     eq(affiliateNetworks.slug, 'shopee'),
     isNotNull(affiliateOffers.externalRef),
     like(affiliateOffers.externalRef, 'shopee-%'),

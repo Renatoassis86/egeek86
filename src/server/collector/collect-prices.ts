@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { and, eq, inArray, isNotNull, isNull, or, lt, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema';
+import { GAMES } from '@/lib/catalog/verticais';
 import { getPriceSource, listOperationalSourceSlugs } from './price-sources';
 import type { PriceSnapshotResult } from './price-sources';
 import { recordPriceSnapshot } from './record-price-snapshot';
@@ -67,6 +68,9 @@ const isWatchedExpr = sql`EXISTS (
 /** Ofertas devidas para coleta (mesma condicao usada na selecao e na medicao de backlog da observabilidade). */
 function dueWhere(operationalSlugs: string[]) {
   return and(
+        // Isolamento por departamento (ADR 0008): o coletor GAMER só enfileira oferta Games; oferta de outra
+        // vertical tem fila/cron/teto próprios (collect-vertical) e não consome os MAX_OFFERS_PER_RUN slots daqui.
+        eq(affiliateOffers.vertical, GAMES),
         // 'draft' entra aqui de propósito: publicação e rastreamento de preço
         // são decisões independentes — mesmo uma oferta ainda não publicada
         // (ex: rascunho criado manualmente pelo admin) já acumula histórico.
@@ -528,17 +532,17 @@ async function applySnapshotsToGroup(
    */
   master?: { outcomes: CatalogOutcome<PriceSnapshotResult>[]; offers: { id: string; sellerId: string | null }[] }
 ): Promise<{ updated: number; created: number; reviewed: IdentityReviewEntry[]; pricedOfferIds: string[]; snapshotsWritten: number }> {
-  let masterCache: { name: string; productType: string; gameFormat: string; defaultImages: string[] } | null = null;
+  let masterCache: { name: string; productType: string; gameFormat: string; defaultImages: string[]; vertical: string } | null = null;
   const loadMaster = async () => {
     if (masterCache) return masterCache;
     const [row] = await db
-      .select({ name: masterProducts.name, productType: masterProducts.productType, gameFormat: masterProducts.gameFormat, defaultImages: masterProducts.defaultImages })
+      .select({ name: masterProducts.name, productType: masterProducts.productType, gameFormat: masterProducts.gameFormat, defaultImages: masterProducts.defaultImages, vertical: masterProducts.vertical })
       .from(masterProducts)
       .where(eq(masterProducts.id, group.masterProductId))
       .limit(1);
     masterCache = row
-      ? { name: row.name, productType: row.productType, gameFormat: row.gameFormat, defaultImages: (row.defaultImages as unknown as string[]) ?? [] }
-      : { name: 'Produto', productType: 'game', gameFormat: 'unknown', defaultImages: [] };
+      ? { name: row.name, productType: row.productType, gameFormat: row.gameFormat, defaultImages: (row.defaultImages as unknown as string[]) ?? [], vertical: row.vertical }
+      : { name: 'Produto', productType: 'game', gameFormat: 'unknown', defaultImages: [], vertical: GAMES };
     return masterCache;
   };
 
@@ -731,6 +735,8 @@ async function applySnapshotsToGroup(
         .insert(affiliateOffers)
         .values({
           masterProductId: group.masterProductId,
+          // A oferta HERDA a vertical do master (ADR 0008); fallback GAMES só para o master ausente (placeholder 'Produto').
+          vertical: masterProduct.vertical,
           networkId: group.networkId,
           title: masterProduct.name,
           slug,

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { and, eq, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, analyticsEvents } from '@/db/schema';
+import { GAMES } from '@/lib/catalog/verticais';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const [offer] = await db
     .select()
     .from(affiliateOffers)
-    .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
+    .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.vertical, GAMES), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
     .limit(1);
 
   if (!offer) {

@@ -5,6 +5,7 @@ import { createPersistedQuery } from '@/lib/cache/server-cache';
 import type { ProductType } from '@/db/schema';
 import { dimensionToProductType } from '@/lib/catalog/dimensions';
 import { evaluateCatalogGate } from '@/lib/catalog/gate';
+import { verticalSql, GAMES } from '@/lib/catalog/verticais';
 
 /**
  * Ponte entre a regra de dimensões (`src/lib/catalog/dimensions.ts`, regex por
@@ -43,7 +44,7 @@ async function loadOverrides(): Promise<DimensionOverrides> {
              array_agg(DISTINCT o.title) AS titles,
              percentile_cont(0.5) WITHIN GROUP (ORDER BY o.current_price_cents) FILTER (WHERE o.current_price_cents > 0) AS median_cents
       FROM affiliate_offers o
-      WHERE o.status = 'active' AND o.quarantined_at IS NULL
+      WHERE ${verticalSql('o', GAMES)} AND o.status = 'active' AND o.quarantined_at IS NULL
       GROUP BY o.master_product_id
     )
     SELECT m.id, m.name, m.product_type, m.game_format, m.game_platform_gen,
@@ -52,7 +53,9 @@ async function loadOverrides(): Promise<DimensionOverrides> {
            a.titles, a.median_cents
     FROM master_products m
     LEFT JOIN agg a ON a.master_product_id = m.id
-    WHERE NOT (m.attributes ? 'mergedInto')
+    -- Porteiro GAMER (gate.ts) só avalia masters do departamento Games (ADR 0008): master de outra vertical
+    -- não pode ser escondido nem "movido de aba" por léxico de jogo (cada departamento terá o próprio porteiro).
+    WHERE ${verticalSql('m', GAMES)} AND NOT (m.attributes ? 'mergedInto')
   `);
   const out: DimensionOverrides = { hidden: [], toType: { game: [], console: [], accessory: [] } };
   for (const r of rows) {

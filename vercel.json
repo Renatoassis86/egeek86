@@ -27,6 +27,26 @@
     {
       "path": "/api/cron/discover-products?source=meli&maxNew=10&terms=4&probes=25",
       "schedule": "17 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-vertical?v=tecnologia",
+      "schedule": "2,32 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-vertical?v=eletroeletronicos",
+      "schedule": "7,37 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-vertical?v=livros",
+      "schedule": "12,42 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-vertical?v=eletrodomesticos",
+      "schedule": "22,52 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-vertical?v=esporte",
+      "schedule": "27,57 * * * *"
     }
   ]
 }

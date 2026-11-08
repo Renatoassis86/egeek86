@@ -9,6 +9,7 @@ import { resolveProductTypeFromTitle } from '@/lib/affiliate/product-type-classi
 import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory, isUsedCondition } from './discover-products';
 import { recordPriceSnapshot } from './record-price-snapshot';
+import { GAMES } from '@/lib/catalog/verticais';
 
 const MAGALU_SEARCH_TERMS = [
   'turok nintendo switch',
@@ -225,6 +226,7 @@ export async function discoverMagaluProducts(): Promise<{
               .values({
                 name: item.title,
                 slug: productSlug,
+                vertical: GAMES,
                 productType,
                 defaultImages: item.imageUrl ? [item.imageUrl] : [],
                 ...classification,
@@ -246,6 +248,7 @@ export async function discoverMagaluProducts(): Promise<{
             .insert(affiliateOffers)
             .values({
               masterProductId: masterProduct.id,
+              vertical: GAMES,
               networkId: network.id,
               title: item.title,
               slug: offerSlug,

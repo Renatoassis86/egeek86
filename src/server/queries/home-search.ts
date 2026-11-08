@@ -10,6 +10,7 @@ import { effectiveCatalogType } from '@/lib/catalog/dimensions';
 import type { ProductType } from '@/db/schema';
 import { cleanProductTitle, foldText } from '@/lib/search/query-normalize';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
+import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 
 /**
  * Dados REAIS para o hero de busca da home. Tudo sai de ofertas públicas
@@ -38,11 +39,11 @@ interface Row extends Record<string, unknown> {
 
 async function compute(): Promise<HomeSearchData> {
   const rows = await db.execute<Row>(sql`
-    WITH ${publicOffersCtes()}
+    WITH ${publicOffersCtes(GAMES)}
     SELECT m.id, m.name, m.product_type, m.game_platform_gen, COUNT(*)::int AS offers
     FROM public_offers p
     INNER JOIN master_products m ON m.id = p.master_product_id
-    WHERE NOT (m.attributes ? 'mergedInto')
+    WHERE ${verticalSql('m', GAMES)} AND NOT (m.attributes ? 'mergedInto')
     GROUP BY m.id
   `);
   // Cartela pública (src/lib/catalog/dimensions.ts): o que está fora dela

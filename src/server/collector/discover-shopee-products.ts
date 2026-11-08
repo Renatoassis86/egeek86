@@ -14,6 +14,7 @@ import { slugify } from '@/lib/slugify';
 import { isNonProductAccessory, isUsedCondition } from './discover-products';
 import { recordPriceSnapshot } from './record-price-snapshot';
 import { getMasterReferencePrices, isImplausiblyLow, median } from './price-plausibility';
+import { GAMES } from '@/lib/catalog/verticais';
 
 /**
  * Descoberta Shopee SOMENTE pela API oficial (productOfferV2 por palavra-chave,
@@ -167,6 +168,7 @@ export async function discoverShopeeProducts(): Promise<{
               .values({
                 name: item.productName,
                 slug: slugify(`${item.productName}-shopee-${item.itemId.slice(-6)}`),
+                vertical: GAMES,
                 productType,
                 defaultImages: item.imageUrl ? [item.imageUrl] : [],
                 ...classified,
@@ -184,6 +186,7 @@ export async function discoverShopeeProducts(): Promise<{
             .insert(affiliateOffers)
             .values({
               masterProductId: masterId,
+              vertical: GAMES,
               networkId: network.id,
               title: item.productName,
               slug: slugify(`${item.productName}-shopee-${randomUUID().slice(0, 6)}`),

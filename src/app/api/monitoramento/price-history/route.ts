@@ -26,6 +26,10 @@ export async function GET(request: NextRequest) {
     const result = await getMasterProductPriceHistory(masterProductId, timeframe);
     return NextResponse.json(result);
   } catch (error) {
+    // Produto inexistente OU de outro departamento (ADR 0008): 404, nunca detalhe de outra vertical.
+    if (error instanceof Error && error.message === 'Produto master não encontrado') {
+      return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
+    }
     console.error('Erro na API de histórico de preços:', error);
     return NextResponse.json({ error: 'Falha ao carregar histórico de preço' }, { status: 500 });
   }

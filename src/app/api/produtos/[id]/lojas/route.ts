@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { produtoExiste } from '@/server/pricing/produto-existe';
+import { GAMES } from '@/lib/catalog/verticais';
 import { isPriceMetricsV2Enabled, isProductCardV1Enabled } from '@/lib/pricing/price-metrics-config';
 import { getLojasHoje } from '@/server/pricing/lojas-hoje';
 
@@ -21,7 +22,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   try {
     // Existência por chave primária ANTES das métricas (consulta leve, sem cache em memória).
-    if (!(await produtoExiste(id))) return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404, headers: NEGATIVO });
+    if (!(await produtoExiste(id, GAMES))) return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404, headers: NEGATIVO });
     const lojas = await getLojasHoje(id);
     return NextResponse.json({ ...lojas, nowIso: new Date().toISOString() }, { headers: { 'Cache-Control': 'public, max-age=0, s-maxage=60, stale-while-revalidate=120' } });
   } catch (error) {

@@ -2,6 +2,7 @@ import 'server-only';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { swrBatch, withTimeout } from '@/lib/cache/swr';
+import { verticalSql, GAMES, type Vertical } from '@/lib/catalog/verticais';
 import { publicOffersCtes, medianSql, weakSellerSql, catalogGateVisibleSql, offerIdentityVisibleSql } from '@/server/queries/public-offers';
 import {
   AGGREGATE_CEILING_MEDIAN_MULTIPLE,
@@ -63,7 +64,7 @@ import {
  * collected_at); `pfloor` = por produto n_all, raw_min, median_cents, floor_cents
  * (null quando há menos de PLAUSIBILITY_MIN_OFFERS cotações: sem régua).
  */
-export function priceQuotesCtes(scope: SQL): SQL {
+export function priceQuotesCtes(scope: SQL, vertical: Vertical): SQL {
   const pct = sql.raw(String(PLAUSIBILITY_FLOOR_PERCENT / 100));
   const minN = sql.raw(String(Math.trunc(PLAUSIBILITY_MIN_OFFERS)));
   return sql`
@@ -74,6 +75,7 @@ export function priceQuotesCtes(scope: SQL): SQL {
       INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
       LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
       WHERE (${scope}) AND s.price_cents > 0
+        AND ${verticalSql('o', vertical)}
         AND ${catalogGateVisibleSql('o.master_product_id')}
         AND ${offerIdentityVisibleSql('o.id')}
     ),
@@ -105,11 +107,11 @@ export function priceQuotesCtes(scope: SQL): SQL {
  * "Limpa" = não passa de 2x a média bruta E, com régua, não passa de
  * AGGREGATE_CEILING_MEDIAN_MULTIPLE x a mediana. O mínimo nunca depende do teto.
  */
-export function statsAggCtes(scope: SQL): SQL {
+export function statsAggCtes(scope: SQL, vertical: Vertical): SQL {
   const mult = sql.raw(String(AGGREGATE_CEILING_MEDIAN_MULTIPLE));
   const clean = sql`(q.price_cents <= raw.raw_avg * 2 AND (pf.floor_cents IS NULL OR q.price_cents <= pf.median_cents * ${mult}))`;
   return sql`
-    ${priceQuotesCtes(scope)},
+    ${priceQuotesCtes(scope, vertical)},
     raw AS (
       SELECT master_product_id,
              AVG(price_cents) AS raw_avg,
@@ -157,7 +159,7 @@ export function statsAggCtes(scope: SQL): SQL {
  */
 export async function getPlatformLowestPriceCentsEver(): Promise<number> {
   const rows = await db.execute<Row>(sql`
-    WITH ${priceQuotesCtes(sql`TRUE`)},
+    WITH ${priceQuotesCtes(sql`TRUE`, GAMES)},
     agg AS (
       SELECT master_product_id, MIN(price_cents) AS mn, COUNT(*) AS n,
              FLOOR(EXTRACT(EPOCH FROM (MAX(collected_at) - MIN(collected_at))) / 86400) AS d
@@ -309,7 +311,7 @@ export async function getMasterProductPriceStatsBatchRaw(
   // da média nem do teto; empate => primeira ocorrência (menor collected_at).
   const [aggRows, currentRows, nearRows] = await Promise.all([
     db.execute<Row>(sql`
-      WITH ${statsAggCtes(sql`o.master_product_id IN (${list})`)},
+      WITH ${statsAggCtes(sql`o.master_product_id IN (${list})`, GAMES)},
       low_all AS (
         SELECT DISTINCT ON (q.master_product_id) q.master_product_id, q.offer_id, q.price_cents, q.collected_at
         FROM q INNER JOIN product_stats ps ON ps.master_product_id = q.master_product_id AND q.price_cents = ps.min_all
@@ -340,7 +342,7 @@ export async function getMasterProductPriceStatsBatchRaw(
 
     // Preço atual: oferta pública mais barata (concorrência real), com o sinal do vendedor.
     db.execute<Row>(sql`
-      WITH ${publicOffersCtes()}
+      WITH ${publicOffersCtes(GAMES)}
       SELECT DISTINCT ON (o.master_product_id)
         o.master_product_id, o.id AS offer_id, o.slug AS offer_slug,
         o.current_price_cents::bigint AS price_cents,
@@ -359,7 +361,7 @@ export async function getMasterProductPriceStatsBatchRaw(
 
     // Corroboração do selo: vendedores distintos com oferta pública perto do preço atual.
     db.execute<Row>(sql`
-      WITH ${publicOffersCtes()}
+      WITH ${publicOffersCtes(GAMES)}
       SELECT o.master_product_id, po.current_price_cents::bigint AS price_cents,
              COALESCE(o.seller_id::text, 'rede:' || o.network_id::text) AS seller_key
       FROM public_offers po

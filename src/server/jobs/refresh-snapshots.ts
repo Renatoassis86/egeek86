@@ -10,6 +10,7 @@ import { overridesCached } from '@/server/queries/catalog-dimensions';
 import { homeSearchCached } from '@/server/queries/home-search';
 import { rankedOfferListCached, rankFeaturedOfferIdsCached } from '@/server/queries/affiliate';
 import type { GamePlatformGen, ProductType } from '@/db/schema';
+import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 
 /**
  * Recalcula o pré-cálculo persistido da vitrine (Fase 2; ata 2026-11-03-fase2-precalculo.md).
@@ -69,7 +70,7 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
   const rows = await db.execute<{ id: string }>(sql`
     SELECT mp.id FROM master_products mp
     LEFT JOIN product_price_stats ps ON ps.master_product_id = mp.id
-    WHERE NOT (mp.attributes ? 'mergedInto')
+    WHERE ${verticalSql('mp', GAMES)} AND NOT (mp.attributes ? 'mergedInto')
       AND (ps.computed_at IS NULL OR ps.computed_at < now() - (${minAgeSec} * interval '1 second'))
     ORDER BY ps.computed_at ASC NULLS FIRST, mp.id
   `);

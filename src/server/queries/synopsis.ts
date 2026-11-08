@@ -25,7 +25,7 @@ function fixMojibake(text: string): string {
 export async function getGameSynopsis(masterProductId: string): Promise<GameSynopsis | null> {
   const rows = (await db.execute(sql`
     select description, attributes->'synopsis_source' as src
-    from master_products where id = ${masterProductId} limit 1`)) as unknown as Array<{
+    from master_products where id = ${masterProductId} and vertical = 'games' limit 1`)) as unknown as Array<{
     description: string | null;
     src: { name?: string; url?: string; license?: string } | null;
   }>;

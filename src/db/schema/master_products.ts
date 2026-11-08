@@ -42,6 +42,8 @@ export const masterProducts = pgTable(
     // já existente é 'game' (default), nada muda pra ele. 'console' reaproveita
     // gamePlatformGen abaixo pra dizer QUAL console é (não pra qual roda).
     productType: productType('product_type').notNull().default('game'),
+    // Departamento (migration 0027, ADR 0008). Todo registro existente é 'games'. CHECK por lista fixa e coerência com product_type no banco.
+    vertical: text('vertical').notNull().default('games'),
     // Classificação de jogos (Geek Deals) — gameFormat/gamePlatformGen vêm
     // direto de atributo estruturado do Mercado Livre (FORMAT/CONSOLE_VERSION),
     // gameEditionType é a única inferida por regra de palavra-chave sobre o

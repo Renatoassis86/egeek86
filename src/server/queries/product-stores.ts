@@ -2,6 +2,7 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { publicOffersCtes } from '@/server/queries/public-offers';
+import { GAMES } from '@/lib/catalog/verticais';
 
 /** Menor preço PÚBLICO por loja de um master_product, da loja mais barata para a mais cara. */
 export interface ProductStoreRow {
@@ -29,7 +30,7 @@ interface Row extends Record<string, unknown> {
 export async function getProductStores(masterProductId: string): Promise<ProductStoreRow[]> {
   if (!/^[0-9a-f-]{36}$/i.test(masterProductId)) return [];
   const rows = await db.execute<Row>(sql`
-    WITH ${publicOffersCtes()}
+    WITH ${publicOffersCtes(GAMES)}
     SELECT DISTINCT ON (o.network_id)
            o.network_id, n.name AS store_name, o.current_price_cents AS price, o.slug,
            COUNT(*) OVER (PARTITION BY o.network_id)::int AS n,

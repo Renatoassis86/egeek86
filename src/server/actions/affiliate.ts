@@ -4,7 +4,7 @@ import { entryGateAttributes } from '@/lib/catalog/gate';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { eq, sql } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { db } from '@/lib/db';
 import {
@@ -22,6 +22,7 @@ import { classifyMeliCatalogProduct } from '@/server/collector/sources/mercado-l
 import { isNonProductAccessory } from '@/server/collector/discover-products';
 import { findExistingMasterProduct } from '@/lib/affiliate/dedup';
 import { normalizeGamePlatformGen } from '@/lib/affiliate/game-classification';
+import { GAMES } from '@/lib/catalog/verticais';
 
 /**
  * Normaliza número em formato brasileiro ("1.999,90") ou já com ponto decimal
@@ -117,7 +118,7 @@ async function findOrCreateMasterProduct(name: string) {
   const [existing] = await db.select().from(masterProducts).where(eq(masterProducts.slug, slug)).limit(1);
   if (existing) return existing;
 
-  const [created] = await db.insert(masterProducts).values({ name, slug, attributes: entryGateAttributes(name) }).returning();
+  const [created] = await db.insert(masterProducts).values({ name, slug, vertical: GAMES, attributes: entryGateAttributes(name) }).returning();
   return created;
 }
 
@@ -137,7 +138,9 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
     .limit(1);
 
   if (network?.slug === 'mercado-livre' && externalRef) {
-    const [existing] = await db.select().from(masterProducts).where(eq(masterProducts.meliCatalogId, externalRef)).limit(1);
+    // Só reaproveita master do departamento Games: master de outra vertical com o mesmo catálogo NÃO é reusado aqui
+    // (a oferta gamer não pode herdar vertical alheia; o índice único acusa o conflito em vez de contaminar).
+    const [existing] = await db.select().from(masterProducts).where(and(eq(masterProducts.meliCatalogId, externalRef), eq(masterProducts.vertical, GAMES))).limit(1);
     if (existing) return existing;
 
     let classification: Awaited<ReturnType<typeof classifyMeliCatalogProduct>> | null = null;
@@ -173,6 +176,8 @@ async function findOrCreateMasterProductForOffer(name: string, networkId: string
       .values({
         name,
         slug,
+        // Departamento explícito (ADR 0008): o cadastro manual do admin gamer só cria master Games.
+        vertical: GAMES,
         meliCatalogId: externalRef,
         ...(classification ?? {}),
         gameFormat,
@@ -233,6 +238,8 @@ export async function createAffiliateOffer(formData: FormData) {
       .insert(affiliateOffers)
       .values({
         masterProductId: masterProduct.id,
+        // Oferta nasce na vertical do master (Games: dedup e criação acima são escopadas a Games).
+        vertical: GAMES,
         networkId: parsed.networkId,
         title: parsed.title,
         slug: offerSlug,

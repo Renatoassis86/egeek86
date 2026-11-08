@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { produtoExiste } from '@/server/pricing/produto-existe';
+import { GAMES } from '@/lib/catalog/verticais';
 import { isPriceMetricsV2Enabled, isProductCardV1Enabled } from '@/lib/pricing/price-metrics-config';
 import { chartLiveProps } from '@/lib/pricing/chart-props';
 import { getPriceChartV2 } from '@/server/pricing/price-chart-v2';
@@ -24,7 +25,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
   try {
     // Existência por chave primária ANTES das métricas (consulta leve, sem cache em memória).
-    if (!(await produtoExiste(id))) return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404, headers: NEGATIVO });
+    if (!(await produtoExiste(id, GAMES))) return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404, headers: NEGATIVO });
     const [input, v2] = await Promise.all([getPriceChartV2(id), getPriceMetricsV2(id).catch(() => null)]);
     return NextResponse.json(
       { input, ...chartLiveProps(v2), storesMedianCents: v2?.stores.medianCents ?? null, nowIso: new Date().toISOString() },

@@ -8,6 +8,7 @@ import { catalogHiddenFilter } from './catalog-dimensions';
 import { suggestTargetPriceCents } from '@/lib/affiliate/price-verdict';
 import { fuzzyMatch } from '@/lib/db/fuzzy-search';
 import type { GameFormat, GamePlatformGen } from '@/db/schema';
+import { GAMES } from '@/lib/catalog/verticais';
 
 /**
  * Pra cada master_product, resolve a oferta PÚBLICA (ADR 0002: ativa, preço > 0,
@@ -22,7 +23,7 @@ export async function getBestActiveOfferIdsForMasterProducts(
   if (masterProductIds.length === 0) return map;
 
   const rows = await db.execute<{ master_product_id: string; offer_id: string }>(sql`
-    WITH ${publicOffersCtes()}
+    WITH ${publicOffersCtes(GAMES)}
     SELECT DISTINCT ON (po.master_product_id) po.master_product_id, po.id AS offer_id
     FROM public_offers po
     WHERE po.master_product_id IN (${sql.join(
@@ -75,7 +76,7 @@ export async function getUserWatches(userId: string): Promise<WatchListItem[]> {
     })
     .from(affiliatePriceWatches)
     .innerJoin(masterProducts, eq(affiliatePriceWatches.masterProductId, masterProducts.id))
-    .where(and(eq(affiliatePriceWatches.userId, userId), eq(affiliatePriceWatches.isActive, true)));
+    .where(and(eq(affiliatePriceWatches.userId, userId), eq(affiliatePriceWatches.isActive, true), eq(masterProducts.vertical, GAMES)));
 
   if (watches.length === 0) return [];
 
@@ -178,7 +179,7 @@ export async function searchMasterProductsToWatch(query: string, userId?: string
       .select({ id: masterProducts.id, name: masterProducts.name, defaultImages: masterProducts.defaultImages })
       .from(masterProducts)
       // Monitoramento só oferece itens da cartela pública (sem merchandise/peças)
-      .where(and(fuzzy, await catalogHiddenFilter(sql`${masterProducts.id}`)))
+      .where(and(fuzzy, eq(masterProducts.vertical, GAMES), await catalogHiddenFilter(sql`${masterProducts.id}`)))
       .limit(limit * 4),
     userId ? getWatchedMasterProductIds(userId) : Promise.resolve(new Set<string>()),
   ]);

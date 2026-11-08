@@ -1,6 +1,7 @@
 import 'server-only';
 import { eq, and, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { GAMES } from '@/lib/catalog/verticais';
 import { affiliateCartItems, affiliateOffers, affiliateNetworks, masterProducts, profiles, notificationPreferences } from '@/db/schema';
 
 export interface CartListItem {
@@ -58,7 +59,8 @@ export async function getCartItemsForUser(userId: string): Promise<CartListItem[
     .innerJoin(affiliateOffers, eq(affiliateCartItems.offerId, affiliateOffers.id))
     .innerJoin(masterProducts, eq(affiliateOffers.masterProductId, masterProducts.id))
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-    .where(and(eq(affiliateCartItems.userId, userId), isNull(affiliateCartItems.sentAt)))
+    // Superfície pública /carrinho (gamer): só itens de oferta Games (ADR 0008). Item de outro departamento não vaza aqui.
+    .where(and(eq(affiliateCartItems.userId, userId), isNull(affiliateCartItems.sentAt), eq(affiliateOffers.vertical, GAMES), eq(masterProducts.vertical, GAMES)))
     .orderBy(affiliateCartItems.addedAt);
 
   return rows;

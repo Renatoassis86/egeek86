@@ -20,6 +20,7 @@ import {
   type Eligibility,
   type PriceVerdict,
 } from '@/lib/affiliate/price-verdict';
+import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 
 export interface PriceTableFilter {
   productType?: ProductType;
@@ -47,7 +48,7 @@ export async function getNetworksWithOffers(): Promise<NetworkOption[]> {
   const rows = await db.execute<{ slug: string; name: string }>(sql`
     SELECT DISTINCT n.slug, n.name
     FROM affiliate_networks n
-    INNER JOIN affiliate_offers o ON o.network_id = n.id
+    INNER JOIN affiliate_offers o ON o.network_id = n.id AND ${verticalSql('o', GAMES)}
     ORDER BY n.name ASC
   `);
   return rows.map((r) => ({ slug: r.slug, name: r.name }));
@@ -107,7 +108,7 @@ function buildCtes(whereClause: SQL, useSnapshot = false) {
   // publicOffersCtes (ADR 0002): só ofertas com coleta real <= 7 dias e preço
   // plausível entram como "oferta mais barata" do produto.
   return sql`
-    ${publicOffersCtes()},
+    ${publicOffersCtes(GAMES)},
     distinct_products AS (
       SELECT DISTINCT ON (mp.id)
         mp.id AS mp_id,
@@ -146,7 +147,7 @@ function buildCtes(whereClause: SQL, useSnapshot = false) {
       WHERE ${STATS_PERSIST_FRESH_SQL} AND ps.quote_count > 0
         AND ps.master_product_id IN (SELECT mp_id FROM distinct_products)
     )`
-        : statsAggCtes(sql`o.master_product_id IN (SELECT mp_id FROM distinct_products)`)
+        : statsAggCtes(sql`o.master_product_id IN (SELECT mp_id FROM distinct_products)`, GAMES)
     },
     base AS (
       SELECT

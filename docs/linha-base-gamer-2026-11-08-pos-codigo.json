@@ -1,0 +1,546 @@
+{
+  "descricao": "Linha de base GAMER antes das verticais (migracao 0027). Somente leitura. Sem horario de coleta de proposito.",
+  "regra_de_comparacao": {
+    "estavel": "deve ser identico apos a migracao",
+    "volatil": "varia com a coleta ao vivo; comparar por tolerancia/ordem de grandeza",
+    "append": "so cresce; comparar como piso (>= baseline)"
+  },
+  "masters": {
+    "total": {
+      "estabilidade": "estavel",
+      "valor": 6552,
+      "nota": "muda se a descoberta cadastrar master novo; comparar total gamer"
+    },
+    "por_product_type": {
+      "estabilidade": "estavel",
+      "valor": {
+        "accessory": 2021,
+        "console": 471,
+        "game": 4060
+      }
+    },
+    "por_veredito_porteiro": {
+      "estabilidade": "estavel",
+      "valor": [
+        {
+          "product_type": "accessory",
+          "verdict": "(sem veredito)",
+          "n": 1068
+        },
+        {
+          "product_type": "accessory",
+          "verdict": "rejected",
+          "n": 745
+        },
+        {
+          "product_type": "accessory",
+          "verdict": "review",
+          "n": 208
+        },
+        {
+          "product_type": "console",
+          "verdict": "(sem veredito)",
+          "n": 323
+        },
+        {
+          "product_type": "console",
+          "verdict": "rejected",
+          "n": 135
+        },
+        {
+          "product_type": "console",
+          "verdict": "review",
+          "n": 13
+        },
+        {
+          "product_type": "game",
+          "verdict": "(sem veredito)",
+          "n": 3103
+        },
+        {
+          "product_type": "game",
+          "verdict": "rejected",
+          "n": 695
+        },
+        {
+          "product_type": "game",
+          "verdict": "review",
+          "n": 262
+        }
+      ],
+      "nota": "master_products nao tem coluna status; veredito do porteiro e o mais proximo"
+    },
+    "mesclados_mergedInto": {
+      "estabilidade": "estavel",
+      "valor": 202
+    },
+    "coluna_vertical_existia_na_linha_base": {
+      "estabilidade": "estavel",
+      "valor": true
+    }
+  },
+  "ofertas_por_rede_status": {
+    "estabilidade": "volatil",
+    "valor": [
+      {
+        "rede": "mercado-livre",
+        "status": "active",
+        "n": 9769
+      },
+      {
+        "rede": "mercado-livre",
+        "status": "archived",
+        "n": 2
+      },
+      {
+        "rede": "mercado-livre",
+        "status": "draft",
+        "n": 10
+      },
+      {
+        "rede": "mercado-livre",
+        "status": "expired",
+        "n": 5280
+      },
+      {
+        "rede": "shopee",
+        "status": "active",
+        "n": 757
+      },
+      {
+        "rede": "shopee",
+        "status": "draft",
+        "n": 18
+      },
+      {
+        "rede": "shopee",
+        "status": "expired",
+        "n": 3597
+      }
+    ],
+    "nota": "ativas/expiradas mudam com a coleta; comparar por tolerancia"
+  },
+  "superficies_publicas": {
+    "public_offers_ofertas": {
+      "estabilidade": "volatil",
+      "valor": 7852,
+      "nota": "publicOffersCtes(): frescor 7d, plausibilidade, porteiro, identidade"
+    },
+    "public_offers_masters": {
+      "estabilidade": "volatil",
+      "valor": 1664
+    },
+    "masters_visiveis_pelo_porteiro": {
+      "estabilidade": "estavel",
+      "valor": 4494,
+      "nota": "catalogGateVisibleSql sobre todos os masters"
+    },
+    "priceQuotes_cotacoes_plausiveis": {
+      "estabilidade": "append",
+      "valor": 3170463,
+      "nota": "priceQuotesCtes(TRUE): historico cresce com a coleta"
+    },
+    "priceQuotes_masters_com_cotacao": {
+      "estabilidade": "append",
+      "valor": 3080
+    }
+  },
+  "sitemap": {
+    "urls_de_oferta_masters_distintos_antes_do_limite": {
+      "estabilidade": "volatil",
+      "valor": 1792,
+      "nota": "sitemap real aplica LIMIT 5000 ofertas por updated_at e o filtro TS getDimensionOverrides().hidden (nao reproduzido aqui)"
+    },
+    "ofertas_elegiveis_antes_do_limite": {
+      "estabilidade": "volatil",
+      "valor": 8065
+    },
+    "urls_fixas": {
+      "estabilidade": "estavel",
+      "valor": 4
+    },
+    "urls_noticias": {
+      "estabilidade": "estavel",
+      "valor": 2
+    }
+  },
+  "price_daily_state": {
+    "linhas_total": {
+      "estabilidade": "append",
+      "valor": 43159,
+      "nota": "dia corrente reescreve; novos dias entram"
+    },
+    "linhas_fechadas": {
+      "estabilidade": "append",
+      "valor": 41485
+    },
+    "soma_min_cents_total": {
+      "estabilidade": "volatil",
+      "valor": "737822400"
+    },
+    "soma_avg_cents_total": {
+      "estabilidade": "volatil",
+      "valor": "390840320.0677102069169"
+    },
+    "soma_n_offers_total": {
+      "estabilidade": "volatil",
+      "valor": "121080"
+    },
+    "dia_min": {
+      "estabilidade": "estavel",
+      "valor": "2026-07-13"
+    },
+    "dia_max": {
+      "estabilidade": "append",
+      "valor": "2026-11-08"
+    },
+    "dia_max_fechado": {
+      "estabilidade": "append",
+      "valor": "2026-11-07"
+    },
+    "hash_sha256_dias_fechados": {
+      "estabilidade": "append",
+      "valor": "df07111ec2db2db6087e65340b02bf1c468b503c5fa000120a4e73cd5e952a81",
+      "nota": "hash de TODAS as linhas fechadas (master|dia|min|round(avg)|n_offers). Para comparar depois, restrinja a day <= dia_max_fechado desta base; o hash completo so coincide se nenhum dia novo fechou"
+    }
+  },
+  "amostra_20_masters": {
+    "criterio": "ORDER BY master_products.id, primeiros 20 com >=3 ofertas ativas e porteiro visivel. A selecao pode mudar se uma oferta expirar; comparar pelos ids gravados aqui.",
+    "itens": [
+      {
+        "id": "00cd08ad-8b64-49d7-bbca-7e21a3c9bd4a",
+        "name": "Jogo Balan Wonderworld Ps4 Aventura Multiplayer 40GB Square Enix",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 5,
+          "minimo_cents": 6569,
+          "media_cents": 9724
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 9448,
+          "menor_historico_cents": 5752,
+          "cotacoes": 45
+        }
+      },
+      {
+        "id": "0105e83a-8f4c-481d-9a98-d1616a400a8f",
+        "name": "Resident Evil: Revelations Xbox One Físico",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 4,
+          "minimo_cents": 28900,
+          "media_cents": 31925
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 31925,
+          "menor_historico_cents": 28900,
+          "cotacoes": 28
+        }
+      },
+      {
+        "id": "01614c72-7ba6-4427-8f0c-fb73b94f6013",
+        "name": "Jogo Elden Ring Nightreign Edição Deluxe Ps5",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 12,
+          "minimo_cents": 23570,
+          "media_cents": 28558
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 28509,
+          "menor_historico_cents": 19999,
+          "cotacoes": 7854
+        }
+      },
+      {
+        "id": "0163ced3-f94d-4bc4-8289-655db9195c89",
+        "name": "Sony PlayStation 5 825GB padrão branco e preto console potente",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 4,
+          "minimo_cents": 420000,
+          "media_cents": 504975
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 498212,
+          "menor_historico_cents": 420000,
+          "cotacoes": 34
+        }
+      },
+      {
+        "id": "016525b7-a7d1-4e06-a197-10b2fcf20185",
+        "name": "Jogo The King Of Fighters Xv - Ps5",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 3,
+          "minimo_cents": 29700,
+          "media_cents": 31797
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 31797,
+          "menor_historico_cents": 29700,
+          "cotacoes": 24
+        }
+      },
+      {
+        "id": "016cce7d-96d4-426f-93b3-6c3caad7fc27",
+        "name": "Final Fantasy Vii & Final Fantasy Viii Remastered Europa Switch",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 5,
+          "minimo_cents": 19999,
+          "media_cents": 32474
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 27903,
+          "menor_historico_cents": 19800,
+          "cotacoes": 4063
+        }
+      },
+      {
+        "id": "01badd08-4af2-4320-8c1d-1d28b143b784",
+        "name": "Módulo de controle Dualsense Edge::.. Joystick Ps5 Cor Preto",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 7,
+          "minimo_cents": 31825,
+          "media_cents": 37333
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 28826,
+          "menor_historico_cents": 20500,
+          "cotacoes": 21806
+        }
+      },
+      {
+        "id": "01f176ed-afbf-413b-a1b7-7a258182d3e4",
+        "name": "Jogo Aventura Hotel Transilvânia Scary Tale Nintendo Switch Físico",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 3,
+          "minimo_cents": 22990,
+          "media_cents": 23323
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 23323,
+          "menor_historico_cents": 22990,
+          "cotacoes": 24
+        }
+      },
+      {
+        "id": "0206010b-3bfd-43fb-9436-02273cf695c3",
+        "name": "Jogo RED DEAD REDEMPTION - Rockstar Games - PS5",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 13,
+          "minimo_cents": 18900,
+          "media_cents": 23634
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 23634,
+          "menor_historico_cents": 18900,
+          "cotacoes": 26
+        }
+      },
+      {
+        "id": "02e58cf6-c587-48bf-8581-5e1c0b6cb24f",
+        "name": "Dock De Carregamento 8bitdo Para Xbox Edição Forza Horizon 6 Azul-celeste",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 8,
+          "minimo_cents": 33500,
+          "media_cents": 39574
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 39535,
+          "menor_historico_cents": 33500,
+          "cotacoes": 67
+        }
+      },
+      {
+        "id": "02f20ed7-e3b8-4ed8-a0fd-31a920cd4e80",
+        "name": "Aliens Fireteam Elite PS4 Jogo Físico Cold Iron Studios Aventura",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 9,
+          "minimo_cents": 14497,
+          "media_cents": 17580
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 17580,
+          "menor_historico_cents": 14497,
+          "cotacoes": 63
+        }
+      },
+      {
+        "id": "03094b6d-31e8-41d3-9aeb-45b0e8dd4515",
+        "name": "God Of War Ragnarok - Midia Física Ps5",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 83,
+          "minimo_cents": 17500,
+          "media_cents": 24680
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 24363,
+          "menor_historico_cents": 16800,
+          "cotacoes": 653
+        }
+      },
+      {
+        "id": "03298169-799c-4554-824d-8278db7584cd",
+        "name": "Controle Ps4 Verde Camuflado Sony",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 7,
+          "minimo_cents": 11988,
+          "media_cents": 25302
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 23942,
+          "menor_historico_cents": 10000,
+          "cotacoes": 197
+        }
+      },
+      {
+        "id": "0379cdc3-9761-4e12-a6a3-e68492745d61",
+        "name": "Silent Hill 2 PS5 Standard",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 21,
+          "minimo_cents": 24997,
+          "media_cents": 38756
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 39089,
+          "menor_historico_cents": 19400,
+          "cotacoes": 26020
+        }
+      },
+      {
+        "id": "03e0354f-6fd1-4cbf-b6c0-9e675bb09add",
+        "name": "Jogo Bounty Battle The Últimate Indie Brawler Ps4",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 3,
+          "minimo_cents": 22900,
+          "media_cents": 24567
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 24567,
+          "menor_historico_cents": 22900,
+          "cotacoes": 24
+        }
+      },
+      {
+        "id": "04653cd5-6dfe-4e3e-b2f1-644cec76a77f",
+        "name": "Contra Operation Galuga PS5 Midia Fisica",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 4,
+          "minimo_cents": 25500,
+          "media_cents": 33745
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 33010,
+          "menor_historico_cents": 25500,
+          "cotacoes": 27
+        }
+      },
+      {
+        "id": "04821ba2-f5ac-4d55-896c-a2e4e055371e",
+        "name": "Transformers Campos de Batalha Ps4 Jogo Físico Aventura Multijogador",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 9,
+          "minimo_cents": 11500,
+          "media_cents": 17922
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 17409,
+          "menor_historico_cents": 10500,
+          "cotacoes": 79
+        }
+      },
+      {
+        "id": "048aa0e6-fb92-4e38-b759-e20d08603306",
+        "name": "Jogo Ps4 Dissidia Final Fantasy Nt Game Midia Fisica",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 17,
+          "minimo_cents": 9900,
+          "media_cents": 14229
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 14295,
+          "menor_historico_cents": 9900,
+          "cotacoes": 340
+        }
+      },
+      {
+        "id": "0539aa0e-2474-4ec8-8a08-5cbec1176e09",
+        "name": "Jogo Xbox 360nCall of Duty: Black Ops II Standard Edition (Físico)",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 3,
+          "minimo_cents": 13800,
+          "media_cents": 15100
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 17241,
+          "menor_historico_cents": 13800,
+          "cotacoes": 17
+        }
+      },
+      {
+        "id": "054a7db9-a582-4746-84e5-45db61395732",
+        "name": "Jogo Gord Deluxe Edition Ps5 Midia Fisica",
+        "preco_do_momento": {
+          "estabilidade": "volatil",
+          "ofertas_publicas": 3,
+          "minimo_cents": 23490,
+          "media_cents": 23656
+        },
+        "historico": {
+          "estabilidade": "append",
+          "media_historica_cents": 23656,
+          "menor_historico_cents": 23490,
+          "cotacoes": 24
+        }
+      }
+    ]
+  },
+  "price_min_events": {
+    "total": {
+      "estabilidade": "append",
+      "valor": 10473
+    },
+    "live": {
+      "estabilidade": "append",
+      "valor": 759
+    },
+    "reconstructed": {
+      "estabilidade": "estavel",
+      "valor": 9714
+    }
+  }
+}

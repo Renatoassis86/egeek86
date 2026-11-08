@@ -4,6 +4,7 @@ import { and, desc, eq, gt, isNotNull, isNull, ne, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { affiliateOffers, masterProducts, newsArticles } from '@/db/schema';
 import { siteBaseUrl } from '@/lib/site-url';
+import { GAMES } from '@/lib/catalog/verticais';
 
 // Cache de 1 hora: o sitemap não precisa refletir cada coleta de preço.
 export const revalidate = 3600;
@@ -35,6 +36,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .innerJoin(masterProducts, eq(masterProducts.id, affiliateOffers.masterProductId))
     .where(
       and(
+        // Allow-list do departamento (ADR 0008): oferta e master precisam ser Games.
+        eq(affiliateOffers.vertical, GAMES),
+        eq(masterProducts.vertical, GAMES),
         eq(affiliateOffers.status, 'active'),
         gt(affiliateOffers.currentPriceCents, 0),
         isNull(affiliateOffers.quarantinedAt), // preço absurdo em quarentena (migration 0023)

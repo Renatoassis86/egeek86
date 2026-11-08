@@ -3,6 +3,7 @@ import { sql, eq, and, asc, gt, inArray, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { offerIdentityVisibleSql, notQuarantinedSql } from '@/server/queries/public-offers';
 import { catalogHiddenFilter } from '@/server/queries/catalog-dimensions';
+import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 import { affiliateOffers, affiliateNetworks, affiliateSellers, masterProducts } from '@/db/schema';
 
 export type PriceHistoryTimeframe = '1D' | '1S' | '1M' | '3M' | '6M' | '1A' | 'Tudo';
@@ -191,7 +192,9 @@ export async function getMasterProductPriceHistory(
   const [masterProduct] = await db
     .select({ id: masterProducts.id })
     .from(masterProducts)
-    .where(eq(masterProducts.id, masterProductId))
+    // ISOLAMENTO (ADR 0008): produto de outro departamento "não existe" aqui. As demais leituras desta função
+    // (cotações, ofertas, snapshots) derivam deste id já filtrado.
+    .where(and(eq(masterProducts.id, masterProductId), eq(masterProducts.vertical, GAMES)))
     .limit(1);
 
   if (!masterProduct) {
@@ -497,7 +500,7 @@ export async function getMasterProductChangePercent(
       -- current_price_cents = 0 é "ainda não coletado" (placeholder da
       -- descoberta automática) — nunca um preço real, nunca deixar vencer
       -- como "menor preço" de um produto.
-      WHERE master_product_id IN (${idList}) AND status = 'active' AND current_price_cents > 0 AND quarantined_at IS NULL
+      WHERE ${verticalSql('affiliate_offers', GAMES)} AND master_product_id IN (${idList}) AND status = 'active' AND current_price_cents > 0 AND quarantined_at IS NULL
     ),
     current_lowest AS (
       SELECT master_product_id, MIN(current_price_cents)::bigint AS current_price_cents
@@ -586,7 +589,7 @@ export async function getTopMovers({
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       -- current_price_cents = 0 é "ainda não coletado", nunca um preço real.
-      WHERE o.status = 'active' AND o.current_price_cents > 0 AND ${notQuarantinedSql('o')}
+      WHERE ${verticalSql('o', GAMES)} AND o.status = 'active' AND o.current_price_cents > 0 AND ${notQuarantinedSql('o')}
     ),
     cheapest AS (
       SELECT DISTINCT ON (master_product_id) master_product_id, offer_id, current_price_cents, slug, image_url, network_name
@@ -694,6 +697,7 @@ export async function getOfferComparisonForMasterProduct(masterProductId: string
     .where(
       and(
         eq(affiliateOffers.masterProductId, masterProductId),
+        eq(affiliateOffers.vertical, GAMES),
         eq(affiliateOffers.status, 'active'),
         // current_price_cents = 0 é "ainda não coletado", nunca um preço real.
         gt(affiliateOffers.currentPriceCents, 0),
@@ -714,7 +718,7 @@ export async function getMasterProductSummary(masterProductId: string): Promise<
   const [row] = await db
     .select({ id: masterProducts.id, name: masterProducts.name, defaultImages: masterProducts.defaultImages })
     .from(masterProducts)
-    .where(eq(masterProducts.id, masterProductId))
+    .where(and(eq(masterProducts.id, masterProductId), eq(masterProducts.vertical, GAMES)))
     .limit(1);
 
   if (!row) return null;

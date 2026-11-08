@@ -5,6 +5,7 @@ import { createCachedQuery, createPersistedQuery } from '@/lib/cache/server-cach
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { catalogDimensionFilter } from '@/server/queries/catalog-dimensions';
 import { getPriceTableProductCount, getPriceTableBadgeCounters } from '@/server/queries/price-table';
+import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 
 /**
  * FONTE ÚNICA dos contadores públicos (home, /ofertas, /sobre, /contatos e
@@ -45,7 +46,8 @@ export interface PublicMetrics {
 export const getQuoteCount = createPersistedQuery(
   async (): Promise<number> => {
     const rows = await db.execute<{ quotes: string }>(sql`
-      SELECT COUNT(*)::bigint AS quotes FROM affiliate_price_snapshots WHERE price_cents > 0
+      SELECT COUNT(*)::bigint AS quotes FROM affiliate_price_snapshots s
+      WHERE s.price_cents > 0 AND s.offer_id IN (SELECT xo.id FROM affiliate_offers xo WHERE ${verticalSql('xo', GAMES)})
     `);
     return Number(rows[0]?.quotes ?? 0);
   },
@@ -66,7 +68,7 @@ async function compute(): Promise<PublicMetrics> {
     // Contadores de selo ainda não calculados (sem snapshot e varredura ao vivo lenta): null, a tela omite o número.
     getPriceTableBadgeCounters().catch(() => null),
     db.execute<{ stores: number; sellers: number }>(sql`
-      WITH ${publicOffersCtes()}
+      WITH ${publicOffersCtes(GAMES)}
       SELECT COUNT(DISTINCT o.network_id)::int AS stores,
              COUNT(DISTINCT o.seller_id)::int AS sellers
       FROM public_offers po

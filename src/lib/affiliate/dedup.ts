@@ -1,5 +1,6 @@
 import { and, eq, inArray, sql } from 'drizzle-orm';
 import { masterProducts } from '@/db/schema';
+import { GAMES, type Vertical } from '@/lib/catalog/verticais';
 import {
   derivePlatformFromTitle,
   fixPlatformTypos,
@@ -632,11 +633,14 @@ export function isSameProduct(a: NormalizedTitle, b: NormalizedTitle, threshold 
  * plataforma 'unknown' no banco entram na comparação quando o título deles
  * indica a plataforma (a duplicata real fica escondida atrás do 'unknown').
  * Masters já fundidos (attributes.mergedInto) nunca são candidatos.
+ * Esta é a dedup GAMER (léxico de jogo/plataforma): só compara com masters do departamento (`vertical`, padrão
+ * 'games', ADR 0008). Sem isso, um livro/produto de outro departamento com título igual ("Resident Evil") viraria
+ * "duplicata" de um jogo e a oferta gamer herdaria a vertical errada. Outros departamentos têm identidade própria.
  */
 export async function findExistingMasterProduct(
   name: string,
   platformGen: string,
-  options: { productType?: 'game' | 'console' | 'accessory'; gameFormat?: string | null } = {}
+  options: { productType?: 'game' | 'console' | 'accessory'; gameFormat?: string | null; vertical?: Vertical } = {}
 ): Promise<any | null> {
   // `gameFormat` = formato estruturado do marketplace (FORMAT do ML); o título, quando prova, vence.
   const normInput = normalizeTitle(name, { productType: options.productType, gameFormat: options.gameFormat });
@@ -648,6 +652,7 @@ export async function findExistingMasterProduct(
   const { db } = await import('@/lib/db');
 
   const conditions = [
+    eq(masterProducts.vertical, options.vertical ?? GAMES),
     sql`(${masterProducts.attributes} ->> 'mergedInto') IS NULL`,
     platform === 'unknown'
       ? eq(masterProducts.gamePlatformGen, 'unknown' as any)

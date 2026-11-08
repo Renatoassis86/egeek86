@@ -29,6 +29,7 @@ import {
   scoreName,
   type ParsedQuery,
 } from '@/lib/search/query-normalize';
+import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 
 /**
  * MOTOR DE BUSCA DE PRODUTOS (servidor). Unidade do resultado = master_product
@@ -383,7 +384,7 @@ async function fetchCandidates(q: ParsedQuery, o: FetchOptions): Promise<Candida
   }
 
   const rows = await db.execute<Row>(sql`
-    WITH ${publicOffersCtes()},
+    WITH ${publicOffersCtes(GAMES)},
     pub_ref AS (
       SELECT po.master_product_id AS mid, COUNT(*)::int AS n,
              percentile_cont(0.5) WITHIN GROUP (ORDER BY po.current_price_cents) AS med
@@ -424,7 +425,7 @@ async function fetchCandidates(q: ParsedQuery, o: FetchOptions): Promise<Candida
     FROM master_products m
     INNER JOIN agg a ON a.mid = m.id
     LEFT JOIN pub_ref r ON r.mid = m.id
-    WHERE NOT (m.attributes ? 'mergedInto')
+    WHERE ${verticalSql('m', GAMES)} AND NOT (m.attributes ? 'mergedInto')
       AND ${textPred}
     ORDER BY wsim DESC, a.offer_count DESC, m.id
     LIMIT ${o.limit}
@@ -706,7 +707,7 @@ async function computeInsights(ids: string[]): Promise<Record<string, SearchInsi
   const [statsMap, ctxRows] = await Promise.all([
     getMasterProductPriceStatsBatch(ids),
     db.execute<Row>(sql`
-      WITH ${publicOffersCtes()},
+      WITH ${publicOffersCtes(GAMES)},
       cheapest AS (
         SELECT DISTINCT ON (o.master_product_id)
                o.master_product_id AS mid, o.current_price_cents::bigint AS price,
@@ -1034,7 +1035,7 @@ interface IndexEntry {
 
 async function loadIndexRows(): Promise<IndexRow[]> {
   const rows = await db.execute<Row>(sql`
-    WITH ${publicOffersCtes()},
+    WITH ${publicOffersCtes(GAMES)},
     po AS (
       SELECT o.id, o.master_product_id AS mid, o.network_id, o.slug,
              o.current_price_cents::bigint AS price, o.image_url
@@ -1055,7 +1056,7 @@ async function loadIndexRows(): Promise<IndexRow[]> {
     FROM master_products m
     INNER JOIN agg a ON a.mid = m.id
     INNER JOIN best b ON b.mid = m.id
-    WHERE NOT (m.attributes ? 'mergedInto')
+    WHERE ${verticalSql('m', GAMES)} AND NOT (m.attributes ? 'mergedInto')
   `);
   return rows.map((r) => ({
     id: String(r.id),

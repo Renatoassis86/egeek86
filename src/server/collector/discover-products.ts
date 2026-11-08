@@ -23,6 +23,7 @@ import {
   type DiscoveryLimits,
   type KindSource,
 } from './discover-policy';
+import { GAMES } from '@/lib/catalog/verticais';
 
 const PLATFORM_TERMS = ['nintendo switch', 'nintendo switch 2', 'ps4', 'ps5', 'xbox one', 'xbox series', 'xbox 360'];
 
@@ -931,7 +932,7 @@ async function searchAndIngestTerm(
         masterProduct = existingBySimilarity;
         [insertedOffer] = await db
           .insert(affiliateOffers)
-          .values({ ...offerValues, masterProductId: masterProduct.id })
+          .values({ ...offerValues, masterProductId: masterProduct.id, vertical: GAMES })
           .onConflictDoNothing(offerConflict)
           .returning({ id: affiliateOffers.id });
       } else {
@@ -961,6 +962,7 @@ async function searchAndIngestTerm(
               .values({
                 name: item.name,
                 slug: productSlug,
+                vertical: GAMES,
                 meliCatalogId: item.id,
                 defaultImages: item.pictures?.map((p) => p.url) ?? [],
                 ...classification,
@@ -970,7 +972,7 @@ async function searchAndIngestTerm(
               .returning();
             const [offer] = await tx
               .insert(affiliateOffers)
-              .values({ ...offerValues, masterProductId: created.id })
+              .values({ ...offerValues, masterProductId: created.id, vertical: GAMES })
               .onConflictDoNothing(offerConflict)
               .returning({ id: affiliateOffers.id });
             if (!offer) tx.rollback();
@@ -1166,6 +1168,8 @@ export async function discoverNewProducts(
 /**
  * Poda/limpa do banco de dados itens legados que não sejam jogos em si
  * nem melhorem a experiência de jogo (ex: chaveiros, porta-chaves, copos, camisetas, etc.)
+ * ISOLAMENTO (ADR 0008): a poda é do departamento GAMES. Sem `vertical = 'games'`, 'garrafa', 'caderno', 'agenda',
+ * 'copo', 'quadro' apagariam produtos legítimos (e o histórico) de Esporte, Livros e Eletrodomésticos.
  */
 export async function pruneMerchandiseProducts(): Promise<{ prunedCount: number }> {
   const keywords = [
@@ -1187,7 +1191,7 @@ export async function pruneMerchandiseProducts(): Promise<{ prunedCount: number 
           SELECT id FROM affiliate_offers
           WHERE master_product_id IN (
             SELECT id FROM master_products
-            WHERE name ILIKE ${'%' + kw + '%'}
+            WHERE vertical = 'games' AND name ILIKE ${'%' + kw + '%'}
           )
         )
       `);
@@ -1197,14 +1201,14 @@ export async function pruneMerchandiseProducts(): Promise<{ prunedCount: number 
         DELETE FROM affiliate_offers
         WHERE master_product_id IN (
           SELECT id FROM master_products
-          WHERE name ILIKE ${'%' + kw + '%'}
+          WHERE vertical = 'games' AND name ILIKE ${'%' + kw + '%'}
         )
       `);
 
       // 3. Apaga os produtos master que contêm o termo no nome
       const res = await db.execute(sql`
         DELETE FROM master_products
-        WHERE name ILIKE ${'%' + kw + '%'}
+        WHERE vertical = 'games' AND name ILIKE ${'%' + kw + '%'}
       `);
       
       prunedCount += (res as any).count ?? (res as any).rowCount ?? (Array.isArray(res) ? res.length : 0);
