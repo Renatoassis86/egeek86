@@ -105,3 +105,10 @@ Cota real de ML e Shopee; limites de cron/plano Vercel e plano/disco Supabase; p
 
 ## Retrospectiva
 Preencher após 30/11/2026.
+
+## Execução (2026-11-08, após as 4 respostas "sim" do dono)
+- **Aplicado em produção (15:32 UTC):** migrações 0025, 0026 e 0027 (backup em `backup/dados/vertical-2026-11-08T15-32-48-526Z`, log em `backup/logs/aplicacao-0025-0027-2026-11-08.log`). Contagens e campos estáveis da linha de base gamer idênticos depois.
+- **Código:** isolamento por allow-list `vertical='games'` (commit b119cad); porteiro com combos, acessórios e variantes de cor (85054d5). `COLLECTOR_RUNS=1`; kill-switches VERTICAL_TECNOLOGIA/ELETROELETRONICOS/ELETRODOMESTICOS ligados; LIVROS e ESPORTE desligados.
+- **Semeadura (Mercado Livre, só leitura de catálogo oficial):** 28 masters em revisão: tecnologia 17, eletroeletrônicos 6, eletrodomésticos 5. Ajuste de ordem frente à ata: livros ficam à espera do recorte do dono; notebook e geladeira sem vendedor no catálogo (404); bola parou em HTTP 429.
+- **QA independente:** sem achados bloqueantes ou altos. Médios: preço implausível (TV LG 75" a R$ 98.919) sem guarda nas verticais; master `smart-tv-lg-4k` com identidade fraca; Shopee em 429 recorrente com fila que não esvazia; "afiliad" em payload de /ofertas (pré-existente). Não verificado: /api/produtos por HTTP (flags OFF), coleta já habilitada de eletroeletrônicos.
+- **Pendências do dono:** recorte de livros; credenciais da Shopee; cor (um master por modelo vs. por GTIN); cópia datada dos termos de ML e Shopee e pergunta escrita ao suporte; revisão jurídica antes de página pública.
