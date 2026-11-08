@@ -1,0 +1,11 @@
+import { isImplausiblyHigh, isImplausiblyLow } from '@/server/collector/price-plausibility';
+let f = 0;
+const t = (n: string, ok: boolean) => { console.log(ok ? 'PASS' : 'FAIL', n); if (!ok) f++; };
+const refs = [300000, 320000, 310000];
+t('98 mil frente a ~3 mil é alto', isImplausiblyHigh(9891900, refs));
+t('preço normal passa', !isImplausiblyHigh(330000, refs) && !isImplausiblyLow(330000, refs));
+t('isca 30% é baixo', isImplausiblyLow(90000, refs));
+t('3x exato passa', !isImplausiblyHigh(930000, refs));
+t('uma referência só não julga', !isImplausiblyHigh(9891900, [300000]));
+t('sem referência não julga', !isImplausiblyHigh(9891900, []) && !isImplausiblyLow(1, []));
+process.exit(f ? 1 : 0);

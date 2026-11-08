@@ -11,6 +11,7 @@ import { isVerticalEnabled, killSwitchEnvName, refreshMinutesFor, type NonGamesV
 import { fetchVerticalCatalog, VerticalPagingError, type RawPage, type VerticalCatalogOutcome } from '@/lib/catalog/vertical/paging';
 import { startCollectorRun, collectorRunsEnabled } from '../collector-runs';
 import { recordPriceSnapshot } from '../record-price-snapshot';
+import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from '../price-plausibility';
 import { getValidAccessToken } from '../sources/mercado-livre-auth';
 import { upsertSellerFromOffer } from '../sources/mercado-livre-seller';
 
@@ -46,6 +47,7 @@ export interface CollectVerticalSummary {
   callCap: number;
   pricesWritten: number;
   snapshotsWritten: number;
+  rejectedImplausible: number;
   offersCreated: number;
   misses: number;
   partialCatalogs: number;
@@ -71,6 +73,7 @@ function emptySummary(vertical: string, extra: Partial<CollectVerticalSummary> =
     callCap: 0,
     pricesWritten: 0,
     snapshotsWritten: 0,
+    rejectedImplausible: 0,
     offersCreated: 0,
     misses: 0,
     partialCatalogs: 0,
@@ -137,6 +140,7 @@ function dueWhere(vertical: NonGamesVertical, networkId: string, refreshMin: num
 interface ApplyResult {
   created: number;
   snapshots: number;
+  rejectedImplausible: number;
   priced: string[];
 }
 
@@ -146,7 +150,7 @@ async function applyVerticalGroup(
   vertical: NonGamesVertical,
   outcome: Extract<VerticalCatalogOutcome, { kind: 'complete' | 'partial' }>
 ): Promise<ApplyResult> {
-  const out: ApplyResult = { created: 0, snapshots: 0, priced: [] };
+  const out: ApplyResult = { created: 0, snapshots: 0, rejectedImplausible: 0, priced: [] };
   const results = collapseBySeller(outcome.items);
   if (results.length === 0) return out;
 
@@ -238,6 +242,15 @@ async function applyVerticalGroup(
       out.created++;
     }
     touched.add(offerId);
+    // Guarda de plausibilidade (0,35x a 3x a mediana das OUTRAS ofertas do master, com >= 2 referências): fora da faixa
+    // vai para quarentena e NÃO vira snapshot; dentro da faixa libera a quarentena (só vertical <> games, sem curadoria manual).
+    const refs = await getMasterReferencePrices(group.masterProductId, offerId);
+    if (isImplausiblyLow(r.priceCents, refs) || isImplausiblyHigh(r.priceCents, refs)) {
+      await db.update(affiliateOffers).set({ quarantinedAt: new Date() }).where(eq(affiliateOffers.id, offerId));
+      out.rejectedImplausible++;
+      continue;
+    }
+    await db.update(affiliateOffers).set({ quarantinedAt: null }).where(and(eq(affiliateOffers.id, offerId), sql`${affiliateOffers.vertical} <> 'games'`));
     if (await recordPriceSnapshot({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api' })) out.snapshots++;
     out.priced.push(offerId);
   }
@@ -376,6 +389,7 @@ export async function collectVertical(vertical: string, options: CollectVertical
         const applied = await applyVerticalGroup(group, v, outcome);
         summary.offersCreated += applied.created;
         summary.snapshotsWritten += applied.snapshots;
+        summary.rejectedImplausible += applied.rejectedImplausible;
         summary.pricesWritten += applied.priced.length;
         run.counters.offersCreated += applied.created;
         run.counters.snapshotsWritten += applied.snapshots;

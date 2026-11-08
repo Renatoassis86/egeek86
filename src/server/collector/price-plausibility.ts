@@ -5,6 +5,8 @@ import { affiliateOffers } from '@/db/schema';
 
 /** Preço abaixo de 35% da mediana das cotações ativas do mesmo produto = isca/erro, não entra. */
 export const PLAUSIBLE_MIN_RATIO = 0.35;
+/** Preço acima de 3x a mediana das cotações ativas do mesmo produto = erro/anúncio absurdo, não entra (mesmo múltiplo do teto da faixa diária). */
+export const PLAUSIBLE_MAX_RATIO = 3;
 /** Sem pelo menos 2 referências não há mediana confiável: não dá para julgar, aceita. */
 export const MIN_REFERENCES = 2;
 
@@ -20,6 +22,13 @@ export function isImplausiblyLow(priceCents: number, referenceCents: number[]): 
   if (referenceCents.length < MIN_REFERENCES) return false;
   const m = median(referenceCents);
   return m != null && priceCents < m * PLAUSIBLE_MIN_RATIO;
+}
+
+/** Pura: true quando o preço é implausivelmente alto frente às referências. */
+export function isImplausiblyHigh(priceCents: number, referenceCents: number[]): boolean {
+  if (referenceCents.length < MIN_REFERENCES) return false;
+  const m = median(referenceCents);
+  return m != null && priceCents > m * PLAUSIBLE_MAX_RATIO;
 }
 
 /** Cotações ativas reais do mesmo master_product (todas as lojas), exceto a própria oferta. */
