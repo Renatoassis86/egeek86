@@ -54,6 +54,10 @@ let r = evaluateIdentity(P({ id: 'MLB1', attributes: [attr('GTIN', isbn)] }), li
 check('livro com ISBN-13 valido => strong isbn:', r.status === 'strong' && r.key === `isbn:${isbn}` && r.keyKind === 'isbn', r);
 r = evaluateIdentity(P({ id: 'MLB1', attributes: [attr('GTIN', gtin('789123456789'))] }), livros);
 check('livro com GTIN que nao e ISBN => review (nunca strong)', r.status === 'review' && r.key === null, r);
+r = evaluateIdentity(P({ id: 'MLB1', attributes: [attr('GTIN', gtin('978972213226'))] }), livros);
+check('livro com ISBN de Portugal (978-972) => rejected isbn_importado', r.status === 'rejected' && r.reason === 'isbn_importado', r);
+r = evaluateIdentity(P({ id: 'MLB1', attributes: [attr('GTIN', gtin('978655000001'))] }), livros);
+check('livro com ISBN brasileiro 978-65 => strong', r.status === 'strong', r);
 r = evaluateIdentity(P({ id: 'MLB1', attributes: [attr('BRAND', 'Editora X'), attr('MODEL', 'Y')] }), livros);
 check('livro sem GTIN nao cai em marca+modelo => review', r.status === 'review', r);
 
@@ -315,9 +319,9 @@ const run = async () => {
   check('429 interrompe', rl);
 
   // --- Planejador de semeadura com cliente ML FALSO (dados do teste, nao de producao) ---
-  const isbnA = gtin('978000000001');
-  const isbnB = gtin('978000000002');
-  const isbnDup = gtin('978000000003');
+  const isbnA = gtin('978850000001');
+  const isbnB = gtin('978850000002');
+  const isbnDup = gtin('978850000003');
   const search = {
     paging: { total: 6, offset: 0, limit: 10 },
     results: [

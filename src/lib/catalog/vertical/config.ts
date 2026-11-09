@@ -65,11 +65,11 @@ export const SEGMENTS: SegmentConfig[] = [
     vertical: 'livros',
     label: 'Livros',
     domains: [/^MLB-BOOKS$/],
-    terms: ['livro 9788535914849'],
+    terms: ['livro 9788535914849', 'ficção científica', 'fantasia', 'romance', 'infantil', 'autoajuda', 'programação', 'história', 'mangá', 'receitas', 'negócios'],
     profile: { strategy: 'isbn_only', fallbackAttrs: [], keyExtras: [] },
     targetRefreshMin: 60,
     seedRank: 1,
-    rationale: 'GTIN (ISBN) em 10/10 dos resultados; catálogo com 16 vendedores. Recorte (quais livros) pendente do dono.',
+    rationale: 'GTIN (ISBN) em 10/10 dos resultados; catálogo com 16 vendedores. Recorte: livros diversos (dono, 2026-11-08); termos por gênero, sempre identificados por ISBN-13.',
   },
   {
     key: 'placa-de-video',

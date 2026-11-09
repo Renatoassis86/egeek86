@@ -225,6 +225,9 @@ export function evaluateIdentity(p: MlCatalogPayload, seg: SegmentConfig): Ident
   }
   if (strategy === 'isbn_only') {
     const isbn = gtins.find(isIsbn13);
+    // Livros: só edição brasileira (grupo de registro 978-65 / 978-85). Outros grupos (Portugal 972/989, Itália 88 etc.)
+    // são livro importado, que a regra do dono deixa de fora (dono: 'livros diversos', 2026-11-08).
+    if (isbn && !/^978(65|85)/.test(isbn)) return result({ status: 'rejected', reason: 'isbn_importado', missing: [] }, base);
     if (isbn) return result({ status: 'strong', key: `isbn:${isbn}`, keyKind: 'isbn', reason: 'isbn13_valido' }, base);
     return result({ status: 'review', reason: 'sem_isbn13_valido', missing: ['ISBN-13'] }, base);
   }
