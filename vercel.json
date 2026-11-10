@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/collect-shopee",
-      "schedule": "*/10 * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=stats",
