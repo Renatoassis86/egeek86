@@ -58,7 +58,7 @@ const WATCHED_REFRESH_INTERVAL = sql`interval '5 minutes'`;
  * 150 (mesma concorrência de 4 grupos por vez, ver GROUP_CONCURRENCY) —
  * ainda cabe com folga dentro do maxDuration=250s do plano Pro da Vercel.
  */
-const MAX_OFFERS_PER_RUN = 150;
+const MAX_OFFERS_PER_RUN = 300; // 150 até 2026-11-10: só 17% das ofertas ML games eram checadas em 30 min (mais velha 3 h); rodada levava 45-70 s de 200 s
 
 const isWatchedExpr = sql`EXISTS (
   SELECT 1 FROM affiliate_price_watches w

@@ -39,3 +39,9 @@ O relatório da raspagem trata o nome "Shopee" na mídia (T&C 2.3(a)) como ambig
 3. **Eventos:** investigar os 68 eventos min=prev e os 936 masters sem evento; usar variação das ofertas casadas no selo quando `composition_flag`.
 4. **Verticais:** continuar semeadura em rodadas espaçadas (bola, notebook, geladeira, livros), esporte por último; vigiar os indicadores das verticais.
 5. Calendário: 27/11 Black Friday; página pública só após decisão do dono e revisão jurídica.
+
+## Decisões do dono e execução (2026-11-10, tarde)
+- **Shopee entra na média e no histórico públicos** (decisão do dono). Já é o comportamento do código (nenhuma exclusão de Shopee nas médias); mantém "um jogo, uma média". Pendente: resposta escrita da Shopee sobre exibir histórico (perguntas em `docs/perguntas-shopee-2026-11-10.md`, envio pelo dono).
+- **Coletor Shopee** (commits a05dc44, 1fbaf1c): pacer de 600 ms (dobra no 10030, teto 2 s), concorrência 2, uma retentativa após 8 s, rejeição de preço > 3x a mediana, cron a cada 5 min. Medido: 164–222 consultas por rodada (antes 107), 0 erros, 94% das 745 ofertas ativas checadas em 30 min.
+- **Quarentena dos 27 outliers gamer** (backup `docs/backups/quarentena-outliers-gamer-2026-11-10.ndjson`; reversão: `quarantined_at = NULL` pelos ids do backup).
+- **ML games:** autorizado dobrar a cobertura (MAX_OFFERS_PER_RUN 150 -> 300). Antes: 17% das ofertas checadas em 30 min, mais velha 3 h. Acompanhar 429 e duração (< 200 s).
