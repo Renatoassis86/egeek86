@@ -5,8 +5,9 @@ import { affiliateOffers, affiliateNetworks } from '@/db/schema';
 import { mapWithConcurrency } from '@/lib/concurrency';
 import { recordPriceSnapshot } from './record-price-snapshot';
 import { ShopeeApiError, generateShopeeAffiliateLink, isShopeeAffiliateConfigured } from './sources/shopee-auth';
+import { createShopeePacer, SHOPEE_RATE_LIMIT_WAIT_MS } from './shopee-pacing';
 import { lookupShopeeItem, shopeeItemIdFromRef, shopeePublicUrl } from './sources/shopee';
-import { getMasterReferencePrices, isImplausiblyLow } from './price-plausibility';
+import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 import { collectorRunsEnabled, startCollectorRun } from './collector-runs';
 import { classifyShopeeKind } from '@/lib/collector-runs/classify-error';
 import { GAMES } from '@/lib/catalog/verticais';
@@ -16,7 +17,7 @@ const MAX_CONSECUTIVE_MISSES = 3;
 const ACTIVE_REFRESH = sql`interval '30 minutes'`;
 /** Ofertas já expiradas são re-testadas devagar: a maioria não volta, e cada teste gasta cota da API. */
 const EXPIRED_REFRESH = sql`interval '24 hours'`;
-const CONCURRENCY = 3;
+const CONCURRENCY = 2; // o ritmo real é dado pelo pacer (espaçamento entre chamadas), não pela concorrência
 /** Parar de coletar ao acumular N falhas seguidas (API fora, schema mudou): evita martelar a API. */
 const MAX_CONSECUTIVE_ERRORS = 10;
 
@@ -70,6 +71,8 @@ export interface CollectShopeeSummary {
   expiredNow: number;
   rejectedImplausible: number;
   linksGenerated: number;
+  /** Quantas vezes um 10030 foi absorvido com espera e nova tentativa. */
+  rateLimitRetries: number;
   errors: { externalRef: string; kind: string; message: string }[];
   /** Preenchido quando o lote foi interrompido (rate limit, auth, acesso, falhas seguidas, tempo). */
   stoppedBecause: string | null;
@@ -86,6 +89,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
     expiredNow: 0,
     rejectedImplausible: 0,
     linksGenerated: 0,
+    rateLimitRetries: 0,
     errors: [],
     stoppedBecause: null,
   };
@@ -122,6 +126,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
     oldestDueAgeS: backlog.oldestS,
   });
 
+  const pacer = createShopeePacer();
   await mapWithConcurrency(due, CONCURRENCY, async (offer) => {
     if (summary.stoppedBecause) return;
     if (Date.now() > deadline) {
@@ -137,7 +142,19 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
 
     run.counters.queries++;
     try {
-      const lookup = await lookupShopeeItem(itemId);
+      await pacer.wait();
+      let lookup;
+      try {
+        lookup = await lookupShopeeItem(itemId);
+      } catch (err) {
+        // 10030 (limite): espera a janela e tenta UMA vez de novo, mais devagar; se falhar de novo, aborta como antes.
+        if (!(err instanceof ShopeeApiError && err.kind === 'rate_limit')) throw err;
+        pacer.onRateLimit();
+        summary.rateLimitRetries++;
+        await new Promise((r) => setTimeout(r, SHOPEE_RATE_LIMIT_WAIT_MS));
+        await pacer.wait();
+        lookup = await lookupShopeeItem(itemId);
+      }
       consecutiveErrors = 0;
       summary.checked++;
       run.counters.checked++;
@@ -147,7 +164,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
 
       if (node) {
         const refs = await getMasterReferencePrices(offer.masterProductId, offer.id);
-        if (isImplausiblyLow(node.priceCents, refs)) {
+        if (isImplausiblyLow(node.priceCents, refs) || isImplausiblyHigh(node.priceCents, refs)) {
           summary.rejectedImplausible++;
           node = null; // trata como sem preço válido: não grava, não reativa
         } else {
@@ -238,6 +255,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
       reactivated: summary.reactivated,
       rejectedImplausible: summary.rejectedImplausible,
       linksGenerated: summary.linksGenerated,
+      rateLimitRetries: summary.rateLimitRetries,
     },
   });
   if (summary.errors.length > 20) summary.errors = summary.errors.slice(0, 20);
