@@ -16,7 +16,9 @@ import {
 } from '@/lib/messaging/group-rules';
 import { sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
 import { setAutomationState } from '@/server/messaging/group-automation-store';
-import { detectGroupCandidates, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
+import { detectGroupCandidates, groupMessagesOnda2Ready, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
+import { runLivePhase, type LiveCheckLog, type LiveDeps } from '@/lib/messaging/live-recheck';
+import { loadLiveTargets, realLiveDeps } from '@/server/messaging/live-recheck';
 
 type Row = Record<string, unknown>;
 export type GroupChannelDb = 'tg' | 'wa';
@@ -110,6 +112,8 @@ export interface PersistOptions {
   state: AutomationState;
   /** Modo sombra: só o vencedor do plano é gravado como decisão simulada (os demais ficam só no resumo do ciclo). */
   shadowWinner?: { messageKey: string; sound: boolean } | null;
+  /** Modo sombra: horário planejado de saída da decisão simulada (coluna planned_at da 0031, quando aplicada). */
+  plannedAt?: Date | null;
 }
 
 export interface PersistResult {
@@ -137,10 +141,24 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
       out.skipped++;
       continue;
     }
-    if (c.cls === 'radar' && c.trigger !== 'RADAR') continue; // item avulso: entra no radar composto
+    // Dono (2026-11-11): UMA mensagem por item. O item de radar só deixa de ser gravado avulso se o radar composto estiver ligado.
+    if (RULES.RADAR_COMPOSITE_ENABLED && c.cls === 'radar' && c.trigger !== 'RADAR') continue;
     if (!v2 && !LEGACY_TRIGGERS.has(c.trigger)) {
       out.skipped++;
       continue;
+    }
+    const isPlatform = c.cls === 'plataforma';
+    if (isPlatform) {
+      // P1..P5 exigem a 0031 (CHECKs) e não se acumulam: uma linha aberta por modelo basta.
+      if (!(await groupMessagesOnda2Ready())) {
+        out.skipped++;
+        continue;
+      }
+      const open = await db.execute(sql`SELECT 1 FROM group_messages WHERE trigger = ${c.trigger} AND channel = 'tg' AND status IN ('proposta_auto', 'aprovada', 'enviando', 'simulada') AND created_at >= now() - interval '6 hours' LIMIT 1`);
+      if (open.length > 0) {
+        out.skipped++;
+        continue;
+      }
     }
     const disp = dispositionOf(c);
     let tgStatus = v2 ? rowStatusFor(disp.disposition, opts.state) : 'proposta';
@@ -153,7 +171,7 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
       simState = opts.shadowWinner.sound ? 'enviaria_som' : 'enviaria_silenciosa';
     }
     const waStatus = disp.disposition === 'held' && v2 ? 'retida' : 'proposta';
-    const productId = c.trigger === 'G4' || c.trigger === 'RADAR' ? null : c.masterProductId;
+    const productId = c.trigger === 'G4' || c.trigger === 'RADAR' || isPlatform ? null : c.masterProductId;
     for (const ch of ['tg', 'wa'] as const) {
       const text = ch === 'tg' ? c.texts.telegram : c.texts.whatsapp;
       const status = ch === 'tg' ? tgStatus : waStatus;
@@ -168,7 +186,7 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
         WHERE NOT EXISTS (
           SELECT 1 FROM group_messages g
           WHERE g.channel = ${ch} AND g.master_product_id = ${productId}::uuid
-            AND g.status IN ('proposta', 'aprovada', 'proposta_auto', 'retida', 'enviando') AND g.created_at >= now() - interval '48 hours'
+            AND g.status IN ('proposta', 'aprovada', 'proposta_auto', 'retida', 'enviando') AND g.created_at >= now() - interval '6 hours'
         )
         ON CONFLICT (dedup_key, channel) DO NOTHING
       `)
@@ -186,6 +204,9 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
       if (n(res) > 0) {
         out.inserted++;
         out.byStatus[status] = (out.byStatus[status] ?? 0) + 1;
+        if (ch === 'tg' && status === 'simulada' && opts.plannedAt && (await groupMessagesOnda2Ready())) {
+          await db.execute(sql`UPDATE group_messages SET planned_at = ${opts.plannedAt.toISOString()}::timestamptz WHERE message_key = ${c.messageKey} AND channel = 'tg'`).catch(() => undefined);
+        }
       } else out.skipped++;
     }
   }
@@ -193,7 +214,7 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
 }
 
 /**
- * Validade das linhas: proposta e proposta_auto em 3 h (radar automático em 20 min: só vale na hora cheia), aprovada em 12 h,
+ * Validade das linhas: proposta e proposta_auto em 6 h (onda 2; radar composto automático em 20 min: só vale na hora cheia), aprovada em 12 h,
  * retida em 24 h. Linha 'enviando' parada há mais de 10 min NUNCA volta para a fila (poderia duplicar a mensagem no canal):
  * vira 'erro' com o aviso para conferir o canal. Mensagem já enviada ao canal nunca é apagada.
  */
@@ -203,13 +224,13 @@ export async function expireStale(): Promise<number> {
   if (!v2) {
     const res = await db.execute(sql`
       UPDATE group_messages SET status = 'expirada', updated_at = now(), error = COALESCE(error, 'expirada sem envio')
-      WHERE (status = 'proposta' AND created_at < now() - interval '3 hours') OR (status = 'aprovada' AND created_at < now() - interval '12 hours')
+      WHERE (status = 'proposta' AND created_at < now() - interval '6 hours') OR (status = 'aprovada' AND created_at < now() - interval '12 hours')
     `);
     return n(res);
   }
   const res = await db.execute(sql`
     UPDATE group_messages SET status = 'expirada', claimed_at = NULL, updated_at = now(), error = COALESCE(error, 'expirada sem envio')
-    WHERE (status IN ('proposta', 'proposta_auto') AND created_at < now() - (CASE WHEN msg_class = 'radar' AND status = 'proposta_auto' THEN interval '20 minutes' ELSE interval '3 hours' END))
+    WHERE (status IN ('proposta', 'proposta_auto') AND created_at < now() - (CASE WHEN trigger = 'RADAR' AND status = 'proposta_auto' THEN interval '20 minutes' ELSE interval '6 hours' END))
        OR (status = 'aprovada' AND created_at < now() - interval '12 hours')
        OR (status = 'retida' AND created_at < now() - interval '24 hours')
   `);
@@ -266,11 +287,22 @@ export type RenderCardFn = (masterProductId: string) => Promise<Buffer | null>;
 /** Cupom verificado da oferta (ponto de ligação com o módulo de cupons; ainda não existe). null = sem cupom válido. */
 export type CouponLookupFn = (offerId: string) => Promise<CouponInfo | null>;
 
+/**
+ * Escolha do cartão (injetável; a rota do cron liga): 'oferta' = card de oferta (capa + preço + insight) para alerta/insight de
+ * preço; 'historico' = cartão de histórico para P1 e G5. null = a mensagem sai só em texto.
+ */
+export type CardForFn = (a: { candidate: Candidate; kind: 'oferta' | 'historico'; offerId: string; masterProductId: string }) => Promise<Buffer | null>;
+
 export interface SendDeps {
+  cardFor?: CardForFn;
   now?: Date;
   fetchImpl?: FetchLike;
   renderCard?: RenderCardFn;
   couponLookup?: CouponLookupFn;
+  /** Envio manual ("Enviar agora"): ignora o intervalo mínimo e o mesmo-produto-3h (os tetos continuam valendo). */
+  manual?: boolean;
+  /** Reconferência ao vivo (padrão: fontes oficiais reais). */
+  live?: LiveDeps;
   /** Só para teste/ambiente; padrão: variáveis de ambiente. */
   token?: string;
   chatId?: string;
@@ -284,22 +316,50 @@ export interface Revalidation {
   ok: boolean;
   reason?: string;
   match?: Candidate;
+  /** Resultado da reconferência ao vivo (uma entrada por oferta olhada). */
+  live?: LiveCheckLog[];
 }
 
 /**
  * Releitura do preço imediatamente antes do envio (e também usada pelo modo sombra para decidir "enviaria").
- * Re-detecta o produto com frescor de envio (30 min; Amazon 40 min). O gatilho precisa continuar valendo, o preço ficar
- * dentro de 2% do detectado e, nas linhas automáticas, continuar na faixa segura (nem aprovação, nem retido).
+ *
+ * ONDA 2: antes, preço gravado com mais de 30 min matava a mensagem (o ML é reconferido a cada 30 a 60 min). Agora:
+ *  1. as ofertas do candidato (e as concorrentes mais baratas com preço velho) com preço velho são consultadas AO VIVO na API
+ *     oficial da loja (ML; Shopee sempre nas automáticas; Amazon não consulta, segue o frescor da coleta assistida), com limite
+ *     de 8 s; a consulta grava o snapshot como o coletor; falha de rede, sem estoque ou preço vivo fora de 2% do detectado = expira;
+ *  2. com o preço vivo gravado, re-detecta o produto com frescor de envio (30 min; Amazon 40). O gatilho precisa continuar
+ *     valendo e, nas linhas automáticas, continuar na faixa segura. Radar: os itens são contados DEPOIS da reconferência ao vivo.
  */
 export async function revalidateCandidate(
   orig: Candidate,
   detectedPriceCents: number | null,
   history: Parameters<typeof applyLimits>[1],
-  opts: { now: Date; allowReview: boolean }
+  opts: { now: Date; allowReview: boolean; live?: LiveDeps }
 ): Promise<Revalidation> {
   const { now } = opts;
   const isRadar = orig.trigger === 'RADAR';
-  const productIds = orig.trigger === 'G4' ? undefined : isRadar ? (orig.items ?? []).map((i) => i.masterProductId) : [orig.masterProductId];
+
+  // ---- 1) reconferência ao vivo ----
+  const originals = isRadar
+    ? (orig.items ?? []).map((i) => ({ offerId: i.offerId, detectedPriceCents: i.priceCents as number | null }))
+    : orig.offerIds.map((id, idx) => ({ offerId: id, detectedPriceCents: idx === 0 && orig.trigger !== 'G4' ? (detectedPriceCents ?? orig.priceCents) : null }));
+  const caps = new Map<string, number>();
+  if (isRadar) for (const i of orig.items ?? []) caps.set(i.masterProductId, i.priceCents);
+  else if (orig.trigger !== 'G4') caps.set(orig.masterProductId, detectedPriceCents ?? orig.priceCents);
+  let phase: Awaited<ReturnType<typeof runLivePhase>>;
+  try {
+    const targets = await loadLiveTargets(originals, caps, now);
+    phase = await runLivePhase({ now, targets, mode: isRadar ? 'radar' : 'single', humanApproved: opts.allowReview, deps: opts.live ?? realLiveDeps() });
+  } catch (e) {
+    return { ok: false, reason: `reconferência ao vivo falhou: ${e instanceof Error ? e.message.slice(0, 120) : 'erro'}` };
+  }
+  if (!phase.ok) return { ok: false, reason: phase.reason, live: phase.logs };
+
+  // ---- 2) re-detecção com o preço vivo já gravado ----
+  const dropped = new Set(phase.droppedOfferIds);
+  const radarItems = (orig.items ?? []).filter((i) => !dropped.has(i.offerId));
+  const productIds = orig.trigger === 'G4' ? undefined : isRadar ? radarItems.map((i) => i.masterProductId) : [orig.masterProductId];
+  if (isRadar && !productIds?.length) return { ok: false, reason: 'reconferência ao vivo: nenhum item do radar passou', live: phase.logs };
   const live = await detectGroupCandidates({
     now,
     maxAgeMin: RULES.SEND_MAX_AGE_MIN,
@@ -307,18 +367,20 @@ export async function revalidateCandidate(
     productIds,
     history,
     adTag: getAdTag(),
+    liveVerifiedOfferIds: phase.verified,
   });
 
   if (isRadar) {
-    const items = orig.items ?? [];
     const fresh = live.candidates.filter((c) => {
       if (c.cls !== 'radar' || c.trigger === 'RADAR' || !c.sendable || !c.move) return false;
-      const it = items.find((i) => i.masterProductId === c.masterProductId);
+      const it = radarItems.find((i) => i.masterProductId === c.masterProductId);
       return !!it && it.kind === c.move.kind && priceWithinTolerance(it.priceCents, c.priceCents);
     });
     const radar = composeRadar(fresh, { now, maxAgeMin: RULES.SEND_MAX_AGE_MIN, adTag: getAdTag() });
-    if (!radar || !radar.sendable) return { ok: false, reason: `revalidação: só ${fresh.length} item(ns) do radar ainda valem (mínimo ${RULES.RADAR_MIN_ITEMS})` };
-    return { ok: true, match: radar };
+    if (!radar || !radar.sendable) {
+      return { ok: false, reason: `revalidação: só ${fresh.length} item(ns) do radar valem depois da reconferência ao vivo (mínimo ${RULES.RADAR_MIN_ITEMS})`, live: phase.logs };
+    }
+    return { ok: true, match: radar, live: phase.logs };
   }
 
   const match = live.candidates.find((c) =>
@@ -326,12 +388,27 @@ export async function revalidateCandidate(
       ? c.trigger === 'G4' && orig.offerIds.every((o) => c.offerIds.includes(o))
       : c.masterProductId === orig.masterProductId && c.trigger === orig.trigger && isAmz(c) === isAmz(orig)
   );
-  if (!match || !match.sendable) return { ok: false, reason: 'revalidação: já não vale (preço velho, sumiu ou mudou)' };
-  if (!opts.allowReview && (match.held || match.status === 'review')) return { ok: false, reason: 'revalidação: saiu da faixa segura (exige aprovação ou retido)' };
-  if (orig.trigger !== 'G4' && detectedPriceCents != null && !priceWithinTolerance(detectedPriceCents, match.priceCents)) {
-    return { ok: false, reason: 'revalidação: preço mudou mais de 2 %' };
+  if (!match || !match.sendable) {
+    const moved = phase.changed ? ' (o preço ao vivo mudou em relação ao gravado)' : '';
+    return { ok: false, reason: `revalidação: já não vale (preço velho, sumiu ou mudou)${moved}`, live: phase.logs };
   }
-  return { ok: true, match };
+  if (!opts.allowReview && (match.held || match.status === 'review')) return { ok: false, reason: 'revalidação: saiu da faixa segura (exige aprovação ou retido)', live: phase.logs };
+  if (orig.trigger !== 'G4' && detectedPriceCents != null && !priceWithinTolerance(detectedPriceCents, match.priceCents)) {
+    return { ok: false, reason: 'revalidação: preço mudou mais de 2 %', live: phase.logs };
+  }
+  return { ok: true, match, live: phase.logs };
+}
+
+/** Grava o resultado da reconferência ao vivo na linha (colunas da 0031; sem elas, nada). */
+async function saveLiveInfo(id: string, logs: LiveCheckLog[] | undefined, note: string | null): Promise<void> {
+  if (!logs?.length || !(await groupMessagesOnda2Ready())) return;
+  const own = logs.find((l) => l.role === 'original' && l.checked);
+  await db
+    .execute(sql`
+      UPDATE group_messages SET live_checked_at = now(), live_price_cents = ${own?.liveCents ?? null}::bigint, live_note = ${(note ?? JSON.stringify(logs.map((l) => ({ o: l.offerId, v: l.verdict, r: l.reason })))).slice(0, 500)}
+      WHERE id = ${id}::uuid
+    `)
+    .catch(() => undefined);
 }
 
 /**
@@ -371,13 +448,20 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
 
   try {
     const hist = await loadSentHistory('tg', now, { excludeId: id });
-    const rev = await revalidateCandidate(row.candidate, row.priceCentsDetected, hist.records, { now, allowReview: human });
+    // Barato primeiro: se os limites já adiam esta linha, não gasta consulta ao vivo.
+    const pre = applyLimits([{ ...row.candidate, status: 'auto', held: false, sendable: true }], hist.records, now, { ignoreSpacing: deps.manual });
+    if (!pre.next) {
+      await release();
+      return { ok: false, outcome: 'deferred', reason: pre.deferred[0]?.reason ?? 'limite' };
+    }
+    const rev = await revalidateCandidate(row.candidate, row.priceCentsDetected, hist.records, { now, allowReview: human, live: deps.live });
+    await saveLiveInfo(id, rev.live, rev.ok ? null : (rev.reason ?? null));
     if (!rev.ok || !rev.match) {
       await expire(rev.reason ?? 'revalidação falhou');
       return { ok: false, outcome: 'expired', reason: rev.reason };
     }
     const match = rev.match;
-    const plan = applyLimits([{ ...match, status: 'auto', held: false, sendable: true }], hist.records, now);
+    const plan = applyLimits([{ ...match, status: 'auto', held: false, sendable: true }], hist.records, now, { ignoreSpacing: deps.manual });
     if (!plan.next) {
       await release();
       return { ok: false, outcome: 'deferred', reason: plan.deferred[0]?.reason ?? 'limite' };
@@ -402,7 +486,17 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     }
 
     let photo: Buffer | null = null;
-    if (deps.renderCard && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR' && match.trigger !== 'G4' && cardAllowed(match.masterProductId, hist.records, now)) {
+    const cardKind: 'oferta' | 'historico' = match.trigger === 'P1' || match.trigger === 'G5' ? 'historico' : 'oferta';
+    const cardCls = match.cls === 'alerta' || match.cls === 'insight' || match.cls === 'radar' || match.trigger === 'P1';
+    if (deps.cardFor && cardCls && match.trigger !== 'RADAR' && match.trigger !== 'G4') {
+      if (cardKind === 'oferta' || cardAllowed(match.masterProductId, hist.records, now)) {
+        try {
+          photo = await timeout(deps.cardFor({ candidate: match, kind: cardKind, offerId: match.offerIds[0], masterProductId: match.masterProductId }), 8000);
+        } catch {
+          photo = null;
+        }
+      }
+    } else if (deps.renderCard && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR' && match.trigger !== 'G4' && cardAllowed(match.masterProductId, hist.records, now)) {
       try {
         photo = await timeout(deps.renderCard(match.masterProductId), 8000);
       } catch {
@@ -461,7 +555,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
  * sem ela, o caminho da 0028 (abaixo).
  */
 export async function sendApprovedTelegram(id: string, now = new Date(), deps: Omit<SendDeps, 'now'> = {}): Promise<SendOutcome> {
-  if (await groupMessagesV2Ready()) return sendQueuedTelegram(id, { ...deps, now });
+  if (await groupMessagesV2Ready()) return sendQueuedTelegram(id, { ...deps, now, manual: deps.manual ?? true });
   return sendApprovedTelegramLegacy(id, now);
 }
 

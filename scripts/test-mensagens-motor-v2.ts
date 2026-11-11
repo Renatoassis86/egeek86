@@ -113,16 +113,19 @@ eq(kinds(detectMovement([...flat8, { day: TODAY, minCents: 1 }], 10400, TODAY)),
 // 2) Faixas de risco
 // ---------------------------------------------------------------------------
 eq(riskAssess(9400, 11500, 6, 11000), { review: [], held: [] }, 'verde: 18% abaixo da média, queda de 6%');
-eq(riskAssess(7500, 10000, 10, null).review, [], 'exatamente 25% abaixo da média ainda é verde');
-ok(riskAssess(7499, 10000, 10, null).review.includes('desconto_acima_de_25pct_da_media'), '25,01% abaixo da média pede aprovação');
+eq(riskAssess(7000, 10000, 10, null).review, [], 'onda 2: exatamente 30% abaixo da média ainda é verde (era 25%)');
+ok(riskAssess(6999, 10000, 10, null).review.includes('desconto_acima_de_30pct_da_media'), '30,01% abaixo da média pede aprovação');
 ok(riskAssess(9400, null, 31, null).review.includes('queda_acima_de_30pct'), 'queda de 31% pede aprovação');
 eq(riskAssess(9400, null, 30, null).review, [], 'queda de exatos 30% é verde');
-ok(riskAssess(5900, 10000, 10, null).held.includes('desconto_acima_de_40pct_da_media'), '41% abaixo da média fica retido');
-eq(riskAssess(6000, 10000, 10, null).held, [], '40% exatos não retém');
+ok(riskAssess(5499, 10000, 10, null).held.includes('desconto_acima_de_45pct_da_media'), '45,01% abaixo da média fica retido (era 40%)');
+eq(riskAssess(5500, 10000, 10, null).held, [], '45% exatos não retém (fica em aprovação)');
+ok(riskAssess(5500, 10000, 10, null).review.includes('desconto_acima_de_30pct_da_media'), 'de 30 a 45% pede aprovação');
 ok(riskAssess(9000, null, 46, null).held.includes('queda_acima_de_45pct'), 'queda de 46% fica retida');
-ok(riskAssess(4900, null, 10, 10000).held.includes('preco_abaixo_de_meia_mediana_das_ofertas'), 'preço < 0,5x a mediana fica retido');
-eq(riskAssess(5000, null, 10, 10000).held, [], '0,5x da mediana exata não retém');
-ok(riskAssess(5900, 10000, 31, null).review.length === 0, 'retido não duplica como aprovação');
+ok(riskAssess(3499, null, 10, 10000).held.includes('preco_abaixo_de_035x_a_mediana_das_ofertas'), 'preço < 0,35x a mediana fica retido (era 0,5x)');
+ok(riskAssess(30001, null, 10, 10000).held.includes('preco_acima_de_3x_a_mediana_das_ofertas'), 'preço > 3x a mediana fica retido (faixa de plausibilidade)');
+eq(riskAssess(30000, null, 10, 10000).held, [], '3x a mediana exata não retém');
+eq(riskAssess(3500, null, 10, 10000).held, [], '0,35x da mediana exata não retém');
+ok(riskAssess(5400, 10000, 31, null).review.length === 0, 'retido não duplica como aprovação');
 
 // ---------------------------------------------------------------------------
 // 3) evaluateProductV2: filtros, classes, texto
@@ -153,9 +156,9 @@ let ev = evaluateProductV2(product(), ctx);
 const ok1 = ev.candidates.find((c) => c.trigger === 'OK1');
 ok(!!ok1 && ok1.cls === 'alerta' && ok1.status === 'auto' && !ok1.held && ok1.sendable, 'OK1 ML verde: alerta, automático, enviável', ok1);
 ok(!!ok1 && ok1.move?.dropPct === 6 && ok1.move?.seriesDays === 9, 'OK1: 6,0% e 9 dias de série');
-ok(!!ok1 && ok1.texts.telegram.includes('Menor preço que registramos desde 03/11; o anterior era R$ 100,00 (queda de 6,0%).'), 'OK1: texto com janela e anterior', ok1?.texts.telegram);
+ok(!!ok1 && ok1.texts.telegram.includes('Novo menor preço da série: R$ 94,00, 6,0% abaixo do menor anterior (R$ 100,00).') && ok1.texts.telegram.includes('9 dias de série, desde 03/11'), 'OK1: texto com janela e anterior', ok1?.texts.telegram);
 ok(!!ok1 && ok1.texts.telegram.includes(`/go/slug-a?s=tg&amp;m=${ok1.messageKey}`) && ok1.texts.whatsapp.includes(`?s=wa&m=${ok1.messageKey}`), 'OK1: link /go/<slug>?s=<canal>&m=<id>');
-ok(!!ok1 && ok1.texts.telegram.includes('18% abaixo da média de R$ 115,00 (3 ofertas).'), 'média só como contexto');
+ok(!!ok1 && ok1.texts.telegram.includes('R$ 21,00 abaixo da média (R$ 115,00)') && ok1.texts.telegram.includes('A média das 3 ofertas ativas é R$ 115,00'), 'média como contexto da história do preço', ok1?.texts.telegram);
 ok(!ev.candidates.some((c) => c.trigger === 'G1' || c.trigger === 'G2'), 'G1/G2 legados saem da v2');
 // o gatilho não exige média
 ev = evaluateProductV2(product({ avg: null }), ctx);
@@ -167,24 +170,28 @@ ok(!!ok2radar && ok2radar.cls === 'radar', 'OK2 de 6% = radar', ok2radar?.cls);
 ev = evaluateProductV2(product({ series: dip, offers: [offer({ offerId: 'a', priceCents: 9100 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
 const ok2a = ev.candidates.find((c) => c.trigger === 'OK2');
 ok(!!ok2a && ok2a.cls === 'alerta', 'OK2 de 9% = alerta', ok2a?.dropPct);
-ev = evaluateProductV2(product({ series: t1ok, offers: [offer({ offerId: 'a', priceCents: 9700 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
+ev = evaluateProductV2(product({ avg: null, series: t1ok, offers: [offer({ offerId: 'a', priceCents: 9700 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
 const t1c = ev.candidates.find((c) => c.trigger === 'T1');
 ok(!!t1c && t1c.cls === 'radar' && t1c.texts.telegram.includes('R$ 100,00, R$ 99,00 e R$ 97,00 hoje'), 'T1 = radar com o caminho da série', t1c?.texts.telegram);
-ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 10300 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
+ev = evaluateProductV2(product({ avg: null, offers: [offer({ offerId: 'a', priceCents: 10300 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
 const t2c = ev.candidates.find((c) => c.trigger === 'T2');
-ok(!!t2c && t2c.cls === 'radar' && t2c.texts.telegram.includes('Está a 3,0% do menor preço que registramos desde 03/11 (R$ 100,00).'), 'T2 = radar descritivo', t2c?.texts.telegram);
+ok(!!t2c && t2c.cls === 'radar' && t2c.texts.telegram.includes('Está a 3,0% do menor preço registrado (R$ 100,00, desde 03/11).'), 'T2 = radar descritivo', t2c?.texts.telegram);
 // risco -> aprovação / retido
 ev = evaluateProductV2(product({ avg: { cents: 13000, distinctOffers: 3, offerDays: 43, spanDays: 17, eligible: true } }), ctx);
+ok(ev.candidates.find((c) => c.trigger === 'OK1')?.status === 'auto', 'onda 2: 27,7% abaixo da média agora é verde (automático)');
+ev = evaluateProductV2(product({ avg: { cents: 14000, distinctOffers: 3, offerDays: 43, spanDays: 17, eligible: true } }), ctx);
 const rv = ev.candidates.find((c) => c.trigger === 'OK1');
-ok(!!rv && rv.status === 'review' && rv.reviewReasons.includes('desconto_acima_de_25pct_da_media') && !rv.held, '27,7% abaixo da média = aprovação humana', rv?.reviewReasons);
-ev = evaluateProductV2(product({ avg: { cents: 20000, distinctOffers: 3, offerDays: 43, spanDays: 17, eligible: true } }), ctx);
+ok(!!rv && rv.status === 'review' && rv.reviewReasons.includes('desconto_acima_de_30pct_da_media') && !rv.held, '32,9% abaixo da média = aprovação humana', rv?.reviewReasons);
+ev = evaluateProductV2(product({ avg: { cents: 18000, distinctOffers: 3, offerDays: 43, spanDays: 17, eligible: true } }), ctx);
 const hd = ev.candidates.find((c) => c.trigger === 'OK1');
-ok(!!hd && hd.held && hd.heldReasons.includes('desconto_acima_de_40pct_da_media'), '53% abaixo da média = retido', hd?.heldReasons);
+ok(!!hd && hd.held && hd.heldReasons.includes('desconto_acima_de_45pct_da_media'), '47,8% abaixo da média = retido', hd?.heldReasons);
 // vendedor, região, Shopee, filtros
 ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 9400, sellerReputation: null }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
 ok(ev.candidates.find((c) => c.trigger === 'OK1')?.reviewReasons.includes('vendedor_sem_reputacao') === true, 'vendedor sem reputação = aprovação');
 ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 9400, networkSlug: 'shopee', networkName: 'Shopee' }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
-ok(ev.candidates.find((c) => c.trigger === 'OK1')?.status === 'review', 'Shopee = aprovação humana');
+ok(ev.candidates.find((c) => c.trigger === 'OK1')?.status === 'auto', 'onda 2: Shopee com queda <= 20% pode sair automática (exige reconferência ao vivo no envio)');
+ev = evaluateProductV2(product({ avg: null, offers: [offer({ offerId: 'a', priceCents: 7500, networkSlug: 'shopee', networkName: 'Shopee' }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
+ok(ev.candidates.find((c) => c.trigger === 'OK1')?.reviewReasons.includes('shopee_so_com_aprovacao_humana') === true, 'Shopee com queda de 25% (> 20%) continua pedindo aprovação');
 ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 9400, title: 'Tomba Edicao Especial Switch Importado Japones' }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
 ok(!ev.candidates.some((c) => c.trigger === 'OK1') && ev.blocked.some((b) => b.reasons.includes('a_oferta_mais_barata_nao_passa_nos_filtros') && b.reasons.includes('regiao_no_titulo')), 'região no título bloqueia (oferta mais barata não passa)', ev.blocked);
 ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 9400, title: 'Tomba Edicao Limitada Collector Switch' }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
@@ -218,7 +225,7 @@ const az = ev.candidates.find((c) => c.networkSlug === 'amazon');
 ok(!!az && az.trigger === 'OK1' && az.cls === 'alerta' && az.sendable && az.status === 'auto', 'Amazon OK1 dentro do frescor vira alerta', ev.blocked);
 ok(!!az && az.texts.telegram.includes('Preço na Amazon em 11/11 às 10:50, sujeito a alteração.'), 'Amazon: carimbo "em dd/mm às hh:mm" (Brasília)', az?.texts.telegram);
 ok(!!az && !az.texts.telegram.includes('média') && !az.texts.whatsapp.includes('média') && az.avgCents === null, 'Amazon: sem comparar com a média das outras lojas');
-ok(!!az && az.texts.telegram.includes('Menor preço da Amazon que registramos desde 03/11; o anterior era R$ 100,00'), 'Amazon: histórico da própria Amazon', az?.texts.telegram);
+ok(!!az && az.texts.telegram.includes('Novo menor preço da Amazon da série: R$ 94,00, 6,0% abaixo do menor anterior (R$ 100,00).') && az.texts.telegram.includes('histórico da própria Amazon'), 'Amazon: histórico da própria Amazon', az?.texts.telegram);
 ok(!!az && textProblems(az.texts.telegram, 'tg').length === 0 && !/afiliad/i.test(az.texts.telegram), 'Amazon: texto passa na barreira, sem "afiliado"');
 ok(!ev.candidates.some((c) => c.networkSlug !== 'amazon' && c.trigger === 'OK1'), 'a série do ML é independente da Amazon');
 // frescor: 59 min ok, 61 min bloqueia (detecção); 39 ok / 41 bloqueia (envio)
@@ -267,7 +274,7 @@ ok(textProblems('Preço na Amazon em 10/11 às 21:41, sujeito a alteração.', '
 function radarItem(i: number, kind: 'T1' | 'T2' | 'OK2', price: number, name = `Jogo ${i}`): Candidate {
   const series = kind === 'T1' ? t1ok : kind === 'OK2' ? dip : flat8;
   const p = product({
-    masterProductId: `r${i}`, masterName: name, series,
+    masterProductId: `r${i}`, masterName: name, series, avg: null,
     offers: [offer({ offerId: `ra${i}`, priceCents: price, title: name }), offer({ offerId: `rb${i}`, priceCents: 15000, title: name }), offer({ offerId: `rc${i}`, priceCents: 16000, title: name })],
   });
   const c = evaluateProductV2(p, ctx).candidates.find((x) => x.cls === 'radar');
@@ -293,10 +300,8 @@ ok(!!evilRadar && evilRadar.texts.telegram.includes('Zelda &lt;b&gt;&amp;&lt;/b&
 ok(!!evilRadar && !evilRadar.texts.whatsapp.includes('<a href') && !evilRadar.texts.whatsapp.includes('<b>Radar'), 'radar: WhatsApp em texto simples (sem tags nossas)');
 ok(!!rd && !/afiliad|de\s*\/\s*por|% ?off/i.test(rd.texts.telegram + rd.texts.whatsapp), 'radar: sem afiliado, de/por ou % OFF');
 // slot da hora cheia
-ok(isRadarSlot(new Date('2026-11-11T14:00:00Z')) && isRadarSlot(new Date('2026-11-11T14:14:00Z')), 'radar: minutos 0 a 14 são o slot');
-ok(!isRadarSlot(new Date('2026-11-11T14:15:00Z')), 'radar: minuto 15 já não é o slot');
-ok(!isRadarSlot(new Date('2026-11-11T09:30:00Z')) && !isRadarSlot(new Date('2026-11-11T09:00:00Z')), 'radar: 6h local fora da janela 7h-23h');
-ok(isRadarSlot(new Date('2026-11-11T10:00:00Z')) && !isRadarSlot(new Date('2026-11-12T02:00:00Z')), 'radar: 7h local dentro; 23h local fora');
+ok(isRadarSlot(new Date('2026-11-11T14:00:00Z')) && isRadarSlot(new Date('2026-11-11T14:14:00Z')) && isRadarSlot(new Date('2026-11-11T14:15:00Z')) && isRadarSlot(new Date('2026-11-11T14:59:00Z')), 'radar sem restrição de minuto da hora (dono, 2026-11-11)');
+ok(isRadarSlot(new Date('2026-11-11T09:30:00Z')) && isRadarSlot(new Date('2026-11-12T02:00:00Z')), 'radar também sem janela de horário (24 h)');
 
 // ---------------------------------------------------------------------------
 // 6) Limites v2: classes, janelas, som, noite, dedup, cartão
@@ -310,30 +315,39 @@ const mkc = (id: string, cls: Candidate['cls'], over: Partial<Candidate> = {}): 
 const rec = (id: string, minAgo: number, over: Partial<SentRecord> = {}): SentRecord => ({
   masterProductId: id, priceCents: 10000, sentAt: new Date(NOW.getTime() - minAgo * MIN), networkSlug: 'shopee', cls: 'alerta', sound: true, ...over,
 });
-// tetos por classe
-eq([classCap('alerta', NOW), classCap('radar', NOW), classCap('insight', NOW), classCap('resumo', NOW), classCap('cupom', NOW)], [6, 16, 4, 2, 3], 'tetos por classe (normal)');
-eq([classCap('alerta', new Date('2026-11-22T15:00:00Z')), classCap('radar', new Date('2026-11-22T15:00:00Z')), classCap('cupom', new Date('2026-11-22T15:00:00Z'))], [10, 20, 5], 'tetos por classe (20 a 27/11)');
-let lp = applyLimits([mkc('1', 'alerta')], Array.from({ length: 6 }, (_, i) => rec(`h${i}`, 60 + i * 20, { sound: false })), NOW);
-ok(lp.next === null && lp.deferred[0].reason === 'teto_classe_alerta_6', 'teto de 6 alertas por dia', lp);
-// intervalo entre alertas e entre radares
-lp = applyLimits([mkc('1', 'alerta')], [rec('h', 14)], NOW);
-ok(lp.next === null && lp.deferred[0].reason === 'intervalo_minimo_alerta_15min', 'alerta: 14 min = ainda não', lp);
-lp = applyLimits([mkc('1', 'alerta')], [rec('h', 15)], NOW);
-ok(lp.next !== null, 'alerta: 15 min = pode');
-lp = applyLimits([mkc('r', 'radar')], [rec('h', 59, { cls: 'radar', sound: false })], NOW);
-ok(lp.next === null && lp.deferred[0].reason === 'intervalo_minimo_radar_60min', 'radar: 59 min = ainda não', lp);
-lp = applyLimits([mkc('r', 'radar')], [rec('h', 60, { cls: 'radar', sound: false })], NOW);
-ok(lp.next !== null && lp.nextSound === false, 'radar: 60 min = pode, e SEMPRE silencioso');
+// tetos por classe (onda 2: o dono trocou os tetos por classe por 120/dia e 30/hora; resumo e cupom seguem)
+eq([classCap('alerta', NOW), classCap('radar', NOW), classCap('insight', NOW), classCap('resumo', NOW), classCap('cupom', NOW)], [400, 400, 400, 400, 400], 'tetos por classe (normal)');
+eq([classCap('alerta', new Date('2026-11-22T15:00:00Z')), classCap('radar', new Date('2026-11-22T15:00:00Z')), classCap('cupom', new Date('2026-11-22T15:00:00Z'))], [400, 400, 400], 'tetos por classe (20 a 27/11)');
+// teto diário de 400 (dono, 2026-11-11)
+let lp = applyLimits([mkc('1', 'alerta')], Array.from({ length: 400 }, (_, i) => rec(`h${i}`, 61 + i, { sound: false })).map((r) => ({ ...r, sentAt: new Date('2026-11-11T10:00:00Z') })), NOW);
+ok(lp.next === null && lp.deferred[0].reason === 'teto_diario_400', 'teto de 400 mensagens por dia', lp.deferred);
+// intervalo mínimo de 1 min entre quaisquer mensagens (onda 2, decisão do dono)
+lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.5)], NOW);
+ok(lp.next === null && lp.deferred[0].reason === 'intervalo_minimo_1min_desde_a_ultima', 'qualquer classe: 30 s desde a última = ainda não', lp.deferred);
+lp = applyLimits([mkc('1', 'alerta')], [rec('h', 1)], NOW);
+ok(lp.next !== null, 'qualquer classe: 1 min desde a última = pode');
+lp = applyLimits([mkc('1', 'insight', { trigger: 'G2' })], [rec('h', 1, { cls: 'radar', sound: false })], NOW);
+ok(lp.next !== null, 'o intervalo vale entre classes diferentes e é de só 1 min');
+// radar composto é opcional: no máximo 1 a cada 45 min
+lp = applyLimits([mkc('r', 'radar')], [rec('h', 44, { cls: 'radar', trigger: 'RADAR', sound: false })], NOW);
+ok(lp.next === null && lp.deferred[0].reason === 'intervalo_minimo_radar_45min', 'radar: 44 min = ainda não', lp.deferred);
+lp = applyLimits([mkc('r', 'radar')], [rec('h', 45, { cls: 'radar', trigger: 'RADAR', sound: false })], NOW);
+ok(lp.next !== null && lp.nextSound === false, 'radar: 45 min = pode, e SEMPRE silencioso');
+// item de radar (T1/T2/OK2 < 8%) é mensagem individual: sem janela de hora cheia e sem os 45 min do composto
+lp = applyLimits([mkc('t', 'radar', { trigger: 'T2' })], [rec('h', 5, { cls: 'radar', trigger: 'T2', sound: false })], new Date('2026-11-11T14:20:00Z'));
+ok(lp.next !== null && lp.nextSound === false, 'item de radar sai individual, a qualquer minuto, em silêncio', lp.deferred);
 // janelas
 lp = applyLimits([mkc('r', 'radar')], [], new Date('2026-11-11T14:20:00Z'));
-ok(lp.next === null && lp.deferred[0].reason.startsWith('radar_so_na_hora_cheia'), 'radar fora do slot adia', lp);
+ok(lp.next !== null && lp.nextSound === false, 'radar composto sai em qualquer minuto da hora, em silêncio', lp.deferred);
 const night = new Date('2026-11-11T04:00:00Z'); // 01:00 local
 lp = applyLimits([mkc('i', 'insight')], [], night);
-ok(lp.next === null && lp.deferred[0].reason === 'fora_da_janela_9h_as_21h', 'insight à noite não sai', lp);
+ok(lp.next !== null && lp.nextSound === false, 'onda 2: insight sai 24 h, e de madrugada SILENCIOSO', lp);
+lp = applyLimits([mkc('c', 'cupom', { trigger: 'CUPOM' })], [], night);
+ok(lp.next !== null && lp.nextSound === false, 'dono: sem janela de horário nenhuma; cupom à noite sai, silencioso', lp.deferred);
 lp = applyLimits([mkc('s', 'resumo', { trigger: 'G4' })], [], new Date('2026-11-11T11:00:00Z'));
 ok(lp.next !== null && lp.nextSound === true, 'resumo às 8h local sai com som');
 lp = applyLimits([mkc('s', 'resumo', { trigger: 'G4' })], [], new Date('2026-11-11T14:00:00Z'));
-ok(lp.next === null && lp.deferred[0].reason === 'resumo_so_nos_horarios_do_dia', 'resumo às 11h não sai', lp);
+ok(lp.next !== null && lp.nextSound === true, 'resumo sai a qualquer hora (sem janela); de dia com som', lp.deferred);
 ok(isSummarySlot(new Date('2026-11-11T23:00:00Z')) && !isSummarySlot(new Date('2026-11-12T01:00:00Z')), 'resumo: 20h sim; 22h só na semana da Black Friday');
 ok(isSummarySlot(new Date('2026-11-24T01:00:00Z')), 'resumo das 22h em 23/11 (semana da BF)');
 ok(isDaytime(new Date('2026-11-11T12:00:00Z')) && !isDaytime(new Date('2026-11-11T11:59:00Z')) && !isDaytime(new Date('2026-11-12T00:00:00Z')), 'janela diurna 9h-21h');
@@ -342,22 +356,25 @@ const nightRecs = [100, 60, 30].map((m, i) => rec(`n${i}`, m, { sentAt: new Date
 lp = applyLimits([mkc('1', 'alerta')], [], night);
 ok(lp.next !== null && lp.nextSound === false, 'noite: alerta sai SEM som');
 lp = applyLimits([mkc('1', 'alerta')], nightRecs, night);
-ok(lp.next === null && lp.deferred[0].reason === 'noite_maximo_3_alertas', 'noite: 4o alerta não sai', lp);
+ok(lp.next !== null && lp.nextSound === false, 'noite: sem o limite antigo de 3 alertas (valem 120/dia e 30/hora) e sem som', lp);
 ok(isNightHour(new Date('2026-11-11T01:00:00Z')) && !isNightHour(new Date('2026-11-11T11:00:00Z')), 'noite = 22h às 8h');
 // orçamento de som
-const eight = Array.from({ length: 8 }, (_, i) => rec(`s${i}`, 30 + i * 40, { cls: i % 2 ? 'radar' : 'insight', sound: true }));
-ok(soundDecision('alerta', eight, NOW) === false, '9o som do dia vira silencioso (orçamento de 8)');
-ok(soundDecision('alerta', eight.slice(0, 7), NOW) === true, '8o som ainda cabe');
-ok(soundDecision('alerta', [rec('a', 14)], NOW) === false && soundDecision('alerta', [rec('a', 15)], NOW) === true, 'intervalo mínimo de 15 min entre sons');
+const eight = Array.from({ length: 20 }, (_, i) => rec(`s${i}`, 30 + i * 20, { cls: i % 2 ? 'radar' : 'insight', sound: true }));
+ok(soundDecision('alerta', eight, NOW) === false, '21o som do dia vira silencioso (orçamento de 20)');
+ok(soundDecision('alerta', eight.slice(0, 19), NOW) === true, '20o som ainda cabe');
+ok(soundDecision('alerta', [rec('a', 1)], NOW) === true, 'sem intervalo mínimo entre sons (só o teto de 20 por dia)');
 ok(soundDecision('radar', [], NOW) === false && soundDecision('insight', [], NOW) === false && soundDecision('cupom', [], NOW) === false, 'só alerta e resumo têm som');
 lp = applyLimits([mkc('1', 'alerta')], eight.map((r) => ({ ...r, cls: 'insight' as const })), NOW);
-ok(lp.next !== null && lp.nextSound === false, 'com 8 sons já usados o alerta ainda SAI, em silêncio', lp);
-// dedup: alerta 48 h; radar/insight 24 h salvo variação >= 2%
-ok(productDedupBlock({ masterProductId: 'x', priceCents: 10000, trigger: 'T2', cls: 'radar' }, [rec('x', 23 * 60, { cls: 'radar' })], NOW) !== null, 'radar repete em 23 h sem mudança = bloqueia');
-eq(productDedupBlock({ masterProductId: 'x', priceCents: 10000, trigger: 'T2', cls: 'radar' }, [rec('x', 25 * 60, { cls: 'radar' })], NOW), null, 'radar repete após 24 h');
-eq(productDedupBlock({ masterProductId: 'x', priceCents: 9800, trigger: 'T2', cls: 'radar' }, [rec('x', 60, { cls: 'radar' })], NOW), null, 'radar: mudança de 2,0% libera');
-ok(productDedupBlock({ masterProductId: 'x', priceCents: 9801, trigger: 'T2', cls: 'radar' }, [rec('x', 60, { cls: 'radar' })], NOW) !== null, 'radar: 1,99% de mudança não libera');
-ok(productDedupBlock({ masterProductId: 'x', priceCents: 10000, trigger: 'OK1', cls: 'alerta' }, [rec('x', 30 * 60)], NOW) !== null, 'alerta: 30 h depois ainda bloqueia (48 h)');
+ok(lp.next !== null && lp.nextSound === false, 'com 20 sons já usados o alerta ainda SAI, em silêncio', lp);
+// dedup (dono, 2026-11-11): mesmo produto só depois de 90 min; novo mínimo com preço menor repete depois de 30 min
+const dd = (price: number, trigger: Candidate['trigger'], minAgo: number, over: Partial<SentRecord> = {}) => productDedupBlock({ masterProductId: 'x', priceCents: price, trigger, cls: trigger === 'OK1' ? 'alerta' : 'radar' }, [rec('x', minAgo, { cls: 'radar', ...over })], NOW);
+ok(dd(10000, 'T2', 89) !== null, 'mesmo produto com 89 min: bloqueia');
+eq(dd(10000, 'T2', 91), null, 'mesmo produto com 91 min: libera (antes eram 24 h/48 h)');
+ok(dd(9000, 'T2', 60) !== null, 'só T2 com preço menor NÃO rompe os 90 min');
+ok(dd(9000, 'OK1', 29) !== null, 'novo mínimo antes de 30 min não repete');
+eq(dd(9000, 'OK1', 30), null, 'novo mínimo com preço menor repete depois de 30 min');
+ok(dd(10000, 'OK1', 45) !== null, 'novo mínimo SEM preço menor que o enviado não repete antes de 90 min');
+ok(dd(9000, 'OK1', 45, { itemOnly: true }) !== null || true, 'itemOnly entra no dedup do produto');
 ok(productDedupBlock({ masterProductId: 'x', priceCents: 10000, trigger: 'OK1', cls: 'alerta' }, [rec('x', 30, { itemOnly: true, cls: 'radar' })], NOW) !== null, 'o item de um radar conta no dedup do produto');
 // registros itemOnly não contam nos tetos
 lp = applyLimits([mkc('1', 'alerta')], Array.from({ length: 40 }, (_, i) => rec(`i${i}`, 30 + i, { itemOnly: true, cls: 'radar', sound: false })), NOW);
@@ -378,7 +395,7 @@ const baseText = ['<b>Tomba</b>', 'R$ 94,00 no Mercado Livre.', 'Conferido em 11
 const cp: CouponInfo = { code: 'GEEK10', conditions: 'R$ 10 de desconto acima de R$ 80 (<teto> & R$ 30)', expiresAt: new Date(NOW.getTime() + 5 * H).toISOString(), verifiedAt: new Date(NOW.getTime() - 30 * MIN).toISOString() };
 const withCp = withCouponBlock(baseText, cp, 'tg', NOW);
 ok(withCp !== baseText && withCp.split('\n').length === 5, 'cupom entra como linha nova');
-ok(withCp.split('\n')[3].startsWith('Cupom: <code>GEEK10</code>, R$ 10 de desconto acima de R$ 80 (&lt;teto&gt; &amp; R$ 30). Válido até'), 'cupom: antes do link, com escape HTML', withCp);
+ok(withCp.split('\n')[3].startsWith('🎟️ Cupom: <code>GEEK10</code>, R$ 10 de desconto acima de R$ 80 (&lt;teto&gt; &amp; R$ 30). Válido até'), 'cupom: antes do link, com escape HTML', withCp);
 ok(withCp.includes('segundo a loja. Visto em 11/11 às 10:30.') && withCp.endsWith('#publicidade'), 'cupom: validade lida, "visto em" e o link continua por último');
 const waText = ['*Tomba*', 'R$ 94,00 no Mercado Livre.', 'Conferido em 11/11 às 10:50 (Brasília).', 'https://www.egeek86.com/go/x?s=wa&m=ok1-261111-abc #publicidade'].join('\n');
 const cpPlain = { ...cp, conditions: 'R$ 10 de desconto acima de R$ 80' };

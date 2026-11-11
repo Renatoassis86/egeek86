@@ -29,7 +29,7 @@ export interface GroupPanelFlags {
 
 const TRIGGER_LABEL: Record<string, string> = {
   G1: 'Menor preço registrado',
-  G2: 'Abaixo da média',
+  G2: 'Na média ou abaixo',
   G3: 'Comparativo entre lojas',
   G4: 'Resumo do dia',
   G5: 'Foto de preço pré-Black Friday',
@@ -40,6 +40,11 @@ const TRIGGER_LABEL: Record<string, string> = {
   T2: 'Perto do menor preço registrado',
   RADAR: 'Radar horário',
   CUPOM: 'Cupom verificado',
+  P1: 'Plataforma: histórico do preço',
+  P2: 'Plataforma: comparar lojas',
+  P3: 'Plataforma: monitorar',
+  P4: 'Plataforma: média única',
+  P5: 'Plataforma: Black Friday',
 };
 
 const CLASS_LABEL: Record<string, string> = {
@@ -48,6 +53,7 @@ const CLASS_LABEL: Record<string, string> = {
   insight: 'C. Insight',
   resumo: 'D. Resumo',
   cupom: 'E. Cupom verificado',
+  plataforma: 'F. Plataforma',
 };
 
 const STATE_LABEL: Record<string, string> = {

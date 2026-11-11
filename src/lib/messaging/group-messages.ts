@@ -4,7 +4,7 @@
 // a palavra "afiliado" nunca aparece; Amazon nunca (preço da Amazon fica fora de mensagem).
 
 export type GroupChannel = 'tg' | 'wa';
-export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'radar';
+export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar';
 
 /** Gatilhos por movimento da série diária (ata 2026-11-10 §2). */
 export type MoveKind = 'OK1' | 'OK2' | 'T1' | 'T2';
@@ -26,10 +26,21 @@ export interface MoveDetail {
   nearPct?: number;
 }
 
+/** Dados reais de cada modelo de plataforma (todos lidos do banco no momento do envio). */
+export type PlatformData =
+  | { kind: 'P1'; minCents: number; minDay: string; avgCents: number | null; todayCents: number; seriesDays: number; sinceDay: string }
+  | { kind: 'P2'; cheapNet: string; cheapCents: number; otherNet: string; otherCents: number }
+  | { kind: 'P3'; todayCents: number; minCents: number | null; offersCount: number }
+  | { kind: 'P4'; avgCents: number; offers: number; offerDays: number; spanDays: number; todayCents: number }
+  | { kind: 'P5'; daysLeft: number; firstCents: number; minCents: number; maxCents: number; todayCents: number; sinceDay: string };
+export type PlatformKind = PlatformData['kind'];
+
 export const GROUP_LINK_BASE = 'https://www.egeek86.com';
 export const MESSAGE_KEY_RE = /^[a-z0-9-]{3,40}$/;
 export const BLACK_FRIDAY_LABEL = '27/11';
 export const TELEGRAM_MAX_CHARS = 4096;
+/** Legenda de foto (sendPhoto). */
+export const TELEGRAM_CAPTION_MAX_CHARS = 1024;
 
 // ---------------------------------------------------------------------------
 // Utilidades de formato
@@ -182,6 +193,13 @@ export function buildGoLink(slug: string, channel: GroupChannel, messageKey: str
   return `${GROUP_LINK_BASE}/go/${encodeURIComponent(slug)}?s=${channel}&m=${messageKey}`;
 }
 
+/** Link para uma página do site (não é oferta) com a origem: https://www.egeek86.com/<path>?s=tg&m=<id>. */
+export function buildSiteLink(path: string, channel: GroupChannel, messageKey: string): string {
+  if (!MESSAGE_KEY_RE.test(messageKey)) throw new Error(`message_key inválida: ${messageKey}`);
+  if (!/^\/[a-z0-9\-/]+$/i.test(path)) throw new Error(`caminho inválido: ${path}`);
+  return `${GROUP_LINK_BASE}${path}?s=${channel}&m=${messageKey}`;
+}
+
 /** Hash curto determinístico (FNV-1a, 32 bits) em base 36: não é segurança, é só identificador. */
 function shortHash(s: string): string {
   let h = 0x811c9dc5;
@@ -257,8 +275,33 @@ export type GroupMessageInput = Common &
         others?: { minCents: number; maxCents: number } | null;
         avg?: MsgAvg | null;
       }
-    | { model: 'movimento'; name: string; offer: MsgOffer; move: MoveDetail; avg?: MsgAvg | null }
+    | { model: 'movimento'; name: string; offer: MsgOffer; move: MoveDetail; avg?: MsgAvg | null; title?: string; meta?: string | null }
+    | {
+        /** "Na média ou abaixo": preço atual <= média única oferta-dia (dono, 2026-11-11). */
+        model: 'media';
+        name: string;
+        offer: MsgOffer;
+        avg: MsgAvg;
+        /** Dias de série medida que sustentam a média. */
+        seriesDays: number;
+        /** Menor valor registrado na série (dias anteriores) e o primeiro dia dela. */
+        refCents?: number | null;
+        sinceDay?: string | null;
+        title?: string;
+        meta?: string | null;
+      }
     | { model: 'radar'; items: Array<{ name: string; offer: MsgOffer; move: MoveDetail }> }
+    | {
+        /** Mensagem de PLATAFORMA (P1 a P5): vende as funcionalidades do site com dado real do produto. */
+        model: 'plataforma';
+        name: string;
+        title: string;
+        meta?: string | null;
+        /** Página do site (ex.: /monitoramento/comparar/<id>); recebe ?s=<canal>&m=<id>. */
+        path: string;
+        offer: MsgOffer;
+        data: PlatformData;
+      }
   );
 
 // ---------------------------------------------------------------------------
@@ -346,6 +389,200 @@ function radarLabel(m: MoveDetail): string {
     case 'T2':
       return `A ${fmtPct1(m.nearPct ?? 0)}% do menor preço que registramos desde ${since}.`;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Mensagem de oferta com storytelling (dono, 2026-11-11): UMA mensagem por item
+// ---------------------------------------------------------------------------
+type OfferMessageInput = Extract<GroupMessageInput, { model: 'movimento' | 'media' }>;
+
+const EMOJI_DROP = '📉';
+const EMOJI_COUPON = '🎟️';
+/** No máximo 2 emojis por mensagem, só como marcador (queda e cupom); nenhum no título. */
+export const MAX_EMOJIS_PER_MESSAGE = 2;
+
+/** Quantos emojis o texto tem (símbolos pictográficos; variation selector e ZWJ não contam). */
+export function countEmojis(text: string): number {
+  return (text.match(/\p{Extended_Pictographic}/gu) ?? []).length;
+}
+
+const pct1 = (x: number) => x.toFixed(1).replace('.', ',');
+
+/** Frases do insight (2 a 3, só fato medido): o que aconteceu, por que importa e o que o dado permite concluir. Nunca previsão. */
+function storySentences(input: OfferMessageInput, amz: boolean): string[] {
+  const o = input.offer;
+  const price = o.priceCents;
+  const net = o.networkName;
+  const avg = !amz ? input.avg : null;
+  const avgSentence = avg
+    ? price < avg.cents
+      ? `A média das ${avg.offers} ofertas ativas é ${fmtBRL(avg.cents)}; este preço fica ${fmtBRL(avg.cents - price)} (${pct1(((avg.cents - price) / avg.cents) * 100)}%) abaixo dela.`
+      : `A média das ${avg.offers} ofertas ativas é ${fmtBRL(avg.cents)}; este preço está no nível dela.`
+    : amz
+      ? 'A comparação é só com o histórico da própria Amazon, nunca com as outras lojas.'
+      : null;
+  if (input.model === 'media') {
+    const since = input.sinceDay ? fmtDay(dayToDate(input.sinceDay)) : null;
+    const below = ((input.avg.cents - price) / input.avg.cents) * 100;
+    const s1 =
+      below > 0.05
+        ? `${theNetwork(net)} está com ${fmtBRL(price)}, ${pct1(below)}% abaixo da média de ${fmtBRL(input.avg.cents)} das ${input.avg.offers} ofertas ativas.`
+        : `${theNetwork(net)} está com ${fmtBRL(price)}, no nível da média de ${fmtBRL(input.avg.cents)} das ${input.avg.offers} ofertas ativas.`;
+    // Série pequena é permitida (dono, 2026-11-11), mas o texto SEMPRE diz a série e não afirma tendência com menos de 3 dias.
+    const serie = `Série de ${input.seriesDays === 1 ? '1 dia' : `${input.seriesDays} dias`}${since ? `, desde ${since}` : ''}`;
+    const s2 = input.refCents != null ? `${serie}; o menor valor medido nela é ${fmtBRL(input.refCents)}.` : `${serie}.`;
+    const s3 = input.seriesDays < 3 ? 'Com tão poucos dias de série ainda não dá para falar de tendência; é só a leitura de hoje.' : `A média usa ${input.seriesDays} dias de série medida; é uma leitura do dado de hoje.`;
+    return [s1, s2, s3].filter((x): x is string => !!x).slice(0, 3);
+  }
+  const m = input.move;
+  const since = fmtDay(dayToDate(m.sinceDay));
+  const scope = amz ? ' da Amazon' : '';
+  switch (m.kind) {
+    case 'OK1':
+      return [
+        `Novo menor preço${scope} da série: ${fmtBRL(price)}, ${pct1(m.dropPct)}% abaixo do menor anterior (${fmtBRL(m.refCents)}).`,
+        avgSentence,
+        `É o menor valor medido em ${m.seriesDays} dias de série, desde ${since}.`,
+      ].filter((x): x is string => !!x);
+    case 'OK2':
+      return [
+        `Caiu ${pct1(m.dropPct)}% de ontem (${fmtBRL(m.prevCents as number)}) para hoje (${fmtBRL(price)}).`,
+        avgSentence,
+        `Na série de ${m.seriesDays} dias, desde ${since}, o menor valor medido é ${fmtBRL(m.refCents)}.`,
+      ].filter((x): x is string => !!x);
+    case 'T1': {
+      const p = m.path ?? [];
+      return [
+        `Caiu dois dias seguidos: ${fmtBRL(p[0])}, ${fmtBRL(p[1])} e ${fmtBRL(p[2])} hoje (${pct1(m.dropPct)}% acumulados).`,
+        avgSentence,
+        `Na série de ${m.seriesDays} dias, desde ${since}, o menor valor medido é ${fmtBRL(m.refCents)}.`,
+      ].filter((x): x is string => !!x);
+    }
+    case 'T2':
+      return [
+        `Está a ${pct1(m.nearPct ?? 0)}% do menor preço registrado (${fmtBRL(m.refCents)}, desde ${since}).`,
+        avgSentence,
+        `O piso da série de ${m.seriesDays} dias ainda não foi batido.`,
+      ].filter((x): x is string => !!x);
+  }
+}
+
+/** Linha das variações: queda vs ontem, R$ abaixo da média (com a média) e distância do menor registrado. */
+function variationParts(input: OfferMessageInput, amz: boolean): string[] {
+  const price = input.offer.priceCents;
+  const out: string[] = [];
+  if (input.model === 'movimento') {
+    const m = input.move;
+    if ((m.kind === 'OK2' || m.kind === 'T1') && m.prevCents != null && m.prevCents > price) {
+      out.push(`queda de ${pct1(((m.prevCents - price) / m.prevCents) * 100)}% vs ontem`);
+    }
+    if (!amz && input.avg && input.avg.cents > price) out.push(`${fmtBRL(input.avg.cents - price)} abaixo da média (${fmtBRL(input.avg.cents)})`);
+    if (m.kind === 'OK1') out.push(`novo menor registrado (antes ${fmtBRL(m.refCents)})`);
+    else if (price < m.refCents) out.push(`${pct1(((m.refCents - price) / m.refCents) * 100)}% abaixo do menor registrado (${fmtBRL(m.refCents)})`);
+    else if (price === m.refCents) out.push('igual ao menor registrado');
+    else out.push(`${pct1(((price - m.refCents) / m.refCents) * 100)}% acima do menor registrado (${fmtBRL(m.refCents)})`);
+  } else {
+    if (input.avg.cents > price) out.push(`${fmtBRL(input.avg.cents - price)} abaixo da média (${fmtBRL(input.avg.cents)})`);
+    else out.push(`no nível da média (${fmtBRL(input.avg.cents)})`);
+    const ref = input.refCents;
+    if (ref != null) {
+      if (price < ref) out.push(`${pct1(((ref - price) / ref) * 100)}% abaixo do menor registrado (${fmtBRL(ref)})`);
+      else if (price === ref) out.push('igual ao menor registrado');
+      else out.push(`${pct1(((price - ref) / ref) * 100)}% acima do menor registrado (${fmtBRL(ref)})`);
+    }
+  }
+  return out;
+}
+
+/**
+ * Mensagem de UMA oferta, com a história do preço (dono, 2026-11-11). Layout, no Telegram (HTML):
+ *   1. <b>Título</b> <i>Plataforma · formato</i>
+ *   2. <b>R$ preço</b> no Mercado Livre
+ *   3. <b>variações</b> (queda vs ontem · R$ abaixo da média (média) · distância do menor registrado), com 1 emoji de marcador
+ *   4. <blockquote>insight de 2 a 3 frases factuais</blockquote>
+ *   5. (cupom verificado, quando houver: ver withCouponBlock)
+ *   6. <a>Ver a oferta</a> (s=tg, m=<id>)
+ *   7. <i>Conferido em dd/mm às hh:mm (Brasília). #publicidade</i>
+ * WhatsApp equivalente com *negrito*, _itálico_ e "> " para a citação. Todo texto de marketplace é escapado.
+ */
+export function formatOfferMessage(input: OfferMessageInput, channel: GroupChannel): string {
+  const f = channel === 'tg' ? TG : WA;
+  const o = input.offer;
+  const amz = isAmazonOffer(o);
+  const title = (input.title ?? input.name).trim();
+  const pre = prefix(input, f);
+  const italic = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
+  const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
+  const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}`;
+  const vars = variationParts(input, amz);
+  const dropMarker = input.model === 'movimento' && input.move.kind !== 'T2' ? `${EMOJI_DROP} ` : '';
+  const varLine = vars.length ? `${dropMarker}${f.b(vars.join(' · '))}` : null;
+  const story = storySentences(input, amz).join(' ');
+  const storyBlock = channel === 'tg' ? `<blockquote>${escapeTelegramHtml(story)}</blockquote>` : `> ${escapeWhatsapp(story)}`;
+  const link = channel === 'tg' ? f.link(buildGoLink(o.slug, 'tg', input.messageKey), 'Ver a oferta') : buildGoLink(o.slug, 'wa', input.messageKey);
+  const foot = italic(withTag(stampLine(o), input.adTag));
+  return [head, priceLine, varLine, storyBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n');
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+/**
+ * Mensagem de PLATAFORMA (dono, 2026-11-11): curta, tom especialista, dado real do produto, link para a página do site.
+ * Só fato medido; nenhuma frase de previsão, de/por, % OFF ou da palavra proibida.
+ */
+export function formatPlatformMessage(input: Extract<GroupMessageInput, { model: 'plataforma' }>, channel: GroupChannel): string {
+  const f = channel === 'tg' ? TG : WA;
+  const o = input.offer;
+  const d = input.data;
+  const italic = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
+  const head = `${prefix(input, f)}${f.b(input.title.trim())}${input.meta ? ` ${italic(input.meta)}` : ''}`;
+  let headline = '';
+  let facts = '';
+  let story = '';
+  let label = '';
+  const net = inNetwork(o.networkName);
+  switch (d.kind) {
+    case 'P1': {
+      const vsMin = d.todayCents === d.minCents ? 'igual ao menor valor medido' : `${pct1(((d.todayCents - d.minCents) / d.minCents) * 100)}% acima do menor valor medido`;
+      headline = 'Veja como o preço se moveu';
+      facts = `menor ${fmtBRL(d.minCents)} em ${fmtDay(dayToDate(d.minDay))}${d.avgCents != null ? ` · média ${fmtBRL(d.avgCents)}` : ''} · hoje ${fmtBRL(d.todayCents)}`;
+      story = `Série de ${plural(d.seriesDays, 'dia', 'dias')}, desde ${fmtDay(dayToDate(d.sinceDay))}. O menor valor medido foi ${fmtBRL(d.minCents)} em ${fmtDay(dayToDate(d.minDay))}${d.avgCents != null ? ` e a média das ofertas é ${fmtBRL(d.avgCents)}` : ''}; hoje a menor oferta está em ${fmtBRL(d.todayCents)} ${net}, ${vsMin}. O histórico completo está na página do produto.`;
+      label = 'Ver o histórico no site';
+      break;
+    }
+    case 'P2': {
+      const diff = d.otherCents - d.cheapCents;
+      headline = 'Mesmo produto, preços diferentes entre lojas';
+      facts = `${fmtBRL(d.cheapCents)} ${inNetwork(d.cheapNet)} · ${fmtBRL(d.otherCents)} ${inNetwork(d.otherNet)} · diferença de ${fmtBRL(diff)}`;
+      story = `${theNetwork(d.cheapNet)} está com ${fmtBRL(d.cheapCents)} e ${theNetwork(d.otherNet).replace(/^A /, 'a ').replace(/^O /, 'o ')} com ${fmtBRL(d.otherCents)} para a mesma mídia: ${fmtBRL(diff)} de diferença (${pct1((diff / d.otherCents) * 100)}%). A página de comparação mostra as lojas lado a lado, com o preço conferido agora.`;
+      label = 'Comparar as lojas';
+      break;
+    }
+    case 'P3':
+      headline = 'Como acompanhar o preço deste produto';
+      facts = `hoje ${fmtBRL(d.todayCents)}${d.minCents != null ? ` · menor registrado ${fmtBRL(d.minCents)}` : ''} · ${plural(d.offersCount, 'oferta ativa', 'ofertas ativas')}`;
+      story = `Na página do produto no egeek86 estão o histórico do preço e as ${plural(d.offersCount, 'oferta ativa', 'ofertas ativas')} lado a lado. É por lá que você acompanha o movimento; as quedas relevantes também aparecem aqui no canal.`;
+      label = 'Acompanhar este produto';
+      break;
+    case 'P4':
+      headline = 'Como calculamos a média';
+      facts = `média ${fmtBRL(d.avgCents)} · ${plural(d.offers, 'oferta', 'ofertas')} · hoje ${fmtBRL(d.todayCents)}`;
+      story = `Cada oferta vale 1 por dia: se uma loja é coletada várias vezes no mesmo dia, ela conta uma vez só. Neste produto são ${plural(d.offers, 'oferta', 'ofertas')} e ${plural(d.offerDays, 'oferta-dia', 'oferta-dias')} em ${plural(d.spanDays, 'dia', 'dias')}, o que dá a média de ${fmtBRL(d.avgCents)}. Hoje a menor oferta está em ${fmtBRL(d.todayCents)}.`;
+      label = 'Ver os números do produto';
+      break;
+    case 'P5': {
+      headline = d.daysLeft <= 0 ? 'É hoje: Black Friday (27/11)' : `Faltam ${plural(d.daysLeft, 'dia', 'dias')} para a Black Friday (27/11)`;
+      facts = `começou em ${fmtBRL(d.firstCents)} · menor ${fmtBRL(d.minCents)} · maior ${fmtBRL(d.maxCents)} · hoje ${fmtBRL(d.todayCents)}`;
+      story = `Acompanhamos este produto desde ${fmtDay(dayToDate(d.sinceDay))}. Nesse período ele foi de ${fmtBRL(d.minCents)} a ${fmtBRL(d.maxCents)} (${fmtBRL(d.maxCents - d.minCents)} de variação) e hoje está em ${fmtBRL(d.todayCents)}. São números medidos, para comparar com o dia da Black Friday.`;
+      label = 'Ver o histórico no site';
+      break;
+    }
+  }
+  const storyBlock = channel === 'tg' ? `<blockquote>${escapeTelegramHtml(story)}</blockquote>` : `> ${escapeWhatsapp(story)}`;
+  const url = buildSiteLink(input.path, channel, input.messageKey);
+  const link = channel === 'tg' ? f.link(url, label) : url;
+  const foot = italic(withTag(conferidoLine(o.confirmedAt), input.adTag));
+  return [head, f.b(headline), f.b(facts), storyBlock, link, foot].filter((l) => l && l.trim() !== '').join('\n');
 }
 
 function withTag(body: string, tag: string): string {
@@ -462,19 +699,11 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       );
       return lines.filter((l): l is string => !!l && l.trim() !== '').join('\n');
     }
-    case 'movimento': {
-      const o = input.offer;
-      const amz = isAmazonOffer(o);
-      lines.push(
-        `${pre}${f.b(input.name)}`,
-        `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}. ${f.t(moveSentence(input.move, o.priceCents, amz))}`,
-        // Amazon nunca é comparada com a média das outras lojas.
-        amz ? null : f.t(avgLine(f, o.priceCents, input.avg) ?? ''),
-        f.t(stampLine(o)),
-        withTag(channel === 'tg' ? f.link(buildGoLink(o.slug, 'tg', input.messageKey), 'Ver a oferta') : buildGoLink(o.slug, 'wa', input.messageKey), input.adTag)
-      );
-      break;
-    }
+    case 'movimento':
+    case 'media':
+      return formatOfferMessage(input, channel);
+    case 'plataforma':
+      return formatPlatformMessage(input, channel);
     case 'radar': {
       if (input.items.length < 3) throw new Error('radar exige pelo menos 3 itens');
       const items = input.items.slice(0, 6);
@@ -614,10 +843,19 @@ export function withCouponBlock(text: string, coupon: CouponInfo | null | undefi
   const cond = coupon.conditions?.trim() ? `, ${esc(coupon.conditions.trim())}` : '';
   const until = coupon.expiresAt ? ` Válido até ${fmtStamp(new Date(coupon.expiresAt))} segundo a loja.` : '';
   const code = channel === 'tg' ? `<code>${esc(coupon.code.trim())}</code>` : esc(coupon.code.trim());
-  const block = `Cupom: ${code}${cond}.${until} Visto em ${fmtStamp(new Date(coupon.verifiedAt))}.`;
+  const mark = channel === 'tg' && countEmojis(text) < MAX_EMOJIS_PER_MESSAGE ? `${EMOJI_COUPON} ` : '';
+  const block = `${mark}Cupom: ${code}${cond}.${until} Visto em ${fmtStamp(new Date(coupon.verifiedAt))}.`;
   const lines = text.split('\n');
   if (lines.length < 2) return text;
-  lines.splice(lines.length - 1, 0, block);
+  // Antes da linha do link (a última com /go/ no texto); nos formatos antigos o link é a última linha.
+  let at = lines.length - 1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].includes('/go/')) {
+      at = i;
+      break;
+    }
+  }
+  lines.splice(at, 0, block);
   const out = lines.join('\n');
   if (textProblems(out, channel).length > textProblems(text, channel).length) return text;
   if (channel === 'tg' && out.length > TELEGRAM_MAX_CHARS) return text;

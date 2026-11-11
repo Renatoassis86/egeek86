@@ -1,0 +1,241 @@
+// Reconferência de preço AO VIVO antes do envio (onda 2, 2026-11-11). Sem server-only, sem banco: toda a rede e toda a
+// gravação entram por injeção (`LiveDeps`), então o teste roda com fetch injetado e nada sai da máquina.
+//
+// Por que existe: o Mercado Livre é reconferido a cada 30 a 60 min pelo coletor, então boa parte das ofertas tinha o último
+// preço com mais de 30 min na hora de enviar e morria na revalidação (medido). Agora, se o preço gravado está velho, consulta-se
+// a API OFICIAL da loja da oferta (Mercado Livre: itens; Shopee: lookup do item), grava-se o snapshot como o coletor faria e só
+// segue se o preço vivo estiver dentro de 2% do detectado e o item continuar ativo e com estoque. Amazon NÃO consulta ao vivo
+// (segue a regra de frescor da coleta assistida). Limite de 8 s por consulta; falha de rede = expirar sem enviar.
+
+import { RULES, netKind, type NetKind } from '@/lib/messaging/group-rules';
+import type { FetchLike } from '@/lib/messaging/telegram-send';
+
+export interface LiveTarget {
+  offerId: string;
+  /** Oferta do candidato ('original') ou concorrente mais barata com preço velho ('competitor'). */
+  role: 'original' | 'competitor';
+  masterProductId?: string;
+  networkSlug: string;
+  networkName?: string;
+  /** affiliate_offers.external_ref (ML: id do catálogo; Shopee: `shopee-<itemId>`). */
+  externalRef: string | null;
+  /** URL do anúncio (ML: contém o id do item, ex.: produto.mercadolivre.com.br/MLB-123456). */
+  affiliateUrl: string | null;
+  /** Vendedor da oferta (ML: seller_id) para conferir que o anúncio é o mesmo. */
+  sellerExternalId: string | null;
+  storedPriceCents: number;
+  confirmedAt: Date | null;
+  /** Preço detectado do candidato (originais). null = só conferir disponibilidade. */
+  detectedPriceCents: number | null;
+}
+
+export type LiveQuote =
+  | { ok: true; priceCents: number }
+  | { ok: false; kind: 'unavailable' | 'error' | 'unsupported'; reason: string };
+
+export interface LiveDeps {
+  fetchImpl?: FetchLike;
+  /** Token OAuth do Mercado Livre (a fonte de coleta existente, mercado-livre-auth). */
+  meliToken?: () => Promise<string>;
+  /** Lookup oficial do item Shopee (sources/shopee.ts lookupShopeeItem). Lança em falha de API. */
+  shopeeLookup?: (itemId: string) => Promise<{ status: 'ok'; priceCents: number } | { status: 'unavailable'; reason: string }>;
+  /** Grava o snapshot como o coletor (recordPriceSnapshot source 'api' + last_price_confirmed_at). */
+  record?: (t: LiveTarget, priceCents: number) => Promise<void>;
+  timeoutMs?: number;
+}
+
+const ML_ITEMS = 'https://api.mercadolibre.com/items';
+
+/** Id do anúncio (MLB123...) tirado da URL do anúncio. URL de catálogo (/p/MLB...) não é anúncio: null. */
+export function meliItemIdFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    return null;
+  }
+  if (!/(^|\.)mercadolivre\.com\.br$|(^|\.)mercadolibre\.com$/i.test(u.hostname)) return null;
+  if (/\/p\/MLB/i.test(u.pathname)) return null;
+  const m = /\/(MLB)-?(\d{6,})/i.exec(u.pathname);
+  return m ? `MLB${m[2]}` : null;
+}
+
+export function shopeeItemIdFromRef(externalRef: string | null | undefined): string | null {
+  const m = /^shopee-(\d{1,19})$/.exec(externalRef ?? '');
+  return m ? m[1] : null;
+}
+
+const asKind = (t: Pick<LiveTarget, 'networkSlug' | 'networkName'>): NetKind => netKind({ networkSlug: t.networkSlug, networkName: t.networkName ?? t.networkSlug });
+
+/** O preço gravado está velho (ou não existe) para o envio? */
+export function isStale(confirmedAt: Date | null, now: Date): boolean {
+  return !confirmedAt || (now.getTime() - confirmedAt.getTime()) / 60_000 > RULES.LIVE_STALE_AFTER_MIN;
+}
+
+/** Precisa de consulta ao vivo? ML: preço velho. Shopee: sempre nas originais do envio automático, senão preço velho. Amazon/outras: nunca. */
+export function needsLive(t: LiveTarget, now: Date, humanApproved: boolean): boolean {
+  const k = asKind(t);
+  if (k === 'ml') return isStale(t.confirmedAt, now);
+  if (k === 'shopee') return t.role === 'original' && !humanApproved ? true : isStale(t.confirmedAt, now);
+  return false;
+}
+
+const defaultFetch: FetchLike = (url, init) => fetch(url, init as RequestInit) as unknown as ReturnType<FetchLike>;
+
+async function meliQuote(t: LiveTarget, deps: LiveDeps): Promise<LiveQuote> {
+  const itemId = meliItemIdFromUrl(t.affiliateUrl);
+  if (!itemId) return { ok: false, kind: 'unsupported', reason: 'ml_sem_id_do_anuncio' };
+  if (!deps.meliToken) return { ok: false, kind: 'error', reason: 'ml_sem_token' };
+  const token = await deps.meliToken();
+  const res = await (deps.fetchImpl ?? defaultFetch)(`${ML_ITEMS}?ids=${itemId}&attributes=id,price,available_quantity,status,condition,seller_id`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.status !== 200) return { ok: false, kind: 'error', reason: `ml_http_${res.status}` };
+  const data = (await res.json()) as Array<{ code?: number; body?: { id?: string; price?: number; available_quantity?: number; status?: string; condition?: string; seller_id?: number | string } }>;
+  const row = Array.isArray(data) ? data.find((r) => r?.body?.id === itemId || r?.code === 404 || r?.code === 200) : undefined;
+  if (!row) return { ok: false, kind: 'error', reason: 'ml_resposta_vazia' };
+  if (row.code === 404) return { ok: false, kind: 'unavailable', reason: 'ml_anuncio_nao_encontrado' };
+  if (row.code !== 200 || !row.body) return { ok: false, kind: 'error', reason: `ml_item_code_${row.code ?? 'x'}` };
+  const b = row.body;
+  if (b.status !== 'active') return { ok: false, kind: 'unavailable', reason: `ml_anuncio_${b.status ?? 'sem_status'}` };
+  if (!(Number(b.available_quantity) > 0)) return { ok: false, kind: 'unavailable', reason: 'ml_sem_estoque' };
+  if (b.condition && b.condition !== 'new') return { ok: false, kind: 'unavailable', reason: 'ml_condicao_nao_nova' };
+  if (t.sellerExternalId && b.seller_id != null && String(b.seller_id) !== t.sellerExternalId) return { ok: false, kind: 'unavailable', reason: 'ml_vendedor_diferente' };
+  const cents = Math.round(Number(b.price) * 100);
+  if (!Number.isFinite(cents) || cents <= 0) return { ok: false, kind: 'error', reason: 'ml_preco_invalido' };
+  return { ok: true, priceCents: cents };
+}
+
+async function shopeeQuote(t: LiveTarget, deps: LiveDeps): Promise<LiveQuote> {
+  const itemId = shopeeItemIdFromRef(t.externalRef);
+  if (!itemId) return { ok: false, kind: 'unsupported', reason: 'shopee_sem_id_do_item' };
+  if (!deps.shopeeLookup) return { ok: false, kind: 'error', reason: 'shopee_sem_credenciais' };
+  const r = await deps.shopeeLookup(itemId);
+  if (r.status === 'unavailable') return { ok: false, kind: 'unavailable', reason: `shopee_${r.reason}` };
+  return { ok: true, priceCents: r.priceCents };
+}
+
+/** Consulta ao vivo de UMA oferta, com limite de 8 s. Qualquer exceção ou estouro vira `error` (nunca lança). */
+export async function fetchLiveQuote(t: LiveTarget, deps: LiveDeps): Promise<LiveQuote> {
+  const k = asKind(t);
+  if (k === 'amazon') return { ok: false, kind: 'unsupported', reason: 'amazon_sem_consulta_ao_vivo' };
+  if (k !== 'ml' && k !== 'shopee') return { ok: false, kind: 'unsupported', reason: 'rede_sem_consulta_ao_vivo' };
+  const ms = deps.timeoutMs ?? RULES.LIVE_CHECK_TIMEOUT_MS;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<LiveQuote>((resolve) => {
+    timer = setTimeout(() => resolve({ ok: false, kind: 'error', reason: `timeout_${Math.round(ms / 1000)}s` }), ms);
+  });
+  try {
+    return await Promise.race([k === 'ml' ? meliQuote(t, deps) : shopeeQuote(t, deps), timeout]);
+  } catch (e) {
+    return { ok: false, kind: 'error', reason: `rede: ${e instanceof Error ? e.message.slice(0, 80) : 'erro'}` };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+export interface LiveCheckLog {
+  offerId: string;
+  role: LiveTarget['role'];
+  checked: boolean;
+  storedCents: number;
+  liveCents?: number;
+  divergencePct?: number;
+  recorded?: boolean;
+  verdict: 'ok' | 'fail' | 'skipped' | 'ignored';
+  reason?: string;
+}
+
+export interface LivePhaseInput {
+  now: Date;
+  targets: LiveTarget[];
+  /** 'radar': falha de um item tira o item (e não derruba tudo). */
+  mode: 'single' | 'radar';
+  /** Linha aprovada por um humano: Shopee só consulta se o preço estiver velho. */
+  humanApproved: boolean;
+  deps: LiveDeps;
+}
+
+export interface LivePhaseResult {
+  ok: boolean;
+  reason?: string;
+  /** Ofertas cujo preço foi confirmado ao vivo (e gravado). */
+  verified: string[];
+  /** Radar: ofertas originais que falharam e saem do radar. */
+  droppedOfferIds: string[];
+  /** O preço vivo difere do que estava gravado em alguma oferta. */
+  changed: boolean;
+  logs: LiveCheckLog[];
+}
+
+const pct = (x: number) => x.toFixed(1).replace('.', ',');
+
+/**
+ * Fase de reconferência ao vivo. Regras:
+ *  - original que precisa de consulta e falha (rede, API, sem estoque, inativo, outro vendedor) expira a mensagem;
+ *  - original com preço vivo fora de 2% do detectado expira;
+ *  - concorrente mais barata com preço velho: indisponível é ignorada (deixa de ser concorrência), erro de rede expira (não dá
+ *    para afirmar "menor preço" sem saber);
+ *  - consulta OK grava o snapshot (como o coletor) antes de qualquer decisão.
+ */
+export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResult> {
+  const { now, targets, deps } = input;
+  const out: LivePhaseResult = { ok: true, verified: [], droppedOfferIds: [], changed: false, logs: [] };
+  const tasks = targets.map(async (t) => {
+    const log: LiveCheckLog = { offerId: t.offerId, role: t.role, checked: false, storedCents: t.storedPriceCents, verdict: 'skipped' };
+    if (!needsLive(t, now, input.humanApproved)) {
+      if (t.role === 'original' && asKind(t) === 'amazon') log.reason = 'amazon_segue_a_regra_de_frescor_da_coleta_assistida';
+      return log;
+    }
+    log.checked = true;
+    const q = await fetchLiveQuote(t, deps);
+    if (!q.ok) {
+      log.reason = q.reason;
+      if (t.role === 'original') log.verdict = 'fail';
+      else log.verdict = q.kind === 'error' ? 'fail' : 'ignored';
+      return log;
+    }
+    log.liveCents = q.priceCents;
+    if (deps.record) {
+      try {
+        await deps.record(t, q.priceCents);
+        log.recorded = true;
+      } catch (e) {
+        log.recorded = false;
+        log.verdict = 'fail';
+        log.reason = `falha ao gravar o snapshot: ${e instanceof Error ? e.message.slice(0, 80) : 'erro'}`;
+        return log;
+      }
+    }
+    if (t.role === 'original' && t.detectedPriceCents != null && t.detectedPriceCents > 0) {
+      const div = (Math.abs(q.priceCents - t.detectedPriceCents) / t.detectedPriceCents) * 100;
+      log.divergencePct = Math.round(div * 100) / 100;
+      if (div > RULES.SEND_PRICE_TOLERANCE_PCT) {
+        log.verdict = 'fail';
+        log.reason = `preço ao vivo divergiu ${pct(div)}% do detectado (${t.detectedPriceCents} para ${q.priceCents} centavos)`;
+        return log;
+      }
+    }
+    log.verdict = 'ok';
+    return log;
+  });
+  out.logs = await Promise.all(tasks);
+  for (const log of out.logs) {
+    if (log.verdict === 'ok') {
+      out.verified.push(log.offerId);
+      if (log.liveCents != null && log.liveCents !== log.storedCents) out.changed = true;
+    }
+    if (log.verdict !== 'fail') continue;
+    if (log.role === 'original' && input.mode === 'radar') {
+      out.droppedOfferIds.push(log.offerId);
+      continue;
+    }
+    if (out.ok) {
+      out.ok = false;
+      const what = log.role === 'competitor' ? 'oferta concorrente mais barata' : 'oferta';
+      out.reason = `reconferência ao vivo: ${what} ${log.reason ?? 'falhou'}`;
+    }
+  }
+  return out;
+}

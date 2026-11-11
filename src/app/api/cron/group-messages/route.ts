@@ -4,6 +4,7 @@ import { isGroupMessagesEnabled } from '@/lib/messaging/group-config';
 import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
 import { renderHistoryCard } from '@/server/messaging/price-card';
 import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
+import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -33,6 +34,12 @@ export async function GET(request: NextRequest) {
   // Cartão de histórico (PNG) e cupom verificado: injeções do ciclo (ambos tolerantes a falha; sem eles a mensagem sai em texto puro).
   const summary = await runGroupMessagesCycle({
     renderCard: async (masterProductId: string) => (await renderHistoryCard(masterProductId))?.png ?? null,
+    // Escolha do cartão: histórico (P1 e G5) ou card de oferta (capa + preço + insight) para alerta/insight de preço.
+    cardFor: async ({ kind, offerId, masterProductId }) => {
+      if (kind === 'historico') return (await renderHistoryCard(masterProductId))?.png ?? null;
+      const input = await loadOfferCardInput(offerId);
+      return input ? ((await renderOfferCard(input))?.png ?? null) : null;
+    },
     couponLookup: lookupVerifiedCoupon,
   });
   return NextResponse.json(summary, { status: summary.ok ? 200 : 500 });

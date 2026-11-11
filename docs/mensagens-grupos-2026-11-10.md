@@ -1,8 +1,75 @@
-# Mensagens automáticas para grupos (construído em 2026-11-10; motor v2, onda 1, em 2026-11-11)
+# Mensagens automáticas para grupos (construído em 2026-11-10; motor v2 onda 1 e onda 2 em 2026-11-11)
 
 Atas: `docs/conselho/atas/2026-11-10-mensagens-automaticas-para-grupos.md` (base) e `docs/conselho/atas/2026-11-10-mensagens-24h-cupons-storytelling-cobertura.md` (motor v2: §1 frequência e automação, §2 gatilhos, §5 storytelling, §5b Amazon, §8 vetos). Tudo nasce **DESLIGADO**. Nada foi commitado, publicado, aplicado no banco nem enviado ao Telegram.
 
-## Resumo do motor v2 (onda 1)
+## ONDA 2 (2026-11-11): fila com distribuição, reconferência ao vivo, volume e plataforma
+
+Decisões do dono no mesmo dia, em ordem (a última vale): "pode enviar já, faça uma fila, cuidado para não mandar muito perto" -> "pode sair de minuto em minuto" -> "eu quero o canal movimentado". Código só escrito e testado: NADA foi aplicado no banco, commitado, publicado ou enviado. O motor segue atrás dos mesmos kill-switches (`GROUP_MESSAGES_ENABLED`, `GROUP_MESSAGES_MODE=send` e a linha `group_messages_auto`); a linha já está em `on` em produção com o motor da onda 1 e a onda 2 só passa a valer depois do deploy.
+
+### Antes e depois
+
+| Regra | Onda 1 | Onda 2 (vale agora no código) |
+|---|---|---|
+| Tetos | 30/dia (40 de 20 a 27/11), 8 sonoras, tetos por classe (6 alertas, 16 radares...) | 400/dia e 60/hora, sonoras <= 20/dia (o resto silenciosa), sem teto por classe |
+| Intervalo entre mensagens | 15 min entre alertas, 60 entre radares, 120 entre insights | 1 min entre quaisquer mensagens, dia e noite iguais, sem jitter (a função de jitter por dia+hora existe e é testada, mas a amplitude vale 0) |
+| Mesmo produto | 48 h (alerta) ou 24 h (radar/insight) | 90 min; novo mínimo (OK1/G1) com preço menor que o último envio repete após 30 min |
+| Janelas de horário | insight 9h-21h, cupom 9h-21h, resumo 8h/20h, radar nos minutos 0 a 14 de 7h-23h | nenhuma: tudo 24 h; de 22h às 8h sai silenciosa. G5 (foto de preço) também 24 h |
+| Radar | UMA mensagem com 3 a 6 itens por hora | uma mensagem POR ITEM; o radar composto é opcional (`RULES.RADAR_COMPOSITE_ENABLED`, desligado) e, se ligado, 1 a cada 45 min com os itens contados depois da reconferência ao vivo |
+| Escolha da próxima | classe, depois gatilho | alerta > insight > radar; dentro da classe o maior movimento; diversidade (loja + departamento + plataforma) só como DESEMPATE entre candidatas de movimento >= 70% da primeira |
+| Fila | até 3 tentativas por execução | no máximo 1 mensagem por execução; só depois do intervalo mínimo; proposta com mais de 6 h expira (era 3 h) |
+| Frescor na detecção | 2 h | 3 h |
+| Reconferência no envio | preço gravado com mais de 30 min expirava a mensagem | preço velho é consultado AO VIVO na API oficial (ML itens; Shopee lookup; Amazon não consulta), grava o snapshot, segue só dentro de 2% do detectado e com item ativo e estoque; limite de 8 s; falha de rede, sem estoque ou divergência expiram |
+| Faixa verde (automático) | desconto <= 25% sobre a média, queda <= 30% | desconto <= 30%, queda <= 30%; 30 a 45% pede aprovação; > 45% retida |
+| Faixa de plausibilidade | preço < 0,5x a mediana retido | fora de 0,35x a 3x a mediana = retido |
+| Shopee | sempre aprovação humana | automática SE a reconferência ao vivo passar e a queda for <= 20% (a reconferência é obrigatória nas automáticas, mesmo com preço fresco) |
+| Região/edição | só barrava região no título quando o master NÃO tinha a palavra | barra também pelo NOME DO MASTER e pelo título: Europeu/Europeia, Japonês/Japonesa, Importado/Import, USA, Americano, Asiático, Versão Internacional, Região (caso Hokko Life Europeu) |
+| Gatilho "na média" | G2 exigia 15% abaixo da média (e média elegível de 14 dias) | G2 = preço atual (menor oferta viva reconferida) <= média única oferta-dia, com >= 3 ofertas e >= 1 dia de série; OK1 e OK2 têm prioridade; Amazon fica de fora (só histórico próprio e só alerta) |
+| Texto | frases soltas | UMA oferta por mensagem com layout e história do preço (ver abaixo) |
+| Classe PLATAFORMA (P1 a P5) | não existia | existe (ver abaixo) |
+
+O que NÃO foi flexibilizado (são checagens de correção): reconferência ao vivo, bloqueio de região/edição/importado, faixa de plausibilidade, oferta sem estoque/inativa, link pendente, Amazon só com carimbo, `#publicidade`, nunca "afiliado", "De/por" ou "% OFF", zero previsão.
+
+### Fila e plano do dia
+
+- `applyLimits` (puro, `group-rules.ts`) devolve no máximo UM `next` por execução. Só passa se: o intervalo mínimo desde a última mensagem de QUALQUER classe passou (`spacingState`), o teto por hora (60) e por dia (400) não estourou, o produto não repete dentro de 90 min (30 min no novo mínimo) e, para plataforma, a cota está devida. O envio manual ("Enviar agora") ignora só o intervalo de 1 min; os tetos e a duplicata do produto continuam.
+- `planDaySlots(now, sentToday, caps)` (puro e testado) calcula quantos slots restam e em que faixas (madrugada, manhã, tarde, início da noite, noite), respeitando intervalo e teto por hora. Em modo sombra, `simulada` ganha `planned_at` (migration 0031).
+- `/admin/mensagens` mostra "Fila e distribuição do envio": fila ordenada com motivo, horário estimado de saída (pelo plano), o que foi enviado hoje, o intervalo vigente e quando sai a próxima. O botão de pausar (muda a flag para `off`) continua no painel de estado.
+
+### Reconferência ao vivo (`src/lib/messaging/live-recheck.ts`, ligada em `group-queue.ts`)
+
+1. Antes de gastar consulta, os limites já são checados (se adiam, a linha volta à fila). 2. Ofertas do candidato e concorrentes mais baratas com preço velho (até 4 por produto) são consultadas em paralelo, 8 s cada. 3. ML: `GET /items?ids=<MLB>&attributes=id,price,available_quantity,status,condition,seller_id` com o token da coleta (`mercado-livre-auth`); o id do anúncio vem da URL da oferta (oferta que só tem URL de catálogo não tem como reconferir e expira). Shopee: `lookupShopeeItem`. 4. Consulta OK grava o snapshot como o coletor (`recordPriceSnapshot`, source `api`, e `last_price_confirmed_at`). 5. Divergência > 2% sobre o detectado, item inativo, sem estoque, vendedor diferente, falha de rede ou limite estourado expiram a mensagem; concorrente sem estoque deixa de ser concorrência; concorrente com erro de rede expira (não dá para afirmar "menor preço"). 6. Só então re-detecta o produto com frescor de envio; o preço conferido ao vivo dispensa o intervalo de 15 min entre coletas.
+
+### Mensagem de oferta (`formatOfferMessage`, `group-messages.ts`)
+
+Telegram (HTML): 1) `<b>Título</b> <i>Switch · mídia física</i>`; 2) `<b>R$ 94,00</b> no Mercado Livre`; 3) variações em `<b>` (queda vs ontem, R$ abaixo da média com a média entre parênteses, distância do menor registrado), com 📉 só quando houve queda; 4) história do preço em `<blockquote>` (2 a 3 frases: o que aconteceu, por que importa, o que o dado permite concluir; nunca previsão; série pequena diz "Série de N dias, desde dd/mm" e não afirma tendência com menos de 3 dias); 5) cupom verificado, quando houver, com 🎟️ e `<code>` logo antes do link; 6) `<a>Ver a oferta</a>` com `?s=tg&m=<id>`; 7) `<i>Conferido em dd/mm às hh:mm (Brasília). #publicidade</i>`. No máximo 2 emojis, nenhum no título. WhatsApp: `*negrito*`, `_itálico_` e `> ` na citação. Todo texto de marketplace é escapado; a barreira reprova acima de 4096 caracteres e a legenda de foto cabe em 1024 (senão cai em texto).
+
+### Classe PLATAFORMA (P1 a P5)
+
+Mensagens curtas que vendem as funcionalidades do site com dado real do banco no momento do envio (`src/lib/messaging/group-platform.ts`, textos em `formatPlatformMessage`). Todas apontam para a página que existe hoje: `/monitoramento/comparar/<masterProductId>` (histórico, comparação entre lojas e ofertas do produto), com `?s=tg&m=<id>`.
+
+| Código | Modelo | Dado real usado |
+|---|---|---|
+| P1 | Histórico | menor valor e a data, média, hoje, série de N dias desde dd/mm; leva o cartão de histórico (`renderCard`) |
+| P2 | Comparar lojas | mesmo produto, ML x Shopee, diferença >= R$ 20, as duas ofertas reconferidas ao vivo |
+| P3 | Monitorar | produto em destaque do dia (mais ofertas ativas), hoje e menor registrado; não promete aviso que o site não faz |
+| P4 | Média única | "cada oferta vale 1 por dia" com ofertas, oferta-dias, dias e média do produto |
+| P5 | Black Friday | dias até 27/11 e a variação medida desde 31/10 (só fato) |
+
+Proporção (`platformDue`, `applyLimits`): pelo menos 1 plataforma a cada 6 mensagens de preço, no máximo 1 a cada 20 min, e também quando o canal fica sem preço há mais de 30 min; devida, ela passa na frente do preço; sai sempre silenciosa; rotaciona P1 a P5 sem repetir o modelo seguido e sem repetir o produto no mesmo dia; NÃO conta nos tetos de preço (mas respeita o intervalo de 1 min). Só é gerada com a migration 0031 aplicada (os CHECKs de gatilho e classe precisam aceitar P1..P5).
+
+### Cartões
+
+`cardFor` (injetável, ligado na rota do cron): card de oferta (`loadOfferCardInput` + `renderOfferCard`) para alerta/insight de preço e cartão de histórico (`renderHistoryCard`) para P1 e G5; este último segue o limite de 4 por dia e 1 por produto a cada 7 dias. Sem `cardFor`, vale o `renderCard` antigo. Falha ou 8 s sem resposta = mensagem em texto.
+
+### Migration 0031 (escrita, NÃO aplicada)
+
+`drizzle/migrations/0031_group_messages_onda2.sql` e `.rollback.sql`: 4 colunas nuláveis em `group_messages` (`planned_at`, `live_checked_at`, `live_price_cents`, `live_note`) e CHECKs ampliados (gatilhos P1..P5, classe `plataforma`). Sem ela o código funciona (a fila do admin é calculada em memória); só não grava o horário planejado, o resultado da reconferência e não gera plataforma.
+
+### Arquivos da onda 2
+
+Criados: `src/lib/messaging/live-recheck.ts`, `src/lib/messaging/group-platform.ts`, `src/server/messaging/live-recheck.ts`, `src/server/messaging/group-plan.ts`, `src/components/admin/group-send-plan.tsx`, `scripts/test-mensagens-onda2.ts` (`npm run test:mensagens-onda2`), migration 0031. Alterados: `group-rules.ts`, `group-messages.ts`, `group-offers.ts`, `group-queue.ts`, `group-auto.ts`, a rota do cron, `/admin/mensagens`, os rótulos do painel e os testes `test-mensagens-grupo.ts` e `test-mensagens-motor-v2.ts`.
+
+## Resumo do motor v2 (onda 1; os números de tetos, janelas, intervalos e faixas abaixo foram SUBSTITUÍDOS pela onda 2 acima)
 
 | Tema | Como ficou |
 |---|---|
@@ -94,3 +161,8 @@ Alterados no motor v2
 - Reconferência só registra: a regra da ata de voltar sozinho para aprovação após 2 divergências em 24 h não foi implementada (os números aparecem no cabeçalho do admin).
 - Falhas temporárias seguidas (3) não pausam a automação; só a falha definitiva pausa.
 - Revisão jurídica da frase de publicidade. Revogar e regenerar o token do bot antes de ligar o automático (ata §9.9).
+- Onda 2: páginas do site para P3 (monitorar) e P4 (média) são a mesma página do produto; conferir se o site honra `?s=tg&m=<id>` fora do `/go` (hoje só o `/go` registra origem).
+- Onda 2: o mesmo produto agora pode voltar em 90 min; o rodízio por produto de um catálogo pequeno pode repetir muito. Medir no modo sombra antes de manter 400/dia.
+- Onda 2: concorrente mais barata com preço velho só é conferida se estiver na janela de 3 h; se o catálogo do ML mudar de id de anúncio, a oferta sem id na URL expira em vez de ser enviada.
+- Onda 2: Amazon "na média" não existe (só histórico próprio e só em alerta). Média própria da Amazon exigiria definir a base (decisão do dono).
+- Onda 2: G3 (comparativo) e G5 (foto de preço) mantêm os textos antigos (já factuais); só movimento e "na média" usam o layout com história.

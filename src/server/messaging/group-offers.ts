@@ -7,6 +7,7 @@ import { addDays, computePeriodMetrics, spDay, PRICE_DAILY_REGIME_START } from '
 import { readPlatform } from '@/lib/catalog/platform';
 import { isVertical } from '@/lib/catalog/verticais';
 import { getAdTag } from '@/lib/messaging/group-config';
+import { buildPlatformCandidates } from '@/lib/messaging/group-platform';
 import {
   RULES,
   amazonLoopPaused,
@@ -65,6 +66,10 @@ export interface DetectOptions {
   amazonMaxAgeMin?: number;
   /** Histórico inclui as decisões simuladas 'enviaria' (modo sombra). */
   includeSimulated?: boolean;
+  /** Ofertas cujo preço acabou de ser conferido AO VIVO na API oficial (reconferência do envio): dispensam o intervalo de 15 min entre coletas. */
+  liveVerifiedOfferIds?: string[];
+  /** Gera as mensagens de plataforma (P1 a P5). Padrão: sim, quando a migration 0031 está aplicada. */
+  includePlatform?: boolean;
 }
 
 export interface DetectionResult {
@@ -114,6 +119,24 @@ export async function groupMessagesV2Ready(): Promise<boolean> {
   return ok;
 }
 
+let onda2Cache: { at: number; ok: boolean } | null = null;
+
+/** Migration 0031 (planned_at e colunas live_* de group_messages) aplicada? Sem ela o motor só deixa de gravar esses campos. */
+export async function groupMessagesOnda2Ready(): Promise<boolean> {
+  if (onda2Cache && Date.now() - onda2Cache.at < 60_000) return onda2Cache.ok;
+  let ok = false;
+  try {
+    const rows = await db.execute<Row>(sql`
+      SELECT (SELECT count(*) FROM information_schema.columns WHERE table_name = 'group_messages' AND column_name IN ('planned_at', 'live_checked_at', 'live_price_cents', 'live_note')) = 4 AS ok
+    `);
+    ok = rows[0]?.ok === true;
+  } catch {
+    ok = false;
+  }
+  onda2Cache = { at: Date.now(), ok };
+  return ok;
+}
+
 /** Último lote da coleta assistida da Amazon (collector_runs job 'amazon-assistida', status ok). */
 export async function loadAmazonLastRun(): Promise<Date | null> {
   const rows = await db.execute<Row>(sql`
@@ -143,7 +166,9 @@ export async function loadSentHistory(
     v2
       ? sql`
     SELECT master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
-           candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state
+           candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state,
+           vertical AS vert, candidate ->> 'platformLabel' AS platform_label,
+           CASE WHEN trigger ~ '^P[1-5]$' THEN candidate ->> 'masterProductId' END AS plat_pid
     FROM group_messages
     WHERE channel = ${channel} AND status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)})
       AND COALESCE(sent_at, created_at) >= ${since}::timestamptz
@@ -151,7 +176,8 @@ export async function loadSentHistory(
   `
       : sql`
     SELECT master_product_id, price_cents_detected, sent_at AS at, trigger, NULL AS msg_class, false AS is_sound, false AS has_card,
-           candidate ->> 'networkSlug' AS network_slug, NULL AS items, status, NULL AS sim_state
+           candidate ->> 'networkSlug' AS network_slug, NULL AS items, status, NULL AS sim_state,
+           vertical AS vert, candidate ->> 'platformLabel' AS platform_label
     FROM group_messages
     WHERE channel = ${channel} AND status = 'enviada' AND sent_at >= ${since}::timestamptz
   `
@@ -166,6 +192,9 @@ export async function loadSentHistory(
       priceCents: Number(r.price_cents_detected ?? 0),
       sentAt: at,
       networkSlug: (r.network_slug as string | null) ?? null,
+      vertical: (r.vert as string | null) ?? null,
+      platformLabel: (r.platform_label as string | null) ?? null,
+      platformProductId: (r.plat_pid as string | null) ?? null,
       trigger: (r.trigger as string | null) ?? null,
       cls,
       sound: r.is_sound === true,
@@ -206,7 +235,7 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
       FROM price_daily_state WHERE day >= ${day}::date AND avg_cents IS NOT NULL
       ORDER BY master_product_id, day DESC
     ),
-    below AS (SELECT DISTINCT l.mid FROM live l INNER JOIN st ON st.mid = l.mid WHERE l.p <= st.avg_cents * ${1 - RULES.MIN_BELOW_AVG_PCT / 100}::numeric),
+    below AS (SELECT DISTINCT l.mid FROM live l INNER JOIN st ON st.mid = l.mid WHERE l.p <= st.avg_cents),
     bigp AS (SELECT mid FROM live GROUP BY mid HAVING count(*) >= ${big}::int),
     hist AS (
       SELECT master_product_id AS mid, min(min_cents) AS rec, (array_agg(min_cents ORDER BY day DESC))[1] AS last_min
@@ -272,7 +301,7 @@ async function loadSeries(ids: string[], today: string): Promise<Map<string, { m
   return out;
 }
 
-async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazonMaxAgeMin: number; eventWindowHours: number }): Promise<ProductFacts[]> {
+async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazonMaxAgeMin: number; eventWindowHours: number; liveVerified?: Set<string> }): Promise<ProductFacts[]> {
   if (!ids.length) return [];
   // O filtro SQL usa o maior dos dois limites (a Amazon pode ter limite maior que as demais redes no envio); o juízo por rede é do judgeOffer.
   const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
@@ -341,6 +370,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       quarantined: r.quarantined_at != null,
       missCount: r.miss_count == null ? 0 : Number(r.miss_count),
       returnedAt: returnedBy.get(String(r.id)) ?? null,
+      liveVerifiedAt: o.liveVerified?.has(String(r.id)) ? o.now : null,
     };
     (offersBy.get(mid) ?? offersBy.set(mid, []).get(mid)!).push(f);
   }
@@ -350,6 +380,12 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
   const today = spDay(o.now);
   const from = addDays(today, -29);
   const seriesBy = await loadSeries(ids, today);
+  const stateAvgRows = await db.execute<Row>(sql`
+    SELECT DISTINCT ON (master_product_id) master_product_id AS mid, avg_cents FROM price_daily_state
+    WHERE master_product_id IN (${idList(ids)}) AND day >= ${addDays(today, -3)}::date AND avg_cents IS NOT NULL
+    ORDER BY master_product_id, day DESC
+  `);
+  const stateAvgBy = new Map(stateAvgRows.map((r) => [String(r.mid), Number(r.avg_cents)]));
   const out: ProductFacts[] = [];
   for (const p of products) {
     const id = String(p.id);
@@ -363,7 +399,10 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     const mainPrices = offs.filter((x) => !/amazon/i.test(x.networkSlug)).map((x) => x.priceCents);
     const cheapestMain = mainPrices.length ? Math.min(...mainPrices) : 0;
     const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today).length > 0;
-    if (hasMove) {
+    // "Na média ou abaixo" (dono, 2026-11-11): também precisa da média quando o menor preço vivo está no nível da média do dia.
+    const stateAvg = stateAvgBy.get(id);
+    const maybeMed = offs.length >= 3 && cheapestMain > 0 && stateAvg != null && cheapestMain <= stateAvg && (seriesBy.get(id)?.main.length ?? 0) >= RULES.MED_MIN_SERIES_DAYS - 1;
+    if (hasMove || maybeMed) {
       const days = await loadPeriodDays(db, id, from, today);
       const pm = computePeriodMetrics(days, null);
       if (pm.avgOfferDayCents != null) {
@@ -414,7 +453,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const ids = opts.productIds?.length
     ? opts.productIds
     : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 400 });
-  const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours });
+  const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []) });
 
   const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused };
   const candidates: Candidate[] = [];
@@ -427,6 +466,8 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const factMap = new Map(facts.map((p) => [p.masterProductId, p]));
   const g4 = buildDailySummary(candidates, factMap, ctx);
   if (g4) candidates.push(g4);
+  // Plataforma (P1 a P5): só com a migration 0031 (os CHECKs de gatilho/classe precisam aceitar P1..P5).
+  if (opts.includePlatform !== false && (await groupMessagesOnda2Ready().catch(() => false))) candidates.push(...buildPlatformCandidates(facts, ctx));
 
   let history: SentRecord[];
   let historySource: DetectionResult['historySource'];
@@ -441,7 +482,8 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   }
   // Radar: itens da classe B que passam no dedup por produto viram UMA mensagem (3 a 6 itens) na hora cheia.
   const radarPool = candidates.filter((c) => c.cls === 'radar' && c.trigger !== 'RADAR' && !productDedupBlock(c, history, now));
-  const radar = composeRadar(radarPool, ctx);
+  // Radar composto é opcional (dono, 2026-11-11: uma mensagem por item): só é gerado com RULES.RADAR_COMPOSITE_ENABLED.
+  const radar = RULES.RADAR_COMPOSITE_ENABLED ? composeRadar(radarPool, ctx) : null;
   if (radar) candidates.push(radar);
   const plan = applyLimits(candidates, history, now);
 

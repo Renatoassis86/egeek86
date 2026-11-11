@@ -8,6 +8,8 @@ import { detectGroupCandidates, groupMessagesTableExists } from '@/server/messag
 import { listQueue } from '@/server/messaging/group-queue';
 import { queueToViewItems, toViewItem, type GroupViewItem } from '@/server/messaging/group-view';
 import { loadAutomationOverview } from '@/server/messaging/group-overview';
+import { loadQueuePlan } from '@/server/messaging/group-plan';
+import { GroupSendPlan } from '@/components/admin/group-send-plan';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
 export const dynamic = 'force-dynamic';
@@ -27,6 +29,7 @@ export default async function AdminMessagesPage() {
   }
   const messages = await listMessagesForAdmin();
   const overview = await loadAutomationOverview();
+  const queuePlan = await loadQueuePlan();
 
   return (
     <div className="flex flex-col gap-6">
@@ -35,11 +38,13 @@ export default async function AdminMessagesPage() {
           Mensagens para grupos
         </Text>
         <Text variant="body-sm" color="secondary" className="mt-1">
-          Decisões calculadas do banco (preço, série e menor preço reais). O Telegram pode sair sozinho nas classes seguras quando a automação está em &ldquo;ligada&rdquo;; Shopee, desconto acima de 25%, vendedor sem reputação e nichos novos sempre esperam a sua aprovação. O WhatsApp é sempre assistido.
+          Decisões calculadas do banco (preço, série e menor preço reais). O Telegram pode sair sozinho nas classes seguras quando a automação está em &ldquo;ligada&rdquo;; desconto acima de 30% da média, queda acima de 30%, Shopee com queda acima de 20%, vendedor sem reputação e nichos novos esperam a sua aprovação. O WhatsApp é sempre assistido.
         </Text>
       </div>
 
       {loadError && <Text variant="body-sm">Não foi possível calcular agora: {loadError}</Text>}
+
+      <GroupSendPlan plan={queuePlan} />
 
       <GroupMessagesPanel
         items={items}

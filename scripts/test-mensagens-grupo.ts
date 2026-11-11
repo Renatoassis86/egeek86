@@ -296,7 +296,7 @@ ok(!ev.candidates.some((c) => c.trigger === 'G2'), 'G2 não passa com 14% abaixo
 // G2 acima de 40% => revisão humana
 ev = evaluateProduct(product({ minEvent: null, offers: [offer({ offerId: 'a', priceCents: 22000 }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })] }), ctx);
 const g2r = ev.candidates.find((c) => c.trigger === 'G2');
-ok(!!g2r && g2r.status === 'review' && g2r.reviewReasons.some((r) => r.includes('40pct')), 'G2 > 40% vai para revisão humana', g2r?.reviewReasons);
+ok(!!g2r && g2r.status === 'review' && g2r.reviewReasons.some((r) => r.includes('45pct')), 'G2 > 45% (onda 2; era 40%) vai para revisão humana', g2r?.reviewReasons);
 // Menos de 3 lojas
 ev = evaluateProduct(product({ offers: [offer({ offerId: 'a', priceCents: 29199 }), offer({ offerId: 'b', priceCents: 45000 })] }), ctx);
 ok(!ev.candidates.some((c) => c.trigger === 'G1' || c.trigger === 'G2'), 'sem 3 lojas não dispara');
@@ -329,7 +329,7 @@ ok(ev.candidates.every((c) => !/amazon/i.test(c.texts.telegram + c.texts.whatsap
 // Shopee só com aprovação
 ev = evaluateProduct(product({ offers: [offer({ offerId: 'sp', priceCents: 25000, networkSlug: 'shopee', networkName: 'Shopee' }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })], minEvent: null }), ctx);
 const sp = ev.candidates.find((c) => c.offerIds[0] === 'sp');
-ok(!!sp && sp.status === 'review' && sp.reviewReasons.includes('shopee_so_com_aprovacao_humana'), 'Shopee exige aprovação humana', sp);
+ok(!!sp && !sp.reviewReasons.includes('shopee_so_com_aprovacao_humana'), 'onda 2: Shopee sem queda > 20% não exige aprovação só por ser Shopee (a reconferência ao vivo é obrigatória no envio)', sp);
 // Link pendente / quarentena / preço velho / não reconfirmado
 for (const [nm, ov] of [
   ['link pendente', { affiliateLinkPending: true }],
@@ -363,7 +363,7 @@ const g3p = product({
 });
 ev = evaluateProduct(g3p, ctx);
 const g3 = ev.candidates.find((c) => c.trigger === 'G3');
-ok(!!g3 && g3.status === 'review' && g3.offerIds.join() === 'x,y', 'G3 Shopee x ML passa só como revisão', g3);
+ok(!!g3 && g3.offerIds.join() === 'x,y' && !g3.reviewReasons.includes('shopee_so_com_aprovacao_humana'), 'G3 Shopee x ML: Shopee deixa de exigir aprovação só por ser Shopee', g3);
 ok(!!g3 && g3.texts.whatsapp.includes('na Shopee:') && g3.texts.whatsapp.includes('no Mercado Livre:'), 'G3 texto com as duas lojas');
 
 // G5
@@ -409,10 +409,10 @@ ok(isNightHour(new Date('2026-11-11T10:59:00Z')), 'noite às 7h59 local');
 ok(!isNightHour(new Date('2026-11-11T11:00:00Z')), 'dia às 8h local');
 ok(isNightHour(new Date('2026-11-11T09:00:00Z')), 'noite às 6h local');
 eq(isNightHour(new Date('2026-11-11T00:50:00Z')), false, '21h50 local ainda não é noite');
-eq(dailyCap(new Date('2026-11-12T15:00:00Z')), 30, 'teto normal 30/dia');
-eq(dailyCap(new Date('2026-11-20T15:00:00Z')), 40, 'teto 40/dia em 20/11');
-eq(dailyCap(new Date('2026-11-27T15:00:00Z')), 40, 'teto 40/dia em 27/11');
-eq(dailyCap(new Date('2026-11-28T15:00:00Z')), 30, 'teto volta a 30 em 28/11');
+eq(dailyCap(new Date('2026-11-12T15:00:00Z')), 400, 'teto normal 400/dia (dono, 2026-11-11)');
+eq(dailyCap(new Date('2026-11-20T15:00:00Z')), 400, 'teto 400/dia em 20/11');
+eq(dailyCap(new Date('2026-11-27T15:00:00Z')), 400, 'teto 400/dia em 27/11');
+eq(dailyCap(new Date('2026-11-28T15:00:00Z')), 400, 'teto 400/dia em 28/11');
 let plan = applyLimits([cand('1')], [], new Date('2026-11-11T01:00:00Z'));
 ok(plan.next?.masterProductId === '1' && plan.nextSound === false, 'à noite o alerta SAI, mas silencioso (sem som)', plan);
 plan = applyLimits([cand('1')], [], midday);
@@ -420,30 +420,32 @@ ok(plan.next?.masterProductId === '1' && plan.nextSound === true, 'de dia e sem 
 const sent = (id: string, hoursAgo: number, net = 'mercado-livre', price = 10000, extra: Partial<SentRecord> = {}): SentRecord => ({
   masterProductId: id, priceCents: price, sentAt: new Date(midday.getTime() - hoursAgo * H), networkSlug: net, cls: 'alerta', sound: true, ...extra,
 });
-plan = applyLimits([cand('1')], [sent('9', 0.1)], midday);
-ok(plan.next === null && plan.deferred[0]?.reason.startsWith('intervalo_minimo_alerta'), 'intervalo mínimo de 15 min entre alertas', plan);
+plan = applyLimits([cand('1')], [sent('9', 0.005)], midday);
+ok(plan.next === null && plan.deferred[0]?.reason.startsWith('intervalo_minimo_'), 'intervalo mínimo de 1 min entre mensagens', plan);
 plan = applyLimits([cand('1')], [sent('9', 0.5)], midday);
 ok(plan.next?.masterProductId === '1', 'depois de 30 min o alerta cabe de novo');
-const full = Array.from({ length: 30 }, (_, i) => sent(`h${i}`, 0.3 + i * 0.01, 'shopee', 1, { cls: 'insight', sound: false }));
+const full = Array.from({ length: 60 }, (_, i) => sent(`h${i}`, 0.3 + i * 0.01, 'shopee', 1, { cls: 'insight', sound: false }));
 plan = applyLimits([cand('1')], full, new Date(midday.getTime()));
-ok(plan.next === null && plan.deferred[0]?.reason === 'teto_diario_30', 'teto diário 30', plan);
+ok(plan.next === null && plan.deferred[0]?.reason === 'teto_horario_60', 'teto de 60 por hora', plan);
 const bfNow = new Date('2026-11-21T15:00:00Z');
-const bfHist = Array.from({ length: 31 }, (_, i) => ({ masterProductId: `h${i}`, priceCents: 1, sentAt: new Date(bfNow.getTime() - (i + 1) * 60_000), networkSlug: 'shopee', cls: 'insight' as const, sound: false }));
+const bfHist = Array.from({ length: 31 }, (_, i) => ({ masterProductId: `h${i}`, priceCents: 1, sentAt: new Date(bfNow.getTime() - (i + 1) * 180_000), networkSlug: 'shopee', cls: 'insight' as const, sound: false }));
 plan = applyLimits([cand('1')], bfHist, bfNow);
-ok(plan.next?.masterProductId === '1', 'semana da BF: 31 enviados ainda cabem (teto 40)', plan);
+ok(plan.next?.masterProductId === '1', 'semana da BF: 31 enviados ainda cabem (teto 400)', plan);
 // dedup 48 h
-plan = applyLimits([cand('1')], [sent('1', 10)], midday);
-ok(plan.next === null && plan.deferred[0]?.reason.startsWith('produto_ja_enviado'), 'dedup 48 h por produto', plan);
-plan = applyLimits([cand('1')], [sent('1', 49)], midday);
-ok(plan.next?.masterProductId === '1', 'após 48 h o produto pode voltar');
-eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 7, 'mercado-livre', 10000)], midday), null, 'novo menor preço >= 5% depois de 6 h rompe a janela');
-eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'OK1' }, [sent('1', 7, 'mercado-livre', 10000)], midday), null, 'OK1 (novo mínimo) também rompe a janela');
-ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 3, 'mercado-livre', 10000)], midday) !== null, 'antes de 6 h não rompe');
-ok(productDedupBlock({ masterProductId: '1', priceCents: 9800, trigger: 'G1' }, [sent('1', 7, 'mercado-livre', 10000)], midday) !== null, 'menos de 5% não rompe');
-ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G2' }, [sent('1', 7, 'mercado-livre', 10000)], midday) !== null, 'só G1/OK1 rompem a janela');
+plan = applyLimits([cand('1')], [sent('1', 1)], midday);
+ok(plan.next === null && plan.deferred[0]?.reason.startsWith('produto_ja_enviado'), 'dedup por produto (90 min)', plan);
+plan = applyLimits([cand('1')], [sent('1', 1.6)], midday);
+ok(plan.next?.masterProductId === '1', 'após 90 min o produto pode voltar');
+eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday), null, 'novo menor preço (menor que o enviado) repete depois de 30 min');
+eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'OK1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday), null, 'OK1 (novo mínimo) também repete depois de 30 min');
+ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 0.3, 'mercado-livre', 10000)], midday) !== null, 'antes de 30 min não repete');
+ok(productDedupBlock({ masterProductId: '1', priceCents: 10000, trigger: 'G1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday) !== null, 'sem preço menor que o enviado não repete');
+ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G2' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday) !== null, 'só G1/OK1 repetem antes de 90 min');
 // rodízio (alertas com 20 min de intervalo da última)
+plan = applyLimits([cand('1', 'mercado-livre', 'G1', 40), cand('2', 'shopee', 'G2', 35)], [sent('9', 2, 'mercado-livre', 10000, { vertical: 'games' })], midday);
+eq(plan.next?.masterProductId, '2', 'diversidade (desempate): troca a rede da última quando o movimento é parecido (>= 70%)');
 plan = applyLimits([cand('1', 'mercado-livre', 'G1', 40), cand('2', 'shopee', 'G2', 20)], [sent('9', 2, 'mercado-livre')], midday);
-eq(plan.next?.masterProductId, '2', 'rodízio: não repete a rede da última mensagem');
+eq(plan.next?.masterProductId, '1', 'diversidade só desempata: movimento bem menor não passa na frente');
 plan = applyLimits([cand('1', 'mercado-livre', 'G1', 40), cand('2', 'mercado-livre', 'G2', 20)], [], midday);
 eq(plan.next?.masterProductId, '1', 'prioridade G1 antes de G2');
 // revisão humana e retida nunca saem sozinhas
