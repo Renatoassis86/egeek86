@@ -3,7 +3,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { getAdTag } from '@/lib/messaging/group-config';
-import { formatOfferMessage, makeMessageKey, withCouponBlock } from '@/lib/messaging/group-messages';
+import { formatOfferMessage, makeMessageKey, withCouponBlock, withWhatsappGroup } from '@/lib/messaging/group-messages';
 import { lookupItemCoupon } from '@/server/messaging/coupon-item-lookup';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
       'tg'
     );
     const coupon = await lookupItemCoupon(r.id).catch(() => null);
-    const text = withCouponBlock(text0, coupon, 'tg', now);
+    const text = withWhatsappGroup(withCouponBlock(text0, coupon, 'tg', now), store?.whatsappGroupUrl, 'tg');
     if (dry) {
       out.push({ offer: r.id, text });
       continue;

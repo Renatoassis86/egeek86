@@ -610,7 +610,7 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
   const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
-  return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, link, monBlock, [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+  return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, link, monBlock, amz ? null : promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
 /** Indicador da Black Friday: só durante a campanha de novembro/2026; depois some e a mensagem volta ao padrão (dono, 2026-11-11). */
@@ -713,6 +713,23 @@ export function sellerLine(o: MsgOffer): string | null {
   const n = o.seller.totalSales ?? 0;
   const vendas = n >= 1000 ? `mais de ${Math.floor(n / 1000)} mil vendas` : n >= 100 ? `mais de ${Math.floor(n / 100) * 100} vendas` : null;
   return `reputação ${rep === '5_green' ? 'verde (nível máximo)' : 'verde-clara'}${vendas ? `, ${vendas}` : ''}`;
+}
+
+/** Divulgação do site no fim da mensagem (dono, 2026-11-11). O link do grupo de WhatsApp de cada loja é acrescentado no envio (ver withWhatsappGroup). */
+export const PROMO_MARK = 'Histórico completo: ';
+export function promoLine(channel: GroupChannel, messageKey: string): string {
+  const url = `${GROUP_LINK_BASE}/?s=${channel}&m=${messageKey}`;
+  return channel === 'tg' ? `${PROMO_MARK}<a href="${escapeTelegramAttr(url)}">egeek86.com</a>` : `${PROMO_MARK}${url}`;
+}
+
+/** Acrescenta "Grupo no WhatsApp: <link>" logo abaixo da divulgação do site. Sem link da loja, devolve o texto como veio. */
+export function withWhatsappGroup(text: string, groupUrl: string | null | undefined, channel: GroupChannel): string {
+  if (!groupUrl || !/^https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com)\/[^\s<>"]+$/.test(groupUrl)) return text;
+  const at = text.indexOf(PROMO_MARK);
+  if (at < 0) return text;
+  const end = text.indexOf('\n', at);
+  const line = `${channel === 'tg' ? '<b>Grupo no WhatsApp:</b>' : '*Grupo no WhatsApp:*'} ${channel === 'tg' ? escapeTelegramHtml(groupUrl) : groupUrl}`;
+  return end < 0 ? `${text}\n${line}` : `${text.slice(0, end)}\n${line}${text.slice(end)}`;
 }
 
 /** Slogan do rodapé (dono, 2026-11-11: a diferença do grupo é a informação para decidir). Configurável: GROUP_MESSAGES_SLOGAN. */

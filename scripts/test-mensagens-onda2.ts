@@ -498,7 +498,7 @@ ok(lines[1] === '<b>R$ 94,00</b> no Mercado Livre', 'linha 2: preço em negrito 
 ok(paras[2].includes('• <b>Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && tg.includes('• <b>Menor registrado:</b> novo menor preço') && tg.includes('• <b>Histórico:</b> mais barato que em') && tg.includes('• <b>Leitura:</b> favorável') && tg.includes('• <b>Black Friday:</b> faltam 16 dias (27/11)'), 'tópicos: variação vs média em destaque; monitoramento (menor registrado, histórico, leitura, Black Friday) no fim', paras[2]);
 const bq = tg.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
 ok(!!bq && bq[1].startsWith('<b>Monitoramento</b>') && tg.indexOf('Monitoramento') > tg.indexOf('Vs. média das lojas') && tg.indexOf('Monitoramento') < tg.indexOf('Conferido em'), 'monitoramento num bloco só, no fim da mensagem (antes do rodapé)', bq?.[1]);
-ok(!tg.includes('/go/') && !tg.includes('<a '), 'Telegram sem URL no texto (o link vai no botão inline)');
+ok(!tg.includes('/go/') && (tg.match(/<a /g) ?? []).length === 1 && tg.includes('Histórico completo: <a href="https://www.egeek86.com/?s=tg&amp;m='), 'Telegram: sem link /go/ no texto (o botão cuida); só a divulgação do site como link');
 ok(tg.includes('• <b>Vendedor:</b> reputação verde'), 'tópico do vendedor ML (reputação verde)');
 const tgLines = tg.split('\n');
 ok(tgLines[tgLines.length - 2] === '<i>Conferido em 11/11 às 10:50 (Brasília). #publicidade</i>' && tgLines[tgLines.length - 1] === '<i>Espaço Geek 86 · Quem monitora, compra melhor.</i>', 'rodapé: carimbo com #publicidade e, por último, o slogan', tgLines.slice(-2));

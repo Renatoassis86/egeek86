@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { canSendTelegram, getAdTag } from '@/lib/messaging/group-config';
 import { dispositionOf, rowStatusFor, type AutomationState } from '@/lib/messaging/group-automation';
-import { withCouponBlock, buildGoLink, type CouponInfo } from '@/lib/messaging/group-messages';
+import { withCouponBlock, withWhatsappGroup, buildGoLink, type CouponInfo } from '@/lib/messaging/group-messages';
 import {
   RULES,
   applyLimits,
@@ -512,6 +512,8 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     }
     // Um grupo por área (dono, 2026-11-11): games no grupo principal; cada outra área no seu, sem misturar. Sem grupo da área, não envia.
     const storeRow = await getStoreByVertical(match.vertical).catch(() => null);
+    // Link do grupo de WhatsApp da loja (dono, 2026-11-11): vem do cadastro da loja; sem link, nada aparece.
+    text = withWhatsappGroup(text, storeRow?.whatsappGroupUrl, 'tg');
     const targetChat = (storeRow ? chatForStore(storeRow, env) : undefined) ?? telegramChatFor(match.vertical, env);
     if (!targetChat) {
       await expire(`sem_grupo_do_departamento_${match.vertical}`);
