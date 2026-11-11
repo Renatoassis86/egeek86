@@ -4,6 +4,7 @@ import { isGroupMessagesEnabled } from '@/lib/messaging/group-config';
 import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
 import { renderHistoryCard } from '@/server/messaging/price-card';
 import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
+import { lookupItemCoupon } from '@/server/messaging/coupon-item-lookup';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { discoverStoreChats } from '@/server/stores-discover';
 
@@ -44,7 +45,8 @@ export async function GET(request: NextRequest) {
       const input = await loadOfferCardInput(offerId);
       return input ? ((await renderOfferCard(input))?.png ?? null) : null;
     },
-    couponLookup: lookupVerifiedCoupon,
+    // Cupom do ANÚNCIO (lido na página do item, 2 h) primeiro; depois o cupom verificado de loja/categoria.
+    couponLookup: async (offerId: string) => (await lookupItemCoupon(offerId).catch(() => null)) ?? lookupVerifiedCoupon(offerId),
   });
   return NextResponse.json(summary, { status: summary.ok ? 200 : 500 });
 }

@@ -3,7 +3,8 @@ import { timingSafeEqual } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { getAdTag } from '@/lib/messaging/group-config';
-import { formatOfferMessage, makeMessageKey } from '@/lib/messaging/group-messages';
+import { formatOfferMessage, makeMessageKey, withCouponBlock } from '@/lib/messaging/group-messages';
+import { lookupItemCoupon } from '@/server/messaging/coupon-item-lookup';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { chatForStore, getStoreByVertical } from '@/server/stores';
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
       continue;
     }
     const messageKey = makeMessageKey('G2', `teste:${r.id}:${now.toISOString().slice(0, 13)}`, now);
-    const text = formatOfferMessage(
+    const text0 = formatOfferMessage(
       {
         model: 'media',
         vertical,
@@ -93,6 +94,8 @@ export async function GET(request: NextRequest) {
       },
       'tg'
     );
+    const coupon = await lookupItemCoupon(r.id).catch(() => null);
+    const text = withCouponBlock(text0, coupon, 'tg', now);
     if (dry) {
       out.push({ offer: r.id, text });
       continue;
