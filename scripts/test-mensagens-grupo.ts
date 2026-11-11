@@ -276,7 +276,7 @@ function product(over: Partial<ProductFacts> = {}): ProductFacts {
     ...over,
   };
 }
-const ctx = { now: NOW, maxAgeMin: 120, adTag: AD };
+const ctx = { now: NOW, maxAgeMin: 120, adTag: AD, minBelowAvgPct: 0 };
 
 // G1 positivo (Tomba: queda 16,6% e 32% abaixo da média)
 let ev = evaluateProduct(product(), ctx);
@@ -292,7 +292,7 @@ ok(!ev.candidates.some((c) => c.trigger === 'G1'), 'G1 não passa com queda < 8%
 ok(ev.candidates.some((c) => c.trigger === 'G2'), 'mesmo produto vira G2 (>= 15% abaixo da média)');
 // G2: 14% abaixo da média não passa
 ev = evaluateProduct(product({ minEvent: null, offers: [offer({ offerId: 'a', priceCents: 37000 }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })] }), ctx);
-ok(!ev.candidates.some((c) => c.trigger === 'G2'), 'G2 não passa com 14% abaixo da média');
+ok(ev.candidates.some((c) => c.trigger === 'G2'), 'G2 (legado) passa com 14% abaixo da média: a régua agora é 10%');
 // G2 acima de 40% => revisão humana
 ev = evaluateProduct(product({ minEvent: null, offers: [offer({ offerId: 'a', priceCents: 22000 }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })] }), ctx);
 const g2r = ev.candidates.find((c) => c.trigger === 'G2');
@@ -432,8 +432,8 @@ const bfHist = Array.from({ length: 31 }, (_, i) => ({ masterProductId: `h${i}`,
 plan = applyLimits([cand('1')], bfHist, bfNow);
 ok(plan.next?.masterProductId === '1', 'semana da BF: 31 enviados ainda cabem (teto 400)', plan);
 // dedup 48 h
-plan = applyLimits([cand('1')], [sent('1', 1)], midday);
-ok(plan.next === null && plan.deferred[0]?.reason.startsWith('produto_ja_enviado'), 'dedup por produto (90 min)', plan);
+plan = applyLimits([cand('1')], [sent('1', 0.5)], midday);
+ok(plan.next === null && plan.deferred[0]?.reason.startsWith('produto_ja_enviado'), 'dedup por produto (1 h)', plan);
 plan = applyLimits([cand('1')], [sent('1', 1.6)], midday);
 ok(plan.next?.masterProductId === '1', 'após 90 min o produto pode voltar');
 eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday), null, 'novo menor preço (menor que o enviado) repete depois de 30 min');

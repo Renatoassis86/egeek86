@@ -150,7 +150,7 @@ function product(over: Partial<ProductFacts> = {}): ProductFacts {
     ...over,
   };
 }
-const ctx = { now: NOW, maxAgeMin: 120, adTag: AD, amazonMaxAgeMin: 60, amazonPaused: false };
+const ctx = { now: NOW, maxAgeMin: 120, adTag: AD, amazonMaxAgeMin: 60, amazonPaused: false, minBelowAvgPct: 0 };
 
 let ev = evaluateProductV2(product(), ctx);
 const ok1 = ev.candidates.find((c) => c.trigger === 'OK1');
@@ -368,9 +368,9 @@ lp = applyLimits([mkc('1', 'alerta')], eight.map((r) => ({ ...r, cls: 'insight' 
 ok(lp.next !== null && lp.nextSound === false, 'com 20 sons já usados o alerta ainda SAI, em silêncio', lp);
 // dedup (dono, 2026-11-11): mesmo produto só depois de 90 min; novo mínimo com preço menor repete depois de 30 min
 const dd = (price: number, trigger: Candidate['trigger'], minAgo: number, over: Partial<SentRecord> = {}) => productDedupBlock({ masterProductId: 'x', priceCents: price, trigger, cls: trigger === 'OK1' ? 'alerta' : 'radar' }, [rec('x', minAgo, { cls: 'radar', ...over })], NOW);
-ok(dd(10000, 'T2', 89) !== null, 'mesmo produto com 89 min: bloqueia');
-eq(dd(10000, 'T2', 91), null, 'mesmo produto com 91 min: libera (antes eram 24 h/48 h)');
-ok(dd(9000, 'T2', 60) !== null, 'só T2 com preço menor NÃO rompe os 90 min');
+ok(dd(10000, 'T2', 59) !== null, 'mesmo produto com 59 min: bloqueia');
+eq(dd(10000, 'T2', 61), null, 'mesmo produto com 61 min: libera (antes eram 24 h/48 h)');
+ok(dd(9000, 'T2', 45) !== null, 'só T2 com preço menor NÃO rompe a 1 h');
 ok(dd(9000, 'OK1', 29) !== null, 'novo mínimo antes de 30 min não repete');
 eq(dd(9000, 'OK1', 30), null, 'novo mínimo com preço menor repete depois de 30 min');
 ok(dd(10000, 'OK1', 45) !== null, 'novo mínimo SEM preço menor que o enviado não repete antes de 90 min');

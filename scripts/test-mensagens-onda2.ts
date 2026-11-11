@@ -262,7 +262,7 @@ function product(over: Partial<ProductFacts> = {}): ProductFacts {
     ...over,
   };
 }
-const ctx = { now: NOW, maxAgeMin: 180, adTag: AD, amazonMaxAgeMin: 60, amazonPaused: false };
+const ctx = { now: NOW, maxAgeMin: 180, adTag: AD, amazonMaxAgeMin: 60, amazonPaused: false, minBelowAvgPct: 0 };
 let ev = evaluateProductV2(product({ masterName: 'Hokko Life Nintendo Switch Europeu', offers: [offer({ offerId: 'a', priceCents: 9400, title: 'Hokko Life Nintendo Switch Europeu' }), offer({ offerId: 'b', priceCents: 11000, title: 'Hokko Life Nintendo Switch Europeu' }), offer({ offerId: 'c', priceCents: 12000, title: 'Hokko Life Nintendo Switch Europeu' })] }), ctx);
 ok(ev.candidates.length === 0 && ev.blocked.some((b) => b.reasons.includes('regiao_no_nome_do_master')), 'Hokko Life Europeu não vira alerta (era OK2 enviável)', ev.blocked);
 
@@ -379,8 +379,8 @@ lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.2)], NOW, { ignoreSpacing: tr
 ok(lp.next !== null, 'o envio manual ignora o intervalo mínimo');
 // mesmo produto: 90 min (exceto novo mínimo, que repete depois de 30 min com preço menor)
 const price9 = { priceCents: 9000 };
-lp = applyLimits([mkc('p', 'insight', { ...price9 })], [rec('p', 89, { cls: 'insight', priceCents: 10000 })], NOW);
-ok(lp.next === null && lp.deferred[0].reason.startsWith('produto_ja_enviado_ha_89'), 'mesmo produto com 89 min: bloqueia (mesmo com preço 10% menor, se não é novo mínimo)', lp.deferred);
+lp = applyLimits([mkc('p', 'insight', { ...price9 })], [rec('p', 59, { cls: 'insight', priceCents: 10000 })], NOW);
+ok(lp.next === null && lp.deferred[0].reason.startsWith('produto_ja_enviado_ha_59'), 'mesmo produto com 59 min: bloqueia (mesmo com preço 10% menor, se não é novo mínimo)', lp.deferred);
 lp = applyLimits([mkc('p', 'insight', { ...price9 })], [rec('p', 91, { cls: 'insight', priceCents: 10000 })], NOW);
 ok(lp.next !== null, 'mesmo produto com 91 min: pode');
 lp = applyLimits([mkc('p', 'alerta', { ...price9 })], [rec('p', 31, { priceCents: 10000 })], NOW);
@@ -388,10 +388,10 @@ ok(lp.next !== null, 'novo mínimo (OK1) com preço menor repete depois de 30 mi
 lp = applyLimits([mkc('p', 'alerta', { ...price9 })], [rec('p', 29, { priceCents: 10000 })], NOW);
 ok(lp.next === null, 'novo mínimo antes de 30 min não repete');
 lp = applyLimits([mkc('p', 'alerta')], [rec('p', 31, { priceCents: 10000 })], NOW);
-ok(lp.next === null, 'OK1 sem preço menor que o enviado espera os 90 min');
-ok(productGapBlock({ masterProductId: 'z', trigger: 'RADAR', items: [{ masterProductId: 'q', offerId: 'o', priceCents: 1, kind: 'T2' }] }, [rec('q', 80, { itemOnly: true, cls: 'radar' })], NOW) !== null, 'o item de um radar conta no mesmo-produto-90min');
-ok(productGapBlock({ masterProductId: 'z', trigger: 'RADAR', items: [{ masterProductId: 'q', offerId: 'o', priceCents: 1, kind: 'T2' }] }, [rec('q', 100, { itemOnly: true, cls: 'radar' })], NOW) === null, 'item de radar com 100 min: libera');
-lp = applyLimits([mkc('p', 'insight')], [rec('p', 60, { cls: 'insight' })], NOW, { ignoreSpacing: true });
+ok(lp.next === null, 'OK1 sem preço menor que o enviado espera a 1 h');
+ok(productGapBlock({ masterProductId: 'z', trigger: 'RADAR', items: [{ masterProductId: 'q', offerId: 'o', priceCents: 1, kind: 'T2' }] }, [rec('q', 50, { itemOnly: true, cls: 'radar' })], NOW) !== null, 'o item de um radar conta no mesmo-produto-1h');
+ok(productGapBlock({ masterProductId: 'z', trigger: 'RADAR', items: [{ masterProductId: 'q', offerId: 'o', priceCents: 1, kind: 'T2' }] }, [rec('q', 70, { itemOnly: true, cls: 'radar' })], NOW) === null, 'item de radar com 70 min: libera');
+lp = applyLimits([mkc('p', 'insight')], [rec('p', 40, { cls: 'insight' })], NOW, { ignoreSpacing: true });
 ok(lp.next === null, 'a duplicata do produto vale também no envio manual');
 // radar composto: 45 min e hora cheia (opcional, desligado por padrão)
 ok(RULES.RADAR_COMPOSITE_ENABLED === false, 'radar composto é opcional e vem desligado (uma mensagem por item)');
@@ -479,7 +479,7 @@ ok(lp.next !== null && lp.nextSound === false, 'dono: sem janela de horário nen
 // ---------------------------------------------------------------------------
 // 10) Tetos
 // ---------------------------------------------------------------------------
-ok(RULES.DAILY_CAP === 400 && RULES.HOURLY_CAP === 60 && RULES.SOUND_CAP === 20 && RULES.PRODUCT_GAP_MIN === 90 && RULES.NEW_MIN_REPEAT_MIN === 30, 'tetos: 400/dia, 60/hora, 20 sonoras, mesmo produto 90 min (novo mínimo 30 min)');
+ok(RULES.DAILY_CAP === 400 && RULES.HOURLY_CAP === 60 && RULES.SOUND_CAP === 20 && RULES.PRODUCT_GAP_MIN === 60 && RULES.MIN_BELOW_AVG_PCT === 10 && RULES.NEW_MIN_REPEAT_MIN === 30, 'tetos: 400/dia, 60/hora, 20 sonoras, mesmo produto 1 h (novo mínimo 30 min), régua de 10% abaixo da média');
 ok(RULES.DETECT_MAX_AGE_MIN === 180, 'frescor na detecção: 3 h');
 ok(RULES.GREEN_MAX_BELOW_AVG_PCT === 30 && RULES.GREEN_MAX_DROP_PCT === 30 && RULES.REVIEW_ABOVE_BELOW_AVG_PCT === 45 && RULES.REVIEW_ABOVE_DROP_PCT === 45 && RULES.SHOPEE_AUTO_MAX_DROP_PCT === 20, 'faixas: verde até 30%, aprovação 30-45, retida > 45; Shopee até 20%');
 
@@ -514,6 +514,13 @@ ok(ok2.texts.telegram.includes('9,0% a menos que ontem (R$ 100,00)') && ok2.text
 const medMsg = evaluateProductV2(medProduct(), ctx).candidates.find((c) => c.trigger === 'G2') as Candidate;
 ok(medMsg.texts.telegram.includes('4,3% abaixo (R$ 5,00); média R$ 115,00') && medMsg.texts.telegram.includes('este preço é 10,0% maior'), 'G2: variação vs média e distância do menor registrado como tópicos', medMsg.texts.telegram);
 ok(!medMsg.texts.telegram.includes('📉') && countEmojis(medMsg.texts.telegram) === 0, 'G2 não leva o marcador de queda (não houve queda)');
+// Régua de 10% (dono, 2026-11-11): só se envia preço pelo menos 10% abaixo da média única (contexto SEM o override dos testes legados)
+const realCtx = { ...ctx, minBelowAvgPct: undefined };
+const gap4 = evaluateProductV2(medProduct(), realCtx).candidates.find((c) => c.trigger === 'G2');
+ok(!!gap4 && !gap4.sendable && /abaixo_da_media_menos_de_10pct/.test(gap4.notSendableReason ?? ''), 'régua: 4,3% abaixo da média NÃO é enviável', gap4?.notSendableReason);
+ok(evaluateProductV2(medProduct(), ctx).candidates.some((c) => c.trigger === 'G2' && c.sendable), 'contexto legado (régua desligada) segue enviando 4,3%');
+const gap18 = evaluateProductV2(product({ series: days([10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]), offers: [offer({ offerId: 'a', priceCents: 9400 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), realCtx).candidates.find((c) => c.cls === 'alerta' || c.cls === 'insight');
+ok(!!gap18 && gap18.sendable, 'régua: preço bem abaixo da média (>= 10%) é enviável', gap18?.notSendableReason);
 // escape HTML do título e limite
 const evilName = 'Zelda <b>&</b> "Tears" > Kingdom';
 const evilMsg = formatOfferMessage(

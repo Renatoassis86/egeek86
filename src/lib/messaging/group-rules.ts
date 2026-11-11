@@ -23,7 +23,8 @@ export const RULES = {
   /** G1 (legado): queda mínima sobre o menor anterior. */
   G1_MIN_DROP_PCT: 8,
   /** G1/G2/G3: abaixo da média mínimo. */
-  MIN_BELOW_AVG_PCT: 15,
+  /** Régua de preço (dono, 2026-11-11): só se envia mensagem de preço quando a cotação do dia está pelo menos este % ABAIXO da média única oferta-dia (era 15). */
+  MIN_BELOW_AVG_PCT: 10,
   /** Acima disso fica RETIDO (nunca sai sozinho). Onda 2: > 45% contra a média (era 40%). */
   REVIEW_ABOVE_BELOW_AVG_PCT: 45,
   /** Queda sobre o preço anterior acima disso: retido. */
@@ -125,8 +126,8 @@ export const RULES = {
   SPACING_NIGHT_MIN: 1,
   /** Amplitude do jitter determinístico por hora (dia + hora). 0 = desligado (decisão do dono). */
   SPACING_JITTER_MIN: 0,
-  /** Mesmo produto: no mínimo 90 min entre duas mensagens (dono, 2026-11-11; substitui 48 h/24 h/3 h). */
-  PRODUCT_GAP_MIN: 90,
+  /** Mesmo produto (mesmo vendedor, mesmo preço): só volta depois de 1 h, se ainda estiver ativo (dono, 2026-11-11, régua anti-saturação). */
+  PRODUCT_GAP_MIN: 60,
   /** Novo mínimo (OK1/G1) pode repetir o produto depois disto, se o preço for menor que o do último envio. */
   NEW_MIN_REPEAT_MIN: 30,
   /** Proposta (e proposta automática) com mais de 6 h expira. */
@@ -461,6 +462,8 @@ export interface Blocked {
 }
 
 export interface EvalContext {
+  /** Régua de preço: % mínimo abaixo da média única para enviar. Padrão RULES.MIN_BELOW_AVG_PCT (10); 0 desliga (só testes legados). */
+  minBelowAvgPct?: number;
   now: Date;
   maxAgeMin: number;
   adTag: string;
@@ -475,7 +478,7 @@ export function windowKey(now: Date): string {
   const ms = now.getTime() - 3 * 3600_000; // Brasil sem horário de verão: UTC-3 fixo
   const d = new Date(ms);
   const day = d.toISOString().slice(0, 10).replace(/-/g, '');
-  return `${day}-${Math.floor(d.getUTCHours() / 2)}`; // janela de 2 h (era 6 h): o canal fica movimentado e o mesmo produto pode voltar quando o preço mexe
+  return `${day}-${d.getUTCHours()}`; // janela de 2 h (era 6 h): o canal fica movimentado e o mesmo produto pode voltar quando o preço mexe
 }
 
 /** Título limpo e "Switch · mídia física" separados, para o layout novo (título em negrito, plataforma em itálico). */
@@ -532,8 +535,16 @@ export function finish(
     rendered = { telegram: '', whatsapp: '', problems: [] };
     problems = [e instanceof Error ? e.message : 'erro ao montar texto'];
   }
+  // Régua de 10% (dono, 2026-11-11): mensagem de preço (alerta, insight, radar) só com preço >= 10% abaixo da média única.
+  const priceClass = (base.cls ?? TRIGGER_CLASS[trigger]) as MessageClass;
+  const belowAvgPct = base.avgCents != null && base.avgCents > 0 ? ((base.avgCents - base.primary.priceCents) / base.avgCents) * 100 : null;
+  const minBelow = ctx.minBelowAvgPct ?? RULES.MIN_BELOW_AVG_PCT;
+  const belowRule =
+    minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
+      ? `abaixo_da_media_menos_de_${minBelow}pct`
+      : null;
   const notSendable =
-    base.notSendable ?? (problems.length ? `texto reprovado: ${problems.join('; ')}` : null) ?? null;
+    base.notSendable ?? belowRule ?? (problems.length ? `texto reprovado: ${problems.join('; ')}` : null) ?? null;
   const reviewReasons = relaxShopee(base.reviewReasons, base.primary, base.dropPct);
   return {
     messageKey: input.messageKey,
@@ -1207,7 +1218,7 @@ export function isSummarySlot(now: Date): boolean {
 }
 
 /**
- * Duplicata do produto (dono, 2026-11-11): o mesmo produto só repete depois de 90 min. Exceção: novo mínimo (OK1/G1) com preço
+ * Duplicata do produto (dono, 2026-11-11): o mesmo produto só repete depois de 1 h. Exceção: novo mínimo (OK1/G1) com preço
  * MENOR que o do último envio pode repetir depois de 30 min.
  */
 export function productDedupBlock(
