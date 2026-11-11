@@ -22,9 +22,10 @@ export const config = {
      * Match all paths exceto:
      * - _next/static, _next/image, favicon, imagens
      * - rotas de webhook (precisam ser intocadas pelo middleware)
+     * - api/ingest (coleta assistida da Amazon: autenticada por token dedicado, CORS próprio, sem cookie de sessão)
      * - rotas de dados públicas da camada do cartão (api/produtos/[id]/grafico e /lojas): não precisam de sessão e devem ficar
      *   cacheáveis no CDN (sem refresh de cookie, sem chamada ao Supabase Auth, sem risco de Set-Cookie na resposta)
      */
-    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/produtos|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|api/ingest|api/produtos|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico)$).*)',
   ],
 };

@@ -26,7 +26,7 @@ import { WatchToggleButton } from '@/components/geek-deals/watch-toggle-button';
 import { ProductStoresTable } from '@/components/search/product-stores-table';
 import { CartToggleButton } from '@/components/affiliate/cart-toggle-button';
 import { GameAboutSection } from '@/components/affiliate/game-about-section';
-import { formatBRL, formatDiscountLabel } from '@/lib/format';
+import { formatBRL, formatBrasiliaStamp, formatDiscountLabel } from '@/lib/format';
 import { isLowestPrice } from '@/lib/affiliate/message-template';
 import {
   GAME_FORMAT_LABELS,
@@ -382,6 +382,12 @@ export default async function OfferDetailPage({ params }: { params: Promise<{ sl
                   </Badge>
                 </CardContent>
               </Card>
+            )}
+
+            {/^amazon/i.test((offer.storeName ?? '').trim()) && formatBrasiliaStamp(offer.lastCheckedAt) && (
+              <Text variant="caption" color="tertiary">
+                Preço na Amazon.com.br em {formatBrasiliaStamp(offer.lastCheckedAt)} (Brasília). Os preços e a disponibilidade dos produtos estão corretos na data e no horário indicados e poderão sofrer alterações.
+              </Text>
             )}
 
             <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">

@@ -1,4 +1,4 @@
-import { formatBRL } from '@/lib/format';
+import { formatBRL, formatBrasiliaStamp } from '@/lib/format';
 import { CommissionNotice } from '@/components/legal/commission-notice';
 import type { ProductStoreRow } from '@/server/queries/product-stores';
 
@@ -13,6 +13,8 @@ function ago(iso: string | null): string {
   const d = Math.floor(h / 24);
   return `há ${d} ${d === 1 ? 'dia' : 'dias'}`;
 }
+
+const isAmazon = (storeName: string) => /^amazon/i.test(storeName.trim());
 
 /**
  * Menor preço por loja do produto (só ofertas públicas), da mais barata para a
@@ -60,7 +62,9 @@ export function ProductStoresTable({
                         Menor preço
                       </span>
                     )}
-                    {when && <span className="block text-[12px] text-[var(--color-text-tertiary)]">Atualizado {when}</span>}
+                    {isAmazon(s.storeName) && formatBrasiliaStamp(s.checkedAt)
+                      ? <span className="block text-[12px] text-[var(--color-text-tertiary)]">Preço na Amazon.com.br em {formatBrasiliaStamp(s.checkedAt)} (Brasília)</span>
+                      : when && <span className="block text-[12px] text-[var(--color-text-tertiary)]">Atualizado {when}</span>}
                   </td>
                   <td className="px-2 py-2 text-right text-[16px] font-bold tabular-nums text-[var(--color-text-primary)]">
                     {formatBRL(s.priceCents)}
@@ -88,6 +92,11 @@ export function ProductStoresTable({
           </tbody>
         </table>
       </div>
+      {stores.some((s) => isAmazon(s.storeName)) && (
+        <p className="px-4 pb-2 text-[12px] text-[var(--color-text-tertiary)]">
+          Os preços e a disponibilidade dos produtos da Amazon estão corretos na data e no horário indicados e poderão sofrer alterações.
+        </p>
+      )}
       <CommissionNotice className="px-4 pb-4" />
     </section>
   );
