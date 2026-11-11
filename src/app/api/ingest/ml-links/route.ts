@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       SELECT o.id::text AS id,
              CASE WHEN o.external_item_id ~ '^MLB[0-9]+$' THEN 'https://produto.mercadolivre.com.br/MLB-' || substr(o.external_item_id, 4)
                   ELSE split_part(split_part(o.affiliate_url, '?', 1), '#', 1) END AS url,
-             row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn, o.master_product_id
+             row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn, o.master_product_id, (m.vertical = 'games') AS is_games
       FROM affiliate_offers o
       JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
       JOIN master_products m ON m.id = o.master_product_id
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
         AND o.current_price_cents > 0 AND o.affiliate_url NOT LIKE 'https://meli.la/%'
         AND o.affiliate_url ~ '^https://(produto|www)\\.mercadolivre\\.com\\.br/'
         AND (m.attributes->'catalogGate'->>'verdict') IS DISTINCT FROM 'review'
-    ) t ORDER BY t.rn ASC, t.master_product_id LIMIT ${n}`);
+    ) t ORDER BY t.is_games ASC, t.rn ASC, t.master_product_id LIMIT ${n}`); // lojas novas primeiro (dono, 2026-11-11: todas as lojas no ar hoje)
   const [tot] = await db.execute<{ n: number }>(sql`
     SELECT count(*)::int AS n FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
     JOIN master_products m ON m.id = o.master_product_id
