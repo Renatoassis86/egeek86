@@ -20,6 +20,7 @@ import {
   formatMoney,
   isFreshForCard,
   priceFontSize,
+  sellerLabel,
   stampLine,
   storePhrase,
   truncateTitle,
@@ -50,12 +51,13 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
   const rows = await db.execute<Row>(sql`
     SELECT o.id, o.master_product_id, o.status, o.current_price_cents, o.image_url,
            COALESCE(o.last_price_confirmed_at, o.last_checked_at) AS checked_at,
-           n.slug AS net_slug, n.name AS net_name, mp.name AS mp_name, mp.game_platform_gen,
+           n.slug AS net_slug, n.name AS net_name, mp.name AS mp_name, mp.game_platform_gen, COALESCE(NULLIF(o.store_name, ''), sl.nickname) AS seller_name,
            (${eligibleOfferSql('o')}) AS eligible,
            (o.affiliate_link_pending = false AND COALESCE(o.affiliate_url, '') <> '') AS link_ok
     FROM affiliate_offers o
     INNER JOIN affiliate_networks n ON n.id = o.network_id
     INNER JOIN master_products mp ON mp.id = o.master_product_id
+    LEFT JOIN affiliate_sellers sl ON sl.id = o.seller_id
     WHERE o.id = ${offerId}::uuid
   `);
   const r = rows[0];
@@ -112,6 +114,7 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
     title,
     platformLabel: platformLabel(rp.platform, rp.legacyLabel),
     store: String(r.net_name),
+    sellerName: sellerLabel(r.seller_name as string | null, String(r.net_name)),
     isAmazon,
     priceCents,
     checkedAt,
@@ -162,7 +165,8 @@ const abs = (left: number, top: number, extra: Record<string, string | number> =
 function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput; cover: string | null; logo: string | null; insight: string | null }) {
   const price = formatMoney(input.priceCents);
   const storeText = storePhrase(input.store);
-  const fs = priceFontSize(price, storeText);
+  const sellerText = input.sellerName ? `Vendido por ${input.sellerName}` : null;
+  const fs = priceFontSize(price, sellerText && sellerText.length > storeText.length ? sellerText : storeText);
   const panel = G.panel;
   const box = coverBox();
   const hasCover = cover != null;
@@ -196,7 +200,10 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
 
       <div style={abs(G.pad, G.priceTop, { width: G.contentW, height: G.priceBoxH, alignItems: 'flex-end' })}>
         <div style={{ display: 'flex', fontSize: fs.price, lineHeight: 1, color: C.text, letterSpacing: -2 }}>{price}</div>
-        <div style={{ display: 'flex', fontSize: fs.store, color: C.secondary, marginLeft: 22, marginBottom: Math.round(fs.price * 0.1) }}>{storeText}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 22, marginBottom: Math.round(fs.price * 0.1) }}>
+          <div style={{ display: 'flex', fontSize: fs.store, color: C.secondary }}>{storeText}</div>
+          {sellerText ? <div style={{ display: 'flex', fontSize: Math.round(fs.store * 0.9), color: C.gold, marginTop: 6 }}>{sellerText}</div> : null}
+        </div>
       </div>
 
       {insight ? (

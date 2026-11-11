@@ -231,6 +231,8 @@ export interface MsgOffer {
   seller?: { reputation: string | null; totalSales: number | null } | null;
   /** Link de afiliado do dono (meli.la, s.shopee, amazon com tag): aparece no TEXTO além do botão (o WhatsApp só tem o texto). */
   affiliateUrl?: string | null;
+  /** Loja/vendedor que dá este preço (dono, 2026-11-11): vai em destaque logo abaixo do preço. */
+  storeName?: string | null;
   /**
    * Selos (dono, 2026-11-11), SÓ com dado gravado para a oferta. Hoje o coletor NÃO guarda frete nem loja oficial: sem o dado, a linha
    * não existe. freeShipping só vale como `true` (false/undefined = nada aparece). officialStore = nome da loja oficial lido da API.
@@ -554,7 +556,9 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const pre = prefix(input, f);
   const italic = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
   const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
-  const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}`;
+  const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
+  const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
+  const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
   // Por tópicos, objetivo (dono, 2026-11-11): só o que ajuda a decidir; sem "série de N dias" nem frases longas.
   const topics: string[] = [];
   const price = o.priceCents;

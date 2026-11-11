@@ -53,6 +53,8 @@ export interface OfferCardInput {
   platformLabel: string | null;
   /** Nome da rede ("Mercado Livre", "Shopee", "Amazon"...). */
   store: string;
+  /** Loja/vendedor que dá ESTE preço (dono, 2026-11-11): destaque no card. null = não informado. */
+  sellerName?: string | null;
   isAmazon: boolean;
   priceCents: number;
   /** Última confirmação do preço (carimbo do rodapé). */
@@ -179,6 +181,15 @@ export const OFFER_GEOM = {
   footerTop: 1000,
   contentW: OFFER_CARD_SIZE - 2 * PAD,
 } as const;
+
+/** Nome da loja para exibir: sem URL, sem _ , até 26 caracteres. Igual ao nome da rede ou vazio = null. */
+export function sellerLabel(raw: string | null | undefined, network?: string): string | null {
+  let s = (raw ?? '').replace(/https?:\/\/\S+/gi, ' ').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
+  if (s.length < 2) return null;
+  if (network && s.toLowerCase().replace(/\.com(\.br)?$/, '') === network.trim().toLowerCase()) return null;
+  if (s.length > 26) s = `${s.slice(0, 25).trimEnd()}…`;
+  return s;
+}
 
 /** Tamanho do preço: o maior (até 140) em que preço + loja cabem lado a lado na largura útil. */
 export function priceFontSize(priceText: string, storeText: string, contentW: number = OFFER_GEOM.contentW): { price: number; store: number } {

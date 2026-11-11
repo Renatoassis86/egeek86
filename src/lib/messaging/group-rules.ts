@@ -216,6 +216,8 @@ export interface OfferFact {
   officialLink?: boolean;
   /** URL de afiliado da oferta (vai no texto da mensagem). */
   affiliateUrl?: string | null;
+  /** Nome da loja/vendedor da oferta (store_name da Shopee/Amazon; apelido do vendedor no ML). */
+  storeName?: string | null;
   quarantined: boolean;
   /** Amazon: ausências seguidas na busca da coleta assistida (consecutive_miss_count). > 0 = fora dos gatilhos. */
   missCount?: number;
@@ -580,7 +582,7 @@ export function finish(
 }
 
 export function toMsgOffer(o: OfferFact) {
-  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date, seller: { reputation: o.sellerReputation, totalSales: o.sellerTotalSales }, affiliateUrl: o.affiliateUrl ?? null, freeShipping: o.freeShipping === true ? true : undefined, officialStore: o.officialStore ?? null, shopeeCampaignUrl: o.shopeeCampaignUrl ?? null };
+  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date, seller: { reputation: o.sellerReputation, totalSales: o.sellerTotalSales }, affiliateUrl: o.affiliateUrl ?? null, storeName: o.storeName ?? null, freeShipping: o.freeShipping === true ? true : undefined, officialStore: o.officialStore ?? null, shopeeCampaignUrl: o.shopeeCampaignUrl ?? null };
 }
 
 function humanReview(price: number, avg: number | null, dropPct: number | null, median: number | null): string[] {
