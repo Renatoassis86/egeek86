@@ -14,6 +14,7 @@ import {
   type Candidate,
   type MessageClass,
 } from '@/lib/messaging/group-rules';
+import { getStoreByVertical, chatForStore } from '@/server/stores';
 import { sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
 import { setAutomationState } from '@/server/messaging/group-automation-store';
 import { detectGroupCandidates, groupMessagesOnda2Ready, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
@@ -510,7 +511,8 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       if (slim.length <= 1024) text = slim;
     }
     // Um grupo por área (dono, 2026-11-11): games no grupo principal; cada outra área no seu, sem misturar. Sem grupo da área, não envia.
-    const targetChat = telegramChatFor(match.vertical, env);
+    const storeRow = await getStoreByVertical(match.vertical).catch(() => null);
+    const targetChat = (storeRow ? chatForStore(storeRow, env) : undefined) ?? telegramChatFor(match.vertical, env);
     if (!targetChat) {
       await expire(`sem_grupo_do_departamento_${match.vertical}`);
       return { ok: false, outcome: 'expired', reason: `sem grupo do departamento ${match.vertical}` };

@@ -5,6 +5,7 @@ import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
 import { renderHistoryCard } from '@/server/messaging/price-card';
 import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
+import { discoverStoreChats } from '@/server/stores-discover';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -30,6 +31,9 @@ export async function GET(request: NextRequest) {
   if (denied) return denied;
 
   if (!isGroupMessagesEnabled()) return NextResponse.json({ ok: true, skipped: 'GROUP_MESSAGES_ENABLED desligado' });
+
+  // Canais novos das lojas: o bot resolve o link público em chat id (só leitura; tolerante a falha).
+  await discoverStoreChats(process.env.TELEGRAM_BOT_TOKEN).catch(() => []);
 
   // Cartão de histórico (PNG) e cupom verificado: injeções do ciclo (ambos tolerantes a falha; sem eles a mensagem sai em texto puro).
   const summary = await runGroupMessagesCycle({
