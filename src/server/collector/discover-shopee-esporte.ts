@@ -245,7 +245,7 @@ export async function discoverShopeeEsporte(opts: DiscoverEsporteOptions): Promi
         resumo.chamadas.busca++;
         resumo.chamadas.total++;
         try {
-          const res = await queryProductOffers({ keyword: termo, page: pagina, limit: 50, sortType: 2, ...(opts.catId ? { productCatId: opts.catId } : {}) });
+          const res = await queryProductOffers({ fields: 'itemId shopId shopName productName priceMin priceMax sales imageUrl productLink offerLink ratingStar productCatIds', keyword: termo, page: pagina, limit: 50, sortType: 2, ...(opts.catId ? { productCatId: opts.catId } : {}) });
           resumo.paginasBuscadas++;
           brutos.push(...res.nodes);
           if (!res.hasNextPage) break;

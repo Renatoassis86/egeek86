@@ -97,6 +97,8 @@ export interface ProductOfferQuery {
   page?: number;
   /** Teto real confirmado pela API: 50. */
   limit?: number;
+  /** Campos pedidos (padrão SHOPEE_PRODUCT_OFFER_FIELDS). Na BUSCA por palavra-chave a API devolve System Error [10000] com priceDiscountRate (medido em 2026-11-11). */
+  fields?: string;
 }
 
 /**
@@ -121,7 +123,7 @@ export async function queryProductOffers(q: ProductOfferQuery): Promise<{ nodes:
   const query = `
     query ProductOffer($keyword: String, $page: Int, $limit: Int) {
       productOfferV2(${args.join(', ')}) {
-        nodes { ${SHOPEE_PRODUCT_OFFER_FIELDS} }
+        nodes { ${q.fields ?? SHOPEE_PRODUCT_OFFER_FIELDS} }
         pageInfo { hasNextPage }
       }
     }
