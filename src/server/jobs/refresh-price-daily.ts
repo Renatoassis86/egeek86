@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import { runInBgPool } from '@/lib/db/pool-context';
 import { PRICE_DAILY_REGIME_START, addDays, computeLiveMin, nextMinEvent, spDay } from '@/lib/pricing/daily-state';
 import { computeStatesForBatch, syncMinEvent, upsertOfferDays, upsertStates } from '@/server/pricing/price-daily';
+import { summarizeAmazonShadow, type AmazonShadowDiff, type AmazonShadowSummary } from '@/lib/pricing/amazon-shadow';
+import { getAmazonMode } from '@/lib/pricing/amazon-mode';
 
 /**
  * Job `refresh-price-daily` (SOMBRA; ata 2026-11-05, ADR 0004). Idempotente. A cada ciclo:
@@ -25,6 +27,10 @@ export interface PriceDailySummary {
   failedChunks: number;
   elapsedMs: number;
   budgetExhausted: boolean;
+  /** Modo da flag PRICE_AMAZON_MODE neste ciclo. */
+  amazonMode?: string;
+  /** Só no modo `shadow`: comparação de HOJE entre a média pública (sem Amazon) e a média COM Amazon. Vai para collector_runs.meta via cron. */
+  amazonShadow?: AmazonShadowSummary;
 }
 
 export function priceDailyShadowEnabled(): boolean {
@@ -36,7 +42,9 @@ export async function refreshPriceDaily(opts: { budgetMs: number; chunkSize?: nu
   const now = opts.now ?? new Date();
   const today = spDay(now);
   const chunkSize = opts.chunkSize ?? 250;
-  const sum: PriceDailySummary = { days: [], offerDayRows: 0, products: 0, stateRows: 0, eventsWritten: 0, failedChunks: 0, elapsedMs: 0, budgetExhausted: false };
+  const mode = getAmazonMode();
+  const sum: PriceDailySummary = { days: [], offerDayRows: 0, products: 0, stateRows: 0, eventsWritten: 0, failedChunks: 0, elapsedMs: 0, budgetExhausted: false, amazonMode: mode };
+  const shadowAll: AmazonShadowDiff[] = [];
 
   const lastClosedRows = await db.execute<{ d: string | null }>(sql`SELECT max(day)::text AS d FROM price_daily_state WHERE closed`);
   const lastClosed = lastClosedRows[0]?.d ?? null;
@@ -67,7 +75,8 @@ export async function refreshPriceDaily(opts: { budgetMs: number; chunkSize?: nu
     const chunk = productIds.slice(i, i + chunkSize);
     try {
       await runInBgPool(async () => {
-        const { rows, offersByProduct } = await computeStatesForBatch(db, chunk, first, today, now);
+        const { rows, offersByProduct, shadow } = await computeStatesForBatch(db, chunk, first, today, now, { mode });
+        shadowAll.push(...shadow);
         sum.stateRows += await upsertStates(db, rows);
         // Fallback dos eventos: só produtos cujo menor preço vigente difere do último evento.
         const lastEv = await db.execute<{ master_product_id: string; at: string; min_cents: string }>(sql`
@@ -86,6 +95,7 @@ export async function refreshPriceDaily(opts: { budgetMs: number; chunkSize?: nu
       console.error('[refresh-price-daily] lote falhou:', err instanceof Error ? err.message : err);
     }
   }
+  if (mode === 'shadow') sum.amazonShadow = summarizeAmazonShadow(shadowAll);
   sum.elapsedMs = Date.now() - started;
   return sum;
 }

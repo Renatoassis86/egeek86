@@ -18,6 +18,9 @@ import {
   type ReconOffer,
 } from '@/lib/pricing/daily-state';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
+import { AMAZON_FRESH_MAX_AGE_MS, amazonScope, getAmazonMode, isAmazonSlug, type AmazonMode, type AmazonScope } from '@/lib/pricing/amazon-mode';
+import { amazonScopeSql } from '@/server/pricing/amazon-scope-sql';
+import type { AmazonShadowDiff } from '@/lib/pricing/amazon-shadow';
 
 /**
  * Camada de banco das métricas diárias (price_daily_offer / price_daily_state / price_min_events; migration 0024).
@@ -70,17 +73,25 @@ export async function upsertOfferDays(exec: Exec, fromDay: string, toDay: string
 // 2) Leitura das ofertas elegíveis
 // ------------------------------------------------------------------------------------------------
 
-/** Ofertas ELEGÍVEIS dos produtos com as linhas oferta-dia de [fromDay, ...) (sem teto: cotação posterior prova oferta viva). */
-export async function loadOffers(exec: Exec, productIds: string[], fromDay: string): Promise<Map<string, OfferInput[]>> {
+/**
+ * Ofertas ELEGÍVEIS dos produtos com as linhas oferta-dia de [fromDay, ...) (sem teto: cotação posterior prova oferta viva).
+ * PONTO ÚNICO de leitura das ofertas das métricas públicas (job, gancho, selo, gráfico, cartões). `opts.amazon` decide a Amazon:
+ * padrão = `amazonScope()` da flag PRICE_AMAZON_MODE (`off`/`shadow` excluem, `on` inclui só games). Com a Amazon dentro, o frescor dela
+ * é por confirmação de preço (`last_price_confirmed_at`, 24 h) e ausência na busca (`consecutive_miss_count` > 0) a deixa inativa.
+ */
+export async function loadOffers(exec: Exec, productIds: string[], fromDay: string, opts: { amazon?: AmazonScope } = {}): Promise<Map<string, OfferInput[]>> {
   const out = new Map<string, OfferInput[]>();
   if (!productIds.length) return out;
+  const scope = opts.amazon ?? amazonScope();
   const rows = await exec.execute<Row>(sql`
     SELECT o.master_product_id, o.id AS offer_id, o.status = 'active' AS active, o.network_id, o.seller_id,
+           n.slug AS net_slug, o.last_price_confirmed_at, o.consecutive_miss_count AS miss_count,
            COALESCE(o.seller_id::text, 'rede:' || o.network_id::text) AS store_key,
            d.day::text AS day, d.median_cents, d.last_cents, d.min_cents, d.max_cents, d.n_collected, d.last_observed_at
     FROM affiliate_offers o
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
     INNER JOIN price_daily_offer d ON d.offer_id = o.id AND d.day >= ${fromDay}::date
-    WHERE o.master_product_id IN (${ids(productIds)}) AND ${eligibleOfferSql('o')}
+    WHERE o.master_product_id IN (${ids(productIds)}) AND ${eligibleOfferSql('o')} AND ${amazonScopeSql(scope, 'o')}
     ORDER BY o.id, d.day
   `);
   const byOffer = new Map<string, OfferInput>();
@@ -88,12 +99,15 @@ export async function loadOffers(exec: Exec, productIds: string[], fromDay: stri
     const oid = String(r.offer_id);
     let o = byOffer.get(oid);
     if (!o) {
+      const amazon = isAmazonSlug(String(r.net_slug));
       o = {
         offerId: oid,
         storeKey: String(r.store_key),
         networkId: (r.network_id as string | null) ?? null,
         sellerId: (r.seller_id as string | null) ?? null,
-        active: r.active === true,
+        active: r.active === true && !(amazon && Number(r.miss_count ?? 0) > 0),
+        isAmazon: amazon,
+        freshness: amazon && r.last_price_confirmed_at ? { confirmedAt: iso(r.last_price_confirmed_at), maxAgeMs: AMAZON_FRESH_MAX_AGE_MS } : null,
         rows: [],
       };
       byOffer.set(oid, o);
@@ -174,12 +188,24 @@ async function loadPrevStates(exec: Exec, productIds: string[], day: string): Pr
  * Calcula (sem gravar) os estados de um lote de produtos para os dias [fromDay, toDay], em ordem, encadeando a
  * decomposição com o dia anterior (o do banco, se `fromDay` é o primeiro; senão o recém-calculado). Só devolve
  * linha para o produto/dia se há alguma oferta elegível na janela de 7 dias (sem linha = lacuna).
+ * A Amazon segue a flag PRICE_AMAZON_MODE (`opts.mode` para testes): `off`/`shadow` gravam o estado SEM Amazon; `on` COM. Em `shadow`
+ * devolve também `shadow` (comparação de HOJE, só produtos que têm Amazon).
  */
-export async function computeStatesForBatch(exec: Exec, productIds: string[], fromDay: string, toDay: string, now: Date): Promise<{ rows: StateRow[]; offersByProduct: Map<string, OfferInput[]> }> {
+export async function computeStatesForBatch(
+  exec: Exec,
+  productIds: string[],
+  fromDay: string,
+  toDay: string,
+  now: Date,
+  opts: { mode?: AmazonMode } = {}
+): Promise<{ rows: StateRow[]; offersByProduct: Map<string, OfferInput[]>; shadow: AmazonShadowDiff[] }> {
+  const mode = opts.mode ?? getAmazonMode();
   const today = spDay(now);
-  const offersByProduct = await loadOffers(exec, productIds, addDays(fromDay, -OFFER_ACTIVE_DAYS));
+  const since = addDays(fromDay, -OFFER_ACTIVE_DAYS);
+  const offersByProduct = await loadOffers(exec, productIds, since, { amazon: amazonScope(mode) });
   const prevDb = await loadPrevStates(exec, [...offersByProduct.keys()], addDays(fromDay, -1));
   const out: StateRow[] = [];
+  const todayState = new Map<string, DayState>();
   for (const [pid, offers] of offersByProduct) {
     let prev: Pick<DayState, 'avgCents' | 'members' | 'quality'> | null = prevDb.get(pid) ?? null;
     for (let day = fromDay; day <= toDay; day = addDays(day, 1)) {
@@ -192,9 +218,34 @@ export async function computeStatesForBatch(exec: Exec, productIds: string[], fr
       st = withTransition(st, prev);
       prev = st;
       out.push({ ...st, productId: pid, closed: day < today });
+      if (day === today) todayState.set(pid, st);
     }
   }
-  return { rows: out, offersByProduct };
+  const shadow: AmazonShadowDiff[] = [];
+  if (mode === 'shadow' && toDay >= today) {
+    const withAmz = await loadOffers(exec, productIds, since, { amazon: 'include' });
+    for (const [pid, offers] of withAmz) {
+      const amz = offers.filter((o) => o.isAmazon);
+      if (!amz.length) continue;
+      const w = computeDayState(today, now, offers);
+      const pub = todayState.get(pid) ?? computeDayState(today, now, offers.filter((o) => !o.isAmazon));
+      const amzIds = new Set(amz.map((o) => o.offerId));
+      shadow.push({
+        productId: pid,
+        day: today,
+        amazonOffers: Object.keys(w.members).filter((id) => amzIds.has(id)).length,
+        nPublic: pub.nOffers,
+        nWith: w.nOffers,
+        avgPublicCents: pub.avgCents,
+        avgWithCents: w.avgCents,
+        avgChangePct: pub.avgCents != null && w.avgCents != null && pub.avgCents > 0 ? Math.round((w.avgCents / pub.avgCents - 1) * 10_000) / 100 : null,
+        minPublicCents: pub.minCents,
+        minWithCents: w.minCents,
+        amazonIsMin: w.minOfferId != null && amzIds.has(w.minOfferId),
+      });
+    }
+  }
+  return { rows: out, offersByProduct, shadow };
 }
 
 /** Dias do produto na janela [fromDay, toDay] para as métricas do período (lê só a tabela de estado). */
@@ -257,10 +308,12 @@ export async function loadReconOffers(exec: Exec, productIds: string[], fromAtIs
   const out = new Map<string, ReconOffer[]>();
   if (!productIds.length) return out;
   const rows = await exec.execute<Row>(sql`
-    SELECT o.master_product_id, o.id AS offer_id, o.status = 'active' AS active, o.network_id, o.seller_id, s.collected_at, s.price_cents
+    SELECT o.master_product_id, o.id AS offer_id, o.status = 'active' AS active, o.network_id, o.seller_id, s.collected_at, s.price_cents,
+           n.slug AS net_slug, o.last_price_confirmed_at
     FROM affiliate_offers o
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
     INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
-    WHERE o.master_product_id IN (${ids(productIds)}) AND ${eligibleOfferSql('o')}
+    WHERE o.master_product_id IN (${ids(productIds)}) AND ${eligibleOfferSql('o')} AND ${amazonScopeSql(amazonScope(), 'o')}
       AND s.price_cents > 0 AND s.collected_at >= ${fromAtIso}::timestamptz - interval '48 hours'
     ORDER BY o.master_product_id, o.id, s.collected_at, s.id
   `);
@@ -269,7 +322,14 @@ export async function loadReconOffers(exec: Exec, productIds: string[], fromAtIs
     const oid = String(r.offer_id);
     let o = by.get(oid);
     if (!o) {
-      o = { offerId: oid, networkId: (r.network_id as string | null) ?? null, sellerId: (r.seller_id as string | null) ?? null, active: r.active === true, snaps: [] };
+      o = {
+        offerId: oid,
+        networkId: (r.network_id as string | null) ?? null,
+        sellerId: (r.seller_id as string | null) ?? null,
+        active: r.active === true,
+        freshness: isAmazonSlug(String(r.net_slug)) && r.last_price_confirmed_at ? { confirmedAt: iso(r.last_price_confirmed_at), maxAgeMs: AMAZON_FRESH_MAX_AGE_MS } : null,
+        snaps: [],
+      };
       by.set(oid, o);
       const pid = String(r.master_product_id);
       const arr = out.get(pid) ?? [];

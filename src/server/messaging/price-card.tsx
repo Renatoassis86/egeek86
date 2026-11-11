@@ -3,6 +3,8 @@ import { ImageResponse } from 'next/og';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
+import { loadOffers } from '@/server/pricing/price-daily';
+import { amazonScope } from '@/lib/pricing/amazon-mode';
 import {
   OFFER_ACTIVE_DAYS,
   PRICE_DAILY_REGIME_START,
@@ -11,7 +13,6 @@ import {
   computeLiveMinFromOffers,
   computePeriodMetrics,
   spDay,
-  type OfferDayRow,
   type OfferInput,
   type PeriodDay,
 } from '@/lib/pricing/daily-state';
@@ -42,8 +43,8 @@ import {
 
 /**
  * CARTÃO DE HISTÓRICO DE PREÇO (PNG 1200x675) para Telegram e WhatsApp (ata 2026-11-10, seção 4). SOMENTE LEITURA do banco.
- *  - Série: a MESMA regra do site (`computeDayState`, ADR 0004: cada oferta vale 1 por dia), recalculada em memória SEM as ofertas
- *    da Amazon (contrato: cache de preço da Amazon <= 24 h; ela nunca entra no histórico). Nada é interpolado.
+ *  - Série: a MESMA regra do site (`computeDayState`, ADR 0004: cada oferta vale 1 por dia), recalculada em memória; a Amazon segue a flag
+ *    PRICE_AMAZON_MODE (`off`/`shadow`: fora; `on`: dentro, só games). Nada é interpolado.
  *  - Média única: `computePeriodMetrics` sobre os mesmos dias desenhados (oferta-dias, não média das médias).
  *  - Preço atual: menor preço hoje entre ofertas ATIVAS, elegíveis, com link pronto e confirmadas nas últimas 6 h, só Mercado Livre e Shopee.
  *  - Devolve null quando não há dado suficiente (< 3 dias medidos, sem preço atual válido, produto inexistente). Nunca desenha curva inventada.
@@ -54,45 +55,12 @@ type Row = Record<string, unknown>;
 const iso = (v: unknown) => new Date(v as string | Date);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Ofertas ELEGÍVEIS do produto com as linhas oferta-dia, SEM Amazon (mesma consulta de `loadOffers`, mais o filtro de rede). */
-export async function loadNonAmazonOffers(masterProductId: string, fromDay: string): Promise<OfferInput[]> {
-  const rows = await db.execute<Row>(sql`
-    SELECT o.id AS offer_id, o.status = 'active' AS active, o.network_id, o.seller_id,
-           COALESCE(o.seller_id::text, 'rede:' || o.network_id::text) AS store_key,
-           d.day::text AS day, d.median_cents, d.last_cents, d.min_cents, d.max_cents, d.n_collected, d.last_observed_at
-    FROM affiliate_offers o
-    INNER JOIN affiliate_networks n ON n.id = o.network_id
-    INNER JOIN price_daily_offer d ON d.offer_id = o.id AND d.day >= ${fromDay}::date
-    WHERE o.master_product_id = ${masterProductId}::uuid AND n.slug <> 'amazon' AND ${eligibleOfferSql('o')}
-    ORDER BY o.id, d.day
-  `);
-  const byOffer = new Map<string, OfferInput>();
-  for (const r of rows) {
-    const oid = String(r.offer_id);
-    let o = byOffer.get(oid);
-    if (!o) {
-      o = {
-        offerId: oid,
-        storeKey: String(r.store_key),
-        networkId: (r.network_id as string | null) ?? null,
-        sellerId: (r.seller_id as string | null) ?? null,
-        active: r.active === true,
-        rows: [],
-      };
-      byOffer.set(oid, o);
-    }
-    const row: OfferDayRow = {
-      day: String(r.day),
-      medianCents: Number(r.median_cents),
-      lastCents: Number(r.last_cents),
-      minCents: Number(r.min_cents),
-      maxCents: Number(r.max_cents),
-      nCollected: Number(r.n_collected),
-      lastObservedAt: iso(r.last_observed_at),
-    };
-    o.rows.push(row);
-  }
-  return [...byOffer.values()];
+/**
+ * Ofertas ELEGÍVEIS do produto com as linhas oferta-dia, na MESMA leitura do site (`loadOffers`). A Amazon segue a flag PRICE_AMAZON_MODE:
+ * `off`/`shadow` = sem Amazon (contrato: cache de preço <= 24 h; ela nunca entra no histórico); `on` = com Amazon, só games, frescor 24 h.
+ */
+export async function loadCardOffers(masterProductId: string, fromDay: string): Promise<OfferInput[]> {
+  return (await loadOffers(db, [masterProductId], fromDay)).get(masterProductId) ?? [];
 }
 
 /** Menor preço de HOJE: ofertas ativas, elegíveis, com link pronto, confirmadas há <= 6 h, só Mercado Livre e Shopee. */
@@ -129,7 +97,7 @@ export async function loadCardInput(masterProductId: string, now: Date): Promise
   const windowFrom = addDays(today, -(CARD_MAX_DAYS - 1));
   const firstDay = windowFrom > PRICE_DAILY_REGIME_START ? windowFrom : PRICE_DAILY_REGIME_START;
 
-  const [offers, current] = await Promise.all([loadNonAmazonOffers(masterProductId, addDays(firstDay, -OFFER_ACTIVE_DAYS)), loadCurrent(masterProductId, now)]);
+  const [offers, current] = await Promise.all([loadCardOffers(masterProductId, addDays(firstDay, -OFFER_ACTIVE_DAYS)), loadCurrent(masterProductId, now)]);
 
   const days: CardDay[] = [];
   const periodDays: PeriodDay[] = [];
@@ -162,7 +130,7 @@ const abs = (left: number, top: number, extra: Record<string, string | number> =
 
 function CardView({ m, L }: { m: CardModel; L: CardLayout }) {
   const stamp = `Atualizado em ${formatStamp(m.current.confirmedAt)} (Brasília)`;
-  const note = `Traço: menor preço de cada dia entre as lojas, sem a Amazon. Eixo de valores não parte do zero.${m.hasPartial ? ' Traço claro: dia com 1 a 2 ofertas.' : ''}`;
+  const note = `Traço: menor preço de cada dia entre as lojas${amazonScope() === 'include' ? '' : ', sem a Amazon'}. Eixo de valores não parte do zero.${m.hasPartial ? ' Traço claro: dia com 1 a 2 ofertas.' : ''}`;
   const subtitle = `Histórico de ${formatDayShort(m.firstDay)} a ${formatDayShort(m.lastDay)} (${m.nDays} dias medidos)`;
   return (
     <div style={{ width: CARD_W, height: CARD_H, display: 'flex', position: 'relative', background: C.canvas, color: C.text }}>

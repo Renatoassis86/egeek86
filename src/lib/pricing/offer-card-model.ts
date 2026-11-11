@@ -56,6 +56,8 @@ export interface OfferCardInput {
   /** Loja/vendedor que dá ESTE preço (dono, 2026-11-11): destaque no card. null = não informado. */
   sellerName?: string | null;
   isAmazon: boolean;
+  /** Só Amazon com PRICE_AMAZON_MODE=on (games): a média das stats inclui a Amazon. 'market' = média do mercado; 'amazon' = produto só na Amazon (média na Amazon). */
+  amazonAvg?: 'market' | 'amazon' | null;
   priceCents: number;
   /** Última confirmação do preço (carimbo do rodapé). */
   checkedAt: Date;
@@ -119,9 +121,12 @@ export function chooseInsight(input: OfferCardInput): Insight | null {
       return { kind: 'drop', text: `Caiu ${pctInt(pct)} ${since}` };
     }
   }
-  if (!input.isAmazon && s.avgCents != null && s.avgCents > 0 && s.distinctOffers >= INSIGHT_MIN_OFFERS_FOR_AVG && p < s.avgCents) {
+  const amzAvg = input.isAmazon ? input.amazonAvg ?? null : null;
+  if ((!input.isAmazon || amzAvg) && s.avgCents != null && s.avgCents > 0 && s.distinctOffers >= INSIGHT_MIN_OFFERS_FOR_AVG && p < s.avgCents) {
     const pct = ((s.avgCents - p) / s.avgCents) * 100;
-    if (pct >= INSIGHT_BELOW_AVG_MIN_PCT) return { kind: 'below_avg', text: `${formatReaisRounded(s.avgCents - p)} abaixo da média das lojas` };
+    // Amazon nunca diz "média das lojas": 'market' = do mercado; 'amazon' (produto só na Amazon) = média na Amazon.
+    const label = amzAvg === 'amazon' ? 'média na Amazon' : amzAvg === 'market' ? 'média do mercado' : 'média das lojas';
+    if (pct >= INSIGHT_BELOW_AVG_MIN_PCT) return { kind: 'below_avg', text: `${formatReaisRounded(s.avgCents - p)} abaixo da ${label}` };
   }
   if (serieOk) {
     const rec = s.recordCents as number;

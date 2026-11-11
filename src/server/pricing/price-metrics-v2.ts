@@ -47,6 +47,8 @@ import { loadOffers } from '@/server/pricing/price-daily';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { contarForaDaFaixa, ofertaFresca } from '@/lib/pricing/lojas-hoje';
 import { weakSellerSql } from '@/server/queries/public-offers';
+import { AMAZON_FRESH_MAX_AGE_MS, amazonScope, isAmazonSlug } from '@/lib/pricing/amazon-mode';
+import { amazonScopeSql } from '@/server/pricing/amazon-scope-sql';
 
 /**
  * Leitura V2 do topo da página de produto (fase 2, ata 2026-11-05). SÓ LEITURA: lê price_daily_offer,
@@ -205,24 +207,39 @@ export async function loadOfferMeta(productId: string): Promise<Map<string, Offe
   return out;
 }
 
-/** Ofertas ATIVAS e elegíveis do produto com preço vigente, última cotação e última checagem (frescor aplicado em `computeLiveMinFromOffers`). */
+/**
+ * Ofertas ATIVAS e elegíveis do produto com preço vigente, última cotação e última checagem (frescor aplicado em `computeLiveMinFromOffers`).
+ * A Amazon segue a flag PRICE_AMAZON_MODE: `off`/`shadow` = fora; `on` = dentro (games), com frescor de 24 h pela CONFIRMAÇÃO do preço
+ * (`last_price_confirmed_at`, que a coleta assistida atualiza a cada leitura) e sem ausência na busca. Para ela, cotação e checagem = confirmação.
+ */
 export async function loadLiveOffers(productId: string, now: Date): Promise<LiveOfferInput[]> {
   const since = new Date(now.getTime() - FRESH_MAX_AGE_MS).toISOString();
   const rows = await db.execute<Row>(sql`
     SELECT o.id AS offer_id, o.network_id, o.seller_id, o.current_price_cents, o.last_checked_at,
+           n.slug AS net_slug, o.last_price_confirmed_at, o.consecutive_miss_count AS miss_count,
            (SELECT MAX(ps.collected_at) FROM affiliate_price_snapshots ps WHERE ps.offer_id = o.id) AS quoted_at
     FROM affiliate_offers o
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
     WHERE o.master_product_id = ${productId}::uuid AND o.status = 'active' AND o.current_price_cents > 0
-      AND o.last_checked_at >= ${since}::timestamptz AND ${eligibleOfferSql('o')}
+      AND o.last_checked_at >= ${since}::timestamptz AND ${eligibleOfferSql('o')} AND ${amazonScopeSql(amazonScope(), 'o')}
   `);
-  return rows.map((r) => ({
-    offerId: String(r.offer_id),
-    networkId: (r.network_id as string | null) ?? null,
-    sellerId: (r.seller_id as string | null) ?? null,
-    priceCents: Number(r.current_price_cents),
-    quotedAt: r.quoted_at ? new Date(r.quoted_at as string | Date) : null,
-    checkedAt: r.last_checked_at ? new Date(r.last_checked_at as string | Date) : null,
-  }));
+  const out: LiveOfferInput[] = [];
+  for (const r of rows) {
+    const base = {
+      offerId: String(r.offer_id),
+      networkId: (r.network_id as string | null) ?? null,
+      sellerId: (r.seller_id as string | null) ?? null,
+      priceCents: Number(r.current_price_cents),
+    };
+    if (isAmazonSlug(String(r.net_slug))) {
+      if (Number(r.miss_count ?? 0) > 0 || !r.last_price_confirmed_at) continue;
+      const at = new Date(r.last_price_confirmed_at as string | Date);
+      out.push({ ...base, quotedAt: at, checkedAt: at, maxAgeMs: AMAZON_FRESH_MAX_AGE_MS });
+      continue;
+    }
+    out.push({ ...base, quotedAt: r.quoted_at ? new Date(r.quoted_at as string | Date) : null, checkedAt: r.last_checked_at ? new Date(r.last_checked_at as string | Date) : null });
+  }
+  return out;
 }
 
 /** Os dois últimos preços gravados da oferta (mais recente primeiro): base da corroboração por 2 coletas no mesmo preço. */

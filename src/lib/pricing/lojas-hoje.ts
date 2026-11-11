@@ -20,10 +20,11 @@ export interface OfertaLojaInput extends LiveOfferInput {
   baixaReputacao: boolean;
 }
 
-/** Mesmo frescor de `computeLiveMinFromOffers`: preço > 0, cotação E checagem com no máximo 48 h. */
+/** Mesmo frescor de `computeLiveMinFromOffers`: preço > 0, cotação E checagem com no máximo 48 h (ou o teto da própria oferta: Amazon 24 h pela confirmação). */
 export function ofertaFresca(l: LiveOfferInput, now: Date): boolean {
   if (!(l.priceCents > 0) || !l.quotedAt || !l.checkedAt) return false;
-  return now.getTime() - l.quotedAt.getTime() <= FRESH_MAX_AGE_MS && now.getTime() - l.checkedAt.getTime() <= FRESH_MAX_AGE_MS;
+  const max = l.maxAgeMs ?? FRESH_MAX_AGE_MS;
+  return now.getTime() - l.quotedAt.getTime() <= max && now.getTime() - l.checkedAt.getTime() <= max;
 }
 
 /**

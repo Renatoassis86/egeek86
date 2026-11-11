@@ -76,8 +76,31 @@ export interface OfferDayRow {
   lastObservedAt: Date;
 }
 
+/**
+ * Frescor por CONFIRMAÇÃO de preço (ADR 0010, D2): a Amazon só grava cotação quando o preço MUDA, então a idade da última cotação não
+ * diz se a oferta está viva. Com `freshness`, a idade passa a ser contada desde `confirmedAt` (last_price_confirmed_at, atualizado a
+ * cada leitura da coleta assistida), com teto `maxAgeMs` (24 h). Premissa: entre a última cotação e a confirmação o preço não mudou
+ * (se tivesse mudado, haveria cotação nova). Instante de referência anterior à confirmação conta como confirmado (idade 0).
+ * Sem `freshness` (Mercado Livre, Shopee...): regra de sempre, 48 h desde a última cotação.
+ */
+export interface OfferFreshness {
+  confirmedAt: Date;
+  maxAgeMs: number;
+}
+
+/** Idade efetiva e teto de frescor da oferta no instante `ref` (ms). */
+function ageOf(freshness: OfferFreshness | null | undefined, lastAt: Date, ref: number): { age: number; max: number } {
+  if (!freshness) return { age: ref - lastAt.getTime(), max: FRESH_MAX_AGE_MS };
+  const anchor = Math.max(lastAt.getTime(), Math.min(freshness.confirmedAt.getTime(), ref));
+  return { age: ref - anchor, max: freshness.maxAgeMs };
+}
+
 export interface OfferInput {
   offerId: string;
+  /** Oferta da rede Amazon (marcação para o modo sombra; não muda o cálculo). */
+  isAmazon?: boolean;
+  /** Frescor por confirmação (só Amazon, modo `on`). */
+  freshness?: OfferFreshness | null;
   /** Chave da loja: vendedor quando existe, senão a rede (mesma chave da corroboração do selo). */
   storeKey: string;
   networkId?: string | null;
@@ -209,7 +232,7 @@ function resolveOffers(day: string, now: Date, offers: OfferInput[]): { fresh: R
     const rows = offer.rows.filter((r) => r.day <= day && r.lastObservedAt.getTime() <= ref.getTime());
     if (!rows.length) continue;
     const last = rows.reduce((a, b) => (b.lastObservedAt.getTime() > a.lastObservedAt.getTime() ? b : a));
-    const age = ref.getTime() - last.lastObservedAt.getTime();
+    const { age, max } = ageOf(offer.freshness, last.lastObservedAt, ref.getTime());
     if (age > OFFER_ACTIVE_DAYS * DAY_MS) continue; // fora da janela de 7 dias: não é ativa no dia
     const today = rows.find((r) => r.day === day) ?? null;
     if (today) {
@@ -218,7 +241,7 @@ function resolveOffers(day: string, now: Date, offers: OfferInput[]): { fresh: R
     }
     const alive = offer.active || offer.rows.some((r) => r.lastObservedAt.getTime() > ref.getTime());
     if (!alive) continue; // oferta expirada não é carregada para dias sem cotação
-    if (age <= FRESH_MAX_AGE_MS) fresh.push({ offer, value: last.lastCents, measured: false, row: null, lastAt: last.lastObservedAt });
+    if (age <= max) fresh.push({ offer, value: last.lastCents, measured: false, row: null, lastAt: last.lastObservedAt });
     else stale++;
   }
   return { fresh, stale };
@@ -268,6 +291,23 @@ export function computeDayState(day: string, now: Date, offers: OfferInput[]): D
   };
 }
 
+/**
+ * Mediana oferta-dia dos últimos `windowDays` dias (anteriores a `toDay`) de UMA oferta, com carry-forward do último preço medido quando o
+ * dia não tem cotação e a oferta estava fresca (mesma `resolveOffers`). Base da régua de 10% da Amazon-only (ADR 0010, D3): o ASIN só se
+ * compara com o próprio histórico. Menos de `minDays` dias de série => null (nada é inventado).
+ */
+export function ownSeriesMedian(offer: OfferInput, toDay: string, now: Date, windowDays = 14, minDays = 7): { cents: number; days: number } | null {
+  const vals: number[] = [];
+  for (let i = windowDays; i >= 1; i--) {
+    const d = addDays(toDay, -i);
+    if (d < PRICE_DAILY_REGIME_START) continue;
+    const { fresh } = resolveOffers(d, now, [offer]);
+    if (fresh[0]) vals.push(fresh[0].value);
+  }
+  if (vals.length < minDays) return null;
+  return { cents: Math.round(medianCont(vals) as number), days: vals.length };
+}
+
 /** Dia anterior ao regime: só contagem medida, nada recalculado (marcador "histórico antigo"). */
 export function legacyDayState(day: string, nQuotes: number, nOffers: number): DayState {
   return { day, ...NO_TRANSITION, members: {}, minCents: null, minOfferId: null, avgCents: null, medianCents: null, maxCents: null, nOffers, nStores: 0, nQuotes, freshOffers: 0, staleOffers: 0, outlierOffers: 0, quality: 'legacy' };
@@ -307,7 +347,8 @@ export function computeLiveMin(offers: OfferInput[], now: Date): LiveMin | null 
   for (const o of offers) {
     if (!o.active || !o.rows.length) continue;
     const last = o.rows.reduce((a, b) => (b.lastObservedAt.getTime() > a.lastObservedAt.getTime() ? b : a));
-    if (now.getTime() - last.lastObservedAt.getTime() > FRESH_MAX_AGE_MS) continue;
+    const { age, max } = ageOf(o.freshness, last.lastObservedAt, now.getTime());
+    if (age > max) continue;
     cands.push({ o, price: last.lastCents, at: last.lastObservedAt });
   }
   return pickMin(cands);
@@ -324,6 +365,8 @@ export interface LiveOfferInput {
   quotedAt: Date | null;
   /** last_checked_at do cadastro. null = nunca checada. */
   checkedAt: Date | null;
+  /** Teto de frescor desta oferta (padrão FRESH_MAX_AGE_MS; Amazon em modo `on`: 24 h, com quotedAt e checkedAt = last_price_confirmed_at). */
+  maxAgeMs?: number;
 }
 
 export interface LiveMinFromOffers extends LiveMin {
@@ -347,8 +390,9 @@ export function computeLiveMinFromOffers(offers: LiveOfferInput[], now: Date): L
   const checked = new Map<string, Date>();
   for (const l of offers) {
     if (!(l.priceCents > 0) || !l.quotedAt || !l.checkedAt) continue;
-    if (now.getTime() - l.quotedAt.getTime() > FRESH_MAX_AGE_MS) continue;
-    if (now.getTime() - l.checkedAt.getTime() > FRESH_MAX_AGE_MS) continue;
+    const maxAge = l.maxAgeMs ?? FRESH_MAX_AGE_MS;
+    if (now.getTime() - l.quotedAt.getTime() > maxAge) continue;
+    if (now.getTime() - l.checkedAt.getTime() > maxAge) continue;
     checked.set(l.offerId, l.checkedAt);
     cands.push({ o: { offerId: l.offerId, storeKey: '', networkId: l.networkId, sellerId: l.sellerId, active: true, rows: [] }, price: l.priceCents, at: l.quotedAt });
   }
@@ -432,6 +476,8 @@ export interface ReconOffer {
   networkId?: string | null;
   sellerId?: string | null;
   active: boolean;
+  /** Frescor por confirmação (só Amazon, modo `on`). */
+  freshness?: OfferFreshness | null;
   /** Cotações reais medidas, em ordem cronológica (inclua as das 48 h anteriores a `fromAt` para o estado inicial). */
   snaps: Array<{ at: Date; priceCents: number }>;
 }
@@ -473,7 +519,8 @@ export function reconstructMinEvents(offers: ReconOffer[], fromAt: Date, opts: {
       ptr.set(o.offerId, i);
       if (i < 0) continue;
       const s = o.snaps[i];
-      if (t - s.at.getTime() > FRESH_MAX_AGE_MS) continue;
+      const fr = ageOf(o.freshness, s.at, t);
+      if (fr.age > fr.max) continue;
       if (!(o.active || (lastEver.get(o.offerId) as number) >= t)) continue; // expirada não ressuscita
       cands.push({ o: { offerId: o.offerId, storeKey: '', networkId: o.networkId, sellerId: o.sellerId, active: o.active, rows: [] }, price: s.priceCents, at: s.at });
     }

@@ -246,6 +246,12 @@ export interface MsgAvg {
   cents: number;
   /** Ofertas distintas que entram na média do período. */
   offers: number;
+  /**
+   * Só para oferta da AMAZON (PRICE_AMAZON_MODE=on): 'market' = média do mercado (a média única, que inclui a Amazon); 'amazon' = produto só na
+   * Amazon (média na Amazon); 'own' = mediana de `days` dias do PRÓPRIO ASIN (não é média nem cita lojas). Ausente = comportamento de sempre.
+   */
+  scope?: 'market' | 'amazon' | 'own';
+  days?: number;
 }
 /** Indicadores de decisão calculados da série medida (menor preço de cada dia anterior). Só dado real. */
 export interface PriceInd {
@@ -562,14 +568,20 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   // Por tópicos, objetivo (dono, 2026-11-11): só o que ajuda a decidir; sem "série de N dias" nem frases longas.
   const topics: string[] = [];
   const price = o.priceCents;
-  if (!amz && input.avg) {
-    const gap = input.avg.cents - price;
+  // Referência de preço: demais lojas = média das lojas (como sempre). Amazon só com PRICE_AMAZON_MODE=on (avg.scope definido) e SEM citar lojas:
+  // média do mercado, média na Amazon (produto só nela) ou a mediana do próprio anúncio.
+  const refAvg = !amz ? input.avg ?? null : input.avg?.scope ? input.avg : null;
+  if (refAvg) {
+    const gap = refAvg.cents - price;
+    const own = amz && refAvg.scope === 'own';
+    const label = !amz ? 'Vs. média das lojas' : own ? `Vs. mediana de ${refAvg.days ?? 14} dias deste anúncio` : refAvg.scope === 'amazon' ? 'Vs. média na Amazon' : 'Vs. média do mercado';
+    const word = own ? 'mediana' : 'média';
     topics.push(
       gap > 0
-        ? topic(f, 'Vs. média das lojas', `${pct1((gap / input.avg.cents) * 100)}% abaixo (${fmtBRL(gap)}); média ${fmtBRL(input.avg.cents)}`)
+        ? topic(f, label, `${pct1((gap / refAvg.cents) * 100)}% abaixo (${fmtBRL(gap)}); ${word} ${fmtBRL(refAvg.cents)}`)
         : gap === 0
-          ? topic(f, 'Vs. média das lojas', `no nível da média (${fmtBRL(input.avg.cents)})`)
-          : topic(f, 'Vs. média das lojas', `${pct1((-gap / input.avg.cents) * 100)}% acima; média ${fmtBRL(input.avg.cents)}`)
+          ? topic(f, label, `no nível da ${word} (${fmtBRL(refAvg.cents)})`)
+          : topic(f, label, `${pct1((-gap / refAvg.cents) * 100)}% acima; ${word} ${fmtBRL(refAvg.cents)}`)
     );
   }
   if (input.model === 'movimento' && (input.move.kind === 'OK2' || input.move.kind === 'T1') && input.move.prevCents != null && input.move.prevCents > price) {
@@ -581,7 +593,8 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   // Detalhes do monitoramento: SÓ no fim da mensagem (dono, 2026-11-11).
   const ref = input.model === 'movimento' ? input.move.refCents : input.refCents;
   const mon: string[] = [];
-  const verdict = readingOf(price, !amz ? input.avg?.cents ?? null : null, ref ?? null);
+  let verdict = readingOf(price, refAvg && !(amz && refAvg.scope === 'own') ? refAvg.cents : null, ref ?? null);
+  if (verdict && amz) verdict = verdict.replace('média das lojas', refAvg?.scope === 'amazon' ? 'média na Amazon' : 'média do mercado');
   if (verdict) mon.push(topic(f, 'Leitura', verdict));
   if (input.model === 'movimento' && input.move.kind === 'OK1') mon.push(topic(f, 'Menor registrado', `novo menor preço (o anterior era ${fmtBRL(input.move.refCents)})`));
   else if (ref != null) {
@@ -997,6 +1010,9 @@ export function textProblems(text: string, channel: GroupChannel): string[] {
   for (const [re, label] of BANNED) if (re.test(text)) out.push(`termo proibido: ${label}`);
   // Amazon só com o carimbo "Preço na Amazon em dd/mm às hh:mm" (decisão do dono, 2026-11-10).
   if (/amazon/i.test(text) && !/Preço na Amazon em \d{2}\/\d{2} às \d{2}:\d{2}/.test(text)) out.push('menção à Amazon sem carimbo de horário');
+  // Mensagem da Amazon não cita outra loja nem "média das lojas" (contrato 6(z); ADR 0010).
+  if (/amazon/i.test(text) && /mercado ?livre|shopee|magalu|magazine/i.test(text.replace(/média do mercado/gi, ''))) out.push('mensagem da Amazon cita outra loja');
+  if (/amazon/i.test(text) && /média das lojas/i.test(text)) out.push('mensagem da Amazon com "média das lojas"');
   if (channel === 'tg' && text.length > TELEGRAM_MAX_CHARS) out.push(`texto acima de ${TELEGRAM_MAX_CHARS} caracteres`);
   if (/\bNaN\b|undefined|null/.test(text)) out.push('variável vazia vazou no texto');
   return out;

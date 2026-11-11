@@ -2,8 +2,9 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
-import { loadPeriodDays } from '@/server/pricing/price-daily';
-import { addDays, computePeriodMetrics, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
+import { loadOffers, loadPeriodDays } from '@/server/pricing/price-daily';
+import { addDays, computePeriodMetrics, ownSeriesMedian, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
+import { AMAZON_OWN_MIN_DAYS, AMAZON_OWN_WINDOW_DAYS, amazonCountsIn, amazonScope, getAmazonMode, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { readPlatform } from '@/lib/catalog/platform';
 import { isVertical } from '@/lib/catalog/verticais';
 import { getAdTag } from '@/lib/messaging/group-config';
@@ -76,7 +77,7 @@ export interface DetectOptions {
 export interface DetectionResult {
   generatedAt: string;
   mode: 'dry';
-  config: { verticals: string[]; maxAgeMin: number; eventWindowHours: number; adTag: string; amazonMaxAgeMin: number; amazonPaused: boolean; amazonLastRunAt: string | null };
+  config: { verticals: string[]; maxAgeMin: number; eventWindowHours: number; adTag: string; amazonMaxAgeMin: number; amazonPaused: boolean; amazonLastRunAt: string | null; amazonMode?: AmazonMode };
   counts: { productsEvaluated: number; candidates: number; auto: number; review: number; notSendable: number; blocked: number };
   candidates: Candidate[];
   blocked: Blocked[];
@@ -272,9 +273,10 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
  * elegíveis) nos dias em que price_daily_state tem qualidade complete/partial, desde PRICE_DAILY_REGIME_START (31/10).
  * Dia sem coleta fica lacuna (nada é interpolado).
  */
-async function loadSeries(ids: string[], today: string): Promise<Map<string, { main: DayPoint[]; amazon: DayPoint[] }>> {
+async function loadSeries(ids: string[], today: string, mode: AmazonMode): Promise<Map<string, { main: DayPoint[]; amazon: DayPoint[] }>> {
   const out = new Map<string, { main: DayPoint[]; amazon: DayPoint[] }>();
   if (!ids.length) return out;
+  const scope = amazonScope(mode);
   const rows = await db.execute<Row>(sql`
     SELECT d.master_product_id AS mid, d.day::text AS day,
            (n.slug || ' ' || n.name) ILIKE '%amazon%' AS amz, min(d.min_cents) AS mn
@@ -291,7 +293,10 @@ async function loadSeries(ids: string[], today: string): Promise<Map<string, { m
   for (const r of rows) {
     const mid = String(r.mid);
     const e = out.get(mid) ?? out.set(mid, { main: [], amazon: [] }).get(mid)!;
-    (r.amz === true ? e.amazon : e.main).push({ day: String(r.day).slice(0, 10), minCents: Number(r.mn) });
+    const pt = { day: String(r.day).slice(0, 10), minCents: Number(r.mn) };
+    (r.amz === true ? e.amazon : e.main).push(pt);
+    // PRICE_AMAZON_MODE=on (games): o menor preço do dia do produto também considera a Amazon (mesma base do estado diário); a série própria dela segue à parte.
+    if (r.amz === true && scope === 'include') e.main.push(pt);
   }
   // Menor entre ML e Shopee por dia (as linhas já agrupam por rede, não por tipo): consolida o mínimo de cada dia.
   for (const e of out.values()) {
@@ -302,7 +307,7 @@ async function loadSeries(ids: string[], today: string): Promise<Map<string, { m
   return out;
 }
 
-async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazonMaxAgeMin: number; eventWindowHours: number; liveVerified?: Set<string> }): Promise<ProductFacts[]> {
+async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazonMaxAgeMin: number; eventWindowHours: number; liveVerified?: Set<string>; amazonMode: AmazonMode }): Promise<ProductFacts[]> {
   if (!ids.length) return [];
   // O filtro SQL usa o maior dos dois limites (a Amazon pode ter limite maior que as demais redes no envio); o juízo por rede é do judgeOffer.
   const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
@@ -355,6 +360,34 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     }
   }
 
+  // PRICE_AMAZON_MODE=on: produto só na Amazon (nenhuma oferta ativa e elegível fora dela, qualquer frescor) e mediana de 14 dias do próprio ASIN.
+  const amazonOnlyBy = new Map<string, boolean>();
+  const ownMedianBy = new Map<string, { cents: number; days: number } | null>();
+  if (o.amazonMode === 'on' && offers.length) {
+    const amzRows = offers.filter((r) => /amazon/i.test(String(r.net_slug)));
+    const amzPids = [...new Set(amzRows.map((r) => String(r.master_product_id)))];
+    if (amzPids.length) {
+      const others = await db.execute<Row>(sql`
+        SELECT DISTINCT o.master_product_id AS mid FROM affiliate_offers o
+        INNER JOIN affiliate_networks n ON n.id = o.network_id
+        WHERE o.master_product_id IN (${idList(amzPids)}) AND n.slug <> 'amazon' AND o.status = 'active' AND o.current_price_cents > 0 AND ${eligibleOfferSql('o')}
+      `);
+      const hasOther = new Set(others.map((r) => String(r.mid)));
+      for (const pid of amzPids) amazonOnlyBy.set(pid, !hasOther.has(pid));
+      const onlyPids = amzPids.filter((pid) => amazonOnlyBy.get(pid));
+      if (onlyPids.length) {
+        const today0 = spDay(o.now);
+        const loaded = await loadOffers(db, onlyPids, addDays(today0, -(AMAZON_OWN_WINDOW_DAYS + 7)), { amazon: 'include' });
+        for (const r of amzRows) {
+          const pid = String(r.master_product_id);
+          if (!amazonOnlyBy.get(pid)) continue;
+          const oi = loaded.get(pid)?.find((x) => x.offerId === String(r.id));
+          ownMedianBy.set(String(r.id), oi ? ownSeriesMedian(oi, today0, o.now, AMAZON_OWN_WINDOW_DAYS, AMAZON_OWN_MIN_DAYS) : null);
+        }
+      }
+    }
+  }
+
   // Shopee: link da campanha oficial por departamento (uma consulta por departamento; sem tabela/sem campanha = null e a linha não aparece).
   const verticalBy = new Map(products.map((p) => [String(p.id), String(p.vertical)]));
   const shopeeUrlBy = new Map<string, string | null>();
@@ -386,6 +419,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       missCount: r.miss_count == null ? 0 : Number(r.miss_count),
       returnedAt: returnedBy.get(String(r.id)) ?? null,
       liveVerifiedAt: o.liveVerified?.has(String(r.id)) ? o.now : null,
+      ownMedian14: ownMedianBy.get(String(r.id)) ?? null,
       shopeeCampaignUrl: /shopee/i.test(String(r.net_slug)) ? shopeeUrlBy.get(verticalBy.get(mid) ?? '') ?? null : null,
     };
     (offersBy.get(mid) ?? offersBy.set(mid, []).get(mid)!).push(f);
@@ -395,7 +429,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
 
   const today = spDay(o.now);
   const from = addDays(today, -29);
-  const seriesBy = await loadSeries(ids, today);
+  const seriesBy = await loadSeries(ids, today, o.amazonMode);
   const stateAvgRows = await db.execute<Row>(sql`
     SELECT DISTINCT ON (master_product_id) master_product_id AS mid, avg_cents FROM price_daily_state
     WHERE master_product_id IN (${idList(ids)}) AND day >= ${addDays(today, -3)}::date AND avg_cents IS NOT NULL
@@ -418,7 +452,9 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     // "Na média ou abaixo" (dono, 2026-11-11): também precisa da média quando o menor preço vivo está no nível da média do dia.
     const stateAvg = stateAvgBy.get(id);
     const maybeMed = offs.length >= 3 && cheapestMain > 0 && stateAvg != null && cheapestMain <= stateAvg && (seriesBy.get(id)?.main.length ?? 0) >= RULES.MED_MIN_SERIES_DAYS - 1;
-    if (hasMove || maybeMed) {
+    // PRICE_AMAZON_MODE=on: a Amazon também compara com a média única, então produto com oferta Amazon precisa dela (games).
+    const needsAmzAvg = amazonCountsIn(o.amazonMode, String(p.vertical)) && offs.some((x) => /amazon/i.test(x.networkSlug));
+    if (hasMove || maybeMed || needsAmzAvg) {
       const days = await loadPeriodDays(db, id, from, today);
       const pm = computePeriodMetrics(days, null);
       if (pm.avgOfferDayCents != null) {
@@ -444,6 +480,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       baseline: null,
       series: seriesBy.get(id)?.main ?? [],
       amazonSeries: seriesBy.get(id)?.amazon ?? [],
+      amazonOnly: amazonCountsIn(o.amazonMode, String(p.vertical)) ? (amazonOnlyBy.get(id) ?? false) : false,
     });
   }
   return out;
@@ -462,6 +499,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const adTag = opts.adTag ?? getAdTag();
   const warnings: string[] = [];
   const amazonMaxAgeMin = opts.amazonMaxAgeMin ?? RULES.AMAZON_DETECT_MAX_AGE_MIN;
+  const amazonMode = getAmazonMode();
   const amazonLastRun = await loadAmazonLastRun().catch(() => null);
   const amazonPaused = amazonLoopPaused(amazonLastRun, now);
   if (amazonPaused) warnings.push('Classe Amazon pausada: a coleta assistida está sem lote há mais de 90 min (ou nunca rodou).');
@@ -469,9 +507,9 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const ids = opts.productIds?.length
     ? opts.productIds
     : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 400 });
-  const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []) });
+  const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode });
 
-  const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused };
+  const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode };
   const candidates: Candidate[] = [];
   const blocked: Blocked[] = [];
   for (const p of facts) {
@@ -515,7 +553,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   return {
     generatedAt: now.toISOString(),
     mode: 'dry',
-    config: { verticals, maxAgeMin, eventWindowHours, adTag, amazonMaxAgeMin, amazonPaused, amazonLastRunAt: amazonLastRun ? amazonLastRun.toISOString() : null },
+    config: { verticals, maxAgeMin, eventWindowHours, adTag, amazonMaxAgeMin, amazonPaused, amazonLastRunAt: amazonLastRun ? amazonLastRun.toISOString() : null, amazonMode },
     counts: {
       productsEvaluated: facts.length,
       candidates: candidates.length,

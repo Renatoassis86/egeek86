@@ -521,6 +521,11 @@ ok(!!gap4 && !gap4.sendable && /abaixo_da_media_menos_de_10pct/.test(gap4.notSen
 ok(evaluateProductV2(medProduct(), ctx).candidates.some((c) => c.trigger === 'G2' && c.sendable), 'contexto legado (régua desligada) segue enviando 4,3%');
 const gap18 = evaluateProductV2(product({ series: days([10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]), offers: [offer({ offerId: 'a', priceCents: 9400 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), realCtx).candidates.find((c) => c.cls === 'alerta' || c.cls === 'insight');
 ok(!!gap18 && gap18.sendable, 'régua: preço bem abaixo da média (>= 10%) é enviável', gap18?.notSendableReason);
+// Nome da loja que dá o preço, em destaque abaixo do preço (dono, 2026-11-11)
+const stMsg = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo X', offer: { slug: 'x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 9400, confirmedAt: NOW, storeName: 'JR_GAMES' }, avg: { cents: 11500, offers: 3 }, seriesDays: 9 }, 'tg');
+ok(stMsg.includes('<b>R$ 94,00</b> no Mercado Livre\nVendido por <b>JR GAMES</b>'), 'loja que dá o preço em destaque abaixo do preço', stMsg);
+const stSame = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo X', offer: { slug: 'x', networkSlug: 'amazon', networkName: 'Amazon', priceCents: 9400, confirmedAt: NOW, storeName: 'Amazon' }, avg: { cents: 11500, offers: 3 }, seriesDays: 9 }, 'tg');
+ok(!stSame.includes('Vendido por'), 'loja igual ao nome da rede não repete');
 // escape HTML do título e limite
 const evilName = 'Zelda <b>&</b> "Tears" > Kingdom';
 const evilMsg = formatOfferMessage(

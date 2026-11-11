@@ -169,7 +169,7 @@ function pngDims(buf: Buffer): { w: number; h: number; sig: boolean } {
 
 async function withDb(outDir: string) {
   const { db } = await import('../src/lib/db');
-  const { renderHistoryCard, loadCardInput, loadNonAmazonOffers } = await import('../src/server/messaging/price-card');
+  const { renderHistoryCard, loadCardInput, loadCardOffers } = await import('../src/server/messaging/price-card');
   const { computeDayState, spDay, addDays } = await import('../src/lib/pricing/daily-state');
   const now = new Date();
   mkdirSync(outDir, { recursive: true });
@@ -219,7 +219,7 @@ async function withDb(outDir: string) {
     check(`entrada carregada (${p.id})`, !!inp && inp.days.length >= CARD_MIN_DAYS);
     if (!inp) continue;
     // Amazon fora: nenhuma oferta usada na série é da Amazon.
-    const offers = await loadNonAmazonOffers(p.id, '2026-10-24');
+    const offers = await loadCardOffers(p.id, '2026-10-24');
     const amz = await db.execute<Record<string, unknown>>(sql`SELECT o.id FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id WHERE o.master_product_id = ${p.id}::uuid AND n.slug = 'amazon'`);
     const amzIds = new Set(amz.map((r) => String(r.id)));
     check(`nenhuma oferta Amazon nas ofertas da série (${p.id}, ofertas Amazon no produto=${amzIds.size})`, offers.every((o) => !amzIds.has(o.offerId)));

@@ -15,6 +15,7 @@ import {
   type MoveKind,
   type RenderedGroupMessage,
 } from '@/lib/messaging/group-messages';
+import { AMAZON_OWN_MIN_DAYS, amazonCountsIn, type AmazonMode } from '@/lib/pricing/amazon-mode';
 
 // ---------------------------------------------------------------------------
 // Limiares (medidos e decididos na ata)
@@ -223,6 +224,8 @@ export interface OfferFact {
   missCount?: number;
   /** Amazon: primeira observação depois de uma ausência (group_offer_watch). null = nunca sumiu / sem registro. */
   returnedAt?: Date | null;
+  /** Amazon, PRICE_AMAZON_MODE=on: mediana oferta-dia dos últimos 14 dias do PRÓPRIO ASIN (régua da Amazon-only). null = série curta (< 7 dias) ou não aplicável. */
+  ownMedian14?: { cents: number; days: number } | null;
   /** Preço conferido AO VIVO na API oficial neste ciclo de envio: dispensa o intervalo de 15 min entre duas coletas. */
   liveVerifiedAt?: Date | null;
   /** Selos (opcionais; o coletor ainda NÃO guarda frete nem loja oficial, então hoje chegam vazios e a linha não aparece). */
@@ -255,6 +258,31 @@ export interface ProductFacts {
   series?: DayPoint[];
   /** Série diária só das ofertas Amazon (a Amazon só se compara com o histórico dela mesma). */
   amazonSeries?: DayPoint[];
+  /** PRICE_AMAZON_MODE=on: o produto não tem NENHUMA oferta ativa e elegível fora da Amazon (qualquer frescor). Só então vale a régua do próprio ASIN. */
+  amazonOnly?: boolean;
+}
+
+export interface AmazonRef {
+  cents: number;
+  offers: number;
+  /** market = média única do mercado (inclui a Amazon); amazon = produto só na Amazon, 3+ ASIN ("média na Amazon"); own = mediana de 14 dias do próprio ASIN. */
+  scope: 'market' | 'amazon' | 'own';
+  ownDays?: number;
+}
+
+/**
+ * Referência de preço para a régua de 10% de uma oferta da Amazon (ADR 0010, D3). Só com PRICE_AMAZON_MODE=on e departamento liberado.
+ *  - média única qualificada (3+ ofertas): vale para a Amazon como para as demais (produto só na Amazon com 3+ ASIN = "média na Amazon");
+ *  - sem média e produto só na Amazon (menos de 3 ASIN): mediana de 14 dias do próprio ASIN (mínimo 7 dias de série), nunca "média das lojas";
+ *  - qualquer outro caso: null (a régua de 10% bloqueia, como hoje).
+ */
+export function amazonReference(p: Pick<ProductFacts, 'vertical' | 'amazonOnly'>, o: Pick<OfferFact, 'ownMedian14'>, avg: { cents: number; distinctOffers: number } | null, mode: AmazonMode | undefined): AmazonRef | null {
+  if (!amazonCountsIn(mode ?? 'off', p.vertical)) return null;
+  if (avg && avg.cents > 0) return { cents: avg.cents, offers: avg.distinctOffers, scope: p.amazonOnly ? 'amazon' : 'market' };
+  if (p.amazonOnly && o.ownMedian14 && o.ownMedian14.cents > 0 && o.ownMedian14.days >= AMAZON_OWN_MIN_DAYS) {
+    return { cents: o.ownMedian14.cents, offers: 1, scope: 'own', ownDays: o.ownMedian14.days };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -473,6 +501,8 @@ export interface EvalContext {
   amazonMaxAgeMin?: number;
   /** Classe Amazon pausada (laço da coleta assistida parado). */
   amazonPaused?: boolean;
+  /** PRICE_AMAZON_MODE desta avaliação (o chamador lê `getAmazonMode()`; este módulo é puro). Ausente = off: comportamento de sempre. */
+  amazonMode?: AmazonMode;
 }
 
 /** Janela de 6 h (fuso de São Paulo) para o dedup por oferta/gatilho. */
@@ -973,9 +1003,11 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
     const cheapest = pool[0];
     const hits = series?.length ? detectMovement(series, cheapest.o.priceCents, today) : [];
     // Dono (2026-11-11): "preços na média ou abaixo da média" é gatilho; novo mínimo (OK1) e queda do dia (OK2) têm prioridade.
-    // A Amazon não entra em "na média" (só se compara com o próprio histórico e segue só em alerta).
+    // PRICE_AMAZON_MODE off/shadow: a Amazon não entra em "na média" (só se compara com o próprio histórico e segue só em alerta).
+    // on (games): a média única inclui a Amazon, e "na média" deixa de excluí-la (ADR 0010).
+    const amzIn = isAmz && amazonCountsIn(ctx.amazonMode ?? 'off', p.vertical);
     const strong = hits[0] && (hits[0].kind === 'OK1' || hits[0].kind === 'OK2');
-    const medOk = !isAmz && !strong && !!avg && cheapest.o.priceCents <= avg.cents;
+    const medOk = (!isAmz || amzIn) && !strong && !!avg && cheapest.o.priceCents <= avg.cents;
     if (!hits.length && !medOk) continue;
     const stop = (reasons: string[]) => blocked.push({ masterProductId: p.masterProductId, name: nm, trigger: medOk ? 'G2' : hits[0].kind, reasons: [isAmz ? 'amazon' : 'mercado', ...reasons] });
     const holder = pool.find((x) => x.v.kind !== 'block');
@@ -983,7 +1015,8 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
       stop(['a_oferta_mais_barata_nao_passa_nos_filtros', ...cheapest.v.reasons]);
       continue;
     }
-    if (stores < RULES.MIN_STORES) {
+    // Amazon-only (PRICE_AMAZON_MODE=on): o produto não tem outra loja; a régua é a do próprio ASIN, então o piso de 3 lojas não se aplica.
+    if (stores < RULES.MIN_STORES && !(amzIn && p.amazonOnly)) {
       stop([`lojas_${stores}_abaixo_de_${RULES.MIN_STORES}`]);
       continue;
     }
@@ -1009,7 +1042,7 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
         title: parts.title,
         meta: parts.meta,
         offer: toMsgOffer(o),
-        avg: { cents: Math.round(avg.cents), offers: avg.distinctOffers },
+        avg: { cents: Math.round(avg.cents), offers: avg.distinctOffers, ...(amzIn ? { scope: p.amazonOnly ? ('amazon' as const) : ('market' as const) } : {}) },
         seriesDays: avg.spanDays,
         refCents,
         sinceDay: series?.[0]?.day ?? daysBefore(today, Math.max(0, avg.spanDays - 1)),
@@ -1039,7 +1072,9 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
       stop(['amazon_so_em_alerta']);
       continue;
     }
-    const risk = riskAssess(o.priceCents, isAmz ? null : (avg?.cents ?? null), hit.kind === 'T2' ? null : hit.dropPct, median);
+    // Amazon (modo on): a referência é a média única (ou, produto só na Amazon, a mediana de 14 dias do próprio ASIN). Nos demais modos, sem referência.
+    const aref = isAmz ? amazonReference(p, o, avg, ctx.amazonMode) : null;
+    const risk = riskAssess(o.priceCents, isAmz ? (aref?.cents ?? null) : (avg?.cents ?? null), hit.kind === 'T2' ? null : hit.dropPct, median);
     const move: MoveDetail = {
       kind: hit.kind,
       sinceDay: hit.sinceDay,
@@ -1051,7 +1086,13 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
       nearPct: hit.nearPct == null ? undefined : Math.round(hit.nearPct * 10) / 10,
     };
     const messageKey = makeMessageKey(hit.kind, `${p.masterProductId}:${hit.kind}:${o.offerId}:${windowKey(ctx.now)}`, ctx.now);
-    const avgIn = !isAmz && avg ? { cents: Math.round(avg.cents), offers: avg.distinctOffers } : null;
+    const avgIn = isAmz
+      ? aref
+        ? { cents: Math.round(aref.cents), offers: aref.offers, scope: aref.scope, ...(aref.ownDays ? { days: aref.ownDays } : {}) }
+        : null
+      : avg
+        ? { cents: Math.round(avg.cents), offers: avg.distinctOffers }
+        : null;
     const input: GroupMessageInput = {
       vertical: p.vertical,
       adTag: ctx.adTag,

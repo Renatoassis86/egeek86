@@ -5,7 +5,8 @@ import { ImageResponse } from 'next/og';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
-import { loadNonAmazonOffers } from '@/server/messaging/price-card';
+import { loadCardOffers } from '@/server/messaging/price-card';
+import { amazonCountsIn, getAmazonMode } from '@/lib/pricing/amazon-mode';
 import { readPlatform } from '@/lib/catalog/platform';
 import {
   OFFER_CARD_COLORS as C,
@@ -35,7 +36,7 @@ import { OFFER_ACTIVE_DAYS, PRICE_DAILY_REGIME_START, addDays, computeDayState, 
  *  - Logo oficial lida de `public/geek 86.png` em tempo de renderização e embutida como data URI (nada copiado para public/images).
  *  - Capa: `affiliate_offers.image_url` buscada na hora (timeout 5 s, em memória, nada em disco). Falhou ou formato ilegível:
  *    card SEM capa, com o título em destaque. Nunca imagem inventada.
- *  - Série do insight: a MESMA regra do site (`computeDayState`, ADR 0004) SEM Amazon. Amazon: insight só com o histórico dela mesma.
+ *  - Série do insight: a MESMA regra do site (`computeDayState`, ADR 0004) com a Amazon segundo a flag PRICE_AMAZON_MODE (off/shadow: sem). Amazon: insight só com o histórico dela mesma, e com a média única quando o modo é `on`.
  *  - Preço: o atual da própria oferta, só se ativa, elegível, com link pronto e confirmada há <= 6 h (Amazon <= 24 h).
  */
 
@@ -49,7 +50,7 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
   if (!UUID.test(offerId)) return null;
   const now = opts?.now ?? new Date();
   const rows = await db.execute<Row>(sql`
-    SELECT o.id, o.master_product_id, o.status, o.current_price_cents, o.image_url,
+    SELECT o.id, o.master_product_id, o.status, o.current_price_cents, o.image_url, o.vertical,
            COALESCE(o.last_price_confirmed_at, o.last_checked_at) AS checked_at,
            n.slug AS net_slug, n.name AS net_name, mp.name AS mp_name, mp.game_platform_gen, COALESCE(NULLIF(o.store_name, ''), sl.nickname) AS seller_name,
            (${eligibleOfferSql('o')}) AS eligible,
@@ -78,10 +79,14 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
   const prev = pv[0] ? { cents: Number(pv[0].last_cents), day: String(pv[0].day) } : null;
 
   const stats: OfferCardStats = { recordCents: null, seriesFirstDay: null, measuredDays: 0, avgCents: null, distinctOffers: 0, prev };
-  if (!isAmazon) {
+  // PRICE_AMAZON_MODE=on (games): a Amazon também compara com a média única (que a inclui). off/shadow: só o histórico dela mesma.
+  const amazonOn = isAmazon && amazonCountsIn(getAmazonMode(), String(r.vertical));
+  let amazonAvg: OfferCardInput['amazonAvg'] = null;
+  if (!isAmazon || amazonOn) {
     const windowFrom = addDays(today, -(CARD_MAX_DAYS - 1));
     const firstDay = windowFrom > REGIME_START ? windowFrom : REGIME_START;
-    const offers = await loadNonAmazonOffers(masterId, addDays(firstDay, -OFFER_ACTIVE_DAYS));
+    const offers = await loadCardOffers(masterId, addDays(firstDay, -OFFER_ACTIVE_DAYS));
+    if (amazonOn) amazonAvg = offers.some((x) => !x.isAmazon) ? 'market' : 'amazon';
     const periodDays: PeriodDay[] = [];
     let record: number | null = null;
     let first: string | null = null;
@@ -116,6 +121,7 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
     store: String(r.net_name),
     sellerName: sellerLabel(r.seller_name as string | null, String(r.net_name)),
     isAmazon,
+    amazonAvg,
     priceCents,
     checkedAt,
     imageUrl: img,
