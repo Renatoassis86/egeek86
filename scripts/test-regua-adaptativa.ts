@@ -1,0 +1,12 @@
+import { effectiveMinBelow, RULES } from '../src/lib/messaging/group-rules';
+let ok = 0, bad = 0;
+const eq = (n: string, a: unknown, b: unknown) => { if (a === b) ok++; else { bad++; console.error('FALHOU', n, a, b); } };
+const robust = { cents: 1, distinctOffers: 3, offerDays: 5, spanDays: 14, eligible: true };
+const young = { ...robust, spanDays: 2, eligible: false };
+eq('games sempre 10', effectiveMinBelow({ vertical: 'games', avg: young }), 10);
+eq('livros jovem = piso', effectiveMinBelow({ vertical: 'livros', avg: young }), RULES.EARLY_MIN_BELOW_AVG_PCT);
+eq('livros sem media = piso', effectiveMinBelow({ vertical: 'livros', avg: null }), RULES.EARLY_MIN_BELOW_AVG_PCT);
+eq('livros robusto volta a 10', effectiveMinBelow({ vertical: 'livros', avg: robust }), 10);
+eq('contexto 0 (legado) segue 0', effectiveMinBelow({ vertical: 'livros', avg: young }, 0), 0);
+console.log(`${ok}/${ok + bad} verificações ok (régua adaptativa)`);
+process.exit(bad ? 1 : 0);

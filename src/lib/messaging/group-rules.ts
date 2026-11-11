@@ -26,6 +26,8 @@ export const RULES = {
   /** G1/G2/G3: abaixo da média mínimo. */
   /** Régua de preço (dono, 2026-11-11): só se envia mensagem de preço quando a cotação do dia está pelo menos este % ABAIXO da média única oferta-dia (era 15). */
   MIN_BELOW_AVG_PCT: 10,
+  /** Fase de formação de amostra (dono, 2026-11-11): nas lojas que não são Games, enquanto a média do produto não é robusta (avg.eligible = >=3 ofertas, >=5 oferta-dias, >=14 dias), basta o preço estar abaixo da média (qualquer % > este piso). A régua de 10% volta SOZINHA quando o produto ganha amostra. */
+  EARLY_MIN_BELOW_AVG_PCT: 0.1,
   /** Acima disso fica RETIDO (nunca sai sozinho). Onda 2: > 45% contra a média (era 40%). */
   REVIEW_ABOVE_BELOW_AVG_PCT: 45,
   /** Queda sobre o preço anterior acima disso: retido. */
@@ -537,6 +539,13 @@ function relaxShopee(reasons: string[], primary: OfferFact, dropPct: number | nu
   return reasons.filter((r) => r !== SHOPEE_REVIEW_REASON);
 }
 
+/** Régua efetiva de % abaixo da média: 10 (ou o valor do contexto); nas lojas novas sem amostra robusta, só o piso EARLY. Games mantém sempre a régua cheia. */
+export function effectiveMinBelow(p: Pick<ProductFacts, 'vertical' | 'avg'>, ctxMin?: number): number {
+  const base = ctxMin ?? RULES.MIN_BELOW_AVG_PCT;
+  if (base > 0 && p.vertical !== 'games' && !(p.avg && p.avg.eligible)) return Math.min(base, RULES.EARLY_MIN_BELOW_AVG_PCT);
+  return base;
+}
+
 export function finish(
   p: ProductFacts,
   trigger: Trigger,
@@ -570,7 +579,7 @@ export function finish(
   // Régua de 10% (dono, 2026-11-11): mensagem de preço (alerta, insight, radar) só com preço >= 10% abaixo da média única.
   const priceClass = (base.cls ?? TRIGGER_CLASS[trigger]) as MessageClass;
   const belowAvgPct = base.avgCents != null && base.avgCents > 0 ? ((base.avgCents - base.primary.priceCents) / base.avgCents) * 100 : null;
-  const minBelow = ctx.minBelowAvgPct ?? RULES.MIN_BELOW_AVG_PCT;
+  const minBelow = effectiveMinBelow(p, ctx.minBelowAvgPct);
   const belowRule =
     minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
       ? `abaixo_da_media_menos_de_${minBelow}pct`
@@ -680,7 +689,7 @@ export function evaluateProduct(p: ProductFacts, ctx: EvalContext): { candidates
     else if (!avg) stop('G1', ['sem_media_elegivel']);
     else if (stores < RULES.MIN_STORES) stop('G1', [`lojas_${stores}_abaixo_de_${RULES.MIN_STORES}`]);
     else if (!p.record) stop('G1', ['sem_primeiro_evento_para_dizer_desde_quando']);
-    else if (pctBelow(holder.o.priceCents, avg.cents) < RULES.MIN_BELOW_AVG_PCT) stop('G1', ['abaixo_da_media_insuficiente']);
+    else if (pctBelow(holder.o.priceCents, avg.cents) < effectiveMinBelow(p, ctx.minBelowAvgPct)) stop('G1', ['abaixo_da_media_insuficiente']);
     else {
       const o = holder.o;
       const trigger: Trigger = asG6 ? 'G6' : 'G1';
@@ -714,7 +723,7 @@ export function evaluateProduct(p: ProductFacts, ctx: EvalContext): { candidates
     else {
       const pct = pctBelow(best.o.priceCents, avg.cents);
       const raw = ((avg.cents - best.o.priceCents) / avg.cents) * 100;
-      if (raw < RULES.MIN_BELOW_AVG_PCT) stop('G2', [`abaixo_da_media_${raw.toFixed(1)}pct_menor_que_${RULES.MIN_BELOW_AVG_PCT}pct`]);
+      if (raw < effectiveMinBelow(p, ctx.minBelowAvgPct)) stop('G2', [`abaixo_da_media_${raw.toFixed(1)}pct_menor_que_${effectiveMinBelow(p, ctx.minBelowAvgPct)}pct`]);
       else {
         const o = best.o;
         const trigger: Trigger = asG6 ? 'G6' : 'G2';
