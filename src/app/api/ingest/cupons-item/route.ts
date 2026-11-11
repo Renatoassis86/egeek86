@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
         AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
     ) t
     WHERE t.rn = 1 AND (t.last_read IS NULL OR t.last_read < now() - interval '90 minutes')
-    ORDER BY t.last_read NULLS FIRST LIMIT ${n}`);
+    ORDER BY (EXISTS (SELECT 1 FROM group_messages g WHERE g.offer_id = t.id::uuid AND g.created_at > now() - interval '3 hours')) DESC, t.last_read NULLS FIRST LIMIT ${n}`);
   const items: { id: string; url: string }[] = [];
   let token: string | null = null;
   for (const r of rows) {
@@ -103,9 +103,10 @@ interface CouponRow { campaign_id?: string; label?: string; status?: string }
 
 /** "R$ 315,46 com Cupom" -> 31546; null se não bate com o formato. */
 function centsFromLabel(label: string): number | null {
-  const m = label.match(/R\$\s*(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d{2}))?/);
+  const m = label.match(/R\$\s*(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d{1,2}))?/);
   if (!m) return null;
-  const v = parseInt(m[1].replace(/\./g, ''), 10) * 100 + (m[2] ? parseInt(m[2], 10) : 0);
+  const dec = m[2] ? (m[2].length === 1 ? parseInt(m[2], 10) * 10 : parseInt(m[2], 10)) : 0;
+  const v = parseInt(m[1].replace(/\./g, ''), 10) * 100 + dec;
   return Number.isFinite(v) && v > 0 ? v : null;
 }
 

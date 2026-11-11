@@ -27,6 +27,7 @@ export async function lookupItemCoupon(offerId: string): Promise<CouponInfo | nu
       ORDER BY ci.last_seen_at DESC LIMIT 1
     ) c ON true
     WHERE r.offer_id = ${offerId}::uuid AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - interval '120 minutes'
+      AND COALESCE(r.label, '') !~* 'seguir' -- cupom que exige seguir a loja não é cupom geral: fica de fora
     ORDER BY r.read_at DESC, r.price_with_coupon_cents ASC LIMIT 1`);
   const r = rows[0];
   if (!r) return null;
