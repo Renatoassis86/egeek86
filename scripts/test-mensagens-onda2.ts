@@ -489,25 +489,28 @@ ok(RULES.GREEN_MAX_BELOW_AVG_PCT === 30 && RULES.GREEN_MAX_DROP_PCT === 30 && RU
 const evMsg = evaluateProductV2(product(), ctx);
 const c1 = evMsg.candidates.find((c) => c.trigger === 'OK1') as Candidate;
 const tg = c1.texts.telegram;
-const lines = tg.split('\n');
+const paras = tg.split('\n\n');
+const lines = [...paras[0].split('\n'), ...paras[1].split('\n')];
 ok(lines[0] === '<b>Tomba! Edição Especial</b> <i>Switch · mídia física</i>', 'linha 1: título em negrito e plataforma/formato em itálico', lines[0]);
 ok(lines[1] === '<b>R$ 94,00</b> no Mercado Livre', 'linha 2: preço em negrito com a loja', lines[1]);
-ok(/^📉 <b>.*abaixo da média \(R\$ 115,00\).*<\/b>$/.test(lines[2]) && lines[2].includes('R$ 21,00 abaixo da média (R$ 115,00)') && lines[2].includes('novo menor registrado'), 'linha 3: variações em negrito', lines[2]);
+ok(/^📉 <b>Economia de .*<\/b>$/.test(lines[2]) && lines[2].includes('Economia de R$ 21,00 sobre a média') && lines[3].includes('novo menor registrado'), 'linha 3: variações em negrito', lines[2]);
 const bq = tg.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
 ok(!!bq && (bq[1].match(/[.!?](\s|$)/g) ?? []).length >= 2 && (bq[1].match(/[.!?](\s|$)/g) ?? []).length <= 3, 'insight em <blockquote> com 2 a 3 frases', bq?.[1]);
-ok(tg.includes(`<a href="https://www.egeek86.com/go/slug-a?s=tg&amp;m=${c1.messageKey}">Ver a oferta</a>`), 'link âncora "Ver a oferta" com s=tg e m=<id>');
-ok(lines[lines.length - 1] === '<i>Conferido em 11/11 às 10:50 (Brasília). #publicidade</i>', 'última linha: itálico com carimbo e #publicidade', lines[lines.length - 1]);
+ok(!tg.includes('/go/') && !tg.includes('<a '), 'Telegram sem URL no texto (o link vai no botão inline)');
+ok(tg.includes('Vendedor com reputação verde'), 'linha do vendedor ML (reputação verde)');
+const tgLines = tg.split('\n');
+ok(tgLines[tgLines.length - 1] === '<i>Conferido em 11/11 às 10:50 (Brasília). #publicidade</i>', 'última linha: itálico com carimbo e #publicidade', tgLines[tgLines.length - 1]);
 ok(countEmojis(tg) <= MAX_EMOJIS_PER_MESSAGE && !countEmojis(lines[0]), 'no máximo 2 emojis e nenhum no título', countEmojis(tg));
 ok(tg.length < TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024) e no limite (4096)', tg.length);
 ok(textProblems(tg, 'tg').length === 0 && !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off/i.test(tg), 'barreira de texto limpa, sem previsão, de/por ou % OFF');
 const wa = c1.texts.whatsapp;
-ok(wa.startsWith('*Tomba! Edição Especial* _Switch · mídia física_\n*R$ 94,00* no Mercado Livre\n') && wa.includes('\n> Novo menor preço da série') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
+ok(wa.startsWith('*Tomba! Edição Especial* _Switch · mídia física_\n\n*R$ 94,00* no Mercado Livre\n') && wa.includes('\n> Novo menor preço da série') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
 ok(wa.includes(`?s=wa&m=${c1.messageKey}`) && wa.trimEnd().endsWith('_'), 'WhatsApp: link s=wa e rodapé em itálico');
 // storytelling por gatilho
 const ok2 = evaluateProductV2(product({ series: days([9000, 9000, 9000, 10000, 10000, 10000, 10000, 10000]), offers: [offer({ offerId: 'a', priceCents: 9100 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx).candidates.find((c) => c.trigger === 'OK2') as Candidate;
 ok(ok2.texts.telegram.includes('queda de 9,0% vs ontem') && ok2.texts.telegram.includes('Caiu 9,0% de ontem (R$ 100,00) para hoje (R$ 91,00).'), 'OK2: queda vs ontem na linha 3 e na história', ok2.texts.telegram);
 const medMsg = evaluateProductV2(medProduct(), ctx).candidates.find((c) => c.trigger === 'G2') as Candidate;
-ok(medMsg.texts.telegram.includes('R$ 5,00 abaixo da média (R$ 115,00)') && medMsg.texts.telegram.includes('4,3% abaixo da média de R$ 115,00 das 3 ofertas ativas') && medMsg.texts.telegram.includes('acima do menor registrado (R$ 100,00)'), 'G2: história com a média, o menor registrado e a distância dele', medMsg.texts.telegram);
+ok(medMsg.texts.telegram.includes('Economia de R$ 5,00 sobre a média') && medMsg.texts.telegram.includes('4,3% abaixo da média de R$ 115,00 das 3 ofertas ativas') && medMsg.texts.telegram.includes('acima do menor registrado (R$ 100,00)'), 'G2: história com a média, o menor registrado e a distância dele', medMsg.texts.telegram);
 ok(!medMsg.texts.telegram.includes('📉') && countEmojis(medMsg.texts.telegram) === 0, 'G2 não leva o marcador de queda (não houve queda)');
 // escape HTML do título e limite
 const evilName = 'Zelda <b>&</b> "Tears" > Kingdom';
@@ -526,7 +529,7 @@ const cp: CouponInfo = { code: 'GEEK10', conditions: 'R$ 10 acima de R$ 80', exp
 const withCp = withCouponBlock(tg, cp, 'tg', NOW);
 const cl = withCp.split('\n');
 const iCoupon = cl.findIndex((l) => l.includes('Cupom:'));
-ok(iCoupon > 0 && cl[iCoupon].includes('<code>GEEK10</code>') && cl[iCoupon + 1].includes('Ver a oferta') && cl[cl.length - 1].startsWith('<i>Conferido'), 'cupom: linha com <code> logo antes do link, rodapé continua por último', withCp);
+ok(iCoupon > 0 && cl[iCoupon].includes('<code>GEEK10</code>') && cl[iCoupon + 1] === '' && cl[cl.length - 1].startsWith('<i>Conferido'), 'cupom: linha com <code> logo antes do link, rodapé continua por último', withCp);
 ok(countEmojis(withCp) <= MAX_EMOJIS_PER_MESSAGE, 'com cupom: ainda no máximo 2 emojis', countEmojis(withCp));
 ok(withCouponBlock(tg, { ...cp, expiresAt: new Date(NOW.getTime() - MIN).toISOString() }, 'tg', NOW) === tg, 'cupom vencido: mensagem sai sem cupom');
 // Amazon: carimbo e sem média das outras lojas

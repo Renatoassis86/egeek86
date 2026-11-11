@@ -556,7 +556,7 @@ export function finish(
 }
 
 export function toMsgOffer(o: OfferFact) {
-  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date };
+  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date, seller: { reputation: o.sellerReputation, totalSales: o.sellerTotalSales } };
 }
 
 function humanReview(price: number, avg: number | null, dropPct: number | null, median: number | null): string[] {

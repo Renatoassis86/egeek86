@@ -227,6 +227,8 @@ export interface MsgOffer {
   networkName: string;
   priceCents: number;
   confirmedAt: Date;
+  /** Reputação do vendedor (só Mercado Livre, dado lido da API): entra na linha "Vendedor". */
+  seller?: { reputation: string | null; totalSales: number | null } | null;
 }
 export interface MsgAvg {
   cents: number;
@@ -516,12 +518,30 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}`;
   const vars = variationParts(input, amz);
   const dropMarker = input.model === 'movimento' && input.move.kind !== 'T2' ? `${EMOJI_DROP} ` : '';
-  const varLine = vars.length ? `${dropMarker}${f.b(vars.join(' · '))}` : null;
+  // Gancho comercial: quanto sobra no bolso em relação à média única (só com dado medido).
+  const saving = !amz && input.avg && input.avg.cents > o.priceCents ? input.avg.cents - o.priceCents : 0;
+  const hook = saving > 0 ? `${dropMarker}${f.b(`Economia de ${fmtBRL(saving)} sobre a média`)}` : null;
+  const rest = hook ? vars.filter((v) => !/abaixo da média/.test(v)) : vars;
+  const varLine = rest.length ? `${hook ? '' : dropMarker}${f.b(rest.join(' · '))}` : null;
   const story = storySentences(input, amz).join(' ');
   const storyBlock = channel === 'tg' ? `<blockquote>${escapeTelegramHtml(story)}</blockquote>` : `> ${escapeWhatsapp(story)}`;
-  const link = channel === 'tg' ? f.link(buildGoLink(o.slug, 'tg', input.messageKey), 'Ver a oferta') : buildGoLink(o.slug, 'wa', input.messageKey);
+  const sellerText = sellerLine(o);
+  const sellerBlock = sellerText ? italic(sellerText) : null;
+  // Telegram: o link vai no BOTÃO (reply_markup) e o texto não leva URL (sem pré-visualização truncada). WhatsApp: o link no texto.
+  const link = channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
-  return [head, priceLine, varLine, storyBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n');
+  const priceBlock = [priceLine, hook, varLine].filter((l): l is string => !!l).join('\n');
+  return [head, priceBlock, storyBlock, sellerBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+}
+
+/** Linha do vendedor, só Mercado Livre e só com reputação lida (verde). Nunca inventa nível. */
+export function sellerLine(o: MsgOffer): string | null {
+  if (!/mercado-?livre/i.test(o.networkSlug) || !o.seller?.reputation) return null;
+  const rep = o.seller.reputation;
+  if (rep !== '5_green' && rep !== '4_light_green') return null;
+  const n = o.seller.totalSales ?? 0;
+  const vendas = n >= 1000 ? `mais de ${Math.floor(n / 1000)} mil vendas` : n >= 100 ? `mais de ${Math.floor(n / 100) * 100} vendas` : null;
+  return `Vendedor com reputação ${rep === '5_green' ? 'verde (nível máximo)' : 'verde-clara'} no Mercado Livre${vendas ? `, ${vendas}` : ''}`;
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -845,9 +865,10 @@ export function withCouponBlock(text: string, coupon: CouponInfo | null | undefi
   const code = channel === 'tg' ? `<code>${esc(coupon.code.trim())}</code>` : esc(coupon.code.trim());
   const mark = channel === 'tg' && countEmojis(text) < MAX_EMOJIS_PER_MESSAGE ? `${EMOJI_COUPON} ` : '';
   const block = `${mark}Cupom: ${code}${cond}.${until} Visto em ${fmtStamp(new Date(coupon.verifiedAt))}.`;
-  const lines = text.split('\n');
+  // Layout com parágrafos (linha em branco): o cupom vira um parágrafo próprio antes do link/rodapé.
+  const sep = text.includes('\n\n') ? '\n\n' : '\n';
+  const lines = text.split(sep);
   if (lines.length < 2) return text;
-  // Antes da linha do link (a última com /go/ no texto); nos formatos antigos o link é a última linha.
   let at = lines.length - 1;
   for (let i = lines.length - 1; i >= 0; i--) {
     if (lines[i].includes('/go/')) {
@@ -856,7 +877,7 @@ export function withCouponBlock(text: string, coupon: CouponInfo | null | undefi
     }
   }
   lines.splice(at, 0, block);
-  const out = lines.join('\n');
+  const out = lines.join(sep);
   if (textProblems(out, channel).length > textProblems(text, channel).length) return text;
   if (channel === 'tg' && out.length > TELEGRAM_MAX_CHARS) return text;
   return out;

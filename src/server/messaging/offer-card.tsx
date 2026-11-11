@@ -103,7 +103,11 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
 
   const title = String(r.mp_name);
   const rp = readPlatform(r.game_platform_gen as Parameters<typeof readPlatform>[0], title);
-  const img = typeof r.image_url === 'string' && /^https:\/\//i.test(r.image_url.trim()) ? r.image_url.trim() : null;
+  // A capa só vale se o endereço da imagem é da MESMA loja da oferta (incidente 2026-11-11: oferta do ML com imagem da Shopee/Amazon).
+  const hostOk: Record<string, RegExp> = { 'mercado-livre': /mlstatic\.com|mercadolivre/i, shopee: /shopee|susercontent|shp\.ee/i, amazon: /media-amazon|ssl-images-amazon/i };
+  const rawImg = typeof r.image_url === 'string' && /^https:\/\//i.test(r.image_url.trim()) ? r.image_url.trim() : null;
+  const okRe = hostOk[String(r.net_slug)];
+  const img = rawImg && (!okRe || okRe.test(rawImg)) ? rawImg : null;
   return {
     title,
     platformLabel: platformLabel(rp.platform, rp.legacyLabel),

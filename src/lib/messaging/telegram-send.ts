@@ -27,6 +27,8 @@ export interface SendTelegramGroupInput {
    * vai por sendPhoto com upload multipart (sem URL pública, sem arquivo guardado); senão cai em sendMessage.
    */
   photo?: Uint8Array | null;
+  /** Botão de link abaixo da mensagem (inline_keyboard). Também desliga a pré-visualização de links. */
+  button?: { text: string; url: string } | null;
 }
 
 /** Limite de legenda do Telegram em sendPhoto. */
@@ -100,6 +102,8 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
     const payload: Record<string, unknown> = photo ? { chat_id: chatId, caption: text } : { chat_id: chatId, text };
     if (!plain) payload.parse_mode = 'HTML';
     if (input.silent) payload.disable_notification = true;
+    if (!photo) payload.link_preview_options = { is_disabled: true };
+    if (input.button) payload.reply_markup = { inline_keyboard: [[{ text: input.button.text, url: input.button.url }]] };
 
     let status = 0;
     let body: TgBody = {};
@@ -107,7 +111,7 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
       let res;
       if (photo) {
         const form = new FormData();
-        for (const [k, v] of Object.entries(payload)) form.append(k, String(v));
+        for (const [k, v] of Object.entries(payload)) form.append(k, typeof v === 'object' ? JSON.stringify(v) : String(v));
         form.append('photo', new Blob([new Uint8Array(photo)], { type: 'image/png' }), 'cartao.png');
         res = await doFetch(url, { method: 'POST', body: form });
       } else {

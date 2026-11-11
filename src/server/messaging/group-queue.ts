@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { canSendTelegram, getAdTag } from '@/lib/messaging/group-config';
 import { dispositionOf, rowStatusFor, type AutomationState } from '@/lib/messaging/group-automation';
-import { withCouponBlock, type CouponInfo } from '@/lib/messaging/group-messages';
+import { withCouponBlock, buildGoLink, type CouponInfo } from '@/lib/messaging/group-messages';
 import {
   RULES,
   applyLimits,
@@ -510,6 +510,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       text,
       silent: !plan.nextSound,
       photo,
+      button: buyButton(match, row.messageKey),
       fetchImpl: deps.fetchImpl,
     });
 
@@ -665,4 +666,14 @@ export async function runRechecks(now = new Date(), limit = 20): Promise<Recheck
     out.checked++;
   }
   return out;
+}
+
+/** Botão "Comprar agora" do Telegram: o mesmo link rastreado /go/<slug> da mensagem (só mensagens de oferta). */
+function buyButton(match: { offerSlug?: string; trigger?: string }, messageKey: string): { text: string; url: string } | null {
+  if (!match.offerSlug || match.trigger === 'RADAR') return null;
+  try {
+    return { text: 'Ver oferta e comprar', url: buildGoLink(match.offerSlug, 'tg', messageKey) };
+  } catch {
+    return null;
+  }
 }
