@@ -6,6 +6,8 @@ import { getAdminDashboardMetrics, getDailyClicks } from '@/server/queries/affil
 import { AdminAnalyticsDashboard } from '@/components/admin/admin-analytics-dashboard';
 import { getAdminCatalogMetrics } from '@/server/queries/admin-metrics';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { getFilaClassificacao } from '@/server/queries/fila-classificacao';
+import { FilaClassificacaoPopup } from '@/components/admin/fila-classificacao-popup';
 
 export const metadata = { title: 'Admin: Painel' };
 
@@ -15,6 +17,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage() {
   await requireAdmin();
+  const fila = await getFilaClassificacao();
   const [metrics, dailyClicks, catalog] = await Promise.all([
     getAdminDashboardMetrics(),
     getDailyClicks(14),
@@ -38,6 +41,9 @@ export default async function AdminDashboardPage() {
         <Text variant="body-sm" color="secondary" className="mt-1">
           Ofertas, cliques e cotações registradas, lidos direto do banco. Onde não há dado, a seção aparece vazia.
         </Text>
+        <div className="mt-3">
+          <FilaClassificacaoPopup initialCards={fila.cards} pendentes={fila.pendentes} regrasAprendidas={fila.regrasAprendidas} />
+        </div>
       </div>
 
       {/* KPIs principais — maior destaque visual que o resto */}
