@@ -682,7 +682,7 @@ export function sellerLine(o: MsgOffer): string | null {
 }
 
 /** Slogan do rodapé (dono, 2026-11-11: a diferença do grupo é a informação para decidir). Configurável: GROUP_MESSAGES_SLOGAN. */
-export const DEFAULT_SLOGAN = 'Informação antes do preço.';
+export const DEFAULT_SLOGAN = 'Quem monitora, compra melhor.';
 export function getSlogan(env: Record<string, string | undefined> = process.env): string {
   const raw = (env.GROUP_MESSAGES_SLOGAN ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 80);
   return raw && !/afiliad/i.test(raw) ? raw : DEFAULT_SLOGAN;
