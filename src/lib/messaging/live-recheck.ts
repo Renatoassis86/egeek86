@@ -19,6 +19,8 @@ export interface LiveTarget {
   networkName?: string;
   /** affiliate_offers.external_ref (ML: id do catálogo; Shopee: `shopee-<itemId>`). */
   externalRef: string | null;
+  /** id do anúncio (affiliate_offers.external_item_id, ex.: MLB123...). Preferido sobre o id extraído da URL (que pode ser meli.la). */
+  externalItemId?: string | null;
   /** URL do anúncio (ML: contém o id do item, ex.: produto.mercadolivre.com.br/MLB-123456). */
   affiliateUrl: string | null;
   /** Vendedor da oferta (ML: seller_id) para conferir que o anúncio é o mesmo. */
@@ -44,7 +46,8 @@ export interface LiveDeps {
   timeoutMs?: number;
 }
 
-const ML_ITEMS = 'https://api.mercadolibre.com/items';
+// Mesma base e mesmo caminho da coleta (src/server/collector/sources/mercado-livre.ts): /products/{catalog}/items.
+const ML_PRODUCTS = 'https://api.mercadolibre.com/products';
 
 /** Id do anúncio (MLB123...) tirado da URL do anúncio. URL de catálogo (/p/MLB...) não é anúncio: null. */
 export function meliItemIdFromUrl(url: string | null | undefined): string | null {
@@ -84,25 +87,24 @@ export function needsLive(t: LiveTarget, now: Date, humanApproved: boolean): boo
 const defaultFetch: FetchLike = (url, init) => fetch(url, init as RequestInit) as unknown as ReturnType<FetchLike>;
 
 async function meliQuote(t: LiveTarget, deps: LiveDeps): Promise<LiveQuote> {
-  const itemId = meliItemIdFromUrl(t.affiliateUrl);
-  if (!itemId) return { ok: false, kind: 'unsupported', reason: 'ml_sem_id_do_anuncio' };
+  // Terceiros: /items?ids= devolve 403. O caminho que funciona é o da coleta: /products/{catalog_product_id}/items (vencedores).
+  const catalogId = t.externalRef && /^MLB\d+$/.test(t.externalRef) ? t.externalRef : null;
+  if (!catalogId) return { ok: false, kind: 'unsupported', reason: 'ml_sem_catalogo' };
+  const itemId = t.externalItemId ?? meliItemIdFromUrl(t.affiliateUrl);
+  if (!itemId && !t.sellerExternalId) return { ok: false, kind: 'unsupported', reason: 'ml_sem_id_do_anuncio' };
   if (!deps.meliToken) return { ok: false, kind: 'error', reason: 'ml_sem_token' };
   const token = await deps.meliToken();
-  const res = await (deps.fetchImpl ?? defaultFetch)(`${ML_ITEMS}?ids=${itemId}&attributes=id,price,available_quantity,status,condition,seller_id`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const res = await (deps.fetchImpl ?? defaultFetch)(`${ML_PRODUCTS}/${catalogId}/items?limit=100`, { headers: { Authorization: `Bearer ${token}` } });
+  // "No winners found" (404) = sem vendedor ativo agora (mesma semântica da coleta), não erro.
+  if (res.status === 404) return { ok: false, kind: 'unavailable', reason: 'ml_sem_vencedores' };
   if (res.status !== 200) return { ok: false, kind: 'error', reason: `ml_http_${res.status}` };
-  const data = (await res.json()) as Array<{ code?: number; body?: { id?: string; price?: number; available_quantity?: number; status?: string; condition?: string; seller_id?: number | string } }>;
-  const row = Array.isArray(data) ? data.find((r) => r?.body?.id === itemId || r?.code === 404 || r?.code === 200) : undefined;
-  if (!row) return { ok: false, kind: 'error', reason: 'ml_resposta_vazia' };
-  if (row.code === 404) return { ok: false, kind: 'unavailable', reason: 'ml_anuncio_nao_encontrado' };
-  if (row.code !== 200 || !row.body) return { ok: false, kind: 'error', reason: `ml_item_code_${row.code ?? 'x'}` };
-  const b = row.body;
-  if (b.status !== 'active') return { ok: false, kind: 'unavailable', reason: `ml_anuncio_${b.status ?? 'sem_status'}` };
-  if (!(Number(b.available_quantity) > 0)) return { ok: false, kind: 'unavailable', reason: 'ml_sem_estoque' };
-  if (b.condition && b.condition !== 'new') return { ok: false, kind: 'unavailable', reason: 'ml_condicao_nao_nova' };
-  if (t.sellerExternalId && b.seller_id != null && String(b.seller_id) !== t.sellerExternalId) return { ok: false, kind: 'unavailable', reason: 'ml_vendedor_diferente' };
-  const cents = Math.round(Number(b.price) * 100);
+  const data = (await res.json()) as { results?: Array<{ item_id?: string; price?: number; condition?: string | null; seller_id?: number | string }> };
+  const rows = Array.isArray(data?.results) ? data.results : null;
+  if (!rows) return { ok: false, kind: 'error', reason: 'ml_resposta_invalida' };
+  const row = itemId ? rows.find((r) => r.item_id === itemId) : rows.find((r) => r.seller_id != null && String(r.seller_id) === t.sellerExternalId);
+  if (!row) return { ok: false, kind: 'unavailable', reason: 'ml_anuncio_fora_dos_vencedores' };
+  if (row.condition !== 'new') return { ok: false, kind: 'unavailable', reason: 'ml_condicao_nao_nova' };
+  const cents = Math.round(Number(row.price) * 100);
   if (!Number.isFinite(cents) || cents <= 0) return { ok: false, kind: 'error', reason: 'ml_preco_invalido' };
   return { ok: true, priceCents: cents };
 }

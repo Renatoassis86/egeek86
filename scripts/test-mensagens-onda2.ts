@@ -84,11 +84,12 @@ function meliFetch(rows: Array<{ status?: number; body?: unknown; throws?: boole
   };
   return { f, calls };
 }
-const item = (over: Record<string, unknown> = {}, code = 200) => [{ code, body: { id: 'MLB1234567890', price: 100, available_quantity: 5, status: 'active', condition: 'new', seller_id: 777, ...over } }];
+// Formato real de GET /products/{catalog}/items (vencedores): item_id, price, condition, seller_id.
+const item = (over: Record<string, unknown> = {}) => ({ results: [{ item_id: 'MLB1234567890', price: 100, condition: 'new', seller_id: 777, ...over }, { item_id: 'MLB9999999999', price: 90, condition: 'new', seller_id: 1 }] });
 
 const mlTarget = (over: Partial<LiveTarget> = {}): LiveTarget => ({
   offerId: 'o1', role: 'original', masterProductId: 'p1', networkSlug: 'mercado-livre', networkName: 'Mercado Livre',
-  externalRef: 'MLB999', affiliateUrl: 'https://produto.mercadolivre.com.br/MLB-1234567890', sellerExternalId: '777',
+  externalRef: 'MLB999', affiliateUrl: 'https://produto.mercadolivre.com.br/MLB-1234567890', externalItemId: 'MLB1234567890', sellerExternalId: '777',
   storedPriceCents: 10000, confirmedAt: new Date(NOW.getTime() - 45 * MIN), detectedPriceCents: 10000, ...over,
 });
 const recorded: Array<{ id: string; cents: number }> = [];
@@ -116,7 +117,7 @@ async function liveTests() {
   recorded.length = 0;
   let r = await phase([mlTarget()], baseDeps(m.f));
   ok(r.ok && r.verified.includes('o1') && recorded.length === 1 && recorded[0].cents === 10000, 'ao vivo OK: segue e grava o snapshot', r);
-  ok(m.calls.length === 1 && m.calls[0].url.startsWith('https://api.mercadolibre.com/items?ids=MLB1234567890') && m.calls[0].auth === `Bearer ${TOKEN}`, 'ao vivo: consulta oficial de itens com o token da coleta', m.calls);
+  ok(m.calls.length === 1 && m.calls[0].url === 'https://api.mercadolibre.com/products/MLB999/items?limit=100' && m.calls[0].auth === `Bearer ${TOKEN}`, 'ao vivo: consulta /products/{catalogo}/items (a da coleta) com o token', m.calls);
   // 1.2 limite de 2%
   m = meliFetch([{ body: item({ price: 102 }) }]);
   r = await phase([mlTarget()], baseDeps(m.f));
@@ -129,19 +130,36 @@ async function liveTests() {
   r = await phase([mlTarget()], baseDeps(m.f));
   ok(!r.ok && /divergiu 2,5%/.test(r.reason ?? ''), 'ao vivo: preço 2,5% abaixo também expira', r.reason);
   // 1.3 sem estoque / inativo / outro vendedor / usado
-  for (const [over, re, nm] of [
-    [{ available_quantity: 0 }, /ml_sem_estoque/, 'sem estoque'],
-    [{ status: 'paused' }, /ml_anuncio_paused/, 'anúncio pausado'],
-    [{ seller_id: 123 }, /ml_vendedor_diferente/, 'vendedor diferente'],
-    [{ condition: 'used' }, /ml_condicao_nao_nova/, 'condição não nova'],
-  ] as const) {
-    m = meliFetch([{ body: item(over) }]);
-    r = await phase([mlTarget()], baseDeps(m.f));
-    ok(!r.ok && re.test(r.reason ?? ''), `ao vivo: ${nm} expira`, r.reason);
-  }
-  m = meliFetch([{ body: item({}, 404) }]);
+  m = meliFetch([{ body: item({ condition: 'used' }) }]);
   r = await phase([mlTarget()], baseDeps(m.f));
-  ok(!r.ok && /ml_anuncio_nao_encontrado/.test(r.reason ?? ''), 'ao vivo: anúncio 404 expira');
+  ok(!r.ok && /ml_condicao_nao_nova/.test(r.reason ?? ''), 'ao vivo: condição diferente de new expira', r.reason);
+  // acerto pelo item_id entre vários vencedores (o primeiro não é o da oferta)
+  m = meliFetch([{ body: { results: [{ item_id: 'MLB9999999999', price: 50, condition: 'new', seller_id: 1 }, ...item().results] } }]);
+  r = await phase([mlTarget()], baseDeps(m.f));
+  ok(r.ok && recorded.at(-1)?.cents === 10000, 'acerto pelo item_id (ignora outros vencedores mais baratos)', r);
+  // item fora dos vencedores
+  m = meliFetch([{ body: { results: [{ item_id: 'MLB9999999999', price: 90, condition: 'new', seller_id: 1 }] } }]);
+  r = await phase([mlTarget()], baseDeps(m.f));
+  ok(!r.ok && /ml_anuncio_fora_dos_vencedores/.test(r.reason ?? ''), 'item fora dos vencedores = indisponível, expira', r.reason);
+  // 404 "No winners found"
+  m = meliFetch([{ status: 404, body: { message: 'No winners found', error: 'not_found' } }]);
+  r = await phase([mlTarget()], baseDeps(m.f));
+  ok(!r.ok && /ml_sem_vencedores/.test(r.reason ?? '') && r.logs[0].verdict === 'fail', '404 sem vencedores = indisponível (ml_sem_vencedores), expira', r.reason);
+  // id vindo de externalItemId com affiliate_url meli.la
+  m = meliFetch([{ body: item() }]);
+  r = await phase([mlTarget({ affiliateUrl: 'https://meli.la/2abc123' })], baseDeps(m.f));
+  ok(r.ok && m.calls.length === 1, 'externalItemId resolve mesmo com affiliate_url meli.la');
+  // sem item_id e sem externalItemId: acha pelo vendedor
+  m = meliFetch([{ body: item() }]);
+  r = await phase([mlTarget({ affiliateUrl: 'https://meli.la/2abc123', externalItemId: null })], baseDeps(m.f));
+  ok(r.ok, 'sem id do anúncio: casa pelo seller_id da oferta');
+  m = meliFetch([{ body: item() }]);
+  r = await phase([mlTarget({ affiliateUrl: 'https://meli.la/2abc123', externalItemId: null, sellerExternalId: '555' })], baseDeps(m.f));
+  ok(!r.ok && /ml_anuncio_fora_dos_vencedores/.test(r.reason ?? ''), 'seller_id que não está entre os vencedores = fora dos vencedores');
+  // sem catálogo no external_ref
+  m = meliFetch([{ body: item() }]);
+  r = await phase([mlTarget({ externalRef: 'shopee-1' })], baseDeps(m.f));
+  ok(!r.ok && m.calls.length === 0, 'ML sem catalog_product_id no external_ref: não consulta e expira');
   // 1.4 falha de rede / HTTP / timeout de 8 s (aqui 80 ms): expira sem enviar e nunca vaza o token
   m = meliFetch([{ throws: true }]);
   r = await phase([mlTarget()], baseDeps(m.f));
@@ -165,9 +183,9 @@ async function liveTests() {
   m = meliFetch([{ body: item() }]);
   r = await phase([mlTarget({ networkSlug: 'amazon', networkName: 'Amazon', affiliateUrl: 'https://www.amazon.com.br/dp/B0X', confirmedAt: new Date(NOW.getTime() - 120 * MIN) })], baseDeps(m.f));
   ok(r.ok && m.calls.length === 0 && /amazon/.test(r.logs[0].reason ?? ''), 'Amazon: NÃO consulta ao vivo (segue o frescor da coleta assistida)', r.logs);
-  // 1.6 ML sem id do anúncio (placeholder de catálogo)
+  // 1.6 ML sem id do anúncio nem vendedor (placeholder de catálogo)
   m = meliFetch([{ body: item() }]);
-  r = await phase([mlTarget({ affiliateUrl: 'https://www.mercadolivre.com.br/p/MLB999' })], baseDeps(m.f));
+  r = await phase([mlTarget({ affiliateUrl: 'https://www.mercadolivre.com.br/p/MLB999', externalItemId: null, sellerExternalId: null })], baseDeps(m.f));
   ok(!r.ok && /ml_sem_id_do_anuncio/.test(r.reason ?? '') && m.calls.length === 0, 'ML sem id do anúncio: não dá para reconferir = expira');
   // 1.7 Shopee: sempre consulta nas automáticas; dentro de 2% e disponível
   const sp = (over: Partial<LiveTarget> = {}): LiveTarget => mlTarget({ offerId: 's1', networkSlug: 'shopee', networkName: 'Shopee', externalRef: 'shopee-555', affiliateUrl: 'https://shopee.com.br/x', sellerExternalId: null, confirmedAt: new Date(NOW.getTime() - 5 * MIN), ...over });
@@ -188,7 +206,7 @@ async function liveTests() {
   ok(!r.ok, 'Shopee sem credenciais/lookup: falha fechada (expira)');
   // 1.8 concorrentes mais baratas com preço velho
   const comp = (over: Partial<LiveTarget> = {}): LiveTarget => mlTarget({ offerId: 'c1', role: 'competitor', detectedPriceCents: null, storedPriceCents: 9900, affiliateUrl: 'https://produto.mercadolivre.com.br/MLB-1234567890', ...over });
-  m = meliFetch([{ body: item() }, { body: item({ available_quantity: 0 }) }]);
+  m = meliFetch([{ body: item() }, { body: item({ condition: 'used' }) }]);
   r = await phase([mlTarget(), comp()], baseDeps(m.f));
   ok(r.ok && r.logs.find((l) => l.offerId === 'c1')?.verdict === 'ignored', 'concorrente sem estoque deixa de ser concorrência (ignorada)', r.logs);
   m = meliFetch([{ body: item() }, { throws: true }]);
@@ -196,7 +214,7 @@ async function liveTests() {
   ok(!r.ok && /concorrente/.test(r.reason ?? ''), 'concorrente mais barata com erro de rede: não dá para afirmar o menor preço = expira', r.reason);
   // 1.9 radar: item que falha sai do radar, os outros seguem
   const radarTargets = [1, 2, 3, 4].map((n) => mlTarget({ offerId: `r${n}`, detectedPriceCents: 10000 }));
-  m = meliFetch([{ body: item() }, { body: item({ available_quantity: 0 }) }, { body: item() }, { body: item() }]);
+  m = meliFetch([{ body: item() }, { body: item({ condition: 'used' }) }, { body: item() }, { body: item() }]);
   r = await phase(radarTargets, baseDeps(m.f), 'radar');
   ok(r.ok && r.droppedOfferIds.length === 1 && r.verified.length === 3, 'radar: o item sem estoque sai e os 3 restantes valem (contagem DEPOIS da reconferência)', r);
   // 1.10 falha ao gravar o snapshot

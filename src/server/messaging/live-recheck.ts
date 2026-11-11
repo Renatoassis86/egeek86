@@ -29,7 +29,7 @@ export async function loadLiveTargets(
   const detectSince = new Date(now.getTime() - RULES.DETECT_MAX_AGE_MIN * 60_000).toISOString();
   const staleBefore = new Date(now.getTime() - RULES.LIVE_STALE_AFTER_MIN * 60_000).toISOString();
   const rows = await db.execute<Row>(sql`
-    SELECT o.id, o.master_product_id, n.slug AS net_slug, n.name AS net_name, o.external_ref, o.affiliate_url,
+    SELECT o.id, o.master_product_id, n.slug AS net_slug, n.name AS net_name, o.external_ref, o.external_item_id, o.affiliate_url,
            s.external_seller_id, o.current_price_cents, o.last_price_confirmed_at
     FROM affiliate_offers o
     INNER JOIN affiliate_networks n ON n.id = o.network_id
@@ -65,6 +65,7 @@ export async function loadLiveTargets(
       networkSlug: String(r.net_slug),
       networkName: String(r.net_name),
       externalRef: (r.external_ref as string | null) ?? null,
+      externalItemId: (r.external_item_id as string | null) ?? null,
       affiliateUrl: (r.affiliate_url as string | null) ?? null,
       sellerExternalId: (r.external_seller_id as string | null) ?? null,
       storedPriceCents: price,
