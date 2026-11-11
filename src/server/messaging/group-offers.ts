@@ -316,7 +316,9 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     db.execute<Row>(sql`
       SELECT o.id, o.master_product_id, o.slug, o.title, n.slug AS net_slug, n.name AS net_name, o.seller_id,
              s.reputation_level, s.total_sales, o.current_price_cents, o.last_price_confirmed_at,
-             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.affiliate_link_pending, o.quarantined_at,
+             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.quarantined_at,
+             -- ML só sai em mensagem com o link OFICIAL de afiliado (meli.la); sem ele a oferta fica de fora do envio (dono, 2026-11-11)
+             (o.affiliate_link_pending OR (n.slug = 'mercado-livre' AND COALESCE(o.affiliate_url, '') NOT LIKE 'https://meli.la/%')) AS affiliate_link_pending,
              o.consecutive_miss_count AS miss_count
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
