@@ -37,22 +37,26 @@ export async function renderStoreProfileCard(slug: string): Promise<Buffer | nul
   if (!p) return null;
   const logo = await loadLogo();
   const size = 1024;
-  const fontLabel = p.label.length > 11 ? 78 : 96;
+  // Avatar pequeno (WhatsApp/Telegram recortam em quadrado arredondado ou círculo): poucos elementos, tudo grande e dentro da área central.
+  const words = p.label.split(' ');
+  const lines = p.label.length > 9 && words.length > 1 ? [words.slice(0, -1).join(' '), words[words.length - 1]] : [p.label];
+  const longest = Math.max(...lines.map((l) => l.length));
+  const font = lines.length > 1 ? 168 : longest > 8 ? 150 : 196;
   const res = new ImageResponse(
     (
-      <div style={{ width: size, height: size, display: 'flex', position: 'relative', background: p.bg, color: C.text }}>
-        <div style={{ position: 'absolute', display: 'flex', left: 92, top: 92, width: 840, height: 840, border: `2px solid ${p.edge}` }} />
+      <div style={{ width: size, height: size, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: p.bg, color: C.text }}>
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} width={420} height={156} alt="" style={{ position: 'absolute', left: 302, top: 214, width: 420, height: 156 }} />
+          <img src={logo} width={620} height={230} alt="" style={{ width: 620, height: 230 }} />
         ) : (
-          <div style={{ position: 'absolute', display: 'flex', left: 0, top: 260, width: size, justifyContent: 'center', fontSize: 54, color: C.gold }}>ESPAÇO GEEK 86</div>
+          <div style={{ display: 'flex', fontSize: 84, color: C.gold }}>ESPAÇO GEEK 86</div>
         )}
-        <div style={{ position: 'absolute', display: 'flex', left: 332, top: 428, width: 360, height: 6, background: p.accent }} />
-        <div style={{ position: 'absolute', display: 'flex', left: 0, top: 468, width: size, justifyContent: 'center', fontSize: fontLabel, letterSpacing: 4, color: C.text }}>{p.label}</div>
-        <div style={{ position: 'absolute', display: 'flex', left: 0, top: 592, width: size, justifyContent: 'center', fontSize: 34, color: p.accent }}>{p.tagline}</div>
-        <div style={{ position: 'absolute', display: 'flex', left: 0, top: 690, width: size, justifyContent: 'center', fontSize: 28, color: C.secondary }}>Menor preço monitorado</div>
-        <div style={{ position: 'absolute', display: 'flex', left: 0, top: 762, width: size, justifyContent: 'center', fontSize: 26, color: C.secondary }}>egeek86.com</div>
+        <div style={{ display: 'flex', width: 460, height: 12, background: p.accent, marginTop: 36, marginBottom: 40 }} />
+        {lines.map((l) => (
+          <div key={l} style={{ display: 'flex', fontSize: font, lineHeight: 1.02, letterSpacing: 2, color: C.text, fontWeight: 700 }}>
+            {l}
+          </div>
+        ))}
       </div>
     ),
     { width: size, height: size }
