@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
-import { AGULHA } from '@/lib/coupons/agulha';
+import { AGULHA, ITEM_READ_NETWORKS } from '@/lib/coupons/agulha';
 import { COUPON_ADAPTERS } from '@/lib/coupons/network-adapters';
 import { MOTIVO_LABEL, idadeLabel, pct, semaforoLeitura, type MotivoSemCupom, type Semaforo } from '@/lib/coupons/agulha-health-model';
 import type { SaudeAgulha } from '@/server/coupons/agulha-health';
@@ -31,7 +31,8 @@ export function CouponAgulhaPanel({ saude }: { saude: SaudeAgulha | null }) {
     );
   }
   const ml = saude.cobertura.filter((c) => c.network === 'mercado-livre');
-  const semFonte = saude.cobertura.filter((c) => c.network !== 'mercado-livre');
+  const paginaRedes = ITEM_READ_NETWORKS.filter((n) => n !== 'mercado-livre');
+  const semFonte = saude.cobertura.filter((c) => !ITEM_READ_NETWORKS.includes(c.network));
   const alvo = ml.reduce((a, c) => a + c.ofertasAlvo, 0);
   const lidas = ml.reduce((a, c) => a + c.lidas2h, 0);
   const naAgulha = ml.reduce((a, c) => a + c.naAgulha, 0);
@@ -77,6 +78,28 @@ export function CouponAgulhaPanel({ saude }: { saude: SaudeAgulha | null }) {
             );
           })}
         </div>
+
+        {paginaRedes.map((rede) => {
+          const linhas = saude.cobertura.filter((c) => c.network === rede);
+          const a = linhas.reduce((x, c) => x + c.ofertasAlvo, 0);
+          const l = linhas.reduce((x, c) => x + c.lidas2h, 0);
+          const n = linhas.reduce((x, c) => x + c.naAgulha, 0);
+          const ult = linhas.map((c) => c.ultimaLeituraMin).filter((m): m is number => m != null);
+          return (
+            <div key={rede} className="flex flex-col gap-1">
+              <Text variant="body-sm" className="font-semibold">{NET_LABEL[rede] ?? rede} (leitura pela página do item)</Text>
+              <Text variant="body-sm" color="secondary">
+                Alvo {a} · lidas em 2 h {l} ({fmtPct(pct(l, a))}) · cupom na agulha {n} · última leitura há {idadeLabel(ult.length ? Math.min(...ult) : null)}
+                {' '}({COUPON_ADAPTERS[rede as keyof typeof COUPON_ADAPTERS]?.itemRead === 'ativo' ? 'rota ativa; a leitura depende do Chrome do dono' : 'aguarda decisão do dono'}).
+              </Text>
+              {linhas.map((c) => (
+                <Text key={`${rede}-${c.vertical}`} variant="body-sm" color="secondary">
+                  {c.vertical}: alvo {c.ofertasAlvo} · lidas {c.lidas2h} · na agulha {c.naAgulha} · cupom visto em 24 h mas velho {c.cupomVelho}
+                </Text>
+              ))}
+            </div>
+          );
+        })}
 
         <div className="flex flex-col gap-2">
           <Text variant="body-sm" className="font-semibold">Outras redes</Text>

@@ -107,10 +107,16 @@ export type AgulhaResult =
   | { ok: true; checks: string[]; ruleKnown: boolean; validityKnown: boolean; finalPriceCents: number | null; discountCents: number | null }
   | { ok: false; reason: AgulhaMiss; detail?: string; checks: string[] };
 
-/** Redes cuja leitura por anúncio está autorizada (aba logada do dono). Amazon e Shopee: decisão do dono pendente. */
-export const ITEM_READ_NETWORKS: readonly string[] = ['mercado-livre'];
-/** Redes com lista/código de cupom (cadastro do dono ou lista lida). */
-export const LIST_NETWORKS: readonly string[] = ['mercado-livre', 'shopee'];
+/** Redes cuja leitura por anúncio está autorizada (aba logada do dono). Amazon e Shopee autorizadas pelo dono em 2026-11-11 (página do item). */
+export const ITEM_READ_NETWORKS: readonly string[] = ['mercado-livre', 'amazon', 'shopee'];
+/** Redes com lista/código de cupom (cadastro do dono ou lista lida). Amazon: só código do dono (não há lista pública). */
+export const LIST_NETWORKS: readonly string[] = ['mercado-livre', 'shopee', 'amazon'];
+
+/**
+ * Rótulo do selo que indica público restrito (Prime, novos usuários, primeira compra, membros). A mensagem é para todos.
+ * Aplicado só fora do Mercado Livre (o rótulo do ML já tem o seu tratamento: "por seguir a loja").
+ */
+export const PUBLICO_RESTRITO_RE = /\bprime\b|novos?\s+(usu[aá]rios|clientes|compradores)|primeira\s+compra|\bmembros?\b|assinantes?|selecionad[oa]s?\s+para\s+voc[eê]/i;
 
 export function freshWindowMin(source: AgulhaSource): number {
   return source === 'item' ? AGULHA.ITEM_FRESH_MIN : source === 'campanha' ? AGULHA.CAMPANHA_FRESH_MIN : AGULHA.LIST_FRESH_MIN;
@@ -171,6 +177,7 @@ export function evaluateAgulha(input: AgulhaInput): AgulhaResult {
 
   // (c) condição.
   if (input.label && /seguir/i.test(input.label)) return miss('cupom_exige_seguir_loja');
+  if (source === 'item' && offer.network !== 'mercado-livre' && input.label && PUBLICO_RESTRITO_RE.test(input.label)) return miss('publico_restrito', 'rotulo');
   if (rule) {
     // Anúncio: o preço com cupom exibido pela loja já é a verificação; só cupom vencido/invalidado na lista barra.
     const stateOk = source === 'item' ? rule.state !== 'vencido' && rule.state !== 'invalido' : !rule.state || rule.state === 'verificado';

@@ -109,7 +109,7 @@ eq(r1.problems, [], 'M1 sem problemas');
 ok(r1.telegram.includes('<b>Tomba! Edição Especial (Switch, mídia física)</b>'), 'M1 TG negrito no produto');
 ok(r1.telegram.includes('<b>R$ 291,99</b> no Mercado Livre. Menor preço que registramos desde 31/10; o anterior era R$ 349,90.'), 'M1 TG linha de preço', r1.telegram);
 ok(r1.telegram.includes('32% abaixo da média de R$ 430,08 (3 ofertas).'), 'M1 TG média', r1.telegram);
-ok(r1.telegram.includes('Conferido em 10/11 às 21:41 (Brasília).'), 'M1 carimbo de Brasília', r1.telegram);
+ok(r1.telegram.includes('Conferido em 10/11 às 21:41.'), 'M1 carimbo de Brasília', r1.telegram);
 ok(r1.telegram.includes('<a href="https://www.egeek86.com/go/tomba-edicao-especial-nintendo-switch-jogo-fisico-2024-49100894?s=tg&amp;m=g1-261110-000abc">Ver a oferta</a> #publicidade'), 'M1 TG link s=tg&m= com & escapado', r1.telegram);
 ok(r1.whatsapp.includes('*Tomba! Edição Especial (Switch, mídia física)*'), 'M1 WA negrito');
 ok(!r1.whatsapp.includes('<'), 'M1 WA sem HTML');
@@ -125,7 +125,7 @@ const bio: GroupMessageInput = {
 };
 const r2 = buildGroupMessages(bio);
 ok(r2.whatsapp.includes('*R$ 227,00* no Mercado Livre, 31% abaixo da média de R$ 330,03 (4 ofertas).'), 'M2 WA texto', r2.whatsapp);
-ok(r2.whatsapp.includes('Conferido em 10/11 às 21:06 (Brasília).'), 'M2 carimbo');
+ok(r2.whatsapp.includes('Conferido em 10/11 às 21:06.'), 'M2 carimbo');
 eq(r2.problems, [], 'M2 sem problemas');
 
 const m3: GroupMessageInput = {
@@ -138,7 +138,7 @@ const m3: GroupMessageInput = {
 const r3 = buildGroupMessages(m3);
 ok(r3.telegram.includes('<b>R$ 229,99</b> na Shopee') && !r3.telegram.includes('R$ 320,00') && !r3.telegram.includes('Mercado Livre'), 'M3 TG só o menor preço, sem o preço de cada loja', r3.telegram);
 ok(r3.telegram.includes('<b>Menor preço:</b> entre as lojas que monitoramos hoje') && r3.telegram.includes('<b>Média das lojas:</b> R$ 367,05'), 'M3 TG menor preço do monitoramento e média', r3.telegram);
-ok(r3.telegram.includes('Conferido em 10/11 às 21:30 (Brasília).'), 'M3 usa a conferência mais antiga', r3.telegram);
+ok(r3.telegram.includes('Conferido em 10/11 às 21:30.'), 'M3 usa a conferência mais antiga', r3.telegram);
 ok(!r3.telegram.includes('/go/'), 'M3 TG sem URL no texto (link no botão)');
 ok(r3.whatsapp.includes('https://www.egeek86.com/go/jogo-nintendo-switch-sports-midia-fisica-shopee-e3a58b?s=wa&m=g3-261110-000ghi'), 'M3 WA link da oferta mais barata', r3.whatsapp);
 
@@ -155,7 +155,7 @@ const m4: GroupMessageInput = { model: 'resumo-dia', vertical: 'games', messageK
 const r4 = buildGroupMessages(m4);
 ok(r4.whatsapp.startsWith('*3 jogos de Switch abaixo da média hoje* (Mercado Livre)'), 'M4 cabeçalho', r4.whatsapp);
 ok(r4.whatsapp.includes('3. Capcom Fighting Collection: *R$ 243,40* (30% abaixo da média)'), 'M4 item 3', r4.whatsapp);
-ok(r4.whatsapp.includes('Preços conferidos entre 21:05 e 21:41 de 10/11 (Brasília). #publicidade'), 'M4 rodapé', r4.whatsapp);
+ok(r4.whatsapp.includes('Preços conferidos entre 21:05 e 21:41 de 10/11. #publicidade'), 'M4 rodapé', r4.whatsapp);
 eq(r4.problems, [], 'M4 sem problemas');
 threw = false;
 try {
@@ -466,7 +466,7 @@ const legacyInput = {
 const legacy = buildWhatsappMessage(legacyInput);
 ok(!/afiliad/i.test(legacy) && !/%\s*off/i.test(legacy) && !/\bDe\s+~?R\$/.test(legacy) && !legacy.includes('~'), 'legado: sem afiliado, % OFF, De/por', legacy);
 ok(!legacy.includes('R$ 400,00'), 'legado: ignora o preço "de" manual');
-ok(legacy.includes('31% abaixo da média de R$ 330,03.') && legacy.includes('Menor preço que registramos desde 31/10.') && legacy.includes('Conferido em 10/11 às 21:06 (Brasília).'), 'legado: média, janela e carimbo', legacy);
+ok(legacy.includes('31% abaixo da média de R$ 330,03.') && legacy.includes('Menor preço que registramos desde 31/10.') && legacy.includes('Conferido em 10/11 às 21:06.'), 'legado: média, janela e carimbo', legacy);
 ok(!/afiliad/i.test(buildWhatsappMessage({ ...legacyInput, affiliateLinkPending: true })), 'legado: lembrete pendente sem "afiliado"');
 ok(!/afiliad|% ?off/i.test(buildCartWhatsappMessage('Ana', [legacyInput], 'https://www.egeek86.com')), 'legado: carrinho limpo');
 

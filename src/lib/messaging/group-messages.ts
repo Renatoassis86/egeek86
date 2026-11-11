@@ -97,9 +97,9 @@ function fmtClock(d: Date): string {
   return `${p.hh}:${p.mi}`;
 }
 
-/** "Conferido em 10/11 às 21:41 (Brasília)." */
+/** "Conferido em 10/11 às 21:41." */
 export function conferidoLine(d: Date): string {
-  return `Conferido em ${fmtStamp(d)} (Brasília).`;
+  return `Conferido em ${fmtStamp(d)}.`;
 }
 
 /** Artigo + rede: "no Mercado Livre", "na Shopee". */
@@ -554,7 +554,7 @@ function variationParts(input: OfferMessageInput, amz: boolean): string[] {
  *   4. <blockquote>insight de 2 a 3 frases factuais</blockquote>
  *   5. (cupom verificado, quando houver: ver withCouponBlock)
  *   6. <a>Ver a oferta</a> (s=tg, m=<id>)
- *   7. <i>Conferido em dd/mm às hh:mm (Brasília). #publicidade</i>
+ *   7. <i>Conferido em dd/mm às hh:mm. #publicidade</i>
  * WhatsApp equivalente com *negrito*, _itálico_ e "> " para a citação. Todo texto de marketplace é escapado.
  */
 export function formatOfferMessage(input: OfferMessageInput, channel: GroupChannel): string {
@@ -911,9 +911,9 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       const first = times[0];
       const last = times[times.length - 1];
       let foot: string;
-      if (fmtStamp(first) === fmtStamp(last)) foot = `Conferido em ${fmtStamp(first)} (Brasília).`;
-      else if (fmtDay(first) === fmtDay(last)) foot = `Preços conferidos entre ${fmtClock(first)} e ${fmtClock(last)} de ${fmtDay(first)} (Brasília).`;
-      else foot = `Preços conferidos entre ${fmtStamp(first)} e ${fmtStamp(last)} (Brasília).`;
+      if (fmtStamp(first) === fmtStamp(last)) foot = `Conferido em ${fmtStamp(first)}.`;
+      else if (fmtDay(first) === fmtDay(last)) foot = `Preços conferidos entre ${fmtClock(first)} e ${fmtClock(last)} de ${fmtDay(first)}.`;
+      else foot = `Preços conferidos entre ${fmtStamp(first)} e ${fmtStamp(last)}.`;
       lines.push(withTag(f.t(foot), input.adTag));
       return lines.filter((l): l is string => !!l && l.trim() !== '').join('\n');
     }
@@ -960,9 +960,9 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       const first = times[0];
       const last = times[times.length - 1];
       let foot: string;
-      if (fmtStamp(first) === fmtStamp(last)) foot = `Conferido em ${fmtStamp(first)} (Brasília).`;
-      else if (fmtDay(first) === fmtDay(last)) foot = `Preços conferidos entre ${fmtClock(first)} e ${fmtClock(last)} de ${fmtDay(first)} (Brasília).`;
-      else foot = `Preços conferidos entre ${fmtStamp(first)} e ${fmtStamp(last)} (Brasília).`;
+      if (fmtStamp(first) === fmtStamp(last)) foot = `Conferido em ${fmtStamp(first)}.`;
+      else if (fmtDay(first) === fmtDay(last)) foot = `Preços conferidos entre ${fmtClock(first)} e ${fmtClock(last)} de ${fmtDay(first)}.`;
+      else foot = `Preços conferidos entre ${fmtStamp(first)} e ${fmtStamp(last)}.`;
       lines.push(withTag(f.t(foot), input.adTag));
       return lines.filter((l): l is string => !!l && l.trim() !== '').join('\n');
     }

@@ -18,6 +18,7 @@ import {
 } from '../src/lib/coupons/agulha';
 import { categoriaCasaComVertical, declaraTodosOsProdutos, verticaisDaCategoria } from '../src/lib/coupons/categoria-vertical';
 import { COUPON_ADAPTERS, adapterFor } from '../src/lib/coupons/network-adapters';
+import { agulhaRuleFromLabel, brlToCents, expectedPageRef, leituraUrlFor, normalizePageRow, originAllowedForNetwork, ruleFromLabel } from '../src/lib/coupons/page-read';
 import { idadeLabel, pct, semaforoLeitura } from '../src/lib/coupons/agulha-health-model';
 
 let fails = 0;
@@ -62,9 +63,9 @@ async function main() {
   check('validade ilegível cai', reason(evaluateAgulha(item({ source: 'loja_categoria', rule: rule({ validUntil: 'amanhã' }) }))) === 'validade_nao_lida');
 
   // ---------------- rede ----------------
-  check('Amazon: leitura por anúncio não autorizada', reason(evaluateAgulha(item({ offer: { network: 'amazon', vertical: 'games', priceCents: 10000 } }))) === 'rede_sem_leitura_autorizada');
-  check('Shopee: leitura por anúncio não autorizada', reason(evaluateAgulha(item({ offer: { network: 'shopee', vertical: 'games', priceCents: 10000 } }))) === 'rede_sem_leitura_autorizada');
-  check('Amazon: lista também não', reason(evaluateAgulha(item({ source: 'loja_categoria', rule: rule(), offer: { network: 'amazon', vertical: 'games', priceCents: 10000 } }))) === 'rede_sem_leitura_autorizada');
+  check('Amazon: leitura por anúncio autorizada (dono, 2026-11-11)', evaluateAgulha(item({ offer: { network: 'amazon', vertical: 'games', priceCents: 10000 } })).ok);
+  check('Shopee: leitura por anúncio autorizada (dono, 2026-11-11)', evaluateAgulha(item({ offer: { network: 'shopee', vertical: 'games', priceCents: 10000 } })).ok);
+  check('Amazon: código do dono passa; rede fora da lista segue barrada', evaluateAgulha(item({ source: 'campanha', rule: rule({ scopeKind: 'loja_inteira' }), offer: { network: 'amazon', vertical: 'games', priceCents: 10000 }, priceWithCents: undefined, priceSeenCents: undefined })).ok && reason(evaluateAgulha(item({ offer: { network: 'magalu', vertical: 'games', priceCents: 10000 } }))) === 'rede_sem_leitura_autorizada');
   check('Shopee: código do dono passa', evaluateAgulha(item({ source: 'campanha', rule: rule({ scopeKind: 'loja_inteira' }), offer: { network: 'shopee', vertical: 'games', priceCents: 10000 }, priceWithCents: undefined, priceSeenCents: undefined })).ok);
   check('preço da oferta zero cai', reason(evaluateAgulha(item({ offer: { network: 'mercado-livre', vertical: 'games', priceCents: 0 } }))) === 'preco_da_oferta_invalido');
 
@@ -147,9 +148,67 @@ async function main() {
 
   // ---------------- pontos de encaixe por rede ----------------
   check('ML ativo em tudo', COUPON_ADAPTERS['mercado-livre'].status === 'ativo' && COUPON_ADAPTERS['mercado-livre'].itemRead === 'ativo');
-  check('Shopee e Amazon: leitura por página pendente de decisão do dono (não implementada)', COUPON_ADAPTERS.shopee.itemRead === 'pendente_decisao_do_dono' && COUPON_ADAPTERS.amazon.itemRead === 'pendente_decisao_do_dono');
-  check('cada rede pendente documenta o que falta', COUPON_ADAPTERS.shopee.falta.length > 0 && COUPON_ADAPTERS.amazon.falta.length > 0);
+  check('Shopee e Amazon: leitura por página ativa; shopee_campaigns nunca cupom; Amazon sem lista pública', COUPON_ADAPTERS.shopee.itemRead === 'ativo' && COUPON_ADAPTERS.amazon.itemRead === 'ativo' && COUPON_ADAPTERS.amazon.listRead === 'sem_fonte_de_comprador' && COUPON_ADAPTERS.amazon.ownerCode === 'ativo' && COUPON_ADAPTERS.shopee.falta.some((f) => /shopee_campaigns/.test(f)));
+  check('cada rede documenta o que falta (seletores não validados em produção)', COUPON_ADAPTERS.shopee.falta.length > 0 && COUPON_ADAPTERS.amazon.falta.length > 0);
   check('rede desconhecida: adaptador nulo', adapterFor('magalu') === null);
+
+  // ---------------- leitura de cupom pela página: Amazon e Shopee (2026-11-11) ----------------
+  const amz = (over: Partial<AgulhaInput> = {}) => item({ offer: { network: 'amazon', vertical: 'games', priceCents: 20000 }, priceWithCents: 18000, priceSeenCents: 20000, label: 'Economize 10% ao aplicar o cupom', ...over });
+  const shp = (over: Partial<AgulhaInput> = {}) => item({ offer: { network: 'shopee', vertical: 'games', priceCents: 20000 }, priceWithCents: 19000, priceSeenCents: 20000, label: 'Voucher R$10 OFF Mín. gasto R$99', ...over });
+  const shRule = agulhaRuleFromLabel('Voucher R$10 OFF Mín. gasto R$99');
+  check('Amazon: leitura de página recente passa nas 4 conferências', evaluateAgulha(amz()).ok);
+  check('Amazon: leitura de 121 min cai (frescor)', reason(evaluateAgulha(amz({ verifiedAt: ago(121) }))) === 'leitura_antiga');
+  check('Amazon: preço mudou depois da leitura cai', reason(evaluateAgulha(amz({ priceSeenCents: 21000, priceWithCents: 18900 }))) === 'preco_mudou_apos_leitura');
+  check('Amazon: preço com cupom não menor cai', reason(evaluateAgulha(amz({ priceWithCents: 20000 }))) === 'preco_com_cupom_invalido');
+  check('Amazon: selo Prime barrado (público restrito)', reason(evaluateAgulha(amz({ label: 'Cupom exclusivo Prime de 10%' }))) === 'publico_restrito');
+  check('Shopee: selo de novos usuários barrado', reason(evaluateAgulha(shp({ label: 'Voucher novos usuários R$10 OFF' }))) === 'publico_restrito');
+  check('Shopee: "seguir a loja" barrado', reason(evaluateAgulha(shp({ label: 'Voucher seguir a loja R$10 OFF' }))) === 'cupom_exige_seguir_loja');
+  check('Shopee: compra mínima não atingida (regra lida do selo) cai', reason(evaluateAgulha(shp({ offer: { network: 'shopee', vertical: 'games', priceCents: 5000 }, priceSeenCents: 5000, priceWithCents: 4000, rule: shRule }))) === 'compra_minima_nao_atingida');
+  check('Shopee: regra do selo coerente com o preço lido passa', evaluateAgulha(shp({ rule: shRule })).ok);
+  check('Shopee: desconto lido incoerente com a regra do selo cai', reason(evaluateAgulha(shp({ priceWithCents: 17000, rule: shRule }))) === 'preco_incoerente_com_regra');
+  check('ML: rótulo com a palavra Prime não é barrado (regra só fora do ML)', evaluateAgulha(item({ label: 'R$ 90 com Cupom Prime' })).ok);
+
+  const pr = ruleFromLabel('Economize 10% ao aplicar o cupom');
+  check('selo "10%": percentual 10', pr.kind === 'percentual' && pr.valueNum === 10 && pr.minOrderCents == null, pr);
+  const fr = ruleFromLabel('Voucher R$10 OFF Mín. gasto R$99 Máx. R$ 20');
+  check('selo "R$10 mín R$99": valor fixo 10, mínimo 9900 (o mínimo não vira desconto)', fr.kind === 'valor_fixo' && fr.valueNum === 10 && fr.minOrderCents === 9900, fr);
+  const pt = ruleFromLabel('Cupom 15% OFF Mín. gasto R$ 1.000,00 Máx. R$ 50,00');
+  check('selo percentual com mínimo e teto', pt.valueNum === 15 && pt.minOrderCents === 100000 && pt.maxDiscountCents === 5000, pt);
+  check('selo ambíguo (% e R$) não tem valor', ruleFromLabel('Cupom 10% ou R$ 20').valueNum == null);
+  check('selo sem regra ("Cupom disponível") não vira regra', agulhaRuleFromLabel('Cupom disponível') === null);
+  check('brlToCents', brlToCents('R$ 1.234,56') === 123456 && brlToCents('20') === 2000 && brlToCents('abc') === null);
+
+  const offA = { externalRef: 'amazon-B0CHX1W1XY', priceCents: 20000 };
+  const offS = { externalRef: 'shopee-123456789', priceCents: 20000 };
+  const okA = normalizePageRow('amazon', { ref: 'B0CHX1W1XY', price_seen_cents: 20000, coupons: [{ label: 'Economize 10% ao aplicar o cupom' }] }, offA);
+  check('Amazon: sem preço final na página, deriva da regra do selo (derivado_do_rotulo)', okA.ok && okA.coupons[0]?.priceWithCents === 18000 && okA.coupons[0]?.status === 'derivado_do_rotulo', okA);
+  const okS = normalizePageRow('shopee', { ref: '123456789', price_seen_cents: 20000, coupons: [{ label: 'Voucher R$10 OFF', price_with_cents: 19000 }] }, offS);
+  check('Shopee: preço com cupom mostrado pela página é gravado como lido (lido_na_pagina)', okS.ok && okS.coupons[0]?.priceWithCents === 19000 && okS.coupons[0]?.status === 'lido_na_pagina', okS);
+  const none = normalizePageRow('amazon', { ref: 'B0CHX1W1XY', price_seen_cents: 20000, coupons: [] }, offA);
+  check('lido e sem cupom: ok com lista vazia', none.ok && none.coupons.length === 0);
+  const vago = normalizePageRow('amazon', { ref: 'B0CHX1W1XY', price_seen_cents: 20000, coupons: [{ label: 'Cupom disponível' }] }, offA);
+  check('selo sem regra legível e sem preço: descartado (nada inventado)', vago.ok && vago.coupons.length === 0);
+  check('página de outro item recusada (ref diferente)', (() => { const r = normalizePageRow('amazon', { ref: 'B000000000', price_seen_cents: 20000, coupons: [] }, offA); return !r.ok && r.reason === 'pagina_de_outro_item'; })());
+  check('sem preço lido recusada', (() => { const r = normalizePageRow('amazon', { ref: 'B0CHX1W1XY', coupons: [] }, offA); return !r.ok && r.reason === 'sem_preco_lido'; })());
+  check('preço lido absurdo (leu outro elemento) recusado', (() => { const r = normalizePageRow('amazon', { ref: 'B0CHX1W1XY', price_seen_cents: 2000, coupons: [] }, offA); return !r.ok && r.reason === 'preco_lido_incoerente'; })());
+  check('preço com cupom lido >= preço do item é descartado', (() => { const r = normalizePageRow('shopee', { ref: '123456789', price_seen_cents: 20000, coupons: [{ label: 'Voucher R$10 OFF', price_with_cents: 20000 }] }, offS); return r.ok && r.coupons.length === 0; })());
+  check('rótulo sem cupom/voucher é ignorado (campanha de comissão nunca entra)', (() => { const r = normalizePageRow('shopee', { ref: '123456789', price_seen_cents: 20000, coupons: [{ label: 'Comissão 10% campanha', price_with_cents: 18000 }] }, offS); return r.ok && r.coupons.length === 0; })());
+  check('ref esperado: ASIN e itemId; fora do padrão = null', expectedPageRef('amazon', 'amazon-B0CHX1W1XY') === 'B0CHX1W1XY' && expectedPageRef('shopee', 'shopee-123') === '123' && expectedPageRef('amazon', 'MLB123') === null);
+  check('URL de leitura: Amazon /dp/ASIN sem tag; Shopee só link oficial https shopee.com.br', leituraUrlFor('amazon', 'amazon-B0CHX1W1XY', 'x') === 'https://www.amazon.com.br/dp/B0CHX1W1XY' && leituraUrlFor('shopee', 'shopee-123', 'https://s.shopee.com.br/abc') === 'https://s.shopee.com.br/abc' && leituraUrlFor('shopee', 'shopee-123', 'https://evil.com/x') === null && leituraUrlFor('shopee', 'shopee-123', null) === null);
+
+  // guarda HTTP por rede (origem da rede + token; sem token = 503)
+  {
+    const { couponGuard } = await import('../src/server/coupons/ingest-guard');
+    const mk = (origin: string) => ({ headers: new Headers({ origin, authorization: `Bearer ${'t'.repeat(40)}` }), url: 'https://x/y' }) as unknown as import('next/server').NextRequest;
+    const prev = process.env.COUPON_INGEST_TOKEN;
+    delete process.env.COUPON_INGEST_TOKEN; delete process.env.ASSISTED_INGEST_TOKEN; delete process.env.AMAZON_INGEST_TOKEN;
+    check('guarda: sem token, origem certa da Amazon = 503 (kill-switch)', couponGuard(mk('https://www.amazon.com.br'), 'amazon')?.status === 503);
+    check('guarda: origem da Amazon pedindo rede Shopee = 403', couponGuard(mk('https://www.amazon.com.br'), 'shopee')?.status === 403);
+    process.env.COUPON_INGEST_TOKEN = 't'.repeat(40);
+    check('guarda: token certo + origem da rede = liberado; origem cruzada = 403', couponGuard(mk('https://shopee.com.br'), 'shopee') === null && couponGuard(mk('https://shopee.com.br'), 'amazon')?.status === 403);
+    check('guarda: rota antiga (sem rede) continua só ML', couponGuard(mk('https://www.mercadolivre.com.br')) === null && couponGuard(mk('https://www.amazon.com.br'))?.status === 403);
+    if (prev === undefined) delete process.env.COUPON_INGEST_TOKEN; else process.env.COUPON_INGEST_TOKEN = prev;
+  }
 
   // ---------------- saúde ----------------
   check('pct: divisão por zero é null (não 0%)', pct(0, 0) === null && pct(1, 4) === 25 && pct(15, 461) === 3.3);
@@ -166,7 +225,7 @@ async function main() {
   check('token dedicado tem precedência sobre o das outras rotas', couponAuthorized(req(T2), { COUPON_INGEST_TOKEN: T1, ASSISTED_INGEST_TOKEN: T2 }) === 'negado');
   check('sem token dedicado, o das rotas assistidas continua valendo', couponAuthorized(req(T2), { ASSISTED_INGEST_TOKEN: T2 }) === 'ok' && couponAuthorized(req(T2), { AMAZON_INGEST_TOKEN: T2 }) === 'ok');
   check('token errado: negado', couponAuthorized(req('c'.repeat(40)), { COUPON_INGEST_TOKEN: T1 }) === 'negado');
-  check('origem fixa: só Mercado Livre', COUPON_ALLOWED_ORIGINS.size === 3 && [...COUPON_ALLOWED_ORIGINS].every((o) => /mercadolivre\.com\.br$/.test(o)));
+  check('origem fixa por rede: cada aba só fala da sua rede; cruzado e desconhecido recusados', COUPON_ALLOWED_ORIGINS.size === 7 && originAllowedForNetwork('https://www.mercadolivre.com.br', 'mercado-livre') && originAllowedForNetwork('https://www.amazon.com.br', 'amazon') && originAllowedForNetwork('https://shopee.com.br', 'shopee') && !originAllowedForNetwork('https://www.amazon.com.br', 'shopee') && !originAllowedForNetwork('https://shopee.com.br', 'amazon') && !originAllowedForNetwork('https://www.amazon.com.br', 'mercado-livre') && !originAllowedForNetwork('https://evil.com', 'amazon'));
 
   // ---------------- texto do cliente: sem a palavra proibida ----------------
   const root = path.resolve(__dirname, '..');

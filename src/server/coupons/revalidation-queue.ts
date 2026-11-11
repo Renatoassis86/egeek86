@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { AGULHA } from '@/lib/coupons/agulha';
 import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
+import { leituraUrlFor, type PageNetwork } from '@/lib/coupons/page-read';
 import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-auth';
 
 /**
@@ -39,7 +40,16 @@ export interface RevalItem {
   prioridade: number;
   motivo: string;
   ultimaLeituraMin: number | null;
+  /** Link da oferta (só usado para montar a URL de leitura da Shopee; nunca devolvido ao Chrome). */
+  affiliateUrl?: string | null;
 }
+
+/** Filtros da fila por rede (ML mantém exatamente o comportamento anterior). */
+const REDE_FILA: Record<string, { refRegex: string; linkedCond: string }> = {
+  'mercado-livre': { refRegex: '^MLB[0-9]+$', linkedCond: "o.affiliate_url LIKE 'https://meli.la/%'" },
+  amazon: { refRegex: '^amazon-[A-Z0-9]{10}$', linkedCond: "o.affiliate_url LIKE 'https://www.amazon.com.br/dp/%'" },
+  shopee: { refRegex: '^shopee-[0-9]{1,19}$', linkedCond: "o.affiliate_url LIKE 'https://%shopee.com.br/%'" },
+};
 
 /** Departamentos que ALGUMA lista de cupons vigente declara por categoria (casamento conservador: ver categoria-vertical.ts). */
 export async function verticaisComCupomDeCategoria(): Promise<string[]> {
@@ -54,20 +64,23 @@ export async function verticaisComCupomDeCategoria(): Promise<string[]> {
   }
 }
 
-export async function listarFilaRevalidacao(n: number): Promise<RevalItem[]> {
-  const hint = await verticaisComCupomDeCategoria();
+export async function listarFilaRevalidacao(n: number, rede: string = 'mercado-livre'): Promise<RevalItem[]> {
+  const cfg = REDE_FILA[rede];
+  if (!cfg) return [];
+  // Cupom de categoria (lista do portal) só existe no ML; nas outras redes o departamento nunca é candidato por esse motivo.
+  const hint = rede === 'mercado-livre' ? await verticaisComCupomDeCategoria() : [];
   const hintCond = hint.length ? sql`c.vertical IN (${sql.join(hint.map((v) => sql`${v}`), sql`, `)})` : sql`false`;
-  const rows = (await db.execute<{ id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null }>(sql`
+  const rows = (await db.execute<{ id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null; aurl: string | null }>(sql`
     WITH ml AS (
-      SELECT o.id, o.external_ref AS ref, o.external_item_id AS item, s.external_seller_id AS seller, o.current_price_cents AS price, o.vertical,
+      SELECT o.id, o.external_ref AS ref, o.external_item_id AS item, s.external_seller_id AS seller, o.current_price_cents AS price, o.vertical, o.affiliate_url AS aurl,
              row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn,
              (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved') AS gate,
-             (o.affiliate_url LIKE 'https://meli.la/%') AS linked
+             (${sql.raw(cfg.linkedCond)}) AS linked
       FROM affiliate_offers o
-      JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
+      JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = ${rede}
       JOIN master_products m ON m.id = o.master_product_id
       LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
-      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical AND o.current_price_cents > 0 AND o.external_ref ~ '^MLB[0-9]+$'
+      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical AND o.current_price_cents > 0 AND o.external_ref ~ ${cfg.refRegex}
     ),
     ann AS (SELECT DISTINCT coupon_ref AS oid FROM coupon_announcements WHERE kind = 'anuncio' AND ended_at IS NULL),
     q AS (
@@ -90,16 +103,16 @@ export async function listarFilaRevalidacao(n: number): Promise<RevalItem[]> {
       LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_read FROM offer_coupon_reads r WHERE r.offer_id = c.id) lr ON true
       LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_pos FROM offer_coupon_reads r WHERE r.offer_id = c.id AND r.price_with_coupon_cents IS NOT NULL) lp ON true
     )
-    SELECT id::text AS id, ref, item, seller, price::text AS price, prio,
+    SELECT id::text AS id, ref, item, seller, price::text AS price, prio, aurl,
            CASE WHEN last_read IS NULL THEN NULL ELSE round(extract(epoch FROM now() - last_read) / 60)::text END AS age_min
     FROM scored
     WHERE last_read IS NULL
        OR last_read < now() - make_interval(mins => (CASE WHEN prio <= 3 THEN ${sql.raw(String(AGULHA.REREAD_TARGET_MIN))} ELSE ${sql.raw(String(AGULHA.REREAD_BASE_MIN))} END)::int)
     ORDER BY prio ASC, last_read ASC NULLS FIRST
-    LIMIT ${Math.min(Math.max(1, n), 60)}`)) as unknown as { id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null }[];
+    LIMIT ${Math.min(Math.max(1, n), 60)}`)) as unknown as { id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null; aurl: string | null }[];
   return rows.map((r) => ({
     id: r.id, ref: r.ref, item: r.item, seller: r.seller, price: r.price, prioridade: Number(r.prio),
-    motivo: PRIORIDADE_MOTIVO[Number(r.prio)] ?? 'outro', ultimaLeituraMin: r.age_min == null ? null : Number(r.age_min),
+    motivo: PRIORIDADE_MOTIVO[Number(r.prio)] ?? 'outro', ultimaLeituraMin: r.age_min == null ? null : Number(r.age_min), affiliateUrl: r.aurl,
   }));
 }
 
@@ -142,6 +155,20 @@ export async function resolverUrlsLeitura(items: RevalItem[]): Promise<RevalUrl[
     if (itemId) {
       out.push({ id: r.id, url: `https://www.mercadolivre.com.br/p/${r.ref}?pdp_filters=item_id%3A${itemId}`, prioridade: r.prioridade, motivo: r.motivo, ultima_leitura_min: r.ultimaLeituraMin });
     }
+  }
+  return out;
+}
+
+/**
+ * Fila por rede para Amazon/Shopee: a URL da página do item sai do external_ref (Amazon: /dp/<ASIN> sem tag) ou do link oficial da oferta
+ * (Shopee). Item sem URL resolvível é pulado. `ref` é devolvido para a aba conferir que abriu o item certo (ASIN / itemId).
+ */
+export function resolverUrlsLeituraRede(items: RevalItem[], rede: PageNetwork): (RevalUrl & { ref: string; preco_cents: number })[] {
+  const out: (RevalUrl & { ref: string; preco_cents: number })[] = [];
+  for (const r of items) {
+    const url = leituraUrlFor(rede, r.ref, r.affiliateUrl);
+    if (!url) continue;
+    out.push({ id: r.id, url, ref: r.ref.replace(/^(amazon|shopee)-/, ''), preco_cents: Number(r.price), prioridade: r.prioridade, motivo: r.motivo, ultima_leitura_min: r.ultimaLeituraMin });
   }
   return out;
 }

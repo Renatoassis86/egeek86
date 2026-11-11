@@ -501,7 +501,7 @@ ok(!!bq && bq[1].startsWith('<b>Monitoramento</b>') && tg.indexOf('Monitoramento
 ok(!tg.includes('/go/') && (tg.match(/<a /g) ?? []).length === 1 && tg.includes('Histórico completo: <a href="https://www.egeek86.com/?s=tg&amp;m='), 'Telegram: sem link /go/ no texto (o botão cuida); só a divulgação do site como link');
 ok(tg.includes('• <b>Vendedor:</b> reputação verde'), 'tópico do vendedor ML (reputação verde)');
 const tgLines = tg.split('\n');
-ok(tgLines[tgLines.length - 2] === '<i>Conferido em 11/11 às 10:50 (Brasília). #publicidade</i>' && tgLines[tgLines.length - 1] === '<i>Espaço Geek 86 · Quem monitora, compra melhor.</i>', 'rodapé: carimbo com #publicidade e, por último, o slogan', tgLines.slice(-2));
+ok(tgLines[tgLines.length - 2] === '<i>Conferido em 11/11 às 10:50. #publicidade</i>' && tgLines[tgLines.length - 1] === '<i>Espaço Geek 86 · Quem monitora, compra melhor.</i>', 'rodapé: carimbo com #publicidade e, por último, o slogan', tgLines.slice(-2));
 ok(countEmojis(tg) <= MAX_EMOJIS_PER_MESSAGE && !countEmojis(lines[0]), 'no máximo 2 emojis e nenhum no título', countEmojis(tg));
 ok(tg.length < TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024) e no limite (4096)', tg.length);
 ok(textProblems(tg, 'tg').length === 0 && !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off/i.test(tg), 'barreira de texto limpa, sem previsão, de/por ou % OFF');

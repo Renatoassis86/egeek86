@@ -154,7 +154,7 @@ export function storePhrase(store: string): string {
 
 /** Carimbo do rodapé: "Conferido em 11/11 às 09:41 (Brasília)". */
 export function stampLine(d: Date): string {
-  return `Conferido em ${formatStamp(d)} (Brasília)`;
+  return `Conferido em ${formatStamp(d)}`;
 }
 
 /** Preço de uma oferta ainda vale como "vivo"? (idade da confirmação e preço positivo) */

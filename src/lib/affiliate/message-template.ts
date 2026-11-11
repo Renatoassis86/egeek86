@@ -66,7 +66,7 @@ function buildPendingLinkReminder(input: WhatsappMessageInput): string {
 function stampLine(d: Date): string {
   const p = new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(d);
   const g = (t: string) => p.find((x) => x.type === t)?.value ?? '';
-  return `Conferido em ${g('day')}/${g('month')} às ${g('hour')}:${g('minute')} (Brasília).`;
+  return `Conferido em ${g('day')}/${g('month')} às ${g('hour')}:${g('minute')}.`;
 }
 
 /** Bloco de um item só (título + preço + média + recorde + cupom) — sem o fechamento de marca, reaproveitado tanto pela mensagem de 1 item quanto pela do carrinho (N itens). */

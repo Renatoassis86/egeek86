@@ -49,11 +49,38 @@ export async function saudeAgulha(): Promise<SaudeAgulha> {
 
   const semFonte = (await db.execute<{ net: string; vertical: string; n: string }>(sql`
     SELECT nn.slug AS net, o.vertical, count(*)::text AS n FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id
-    WHERE o.status = 'active' AND o.quarantined_at IS NULL AND nn.slug <> 'mercado-livre' GROUP BY 1, 2 ORDER BY 1, 2`)) as unknown as { net: string; vertical: string; n: string }[];
+    WHERE o.status = 'active' AND o.quarantined_at IS NULL AND nn.slug NOT IN ('mercado-livre', 'amazon', 'shopee') GROUP BY 1, 2 ORDER BY 1, 2`)) as unknown as { net: string; vertical: string; n: string }[];
+
+  // Amazon e Shopee (leitura pela página do item autorizada em 2026-11-11): alvo = o mais barato de cada produto aprovado, mesma contagem do ML.
+  const pagina = (await db.execute<{ net: string; vertical: string; alvo: string; lidas2h: string; na_agulha: string; velho: string; age: string | null }>(sql`
+    WITH alvo AS (
+      SELECT o.id, o.vertical, o.current_price_cents AS price, nn.slug AS net,
+             row_number() OVER (PARTITION BY o.master_product_id, nn.slug ORDER BY o.current_price_cents ASC, o.id) AS rn,
+             (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved') AS gate
+      FROM affiliate_offers o
+      JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug IN ('amazon', 'shopee')
+      JOIN master_products m ON m.id = o.master_product_id
+      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical AND o.current_price_cents > 0
+        AND o.external_ref ~ '^(amazon-[A-Z0-9]{10}|shopee-[0-9]{1,19})$'
+    ), t AS (SELECT * FROM alvo WHERE rn = 1 AND gate)
+    SELECT t.net, t.vertical, count(*)::text AS alvo,
+           count(*) FILTER (WHERE EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = t.id AND r.read_at > now() - make_interval(mins => ${fresh}::int)))::text AS lidas2h,
+           count(*) FILTER (WHERE EXISTS (
+             SELECT 1 FROM offer_coupon_reads r
+             WHERE r.offer_id = t.id AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - make_interval(mins => ${fresh}::int)
+               AND r.price_with_coupon_cents < t.price AND r.price_seen_cents = t.price AND COALESCE(r.label, '') !~* 'seguir|prime|novos? (usu|cli)|primeira compra'
+               AND NOT EXISTS (SELECT 1 FROM offer_coupon_reads n WHERE n.offer_id = t.id AND n.price_with_coupon_cents IS NULL AND n.read_at > r.read_at)))::text AS na_agulha,
+           count(*) FILTER (WHERE EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = t.id AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - interval '24 hours'))::text AS velho,
+           round(extract(epoch FROM now() - max((SELECT max(r.read_at) FROM offer_coupon_reads r WHERE r.offer_id = t.id))) / 60)::text AS age
+    FROM t GROUP BY t.net, t.vertical ORDER BY t.net, t.vertical`)) as unknown as { net: string; vertical: string; alvo: string; lidas2h: string; na_agulha: string; velho: string; age: string | null }[];
 
   const cobertura: CoberturaLinha[] = [
     ...alvo.map((r) => ({
       network: 'mercado-livre', vertical: r.vertical, ofertasAlvo: num(r.alvo), lidas2h: num(r.lidas2h), naAgulha: num(r.na_agulha), cupomVelho: Math.max(0, num(r.velho) - num(r.na_agulha)),
+      ultimaLeituraMin: r.age == null ? null : num(r.age),
+    })),
+    ...pagina.map((r) => ({
+      network: r.net, vertical: r.vertical, ofertasAlvo: num(r.alvo), lidas2h: num(r.lidas2h), naAgulha: num(r.na_agulha), cupomVelho: Math.max(0, num(r.velho) - num(r.na_agulha)),
       ultimaLeituraMin: r.age == null ? null : num(r.age),
     })),
     ...semFonte.map((r) => ({ network: r.net, vertical: r.vertical, ofertasAlvo: num(r.n), lidas2h: 0, naAgulha: 0, cupomVelho: 0, ultimaLeituraMin: null })),
@@ -78,7 +105,7 @@ export async function saudeAgulha(): Promise<SaudeAgulha> {
     SELECT net, vertical,
       CASE WHEN tem THEN 'com_cupom'
            WHEN NOT consulta THEN 'nao_consultou'
-           WHEN net <> 'mercado-livre' THEN 'rede_sem_leitura_autorizada'
+           WHEN net NOT IN ('mercado-livre', 'amazon', 'shopee') THEN 'rede_sem_leitura_autorizada'
            WHEN NOT EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = s.offer_id AND r.read_at <= s.sent_at AND r.read_at > s.sent_at - make_interval(mins => ${fresh}::int)) THEN 'sem_leitura_2h'
            WHEN EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = s.offer_id AND r.price_with_coupon_cents IS NOT NULL AND r.read_at <= s.sent_at AND r.read_at > s.sent_at - make_interval(mins => ${fresh}::int)) THEN 'cupom_lido_reprovado'
            ELSE 'lida_sem_cupom' END AS motivo,

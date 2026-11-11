@@ -165,10 +165,16 @@ export async function relatorioCupons(now: Date = new Date()): Promise<Relatorio
   );
   const fontes = await safe(
     async () => {
-      const ml = (await db.execute<{ at: string | Date | null }>(sql`SELECT max(read_at) AS at FROM offer_coupon_reads`)) as unknown as { at: string | Date | null }[];
+      const pag = (await db.execute<{ src: string; at: string | Date | null }>(sql`SELECT source AS src, max(read_at) AS at FROM offer_coupon_reads GROUP BY source`)) as unknown as { src: string; at: string | Date | null }[];
+      const latest = (srcs: string[]) => pag.filter((p) => srcs.includes(p.src)).map((p) => new Date(p.at ?? 0).getTime()).reduce((m, t) => Math.max(m, t), 0);
+      const atOf = (srcs: string[]) => (latest(srcs) > 0 ? new Date(latest(srcs)) : null);
       const items = (await db.execute<{ net: string; at: string | Date | null }>(sql`
         SELECT network_slug AS net, max(last_seen_at) AS at FROM coupon_items WHERE source_kind <> 'manual_dono' GROUP BY network_slug`)) as unknown as { net: string; at: string | Date | null }[];
-      const out: { fonte: string; at: string | Date | null }[] = [{ fonte: 'mercado-livre:pagina-do-item', at: ml[0]?.at ?? null }];
+      const out: { fonte: string; at: string | Date | null }[] = [
+        { fonte: 'mercado-livre:pagina-do-item', at: atOf(['item_page_assistida']) },
+        { fonte: 'amazon:pagina-do-item', at: atOf(['amazon-pagina']) },
+        { fonte: 'shopee:pagina-do-item', at: atOf(['shopee-pagina']) },
+      ];
       for (const n of ['mercado-livre', 'shopee', 'amazon']) out.push({ fonte: `${n}:cupons-de-loja`, at: items.find((i) => i.net === n)?.at ?? null });
       return out;
     },

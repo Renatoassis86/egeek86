@@ -223,7 +223,7 @@ const amzProduct = (amz: OfferFact, extra: Partial<ProductFacts> = {}) =>
 ev = evaluateProductV2(amzProduct(amzOffer()), ctx);
 const az = ev.candidates.find((c) => c.networkSlug === 'amazon');
 ok(!!az && az.trigger === 'OK1' && az.cls === 'alerta' && az.sendable && az.status === 'auto', 'Amazon OK1 dentro do frescor vira alerta', ev.blocked);
-ok(!!az && az.texts.telegram.includes('Preço na Amazon em 11/11 às 10:50, sujeito a alteração.'), 'Amazon: carimbo "em dd/mm às hh:mm" (Brasília)', az?.texts.telegram);
+ok(!!az && az.texts.telegram.includes('Preço na Amazon em 11/11 às 10:50, sujeito a alteração.'), 'Amazon: carimbo "em dd/mm às hh:mm"', az?.texts.telegram);
 ok(!!az && !az.texts.telegram.includes('média') && !az.texts.whatsapp.includes('média') && az.avgCents === null, 'Amazon: sem comparar com a média das outras lojas');
 ok(!!az && az.texts.telegram.includes('Preço na Amazon em') && !az.texts.telegram.includes('Média das lojas') && !az.texts.telegram.includes('MENOR PREÇO REGISTRADO'), 'Amazon: sem média das lojas e sem o destaque de menor registrado, com o carimbo da Amazon', az?.texts.telegram);
 ok(!!az && textProblems(az.texts.telegram, 'tg').length === 0 && !/afiliad/i.test(az.texts.telegram), 'Amazon: texto passa na barreira, sem "afiliado"');
@@ -287,7 +287,7 @@ ok(!!rd && rd.trigger === 'RADAR' && rd.cls === 'radar' && rd.items?.length === 
 ok(!!rd && rd.sendable && rd.texts.telegram.split('\n').filter((l) => /^\d\. /.test(l)).length === 6, 'radar: 6 linhas numeradas numa só mensagem');
 ok(!!rd && (rd.items ?? []).every((it, i, arr) => i === 0 || (rItems.find((c) => c.masterProductId === arr[i - 1].masterProductId)?.moveScore ?? 0) >= (rItems.find((c) => c.masterProductId === it.masterProductId)?.moveScore ?? 0)), 'radar ordenado por movimento (maior primeiro)');
 ok(!!rd && rd.texts.telegram.includes(`/go/slug-ra1?s=tg&amp;m=${rd.messageKey}`) && rd.texts.whatsapp.includes(`?s=wa&m=${rd.messageKey}`), 'radar: links /go/<slug>?s=tg&m=<id> com o mesmo m');
-ok(!!rd && rd.texts.telegram.includes('<b>Radar de preços: 6 jogos que mudaram</b>') && rd.texts.telegram.includes('Conferido em 11/11 às 10:50 (Brasília).') && rd.texts.telegram.includes(AD), 'radar: título, carimbo e #publicidade');
+ok(!!rd && rd.texts.telegram.includes('<b>Radar de preços: 6 jogos que mudaram</b>') && rd.texts.telegram.includes('Conferido em 11/11 às 10:50.') && rd.texts.telegram.includes(AD), 'radar: título, carimbo e #publicidade');
 ok(composeRadar(rItems.slice(0, 2), ctx) === null, 'radar com 2 itens não existe (sem enchimento)');
 ok(composeRadar(rItems.slice(0, 3), ctx)?.items?.length === 3, 'radar com 3 itens existe');
 ok(composeRadar([...rItems.slice(0, 2), { ...rItems[2], held: true }], ctx) === null, 'item retido não entra no radar');
@@ -391,13 +391,13 @@ ok(!cardAllowed('p', Array.from({ length: 4 }, (_, i) => rec(`c${i}`, 30 + i * 1
 // ---------------------------------------------------------------------------
 // 7) Cupom verificado (ponto de ligação couponLookup)
 // ---------------------------------------------------------------------------
-const baseText = ['<b>Tomba</b>', 'R$ 94,00 no Mercado Livre.', 'Conferido em 11/11 às 10:50 (Brasília).', '<a href="https://www.egeek86.com/go/x?s=tg&amp;m=ok1-261111-abc">Ver a oferta</a> #publicidade'].join('\n');
+const baseText = ['<b>Tomba</b>', 'R$ 94,00 no Mercado Livre.', 'Conferido em 11/11 às 10:50.', '<a href="https://www.egeek86.com/go/x?s=tg&amp;m=ok1-261111-abc">Ver a oferta</a> #publicidade'].join('\n');
 const cp: CouponInfo = { code: 'GEEK10', conditions: 'R$ 10 de desconto acima de R$ 80 (<teto> & R$ 30)', expiresAt: new Date(NOW.getTime() + 5 * H).toISOString(), verifiedAt: new Date(NOW.getTime() - 30 * MIN).toISOString() };
 const withCp = withCouponBlock(baseText, cp, 'tg', NOW);
 ok(withCp !== baseText && withCp.split('\n').length === 5, 'cupom entra como linha nova');
 ok(withCp.split('\n')[3].startsWith('🎟️ Cupom: <code>GEEK10</code>, R$ 10 de desconto acima de R$ 80 (&lt;teto&gt; &amp; R$ 30). Válido até'), 'cupom: antes do link, com escape HTML', withCp);
 ok(withCp.includes('segundo a loja. Visto em 11/11 às 10:30.') && withCp.endsWith('#publicidade'), 'cupom: validade lida, "visto em" e o link continua por último');
-const waText = ['*Tomba*', 'R$ 94,00 no Mercado Livre.', 'Conferido em 11/11 às 10:50 (Brasília).', 'https://www.egeek86.com/go/x?s=wa&m=ok1-261111-abc #publicidade'].join('\n');
+const waText = ['*Tomba*', 'R$ 94,00 no Mercado Livre.', 'Conferido em 11/11 às 10:50.', 'https://www.egeek86.com/go/x?s=wa&m=ok1-261111-abc #publicidade'].join('\n');
 const cpPlain = { ...cp, conditions: 'R$ 10 de desconto acima de R$ 80' };
 ok(!withCouponBlock(waText, cpPlain, 'wa', NOW).includes('<') && withCouponBlock(waText, cpPlain, 'wa', NOW).includes('Cupom: GEEK10, R$ 10 de desconto'), 'cupom no WhatsApp sem HTML');
 ok(withCouponBlock(baseText, { ...cp, expiresAt: new Date(NOW.getTime() - MIN).toISOString() }, 'tg', NOW) === baseText, 'cupom vencido: a mensagem sai sem cupom');

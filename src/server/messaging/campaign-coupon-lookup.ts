@@ -10,7 +10,7 @@ import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 
 /**
  * Codigo de CAMPANHA cadastrado pelo dono (ex.: TODOSITE1111) para uma oferta. Mesmo formato CouponInfo do coupon-lookup, mas
- * aqui `code` e o codigo DIGITAVEL. Devolve null (a mensagem sai sem cupom) se: a rede nao e ML/Shopee, nao ha codigo verificado
+ * aqui `code` e o codigo DIGITAVEL. Devolve null (a mensagem sai sem cupom) se: a rede nao e ML/Shopee/Amazon, nao ha codigo verificado
  * e dentro da validade, o escopo (site | categoria | loja) nao casa com a oferta, a compra minima nao e alcancada ou o cupom
  * reprova na agulha (frescor de 24 h do dono, validade com folga, preco final coerente com % e teto).
  * Ligacao ao ciclo de envio: chamar junto de lookupVerifiedCoupon e escolher um dos dois (campanha tem prioridade quando existir:
@@ -27,7 +27,7 @@ export async function lookupCampaignCoupon(offerId: string, trace?: MissTrace, n
     WHERE o.id = ${offerId}::uuid LIMIT 1`);
   const o = rows[0];
   if (!o) { trace?.('oferta_inexistente'); return null; }
-  if (o.net !== 'mercado-livre' && o.net !== 'shopee') { trace?.('rede_sem_leitura_autorizada'); return null; }
+  if (o.net !== 'mercado-livre' && o.net !== 'shopee' && o.net !== 'amazon') { trace?.('rede_sem_leitura_autorizada'); return null; }
   const found = await findCampaignCoupons(o.net, now);
   if (!found.length) { trace?.('sem_codigo_do_dono_ativo'); return null; }
   const ranked = rankCampaignCoupons(found, {

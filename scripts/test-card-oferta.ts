@@ -45,7 +45,7 @@ const mk = (priceCents: number, over: Partial<OfferCardInput> = {}, st: Partial<
 function pure() {
   check('moeda milhar', formatMoney(123456) === 'R$ 1.234,56' && formatMoney(18700) === 'R$ 187,00' && formatMoney(5) === 'R$ 0,05');
   check('reais arredondado', formatReaisRounded(18734) === 'R$ 187' && formatReaisRounded(123456) === 'R$ 1.235', [formatReaisRounded(18734), formatReaisRounded(123456)]);
-  check('carimbo', stampLine(new Date('2026-11-11T12:41:00Z')) === 'Conferido em 11/11 às 09:41 (Brasília)', stampLine(new Date('2026-11-11T12:41:00Z')));
+  check('carimbo', stampLine(new Date('2026-11-11T12:41:00Z')) === 'Conferido em 11/11 às 09:41', stampLine(new Date('2026-11-11T12:41:00Z')));
   check('loja', storePhrase('Mercado Livre') === 'no Mercado Livre' && storePhrase('Amazon') === 'na Amazon' && storePhrase('Shopee') === 'na Shopee' && storePhrase('Foo') === 'em Foo');
   const t = truncateTitle('Jogo The Legend Of Zelda Echoes Of Wisdom Nintendo Switch Mídia Física Lacrado Edição Padrão Brasil', 78);
   check('truncagem', Array.from(t).length <= 78 && t.endsWith('…'), t);

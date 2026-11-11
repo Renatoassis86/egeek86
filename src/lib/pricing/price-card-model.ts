@@ -343,7 +343,7 @@ export function buildCaption(m: CardModel): string {
     const pa = ((cur - m.avg.cents) / m.avg.cents) * 100;
     avgPhrase = Math.abs(pa) < 0.05 ? ' e igual à média' : ` e ${formatPct(Math.abs(pa))} ${pa > 0 ? 'acima' : 'abaixo'} da média`;
   }
-  const l3 = `<b>Hoje:</b> ${formatMoney(cur)} (${escapeHtml(m.current.store)}), ${recPhrase}${avgPhrase}. Atualizado em ${formatStamp(m.current.confirmedAt)} (Brasília).`;
+  const l3 = `<b>Hoje:</b> ${formatMoney(cur)} (${escapeHtml(m.current.store)}), ${recPhrase}${avgPhrase}. Atualizado em ${formatStamp(m.current.confirmedAt)}.`;
   return [l1, l2, l3].join('\n');
 }
 

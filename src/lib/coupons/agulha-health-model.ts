@@ -15,7 +15,7 @@ export const MOTIVO_LABEL: Record<MotivoSemCupom, string> = {
   sem_leitura_2h: 'Anúncio sem leitura de cupom nas 2 h anteriores',
   lida_sem_cupom: 'Lido a tempo, a loja não mostrava cupom',
   cupom_lido_reprovado: 'Cupom lido, mas reprovado (exige seguir a loja, preço mudou ou regra incoerente)',
-  rede_sem_leitura_autorizada: 'Rede sem leitura autorizada (Amazon, Shopee)',
+  rede_sem_leitura_autorizada: 'Rede sem leitura autorizada (fora Mercado Livre, Amazon e Shopee)',
 };
 
 export interface CoberturaLinha {
