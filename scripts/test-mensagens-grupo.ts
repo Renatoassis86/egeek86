@@ -136,8 +136,8 @@ const m3: GroupMessageInput = {
   avg: { cents: 36705, offers: 9 },
 };
 const r3 = buildGroupMessages(m3);
-ok(r3.telegram.includes('<b>R$ 229,99</b> na Shopee') && r3.telegram.includes('<b>Mercado Livre:</b> R$ 320,00 (melhor de 6 ofertas)'), 'M3 TG preços', r3.telegram);
-ok(r3.telegram.includes('<b>Diferença:</b> R$ 90,01 a menos (28%)') && r3.telegram.includes('<b>Média das lojas:</b> R$ 367,05'), 'M3 TG diferença', r3.telegram);
+ok(r3.telegram.includes('<b>R$ 229,99</b> na Shopee') && !r3.telegram.includes('R$ 320,00') && !r3.telegram.includes('Mercado Livre'), 'M3 TG só o menor preço, sem o preço de cada loja', r3.telegram);
+ok(r3.telegram.includes('<b>Menor preço:</b> entre as lojas que monitoramos hoje') && r3.telegram.includes('<b>Média das lojas:</b> R$ 367,05'), 'M3 TG menor preço do monitoramento e média', r3.telegram);
 ok(r3.telegram.includes('Conferido em 10/11 às 21:30 (Brasília).'), 'M3 usa a conferência mais antiga', r3.telegram);
 ok(!r3.telegram.includes('/go/'), 'M3 TG sem URL no texto (link no botão)');
 ok(r3.whatsapp.includes('https://www.egeek86.com/go/jogo-nintendo-switch-sports-midia-fisica-shopee-e3a58b?s=wa&m=g3-261110-000ghi'), 'M3 WA link da oferta mais barata', r3.whatsapp);
@@ -364,7 +364,7 @@ const g3p = product({
 ev = evaluateProduct(g3p, ctx);
 const g3 = ev.candidates.find((c) => c.trigger === 'G3');
 ok(!!g3 && g3.offerIds.join() === 'x,y' && !g3.reviewReasons.includes('shopee_so_com_aprovacao_humana'), 'G3 Shopee x ML: Shopee deixa de exigir aprovação só por ser Shopee', g3);
-ok(!!g3 && g3.texts.whatsapp.includes('*Shopee:*') && g3.texts.whatsapp.includes('*Mercado Livre:*'), 'G3 texto com as duas lojas');
+ok(!!g3 && g3.texts.whatsapp.includes('*Menor preço:*') && !g3.texts.whatsapp.includes('Mercado Livre:'), 'G3 só o menor preço, sem listar as duas lojas');
 
 // G5
 const many = Array.from({ length: 25 }, (_, i) => offer({ offerId: `m${i}`, priceCents: 315754 + i * 8000, title: 'Console Nintendo Switch 2 Modelo Nacional', sellerId: `s${i}` }));

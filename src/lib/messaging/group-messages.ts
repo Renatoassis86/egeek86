@@ -693,16 +693,13 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       guardNetwork(input.other);
       const c = input.cheap;
       const o = input.other;
-      const diff = o.priceCents - c.priceCents;
-      const diffPct = Math.round((diff / o.priceCents) * 100);
       const avg = input.avg && input.avg.cents > c.priceCents ? input.avg : null;
       const stamp = c.confirmedAt.getTime() <= o.confirmedAt.getTime() ? c.confirmedAt : o.confirmedAt;
       // Por tópicos (dono, 2026-11-11). Telegram: o link vai no botão; WhatsApp: link da oferta mais barata no texto.
       const ital = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
       const topics = [
-        topic(f, inNetwork(c.networkName).replace(/^n[oa] /, ''), `${fmtBRL(c.priceCents)} (a mais barata)`),
-        topic(f, inNetwork(o.networkName).replace(/^n[oa] /, ''), `${fmtBRL(o.priceCents)}${o.offersCount > 1 ? ` (melhor de ${o.offersCount} ofertas)` : ''}`),
-        topic(f, 'Diferença', `${fmtBRL(diff)} a menos (${diffPct}%)`),
+        // Objetivo da plataforma: o MENOR preço do monitoramento. Não se publica o preço de cada loja (dono, 2026-11-11).
+        topic(f, 'Menor preço', 'entre as lojas que monitoramos hoje'),
         avg ? topic(f, 'Média das lojas', `${fmtBRL(avg.cents)} (${fmtBRL(avg.cents - c.priceCents)} abaixo)`) : null,
       ].filter((x): x is string => !!x);
       const foot = ital(withTag(conferidoLine(stamp), input.adTag));
