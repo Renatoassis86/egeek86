@@ -16,6 +16,8 @@ export const SLO = {
   deadMan: [
     { job: 'collect-prices', network: 'mercado-livre', everyMinutes: 5, maxSilenceMin: 20, abandonedAfterMin: 5 },
     { job: 'collect-shopee', network: 'shopee', everyMinutes: 10, maxSilenceMin: 40, abandonedAfterMin: 6 },
+    // Amazon assistida (aba logada do dono envia lotes de ~75 s durante ~85 min a cada 2 h; ata 2026-11-10). Silencio maximo de 3 h = aba parada.
+    { job: 'amazon-assistida', network: 'amazon', everyMinutes: 120, maxSilenceMin: 180, abandonedAfterMin: 5 },
   ] satisfies DeadManRule[],
 
   /** Idade da oferta DEVIDA mais velha (no inicio da execucao). Acima disso = backlog crescendo / cobertura caindo. */

@@ -42,7 +42,7 @@ export async function loadHealthInput(now: Date): Promise<HealthInput> {
   const runRows = await db.execute<RunDbRow>(sql`
     SELECT job, network, started_at, finished_at, status, checked, errors, rate_limited, misses, price_confirmed, oldest_due_age_s
     FROM collector_runs
-    WHERE started_at > now() - interval '8 days' AND job IN ('collect-prices', 'collect-shopee')
+    WHERE started_at > now() - interval '8 days' AND job IN ('collect-prices', 'collect-shopee', 'amazon-assistida')
   `);
   const runs: RunRow[] = runRows.map((r) => ({
     job: r.job,
