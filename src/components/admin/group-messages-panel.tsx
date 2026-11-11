@@ -98,7 +98,10 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPanelFlags; live: boolean; run: (fn: () => Promise<GroupActionResult>) => void }) {
+type GroupLinks = Record<string, { name: string; url: string }>;
+
+function Item({ item, flags, live, run, groupLinks }: { item: GroupViewItem; flags: GroupPanelFlags; live: boolean; run: (fn: () => Promise<GroupActionResult>) => void; groupLinks: GroupLinks }) {
+  const group = item.vertical ? groupLinks[item.vertical] ?? null : null;
   const [tab, setTab] = useState<'wa' | 'tg'>('wa');
   const text = tab === 'wa' ? item.whatsapp : item.telegram;
   const approved = item.statusTg === 'aprovada' || item.statusWa === 'aprovada';
@@ -163,6 +166,33 @@ function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPan
           >
             <Copy /> Copiar
           </Button>
+          {tab === 'wa' && item.cardOfferId && group && (
+            <Button
+              size="lg"
+              fullWidth
+              variant="primary"
+              className={`${SQUARE} sm:col-span-2`}
+              disabled={!item.sendable}
+              onClick={async () => {
+                // Um clique: copia card + texto (legenda) para a área de transferência e abre o grupo da loja deste item.
+                // No WhatsApp aberto é só colar (Ctrl+V) e enviar.
+                const w = window.open(group.url, '_blank', 'noopener');
+                try {
+                  const res = await fetch(`/api/admin/card/${item.cardOfferId}`, { cache: 'no-store' });
+                  if (!res.ok) throw new Error('card');
+                  const png = await res.blob();
+                  await navigator.clipboard.write([new ClipboardItem({ 'image/png': png, 'text/plain': new Blob([item.whatsapp], { type: 'text/plain' }) })]);
+                  toast.success(`Card + texto copiados. Cole no grupo ${group.name}.`);
+                } catch {
+                  await copyText(item.whatsapp);
+                  toast.error('Não consegui copiar o card; o texto foi copiado. Use "Compartilhar card + texto".');
+                }
+                void w;
+              }}
+            >
+              <MessageCircle /> Copiar card + texto e abrir o grupo {group.name}
+            </Button>
+          )}
           {tab === 'wa' && item.cardOfferId && (
             <Button
               size="lg"
@@ -291,7 +321,7 @@ function AutomationCard({ overview, pending, run }: { overview: AutomationOvervi
   );
 }
 
-export function GroupMessagesPanel({ items, flags, overview }: { items: GroupViewItem[]; flags: GroupPanelFlags; overview: AutomationOverview }) {
+export function GroupMessagesPanel({ items, flags, overview, groupLinks = {} }: { items: GroupViewItem[]; flags: GroupPanelFlags; overview: AutomationOverview; groupLinks?: GroupLinks }) {
   const router = useRouter();
   const [liveItems, setLiveItems] = useState<GroupViewItem[] | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -348,7 +378,7 @@ export function GroupMessagesPanel({ items, flags, overview }: { items: GroupVie
               <Text variant="caption" color="tertiary">{sec.hint}</Text>
             </div>
             {inSec.map((it) => (
-              <Item key={`${it.messageKey}-${it.status}`} item={it} flags={flags} live={live} run={run} />
+              <Item key={`${it.messageKey}-${it.status}`} item={it} flags={flags} live={live} run={run} groupLinks={groupLinks} />
             ))}
           </section>
         );

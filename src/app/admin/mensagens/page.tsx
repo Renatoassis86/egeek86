@@ -9,6 +9,7 @@ import { listQueue } from '@/server/messaging/group-queue';
 import { queueToViewItems, toViewItem, type GroupViewItem } from '@/server/messaging/group-view';
 import { loadAutomationOverview } from '@/server/messaging/group-overview';
 import { loadQueuePlan } from '@/server/messaging/group-plan';
+import { getStores } from '@/server/stores';
 import { GroupSendPlan } from '@/components/admin/group-send-plan';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
@@ -30,6 +31,11 @@ export default async function AdminMessagesPage() {
   const messages = await listMessagesForAdmin();
   const overview = await loadAutomationOverview();
   const queuePlan = await loadQueuePlan();
+  const groupLinks: Record<string, { name: string; url: string }> = {};
+  for (const s of await getStores({ fresh: true }).catch(() => [])) {
+    if (!s.whatsappGroupUrl) continue;
+    for (const v of s.verticals) groupLinks[v] = { name: s.name, url: s.whatsappGroupUrl };
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,6 +54,7 @@ export default async function AdminMessagesPage() {
 
       <GroupMessagesPanel
         items={items}
+        groupLinks={groupLinks}
         overview={overview}
         flags={{
           enabled: isGroupMessagesEnabled(),

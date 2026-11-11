@@ -29,6 +29,7 @@ export type LojaRow = {
   telegram_verified_at: string | Date | null;
   telegram_bot_can_post: boolean;
   whatsapp_group_url: string | null;
+  telegram_invite_url?: string | null;
   limits: unknown;
   ad_tag: string | null;
   brand: unknown;
@@ -60,6 +61,7 @@ export function mapLoja(r: LojaRow): StoreSection {
     telegramVerifiedAt: toDate(r.telegram_verified_at),
     telegramBotCanPost: r.telegram_bot_can_post,
     whatsappGroupUrl: r.whatsapp_group_url,
+    telegramInviteUrl: r.telegram_invite_url ?? null,
     limits: resolveLimits(r.limits, base),
     adTag: r.ad_tag,
     brand: (r.brand && typeof r.brand === 'object' ? r.brand : {}) as Record<string, unknown>,
@@ -76,7 +78,7 @@ export async function getStores(opts: { fresh?: boolean; now?: number } = {}): P
   try {
     const rows = await db.execute<LojaRow>(sql`
       SELECT s.id::text AS id, s.slug, s.name, s.stage, s.telegram_chat_id, s.telegram_chat_title, s.telegram_verified_at,
-             s.telegram_bot_can_post, s.whatsapp_group_url, s.limits, s.ad_tag, s.brand, s.archived_at,
+             s.telegram_bot_can_post, s.whatsapp_group_url, s.telegram_invite_url, s.limits, s.ad_tag, s.brand, s.archived_at,
              COALESCE(array_agg(v.vertical ORDER BY v.vertical) FILTER (WHERE v.vertical IS NOT NULL), '{}') AS verticals
       FROM store_sections s
       LEFT JOIN store_section_verticals v ON v.store_id = s.id

@@ -89,6 +89,8 @@ export interface StoreSection {
   telegramVerifiedAt: Date | null;
   telegramBotCanPost: boolean;
   whatsappGroupUrl: string | null;
+  /** Link público do canal de Telegram da loja (https://t.me/...). */
+  telegramInviteUrl: string | null;
   limits: StoreLimits;
   adTag: string | null;
   brand: Record<string, unknown>;
@@ -142,6 +144,7 @@ export function lojaGamesPadrao(): StoreSection {
     telegramVerifiedAt: null,
     telegramBotCanPost: false,
     whatsappGroupUrl: null,
+    telegramInviteUrl: null,
     limits: GAMES_STORE_LIMITS,
     adTag: null,
     brand: { label: 'Games' },

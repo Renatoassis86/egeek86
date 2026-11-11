@@ -35,6 +35,8 @@ export interface GroupViewItem {
   heldReasons: string[];
   /** Oferta do card (para o botão de compartilhar com imagem). */
   cardOfferId: string | null;
+  /** Departamento do item (define a loja e o grupo de WhatsApp). */
+  vertical: string | null;
 }
 
 export type GroupSection = 'aprovacao' | 'retidas' | 'sombra' | 'fila_auto' | 'historico' | 'ao_vivo';
@@ -76,6 +78,7 @@ export function toViewItem(c: Candidate): GroupViewItem {
     recheckNote: null,
     heldReasons: c.heldReasons ?? [],
     cardOfferId: c.offerIds?.[0] ?? null,
+    vertical: c.vertical ?? null,
   };
 }
 
@@ -120,6 +123,7 @@ export function queueToViewItems(rows: QueueRow[]): GroupViewItem[] {
       recheckNote: tg?.recheckNote ?? null,
       heldReasons: c.heldReasons ?? [],
       cardOfferId: c.offerIds?.[0] ?? null,
+      vertical: c.vertical ?? null,
     });
   }
   return out;
