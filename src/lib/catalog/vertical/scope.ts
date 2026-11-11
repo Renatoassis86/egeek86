@@ -48,7 +48,7 @@ const LEX: Record<string, SegmentLexicon> = {
     noun: /\b(impressora 3d|impressora)\b/,
     accessory: /\b(filamento|filamentos|resina|bico|nozzle|hotend|extrusor|correia|mesa|cama|ventilador|fonte|suporte|cabo|capa|placa)\b/,
   },
-  // ---- Impressão 3D (2026-11-11, INERTE: léxico sem segmento no cardápio; só vale quando existir segmento com esta chave) ----
+  // ---- Impressão 3D (2026-11-11): segmentos filamento-3d e resina-3d no cardápio da onda 1; peca-impressora-3d fica INERTE (onda seguinte) ----
   'filamento-3d': {
     noun: /\b(filamento|filamentos)\b/,
     accessory: /\b(suporte|porta|secador|estufa|caixa|bico|extrusor|cortador|espatula|adaptador|carretel vazio)\b/,
@@ -155,6 +155,21 @@ const LEX: Record<string, SegmentLexicon> = {
  * Falhou => revisão com reason 'fora_do_nicho' (nunca master automático, nunca rejeição definitiva).
  */
 const NICHO: Record<string, { require?: RegExp; forbid?: RegExp }> = {
+  // Impressão 3D (2026-11-11). Impressora: tem que dizer "3d" e não pode ser caneta 3D, scanner, impressora de papel/etiqueta/gravadora
+  // nem kit/peças soltas. Filamento: não pode ser caneta 3D nem lâmpada de filamento; tem que dizer 3d ou um material. Resina: só de
+  // impressora 3D (3d/uv/lcd/dlp/sla), nunca epóxi, poliéster, odontológica ou de artesanato.
+  'impressora-3d': {
+    require: /\b3d\b/,
+    forbid: /\b(caneta|canetas|pen|scanner|escaner|digitalizador|jato de tinta|ecotank|multifuncional|termica|etiqueta|etiquetas|gravadora|plotter|kit de pecas|kit pecas|pecas de reposicao|pecas para|pecas p)\b/,
+  },
+  'filamento-3d': {
+    require: /\b(3d|pla|petg|abs|tpu|asa|nylon|pa12|pva|hips)\b/,
+    forbid: /\b(caneta|canetas|pen|lampada|lampadas|led|solda|soldagem|resina)\b/,
+  },
+  'resina-3d': {
+    require: /\b(3d|uv|lcd|dlp|sla|msla|405nm)\b/,
+    forbid: /\b(epoxi|epoxy|poliester|acrilica|dental|odontologica|protese|artesanato|bijuteria|joia|joias|fibra de vidro|pigmento|corante)\b/,
+  },
   teclado: { require: /\b(mecanico|mechanical|gamer|gaming|rgb|switch)\b/ },
   mouse: { require: /\b(gamer|gaming|rgb|dpi)\b/ },
   'headset-gamer': { require: /\b(headset|gamer|gaming)\b/ },
@@ -173,6 +188,9 @@ export function nichoIssue(segmentKey: string, name: string): ScopeIssue | null 
   if (rule.require && !rule.require.test(folded)) return { kind: 'nicho', reason: 'fora_do_nicho', matched: 'sem_termo_do_nicho' };
   return null;
 }
+
+/** Segmentos em que "combo" é variante legítima do produto, não pacote de 2+ produtos. */
+const COMBO_E_VARIANTE = new Set(['impressora-3d']);
 
 /** Segmentos sem léxico (livros: "capa dura" é legítimo; tênis: só revisão de qualquer forma). */
 const NO_SCOPE_LEXICON = new Set(['livros', 'tenis-de-corrida']);
@@ -208,7 +226,12 @@ export function comboIssue(segmentKey: string, name: string): ScopeIssue | null 
   const lex = LEX[segmentKey];
   const folded = fold(name);
 
-  const bundleWord = /\b(?:(kit|combo|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+|com|c)\b|(combo|pacote)\b|leve\s+\d+)/.exec(folded);
+  // "Combo" sozinho NÃO é pacote na impressora 3D: é a variante do fabricante (ex.: Bambu Lab A1 Combo = com AMS lite) e SEPARA o master
+  // da versão sem combo (plano A4). Kit/combo com quantidade, "pacote" e "leve N" continuam sendo pacote.
+  const bundleRe = COMBO_E_VARIANTE.has(segmentKey)
+    ? /\b(?:(kit|combo|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+|com|c)\b|(pacote)\b|leve\s+\d+)/
+    : /\b(?:(kit|combo|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+|com|c)\b|(combo|pacote)\b|leve\s+\d+)/;
+  const bundleWord = bundleRe.exec(folded);
   if (bundleWord) {
     return { kind: 'combo', reason: 'combo_pacote', matched: bundleWord[0] };
   }

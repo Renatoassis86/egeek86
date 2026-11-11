@@ -248,15 +248,58 @@ export const SEGMENTS: SegmentConfig[] = [
   },
   {
     key: 'impressora-3d',
-    vertical: 'tecnologia',
+    // 2026-11-11: vertical própria (migração 0033). Os 3 masters Bambu Lab que nasceram em 'tecnologia' foram reclassificados (scripts/reclassificar-impressao3d.ts).
+    vertical: 'impressao3d',
     label: 'Impressora 3D',
     domains: [/3D_PRINTERS$/],
     searchDomain: 'MLB-3D_PRINTERS',
-    terms: dedupeTerms(['impressora 3d creality ender', 'impressora 3d bambu lab', ...combineTerms('impressora 3d', ['fdm', 'resina'], ['creality', 'bambu lab', 'anycubic', 'elegoo', 'flashforge', 'voxelab'])]),
-    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['ALPHANUMERIC_MODEL', 'VERSION'] },
+    terms: dedupeTerms([
+      'impressora 3d bambu lab a1', 'impressora 3d bambu lab p1s', 'impressora 3d creality ender', 'impressora 3d creality k1',
+      ...combineTerms('impressora 3d', ['fdm', 'resina'], ['creality', 'bambu lab', 'anycubic', 'elegoo', 'flashforge', 'voxelab', 'sovol', 'artillery', 'qidi', 'phrozen']),
+      'impressora 3d ender 3 v3', 'impressora 3d anycubic kobra', 'impressora 3d elegoo neptune', 'impressora 3d elegoo centauri carbon', 'impressora 3d bambu lab x1 carbon',
+      'impressora 3d resina anycubic photon mono', 'impressora 3d resina elegoo saturn', 'impressora 3d resina elegoo mars', 'impressora 3d corexy', 'impressora 3d multicolor',
+    ]),
+    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['ALPHANUMERIC_MODEL', 'VERSION', 'VOLTAGE'] },
     targetRefreshMin: 60,
     seedRank: 12,
-    rationale: 'Domínio misturado com filamento (3 de 10); catálogo medido com 1 vendedor.',
+    rationale: 'Domínio misturado com filamento (3 de 10); catálogo medido com 1 vendedor. Combo (com AMS/filamento) é variante legítima e separa master; caneta 3D, scanner e impressora de papel ficam fora (scope.ts).',
+  },
+  {
+    // ONDA 1 (2026-11-11). Domínio do filamento NÃO medido ao vivo (cota do dia esgotada): regex de varredura, sem searchDomain.
+    // O primeiro dry-run confirma o domain_id real (relatório 'off_domain') e só então se fixa searchDomain.
+    key: 'filamento-3d',
+    vertical: 'impressao3d',
+    label: 'Filamento 3D',
+    domains: [/FILAMENT/],
+    terms: dedupeTerms([
+      'filamento pla 1kg 1.75mm', 'filamento petg 1kg 1.75mm', 'filamento abs 1kg 1.75mm', 'filamento tpu 1.75mm',
+      ...combineTerms('filamento', ['pla 1kg', 'petg 1kg', 'abs 1kg', 'tpu 95a'], ['creality', 'bambu lab', 'elegoo', 'anycubic', 'esun', 'sunlu', 'polymaker', 'voolt3d', '3d lab', '3dfila', 'printalot', 'national 3d', 'grilon3', 'overture']),
+      'filamento pla silk 1kg', 'filamento pla plus 1kg', 'filamento pla 250g', 'filamento pla 500g', 'filamento petg 500g', 'filamento asa 1kg', 'filamento nylon 1kg', 'filamento pla carbono',
+    ]),
+    // GTIN primeiro. Sem GTIN/MPN, exige MARCA+MODELO (nunca marca sozinha: juntaria materiais, diâmetros e massas diferentes).
+    // Material, diâmetro e massa entram na chave quando a API os devolve (ids a confirmar no dry-run; ausentes são ignorados) e são
+    // exigidos no TÍTULO pela aprovação em bloco (aprovacao-impressao3d.ts). Cor junta: COLOR nunca entra.
+    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['FILAMENT_MATERIAL', 'MATERIAL', 'FILAMENT_DIAMETER', 'DIAMETER', 'NET_WEIGHT', 'WEIGHT', 'UNITS_PER_PACK'] },
+    targetRefreshMin: 60,
+    seedRank: 27,
+    rationale: 'Domínio a medir no 1º dry-run. Identidade difícil (guardião): material, diâmetro e massa separam; cor junta.',
+  },
+  {
+    // ONDA 1 (2026-11-11). Domínio da resina NÃO medido ao vivo; regex de varredura com exclusão de resina epóxi/odonto/artesanato.
+    key: 'resina-3d',
+    vertical: 'impressao3d',
+    label: 'Resina 3D',
+    domains: [/RESIN/],
+    excludeDomains: [/EPOXY|DENTAL|DENTIST|CRAFT|ARTISAN|CASTING|MOLD/],
+    terms: dedupeTerms([
+      'resina 3d uv 1kg', 'resina 3d 405nm 1kg', 'resina 3d standard 1kg', 'resina 3d abs like', 'resina 3d water washable',
+      ...combineTerms('resina 3d', ['1kg', '500g', 'uv'], ['elegoo', 'anycubic', 'creality', 'sunlu', 'siraya tech', 'phrozen', 'esun', 'voolt3d', '3d lab', 'flashforge']),
+      'resina 3d flexivel', 'resina 3d transparente', 'resina 3d alta resolucao 8k',
+    ]),
+    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['MODEL_TYPE', 'RESIN_TYPE', 'NET_VOLUME', 'NET_WEIGHT', 'VOLUME', 'UNITS_PER_PACK'] },
+    targetRefreshMin: 60,
+    seedRank: 28,
+    rationale: 'Domínio a medir no 1º dry-run. Tipo de resina e volume separam; cor junta. Exige "3d"/UV no título (scope.ts) para não trazer resina epóxi.',
   },
   {
     key: 'tenis-de-corrida',

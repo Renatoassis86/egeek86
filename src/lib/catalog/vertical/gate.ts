@@ -55,8 +55,8 @@ const OUT_OF_SCOPE: Record<NonGamesVertical, RegExp> = {
   livros: /\b(caderno|agenda|planner|fichario|marca pagina|poster|camiseta|caneca|luminaria|papelaria)\b/,
   eletrodomesticos: /\b(peca|pecas|reposicao|mangueira|capa|acessorio|acessorios)\b/,
   esporte: /\b(balao|bexiga|chaveiro|mochila|bomba|miniatura|pelucia|brinquedo|inflavel|calcador|meiao)\b/,
-  // Impressão 3D (inerte: sem segmento no cardápio ainda). Peças/bicos entram só numa onda posterior, com compatibilidade escrita.
-  impressao3d: /\b(capa|bolsa|mochila|garantia estendida|miniatura pronta|action figure|estatueta)\b/,
+  // Impressão 3D (onda 1: impressora, filamento, resina). Peças/bicos/mesas entram só na onda seguinte, com compatibilidade escrita.
+  impressao3d: /\b(capa|bolsa|mochila|garantia estendida|miniatura pronta|action figure|estatueta|caneta 3d|scanner|escaner|digitalizador|kit de pecas|pecas de reposicao)\b/,
 };
 
 function evaluateFor(vertical: NonGamesVertical, input: VerticalGateInput): VerticalGateResult {

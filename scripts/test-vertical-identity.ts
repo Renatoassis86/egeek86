@@ -143,7 +143,7 @@ check('semeadura: livros, placa de video, impressora primeiro', ordem.slice(0, 3
 // Ampliacao 2026-11-10: os 13 segmentos originais mantem a ordem medida (pior por ultimo DENTRO deles); os novos vem depois.
 check('semeadura: entre os 13 originais, tenis, maquina de lavar, impressora 3D por ultimo', ['tenis-de-corrida', 'maquina-de-lavar', 'impressora-3d'].every((k) => ordem.indexOf(k) >= 10 && ordem.indexOf(k) < 13), ordem);
 check('ranks unicos', new Set(SEGMENTS.map((s) => s.seedRank)).size === SEGMENTS.length);
-check('segmentsOf agrupa por departamento (13 originais + 13 novos da ampliacao)', segmentsOf('tecnologia').length === 12 && segmentsOf('esporte').length === 4 && segmentsOf('livros').length === 1 && segmentsOf('eletroeletronicos').length === 4 && segmentsOf('eletrodomesticos').length === 5);
+check('segmentsOf agrupa por departamento (13 originais + 13 novos da ampliacao; impressora 3D saiu de tecnologia em 2026-11-11 e a impressao3d tem 3 segmentos)', segmentsOf('tecnologia').length === 11 && segmentsOf('impressao3d').map((x) => x.key).join() === 'impressora-3d,filamento-3d,resina-3d' && segmentsOf('esporte').length === 4 && segmentsOf('livros').length === 1 && segmentsOf('eletroeletronicos').length === 4 && segmentsOf('eletrodomesticos').length === 5);
 check('kill-switch desligado por padrao', !isVerticalEnabled('livros', {}));
 check('kill-switch so liga com 1/true', isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '1' }) && isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'true' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '0' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'sim' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '' }));
 check('nome do kill-switch', killSwitchEnvName('eletroeletronicos') === 'VERTICAL_ELETROELETRONICOS_ENABLED');
@@ -398,6 +398,49 @@ const run = async () => {
   check('bolas: pacote (bola + bomba) e acessorio (bomba) vao para revisao, nao viram master', repB.reviews.some((x) => x.catalogId === 'MLB-B5' && x.reason === 'combo_pacote') && repB.reviews.some((x) => x.catalogId === 'MLB-B6' && x.reason === 'acessorio_ou_peca'), repB.reviews);
   check('bolas: combo/acessorio custam 0 chamadas (barrados na busca)', !chamadasB.some((c) => c.includes('MLB-B5') || c.includes('MLB-B6')), chamadasB);
 };
+
+// --- Impressao 3D (2026-11-11): vertical propria, onda 1 = impressora, filamento, resina ---
+{
+  const imp = segmentByKey('impressora-3d')!;
+  const fil = segmentByKey('filamento-3d')!;
+  const res = segmentByKey('resina-3d')!;
+  check('impressao3d: impressora-3d, filamento-3d e resina-3d existem e pertencem a impressao3d', [imp, fil, res].every((x) => x?.vertical === 'impressao3d'));
+  check('impressao3d: nenhum segmento usa COLOR na chave (cor junta)', [imp, fil, res].every((x) => !x.profile.keyExtras.includes('COLOR') && !x.profile.fallbackAttrs.includes('COLOR')));
+  check('impressao3d: filamento e resina exigem marca+modelo no fallback (nunca marca sozinha)', [fil, res].every((x) => x.profile.fallbackAttrs.join() === 'BRAND,MODEL'));
+  check('impressao3d: impressora separa por voltagem na chave', imp.profile.keyExtras.includes('VOLTAGE'));
+  check('impressao3d: domainMatches de filamento/resina nao aceita impressora nem epoxi', !domainMatches(fil, 'MLB-3D_PRINTERS') && domainMatches(fil, 'MLB-3D_PRINTER_FILAMENTS') && !domainMatches(res, 'MLB-EPOXY_RESINS') && domainMatches(res, 'MLB-3D_PRINTER_RESINS'));
+  check('impressao3d: termos sem duplicata e todos citam o produto', [imp, fil, res].every((x) => x.terms.length === new Set(x.terms).size && x.terms.every((t) => /impressora|filamento|resina/.test(t))));
+  const ok: Array<[string, string]> = [
+    ['impressora-3d', 'Impressora 3d Bambu Lab P1s Combo'],
+    ['impressora-3d', 'Impressora 3d Bambu Lab A1'],
+    ['impressora-3d', 'Impressora 3D Creality Ender-3 V3 SE FDM'],
+    ['filamento-3d', 'Filamento Pla 1,75mm 1kg Creality Hyper'],
+    ['resina-3d', 'Resina 3d Uv 405nm Elegoo Standard 1kg'],
+  ];
+  for (const [seg, nome] of ok) check('impressao3d: titulo legitimo passa no escopo [' + seg + ']: ' + nome, scopeIssue(seg, nome) === null, scopeIssue(seg, nome));
+  const fora: Array<[string, string, string]> = [
+    ['impressora-3d', 'Caneta 3d Pen Impressora Infantil', 'nicho'],
+    ['impressora-3d', 'Scanner 3d Creality Cr-scan', 'nicho'],
+    ['impressora-3d', 'Impressora Multifuncional Epson Ecotank L3250', 'nicho'],
+    ['impressora-3d', 'Impressora 3d Ender 3 + Filamento Pla', 'combo'],
+    ['impressora-3d', 'Kit 2 Impressora 3d Voxelab', 'combo'],
+    ['impressora-3d', 'Kit de Pecas para Impressora 3d Ender 3', 'acessorio'],
+    ['impressora-3d', 'Bico Nozzle para Impressora 3d', 'acessorio'],
+    ['filamento-3d', 'Filamento Led Lampada Vintage E27', 'nicho'],
+    ['filamento-3d', 'Filamento para Caneta 3d Pla', 'nicho'],
+    ['resina-3d', 'Resina Epoxi Cristal 1kg Artesanato', 'nicho'],
+    ['resina-3d', 'Filtro Funil para Resina 3d', 'acessorio'],
+  ];
+  for (const [seg, nome, kind] of fora) check('impressao3d: fora do escopo [' + seg + ']: ' + nome, scopeIssue(seg, nome)?.kind === kind, scopeIssue(seg, nome));
+  check('impressao3d: o combo de OUTRO segmento continua sendo pacote', comboIssue('soundbar', 'Soundbar Samsung Combo')?.reason === 'combo_pacote');
+  const gi = gateFor('impressao3d');
+  const rIdent = evaluateIdentity(P({ id: 'MLB-P1', name: 'Impressora 3d Bambu Lab P1s Combo', domain_id: 'MLB-3D_PRINTERS', attributes: [attr('GTIN', gtin('789366910361'))] }), imp);
+  check('impressao3d: impressora com GTIN valido => strong', rIdent.status === 'strong' && rIdent.keyKind === 'gtin', rIdent);
+  check('impressao3d: porteiro sugere approved para impressora legitima', gi.evaluate({ segment: 'impressora-3d', name: 'Impressora 3d Bambu Lab P1s Combo', domainId: 'MLB-3D_PRINTERS', identity: rIdent }).verdict === 'approved');
+  check('impressao3d: porteiro nao aceita segmento de outro departamento', gateFor('impressao3d').evaluate({ segment: 'impressora', name: 'Impressora Epson', domainId: 'MLB-PRINTERS', identity: rIdent }).verdict === 'review');
+  const rUsado = evaluateIdentity(P({ id: 'MLB-P2', name: 'Impressora 3d Ender 3 Usada', domain_id: 'MLB-3D_PRINTERS', attributes: [attr('GTIN', gtin('789366910362'))] }), imp);
+  check('impressao3d: usada => rejected', rUsado.status === 'rejected', rUsado);
+}
 
 run()
   .then(() => {
