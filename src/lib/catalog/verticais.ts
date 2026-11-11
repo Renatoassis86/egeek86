@@ -5,11 +5,12 @@ import { sql, type SQL } from 'drizzle-orm';
  *
  * A lista é a MESMA dos CHECKs `master_products_vertical_chk` / `affiliate_offers_vertical_chk` (migração 0027).
  * Departamento novo = nova migração que troca o CHECK + entrada aqui. Nunca texto livre.
+ * 'impressao3d' entrou com a migração 0033 (2026-11-11); fechada ao público (MERCADO_UI e dept_impressao3d continuam desligadas).
  *
  * Toda consulta PÚBLICA recebe um `Vertical` OBRIGATÓRIO (sem default silencioso): quem chama declara o
  * departamento da superfície. Superfícies gamer passam `GAMES`.
  */
-export const VERTICALS = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte'] as const;
+export const VERTICALS = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d'] as const;
 export type Vertical = (typeof VERTICALS)[number];
 
 /** Departamento das superfícies gamer (home, busca, ofertas, notícias, /api/produtos, /go, sitemap). */

@@ -48,6 +48,19 @@ const LEX: Record<string, SegmentLexicon> = {
     noun: /\b(impressora 3d|impressora)\b/,
     accessory: /\b(filamento|filamentos|resina|bico|nozzle|hotend|extrusor|correia|mesa|cama|ventilador|fonte|suporte|cabo|capa|placa)\b/,
   },
+  // ---- Impressão 3D (2026-11-11, INERTE: léxico sem segmento no cardápio; só vale quando existir segmento com esta chave) ----
+  'filamento-3d': {
+    noun: /\b(filamento|filamentos)\b/,
+    accessory: /\b(suporte|porta|secador|estufa|caixa|bico|extrusor|cortador|espatula|adaptador|carretel vazio)\b/,
+  },
+  'resina-3d': {
+    noun: /\b(resina|resinas)\b/,
+    accessory: /\b(filtro|funil|tanque|vat|fep|luva|luvas|espatula|lavadora|curadora|alcool|isopropilico|recipiente)\b/,
+  },
+  'peca-impressora-3d': {
+    noun: /\b(bico|nozzle|hotend|extrusor|extrusora|mesa|correia|polia)\b/,
+    accessory: /\b(capa|suporte|gabinete|enclosure|cabo|adaptador)\b/,
+  },
   notebook: {
     noun: /\b(notebook|laptop|ultrabook|macbook|chromebook)\b/,
     accessory: /\b(carregador|fonte|bateria|tela|teclado|capa|mochila|bolsa|suporte|cabo|dobradica|cooler|pelicula|adaptador|dock|hub|tampa|base|protetor)\b/,

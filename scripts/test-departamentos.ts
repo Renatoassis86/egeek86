@@ -53,7 +53,7 @@ function secaoA() {
   check(estadoPermiteVer('admin', false) === false && estadoPermiteVer('admin', true) === true && estadoPermiteVer('fechado', true) === false && estadoPermiteVer('publico', false), 'a:permite-ver', 'admin só para admin; fechado nunca; público para todos');
 
   check(!DEPARTAMENTOS.some((d) => (d.slug as string) === 'games'), 'a:registro-sem-games', 'registro não contém games');
-  check(DEPARTAMENTOS.length === 5 && DEPARTAMENTOS.every((d) => d.flag === `dept_${d.slug}`), 'a:registro-flags', 'cinco departamentos, uma flag dept_<slug> cada');
+  check(DEPARTAMENTOS.length === 6 && DEPARTAMENTOS.every((d) => d.flag === `dept_${d.slug}`), 'a:registro-flags', 'seis departamentos (inclui impressao3d, fechado), uma flag dept_<slug> cada');
   check(departamentoPorSlug('games') === null && departamentoPorSlug('xyz') === null, 'a:slug-desconhecido', 'slug desconhecido/games => null');
   check(!DEPARTAMENTOS.some((d) => /afiliad/i.test(`${d.rotulo} ${d.descricao}`)), 'a:sem-afiliado', 'rótulos sem a palavra "afiliad"');
 
