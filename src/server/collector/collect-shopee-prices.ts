@@ -10,7 +10,7 @@ import { lookupShopeeItem, shopeeItemIdFromRef, shopeePublicUrl } from './source
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 import { collectorRunsEnabled, startCollectorRun } from './collector-runs';
 import { classifyShopeeKind } from '@/lib/collector-runs/classify-error';
-import { GAMES } from '@/lib/catalog/verticais';
+import { GAMES, type Vertical } from '@/lib/catalog/verticais';
 
 /** Mesma regra do coletor genérico: 3 respostas válidas SEGUIDAS sem preço expiram a oferta ativa. */
 const MAX_CONSECUTIVE_MISSES = 3;
@@ -22,10 +22,11 @@ const CONCURRENCY = 2; // o ritmo real é dado pelo pacer (espaçamento entre ch
 const MAX_CONSECUTIVE_ERRORS = 10;
 
 /** Ofertas Shopee devidas (mesma condicao da selecao e da medicao de backlog da observabilidade). */
-function shopeeDueWhere() {
+function shopeeDueWhere(vertical: Vertical = GAMES) {
   return and(
-    // Coletor Shopee GAMER: só oferta Games (ADR 0008); outras verticais têm fila própria.
-    eq(affiliateOffers.vertical, GAMES),
+    // Padrão: coletor Shopee GAMER (só oferta Games, ADR 0008). Outra vertical só quando pedida de forma explícita
+    // (?v=esporte na rota: ofertas Shopee do esporte, criadas por discover-shopee-esporte.ts); cada chamada trata UMA vertical.
+    eq(affiliateOffers.vertical, vertical),
     eq(affiliateNetworks.slug, 'shopee'),
     isNotNull(affiliateOffers.externalRef),
     like(affiliateOffers.externalRef, 'shopee-%'),
@@ -41,7 +42,7 @@ function shopeeDueWhere() {
 }
 
 /** Backlog para a observabilidade; a idade da mais velha ignora expiradas (re-teste lento de proposito). So com a flag. */
-async function measureShopeeBacklog(): Promise<{ total: number | null; oldestS: number | null }> {
+async function measureShopeeBacklog(vertical: Vertical = GAMES): Promise<{ total: number | null; oldestS: number | null }> {
   if (!collectorRunsEnabled()) return { total: null, oldestS: null };
   try {
     const [row] = await db
@@ -51,7 +52,7 @@ async function measureShopeeBacklog(): Promise<{ total: number | null; oldestS: 
       })
       .from(affiliateOffers)
       .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-      .where(shopeeDueWhere());
+      .where(shopeeDueWhere(vertical));
     return { total: row?.total ?? 0, oldestS: row?.oldest ?? null };
   } catch (err) {
     console.error('[collector-runs] backlog shopee falhou (ignorado):', err instanceof Error ? err.message : err);
@@ -78,7 +79,7 @@ export interface CollectShopeeSummary {
   stoppedBecause: string | null;
 }
 
-export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?: number } = {}): Promise<CollectShopeeSummary> {
+export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?: number; vertical?: Vertical } = {}): Promise<CollectShopeeSummary> {
   const summary: CollectShopeeSummary = {
     configured: isShopeeAffiliateConfigured(),
     selected: 0,
@@ -110,7 +111,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
     })
     .from(affiliateOffers)
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-    .where(shopeeDueWhere())
+    .where(shopeeDueWhere(opts.vertical ?? GAMES))
     // Ativas/rascunho primeiro; dentro de cada grupo, as nunca checadas / mais antigas.
     .orderBy(sql`CASE WHEN ${affiliateOffers.status} = 'expired' THEN 1 ELSE 0 END`, sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`)
     .limit(maxOffers);
@@ -119,7 +120,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
   let consecutiveErrors = 0;
 
   // Observabilidade (flag COLLECTOR_RUNS=1; no-op sem a flag). Nunca interfere na coleta.
-  const backlog = await measureShopeeBacklog();
+  const backlog = await measureShopeeBacklog(opts.vertical ?? GAMES);
   const run = await startCollectorRun('collect-shopee', 'shopee', {
     selected: due.length,
     dueTotal: backlog.total,

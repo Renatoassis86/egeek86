@@ -1,6 +1,8 @@
 // Puro (sem banco): critérios de aprovação de masters de nicho (ata 2026-11-10, E.2). Usado por
 // scripts/aprovar-masters-nicho.ts (dry-run/apply) e testado em scripts/test-departamentos.ts.
 
+import { SEGMENTOS_ESPORTE_COM_GENERO } from './vertical/esporte-shopee';
+
 export const CRITERIA_VERSION = 2;
 /** Amplitude máxima (maior/menor preço) entre as ofertas clicáveis. */
 export const AMPLITUDE_MAX = 2.5;
@@ -35,7 +37,8 @@ export interface CandidatoMaster {
 }
 
 /** Segmentos de calçado/vestuário: a identidade é marca+modelo+GÊNERO (tamanho e cor não separam master). */
-const SEGMENTOS_COM_GENERO = new Set(['tenis', 'chuteira', 'camisa-de-time', 'roupa-de-ciclismo']);
+// Inclui os segmentos da descoberta Shopee de esporte (2026-11-11: regata, short, legging, agasalho, compressão), que exigem gênero.
+const SEGMENTOS_COM_GENERO = new Set(['tenis', 'chuteira', 'camisa-de-time', 'roupa-de-ciclismo', ...SEGMENTOS_ESPORTE_COM_GENERO]);
 const GENERO_NO_NOME = /\b(masculin[oa]s?|feminin[oa]s?|infantil|juvenil|unissex|menin[oa]s?|homem|mulher|kids)\b/i;
 
 export interface Avaliacao {
