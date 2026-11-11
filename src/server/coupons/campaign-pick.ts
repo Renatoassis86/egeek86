@@ -19,6 +19,11 @@ function score(c: StoredCoupon): number {
 }
 
 export function pickCampaignCoupon(list: StoredCoupon[], t: CampaignTarget): StoredCoupon | null {
+  return rankCampaignCoupons(list, t)[0] ?? null;
+}
+
+/** Todos os que servem, do melhor ao pior (o chamador aplica a agulha e fica com o primeiro que passa). */
+export function rankCampaignCoupons(list: StoredCoupon[], t: CampaignTarget): StoredCoupon[] {
   const ok = list.filter((c) => {
     if (!c.code || !c.validUntil) return false;
     if (!meetsMinimum(c, t.priceCents)) return false;
@@ -27,7 +32,7 @@ export function pickCampaignCoupon(list: StoredCoupon[], t: CampaignTarget): Sto
   });
   // Mais especifico primeiro (loja > categoria > site), depois maior desconto.
   const spec = (c: StoredCoupon) => (c.scopeKind === 'lista_itens' ? 2 : c.scopeKind === 'categoria' ? 1 : 0);
-  return ok.sort((a, b) => spec(b) - spec(a) || score(b) - score(a))[0] ?? null;
+  return ok.sort((a, b) => spec(b) - spec(a) || score(b) - score(a));
 }
 
 export function campaignToCouponInfo(c: StoredCoupon, networkName: string) {

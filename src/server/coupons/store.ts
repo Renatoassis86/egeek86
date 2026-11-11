@@ -54,6 +54,8 @@ export interface FindVerifiedCouponsInput extends ScopeTarget {
   now?: Date;
   allowNoExpiry?: boolean;
   limit?: number;
+  /** Casamento extra de escopo (ex.: rótulo de categoria que declara o departamento da oferta). OU com matchesScope. */
+  extraScopeMatch?: (c: StoredCoupon) => boolean;
 }
 
 /**
@@ -77,7 +79,7 @@ export async function findVerifiedCoupons(input: FindVerifiedCouponsInput): Prom
   return rows
     .map(mapRow)
     .filter((c) => isUsableForMessage(c, { now, maxAgeMinutes: maxAge, allowNoExpiry: input.allowNoExpiry }))
-    .filter((c) => matchesScope(c, input))
+    .filter((c) => matchesScope(c, input) || !!input.extraScopeMatch?.(c))
     .filter((c) => meetsMinimum(c, input.priceCents));
 }
 

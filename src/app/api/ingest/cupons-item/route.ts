@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { timingSafeEqual } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-auth';
+import { couponCors as cors, couponGuard as guard } from '@/server/coupons/ingest-guard';
+import { listarFilaRevalidacao, resolverUrlsLeitura } from '@/server/coupons/revalidation-queue';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -15,32 +15,7 @@ export const maxDuration = 60;
  * (matt_tool_id, matt_tracing_id, source=affiliate-profile). Mesma proteção da rota da Amazon: origem fixa, token dedicado
  * (sem token = 503 = kill-switch). Cada gravação guarda o link antigo em collector_runs.meta (reversível).
  */
-const ALLOWED_ORIGINS = new Set(['https://www.mercadolivre.com.br', 'https://mercadolivre.com.br', 'https://produto.mercadolivre.com.br']);
 const MAX_ROWS = 100;
-
-function cors(request: NextRequest): Record<string, string> {
-  const origin = request.headers.get('origin') ?? '';
-  return ALLOWED_ORIGINS.has(origin)
-    ? { 'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Headers': 'authorization, content-type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Max-Age': '600', Vary: 'Origin' }
-    : { Vary: 'Origin' };
-}
-
-function authorized(request: NextRequest): 'ok' | 'desligado' | 'negado' {
-  const expected = process.env.ASSISTED_INGEST_TOKEN || process.env.AMAZON_INGEST_TOKEN;
-  if (!expected || expected.length < 32) return 'desligado';
-  const given = (request.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
-  const a = Buffer.from(given), b = Buffer.from(expected);
-  return a.length === b.length && timingSafeEqual(a, b) ? 'ok' : 'negado';
-}
-
-function guard(request: NextRequest): NextResponse | null {
-  const headers = cors(request);
-  if (!ALLOWED_ORIGINS.has(request.headers.get('origin') ?? '')) return NextResponse.json({ error: 'origem_nao_permitida' }, { status: 403, headers });
-  const auth = authorized(request);
-  if (auth === 'desligado') return NextResponse.json({ error: 'desligado' }, { status: 503, headers });
-  if (auth === 'negado') return NextResponse.json({ error: 'nao_autorizado' }, { status: 401, headers });
-  return null;
-}
 
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 204, headers: cors(request) });
@@ -52,52 +27,16 @@ export async function OPTIONS(request: NextRequest) {
  * O servidor só guarda (offer_coupon_reads) e valida: preço com cupom precisa ser menor que o preço atual da oferta.
  * Mesma proteção das outras rotas assistidas (origem fixa, token; sem token = 503).
  */
-/** Fila: ofertas ativas do ML com link oficial cuja leitura de cupom está velha (> 90 min). O id do anúncio vem da API oficial (vendedor da oferta). ?n=20 */
+/**
+ * Fila de leitura (compatível com a aba atual: { items: [{ id, url }] }). Agora priorizada pelo Agente de Cupons (cupom na agulha):
+ * cupom já divulgado, mensagem pronta na fila, anúncio com cupom visto há pouco e só depois as demais (ver revalidation-queue.ts).
+ * Os campos extras (prioridade, motivo, ultima_leitura_min) são opcionais para a aba. ?n=20
+ */
 export async function GET(request: NextRequest) {
   const denied = guard(request);
   if (denied) return denied;
   const n = Math.min(Math.max(1, Number(new URL(request.url).searchParams.get('n') ?? 20) || 20), 40);
-  const rows = await db.execute<{ id: string; ref: string; item: string | null; seller: string | null; price: string }>(sql`
-    SELECT t.id, t.ref, t.item, t.seller, t.price FROM (
-      SELECT o.id::text AS id, o.external_ref AS ref, o.external_item_id AS item, s.external_seller_id AS seller, o.current_price_cents::text AS price,
-             row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn,
-             (SELECT max(r.read_at) FROM offer_coupon_reads r WHERE r.offer_id = o.id) AS last_read
-      FROM affiliate_offers o
-      JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
-      JOIN master_products m ON m.id = o.master_product_id
-      LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
-      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical AND o.current_price_cents > 0
-        AND o.affiliate_url LIKE 'https://meli.la/%' AND o.external_ref ~ '^MLB[0-9]+$'
-        AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
-    ) t
-    WHERE t.rn = 1 AND (t.last_read IS NULL OR t.last_read < now() - interval '90 minutes')
-    ORDER BY (EXISTS (SELECT 1 FROM group_messages g WHERE g.offer_id = t.id::uuid AND g.created_at > now() - interval '3 hours')) DESC, t.last_read NULLS FIRST LIMIT ${n}`);
-  const items: { id: string; url: string }[] = [];
-  let token: string | null = null;
-  for (const r of rows) {
-    let itemId = r.item && /^MLB\d{6,}$/.test(r.item) ? r.item : null;
-    if (!itemId) {
-      try {
-        token ??= await getValidAccessToken();
-        const res = await fetch(`https://api.mercadolibre.com/products/${r.ref}/items?limit=100`, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(8000) });
-        if (res.ok) {
-          const data = (await res.json()) as { results?: Array<{ item_id?: string; seller_id?: number | string; condition?: string | null; price?: number }> };
-          const list = Array.isArray(data.results) ? data.results.filter((x) => x.condition === 'new') : [];
-          // Por vendedor; sem vendedor gravado, só o anúncio de MESMO preço da oferta (o mesmo preço ao centavo identifica o mesmo anúncio).
-          const cents = Number(r.price);
-          const hit = (r.seller ? list.find((x) => x.seller_id != null && String(x.seller_id) === r.seller) : undefined) ?? list.find((x) => Math.round(Number(x.price) * 100) === cents);
-          if (hit?.item_id && /^MLB\d{6,}$/.test(hit.item_id)) {
-            itemId = hit.item_id;
-            await db.execute(sql`UPDATE affiliate_offers SET external_item_id = ${itemId} WHERE id = ${r.id}::uuid AND external_item_id IS NULL`);
-          }
-        }
-      } catch {
-        // sem id do anúncio: a oferta é pulada nesta rodada
-      }
-    }
-    // Mesma origem da aba logada (www): a página do catálogo com o anúncio escolhido embute o cupom daquele anúncio.
-    if (itemId) items.push({ id: r.id, url: `https://www.mercadolivre.com.br/p/${r.ref}?pdp_filters=item_id%3A${itemId}` });
-  }
+  const items = await resolverUrlsLeitura(await listarFilaRevalidacao(n));
   return NextResponse.json({ items }, { headers: cors(request) });
 }
 

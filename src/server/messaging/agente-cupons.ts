@@ -6,6 +6,7 @@ import type { AnnKind, CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import { lookupItemCoupon } from '@/server/messaging/coupon-item-lookup';
 import { lookupCampaignCoupon } from '@/server/messaging/campaign-coupon-lookup';
 import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
+import type { MissTrace } from '@/lib/coupons/agulha';
 
 /**
  * AGENTE DE CUPONS: consulta ÚNICA do motor de mensagens ("há cupom ativo e testado para esta oferta?") e registro da divulgação.
@@ -16,17 +17,39 @@ import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
 export type CouponSource = 'item' | 'campanha' | 'loja_categoria';
 export type ConsultedCoupon = CouponInfo & { source: CouponSource; couponRef: string; annKind: AnnKind };
 
-type Lookup = (offerId: string) => Promise<(CouponInfo & CouponRefMeta) | null>;
+type Lookup = (offerId: string, trace?: MissTrace) => Promise<(CouponInfo & CouponRefMeta) | null>;
 
 export interface ConsultaDeps {
   item?: Lookup;
   campanha?: Lookup;
   lojaCategoria?: Lookup;
   /** Auditoria (padrão: coupon_consults). Falha nunca derruba a consulta. */
-  audit?: (row: { offerId: string; found: boolean; source: CouponSource | null; couponRef: string | null }) => Promise<void>;
+  audit?: (row: ConsultAudit) => Promise<void>;
 }
 
-async function auditDb(row: { offerId: string; found: boolean; source: CouponSource | null; couponRef: string | null }): Promise<void> {
+export interface ConsultAudit {
+  offerId: string;
+  found: boolean;
+  source: CouponSource | null;
+  couponRef: string | null;
+  /** Por que NÃO saiu cupom (um item por etapa que descartou), ex.: item:sem_leitura | campanha:sem_codigo_do_dono_ativo. Vazio quando achou. */
+  missReason?: string | null;
+}
+
+/** Colunas miss_reason (migration 0041) ausentes => cai para o insert antigo e lembra, sem erro a cada consulta. */
+let hasMissColumn: boolean | null = null;
+
+async function auditDb(row: ConsultAudit): Promise<void> {
+  if (hasMissColumn !== false) {
+    try {
+      await db.execute(sql`INSERT INTO coupon_consults (offer_id, found, source, coupon_ref, miss_reason) VALUES (${row.offerId}::uuid, ${row.found}, ${row.source}, ${row.couponRef}, ${row.missReason ?? null})`);
+      hasMissColumn = true;
+      return;
+    } catch (e) {
+      if (!/miss_reason/.test(String((e as { message?: string })?.message ?? '') + String((e as { cause?: { message?: string } })?.cause?.message ?? ''))) throw e;
+      hasMissColumn = false;
+    }
+  }
   await db.execute(sql`INSERT INTO coupon_consults (offer_id, found, source, coupon_ref) VALUES (${row.offerId}::uuid, ${row.found}, ${row.source}, ${row.couponRef})`);
 }
 
@@ -37,8 +60,12 @@ export async function consultarCupom(offerId: string, deps: ConsultaDeps = {}): 
     ['loja_categoria', deps.lojaCategoria ?? lookupVerifiedCoupon, 'loja'],
   ];
   let result: ConsultedCoupon | null = null;
+  const misses: string[] = [];
   for (const [source, fn, defaultKind] of steps) {
-    const info = await fn(offerId).catch(() => null);
+    const info = await fn(offerId, (reason) => misses.push(`${source}:${reason}`.slice(0, 80))).catch(() => {
+      misses.push(`${source}:erro_na_consulta`);
+      return null;
+    });
     if (!info) continue;
     result = {
       ...info,
@@ -49,7 +76,7 @@ export async function consultarCupom(offerId: string, deps: ConsultaDeps = {}): 
     break;
   }
   try {
-    await (deps.audit ?? auditDb)({ offerId, found: !!result, source: result?.source ?? null, couponRef: result?.couponRef ?? null });
+    await (deps.audit ?? auditDb)({ offerId, found: !!result, source: result?.source ?? null, couponRef: result?.couponRef ?? null, missReason: result ? null : misses.join(' | ').slice(0, 300) || null });
   } catch {
     // auditoria é opcional
   }

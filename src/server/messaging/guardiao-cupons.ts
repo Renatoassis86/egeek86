@@ -20,6 +20,8 @@ import {
 } from '@/lib/coupons/guardiao-model';
 import { chatForStore, getStoreByVertical } from '@/server/stores';
 import { gravarCicloAgente, relatorioCupons, resumoRelatorio } from '@/server/messaging/agente-cupons';
+import { baixarCuponsParados } from '@/server/coupons/baixa';
+import { resumoSaude, saudeAgulha } from '@/server/coupons/agulha-health';
 
 /**
  * GUARDIÃO DE CUPONS (Agente de Cupons). A cada ~5 min (passo do cron group-messages): para cada cupom que JÁ DIVULGAMOS confere se
@@ -293,6 +295,8 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
       const last = await lastCycleAt();
       if (last && started.getTime() - last.getTime() < CYCLE_MIN_GAP_MS) return { skipped: 'ciclo recente' };
     }
+    // Baixa automática do inventário (prazo lido vencido; lista sem conferência há 12 h) ANTES do guardião, sem passo manual.
+    const baixa = await baixarCuponsParados(started).catch(() => null);
     const canSend = isGroupMessagesEnabled() && getGroupMessagesMode() === 'send' && !!process.env.TELEGRAM_BOT_TOKEN;
     const res = await rodarGuardiao({
       store: dbGuardiaoStore,
@@ -305,9 +309,12 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
       now: started,
     });
     const rel = await relatorioCupons(started);
+    // Cobertura na agulha: histórico a cada ~30 min (consulta mais pesada que o resto do ciclo).
+    const saude = started.getUTCMinutes() % 30 < 5 ? await saudeAgulha().then(resumoSaude).catch(() => ({})) : {};
     const meta = resumoRelatorio(rel, {
       verificados: res.checked, encerradosNoCiclo: res.ended.length, avisosEnviados: res.notified, avisosPulados: res.notifySkipped,
       divergenciasNoCiclo: res.divergencias.length, erros: res.errors, orcamentoEsgotado: res.budgetExhausted,
+      baixaVencidosPorPrazo: baixa?.vencidosPorPrazo ?? null, baixaSemConferencia: baixa?.rebaixadosSemConferencia ?? null, ...saude,
     });
     await gravarCicloAgente(meta, started, res.errors === 0);
     return meta;
