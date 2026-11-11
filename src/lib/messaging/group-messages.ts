@@ -229,6 +229,8 @@ export interface MsgOffer {
   confirmedAt: Date;
   /** Reputação do vendedor (só Mercado Livre, dado lido da API): entra na linha "Vendedor". */
   seller?: { reputation: string | null; totalSales: number | null } | null;
+  /** Link de afiliado do dono (meli.la, s.shopee, amazon com tag): aparece no TEXTO além do botão (o WhatsApp só tem o texto). */
+  affiliateUrl?: string | null;
 }
 export interface MsgAvg {
   cents: number;
@@ -594,9 +596,12 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
       : ['*Monitoramento*', ...mon].map((l) => `> ${l}`).join('\n')
     : null;
   // Telegram: o link vai no BOTÃO (reply_markup) e o texto não leva URL (sem pré-visualização truncada). WhatsApp: o link no texto.
-  const link = channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
+  // Link de afiliado no texto (Telegram e WhatsApp): o botão do Telegram continua, mas o WhatsApp só tem o texto (dono, 2026-11-11).
+  const buyUrl = o.affiliateUrl && /^https:\/\/[^\s<>"]+$/.test(o.affiliateUrl) ? o.affiliateUrl : null;
+  const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
-  return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, monBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+  const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
+  return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, link, monBlock, [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
 /** Indicador da Black Friday: só durante a campanha de novembro/2026; depois some e a mensagem volta ao padrão (dono, 2026-11-11). */
@@ -674,6 +679,13 @@ export function sellerLine(o: MsgOffer): string | null {
   const n = o.seller.totalSales ?? 0;
   const vendas = n >= 1000 ? `mais de ${Math.floor(n / 1000)} mil vendas` : n >= 100 ? `mais de ${Math.floor(n / 100) * 100} vendas` : null;
   return `reputação ${rep === '5_green' ? 'verde (nível máximo)' : 'verde-clara'}${vendas ? `, ${vendas}` : ''}`;
+}
+
+/** Slogan do rodapé (dono, 2026-11-11: a diferença do grupo é a informação para decidir). Configurável: GROUP_MESSAGES_SLOGAN. */
+export const DEFAULT_SLOGAN = 'Informação antes do preço.';
+export function getSlogan(env: Record<string, string | undefined> = process.env): string {
+  const raw = (env.GROUP_MESSAGES_SLOGAN ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 80);
+  return raw && !/afiliad/i.test(raw) ? raw : DEFAULT_SLOGAN;
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;

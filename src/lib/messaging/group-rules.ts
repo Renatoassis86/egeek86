@@ -213,6 +213,8 @@ export interface OfferFact {
   affiliateLinkPending: boolean;
   /** Link oficial de afiliado (meli.la) já gravado: o programa só gera link para vendedor amarelo ou melhor, então vale como reputação mínima. */
   officialLink?: boolean;
+  /** URL de afiliado da oferta (vai no texto da mensagem). */
+  affiliateUrl?: string | null;
   quarantined: boolean;
   /** Amazon: ausências seguidas na busca da coleta assistida (consecutive_miss_count). > 0 = fora dos gatilhos. */
   missCount?: number;
@@ -562,7 +564,7 @@ export function finish(
 }
 
 export function toMsgOffer(o: OfferFact) {
-  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date, seller: { reputation: o.sellerReputation, totalSales: o.sellerTotalSales } };
+  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date, seller: { reputation: o.sellerReputation, totalSales: o.sellerTotalSales }, affiliateUrl: o.affiliateUrl ?? null };
 }
 
 function humanReview(price: number, avg: number | null, dropPct: number | null, median: number | null): string[] {

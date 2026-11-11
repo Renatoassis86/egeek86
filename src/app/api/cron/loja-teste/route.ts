@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     FROM affiliate_offers o
     JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
     JOIN master_products m ON m.id = o.master_product_id
-    WHERE m.vertical = ${vertical} AND o.vertical = m.vertical AND (m.attributes->'catalogGate'->>'verdict') = 'approved'
+    WHERE m.vertical = ${vertical} AND o.vertical = m.vertical AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
       AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND COALESCE(o.affiliate_url, '') <> ''
     ORDER BY o.master_product_id, o.current_price_cents ASC
     LIMIT 20`);
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
         name: card.title,
         title: card.title,
         meta: null,
-        offer: { slug: r.slug, networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: card.priceCents, confirmedAt: card.checkedAt },
+        offer: { slug: r.slug, networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: card.priceCents, confirmedAt: card.checkedAt, affiliateUrl: r.url },
         avg: { cents: card.stats.avgCents, offers: card.stats.distinctOffers },
         seriesDays: card.stats.measuredDays,
         refCents: card.stats.recordCents,

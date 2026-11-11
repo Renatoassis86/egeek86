@@ -501,7 +501,7 @@ ok(!!bq && bq[1].startsWith('<b>Monitoramento</b>') && tg.indexOf('Monitoramento
 ok(!tg.includes('/go/') && !tg.includes('<a '), 'Telegram sem URL no texto (o link vai no botão inline)');
 ok(tg.includes('• <b>Vendedor:</b> reputação verde'), 'tópico do vendedor ML (reputação verde)');
 const tgLines = tg.split('\n');
-ok(tgLines[tgLines.length - 1] === '<i>Conferido em 11/11 às 10:50 (Brasília). #publicidade</i>', 'última linha: itálico com carimbo e #publicidade', tgLines[tgLines.length - 1]);
+ok(tgLines[tgLines.length - 2] === '<i>Conferido em 11/11 às 10:50 (Brasília). #publicidade</i>' && tgLines[tgLines.length - 1] === '<i>Espaço Geek 86 · Informação antes do preço.</i>', 'rodapé: carimbo com #publicidade e, por último, o slogan', tgLines.slice(-2));
 ok(countEmojis(tg) <= MAX_EMOJIS_PER_MESSAGE && !countEmojis(lines[0]), 'no máximo 2 emojis e nenhum no título', countEmojis(tg));
 ok(tg.length < TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024) e no limite (4096)', tg.length);
 ok(textProblems(tg, 'tg').length === 0 && !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off/i.test(tg), 'barreira de texto limpa, sem previsão, de/por ou % OFF');
@@ -531,7 +531,7 @@ const cp: CouponInfo = { code: 'GEEK10', conditions: 'R$ 10 acima de R$ 80', exp
 const withCp = withCouponBlock(tg, cp, 'tg', NOW);
 const cl = withCp.split('\n');
 const iCoupon = cl.findIndex((l) => l.includes('CUPOM:'));
-ok(iCoupon > 0 && cl[iCoupon].includes('<code>GEEK10</code>') && cl.findIndex((l) => l.startsWith('• ')) > iCoupon && cl[cl.length - 1].startsWith('<i>Conferido'), 'cupom: destaque logo abaixo do preço, antes dos tópicos, rodapé continua por último', withCp);
+ok(iCoupon > 0 && cl[iCoupon].includes('<code>GEEK10</code>') && cl.findIndex((l) => l.startsWith('• ')) > iCoupon && cl[cl.length - 2].startsWith('<i>Conferido'), 'cupom: destaque logo abaixo do preço, antes dos tópicos, rodapé continua por último', withCp);
 ok(countEmojis(withCp) <= MAX_EMOJIS_PER_MESSAGE, 'com cupom: ainda no máximo 2 emojis', countEmojis(withCp));
 ok(withCouponBlock(tg, { ...cp, expiresAt: new Date(NOW.getTime() - MIN).toISOString() }, 'tg', NOW) === tg, 'cupom vencido: mensagem sai sem cupom');
 // Amazon: carimbo e sem média das outras lojas

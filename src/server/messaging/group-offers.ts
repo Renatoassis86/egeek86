@@ -319,7 +319,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
              COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.quarantined_at,
              -- ML só sai em mensagem com o link OFICIAL de afiliado (meli.la); sem ele a oferta fica de fora do envio (dono, 2026-11-11)
              (o.affiliate_link_pending OR (n.slug = 'mercado-livre' AND COALESCE(o.affiliate_url, '') NOT LIKE 'https://meli.la/%')) AS affiliate_link_pending,
-             (COALESCE(o.affiliate_url, '') LIKE 'https://meli.la/%') AS official_link,
+             (COALESCE(o.affiliate_url, '') LIKE 'https://meli.la/%') AS official_link, o.affiliate_url,
              o.consecutive_miss_count AS miss_count
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
@@ -371,6 +371,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       priceSince: r.price_since ? new Date(r.price_since as string | Date) : null,
       affiliateLinkPending: r.affiliate_link_pending === true,
       officialLink: r.official_link === true,
+      affiliateUrl: (r.affiliate_url as string | null) ?? null,
       quarantined: r.quarantined_at != null,
       missCount: r.miss_count == null ? 0 : Number(r.miss_count),
       returnedAt: returnedBy.get(String(r.id)) ?? null,
