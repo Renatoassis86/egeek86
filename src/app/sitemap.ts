@@ -19,6 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/ofertas`, changeFrequency: 'hourly', priority: 0.9 },
     { url: `${base}/tabela-de-precos`, changeFrequency: 'daily', priority: 0.8 },
     { url: `${base}/noticias`, changeFrequency: 'daily', priority: 0.7 },
+    { url: `${base}/plus`, changeFrequency: 'daily', priority: 0.6 },
   ];
 
   // Falha de consulta NÃO vira sitemap parcial/vazio: o erro sobe, o Next mantém o último sitemap

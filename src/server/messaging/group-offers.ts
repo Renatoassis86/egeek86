@@ -1,4 +1,5 @@
 import 'server-only';
+import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
@@ -454,7 +455,8 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     const maybeMed = offs.length >= 3 && cheapestMain > 0 && stateAvg != null && cheapestMain <= stateAvg && (seriesBy.get(id)?.main.length ?? 0) >= RULES.MED_MIN_SERIES_DAYS - 1;
     // PRICE_AMAZON_MODE=on: a Amazon também compara com a média única, então produto com oferta Amazon precisa dela (games).
     const needsAmzAvg = amazonCountsIn(o.amazonMode, String(p.vertical)) && offs.some((x) => /amazon/i.test(x.networkSlug));
-    if (hasMove || maybeMed || needsAmzAvg) {
+    // Fase de formação (lojas que não são games, antes da data de corte): a média simples sai das ofertas já carregadas, dentro do avaliador; não precisa da consulta de série.
+    if (!emFaseDeFormacao(String(p.vertical), o.now) && (hasMove || maybeMed || needsAmzAvg)) {
       const days = await loadPeriodDays(db, id, from, today);
       const pm = computePeriodMetrics(days, null);
       if (pm.avgOfferDayCents != null) {

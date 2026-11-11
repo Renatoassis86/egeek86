@@ -60,7 +60,8 @@ export interface CollectVerticalSummary {
 const MELI_SLUG = 'mercado-livre';
 const MAX_CONSECUTIVE_MISSES = 3; // mesma regra do coletor gamer
 const CATALOG_CONCURRENCY = 3;
-const DEFAULT_MAX_CALLS = 150;
+// 2026-11-11 (fase de formação das lojas que não são games): 150 -> 240 chamadas por execução; o orçamento de 240 s continua parando antes se preciso.
+const DEFAULT_MAX_CALLS = 240;
 const DEFAULT_BUDGET_MS = 240_000;
 
 function emptySummary(vertical: string, extra: Partial<CollectVerticalSummary> = {}): CollectVerticalSummary {

@@ -59,6 +59,11 @@ export function fmtBRL(cents: number): string {
 /** Amostra mínima para AFIRMAR "X% abaixo da média das lojas" (dono, 2026-11-11, caso PS5: média de 3 anúncios com pacotes enganou). Abaixo disso a mensagem sai sem comparar com a média. */
 export const MIN_AVG_OFFERS_CLAIM = 5;
 
+/** Amostra pequena (< MIN_AVG_OFFERS_CLAIM ofertas, fora a mediana do próprio ASIN): o texto mostra a média simples, mas NUNCA afirma "% abaixo" nem "abaixo da média". */
+export function amostraPequena(avg: { offers: number; scope?: string } | null | undefined): boolean {
+  return !!avg && avg.scope !== 'own' && avg.offers < MIN_AVG_OFFERS_CLAIM;
+}
+
 export function pctBelow(priceCents: number, avgCents: number): number {
   if (avgCents <= 0) return 0;
   return Math.round(((avgCents - priceCents) / avgCents) * 100);
@@ -466,7 +471,9 @@ function storySentences(input: OfferMessageInput, amz: boolean): string[] {
   const price = o.priceCents;
   const net = o.networkName;
   const avg = !amz ? input.avg : null;
-  const avgSentence = avg
+  const avgSentence = avg && amostraPequena(avg)
+    ? `A média simples das ${avg.offers} ofertas ativas hoje é ${fmtBRL(avg.cents)} (amostra pequena, sem comparação em percentual).`
+    : avg
     ? price < avg.cents
       ? `A média das ${avg.offers} ofertas ativas é ${fmtBRL(avg.cents)}; este preço fica ${fmtBRL(avg.cents - price)} (${pct1(((avg.cents - price) / avg.cents) * 100)}%) abaixo dela.`
       : `A média das ${avg.offers} ofertas ativas é ${fmtBRL(avg.cents)}; este preço está no nível dela.`
@@ -476,8 +483,9 @@ function storySentences(input: OfferMessageInput, amz: boolean): string[] {
   if (input.model === 'media') {
     const since = input.sinceDay ? fmtDay(dayToDate(input.sinceDay)) : null;
     const below = ((input.avg.cents - price) / input.avg.cents) * 100;
-    const s1 =
-      below > 0.05
+    const s1 = amostraPequena(input.avg)
+      ? `${theNetwork(net)} está com ${fmtBRL(price)}. A média simples das ${input.avg.offers} ofertas ativas hoje é ${fmtBRL(input.avg.cents)} (amostra pequena, sem comparação em percentual).`
+      : below > 0.05
         ? `${theNetwork(net)} está com ${fmtBRL(price)}, ${pct1(below)}% abaixo da média de ${fmtBRL(input.avg.cents)} das ${input.avg.offers} ofertas ativas.`
         : `${theNetwork(net)} está com ${fmtBRL(price)}, no nível da média de ${fmtBRL(input.avg.cents)} das ${input.avg.offers} ofertas ativas.`;
     // Série pequena é permitida (dono, 2026-11-11), mas o texto SEMPRE diz a série e não afirma tendência com menos de 3 dias.
@@ -528,13 +536,14 @@ function variationParts(input: OfferMessageInput, amz: boolean): string[] {
     if ((m.kind === 'OK2' || m.kind === 'T1') && m.prevCents != null && m.prevCents > price) {
       out.push(`queda de ${pct1(((m.prevCents - price) / m.prevCents) * 100)}% vs ontem`);
     }
-    if (!amz && input.avg && input.avg.cents > price) out.push(`${fmtBRL(input.avg.cents - price)} abaixo da média (${fmtBRL(input.avg.cents)})`);
+    if (!amz && input.avg && !amostraPequena(input.avg) && input.avg.cents > price) out.push(`${fmtBRL(input.avg.cents - price)} abaixo da média (${fmtBRL(input.avg.cents)})`);
     if (m.kind === 'OK1') out.push(`novo menor registrado (antes ${fmtBRL(m.refCents)})`);
     else if (price < m.refCents) out.push(`${pct1(((m.refCents - price) / m.refCents) * 100)}% abaixo do menor registrado (${fmtBRL(m.refCents)})`);
     else if (price === m.refCents) out.push('igual ao menor registrado');
     else out.push(`${pct1(((price - m.refCents) / m.refCents) * 100)}% acima do menor registrado (${fmtBRL(m.refCents)})`);
   } else {
-    if (input.avg.cents > price) out.push(`${fmtBRL(input.avg.cents - price)} abaixo da média (${fmtBRL(input.avg.cents)})`);
+    if (amostraPequena(input.avg)) out.push(`média simples de ${input.avg.offers} ofertas: ${fmtBRL(input.avg.cents)}`);
+    else if (input.avg.cents > price) out.push(`${fmtBRL(input.avg.cents - price)} abaixo da média (${fmtBRL(input.avg.cents)})`);
     else out.push(`no nível da média (${fmtBRL(input.avg.cents)})`);
     const ref = input.refCents;
     if (ref != null) {
@@ -588,6 +597,8 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
           : topic(f, label, `${pct1((-gap / refAvg.cents) * 100)}% acima; ${word} ${fmtBRL(refAvg.cents)}`)
     );
   }
+  // Amostra pequena (fase de formação): mostra o valor da média simples e o tamanho da amostra, SEM percentual e sem dizer "abaixo".
+  else if (!amz && refAvgAll && amostraPequena(refAvgAll)) topics.push(topic(f, 'Média simples', `${fmtBRL(refAvgAll.cents)} (${refAvgAll.offers} ofertas ativas; amostra pequena)`));
   if (input.model === 'movimento' && (input.move.kind === 'OK2' || input.move.kind === 'T1') && input.move.prevCents != null && input.move.prevCents > price) {
     topics.push(topic(f, 'Variação', `${pct1(((input.move.prevCents - price) / input.move.prevCents) * 100)}% a menos que ontem (${fmtBRL(input.move.prevCents)})`));
   }
@@ -683,6 +694,7 @@ function leituraLine(input: OfferMessageInput, amz: boolean): string {
   const price = input.offer.priceCents;
   const scope = amz ? ' da Amazon' : '';
   if (input.model === 'media') {
+    if (amostraPequena(input.avg)) return `Média simples das ${input.avg.offers} ofertas ativas hoje: ${fmtBRL(input.avg.cents)} (amostra pequena).`;
     return input.avg.cents > price ? `Preço abaixo da média das ${input.avg.offers} ofertas ativas.` : `Preço no nível da média das ${input.avg.offers} ofertas ativas.`;
   }
   const m = input.move;
@@ -833,7 +845,7 @@ function prefix(i: Common, f: Fmt): string {
 }
 
 function avgLine(f: Fmt, price: number, avg: MsgAvg | null | undefined): string | null {
-  if (!avg || avg.cents <= price) return null;
+  if (!avg || avg.cents <= price || amostraPequena(avg)) return null;
   return `${pctBelow(price, avg.cents)}% abaixo da média de ${fmtBRL(avg.cents)} (${avg.offers} ofertas).`;
 }
 
@@ -860,7 +872,9 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       const o = input.offer;
       lines.push(
         `${pre}${f.b(input.name)}`,
-        `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}, ${pctBelow(o.priceCents, input.avg.cents)}% abaixo da média de ${fmtBRL(input.avg.cents)} (${input.avg.offers} ofertas).`,
+        amostraPequena(input.avg)
+          ? `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}. Média simples de ${input.avg.offers} ofertas: ${fmtBRL(input.avg.cents)}.`
+          : `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}, ${pctBelow(o.priceCents, input.avg.cents)}% abaixo da média de ${fmtBRL(input.avg.cents)} (${input.avg.offers} ofertas).`,
         conferidoLine(o.confirmedAt),
         withTag(channel === 'tg' ? f.link(buildGoLink(o.slug, 'tg', input.messageKey), 'Ver a oferta') : buildGoLink(o.slug, 'wa', input.messageKey), input.adTag)
       );
@@ -871,7 +885,7 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       guardNetwork(input.other);
       const c = input.cheap;
       const o = input.other;
-      const avg = input.avg && input.avg.cents > c.priceCents ? input.avg : null;
+      const avg = input.avg && input.avg.cents > c.priceCents && !amostraPequena(input.avg) ? input.avg : null;
       const stamp = c.confirmedAt.getTime() <= o.confirmedAt.getTime() ? c.confirmedAt : o.confirmedAt;
       // Por tópicos (dono, 2026-11-11). Telegram: o link vai no botão; WhatsApp: link da oferta mais barata no texto.
       const ital = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);

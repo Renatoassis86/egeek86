@@ -57,6 +57,7 @@ import { PLATFORM_SHORT } from '@/components/search/platform-short';
 import { GamerSurvey } from '@/components/home/gamer-survey';
 import { Package, Store, Layers, LineChart, TrendingDown as TrendingDownIcon } from 'lucide-react';
 import { StatTile } from '@/components/ui/stat-tile';
+import { SecaoPlusHome } from '@/components/plus/secao-plus-home';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,6 +98,9 @@ export default async function HomePage() {
       <CategoriesSection />
       <Suspense fallback={null}>
         <SalesHighlights />
+      </Suspense>
+      <Suspense fallback={null}>
+        <SecaoPlusHome />
       </Suspense>
       <SurveySection surveyData={surveyData} />
       <IndicatorsSection metrics={metrics} />

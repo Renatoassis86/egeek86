@@ -95,6 +95,8 @@ export interface CartaoDepartamento extends MasterIdentidadeInput {
   /** Só preenchida com MIN_VENDEDORES_MEDIANA ou mais vendedores do Mercado Livre. */
   medianaCents: number | null;
   verificadoEm: string;
+  /** Nome da rede (Mercado Livre, Shopee) onde está o menor preço. */
+  lojaMenor: string | null;
 }
 
 export interface PaginaDepartamento {
@@ -108,7 +110,7 @@ interface RowLista extends Record<string, unknown> {
   id: string; slug: string; name: string; gtin: string | null; mpn: string | null; manufacturer: string | null;
   cat: Record<string, unknown> | null; imagem: string | null;
   min_cents: string | number; vendedores: string | number; vendedores_ml: string | number; mediana: string | number | null;
-  verificado_em: Date | string; total: string | number;
+  verificado_em: Date | string; loja_menor?: string | null; total: string | number;
 }
 
 function mapCartao(r: RowLista): CartaoDepartamento {
@@ -126,16 +128,30 @@ function mapCartao(r: RowLista): CartaoDepartamento {
     vendedoresMl: Number(r.vendedores_ml),
     medianaCents: r.mediana === null || r.mediana === undefined ? null : Math.round(Number(r.mediana)),
     verificadoEm: new Date(r.verificado_em).toISOString(),
+    lojaMenor: r.loja_menor ?? null,
   };
 }
 
+export const ORDENS_DEPARTAMENTO = ['menor', 'maior', 'nome', 'vendedores'] as const;
+export type OrdemDepartamento = (typeof ORDENS_DEPARTAMENTO)[number];
+export function normalizarOrdem(v: unknown): OrdemDepartamento {
+  return (ORDENS_DEPARTAMENTO as readonly string[]).includes(v as string) ? (v as OrdemDepartamento) : 'menor';
+}
+
 /** Lista paginada (24 por página) com busca interna por nome, ordenada pelo menor preço. */
-export async function listarDepartamento(vertical: string, opts: { pagina?: number; q?: string | null } = {}): Promise<PaginaDepartamento> {
+export async function listarDepartamento(vertical: string, opts: { pagina?: number; q?: string | null; ordem?: OrdemDepartamento } = {}): Promise<PaginaDepartamento> {
   assertDepartamento(vertical);
   const pagina = Math.max(1, Math.min(500, Math.trunc(opts.pagina ?? 1) || 1));
   const termos = termosBusca(opts.q);
   const busca = termos.length ? sql.join(termos.map((t) => sql`AND m.name ILIKE ${'%' + t + '%'}`), sql` `) : sql``;
   const minV = sql.raw(String(MIN_VENDEDORES_MEDIANA));
+  // Ordenação de uma lista fixa (sem texto livre no SQL).
+  const ordem = normalizarOrdem(opts.ordem);
+  const ordemSql =
+    ordem === 'maior' ? sql`ORDER BY MIN(sb.current_price_cents) DESC, m.name ASC`
+    : ordem === 'nome' ? sql`ORDER BY m.name ASC`
+    : ordem === 'vendedores' ? sql`ORDER BY COUNT(*) DESC, MIN(sb.current_price_cents) ASC, m.name ASC`
+    : sql`ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC`;
   const rows = await db.execute<RowLista>(sql`
     WITH ${departamentoClicaveisCtes(vertical)}
     SELECT m.id, m.slug, m.name, m.gtin, m.mpn, m.manufacturer,
@@ -147,12 +163,13 @@ export async function listarDepartamento(vertical: string, opts: { pagina?: numb
            CASE WHEN COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre') >= ${minV}
                 THEN percentile_cont(0.5) WITHIN GROUP (ORDER BY sb.current_price_cents) FILTER (WHERE sb.network_slug = 'mercado-livre') END AS mediana,
            (array_agg(sb.last_checked_at ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS verificado_em,
+           (array_agg(sb.network_name ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS loja_menor,
            COUNT(*) OVER () AS total
     FROM seller_best sb
     INNER JOIN master_products m ON m.id = sb.master_product_id
     WHERE ${verticalSql('m', vertical)} ${busca}
     GROUP BY m.id
-    ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC
+    ${ordemSql}
     LIMIT ${POR_PAGINA} OFFSET ${(pagina - 1) * POR_PAGINA}
   `);
   // COUNT(*) OVER () conta os grupos? Não: é avaliado depois do GROUP BY, então é o total de masters. Página fora do alcance => total 0 aqui.
@@ -198,6 +215,7 @@ export async function detalheDepartamento(vertical: string, slug: string): Promi
            CASE WHEN COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre') >= ${sql.raw(String(MIN_VENDEDORES_MEDIANA))}
                 THEN percentile_cont(0.5) WITHIN GROUP (ORDER BY sb.current_price_cents) FILTER (WHERE sb.network_slug = 'mercado-livre') END AS mediana,
            (array_agg(sb.last_checked_at ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS verificado_em,
+           (array_agg(sb.network_name ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS loja_menor,
            1 AS total
     FROM seller_best sb
     INNER JOIN master_products m ON m.id = sb.master_product_id

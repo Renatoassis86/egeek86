@@ -79,6 +79,23 @@ export async function departamentosVisiveis(ehAdmin: boolean): Promise<Departame
   return DEPARTAMENTOS.filter((d) => estadoPermiteVer(s.estados.get(d.slug) ?? 'fechado', ehAdmin));
 }
 
+export interface ResumoDepartamento {
+  slug: string;
+  estado: EstadoDepartamento;
+  /** Produtos aprovados com oferta clicável (0 quando a flag está desligada: a contagem nem é feita). */
+  produtos: number;
+}
+
+/** Estado e contagem de todos os departamentos (vitrine Plus). Falha de leitura => tudo fechado, sem contagem. */
+export async function resumoDepartamentos(): Promise<ResumoDepartamento[]> {
+  const s = await snapshot();
+  return DEPARTAMENTOS.map((d) => ({
+    slug: d.slug,
+    estado: s.estados.get(d.slug) ?? 'fechado',
+    produtos: s.contagens.get(d.slug) ?? 0,
+  }));
+}
+
 export async function departamentoVisivel(slug: string, ehAdmin: boolean): Promise<Departamento | null> {
   const d = departamentoPorSlug(slug);
   if (!d) return null;

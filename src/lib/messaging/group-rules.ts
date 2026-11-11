@@ -16,6 +16,7 @@ import {
   type RenderedGroupMessage,
 } from '@/lib/messaging/group-messages';
 import { AMAZON_OWN_MIN_DAYS, amazonCountsIn, type AmazonMode } from '@/lib/pricing/amazon-mode';
+import { emFaseDeFormacao, mediaSimples, minLojas } from '@/lib/messaging/fase-formacao';
 
 // ---------------------------------------------------------------------------
 // Limiares (medidos e decididos na ata)
@@ -26,7 +27,7 @@ export const RULES = {
   /** G1/G2/G3: abaixo da média mínimo. */
   /** Régua de preço (dono, 2026-11-11): só se envia mensagem de preço quando a cotação do dia está pelo menos este % ABAIXO da média única oferta-dia (era 15). */
   MIN_BELOW_AVG_PCT: 10,
-  /** Fase de formação de amostra (dono, 2026-11-11): nas lojas que não são Games, enquanto a média do produto não é robusta (avg.eligible = >=3 ofertas, >=5 oferta-dias, >=14 dias), basta o preço estar abaixo da média (qualquer % > este piso). A régua de 10% volta SOZINHA quando o produto ganha amostra. */
+  /** Fase de formação de amostra (dono, 2026-11-11): nas lojas que não são Games, ANTES da data de corte (fase-formacao.ts: DATA_DE_CORTE_FORMACAO), basta o preço estar abaixo da média simples (qualquer % > este piso). Na data de corte a régua de 10% entra SOZINHA. */
   EARLY_MIN_BELOW_AVG_PCT: 0.1,
   /** Acima disso fica RETIDO (nunca sai sozinho). Onda 2: > 45% contra a média (era 40%). */
   REVIEW_ABOVE_BELOW_AVG_PCT: 45,
@@ -222,6 +223,11 @@ export interface OfferFact {
   /** Nome da loja/vendedor da oferta (store_name da Shopee/Amazon; apelido do vendedor no ML). */
   storeName?: string | null;
   quarantined: boolean;
+  /**
+   * Identidade do item na fila de classificação (ata 2026-11-11-time-identidade-itens). Ausente = certa/não avaliada (comportamento de sempre).
+   * 'incerta' em loja que não é games, durante a fase de formação: o item fica FORA da média simples e não é escolhido para mensagem.
+   */
+  identidade?: 'certa' | 'incerta';
   /** Amazon: ausências seguidas na busca da coleta assistida (consecutive_miss_count). > 0 = fora dos gatilhos. */
   missCount?: number;
   /** Amazon: primeira observação depois de uma ausência (group_offer_watch). null = nunca sumiu / sem registro. */
@@ -539,10 +545,13 @@ function relaxShopee(reasons: string[], primary: OfferFact, dropPct: number | nu
   return reasons.filter((r) => r !== SHOPEE_REVIEW_REASON);
 }
 
-/** Régua efetiva de % abaixo da média: 10 (ou o valor do contexto); nas lojas novas sem amostra robusta, só o piso EARLY. Games mantém sempre a régua cheia. */
-export function effectiveMinBelow(p: Pick<ProductFacts, 'vertical' | 'avg'>, ctxMin?: number): number {
+/**
+ * Régua efetiva de % abaixo da média: 10 (ou o valor do contexto). Nas lojas que não são Games, ANTES da data de corte
+ * (emFaseDeFormacao), só o piso EARLY ("abaixo da média"). Games e, depois da data de corte, todas: régua cheia, sem deploy.
+ */
+export function effectiveMinBelow(p: Pick<ProductFacts, 'vertical'>, ctxMin: number | undefined, now: Date): number {
   const base = ctxMin ?? RULES.MIN_BELOW_AVG_PCT;
-  if (base > 0 && p.vertical !== 'games' && !(p.avg && p.avg.eligible)) return Math.min(base, RULES.EARLY_MIN_BELOW_AVG_PCT);
+  if (base > 0 && emFaseDeFormacao(p.vertical, now)) return Math.min(base, RULES.EARLY_MIN_BELOW_AVG_PCT);
   return base;
 }
 
@@ -579,7 +588,7 @@ export function finish(
   // Régua de 10% (dono, 2026-11-11): mensagem de preço (alerta, insight, radar) só com preço >= 10% abaixo da média única.
   const priceClass = (base.cls ?? TRIGGER_CLASS[trigger]) as MessageClass;
   const belowAvgPct = base.avgCents != null && base.avgCents > 0 ? ((base.avgCents - base.primary.priceCents) / base.avgCents) * 100 : null;
-  const minBelow = effectiveMinBelow(p, ctx.minBelowAvgPct);
+  const minBelow = effectiveMinBelow(p, ctx.minBelowAvgPct, ctx.now);
   const belowRule =
     minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
       ? `abaixo_da_media_menos_de_${minBelow}pct`
@@ -689,7 +698,7 @@ export function evaluateProduct(p: ProductFacts, ctx: EvalContext): { candidates
     else if (!avg) stop('G1', ['sem_media_elegivel']);
     else if (stores < RULES.MIN_STORES) stop('G1', [`lojas_${stores}_abaixo_de_${RULES.MIN_STORES}`]);
     else if (!p.record) stop('G1', ['sem_primeiro_evento_para_dizer_desde_quando']);
-    else if (pctBelow(holder.o.priceCents, avg.cents) < effectiveMinBelow(p, ctx.minBelowAvgPct)) stop('G1', ['abaixo_da_media_insuficiente']);
+    else if (pctBelow(holder.o.priceCents, avg.cents) < effectiveMinBelow(p, ctx.minBelowAvgPct, ctx.now)) stop('G1', ['abaixo_da_media_insuficiente']);
     else {
       const o = holder.o;
       const trigger: Trigger = asG6 ? 'G6' : 'G1';
@@ -723,7 +732,7 @@ export function evaluateProduct(p: ProductFacts, ctx: EvalContext): { candidates
     else {
       const pct = pctBelow(best.o.priceCents, avg.cents);
       const raw = ((avg.cents - best.o.priceCents) / avg.cents) * 100;
-      if (raw < effectiveMinBelow(p, ctx.minBelowAvgPct)) stop('G2', [`abaixo_da_media_${raw.toFixed(1)}pct_menor_que_${effectiveMinBelow(p, ctx.minBelowAvgPct)}pct`]);
+      if (raw < effectiveMinBelow(p, ctx.minBelowAvgPct, ctx.now)) stop('G2', [`abaixo_da_media_${raw.toFixed(1)}pct_menor_que_${effectiveMinBelow(p, ctx.minBelowAvgPct, ctx.now)}pct`]);
       else {
         const o = best.o;
         const trigger: Trigger = asG6 ? 'G6' : 'G2';
@@ -998,11 +1007,24 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
   const nm = nameOf(p);
   const today = spDayStr(ctx.now);
   const jopts: JudgeOptions = { allowAmazon: true, amazonMaxAgeMin: ctx.amazonMaxAgeMin, amazonPaused: ctx.amazonPaused };
-  const verdicts = p.offers.map((o) => ({ o, v: judgeOffer(o, p, ctx.now, ctx.maxAgeMin, jopts) }));
+  // FASE DE FORMAÇÃO (dono, 2026-11-11; fase-formacao.ts): lojas que não são games, antes da data de corte.
+  const formacao = emFaseDeFormacao(p.vertical, ctx.now);
+  // Identidade 'incerta' (fila de classificação): na formação o item sai de tudo (média simples, preço mais baixo, escolha da oferta) até ser resolvido.
+  const verdicts = p.offers
+    .filter((o) => !(formacao && o.identidade === 'incerta'))
+    .map((o) => ({ o, v: judgeOffer(o, p, ctx.now, ctx.maxAgeMin, jopts) }));
   const stores = countStores(verdicts.filter((x) => x.v.kind !== 'block').map((x) => x.o));
+  const minStores = minLojas(p.vertical, ctx.now, RULES.MIN_STORES);
   const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon').map((o) => o.priceCents));
-  // Média do V2: a mesma do selo, mas com o critério do dono (>= 3 ofertas e >= 3 dias de série medida), não os 14 dias do selo.
-  const avg = p.avg && p.avg.cents > 0 && p.avg.distinctOffers >= RULES.MED_MIN_OFFERS && p.avg.spanDays >= RULES.MED_MIN_SERIES_DAYS ? p.avg : null;
+  // Média do V2. Games e depois da corte: a mesma do selo (oferta-dia), com o critério do dono (>= 3 ofertas e >= 1 dia de série medida).
+  // Formação: MÉDIA SIMPLES das ofertas ativas (uma por oferta; sem série, sem 14 dias), sem Amazon, sem condição/região/edição
+  // diferente no título (Open Box fora) e sem identidade incerta; mínimo de 3 ofertas dentro da faixa de plausibilidade.
+  let avg: ProductFacts['avg'] = p.avg && p.avg.cents > 0 && p.avg.distinctOffers >= RULES.MED_MIN_OFFERS && p.avg.spanDays >= RULES.MED_MIN_SERIES_DAYS ? p.avg : null;
+  if (formacao) {
+    const base = p.offers.filter((o) => netKind(o) !== 'amazon' && netKind(o) !== 'other' && !o.quarantined && o.priceCents > 0 && o.identidade !== 'incerta' && titleIdentityBlock(o.title, p.masterName) == null);
+    const ms = mediaSimples(base.map((o) => o.priceCents));
+    avg = ms ? { cents: ms.cents, distinctOffers: ms.ofertas, offerDays: ms.ofertas, spanDays: 0, eligible: false } : null;
+  }
   const released = RELEASED_VERTICALS.includes(p.vertical);
 
   for (const isAmz of [false, true]) {
@@ -1025,8 +1047,8 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
       continue;
     }
     // Amazon-only (PRICE_AMAZON_MODE=on): o produto não tem outra loja; a régua é a do próprio ASIN, então o piso de 3 lojas não se aplica.
-    if (stores < RULES.MIN_STORES && !(amzIn && p.amazonOnly)) {
-      stop([`lojas_${stores}_abaixo_de_${RULES.MIN_STORES}`]);
+    if (stores < minStores && !(amzIn && p.amazonOnly)) {
+      stop([`lojas_${stores}_abaixo_de_${minStores}`]);
       continue;
     }
     if (!released) {
@@ -1052,7 +1074,7 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
         meta: parts.meta,
         offer: toMsgOffer(o),
         avg: { cents: Math.round(avg.cents), offers: avg.distinctOffers, ...(amzIn ? { scope: p.amazonOnly ? ('amazon' as const) : ('market' as const) } : {}) },
-        seriesDays: avg.spanDays,
+        seriesDays: formacao ? Math.max(1, (series?.length ?? 0) + 1) : avg.spanDays, // formação: dias reais medidos do produto (a média simples não tem série)
         refCents,
         sinceDay: series?.[0]?.day ?? daysBefore(today, Math.max(0, avg.spanDays - 1)),
         ind: priceIndicators(series, o.priceCents),

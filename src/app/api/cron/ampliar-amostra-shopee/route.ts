@@ -1,14 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
+import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 import { db } from '@/lib/db';
 import { parseParametrosRota } from '@/lib/affiliate/ampliar-amostra-params';
 import { ampliarAmostraShopee, desfazerRun, type Sql } from '@/server/collector/ampliar-amostra-shopee';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300; // Pro (mesmo teto de collect-shopee); era 60
 
-/** Para de abrir trabalho novo aos 48 s (sobram 12 s para fechar o registro em collector_runs). */
-const ORCAMENTO_MS = 48_000;
+/** Para de abrir trabalho novo aos 240 s (sobram 60 s para fechar o registro em collector_runs). Era 48 s de 60. */
+const ORCAMENTO_MS = 240_000;
 const MAX_PARES_NA_RESPOSTA = 40;
 
 /**
@@ -18,9 +19,9 @@ const MAX_PARES_NA_RESPOSTA = 40;
  * chave errada/ausente = 401). GET.
  *
  *   ?vertical=esporte[,livros]   obrigatorio (eletrodomesticos|eletroeletronicos|esporte|impressao3d|livros|tecnologia)
- *   &limitMasters=15             masters por vertical (padrao 15, maximo 40)
+ *   &limitMasters=30             masters por vertical (padrao 30, maximo 80)
  *   &offset=0                    pula os N primeiros elegiveis (use proximoOffset da resposta anterior)
- *   &maxCalls=90                 teto de chamadas a Shopee nesta rodada (padrao 90, maximo 150)
+ *   &maxCalls=200                teto de chamadas a Shopee nesta rodada (padrao 200, maximo 450; tambem limitado pelo teto horario de 3000 deste job)
  *   &apply=1                     GRAVA (sem isso e dry-run); registro de reversao em collector_runs.meta
  *   ?rollback=<run_id>&apply=1   apaga so as ofertas criadas por aquele run (e suas cotacoes); sem apply so conta. Nunca toca masters.
  */
@@ -34,8 +35,12 @@ function authorized(request: NextRequest): 'ok' | 'desligado' | 'negado' {
 
 export async function GET(request: NextRequest) {
   const auth = authorized(request);
-  if (auth === 'desligado') return NextResponse.json({ error: 'desligado' }, { status: 503 });
-  if (auth === 'negado') return NextResponse.json({ error: 'nao_autorizado' }, { status: 401 });
+  if (auth !== 'ok') {
+    // Tambem aceita CRON_SECRET (Vercel Cron, se o dono quiser agendar). Sem chave valida nenhuma: recusa.
+    if (!process.env.CRON_SECRET) return NextResponse.json(auth === 'desligado' ? { error: 'desligado' } : { error: 'nao_autorizado' }, { status: auth === 'desligado' ? 503 : 401 });
+    const denied = rejectUnlessCronAuthorized(request);
+    if (denied) return denied;
+  }
 
   const q = new URL(request.url).searchParams;
   const parsed = parseParametrosRota((k) => q.get(k));

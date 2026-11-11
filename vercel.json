@@ -34,27 +34,27 @@
     },
     {
       "path": "/api/cron/collect-vertical?v=tecnologia",
-      "schedule": "2,32 * * * *"
+      "schedule": "2,22,42 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=eletroeletronicos",
-      "schedule": "7,37 * * * *"
+      "schedule": "7,27,47 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=livros",
-      "schedule": "12,42 * * * *"
+      "schedule": "12,32,52 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=eletrodomesticos",
-      "schedule": "22,52 * * * *"
+      "schedule": "19,39,59 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=esporte",
-      "schedule": "27,57 * * * *"
+      "schedule": "4,24,44 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=impressao3d",
-      "schedule": "5,35 * * * *"
+      "schedule": "9,29,49 * * * *"
     },
     {
       "path": "/api/cron/collector-health",

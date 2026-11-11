@@ -173,16 +173,18 @@ export function AppHeader({
   departamentos?: { slug: string; label: string }[];
 }) {
   const pathname = usePathname();
-  const navItems: NavItem[] = departamentos.length
-    ? [
-        ...navLinks,
-        {
-          href: `/mercado/${departamentos[0].slug}`,
-          label: 'Departamentos',
-          children: departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label })),
-        },
-      ]
-    : navLinks;
+  // "Plus" sempre existe (vitrine de todos os departamentos); os abertos aparecem como atalhos no submenu.
+  const navItems: NavItem[] = [
+    ...navLinks,
+    {
+      href: '/plus',
+      label: 'Plus',
+      children: [
+        { href: '/plus', label: 'Todos os departamentos' },
+        ...departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label })),
+      ],
+    },
+  ];
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   return (

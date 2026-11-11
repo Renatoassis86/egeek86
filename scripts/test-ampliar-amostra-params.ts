@@ -6,12 +6,12 @@ function check(name: string, cond: boolean, extra?: unknown) { total++; if (!con
 const P = (o: Record<string, string>) => parseParametrosRota((k) => o[k] ?? null);
 
 const d = P({ vertical: 'esporte' });
-check('padroes', d.ok && d.params.limitMasters === 15 && d.params.offset === 0 && d.params.maxCalls === 90 && !d.params.apply && d.params.rollback === null, d);
+check('padroes', d.ok && d.params.limitMasters === 30 && d.params.offset === 0 && d.params.maxCalls === 200 && !d.params.apply && d.params.rollback === null, d);
 check('sem vertical => erro', !P({}).ok && (P({}) as any).erro === 'vertical_obrigatoria');
 check('vertical invalida', (P({ vertical: 'games' }) as any).erro === 'vertical_invalida:games');
-check('limitMasters limitado a 40', (P({ vertical: 'livros', limitMasters: '999' }) as any).params.limitMasters === 40);
+check('limitMasters limitado a 80', (P({ vertical: 'livros', limitMasters: '999' }) as any).params.limitMasters === 80);
 check('limitMasters minimo 1', (P({ vertical: 'livros', limitMasters: '0' }) as any).params.limitMasters === 1);
-check('maxCalls limitado a 150', (P({ vertical: 'livros', maxCalls: '9999' }) as any).params.maxCalls === 150);
+check('maxCalls limitado a 450', (P({ vertical: 'livros', maxCalls: '9999' }) as any).params.maxCalls === 450);
 check('numero invalido', (P({ vertical: 'livros', offset: '-1' }) as any).erro === 'offset_invalido');
 check('apply so com 1', (P({ vertical: 'livros', apply: '1' }) as any).params.apply === true && (P({ vertical: 'livros', apply: 'true' }) as any).params.apply === false);
 check('lista de verticais sem repeticao', JSON.stringify((P({ vertical: 'livros, esporte,livros' }) as any).params.verticals) === '["livros","esporte"]');

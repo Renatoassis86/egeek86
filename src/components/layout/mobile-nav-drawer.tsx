@@ -200,14 +200,15 @@ export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onC
               <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone e Drops" />
             )}
             <NavGroup items={observatorioModules} onClose={onClose} pathname={pathname} subheading="Observatório Gamer" />
-            {departamentos.length > 0 && (
-              <NavGroup
-                items={departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label, icon: Tag }))}
-                onClose={onClose}
-                pathname={pathname}
-                subheading="Departamentos"
-              />
-            )}
+            <NavGroup
+              items={[
+                { href: '/plus', label: 'Espaço Geek Plus', icon: Sparkles },
+                ...departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label, icon: Tag })),
+              ]}
+              onClose={onClose}
+              pathname={pathname}
+              subheading="Plus"
+            />
             <NavGroup items={newsModules} onClose={onClose} pathname={pathname} subheading="Notícias" />
             {viewer && <NavGroup items={userModules} onClose={onClose} pathname={pathname} subheading="Minha conta" />}
             <NavGroup items={institutionalModules} onClose={onClose} pathname={pathname} subheading="Institucional e Suporte" />

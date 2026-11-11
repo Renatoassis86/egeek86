@@ -102,13 +102,13 @@ const tombaOffer = {
 const m1: GroupMessageInput = {
   model: 'menor-preco', vertical: 'games', messageKey: 'g1-261110-000abc', adTag: AD,
   name: 'Tomba! Edição Especial (Switch, mídia física)', offer: tombaOffer, prevMinCents: 34990,
-  trackingSince: new Date('2026-10-31T15:00:00Z'), avg: { cents: 43008, offers: 3 },
+  trackingSince: new Date('2026-10-31T15:00:00Z'), avg: { cents: 43008, offers: 5 },
 };
 const r1 = buildGroupMessages(m1);
 eq(r1.problems, [], 'M1 sem problemas');
 ok(r1.telegram.includes('<b>Tomba! Edição Especial (Switch, mídia física)</b>'), 'M1 TG negrito no produto');
 ok(r1.telegram.includes('<b>R$ 291,99</b> no Mercado Livre. Menor preço que registramos desde 31/10; o anterior era R$ 349,90.'), 'M1 TG linha de preço', r1.telegram);
-ok(r1.telegram.includes('32% abaixo da média de R$ 430,08 (3 ofertas).'), 'M1 TG média', r1.telegram);
+ok(r1.telegram.includes('32% abaixo da média de R$ 430,08 (5 ofertas).'), 'M1 TG média', r1.telegram);
 ok(r1.telegram.includes('Conferido em 10/11 às 21:41.'), 'M1 carimbo de Brasília', r1.telegram);
 ok(r1.telegram.includes('<a href="https://www.egeek86.com/go/tomba-edicao-especial-nintendo-switch-jogo-fisico-2024-49100894?s=tg&amp;m=g1-261110-000abc">Ver a oferta</a> #publicidade'), 'M1 TG link s=tg&m= com & escapado', r1.telegram);
 ok(r1.whatsapp.includes('*Tomba! Edição Especial (Switch, mídia física)*'), 'M1 WA negrito');
@@ -121,10 +121,10 @@ const bio: GroupMessageInput = {
   model: 'abaixo-media', vertical: 'games', messageKey: 'g2-261110-000def', adTag: AD,
   name: 'Biomutant (Switch, mídia física)',
   offer: { slug: 'jogo-biomutant-nintendo-switch-midia-fisica-281736848', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 22700, confirmedAt: T_BIO },
-  avg: { cents: 33003, offers: 4 },
+  avg: { cents: 33003, offers: 6 },
 };
 const r2 = buildGroupMessages(bio);
-ok(r2.whatsapp.includes('*R$ 227,00* no Mercado Livre, 31% abaixo da média de R$ 330,03 (4 ofertas).'), 'M2 WA texto', r2.whatsapp);
+ok(r2.whatsapp.includes('*R$ 227,00* no Mercado Livre, 31% abaixo da média de R$ 330,03 (6 ofertas).'), 'M2 WA texto', r2.whatsapp);
 ok(r2.whatsapp.includes('Conferido em 10/11 às 21:06.'), 'M2 carimbo');
 eq(r2.problems, [], 'M2 sem problemas');
 
@@ -143,8 +143,8 @@ ok(!r3.telegram.includes('/go/'), 'M3 TG sem URL no texto (link no botão)');
 ok(r3.whatsapp.includes('https://www.egeek86.com/go/jogo-nintendo-switch-sports-midia-fisica-shopee-e3a58b?s=wa&m=g3-261110-000ghi'), 'M3 WA link da oferta mais barata', r3.whatsapp);
 
 const items = [
-  { name: 'Tomba! Edição Especial', platformLabel: 'Switch', offer: tombaOffer, avg: { cents: 43008, offers: 3 } },
-  { name: 'Biomutant', platformLabel: 'Switch', offer: bio.model === 'abaixo-media' ? bio.offer : tombaOffer, avg: { cents: 33003, offers: 4 } },
+  { name: 'Tomba! Edição Especial', platformLabel: 'Switch', offer: tombaOffer, avg: { cents: 43008, offers: 5 } },
+  { name: 'Biomutant', platformLabel: 'Switch', offer: bio.model === 'abaixo-media' ? bio.offer : tombaOffer, avg: { cents: 33003, offers: 6 } },
   {
     name: 'Capcom Fighting Collection', platformLabel: 'Switch',
     offer: { slug: 'capcom-fighting-collection-para-nintendo-switch-fisico-3003664742', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 24340, confirmedAt: T_CAPCOM },

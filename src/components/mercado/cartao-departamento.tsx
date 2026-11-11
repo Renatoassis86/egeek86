@@ -31,6 +31,7 @@ export function PrecoDepartamentoView({ master }: { master: CartaoDepartamento }
       <Text variant="label" color="tertiary">Menor preço agora</Text>
       <Text variant="mono-lg" className="font-black text-[var(--color-accent-primary)]">{formatBRL(master.menorCents)}</Text>
       <Text variant="caption" color="tertiary">
+        {master.lojaMenor ? `em ${master.lojaMenor} · ` : ''}
         {master.vendedores} {master.vendedores === 1 ? 'vendedor' : 'vendedores'} · <VerificadoHa iso={master.verificadoEm} />
       </Text>
       {mediana && master.medianaCents !== null ? (

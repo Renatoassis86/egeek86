@@ -6,11 +6,11 @@
 export const VERTICAIS_ALVO = ['eletrodomesticos', 'eletroeletronicos', 'esporte', 'impressao3d', 'livros', 'tecnologia'] as const;
 export type VerticalAlvo = (typeof VERTICAIS_ALVO)[number];
 
-/** Limites da ROTA (maxDuration 60 s; o espacamento da Shopee e ~480 ms por chamada, entao cabem ~100 chamadas). */
-export const ROTA_LIMITE_MASTERS_PADRAO = 15;
-export const ROTA_LIMITE_MASTERS_MAX = 40;
-export const ROTA_MAX_CALLS_PADRAO = 90;
-export const ROTA_MAX_CALLS_MAX = 150;
+/** Limites da ROTA (2026-11-11, fase de formacao: maxDuration 300 s e orcamento de 240 s; o espacamento da Shopee e ~480 ms por chamada, entao cabem ~500 chamadas; antes 60 s/~100). O teto HORARIO abaixo continua o freio de quota. */
+export const ROTA_LIMITE_MASTERS_PADRAO = 30;
+export const ROTA_LIMITE_MASTERS_MAX = 80;
+export const ROTA_MAX_CALLS_PADRAO = 200;
+export const ROTA_MAX_CALLS_MAX = 450;
 /** Teto de chamadas por hora deste job (o limite oficial e 8000/h somados a todos os coletores). */
 export const TETO_HORARIO_PADRAO = 3000;
 
