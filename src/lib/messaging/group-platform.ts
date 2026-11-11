@@ -32,6 +32,9 @@ function usableForPlatform(v: OfferVerdict): boolean {
 }
 
 /** Dias inteiros de hoje até a Black Friday (0 = é hoje; negativo = já passou). */
+/** P5 avulsa (mensagem só sobre a Black Friday). Desligada: o assunto entra como indicador nas mensagens de oferta. */
+export const BLACK_FRIDAY_STANDALONE = false;
+
 export function daysToBlackFriday(today: string): number {
   const a = new Date(`${today}T12:00:00Z`).getTime();
   const b = new Date(`${RULES.BLACK_FRIDAY_DAY}T12:00:00Z`).getTime();
@@ -171,7 +174,8 @@ export function buildPlatformCandidates(facts: ProductFacts[], ctx: EvalContext)
         return { u, score: ((Math.max(...vals) - Math.min(...vals)) / Math.min(...vals)) * 100 };
       })
   );
-  if (p5) {
+  // A Black Friday virou um indicador dentro das mensagens de oferta (só em novembro); P5 avulsa fica desligada (dono, 2026-11-11).
+  if (BLACK_FRIDAY_STANDALONE && p5) {
     const series = p5.u.p.series ?? [];
     const vals = [...series.map((x) => x.minCents), p5.u.cheapest.priceCents];
     emit('P5', p5.u, { kind: 'P5', daysLeft: daysToBlackFriday(today), firstCents: series[0].minCents, minCents: Math.min(...vals), maxCents: Math.max(...vals), todayCents: p5.u.cheapest.priceCents, sinceDay: series[0].day }, `Black Friday em ${daysToBlackFriday(today)} dias: produto acompanhado desde ${series[0].day}.`, p5.score);

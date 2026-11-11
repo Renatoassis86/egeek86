@@ -487,7 +487,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
 
     let photo: Buffer | null = null;
     const cardKind: 'oferta' | 'historico' = match.trigger === 'P1' || match.trigger === 'G5' ? 'historico' : 'oferta';
-    const cardCls = match.cls === 'alerta' || match.cls === 'insight' || match.cls === 'radar' || match.trigger === 'P1';
+    const cardCls = match.cls === 'alerta' || match.cls === 'insight' || match.cls === 'radar' || match.cls === 'plataforma';
     if (deps.cardFor && cardCls && match.trigger !== 'RADAR' && match.trigger !== 'G4') {
       if (cardKind === 'oferta' || cardAllowed(match.masterProductId, hist.records, now)) {
         try {
@@ -504,6 +504,11 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       }
     }
 
+    // Legenda de foto cabe em 1024 caracteres: se passar, o bloco "Monitoramento" (detalhe) sai, e o card continua indo.
+    if (photo && text.length > 1024) {
+      const slim = text.replace(/<blockquote><b>Monitoramento<\/b>[\s\S]*?<\/blockquote>\n\n/, '');
+      if (slim.length <= 1024) text = slim;
+    }
     // Um grupo por área (dono, 2026-11-11): games no grupo principal; cada outra área no seu, sem misturar. Sem grupo da área, não envia.
     const targetChat = telegramChatFor(match.vertical, env);
     if (!targetChat) {
@@ -516,7 +521,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       text,
       silent: !plan.nextSound,
       photo,
-      button: buyButton(match, row.messageKey),
+      button: match.cls === 'plataforma' ? null : buyButton(match, row.messageKey),
       fetchImpl: deps.fetchImpl,
     });
 

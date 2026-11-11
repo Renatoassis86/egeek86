@@ -156,7 +156,7 @@ let ev = evaluateProductV2(product(), ctx);
 const ok1 = ev.candidates.find((c) => c.trigger === 'OK1');
 ok(!!ok1 && ok1.cls === 'alerta' && ok1.status === 'auto' && !ok1.held && ok1.sendable, 'OK1 ML verde: alerta, automático, enviável', ok1);
 ok(!!ok1 && ok1.move?.dropPct === 6 && ok1.move?.seriesDays === 9, 'OK1: 6,0% e 9 dias de série');
-ok(!!ok1 && ok1.texts.telegram.includes('Menor registrado:</b> novo menor preço (o anterior era R$ 100,00)') && ok1.texts.telegram.includes('Menor preço que registramos desde 03/11.'), 'OK1: texto com janela e anterior', ok1?.texts.telegram);
+ok(!!ok1 && ok1.texts.telegram.includes('Menor registrado:</b> novo menor preço (o anterior era R$ 100,00)') && ok1.texts.telegram.includes('MENOR PREÇO REGISTRADO'), 'OK1: destaque de menor preço registrado e o anterior', ok1?.texts.telegram);
 ok(!!ok1 && !ok1.texts.telegram.includes('/go/') && ok1.texts.whatsapp.includes(`?s=wa&m=${ok1.messageKey}`), 'OK1: Telegram sem URL no texto (vai no botão); WhatsApp com link /go/?s=wa&m=<id>');
 ok(!!ok1 && ok1.texts.telegram.includes('Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && !/Série de|dias de série/.test(ok1.texts.telegram), 'variação vs média como tópico, sem frase de série', ok1?.texts.telegram);
 ok(!ev.candidates.some((c) => c.trigger === 'G1' || c.trigger === 'G2'), 'G1/G2 legados saem da v2');
@@ -225,7 +225,7 @@ const az = ev.candidates.find((c) => c.networkSlug === 'amazon');
 ok(!!az && az.trigger === 'OK1' && az.cls === 'alerta' && az.sendable && az.status === 'auto', 'Amazon OK1 dentro do frescor vira alerta', ev.blocked);
 ok(!!az && az.texts.telegram.includes('Preço na Amazon em 11/11 às 10:50, sujeito a alteração.'), 'Amazon: carimbo "em dd/mm às hh:mm" (Brasília)', az?.texts.telegram);
 ok(!!az && !az.texts.telegram.includes('média') && !az.texts.whatsapp.includes('média') && az.avgCents === null, 'Amazon: sem comparar com a média das outras lojas');
-ok(!!az && az.texts.telegram.includes('Menor preço da Amazon que registramos desde') && !az.texts.telegram.includes('Média das lojas'), 'Amazon: só histórico da própria Amazon, sem média das lojas', az?.texts.telegram);
+ok(!!az && az.texts.telegram.includes('Preço na Amazon em') && !az.texts.telegram.includes('Média das lojas') && !az.texts.telegram.includes('MENOR PREÇO REGISTRADO'), 'Amazon: sem média das lojas e sem o destaque de menor registrado, com o carimbo da Amazon', az?.texts.telegram);
 ok(!!az && textProblems(az.texts.telegram, 'tg').length === 0 && !/afiliad/i.test(az.texts.telegram), 'Amazon: texto passa na barreira, sem "afiliado"');
 ok(!ev.candidates.some((c) => c.networkSlug !== 'amazon' && c.trigger === 'OK1'), 'a série do ML é independente da Amazon');
 // frescor: 59 min ok, 61 min bloqueia (detecção); 39 ok / 41 bloqueia (envio)

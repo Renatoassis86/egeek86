@@ -288,7 +288,7 @@ ok(!ev.candidates.some((c) => c.trigger === 'G2'), 'série medida de 0 dia: não
 ev = evaluateProductV2(medProduct({ series: [], avg: { cents: 11500, distinctOffers: 3, offerDays: 3, spanDays: 1, eligible: false } }), ctx);
 const medShort = ev.candidates.find((c) => c.trigger === 'G2');
 ok(!!medShort && medShort.sendable, 'série de 1 dia e 3 ofertas já basta (o selo exige 14; o gatilho não)', ev.blocked);
-ok(!!medShort && medShort.texts.telegram.includes('Preço abaixo da média') && !/tendência|Série de/.test(medShort.texts.telegram), 'série curta: texto objetivo, sem frase de série nem de tendência', medShort?.texts.telegram);
+ok(!!medShort && medShort.texts.telegram.includes('abaixo') && !/tendência|Série de/.test(medShort.texts.telegram), 'série curta: texto objetivo, sem frase de série nem de tendência', medShort?.texts.telegram);
 ev = evaluateProductV2(medProduct({ avg: { cents: 11500, distinctOffers: 3, offerDays: 9, spanDays: 3, eligible: false } }), ctx);
 ok(!(ev.candidates.find((c) => c.trigger === 'G2')?.texts.telegram ?? '').includes('dias de série'), 'texto sem a frase "dias de série"');
 ev = evaluateProductV2(medProduct({}, 9400), ctx);
@@ -495,9 +495,9 @@ const paras = paras0.slice(1);
 const lines = [...paras[0].split('\n'), ...paras[1].split('\n')];
 ok(lines[0] === '<b>Tomba! Edição Especial</b> <i>Switch · mídia física</i>', 'linha 1: título em negrito e plataforma/formato em itálico', lines[0]);
 ok(lines[1] === '<b>R$ 94,00</b> no Mercado Livre', 'linha 2: preço em negrito com a loja', lines[1]);
-ok(paras[2].includes('• <b>Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && paras[2].includes('• <b>Menor registrado:</b> novo menor preço') && paras[2].includes('• <b>Histórico medido:</b> mais barato que em') && paras[2].includes('• <b>Leitura:</b> favorável'), 'tópicos: variação vs média, menor registrado, histórico medido e leitura', paras[2]);
+ok(paras[2].includes('• <b>Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && tg.includes('• <b>Menor registrado:</b> novo menor preço') && tg.includes('• <b>Histórico:</b> mais barato que em') && tg.includes('• <b>Leitura:</b> favorável') && tg.includes('• <b>Black Friday:</b> faltam 16 dias (27/11)'), 'tópicos: variação vs média em destaque; monitoramento (menor registrado, histórico, leitura, Black Friday) no fim', paras[2]);
 const bq = tg.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
-ok(!!bq && (bq[1].match(/[.!?](\s|$)/g) ?? []).length === 1, 'leitura em <blockquote> com uma frase', bq?.[1]);
+ok(!!bq && bq[1].startsWith('<b>Monitoramento</b>') && tg.indexOf('Monitoramento') > tg.indexOf('Vs. média das lojas') && tg.indexOf('Monitoramento') < tg.indexOf('Conferido em'), 'monitoramento num bloco só, no fim da mensagem (antes do rodapé)', bq?.[1]);
 ok(!tg.includes('/go/') && !tg.includes('<a '), 'Telegram sem URL no texto (o link vai no botão inline)');
 ok(tg.includes('• <b>Vendedor:</b> reputação verde'), 'tópico do vendedor ML (reputação verde)');
 const tgLines = tg.split('\n');
@@ -506,7 +506,7 @@ ok(countEmojis(tg) <= MAX_EMOJIS_PER_MESSAGE && !countEmojis(lines[0]), 'no máx
 ok(tg.length < TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024) e no limite (4096)', tg.length);
 ok(textProblems(tg, 'tg').length === 0 && !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off/i.test(tg), 'barreira de texto limpa, sem previsão, de/por ou % OFF');
 const wa = c1.texts.whatsapp;
-ok(wa.startsWith('*🏆 MENOR PREÇO REGISTRADO*\n\n*Tomba! Edição Especial* _Switch · mídia física_\n\n*R$ 94,00* no Mercado Livre\n\n• *Vs. média das lojas:*') && wa.includes('\n> Menor preço que registramos desde') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
+ok(wa.startsWith('*🏆 MENOR PREÇO REGISTRADO*\n\n*Tomba! Edição Especial* _Switch · mídia física_\n\n*R$ 94,00* no Mercado Livre\n\n• *Vs. média das lojas:*') && wa.includes('\n> *Monitoramento*') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
 ok(wa.includes(`?s=wa&m=${c1.messageKey}`) && wa.trimEnd().endsWith('_'), 'WhatsApp: link s=wa e rodapé em itálico');
 // storytelling por gatilho
 const ok2 = evaluateProductV2(product({ series: days([9000, 9000, 9000, 10000, 10000, 10000, 10000, 10000]), offers: [offer({ offerId: 'a', priceCents: 9100 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx).candidates.find((c) => c.trigger === 'OK2') as Candidate;
@@ -530,8 +530,8 @@ ok(textProblems(longMsg, 'tg').some((p) => p.includes('4096')), 'título gigante
 const cp: CouponInfo = { code: 'GEEK10', conditions: 'R$ 10 acima de R$ 80', expiresAt: new Date(NOW.getTime() + 5 * H).toISOString(), verifiedAt: new Date(NOW.getTime() - 30 * MIN).toISOString() };
 const withCp = withCouponBlock(tg, cp, 'tg', NOW);
 const cl = withCp.split('\n');
-const iCoupon = cl.findIndex((l) => l.includes('Cupom:'));
-ok(iCoupon > 0 && cl[iCoupon].includes('<code>GEEK10</code>') && cl[iCoupon + 1] === '' && cl[cl.length - 1].startsWith('<i>Conferido'), 'cupom: linha com <code> logo antes do link, rodapé continua por último', withCp);
+const iCoupon = cl.findIndex((l) => l.includes('CUPOM:'));
+ok(iCoupon > 0 && cl[iCoupon].includes('<code>GEEK10</code>') && cl.findIndex((l) => l.startsWith('• ')) > iCoupon && cl[cl.length - 1].startsWith('<i>Conferido'), 'cupom: destaque logo abaixo do preço, antes dos tópicos, rodapé continua por último', withCp);
 ok(countEmojis(withCp) <= MAX_EMOJIS_PER_MESSAGE, 'com cupom: ainda no máximo 2 emojis', countEmojis(withCp));
 ok(withCouponBlock(tg, { ...cp, expiresAt: new Date(NOW.getTime() - MIN).toISOString() }, 'tg', NOW) === tg, 'cupom vencido: mensagem sai sem cupom');
 // Amazon: carimbo e sem média das outras lojas
@@ -569,7 +569,7 @@ const sonic = product({
 const platCtx = { ...ctx };
 const plat = buildPlatformCandidates([zelda, sonic], platCtx);
 const byKind = (k: string) => plat.find((c) => c.trigger === k);
-ok(['P1', 'P2', 'P3', 'P4', 'P5'].every((k) => !!byKind(k)), 'builder: um candidato para cada modelo P1..P5', plat.map((c) => c.trigger));
+ok(['P1', 'P2', 'P3', 'P4'].every((k) => !!byKind(k)) && !byKind('P5'), 'builder: um candidato para cada modelo P1..P4 (P5 avulsa desligada: a Black Friday virou indicador)', plat.map((c) => c.trigger));
 ok(plat.every((c) => c.cls === 'plataforma' && c.status === 'auto' && c.sendable && !c.held), 'plataforma: classe própria, automática e enviável');
 ok(plat.every((c) => textProblems(c.texts.telegram, 'tg').length === 0 && textProblems(c.texts.whatsapp, 'wa').length === 0), 'plataforma: barreira de texto limpa');
 ok(plat.every((c) => !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off|imperd/i.test(c.texts.telegram + c.texts.whatsapp)), 'plataforma: sem afiliado, previsão, de/por, % OFF');
@@ -579,12 +579,12 @@ ok(plat.every((c) => /^p[1-5]-\d{6}-[a-z0-9]+$/.test(c.messageKey)), 'plataforma
 // P1: histórico com dado real
 const p1 = byKind('P1') as Candidate;
 ok(p1.masterProductId === zelda.masterProductId, 'P1 escolhe o produto com mais variação medida', p1.name);
-ok(p1.texts.telegram.includes('menor R$ 309,90 em 09/11 · média R$ 331,00 · hoje R$ 319,90') && p1.texts.telegram.includes('Série de 12 dias, desde 31/10'), 'P1: menor valor e data, média, hoje e a série dita', p1.texts.telegram);
-ok(p1.texts.telegram.includes('3,2% acima do menor valor medido'), 'P1: distância do menor valor medido', p1.texts.telegram);
+ok(p1.texts.telegram.includes('• menor R$ 309,90 em 09/11') && p1.texts.telegram.includes('• média R$ 331,00') && p1.texts.telegram.includes('• hoje R$ 319,90'), 'P1: menor valor e data, média e hoje em tópicos', p1.texts.telegram);
+ok(!p1.texts.telegram.includes('Série de'), 'P1: sem frase de série', p1.texts.telegram);
 // P2: só ML x Shopee e diferença >= R$ 20
 const p2 = byKind('P2') as Candidate;
 ok(p2.offerIds.length === 2 && p2.offerIds[0] === 'zml1' && p2.offerIds[1] === 'zsp1', 'P2: as duas ofertas (ML mais barata, Shopee) para reconferir', p2.offerIds);
-ok(p2.texts.telegram.includes('R$ 319,90 no Mercado Livre · R$ 349,90 na Shopee · diferença de R$ 30,00') && p2.texts.telegram.includes('R$ 30,00 de diferença'), 'P2: diferença em reais', p2.texts.telegram);
+ok(p2.texts.telegram.includes('• R$ 319,90 no Mercado Livre') && p2.texts.telegram.includes('• R$ 349,90 na Shopee') && p2.texts.telegram.includes('• diferença de R$ 30,00'), 'P2: lojas e diferença em tópicos', p2.texts.telegram);
 const near = product({ ...sonic, offers: sonic.offers.map((o) => (o.offerId === 'ssp1' ? { ...o, priceCents: 17990 } : o)) });
 const nearP2 = buildPlatformCandidates([near], platCtx).find((c) => c.trigger === 'P2');
 ok(!nearP2 || (nearP2.offerIds.length === 2 && Math.abs(18490 - 17990) >= 2000) === false, 'P2: diferença de R$ 5 não vira P2');
@@ -596,9 +596,9 @@ const p3 = byKind('P3') as Candidate;
 ok(p3.texts.telegram.includes('Como acompanhar o preço deste produto') && p3.texts.telegram.includes('4 ofertas ativas') && !/avis/i.test(p3.texts.telegram), 'P3: explica como acompanhar com o produto do dia e sem prometer aviso que o site não faz', p3.texts.telegram);
 const p4 = byKind('P4') as Candidate;
 ok(p4.texts.telegram.includes('Cada oferta vale 1 por dia') && p4.texts.telegram.includes('5 ofertas e 48 oferta-dias em 11 dias') && p4.texts.telegram.includes('média de R$ 331,00'), 'P4: explica a média única com os números do produto', p4.texts.telegram);
-const p5 = byKind('P5') as Candidate;
+ok(true, 'P5 avulsa desligada');
 ok(daysToBlackFriday('2026-11-11') === 16 && daysToBlackFriday('2026-11-27') === 0 && daysToBlackFriday('2026-11-28') === -1, 'dias até a Black Friday (27/11)');
-ok(p5.texts.telegram.includes('Faltam 16 dias para a Black Friday (27/11)') && p5.texts.telegram.includes('começou em R$ 339,90 · menor R$ 309,90 · maior R$ 349,90 · hoje R$ 319,90') && p5.texts.telegram.includes('Acompanhamos este produto desde 31/10'), 'P5: contagem regressiva e a variação medida desde 31/10', p5.texts.telegram);
+ok(true, 'P5: a Black Friday é indicador nas mensagens de oferta (novembro)');
 // produtos diferentes por modelo quando há alternativa
 ok(new Set(plat.map((c) => c.masterProductId)).size === 2, 'plataforma: usa produtos diferentes entre os modelos quando há alternativa');
 // faixa de plausibilidade

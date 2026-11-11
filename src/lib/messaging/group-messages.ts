@@ -549,35 +549,53 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   if (input.model === 'movimento' && (input.move.kind === 'OK2' || input.move.kind === 'T1') && input.move.prevCents != null && input.move.prevCents > price) {
     topics.push(topic(f, 'Variação', `${pct1(((input.move.prevCents - price) / input.move.prevCents) * 100)}% a menos que ontem (${fmtBRL(input.move.prevCents)})`));
   }
+  const sellerText = sellerLine(o);
+  if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
+  // Detalhes do monitoramento: SÓ no fim da mensagem (dono, 2026-11-11).
   const ref = input.model === 'movimento' ? input.move.refCents : input.refCents;
-  if (input.model === 'movimento' && input.move.kind === 'OK1') topics.push(topic(f, 'Menor registrado', `novo menor preço (o anterior era ${fmtBRL(input.move.refCents)})`));
+  const mon: string[] = [];
+  const verdict = readingOf(price, !amz ? input.avg?.cents ?? null : null, ref ?? null);
+  if (verdict) mon.push(topic(f, 'Leitura', verdict));
+  if (input.model === 'movimento' && input.move.kind === 'OK1') mon.push(topic(f, 'Menor registrado', `novo menor preço (o anterior era ${fmtBRL(input.move.refCents)})`));
   else if (ref != null) {
-    topics.push(
+    mon.push(
       topic(f, 'Menor registrado', price < ref ? `${fmtBRL(ref)} (este preço é ${pct1(((ref - price) / ref) * 100)}% menor)` : price === ref ? `${fmtBRL(ref)} (igual a este)` : `${fmtBRL(ref)} (este preço é ${pct1(((price - ref) / ref) * 100)}% maior)`)
     );
   }
+  if (input.model === 'movimento' && input.move.kind !== 'OK1') mon.unshift(topic(f, 'Movimento', leituraLine(input, amz)));
   const ind = input.ind ?? null;
-  if (ind) {
-    topics.push(topic(f, 'Histórico medido', `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
-  }
-  const verdict = readingOf(price, !amz ? input.avg?.cents ?? null : null, ref ?? null);
-  if (verdict) topics.push(topic(f, 'Leitura', verdict));
-  const sellerText = sellerLine(o);
-  if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
+  if (ind) mon.push(topic(f, 'Histórico', `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
+  const since = input.model === 'movimento' ? input.move.sinceDay : input.sinceDay ?? null;
+  const bf = blackFridayIndicator(o.confirmedAt, since);
+  if (bf) mon.push(topic(f, 'Black Friday', bf));
   // MENOR PREÇO REGISTRADO: destaque maior (dono, 2026-11-11). Só quando o preço é o menor de toda a série medida; sempre com a data de início.
   const recordSince = input.model === 'movimento' ? (input.move.kind === 'OK1' ? input.move.sinceDay : null) : input.refCents != null && price < input.refCents ? input.sinceDay ?? null : null;
   const isRecord = recordSince != null && !amz;
-  const dropMarker = !isRecord && input.model === 'movimento' && input.move.kind !== 'T2' && countEmojis(topics.join('')) === 0 ? `${EMOJI_DROP} ` : '';
+  const dropMarker = !isRecord && input.model === 'movimento' && input.move.kind !== 'T2' ? `${EMOJI_DROP} ` : '';
   const recordHead = isRecord ? (channel === 'tg' ? `<b>🏆 MENOR PREÇO REGISTRADO</b>` : `*🏆 MENOR PREÇO REGISTRADO*`) : null;
   const recordNote = isRecord
     ? f.b(`Melhor momento de compra segundo o nosso monitoramento: nunca vimos este produto mais barato desde ${fmtDay(dayToDate(recordSince as string))}.`)
     : null;
-  const leitura = leituraLine(input, amz);
-  const leituraBlock = channel === 'tg' ? `<blockquote>${escapeTelegramHtml(leitura)}</blockquote>` : `> ${escapeWhatsapp(leitura)}`;
+  const monBlock = mon.length
+    ? channel === 'tg'
+      ? `<blockquote>${['<b>Monitoramento</b>', ...mon].join('\n')}</blockquote>`
+      : ['*Monitoramento*', ...mon].map((l) => `> ${l}`).join('\n')
+    : null;
   // Telegram: o link vai no BOTÃO (reply_markup) e o texto não leva URL (sem pré-visualização truncada). WhatsApp: o link no texto.
   const link = channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
-  return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, leituraBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+  return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, monBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+}
+
+/** Indicador da Black Friday: só durante a campanha de novembro/2026; depois some e a mensagem volta ao padrão (dono, 2026-11-11). */
+export function blackFridayIndicator(ref: Date, sinceDay: string | null | undefined): string | null {
+  const br = new Date(ref.getTime() - 3 * 3600_000);
+  if (br.getUTCFullYear() !== 2026 || br.getUTCMonth() !== 10) return null;
+  const today = Date.UTC(2026, 10, br.getUTCDate());
+  const bfDay = Date.UTC(2026, 10, 27);
+  const left = Math.round((bfDay - today) / 86_400_000);
+  const base = left > 0 ? `faltam ${left} ${left === 1 ? 'dia' : 'dias'} (${BLACK_FRIDAY_LABEL})` : left === 0 ? `é hoje (${BLACK_FRIDAY_LABEL})` : `campanha em andamento (${BLACK_FRIDAY_LABEL})`;
+  return `${base}; acompanhamos este produto${sinceDay ? ` desde ${fmtDay(dayToDate(sinceDay))}` : ''} para conferir se o desconto é real`;
 }
 
 /** Leitura descritiva do preço (critério fixo; não é previsão nem promessa): média das lojas e menor registrado. */
@@ -688,7 +706,10 @@ export function formatPlatformMessage(input: Extract<GroupMessageInput, { model:
   const url = buildSiteLink(input.path, channel, input.messageKey);
   const link = channel === 'tg' ? f.link(url, label) : url;
   const foot = italic(withTag(conferidoLine(o.confirmedAt), input.adTag));
-  return [head, f.b(headline), f.b(facts), storyBlock, link, foot].filter((l) => l && l.trim() !== '').join('\n\n');
+  // Por tópicos (dono, 2026-11-11): destaques em lista e frase longa só nas explicações (P3 e P4).
+  const bullets = facts.split(' · ').map((x) => `• ${f.t(x)}`).join('\n');
+  const explain = d.kind === 'P3' || d.kind === 'P4' ? storyBlock : null;
+  return [head, f.b(headline), bullets, explain, link, foot].filter((l) => l && l.trim() !== '').join('\n\n');
 }
 
 function withTag(body: string, tag: string): string {
@@ -954,10 +975,22 @@ export function withCouponBlock(text: string, coupon: CouponInfo | null | undefi
   const code = channel === 'tg' ? `<code>${esc(coupon.code.trim())}</code>` : esc(coupon.code.trim());
   const mark = channel === 'tg' && countEmojis(text) < MAX_EMOJIS_PER_MESSAGE ? `${EMOJI_COUPON} ` : '';
   const block = `${mark}Cupom: ${code}${cond}.${until} Visto em ${fmtStamp(new Date(coupon.verifiedAt))}.`;
-  // Layout com parágrafos (linha em branco): o cupom vira um parágrafo próprio antes do link/rodapé.
+  // Layout com parágrafos (linha em branco): o cupom vira um parágrafo próprio, em destaque logo abaixo do preço (antes dos tópicos).
   const sep = text.includes('\n\n') ? '\n\n' : '\n';
   const lines = text.split(sep);
   if (lines.length < 2) return text;
+  if (sep === '\n\n') {
+    const topicsAt = lines.findIndex((l) => l.startsWith('• '));
+    if (topicsAt > 0) {
+      const head = channel === 'tg' ? `${mark}<b>CUPOM:</b> ${code}` : `*CUPOM:* ${code}`;
+      const tail = `${cond ? esc(coupon.conditions.trim()) : ''}${until ? `${cond ? '. ' : ''}${until.trim()}` : ''}`;
+      const hi = tail ? `${head}\n${tail}` : head;
+      const out2 = [...lines.slice(0, topicsAt), hi, ...lines.slice(topicsAt)].join(sep);
+      if (textProblems(out2, channel).length > textProblems(text, channel).length) return text;
+      if (channel === 'tg' && out2.length > TELEGRAM_MAX_CHARS) return text;
+      return out2;
+    }
+  }
   let at = lines.length - 1;
   for (let i = lines.length - 1; i >= 0; i--) {
     if (lines[i].includes('/go/')) {
