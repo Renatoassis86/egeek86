@@ -243,12 +243,23 @@ export interface PriceInd {
   cheaperThanDays: number;
   minCents: number;
   maxCents: number;
+  /** Primeiro dia medido da série e o menor preço dele (base do comparativo da Black Friday). */
+  firstDay: string | null;
+  firstCents: number | null;
 }
-export function priceIndicators(series: Array<{ minCents: number }> | null | undefined, priceCents: number): PriceInd | null {
-  if (!series || series.length < 3) return null;
+export function priceIndicators(series: Array<{ minCents: number; day?: string }> | null | undefined, priceCents: number): PriceInd | null {
+  if (!series || series.length < 1) return null;
   const v = series.map((x) => x.minCents).filter((x) => x > 0);
-  if (v.length < 3) return null;
-  return { days: v.length, cheaperThanDays: v.filter((x) => x > priceCents).length, minCents: Math.min(...v), maxCents: Math.max(...v) };
+  if (v.length < 1) return null;
+  const first = series.find((x) => x.minCents > 0);
+  return {
+    days: v.length,
+    cheaperThanDays: v.filter((x) => x > priceCents).length,
+    minCents: Math.min(...v),
+    maxCents: Math.max(...v),
+    firstDay: first?.day ?? null,
+    firstCents: first?.minCents ?? null,
+  };
 }
 
 interface Common {
@@ -565,9 +576,9 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   }
   if (input.model === 'movimento' && input.move.kind !== 'OK1') mon.unshift(topic(f, 'Movimento', leituraLine(input, amz)));
   const ind = input.ind ?? null;
-  if (ind) mon.push(topic(f, 'Histórico', `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
+  if (ind && ind.days >= 3) mon.push(topic(f, 'Histórico', `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
   const since = input.model === 'movimento' ? input.move.sinceDay : input.sinceDay ?? null;
-  const bf = blackFridayIndicator(o.confirmedAt, since);
+  const bf = blackFridayIndicator(o.confirmedAt, since, { price, avgCents: !amz ? input.avg?.cents ?? null : null, firstCents: ind?.firstCents ?? null, firstDay: ind?.firstDay ?? null });
   if (bf) mon.push(topic(f, 'Black Friday', bf));
   // MENOR PREÇO REGISTRADO: destaque maior (dono, 2026-11-11). Só quando o preço é o menor de toda a série medida; sempre com a data de início.
   const recordSince = input.model === 'movimento' ? (input.move.kind === 'OK1' ? input.move.sinceDay : null) : input.refCents != null && price < input.refCents ? input.sinceDay ?? null : null;
@@ -589,14 +600,30 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
 }
 
 /** Indicador da Black Friday: só durante a campanha de novembro/2026; depois some e a mensagem volta ao padrão (dono, 2026-11-11). */
-export function blackFridayIndicator(ref: Date, sinceDay: string | null | undefined): string | null {
+export function blackFridayIndicator(
+  ref: Date,
+  sinceDay: string | null | undefined,
+  ctx: { price: number; avgCents: number | null; firstCents: number | null; firstDay: string | null }
+): string | null {
   const br = new Date(ref.getTime() - 3 * 3600_000);
   if (br.getUTCFullYear() !== 2026 || br.getUTCMonth() !== 10) return null;
   const today = Date.UTC(2026, 10, br.getUTCDate());
   const bfDay = Date.UTC(2026, 10, 27);
   const left = Math.round((bfDay - today) / 86_400_000);
   const base = left > 0 ? `faltam ${left} ${left === 1 ? 'dia' : 'dias'} (${BLACK_FRIDAY_LABEL})` : left === 0 ? `é hoje (${BLACK_FRIDAY_LABEL})` : `campanha em andamento (${BLACK_FRIDAY_LABEL})`;
-  return `${base}; acompanhamos este produto${sinceDay ? ` desde ${fmtDay(dayToDate(sinceDay))}` : ''} para conferir se o desconto é real`;
+  // O que o consumidor quer saber em novembro: está mais barato do que a média e do que antes da campanha? Só dado medido.
+  const parts: string[] = [];
+  if (ctx.avgCents != null && ctx.avgCents > 0) {
+    const d = ((ctx.avgCents - ctx.price) / ctx.avgCents) * 100;
+    parts.push(Math.abs(d) < 0.05 ? 'no nível da média das lojas' : d > 0 ? `${pct1(d)}% abaixo da média das lojas` : `${pct1(-d)}% acima da média das lojas`);
+  }
+  if (ctx.firstCents != null && ctx.firstCents > 0 && ctx.firstDay) {
+    const d = ((ctx.firstCents - ctx.price) / ctx.firstCents) * 100;
+    const day = fmtDay(dayToDate(ctx.firstDay));
+    parts.push(Math.abs(d) < 0.05 ? `igual ao preço de ${day}` : d > 0 ? `${pct1(d)}% abaixo do preço de ${day} (${fmtBRL(ctx.firstCents)})` : `${pct1(-d)}% acima do preço de ${day} (${fmtBRL(ctx.firstCents)})`);
+  }
+  if (!parts.length) return `${base}; acompanhamos este produto${sinceDay ? ` desde ${fmtDay(dayToDate(sinceDay))}` : ''} para conferir se o desconto é real`;
+  return `${base}. Hoje: ${parts.join(' e ')}`;
 }
 
 /** Leitura descritiva do preço (critério fixo; não é previsão nem promessa): média das lojas e menor registrado. */
