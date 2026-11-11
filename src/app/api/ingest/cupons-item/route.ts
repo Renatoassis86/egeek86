@@ -57,9 +57,9 @@ export async function GET(request: NextRequest) {
   const denied = guard(request);
   if (denied) return denied;
   const n = Math.min(Math.max(1, Number(new URL(request.url).searchParams.get('n') ?? 20) || 20), 40);
-  const rows = await db.execute<{ id: string; ref: string; item: string | null; seller: string | null }>(sql`
-    SELECT t.id, t.ref, t.item, t.seller FROM (
-      SELECT o.id::text AS id, o.external_ref AS ref, o.external_item_id AS item, s.external_seller_id AS seller,
+  const rows = await db.execute<{ id: string; ref: string; item: string | null; seller: string | null; price: string }>(sql`
+    SELECT t.id, t.ref, t.item, t.seller, t.price FROM (
+      SELECT o.id::text AS id, o.external_ref AS ref, o.external_item_id AS item, s.external_seller_id AS seller, o.current_price_cents::text AS price,
              row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn,
              (SELECT max(r.read_at) FROM offer_coupon_reads r WHERE r.offer_id = o.id) AS last_read
       FROM affiliate_offers o
@@ -81,9 +81,11 @@ export async function GET(request: NextRequest) {
         token ??= await getValidAccessToken();
         const res = await fetch(`https://api.mercadolibre.com/products/${r.ref}/items?limit=100`, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(8000) });
         if (res.ok) {
-          const data = (await res.json()) as { results?: Array<{ item_id?: string; seller_id?: number | string; condition?: string | null }> };
+          const data = (await res.json()) as { results?: Array<{ item_id?: string; seller_id?: number | string; condition?: string | null; price?: number }> };
           const list = Array.isArray(data.results) ? data.results.filter((x) => x.condition === 'new') : [];
-          const hit = r.seller ? list.find((x) => x.seller_id != null && String(x.seller_id) === r.seller) : undefined;
+          // Por vendedor; sem vendedor gravado, só o anúncio de MESMO preço da oferta (o mesmo preço ao centavo identifica o mesmo anúncio).
+          const cents = Number(r.price);
+          const hit = (r.seller ? list.find((x) => x.seller_id != null && String(x.seller_id) === r.seller) : undefined) ?? list.find((x) => Math.round(Number(x.price) * 100) === cents);
           if (hit?.item_id && /^MLB\d{6,}$/.test(hit.item_id)) {
             itemId = hit.item_id;
             await db.execute(sql`UPDATE affiliate_offers SET external_item_id = ${itemId} WHERE id = ${r.id}::uuid AND external_item_id IS NULL`);
