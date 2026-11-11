@@ -37,3 +37,6 @@ Uma ficha por loja: canal oficial, pré-requisitos, cotas, campos, termos, impli
 5. Ler e arquivar os termos de Mercado Livre e Amazon, quando o dono quiser.
 
 Black Friday (27/11/2026): só Mercado Livre e Shopee.
+
+## Catálogo por loja
+O catálogo de tudo o que vendemos, por loja (Games, Impressão 3D, Tecnologia, Livros, Casa e eletrodomésticos, Eletrônicos, Esporte), vive em **/admin/catalogo** (só admin, números ao vivo, histórico diário de 14 dias) e tem retrato versionado em [../inventario-catalogo/README.md](../inventario-catalogo/README.md) com um CSV por loja. Consultar e regerar (`scripts/gerar-inventario-catalogo.ts`) quando lojas, produtos ou fontes mudarem.

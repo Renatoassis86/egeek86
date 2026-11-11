@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 import { refreshProductStats, refreshShowcase } from '@/server/jobs/refresh-snapshots';
 import { startCollectorRun } from '@/server/collector/collector-runs';
+import { gravarSnapshotInventario } from '@/server/jobs/catalog-inventory-snapshot';
 import { priceDailyShadowEnabled, refreshPriceDaily } from '@/server/jobs/refresh-price-daily';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,7 @@ export const maxDuration = 300;
  * Pré-cálculo persistido da vitrine (Fase 2, ata 2026-11-03-fase2-precalculo.md). Vercel Cron (vercel.json):
  *   ?part=stats     a cada 15 min  -> product_price_stats (estatística canônica por produto)
  *   ?part=showcase  4 min depois   -> showcase_snapshot (contadores, rankings, tabela), que lê as estatísticas prontas
+ *   ?part=inventory  (1x por hora; upsert de 1 linha por loja por dia) -> catalog_inventory_snapshots (inventário do catálogo, migração 0040)
  *   ?part=daily     (SOMBRA, só com PRICE_DAILY_SHADOW=1) -> price_daily_offer/state/min_events (ata 2026-11-05)
  * Mesma autenticação das demais /api/cron/* (CRON_SECRET, falha fechada). `force=1` recalcula tudo, mesmo o recente.
  */
@@ -37,6 +39,10 @@ export async function GET(request: NextRequest) {
       out.daily = priceDailyShadowEnabled()
         ? await refreshPriceDaily({ budgetMs: Math.max(20_000, BUDGET_MS - (Date.now() - started)) })
         : { skipped: 'PRICE_DAILY_SHADOW desligada' };
+    }
+    // Inventário do catálogo: tolerante a falha por construção (nunca lança; erro vai no retorno).
+    if (part === 'inventory' || part === 'all') {
+      out.inventory = await gravarSnapshotInventario();
     }
   } catch (err) {
     console.error('[cron refresh-snapshots] falhou:', err);
