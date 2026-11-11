@@ -75,13 +75,13 @@ export async function POST(request: NextRequest) {
     try {
       await db.execute(sql`
         INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, selected, checked, price_confirmed, snapshots_written, errors, offers_created, meta)
-        VALUES ('amazon-assistida', 'amazon', ${new Date(started)}, now(), ${ms}, 'ok', ${rows.length}, ${stats.buscas}, ${stats.aceitos}, ${stats.novos + stats.atualizados}, 0, ${stats.novos}, ${JSON.stringify({ stats, round: body.round ?? null })}::jsonb)`);
+        VALUES ('amazon-assistida', 'amazon', ${new Date(started).toISOString()}::timestamptz, now(), ${ms}, 'ok', ${rows.length}, ${stats.buscas}, ${stats.aceitos}, ${stats.novos + stats.atualizados}, 0, ${stats.novos}, ${JSON.stringify({ stats, round: body.round ?? null })}::jsonb)`);
     } catch (e) { console.error('[amazon-assistida] falha ao registrar collector_runs', e); }
     return NextResponse.json({ ok: true, stats }, { headers });
   } catch (e) {
     console.error('[amazon-assistida] erro', e);
     try {
-      await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, status, selected, errors, meta) VALUES ('amazon-assistida', 'amazon', ${new Date(started)}, now(), 'error', ${rows.length}, 1, ${JSON.stringify({ erro: e instanceof Error ? e.message : String(e) })}::jsonb)`);
+      await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, status, selected, errors, meta) VALUES ('amazon-assistida', 'amazon', ${new Date(started).toISOString()}::timestamptz, now(), 'error', ${rows.length}, 1, ${JSON.stringify({ erro: e instanceof Error ? e.message : String(e) })}::jsonb)`);
     } catch { /* observabilidade nunca derruba a rota */ }
     return NextResponse.json({ error: 'falha_interna' }, { status: 500, headers });
   }
