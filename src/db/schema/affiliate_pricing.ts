@@ -34,6 +34,8 @@ export const affiliatePriceSnapshots = pgTable(
     couponCode: text('coupon_code'),
     source: affiliatePriceSource('source').notNull().default('manual'),
     collectedAt: timestamp('collected_at', { withTimezone: true }).notNull().defaultNow(),
+    /** 'primeira' | 'mudanca' | 'batimento' (mesmo preço, a cada 24 h) | 'manual' (migração 0038). */
+    recordKind: text('record_kind'),
   },
   (t) => [
     index('affiliate_price_snapshots_offer_collected_idx').on(t.offerId, t.collectedAt),

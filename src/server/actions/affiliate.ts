@@ -261,6 +261,7 @@ export async function createAffiliateOffer(formData: FormData) {
       listPriceCents,
       couponCode,
       source: 'manual',
+      recordKind: 'manual',
     });
 
     return createdOffer;

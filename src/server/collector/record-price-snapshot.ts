@@ -80,6 +80,8 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<b
         listPriceCents: input.listPriceCents ?? null,
         couponCode: input.couponCode ?? null,
         source: input.source,
+        // Tipo de registro (migração 0038): primeira cotação, mudança de preço ou batimento de 24 h (mesmo preço).
+        recordKind: lastSnap == null ? 'primeira' : lastSnap.priceCents !== input.priceCents ? 'mudanca' : 'batimento',
       });
     }
 
