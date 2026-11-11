@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { dropCurations, reviewCurations, reviews, products, profiles, sellers } from '@/db/schema';
@@ -21,6 +22,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CurationPage() {
+  await assertMarketplaceVisible();
   const profile = await getCurrentProfile();
   const isAuthenticated = !!profile;
   const isAdmin = profile?.role === 'admin';

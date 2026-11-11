@@ -183,7 +183,7 @@ function Cluster({
         </Reveal>
       </div>
 
-      <div className="relative mt-12 grid gap-4 sm:grid-cols-3">
+      <div className={`relative mt-12 grid gap-4 ${cards.length === 2 ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
         {cards.map(({ href, label: cardLabel, description, Icon, cta = 'Ver ofertas' }, i) => (
           <Reveal key={href} delay={0.06 + i * 0.06}>
             <Link

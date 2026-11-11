@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import { redirect } from 'next/navigation';
 import { OnboardingForm } from '@/components/geek-deals/onboarding-form';
 import { Text } from '@/components/ui/text';
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CollectorOnboardingPage() {
+  await assertMarketplaceVisible();
   const profile = await getCurrentProfile();
 
   if (!profile) {

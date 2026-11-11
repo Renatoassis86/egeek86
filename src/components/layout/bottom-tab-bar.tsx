@@ -3,14 +3,17 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Home, Tag, BarChart3, Flame, User } from 'lucide-react';
+import { Home, Tag, BarChart3, Flame, Newspaper, User } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 
 const tabs = [
   { href: '/', label: 'Início', Icon: Home },
   { href: '/ofertas', label: 'Ofertas', Icon: Tag },
   { href: '/monitoramento', label: 'Monitorar', Icon: BarChart3 },
-  { href: '/hype-zone', label: 'Hype', Icon: Flame, highlight: true },
+  MARKETPLACE_PUBLIC
+    ? { href: '/hype-zone', label: 'Hype', Icon: Flame, highlight: true }
+    : { href: '/noticias', label: 'Notícias', Icon: Newspaper, highlight: false },
   { href: '/conta', label: 'Perfil', Icon: User },
 ];
 

@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { Boxes, Gamepad2, Joystick, Newspaper, Zap, Sparkles } from 'lucide-react';
 
 export interface CategoryCard {
@@ -19,7 +20,9 @@ export const gamerCards: CategoryCard[] = [
 
 /** Lado GEEK (cultura: franquia/drop/notícia) — fonte única, usada em /categorias e /sobre. */
 export const geekCards: CategoryCard[] = [
-  { href: '/hype-zone', label: 'Hype Zone', description: 'Lançamentos e cultura geek para acompanhar.', Icon: Zap, cta: 'Abrir Hype Zone' },
+  ...(MARKETPLACE_PUBLIC
+    ? [{ href: '/hype-zone', label: 'Hype Zone', description: 'Lançamentos e cultura geek para acompanhar.', Icon: Zap, cta: 'Abrir Hype Zone' }]
+    : []),
   { href: '/noticias', label: 'Notícias', description: 'Cultura pop, sinopse de jogo e tecnologia geek.', Icon: Newspaper, cta: 'Ler notícias' },
   { href: '/inteligencia-gamer', label: 'Observatório Gamer', description: 'Notícias, artigos e pesquisas sobre o mercado de games.', Icon: Sparkles, cta: 'Acessar portal' },
 ];

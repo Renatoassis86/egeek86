@@ -1,5 +1,6 @@
 'use server';
 
+import { marketplaceActionAllowed } from '@/lib/auth/marketplace-gate';
 import { revalidatePath } from 'next/cache';
 import { randomUUID } from 'crypto';
 import { eq, and } from 'drizzle-orm';
@@ -17,6 +18,9 @@ export async function submitDropCuration(data: {
   notes: string;
 }) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para enviar uma curadoria.' };
@@ -76,6 +80,9 @@ export async function submitDropCuration(data: {
  */
 export async function convertPointsToDiscount(pointsToConvert: number) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para resgatar seus pontos.' };
@@ -145,6 +152,9 @@ export async function convertPointsToDiscount(pointsToConvert: number) {
  */
 export async function resolveDropCuration(dropId: string, correctVerdict: 'authentic' | 'fake') {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     // Apenas admin/moderadores podem julgar os drops do conselho
     if (!profile || profile.role !== 'admin') {
@@ -216,6 +226,9 @@ export async function submitReviewCuration(data: {
   notes: string;
 }) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para auditar avaliações.' };
@@ -272,6 +285,9 @@ export async function submitReviewCuration(data: {
  */
 export async function resolveReviewCuration(reviewId: string, correctVerdict: 'approve' | 'reject') {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile || profile.role !== 'admin') {
       return { error: 'Apenas administradores podem julgar as auditorias de avaliações.' };
@@ -341,6 +357,9 @@ export async function resolveReviewCuration(reviewId: string, correctVerdict: 'a
  */
 export async function deleteSellerAction(sellerId: string) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile || profile.role !== 'admin') {
       return { error: 'Apenas administradores podem excluir colecionadores.' };

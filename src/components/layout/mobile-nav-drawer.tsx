@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import {
   Home,
   Info,
@@ -72,8 +73,12 @@ const newsModules = [
 const userModules = [
   { href: '/conta', label: 'Minha conta', icon: User },
   { href: '/conta?aba=dados', label: 'Dados cadastrais', icon: Sliders },
-  { href: '/conta?aba=vendas', label: 'Meus drops', icon: ShieldCheck },
-  { href: '/conta?aba=leiloes', label: 'Meus leilões', icon: Gavel },
+  ...(MARKETPLACE_PUBLIC
+    ? [
+        { href: '/conta?aba=vendas', label: 'Meus drops', icon: ShieldCheck },
+        { href: '/conta?aba=leiloes', label: 'Meus leilões', icon: Gavel },
+      ]
+    : []),
   { href: '/conta?aba=jogos', label: 'Jogos acompanhados', icon: Heart },
   { href: '/carrinho', label: 'Lista de acompanhamento', icon: Bookmark },
 ];
@@ -176,7 +181,7 @@ export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onC
             </Button>
           </div>
 
-          {/* Banner Rápido de Colecionador */}
+          {/* Cabeçalho do menu */}
           <div className="p-3 bg-[var(--color-bg-surface)] border-b border-[var(--color-border-subtle)] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-[var(--color-accent-gold)]" />
@@ -191,7 +196,9 @@ export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onC
           {/* Módulos do Site */}
           <div className="p-3 pb-6 flex flex-col gap-1">
             <NavGroup items={mainMarketModules} onClose={onClose} pathname={pathname} subheading="Mercado e Ofertas" />
-            <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone e Drops" />
+            {MARKETPLACE_PUBLIC && (
+              <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone e Drops" />
+            )}
             <NavGroup items={observatorioModules} onClose={onClose} pathname={pathname} subheading="Observatório Gamer" />
             {departamentos.length > 0 && (
               <NavGroup
@@ -224,6 +231,7 @@ export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onC
                 <LogIn className="size-3.5" />
                 <span>Entrar</span>
               </Link>
+              {MARKETPLACE_PUBLIC && (
               <Link
                 href="/entrar?role=colecionador"
                 onClick={onClose}
@@ -231,6 +239,7 @@ export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onC
               >
                 <span>Cadastrar como colecionador</span>
               </Link>
+              )}
             </>
           )}
         </div>

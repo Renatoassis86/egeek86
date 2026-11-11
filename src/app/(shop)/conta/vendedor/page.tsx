@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import Link from 'next/link';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
@@ -22,6 +23,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function CollectorDashboardPage() {
+  await assertMarketplaceVisible();
   const profile = await getCurrentProfile();
 
   if (!profile) {

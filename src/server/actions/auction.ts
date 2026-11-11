@@ -1,5 +1,6 @@
 'use server';
 
+import { marketplaceActionAllowed } from '@/lib/auth/marketplace-gate';
 import { revalidatePath } from 'next/cache';
 import { eq, and, gt, desc } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -20,6 +21,9 @@ export async function createCollectorAuction(data: {
   buyoutPriceCents?: number;
 }) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para cadastrar um leilão.' };
@@ -95,6 +99,9 @@ export async function submitAuctionBid(data: {
   amountCents: number;
 }) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para dar um lance.' };
@@ -195,6 +202,9 @@ export async function submitAuctionBid(data: {
  */
 export async function curateAuction(auctionId: string, verdict: 'approve' | 'reject') {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile || profile.role !== 'admin') {
       return { error: 'Apenas administradores podem julgar a curadoria de leilões.' };
@@ -241,6 +251,9 @@ export async function curateAuction(auctionId: string, verdict: 'approve' | 'rej
  */
 export async function resolveAuction(auctionId: string, isWinnerDefaulted: boolean = false) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile || profile.role !== 'admin') {
       return { error: 'Apenas administradores podem gerenciar o desfecho dos leilões.' };

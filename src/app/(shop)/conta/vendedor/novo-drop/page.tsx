@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import { redirect } from 'next/navigation';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function NewCollectorDropPage() {
+  await assertMarketplaceVisible();
   const profile = await getCurrentProfile();
 
   if (!profile) {

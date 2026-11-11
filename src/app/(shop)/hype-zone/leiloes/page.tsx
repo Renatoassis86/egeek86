@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import Link from 'next/link';
 import Image from 'next/image';
 import { eq, desc, and } from 'drizzle-orm';
@@ -29,6 +30,7 @@ export default async function AuctionsPage({
 }: {
   searchParams: Promise<{ aba?: string }>;
 }) {
+  await assertMarketplaceVisible();
   const profile = await getCurrentProfile();
   const isAuthenticated = !!profile;
   const activeTab = (await searchParams).aba || 'ativos';

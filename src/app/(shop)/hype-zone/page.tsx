@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Flame, ShieldCheck, ShoppingBag, Users, Award, ChevronRight, Gavel, Sparkles, Clock } from 'lucide-react';
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 
 export default async function HypeZonePage() {
+  await assertMarketplaceVisible();
   const profile = await getCurrentProfile();
   const isAuthenticated = !!profile;
 

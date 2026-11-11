@@ -1,5 +1,6 @@
 'use server';
 
+import { marketplaceActionAllowed } from '@/lib/auth/marketplace-gate';
 import { revalidatePath } from 'next/cache';
 import { cookies, headers } from 'next/headers';
 import { createHash } from 'crypto';
@@ -13,6 +14,9 @@ import { getCurrentProfile } from '@/lib/auth/require-admin';
  */
 export async function joinDropWaitlist(dropId: string) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para entrar na lista de espera.' };

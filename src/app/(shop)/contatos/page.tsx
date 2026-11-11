@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { StatTile } from '@/components/ui/stat-tile';
 import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { getPublicMetrics, PUBLIC_METRIC_LABELS } from '@/server/queries/public-metrics';
 
 export const metadata: Metadata = {
@@ -33,7 +34,7 @@ export default async function ContatosPage() {
           <Reveal>
             <Badge variant="primary" size="md">
               <MessageSquare className="size-3.5" />
-              Atendimento ao Colecionador
+              Atendimento
             </Badge>
           </Reveal>
           <Reveal delay={0.05}>
@@ -43,7 +44,7 @@ export default async function ContatosPage() {
           </Reveal>
           <Reveal delay={0.1}>
             <Text variant="body-md" color="secondary" className="leading-relaxed">
-              Dúvidas sobre cadastro de colecionadores, leilões, drops ou parcerias? Fale com a nossa equipe.
+              {MARKETPLACE_PUBLIC ? 'Dúvidas sobre cadastro de colecionadores, leilões, drops ou parcerias? Fale com a nossa equipe.' : 'Dúvidas sobre preços, dados ou parcerias? Fale com a nossa equipe.'}
             </Text>
           </Reveal>
         </div>
@@ -115,6 +116,7 @@ export default async function ContatosPage() {
             </Card>
           </Reveal>
 
+          {MARKETPLACE_PUBLIC && (
           <Reveal delay={0.15}>
             <Card className="border-amber-500/30 bg-amber-500/5">
               <CardContent className="p-6 flex flex-col gap-3">
@@ -131,6 +133,7 @@ export default async function ContatosPage() {
               </CardContent>
             </Card>
           </Reveal>
+          )}
         </div>
 
         {/* Formulário de Envio de Mensagem */}
@@ -162,7 +165,7 @@ export default async function ContatosPage() {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-semibold text-[var(--color-text-secondary)]">Assunto</label>
-                    <Input name="subject" placeholder="Ex: Dúvida sobre leilões / Credenciamento de Colecionador" required />
+                    <Input name="subject" placeholder="Ex: Dúvida sobre um preço ou parceria" required />
                   </div>
 
                   <div className="flex flex-col gap-1.5">

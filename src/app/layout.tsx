@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     template: '%s | Espaço Geek 86',
   },
   description:
-    'Marketplace premium de cultura geek: action figures, TCG, colecionáveis, hype drops e raridades. Coleção, curadoria e comunidade.',
+    'Comparador de preços de jogos, consoles e acessórios, com histórico de preço, pesquisa de mercado e notícias da cultura geek.',
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL
       ? process.env.NEXT_PUBLIC_APP_URL.startsWith('http')

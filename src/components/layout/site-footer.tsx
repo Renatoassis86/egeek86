@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Text } from '@/components/ui/text';
 import { Separator } from '@/components/ui/separator';
 import { Send } from 'lucide-react';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { CommissionNotice } from '@/components/legal/commission-notice';
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -30,7 +31,7 @@ const footerSections = [
     links: [
       { href: '/ofertas', label: 'Ofertas' },
       { href: '/ranking', label: 'Ranking' },
-      { href: '/hype-zone', label: 'Hype Zone' },
+      ...(MARKETPLACE_PUBLIC ? [{ href: '/hype-zone', label: 'Hype Zone' }] : []),
     ],
   },
   {
@@ -60,7 +61,7 @@ export function SiteFooter() {
               <Image src="/geek 86.webp" alt="Espaço Geek 86" width={4220} height={1568} className="theme-logo h-7 w-auto" />
             </Link>
             <Text variant="body-sm" color="secondary" className="max-w-[28ch]">
-              O cofre da cultura geek. Drops, raridades e curadoria.
+              {MARKETPLACE_PUBLIC ? 'O cofre da cultura geek. Drops, raridades e curadoria.' : 'Preços, pesquisa e insights do mercado gamer.'}
             </Text>
             {/* Redes Sociais */}
             <div className="flex items-center gap-3.5 mt-2">

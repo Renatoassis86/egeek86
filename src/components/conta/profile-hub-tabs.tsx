@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/toast';
 import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { updateOwnProfile } from '@/app/(shop)/conta/actions';
 
 interface ProfileHubTabsProps {
@@ -44,7 +45,10 @@ const TAB_BASE =
 const TAB_IDLE = 'border-transparent text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]';
 
 export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, watches }: ProfileHubTabsProps) {
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [rawTab, setActiveTab] = useState(initialTab);
+  // Marketplace fechado: abas de drops/leilões não existem, volta para a visão geral.
+  const activeTab =
+    !MARKETPLACE_PUBLIC && (rawTab === 'vendas' || rawTab === 'leiloes') ? 'visao_geral' : rawTab;
 
   // useState(initialTab) só roda o inicializador na primeira montagem — se o
   // usuário já está em /conta e clica num link tipo /conta?aba=jogos (o
@@ -98,6 +102,8 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
           <span>Dados cadastrais</span>
         </button>
 
+        {MARKETPLACE_PUBLIC && (
+          <>
         <button
           onClick={() => setActiveTab('vendas')}
           className={cn(
@@ -119,6 +125,8 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
           <Gavel className="size-4" />
           <span>Meus leilões</span>
         </button>
+          </>
+        )}
 
         <button
           onClick={() => setActiveTab('compras')}
@@ -145,7 +153,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
 
       {/* 1. VISÃO GERAL — somente dado real da conta */}
       {activeTab === 'visao_geral' && (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className={cn('grid grid-cols-1 gap-6', MARKETPLACE_PUBLIC ? 'md:grid-cols-3' : 'md:grid-cols-2')}>
           <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
             <Text variant="caption" color="tertiary">Jogos acompanhados</Text>
             <Text variant="heading-lg" className="mt-2 text-2xl font-black">{watches.length}</Text>
@@ -166,6 +174,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
             </Text>
           </Card>
 
+          {MARKETPLACE_PUBLIC && (
           <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
             <Text variant="caption" color="tertiary">Perfil de colecionador</Text>
             <Text variant="heading-lg" className="mt-2 text-2xl font-black">
@@ -177,6 +186,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
                 : 'Cadastre-se como colecionador para publicar drops e leilões.'}
             </Text>
           </Card>
+          )}
         </div>
       )}
 
@@ -215,7 +225,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
       )}
 
       {/* 3. MEUS DROPS */}
-      {activeTab === 'vendas' && (
+      {MARKETPLACE_PUBLIC && activeTab === 'vendas' && (
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:p-8">
           <div className="mb-6 flex items-center justify-between">
             <div>
@@ -255,7 +265,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
       )}
 
       {/* 4. MEUS LEILÕES */}
-      {activeTab === 'leiloes' && (
+      {MARKETPLACE_PUBLIC && activeTab === 'leiloes' && (
         <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6 md:p-8">
           <div className="mb-6 flex w-full max-w-full flex-col items-start justify-between gap-4 overflow-hidden sm:flex-row sm:items-center">
             <div>

@@ -436,22 +436,6 @@ function FerramentasShowcaseSection() {
       ],
       reverse: true,
     },
-    {
-      id: 'ferramenta-hype-zone-leiloes',
-      badge: 'Hype Zone e Leilões C2C',
-      title: '7. Hype Zone, drops e leilões entre colecionadores',
-      description:
-        'Lançamentos de edições limitadas e leilões entre colecionadores de itens clássicos e raros, com contagem regressiva, histórico de lances e nota de confiança dos vendedores.',
-      imageSrc: '/images/sobre/loja-retro.png',
-      badgeColor: 'bg-amber-500 text-black',
-      borderHover: 'hover:border-amber-500 hover:shadow-xl',
-      bullets: [
-        'Leilões com cronômetro regressivo',
-        'Drops com acesso restrito e cadastro prévio',
-        'Nota de reputação de vendedores e colecionadores',
-      ],
-      reverse: false,
-    },
   ];
 
   return (
@@ -466,7 +450,7 @@ function FerramentasShowcaseSection() {
               Ferramentas do Espaço Geek 86
             </Text>
             <Text variant="body-lg" className="text-zinc-700 max-w-[64ch] leading-relaxed font-medium">
-              O que o site oferece para compradores, divulgadores e colecionadores.
+              O que o site oferece para quem quer comprar jogos e consoles pelo menor preço.
             </Text>
           </div>
         </Reveal>

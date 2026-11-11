@@ -13,6 +13,7 @@ import { MobileNavDrawer } from '@/components/layout/mobile-nav-drawer';
 import { SignOutButton } from '@/components/layout/sign-out-button';
 import { isAdminRole, type ShellViewer } from '@/components/layout/shell-viewer';
 import { cn } from '@/lib/cn';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 
 interface NavChild {
   href: string;
@@ -52,15 +53,6 @@ const navLinks: NavItem[] = [
       { href: '/ofertas', label: 'Vitrine de Ofertas' },
       { href: '/tabela-de-precos', label: 'Tabela de Preços' },
       { href: '/monitoramento', label: 'Bolsa Gamer (Monitoramento)' },
-    ],
-  },
-  {
-    href: '/hype-zone',
-    label: 'Hype Zone',
-    highlight: true,
-    children: [
-      { href: '/hype-zone', label: 'Hype Zone e Drops' },
-      { href: '/leiloes', label: 'Leilões Geek' },
     ],
   },
   {
@@ -282,7 +274,7 @@ export function AppHeader({
                     {/* Cabeçalho do Perfil */}
                     <div className="p-3 border-b border-[#28231D] flex flex-col gap-1">
                       <span className="text-xs font-bold text-[#F3EFE6] truncate">{viewer.name}</span>
-                      <span className="text-xs text-[#A39785]">Acesse seus dados, drops e leilões</span>
+                      <span className="text-xs text-[#A39785]">{MARKETPLACE_PUBLIC ? 'Acesse seus dados, drops e leilões' : 'Acesse seus dados e jogos acompanhados'}</span>
                     </div>
 
                     <div className="flex flex-col py-1">
@@ -294,6 +286,8 @@ export function AppHeader({
                         <Sliders className="size-3.5 text-[#E0A83B]" />
                         <span>Dados cadastrais</span>
                       </Link>
+                      {MARKETPLACE_PUBLIC && (
+                      <>
                       <Link href="/conta?aba=vendas" className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#D4CBB9] hover:text-[#F3EFE6] hover:bg-white/10 rounded-[var(--radius-xs)] transition-colors">
                         <ShieldCheck className="size-3.5 text-[#F59E0B]" />
                         <span>Meus drops</span>
@@ -302,6 +296,7 @@ export function AppHeader({
                         <Gavel className="size-3.5 text-[#E0A83B]" />
                         <span>Meus leilões</span>
                       </Link>
+                      </>)}
                       {isAdminRole(viewer.role) && (
                         <Link href="/admin" className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-[var(--radius-xs)] transition-colors">
                           <Settings className="size-3.5" />
@@ -327,9 +322,11 @@ export function AppHeader({
                         <LogIn className="size-3.5" />
                         <span>Entrar</span>
                       </Link>
+                      {MARKETPLACE_PUBLIC && (
                       <Link href="/entrar?role=colecionador" className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-[var(--radius-xs)] transition-colors">
                         <span>Cadastrar como colecionador</span>
                       </Link>
+                      )}
                     </div>
                   </>
                 )}

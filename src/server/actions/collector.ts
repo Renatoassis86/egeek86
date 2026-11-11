@@ -1,5 +1,6 @@
 'use server';
 
+import { marketplaceActionAllowed } from '@/lib/auth/marketplace-gate';
 import { entryGateAttributes } from '@/lib/catalog/gate';
 import type { ProductType } from '@/db/schema';
 import { revalidatePath } from 'next/cache';
@@ -27,6 +28,9 @@ export async function saveCollectorOnboarding(answers: {
   guaranteesAuthentic: boolean;
 }) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para realizar o onboarding.' };
@@ -154,6 +158,9 @@ export async function createCollectorDrop(data: {
   images: string[];
 }) {
   try {
+    if (!(await marketplaceActionAllowed())) {
+      return { error: 'Recurso indisponivel no momento.' };
+    }
     const profile = await getCurrentProfile();
     if (!profile) {
       return { error: 'Você precisa estar logado para agendar um drop.' };

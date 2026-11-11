@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Badge } from '@/components/ui/badge';
 import { formatBRL } from '@/lib/format';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import type { GlobalSearchResult } from '@/app/api/search/route';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -81,9 +82,9 @@ export function HeaderSearchModal() {
     setIsOpen(false);
     if (filter === 'noticia') {
       router.push(`/noticias?q=${encodeURIComponent(query.trim())}`);
-    } else if (filter === 'hype') {
+    } else if (MARKETPLACE_PUBLIC && filter === 'hype') {
       router.push(`/hype-zone?q=${encodeURIComponent(query.trim())}`);
-    } else if (filter === 'leilao') {
+    } else if (MARKETPLACE_PUBLIC && filter === 'leilao') {
       router.push(`/leiloes?q=${encodeURIComponent(query.trim())}`);
     } else {
       router.push(`/ofertas?q=${encodeURIComponent(query.trim())}`);
@@ -123,7 +124,7 @@ export function HeaderSearchModal() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 aria-label="Buscar jogos, consoles e notícias"
-                placeholder="Pesquisar por jogos, notícias, leilões ou consoles..."
+                placeholder={MARKETPLACE_PUBLIC ? 'Pesquisar por jogos, notícias, leilões ou consoles...' : 'Pesquisar por jogos, notícias ou consoles...'}
                 className="w-full bg-transparent text-sm md:text-base text-[var(--color-text-primary)] placeholder-[var(--color-text-tertiary)] focus:outline-none"
               />
               {query && (
@@ -159,6 +160,7 @@ export function HeaderSearchModal() {
               >
                 <Newspaper className="size-3.5" /> Notícias
               </button>
+              {MARKETPLACE_PUBLIC && (<>
               <button
                 type="button"
                 onClick={() => setFilter('hype')}
@@ -173,6 +175,7 @@ export function HeaderSearchModal() {
               >
                 <Gavel className="size-3.5" /> Leilões
               </button>
+              </>)}
             </div>
 
             {/* Lista de Resultados */}

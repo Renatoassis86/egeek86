@@ -6,6 +6,7 @@ import { sellers } from '@/db/schema';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { Glow } from '@/components/motion/glow';
 import { Reveal } from '@/components/motion/reveal';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
@@ -72,11 +73,11 @@ export default async function ContaPage({
                 <Badge variant="hype" size="lg">
                   Administrador
                 </Badge>
-              ) : seller?.status === 'active' ? (
+              ) : MARKETPLACE_PUBLIC && seller?.status === 'active' ? (
                 <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">
                   <ShieldCheck className="size-3 mr-1" /> Colecionador verificado
                 </Badge>
-              ) : seller ? (
+              ) : MARKETPLACE_PUBLIC && seller ? (
                 <Badge variant="outline" className="border-amber-500/50 text-amber-400">
                   Cadastro de colecionador em análise
                 </Badge>
@@ -92,7 +93,7 @@ export default async function ContaPage({
 
           <Reveal delay={0.1}>
             <Text variant="body-md" color="secondary" className="max-w-[52ch] leading-relaxed text-xs md:text-sm">
-              Gerencie seus dados cadastrais, os jogos que você acompanha, seus drops e leilões.
+              Gerencie seus dados cadastrais, os jogos que você acompanha, {MARKETPLACE_PUBLIC ? 'seus drops e leilões.' : 'seus alertas de preço.'}
             </Text>
           </Reveal>
 
@@ -104,11 +105,13 @@ export default async function ContaPage({
                   <Button asChild size="md" variant="primary" className="font-bold" rightIcon={<ArrowRight className="size-4" />}>
                     <Link href="/entrar">Criar Minha Conta / Entrar</Link>
                   </Button>
+                  {MARKETPLACE_PUBLIC && (
                   <Button asChild size="md" variant="hype" className="font-bold">
                     <Link href="/entrar?role=colecionador">Cadastrar como Colecionador</Link>
                   </Button>
+                  )}
                 </>
-              ) : (
+              ) : MARKETPLACE_PUBLIC ? (
                 <>
                   <Button asChild size="sm" variant="hype">
                     <Link href="/conta/vendedor/novo-drop">
@@ -123,7 +126,7 @@ export default async function ContaPage({
                     </Link>
                   </Button>
                 </>
-              )}
+              ) : null}
             </div>
           </Reveal>
         </div>
