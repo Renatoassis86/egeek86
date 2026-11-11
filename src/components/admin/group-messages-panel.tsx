@@ -163,8 +163,39 @@ function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPan
           >
             <Copy /> Copiar
           </Button>
+          {tab === 'wa' && item.cardOfferId && (
+            <Button
+              size="lg"
+              fullWidth
+              variant="primary"
+              className={`${SQUARE} sm:col-span-2`}
+              disabled={!item.sendable}
+              onClick={async () => {
+                // Card + texto de uma vez: a folha de compartilhar abre o WhatsApp (ou o app de desktop) com a imagem e a legenda prontas;
+                // é só escolher o grupo. Sem suporte: copia o texto e abre o card para anexar.
+                try {
+                  const res = await fetch(`/api/admin/card/${item.cardOfferId}`, { cache: 'no-store' });
+                  if (!res.ok) throw new Error('card');
+                  const file = new File([await res.blob()], 'card-espaco-geek-86.png', { type: 'image/png' });
+                  if (navigator.canShare?.({ files: [file] })) {
+                    await navigator.share({ files: [file], text: item.whatsapp });
+                    return;
+                  }
+                  await copyText(item.whatsapp);
+                  window.open(URL.createObjectURL(file), '_blank');
+                  toast.success('Texto copiado. Anexe o card aberto na nova aba e cole o texto como legenda.');
+                } catch (e) {
+                  if ((e as Error)?.name === 'AbortError') return;
+                  await copyText(item.whatsapp);
+                  toast.error('Não consegui montar o card; o texto foi copiado.');
+                }
+              }}
+            >
+              <MessageCircle /> Compartilhar card + texto no WhatsApp
+            </Button>
+          )}
           {tab === 'wa' && (
-            <Button size="lg" fullWidth variant="primary" className={SQUARE} disabled={!item.sendable} asChild>
+            <Button size="lg" fullWidth variant="secondary" className={SQUARE} disabled={!item.sendable} asChild>
               <a
                 href={item.sendable ? waMe(item.whatsapp) : undefined}
                 target="_blank"

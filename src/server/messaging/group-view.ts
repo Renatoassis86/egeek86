@@ -33,6 +33,8 @@ export interface GroupViewItem {
   recheckDivergencePct: number | null;
   recheckNote: string | null;
   heldReasons: string[];
+  /** Oferta do card (para o botão de compartilhar com imagem). */
+  cardOfferId: string | null;
 }
 
 export type GroupSection = 'aprovacao' | 'retidas' | 'sombra' | 'fila_auto' | 'historico' | 'ao_vivo';
@@ -73,6 +75,7 @@ export function toViewItem(c: Candidate): GroupViewItem {
     recheckDivergencePct: null,
     recheckNote: null,
     heldReasons: c.heldReasons ?? [],
+    cardOfferId: c.offerIds?.[0] ?? null,
   };
 }
 
@@ -116,6 +119,7 @@ export function queueToViewItems(rows: QueueRow[]): GroupViewItem[] {
       recheckDivergencePct: tg?.recheckDivergencePct ?? null,
       recheckNote: tg?.recheckNote ?? null,
       heldReasons: c.heldReasons ?? [],
+      cardOfferId: c.offerIds?.[0] ?? null,
     });
   }
   return out;
