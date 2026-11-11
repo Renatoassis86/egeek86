@@ -334,6 +334,7 @@ const DEPARTMENTS: Record<string, string> = {
   livros: 'Livros',
   eletrodomesticos: 'Eletrodomésticos',
   esporte: 'Esporte',
+  impressao3d: 'Impressão 3D',
 };
 export function departmentLabel(vertical: string): string {
   return DEPARTMENTS[vertical] ?? vertical;
