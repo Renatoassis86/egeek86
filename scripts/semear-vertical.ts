@@ -9,9 +9,16 @@
  * Opcoes:
  *   --segmento <chave[,chave]>  segmentos (config.ts); --vertical <nome> usa todos do departamento; sem nenhum: o 1o da ordem de semeadura.
  *   --max-calls N               teto de chamadas ao ML por execucao (padrao 40; busca, /items e /products/{id} contam).
+ *                               Alem dele vale o ORCAMENTO DIARIO persistente (480/dia, backup/dados/semear-estado.json): toda chamada
+ *                               e cobrada ANTES de sair, em dry-run ou apply; esgotado o dia, a execucao para com seguranca.
+ *   --daily-cap N               teto diario (padrao 480; so reduzir, nunca passar do autorizado pelo dono).
  *   --max-create N              teto de masters a criar por segmento (padrao 20).
- *   --limit N / --offset N      pagina de /products/search (padrao 10 / 0).
- *   --terms N                   quantos termos da whitelist usar (padrao todos).
+ *   --limit N                   resultados por pagina de /products/search (padrao 20, maximo 50 medido em 10/11).
+ *   --pages N                   paginas por termo (offset += limit; padrao 2). Para o termo se a pagina nao rendeu.
+ *   --offset N                  offset da 1a pagina (padrao 0).
+ *   --terms N / --terms-from K  usa N termos a partir do K-esimo (0-based) da lista do segmento (padrao todos / 0).
+ *   --sem-dominio               nao filtra a busca por domain_id (padrao: filtra onde o segmento declara searchDomain).
+ *   --estado                    so mostra o orcamento do dia e o cache de 404 e sai (0 chamadas).
  *   --out-dir <pasta>           onde gravar log.txt, plano.json e revisao.json (padrao backup/dados/semear-vertical-<ts>/).
  *   --apply                     GRAVA (precisa tambem de --termos-aprovados: a whitelist de termos e provisoria ate o dono curar).
  *
@@ -35,6 +42,9 @@ import { createMlClient } from '../src/lib/catalog/vertical/ml-api';
 import { planSeed, type ExistingLookup, type SeedPlanEntry, type SeedReport } from '../src/lib/catalog/vertical/seed-plan';
 import { slugify } from '../src/lib/slugify';
 import { isVertical } from '../src/lib/catalog/verticais';
+import { DAILY_CALL_CAP, dayKeySP, effectiveMaxCalls, isKnownNotFound, remainingOn, usedOn } from '../src/lib/catalog/vertical/seed-budget';
+import { formatSummary, summarizeReports } from '../src/lib/catalog/vertical/seed-utils';
+import { chargeOne, loadState, rememberNotFound, STATE_FILE } from './_semear-estado';
 
 const argv = process.argv.slice(2);
 const flag = (n: string) => argv.includes(n);
@@ -45,9 +55,14 @@ const opt = (n: string): string | undefined => {
 const APPLY = flag('--apply');
 const MAX_CALLS = Number(opt('--max-calls') ?? 40);
 const MAX_CREATE = Number(opt('--max-create') ?? 20);
-const PAGE_LIMIT = Number(opt('--limit') ?? 10);
+const PAGE_LIMIT = Math.min(50, Math.max(1, Number(opt('--limit') ?? 20)));
+const PAGES = Math.max(1, Number(opt('--pages') ?? 2));
 const OFFSET = Number(opt('--offset') ?? 0);
 const TERMS = opt('--terms') ? Number(opt('--terms')) : undefined;
+const TERMS_FROM = Number(opt('--terms-from') ?? 0);
+const DAILY_CAP = Math.min(DAILY_CALL_CAP, Math.max(0, Number(opt('--daily-cap') ?? DAILY_CALL_CAP)));
+const USE_DOMAIN = !flag('--sem-dominio');
+let interrupted = false;
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const outDir = path.resolve(opt('--out-dir') ?? path.join('backup', 'dados', `semear-vertical-${stamp}`));
 fs.mkdirSync(outDir, { recursive: true });
@@ -168,7 +183,19 @@ async function applyEntry(sql: Sql, e: SeedPlanEntry, networkId: string): Promis
 }
 
 async function main() {
-  log(`semear-vertical: modo=${APPLY ? 'APPLY (GRAVA)' : 'DRY-RUN (nada e gravado)'} max-calls=${MAX_CALLS} max-create=${MAX_CREATE} saida=${outDir}`);
+  const today = dayKeySP(new Date());
+  const state0 = loadState();
+  const effectiveCalls = effectiveMaxCalls(state0, today, MAX_CALLS, DAILY_CAP);
+  log(`orcamento diario (${today}): usadas=${usedOn(state0, today)} restam=${remainingOn(state0, today, DAILY_CAP)} de ${DAILY_CAP}; cache de 404: ${Object.keys(state0.notFound).length} catalogos; estado=${STATE_FILE}`);
+  if (flag('--estado')) return;
+  if (effectiveCalls <= 0) throw new Error(`orcamento diario esgotado (${usedOn(state0, today)}/${DAILY_CAP}); nada executado, 0 chamadas`);
+  log(`semear-vertical: modo=${APPLY ? 'APPLY (GRAVA)' : 'DRY-RUN (nada e gravado)'} max-calls=${effectiveCalls}${effectiveCalls < MAX_CALLS ? ` (pedido ${MAX_CALLS}, limitado pelo que resta no dia)` : ''} max-create=${MAX_CREATE} limit=${PAGE_LIMIT} pages=${PAGES} dominio=${USE_DOMAIN ? 'filtra onde declarado' : 'sem filtro'} saida=${outDir}`);
+  process.on('SIGINT', () => {
+    if (interrupted) process.exit(130);
+    interrupted = true;
+    log('SIGINT: terminando a chamada em curso e gravando o relatorio parcial (Ctrl+C de novo aborta). O orcamento ja gasto esta salvo.');
+  });
+  const run = { runId: randomUUID(), startedAt: new Date().toISOString(), mode: (APPLY ? 'apply' : 'dry-run') as 'apply' | 'dry-run' };
   const segments = pickSegments();
   log(`segmentos: ${segments.map((s) => `${s.key}[${s.vertical}]`).join(', ')}`);
   if (APPLY && !flag('--termos-aprovados')) {
@@ -180,7 +207,13 @@ async function main() {
   let runHandle: { counters: any; finish(o?: any): Promise<void> } | null = null;
   try {
     const token = await readToken(sql);
-    const client = createMlClient({ token, maxCalls: MAX_CALLS, onCall: (c) => log(`ML #${c.n}/${MAX_CALLS} ${c.endpoint} -> ${c.status} (${c.ms} ms)`) });
+    const client = createMlClient({
+      token,
+      maxCalls: effectiveCalls,
+      beforeCall: () => chargeOne(run, DAILY_CAP),
+      onCall: (c) => log(`ML #${c.n}/${effectiveCalls} ${c.endpoint} -> ${c.status} (${c.ms} ms)`),
+    });
+    let notFoundState = state0;
     const lookup = await buildLookup(sql);
     if (APPLY) {
       const { startCollectorRun } = await import('../src/server/collector/collector-runs');
@@ -188,9 +221,29 @@ async function main() {
     }
     for (const seg of segments) {
       log(`--- segmento ${seg.key} (${seg.vertical}) | termos: ${seg.terms.slice(0, TERMS ?? seg.terms.length).join(' | ')}`);
-      const rep = await planSeed(client, seg, lookup, { pageLimit: PAGE_LIMIT, offset: OFFSET, termsLimit: TERMS, maxCreate: MAX_CREATE, log });
+      if (interrupted) break;
+      const rep = await planSeed(client, seg, lookup, {
+        pageLimit: PAGE_LIMIT,
+        offset: OFFSET,
+        pages: PAGES,
+        termsLimit: TERMS,
+        termsFrom: TERMS_FROM,
+        maxCreate: MAX_CREATE,
+        useSearchDomain: USE_DOMAIN,
+        isKnownNotFound: (id) => isKnownNotFound(notFoundState, id, new Date()),
+        onNotFound: (id) => {
+          rememberNotFound(id);
+          notFoundState = loadState();
+        },
+        shouldStop: () => interrupted,
+        log,
+      });
       reports.push(rep);
-      log(`segmento ${seg.key}: buscas=${rep.termsSearched} resultados=${rep.searchResults} planejados=${rep.plans.length} revisao=${rep.reviews.length} parou=${rep.stoppedBecause ?? '-'}`);
+      log(`segmento ${seg.key}: buscas=${rep.termsSearched} resultados=${rep.searchResults} chamadas=${rep.callsSpent} planejados=${rep.plans.length} revisao=${rep.reviews.length} parou=${rep.stoppedBecause ?? '-'}`);
+      log(`  paradas por termo: ${JSON.stringify(rep.termStops)}`);
+      if (rep.stoppedBecause === 'teto_diario' || rep.stoppedBecause === 'teto_de_chamadas') {
+        log('  orcamento acabou neste segmento; os demais nao serao buscados.');
+      }
       log(`  contagens: ${JSON.stringify(rep.counts)}`);
       for (const p of rep.plans) {
         log(
@@ -222,7 +275,12 @@ async function main() {
       }
     }
     const used = client.used();
-    log(`TOTAL: chamadas ao ML=${used}/${MAX_CALLS}; planejados=${reports.reduce((n, r) => n + r.plans.length, 0)}; revisao=${reports.reduce((n, r) => n + r.reviews.length, 0)}; ` +
+    const summary = summarizeReports(reports, applied.filter((a) => a.masterId).length);
+    for (const line of formatSummary(summary, APPLY)) log(line);
+    const after = loadState();
+    log(`orcamento diario apos a execucao: usadas=${usedOn(after, today)} restam=${remainingOn(after, today, DAILY_CAP)} de ${DAILY_CAP}`);
+    fs.writeFileSync(path.join(outDir, 'relatorio.json'), JSON.stringify({ apply: APPLY, dia: today, resumo: summary, orcamento: { usadas: usedOn(after, today), teto: DAILY_CAP } }, null, 2));
+    log(`TOTAL: chamadas ao ML=${used}/${effectiveCalls}; planejados=${reports.reduce((n, r) => n + r.plans.length, 0)}; revisao=${reports.reduce((n, r) => n + r.reviews.length, 0)}; ` +
       `${APPLY ? `criados=${applied.filter((a) => a.masterId).length}` : 'NADA GRAVADO (dry-run)'}`);
     if (runHandle) {
       runHandle.counters.queries = used;

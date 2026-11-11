@@ -3,18 +3,24 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { loadPeriodDays } from '@/server/pricing/price-daily';
-import { addDays, computePeriodMetrics, spDay } from '@/lib/pricing/daily-state';
+import { addDays, computePeriodMetrics, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
 import { readPlatform } from '@/lib/catalog/platform';
 import { isVertical } from '@/lib/catalog/verticais';
 import { getAdTag } from '@/lib/messaging/group-config';
 import {
   RULES,
+  amazonLoopPaused,
   applyLimits,
   buildDailySummary,
-  evaluateProduct,
+  composeRadar,
+  detectMovement,
+  evaluateProductV2,
+  productDedupBlock,
   type Blocked,
   type Candidate,
+  type DayPoint,
   type LimitPlan,
+  type MessageClass,
   type OfferFact,
   type ProductFacts,
   type SentRecord,
@@ -55,16 +61,22 @@ export interface DetectOptions {
   /** Teto de produtos avaliados por execução (proteção de tempo). */
   maxProducts?: number;
   adTag?: string;
+  /** Frescor máximo das ofertas Amazon (60 min na detecção, 40 no envio). */
+  amazonMaxAgeMin?: number;
+  /** Histórico inclui as decisões simuladas 'enviaria' (modo sombra). */
+  includeSimulated?: boolean;
 }
 
 export interface DetectionResult {
   generatedAt: string;
   mode: 'dry';
-  config: { verticals: string[]; maxAgeMin: number; eventWindowHours: number; adTag: string };
+  config: { verticals: string[]; maxAgeMin: number; eventWindowHours: number; adTag: string; amazonMaxAgeMin: number; amazonPaused: boolean; amazonLastRunAt: string | null };
   counts: { productsEvaluated: number; candidates: number; auto: number; review: number; notSendable: number; blocked: number };
   candidates: Candidate[];
   blocked: Blocked[];
   plan: LimitPlan;
+  /** Histórico de envios usado nos limites (para o chamador revalidar com o mesmo contexto). */
+  history: SentRecord[];
   historySource: 'group_messages' | 'nenhum (tabela ausente)' | 'parametro';
   warnings: string[];
 }
@@ -77,31 +89,103 @@ export async function groupMessagesTableExists(): Promise<boolean> {
   return rows[0]?.ok === true;
 }
 
-/** Envios (status 'enviada') das últimas 72 h do canal; [] se a tabela ainda não existe. */
-export async function loadSentHistory(channel: 'tg' | 'wa', now: Date): Promise<{ records: SentRecord[]; source: DetectionResult['historySource'] }> {
-  if (!(await groupMessagesTableExists())) return { records: [], source: 'nenhum (tabela ausente)' };
-  const since = new Date(now.getTime() - 72 * 3600_000).toISOString();
-  const rows = await db.execute<Row>(sql`
-    SELECT master_product_id, price_cents_detected, sent_at, trigger, candidate ->> 'networkSlug' AS network_slug
-    FROM group_messages
-    WHERE channel = ${channel} AND status = 'enviada' AND sent_at >= ${since}::timestamptz AND master_product_id IS NOT NULL
-  `);
-  return {
-    source: 'group_messages',
-    records: rows.map((r) => ({
-      masterProductId: String(r.master_product_id),
-      priceCents: Number(r.price_cents_detected ?? 0),
-      sentAt: new Date(r.sent_at as string | Date),
-      networkSlug: (r.network_slug as string | null) ?? null,
-      trigger: (r.trigger as string | null) ?? null,
-    })),
-  };
+let v2Cache: { at: number; ok: boolean } | null = null;
+
+/**
+ * Migration 0030 (colunas novas de group_messages + tabelas group_member_counts e group_offer_watch) já foi aplicada?
+ * Sem ela o código cai no comportamento da 0028 (propostas manuais) e a automação (shadow/on) fica recusada.
+ */
+export async function groupMessagesV2Ready(): Promise<boolean> {
+  if (v2Cache && Date.now() - v2Cache.at < 60_000) return v2Cache.ok;
+  let ok = false;
+  try {
+    const rows = await db.execute<Row>(sql`
+      SELECT (
+        EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'group_messages' AND column_name = 'msg_class')
+        AND to_regclass('public.group_member_counts') IS NOT NULL
+        AND to_regclass('public.group_offer_watch') IS NOT NULL
+      ) AS ok
+    `);
+    ok = rows[0]?.ok === true;
+  } catch {
+    ok = false;
+  }
+  v2Cache = { at: Date.now(), ok };
+  return ok;
 }
 
-async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eventWindowHours'>> & { verticals: string[]; now: Date; maxProducts: number }): Promise<string[]> {
-  const confirmedSince = new Date(o.now.getTime() - o.maxAgeMin * 60_000).toISOString();
+/** Último lote da coleta assistida da Amazon (collector_runs job 'amazon-assistida', status ok). */
+export async function loadAmazonLastRun(): Promise<Date | null> {
+  const rows = await db.execute<Row>(sql`
+    SELECT max(COALESCE(finished_at, started_at)) AS at FROM collector_runs WHERE job = 'amazon-assistida' AND status = 'ok'
+  `);
+  const v = rows[0]?.at;
+  return v ? new Date(v as string | Date) : null;
+}
+
+/**
+ * Envios das últimas 7 dias do canal (a janela de 7 dias serve ao cartão; os demais limites olham 24/48 h).
+ * Conta 'enviada' e 'enviando' (envio em curso de outra execução: os limites o enxergam). Com `includeSimulated`
+ * (modo sombra), as decisões 'simulada' com estado 'enviaria' valem como envio, para a simulação respeitar os tetos.
+ * Radar: um registro da mensagem (conta nos tetos) + um registro por item (só para o dedup por produto).
+ * [] se a tabela ainda não existe.
+ */
+export async function loadSentHistory(
+  channel: 'tg' | 'wa',
+  now: Date,
+  opts: { includeSimulated?: boolean; excludeId?: string } = {}
+): Promise<{ records: SentRecord[]; source: DetectionResult['historySource'] }> {
+  if (!(await groupMessagesTableExists())) return { records: [], source: 'nenhum (tabela ausente)' };
+  const since = new Date(now.getTime() - 7 * 86_400_000).toISOString();
+  const v2 = await groupMessagesV2Ready();
+  const statuses = opts.includeSimulated && v2 ? ['enviada', 'enviando', 'simulada'] : v2 ? ['enviada', 'enviando'] : ['enviada'];
+  const rows = await db.execute<Row>(
+    v2
+      ? sql`
+    SELECT master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
+           candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state
+    FROM group_messages
+    WHERE channel = ${channel} AND status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)})
+      AND COALESCE(sent_at, created_at) >= ${since}::timestamptz
+      AND (${opts.excludeId ?? null}::uuid IS NULL OR id <> ${opts.excludeId ?? null}::uuid)
+  `
+      : sql`
+    SELECT master_product_id, price_cents_detected, sent_at AS at, trigger, NULL AS msg_class, false AS is_sound, false AS has_card,
+           candidate ->> 'networkSlug' AS network_slug, NULL AS items, status, NULL AS sim_state
+    FROM group_messages
+    WHERE channel = ${channel} AND status = 'enviada' AND sent_at >= ${since}::timestamptz
+  `
+  );
+  const records: SentRecord[] = [];
+  for (const r of rows) {
+    if (r.status === 'simulada' && !String(r.sim_state ?? '').startsWith('enviaria')) continue;
+    const at = new Date(r.at as string | Date);
+    const cls = (r.msg_class as MessageClass | null) ?? null;
+    records.push({
+      masterProductId: r.master_product_id ? String(r.master_product_id) : '',
+      priceCents: Number(r.price_cents_detected ?? 0),
+      sentAt: at,
+      networkSlug: (r.network_slug as string | null) ?? null,
+      trigger: (r.trigger as string | null) ?? null,
+      cls,
+      sound: r.is_sound === true,
+      card: r.has_card === true,
+    });
+    const items = typeof r.items === 'string' ? JSON.parse(r.items) : r.items;
+    if (Array.isArray(items)) {
+      for (const it of items as Array<{ masterProductId?: string; priceCents?: number }>) {
+        if (it.masterProductId) records.push({ masterProductId: it.masterProductId, priceCents: Number(it.priceCents ?? 0), sentAt: at, trigger: 'RADAR', cls: 'radar', itemOnly: true });
+      }
+    }
+  }
+  return { records, source: 'group_messages' };
+}
+
+async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eventWindowHours' | 'amazonMaxAgeMin'>> & { verticals: string[]; now: Date; maxProducts: number }): Promise<string[]> {
+  const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
   const evSince = new Date(o.now.getTime() - o.eventWindowHours * 3600_000).toISOString();
   const day = addDays(spDay(o.now), -3);
+  const today = spDay(o.now);
   const big = RULES.G5_MIN_OFFERS;
   const rows = await db.execute<Row>(sql`
     WITH live AS (
@@ -124,6 +208,17 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
     ),
     below AS (SELECT DISTINCT l.mid FROM live l INNER JOIN st ON st.mid = l.mid WHERE l.p <= st.avg_cents * ${1 - RULES.MIN_BELOW_AVG_PCT / 100}::numeric),
     bigp AS (SELECT mid FROM live GROUP BY mid HAVING count(*) >= ${big}::int),
+    hist AS (
+      SELECT master_product_id AS mid, min(min_cents) AS rec, (array_agg(min_cents ORDER BY day DESC))[1] AS last_min
+      FROM price_daily_state
+      WHERE day >= ${PRICE_DAILY_REGIME_START}::date AND day < ${today}::date AND quality IN ('complete', 'partial')
+      GROUP BY master_product_id
+    ),
+    mv AS (
+      SELECT l.mid FROM (SELECT mid, min(p) AS p FROM live GROUP BY mid) l
+      INNER JOIN hist h ON h.mid = l.mid
+      WHERE l.p < h.last_min OR l.p <= h.rec * ${1 + RULES.T2_NEAR_PCT / 100}::numeric
+    ),
     nets AS (
       SELECT mid FROM (SELECT mid, network_id, min(p) AS mn FROM live GROUP BY mid, network_id) x
       GROUP BY mid HAVING count(*) >= 2 AND min(mn) <= max(mn) * ${1 - RULES.G3_MIN_DIFF_PCT / 100}::numeric
@@ -131,6 +226,7 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
     SELECT mid FROM (
       SELECT mid, min(r) AS r FROM (
         SELECT mid, 1 AS r FROM ev WHERE mid IN (SELECT mid FROM live)
+        UNION ALL SELECT mid, 1 FROM mv
         UNION ALL SELECT mid, 2 FROM below
         UNION ALL SELECT mid, 3 FROM nets
         UNION ALL SELECT mid, 4 FROM bigp
@@ -140,9 +236,46 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
   return rows.map((r) => String(r.mid));
 }
 
-async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; eventWindowHours: number }): Promise<ProductFacts[]> {
+/**
+ * Série diária do MENOR preço do produto, dias anteriores a hoje: Mercado Livre/Shopee (principal) e Amazon (separada,
+ * porque a Amazon só se compara com o próprio histórico). Fonte: price_daily_offer (um mínimo por oferta-dia, só ofertas
+ * elegíveis) nos dias em que price_daily_state tem qualidade complete/partial, desde PRICE_DAILY_REGIME_START (31/10).
+ * Dia sem coleta fica lacuna (nada é interpolado).
+ */
+async function loadSeries(ids: string[], today: string): Promise<Map<string, { main: DayPoint[]; amazon: DayPoint[] }>> {
+  const out = new Map<string, { main: DayPoint[]; amazon: DayPoint[] }>();
+  if (!ids.length) return out;
+  const rows = await db.execute<Row>(sql`
+    SELECT d.master_product_id AS mid, d.day::text AS day,
+           (n.slug || ' ' || n.name) ILIKE '%amazon%' AS amz, min(d.min_cents) AS mn
+    FROM price_daily_offer d
+    INNER JOIN affiliate_offers o ON o.id = d.offer_id
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
+    INNER JOIN price_daily_state s ON s.master_product_id = d.master_product_id AND s.day = d.day AND s.quality IN ('complete', 'partial')
+    WHERE d.master_product_id IN (${idList(ids)}) AND d.day >= ${PRICE_DAILY_REGIME_START}::date AND d.day < ${today}::date
+      AND d.min_cents > 0 AND ${eligibleOfferSql('o')}
+      AND ((n.slug || ' ' || n.name) ILIKE '%mercado%' OR (n.slug || ' ' || n.name) ILIKE '%shopee%' OR (n.slug || ' ' || n.name) ILIKE '%amazon%')
+    GROUP BY d.master_product_id, d.day, ((n.slug || ' ' || n.name) ILIKE '%amazon%')
+    ORDER BY d.day
+  `);
+  for (const r of rows) {
+    const mid = String(r.mid);
+    const e = out.get(mid) ?? out.set(mid, { main: [], amazon: [] }).get(mid)!;
+    (r.amz === true ? e.amazon : e.main).push({ day: String(r.day).slice(0, 10), minCents: Number(r.mn) });
+  }
+  // Menor entre ML e Shopee por dia (as linhas já agrupam por rede, não por tipo): consolida o mínimo de cada dia.
+  for (const e of out.values()) {
+    const m = new Map<string, number>();
+    for (const pt of e.main) m.set(pt.day, Math.min(m.get(pt.day) ?? Infinity, pt.minCents));
+    e.main = [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([day, minCents]) => ({ day, minCents }));
+  }
+  return out;
+}
+
+async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazonMaxAgeMin: number; eventWindowHours: number }): Promise<ProductFacts[]> {
   if (!ids.length) return [];
-  const confirmedSince = new Date(o.now.getTime() - o.maxAgeMin * 60_000).toISOString();
+  // O filtro SQL usa o maior dos dois limites (a Amazon pode ter limite maior que as demais redes no envio); o juízo por rede é do judgeOffer.
+  const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
   const evSince = new Date(o.now.getTime() - o.eventWindowHours * 3600_000).toISOString();
 
   const [products, offers, firsts, lasts] = await Promise.all([
@@ -154,7 +287,8 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; event
     db.execute<Row>(sql`
       SELECT o.id, o.master_product_id, o.slug, o.title, n.slug AS net_slug, n.name AS net_name, o.seller_id,
              s.reputation_level, s.total_sales, o.current_price_cents, o.last_price_confirmed_at,
-             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.affiliate_link_pending, o.quarantined_at
+             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.affiliate_link_pending, o.quarantined_at,
+             o.consecutive_miss_count AS miss_count
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
@@ -173,6 +307,21 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; event
     `),
   ]);
 
+  // Amazon: primeira observação depois de uma ausência (tabela group_offer_watch, migration 0030).
+  const returnedBy = new Map<string, Date>();
+  if (offers.length && (await groupMessagesV2Ready())) {
+    const amzIds = offers.filter((r) => /amazon/i.test(String(r.net_slug))).map((r) => String(r.id));
+    if (amzIds.length) {
+      // Oferta que já sumiu da busca alguma vez (absent_since) e ainda não completou a 2a observação: returned_at; se a volta
+      // ainda não foi registrada pelo cron, vale a confirmação atual (intervalo 0, segue bloqueada até registrar e esperar 15 min).
+      const w = await db.execute<Row>(sql`SELECT offer_id, returned_at FROM group_offer_watch WHERE offer_id IN (${idList(amzIds)}) AND absent_since IS NOT NULL`);
+      for (const r of w) {
+        const conf = offers.find((x) => String(x.id) === String(r.offer_id))?.last_price_confirmed_at;
+        returnedBy.set(String(r.offer_id), r.returned_at ? new Date(r.returned_at as string | Date) : new Date((conf as string | Date) ?? Date.now()));
+      }
+    }
+  }
+
   const offersBy = new Map<string, OfferFact[]>();
   for (const r of offers) {
     const mid = String(r.master_product_id);
@@ -190,6 +339,8 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; event
       priceSince: r.price_since ? new Date(r.price_since as string | Date) : null,
       affiliateLinkPending: r.affiliate_link_pending === true,
       quarantined: r.quarantined_at != null,
+      missCount: r.miss_count == null ? 0 : Number(r.miss_count),
+      returnedAt: returnedBy.get(String(r.id)) ?? null,
     };
     (offersBy.get(mid) ?? offersBy.set(mid, []).get(mid)!).push(f);
   }
@@ -198,6 +349,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; event
 
   const today = spDay(o.now);
   const from = addDays(today, -29);
+  const seriesBy = await loadSeries(ids, today);
   const out: ProductFacts[] = [];
   for (const p of products) {
     const id = String(p.id);
@@ -205,8 +357,13 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; event
     if (!offs.length) continue;
     const rp = readPlatform(String(p.game_platform_gen ?? 'unknown') as never, String(p.name));
     const platformLabel = rp.platform !== 'unknown' ? (PLATFORM_LABELS[rp.platform] ?? null) : rp.legacyLabel;
+    // A média é só CONTEXTO do movimento (e faixa de risco): só se calcula para quem tem gatilho de movimento (ML/Shopee),
+    // porque a leitura é uma consulta por produto (a média é a MESMA do selo e do gráfico: computePeriodMetrics).
     let avg: ProductFacts['avg'] = null;
-    if (offs.length >= 3) {
+    const mainPrices = offs.filter((x) => !/amazon/i.test(x.networkSlug)).map((x) => x.priceCents);
+    const cheapestMain = mainPrices.length ? Math.min(...mainPrices) : 0;
+    const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today).length > 0;
+    if (hasMove) {
       const days = await loadPeriodDays(db, id, from, today);
       const pm = computePeriodMetrics(days, null);
       if (pm.avgOfferDayCents != null) {
@@ -230,6 +387,8 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; event
         : null,
       record: f ? { since: new Date(f.first_at as string | Date), minCents: Number(f.rec_cents) } : null,
       baseline: null,
+      series: seriesBy.get(id)?.main ?? [],
+      amazonSeries: seriesBy.get(id)?.amazon ?? [],
     });
   }
   return out;
@@ -247,17 +406,21 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const eventWindowHours = opts.eventWindowHours ?? 24;
   const adTag = opts.adTag ?? getAdTag();
   const warnings: string[] = [];
+  const amazonMaxAgeMin = opts.amazonMaxAgeMin ?? RULES.AMAZON_DETECT_MAX_AGE_MIN;
+  const amazonLastRun = await loadAmazonLastRun().catch(() => null);
+  const amazonPaused = amazonLoopPaused(amazonLastRun, now);
+  if (amazonPaused) warnings.push('Classe Amazon pausada: a coleta assistida está sem lote há mais de 90 min (ou nunca rodou).');
 
   const ids = opts.productIds?.length
     ? opts.productIds
-    : await pickProductIds({ verticals, now, maxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 300 });
-  const facts = await loadFacts(ids, { now, maxAgeMin, eventWindowHours });
+    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 400 });
+  const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours });
 
-  const ctx = { now, maxAgeMin, adTag };
+  const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused };
   const candidates: Candidate[] = [];
   const blocked: Blocked[] = [];
   for (const p of facts) {
-    const r = evaluateProduct(p, ctx);
+    const r = evaluateProductV2(p, ctx);
     candidates.push(...r.candidates);
     blocked.push(...r.blocked);
   }
@@ -271,11 +434,15 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
     history = opts.history;
     historySource = 'parametro';
   } else {
-    const h = await loadSentHistory('tg', now);
+    const h = await loadSentHistory('tg', now, { includeSimulated: opts.includeSimulated });
     history = h.records;
     historySource = h.source;
     if (h.source !== 'group_messages') warnings.push('Tabela group_messages ausente: limites calculados sem histórico de envios (migration 0028 não aplicada).');
   }
+  // Radar: itens da classe B que passam no dedup por produto viram UMA mensagem (3 a 6 itens) na hora cheia.
+  const radarPool = candidates.filter((c) => c.cls === 'radar' && c.trigger !== 'RADAR' && !productDedupBlock(c, history, now));
+  const radar = composeRadar(radarPool, ctx);
+  if (radar) candidates.push(radar);
   const plan = applyLimits(candidates, history, now);
 
   // Ordem de leitura: auto primeiro, depois revisão, depois não enviáveis; dentro, maior distância da média.
@@ -290,7 +457,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   return {
     generatedAt: now.toISOString(),
     mode: 'dry',
-    config: { verticals, maxAgeMin, eventWindowHours, adTag },
+    config: { verticals, maxAgeMin, eventWindowHours, adTag, amazonMaxAgeMin, amazonPaused, amazonLastRunAt: amazonLastRun ? amazonLastRun.toISOString() : null },
     counts: {
       productsEvaluated: facts.length,
       candidates: candidates.length,
@@ -302,6 +469,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
     candidates,
     blocked: blocked.slice(0, 200),
     plan,
+    history,
     historySource,
     warnings,
   };

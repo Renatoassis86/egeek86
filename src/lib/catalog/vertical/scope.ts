@@ -20,8 +20,8 @@ function fold(s: string): string {
 }
 
 export interface ScopeIssue {
-  kind: 'combo' | 'acessorio';
-  reason: 'combo_pacote' | 'acessorio_ou_peca';
+  kind: 'combo' | 'acessorio' | 'nicho';
+  reason: 'combo_pacote' | 'acessorio_ou_peca' | 'fora_do_nicho';
   /** Trecho que disparou (auditoria). */
   matched: string;
 }
@@ -80,7 +80,86 @@ const LEX: Record<string, SegmentLexicon> = {
     noun: /\b(bola|bolas)\b/,
     accessory: /\b(bomba|bolsa|saco|rede|capa|mochila|agulha|pino|calibrador|suporte|porta)\b/,
   },
+  // ---- Segmentos novos (ampliação da semeadura, 2026-11-10) ----
+  teclado: {
+    noun: /\b(teclado|keyboard)\b/,
+    accessory: /\b(keycap|keycaps|capa|protetor|cabo|descanso|apoio|extrator|lubrificante|kit de teclas)\b/,
+  },
+  mouse: {
+    noun: /\b(mouse|mice)\b/,
+    accessory: /\b(mousepad|pad|grip|skate|skates|feet|capa|cabo|suporte|bungee|receptor|dongle)\b/,
+  },
+  'headset-gamer': {
+    noun: /\b(headset|fone|fones|headphone|auricular)\b/,
+    accessory: /\b(almofada|almofadas|espuma|capa|case|suporte|cabo|adaptador|estojo|bag|haste|presilha|ear pads|earpads|cushion)\b/,
+  },
+  'fone-de-ouvido': {
+    noun: /\b(fone|fones|headphone|headset|earbuds?|earphones?|auricular|airpods)\b/,
+    accessory: /\b(almofada|almofadas|espuma|capa|case|suporte|cabo|adaptador|estojo|bag|haste|presilha|ear pads|earpads|cushion|ponteira|ponteiras|protetor)\b/,
+  },
+  monitor: {
+    noun: /\b(monitor)\b/,
+    accessory: /\b(suporte|braco|articulado|cabo|capa|pelicula|fonte|base|protetor|adaptador|filtro|painel)\b/,
+  },
+  'cadeira-gamer': {
+    noun: /\b(cadeira|poltrona)\b/,
+    accessory: /\b(rodinha|rodinhas|rodizio|rodizios|almofada|almofadas|apoio|capa|pistao|base|braco|bracos|encosto|forro|protetor|kit)\b/,
+  },
+  'memoria-ram': {
+    noun: /\b(memoria|ram|ddr\d)\b/,
+    accessory: /\b(dissipador|heatsink|suporte|cabo|adaptador|capa)\b/,
+  },
+  processador: {
+    noun: /\b(processador|cpu|ryzen|intel core|core i\d)\b/,
+    accessory: /\b(cooler|pasta termica|suporte|dissipador|adaptador|soquete|socket|ventoinha|water cooler|kit)\b/,
+  },
+  'caixa-de-som': {
+    noun: /\b(caixa de som|caixa acustica|speaker|soundbox)\b/,
+    accessory: /\b(suporte|capa|case|bag|cabo|bateria|controle|alca|tripe|pedestal|bolsa)\b/,
+  },
+  'robo-aspirador': {
+    noun: /\b(robo aspirador|aspirador robo|aspirador|robot)\b/,
+    accessory: /\b(filtro|filtros|escova|escovas|mop|pano|panos|bateria|dock|base|carregador|refil|refis|saco|sacos|reservatorio|kit|acessorio|acessorios|peca|pecas)\b/,
+  },
+  cafeteira: {
+    noun: /\b(cafeteira|maquina de cafe|expresso|espresso)\b/,
+    accessory: /\b(capsula|capsulas|filtro|filtros|porta filtro|jarra|vidro|reposicao|resistencia|bomba|garrafa|descalcificante|limpador|kit|peca|pecas)\b/,
+  },
+  esteira: {
+    noun: /\b(esteira)\b/,
+    accessory: /\b(correia|lona|lubrificante|oleo|silicone|tapete|capa|protetor|motor|placa|painel|sensor|rolo|peca|pecas|kit|manta)\b/,
+  },
+  'bicicleta-ergometrica': {
+    noun: /\b(bicicleta|bike|ergometrica|spinning)\b/,
+    accessory: /\b(pedal|pedais|selim|banco|capa|suporte|tapete|sensor|kit)\b/,
+  },
 };
+
+/**
+ * Exigência de NICHO por segmento (o domínio do ML é mais largo que o recorte do Espaço Geek 86):
+ *  - `require`: o título precisa casar (ex.: cadeira gamer vive em MLB-OFFICE_CHAIRS; só entra a que diz "gamer");
+ *  - `forbid`: o título NÃO pode casar (ex.: fone comum não pode ser headset gamer, que tem segmento próprio).
+ * Falhou => revisão com reason 'fora_do_nicho' (nunca master automático, nunca rejeição definitiva).
+ */
+const NICHO: Record<string, { require?: RegExp; forbid?: RegExp }> = {
+  teclado: { require: /\b(mecanico|mechanical|gamer|gaming|rgb|switch)\b/ },
+  mouse: { require: /\b(gamer|gaming|rgb|dpi)\b/ },
+  'headset-gamer': { require: /\b(headset|gamer|gaming)\b/ },
+  'fone-de-ouvido': { forbid: /\b(gamer|gaming|headset)\b/ },
+  'cadeira-gamer': { require: /\b(gamer|gaming)\b/ },
+};
+
+export function nichoIssue(segmentKey: string, name: string): ScopeIssue | null {
+  const rule = NICHO[segmentKey];
+  if (!rule) return null;
+  const folded = fold(name);
+  if (rule.forbid) {
+    const m = rule.forbid.exec(folded);
+    if (m) return { kind: 'nicho', reason: 'fora_do_nicho', matched: m[0] };
+  }
+  if (rule.require && !rule.require.test(folded)) return { kind: 'nicho', reason: 'fora_do_nicho', matched: 'sem_termo_do_nicho' };
+  return null;
+}
 
 /** Segmentos sem léxico (livros: "capa dura" é legítimo; tênis: só revisão de qualquer forma). */
 const NO_SCOPE_LEXICON = new Set(['livros', 'tenis-de-corrida']);
@@ -174,7 +253,7 @@ export function accessoryIssue(segmentKey: string, name: string): ScopeIssue | n
 
 /** Combo primeiro (mais específico), depois acessório. */
 export function scopeIssue(segmentKey: string, name: string): ScopeIssue | null {
-  return comboIssue(segmentKey, name) ?? accessoryIssue(segmentKey, name);
+  return comboIssue(segmentKey, name) ?? accessoryIssue(segmentKey, name) ?? nichoIssue(segmentKey, name);
 }
 
 // ---------------------------------------------------------------------------

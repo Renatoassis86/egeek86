@@ -4,7 +4,7 @@
 
 import { TELEGRAM_MAX_CHARS } from '@/lib/messaging/group-messages';
 
-export type FetchLike = (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string }) => Promise<{
+export type FetchLike = (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string | FormData }) => Promise<{
   status: number;
   json: () => Promise<unknown>;
 }>;
@@ -20,7 +20,17 @@ export interface SendTelegramGroupInput {
   sleep?: (ms: number) => Promise<void>;
   /** Maior espera aceita em um 429 antes de desistir e deixar para a próxima rodada (segundos). */
   maxRetryAfterSec?: number;
+  /** Mensagem SILENCIOSA (disable_notification): chega sem som. Padrão false. */
+  silent?: boolean;
+  /**
+   * Cartão de histórico em PNG (gerado em memória por outro módulo). Se vier e a legenda couber (<= 1024 caracteres),
+   * vai por sendPhoto com upload multipart (sem URL pública, sem arquivo guardado); senão cai em sendMessage.
+   */
+  photo?: Uint8Array | null;
 }
+
+/** Limite de legenda do Telegram em sendPhoto. */
+export const TELEGRAM_CAPTION_MAX = 1024;
 
 export interface SendTelegramGroupResult {
   ok: boolean;
@@ -33,6 +43,10 @@ export interface SendTelegramGroupResult {
   /** Nada foi enviado porque faltou configuração. */
   skipped?: boolean;
   usedPlainText?: boolean;
+  /** Saiu como foto (sendPhoto) com a legenda. */
+  photoSent?: boolean;
+  /** A foto veio mas não foi usada (ex.: legenda maior que 1024); a mensagem saiu só em texto. */
+  photoSkipped?: string;
 }
 
 export function stripTelegramHtml(html: string): string {
@@ -70,19 +84,35 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
   const doFetch = input.fetchImpl ?? defaultFetch;
   const sleep = input.sleep ?? defaultSleep;
   const maxWait = input.maxRetryAfterSec ?? 30;
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+  let photo: Uint8Array | null = input.photo && input.photo.byteLength > 0 ? input.photo : null;
+  let photoSkipped: string | undefined;
+  if (photo && input.text.length > TELEGRAM_CAPTION_MAX) {
+    photo = null;
+    photoSkipped = `legenda_maior_que_${TELEGRAM_CAPTION_MAX}`;
+  }
+  const url = `https://api.telegram.org/bot${token}/${photo ? 'sendPhoto' : 'sendMessage'}`;
 
   let plain = false;
   let rateRetried = false;
 
   for (let attempt = 0; attempt < 4; attempt++) {
-    const payload: Record<string, unknown> = { chat_id: chatId, text: plain ? (input.plainText ?? stripTelegramHtml(input.text)) : input.text };
+    const text = plain ? (input.plainText ?? stripTelegramHtml(input.text)) : input.text;
+    const payload: Record<string, unknown> = photo ? { chat_id: chatId, caption: text } : { chat_id: chatId, text };
     if (!plain) payload.parse_mode = 'HTML';
+    if (input.silent) payload.disable_notification = true;
 
     let status = 0;
     let body: TgBody = {};
     try {
-      const res = await doFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      let res;
+      if (photo) {
+        const form = new FormData();
+        for (const [k, v] of Object.entries(payload)) form.append(k, String(v));
+        form.append('photo', new Blob([new Uint8Array(photo)], { type: 'image/png' }), 'cartao.png');
+        res = await doFetch(url, { method: 'POST', body: form });
+      } else {
+        res = await doFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      }
       status = res.status;
       body = ((await res.json().catch(() => ({}))) ?? {}) as TgBody;
     } catch (e) {
@@ -91,7 +121,14 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
     }
 
     if (status === 200 && body.ok) {
-      return { ok: true, status, messageId: body.result?.message_id != null ? String(body.result.message_id) : undefined, usedPlainText: plain || undefined };
+      return {
+        ok: true,
+        status,
+        messageId: body.result?.message_id != null ? String(body.result.message_id) : undefined,
+        usedPlainText: plain || undefined,
+        photoSent: photo ? true : undefined,
+        photoSkipped,
+      };
     }
 
     const desc = scrub(String(body.description ?? `HTTP ${status}`), token).slice(0, 300);
@@ -116,4 +153,32 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
     return { ok: false, status, error: desc, retryable: true };
   }
   return { ok: false, error: 'tentativas esgotadas', retryable: true };
+}
+
+// ---------------------------------------------------------------------------
+// Contagem de inscritos (freio automático por saída; ata 2026-11-10 §1.4)
+// ---------------------------------------------------------------------------
+export interface MemberCountResult {
+  ok: boolean;
+  count?: number;
+  error?: string;
+}
+
+/** getChatMemberCount: número de membros do grupo/canal. Nunca devolve nem registra o token. */
+export async function getTelegramMemberCount(input: { token: string | undefined; chatId: string | undefined; fetchImpl?: FetchLike }): Promise<MemberCountResult> {
+  const { token, chatId } = input;
+  if (!token || !chatId) return { ok: false, error: 'token ou chat id ausente' };
+  const doFetch = input.fetchImpl ?? defaultFetch;
+  try {
+    const res = await doFetch(`https://api.telegram.org/bot${token}/getChatMemberCount`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId }),
+    });
+    const body = ((await res.json().catch(() => ({}))) ?? {}) as { ok?: boolean; result?: number; description?: string };
+    if (res.status === 200 && body.ok && Number.isInteger(body.result) && (body.result as number) >= 0) return { ok: true, count: body.result as number };
+    return { ok: false, error: scrub(String(body.description ?? `HTTP ${res.status}`), token).slice(0, 200) };
+  } catch (e) {
+    return { ok: false, error: `rede: ${scrub(e instanceof Error ? e.message : 'falha', token)}`.slice(0, 200) };
+  }
 }

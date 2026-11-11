@@ -4,7 +4,27 @@
 // a palavra "afiliado" nunca aparece; Amazon nunca (preço da Amazon fica fora de mensagem).
 
 export type GroupChannel = 'tg' | 'wa';
-export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento';
+export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'radar';
+
+/** Gatilhos por movimento da série diária (ata 2026-11-10 §2). */
+export type MoveKind = 'OK1' | 'OK2' | 'T1' | 'T2';
+export interface MoveDetail {
+  kind: MoveKind;
+  /** Primeiro dia da série ('YYYY-MM-DD'). */
+  sinceDay: string;
+  /** Dias de série contando hoje. */
+  seriesDays: number;
+  /** Menor valor anterior da série. */
+  refCents: number;
+  /** Menor de ontem (OK2, T1) ou o menor anterior (OK1). */
+  prevCents: number | null;
+  /** Queda em %, uma casa decimal (OK1: sobre o menor anterior; OK2: sobre ontem; T1: acumulada em 2 dias). */
+  dropPct: number;
+  /** T1: anteontem, ontem, hoje. */
+  path?: number[];
+  /** T2: quanto está acima do menor registrado, em %. */
+  nearPct?: number;
+}
 
 export const GROUP_LINK_BASE = 'https://www.egeek86.com';
 export const MESSAGE_KEY_RE = /^[a-z0-9-]{3,40}$/;
@@ -237,6 +257,8 @@ export type GroupMessageInput = Common &
         others?: { minCents: number; maxCents: number } | null;
         avg?: MsgAvg | null;
       }
+    | { model: 'movimento'; name: string; offer: MsgOffer; move: MoveDetail; avg?: MsgAvg | null }
+    | { model: 'radar'; items: Array<{ name: string; offer: MsgOffer; move: MoveDetail }> }
   );
 
 // ---------------------------------------------------------------------------
@@ -274,6 +296,55 @@ const WA: Fmt = {
 function guardNetwork(o: { networkSlug: string; networkName: string }) {
   if (/amazon/i.test(o.networkSlug) || /amazon/i.test(o.networkName)) {
     throw new Error('Amazon fica fora das mensagens (preço da Amazon nunca em mensagem).');
+  }
+}
+
+export function isAmazonOffer(o: { networkSlug: string; networkName: string }): boolean {
+  return /amazon/i.test(o.networkSlug) || /amazon/i.test(o.networkName);
+}
+
+/** 'YYYY-MM-DD' vira data de meio-dia em Brasília (para fmtDay). */
+function dayToDate(day: string): Date {
+  return new Date(`${day}T12:00:00-03:00`);
+}
+
+const fmtPct1 = (x: number) => x.toFixed(1).replace('.', ',');
+
+/** Frase do movimento. Descritiva: só o que a série mostra, com a janela. Nunca previsão. */
+function moveSentence(m: MoveDetail, price: number, amazon: boolean): string {
+  const since = fmtDay(dayToDate(m.sinceDay));
+  const subj = amazon ? 'O preço' : 'O menor preço';
+  switch (m.kind) {
+    case 'OK1':
+      return `${amazon ? 'Menor preço da Amazon que registramos' : 'Menor preço que registramos'} desde ${since}; o anterior era ${fmtBRL(m.refCents)} (queda de ${fmtPct1(m.dropPct)}%).`;
+    case 'OK2':
+      return `${subj} era ${fmtBRL(m.prevCents as number)} ontem e está em ${fmtBRL(price)} hoje (queda de ${fmtPct1(m.dropPct)}%). Série de ${m.seriesDays} dias, desde ${since}.`;
+    case 'T1': {
+      const p = m.path ?? [];
+      return `${subj} caiu dois dias seguidos: ${fmtBRL(p[0])}, ${fmtBRL(p[1])} e ${fmtBRL(p[2])} hoje. Série de ${m.seriesDays} dias, desde ${since}.`;
+    }
+    case 'T2':
+      return `Está a ${fmtPct1(m.nearPct ?? 0)}% do ${amazon ? 'menor preço da Amazon que registramos' : 'menor preço que registramos'} desde ${since} (${fmtBRL(m.refCents)}).`;
+  }
+}
+
+/** Carimbo: Amazon sempre "Preço na Amazon em dd/mm às hh:mm, sujeito a alteração."; demais "Conferido em ...". */
+function stampLine(o: MsgOffer): string {
+  return isAmazonOffer(o) ? `Preço na Amazon em ${fmtStamp(o.confirmedAt)}, sujeito a alteração.` : conferidoLine(o.confirmedAt);
+}
+
+/** Rótulo curto do item do radar: só fato medido, com a janela. */
+function radarLabel(m: MoveDetail): string {
+  const since = fmtDay(dayToDate(m.sinceDay));
+  switch (m.kind) {
+    case 'OK1':
+      return `Menor preço que registramos desde ${since} (queda de ${fmtPct1(m.dropPct)}% sobre o anterior).`;
+    case 'OK2':
+      return `Caiu ${fmtPct1(m.dropPct)}% de ontem para hoje.`;
+    case 'T1':
+      return `Caiu dois dias seguidos (${fmtPct1(m.dropPct)}% acumulados).`;
+    case 'T2':
+      return `A ${fmtPct1(m.nearPct ?? 0)}% do menor preço que registramos desde ${since}.`;
   }
 }
 
@@ -391,6 +462,39 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       );
       return lines.filter((l): l is string => !!l && l.trim() !== '').join('\n');
     }
+    case 'movimento': {
+      const o = input.offer;
+      const amz = isAmazonOffer(o);
+      lines.push(
+        `${pre}${f.b(input.name)}`,
+        `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}. ${f.t(moveSentence(input.move, o.priceCents, amz))}`,
+        // Amazon nunca é comparada com a média das outras lojas.
+        amz ? null : f.t(avgLine(f, o.priceCents, input.avg) ?? ''),
+        f.t(stampLine(o)),
+        withTag(channel === 'tg' ? f.link(buildGoLink(o.slug, 'tg', input.messageKey), 'Ver a oferta') : buildGoLink(o.slug, 'wa', input.messageKey), input.adTag)
+      );
+      break;
+    }
+    case 'radar': {
+      if (input.items.length < 3) throw new Error('radar exige pelo menos 3 itens');
+      const items = input.items.slice(0, 6);
+      if (items.some((it) => isAmazonOffer(it.offer))) throw new Error('Amazon fica fora do radar (só em alerta, com carimbo).');
+      lines.push(f.b(`Radar de preços: ${items.length} jogos que mudaram`));
+      items.forEach((it, i) => {
+        const url = buildGoLink(it.offer.slug, channel, input.messageKey);
+        lines.push(`${i + 1}. ${f.t(it.name)}: ${f.b(fmtBRL(it.offer.priceCents))} ${f.t(inNetwork(it.offer.networkName))}. ${f.t(radarLabel(it.move))}`);
+        lines.push(channel === 'tg' ? f.link(url, 'Ver a oferta') : url);
+      });
+      const times = items.map((i) => i.offer.confirmedAt).sort((a, b) => a.getTime() - b.getTime());
+      const first = times[0];
+      const last = times[times.length - 1];
+      let foot: string;
+      if (fmtStamp(first) === fmtStamp(last)) foot = `Conferido em ${fmtStamp(first)} (Brasília).`;
+      else if (fmtDay(first) === fmtDay(last)) foot = `Preços conferidos entre ${fmtClock(first)} e ${fmtClock(last)} de ${fmtDay(first)} (Brasília).`;
+      else foot = `Preços conferidos entre ${fmtStamp(first)} e ${fmtStamp(last)} (Brasília).`;
+      lines.push(withTag(f.t(foot), input.adTag));
+      return lines.filter((l): l is string => !!l && l.trim() !== '').join('\n');
+    }
     case 'departamento': {
       guardNetwork(input.offer);
       const o = input.offer;
@@ -424,13 +528,21 @@ const BANNED: Array<[RegExp, string]> = [
   [/promo[cç][aã]o rel[aâ]mpago/i, 'promoção relâmpago'],
   [/menor pre[cç]o da internet/i, 'menor da internet'],
   [/menor pre[cç]o (da|na) hist[oó]ria|menor pre[cç]o do ano/i, 'menor da história/ano'],
+  // Sem previsão (veto do QA, ata 2026-11-10 §8): a tendência é descritiva, nunca "vai cair".
+  [/\bvai (cair|baixar|subir|aumentar)\b/i, 'previsão: vai cair'],
+  [/\bdeve (cair|baixar|subir|aumentar)\b/i, 'previsão: deve cair'],
+  [/\btende a\b/i, 'tende a'],
+  [/previs[aã]o/i, 'previsão'],
+  [/hora de comprar/i, 'hora de comprar'],
+  [/garantid[oa]/i, 'garantido'],
 ];
 
 /** Devolve os problemas encontrados no texto final (vazio = limpo). */
 export function textProblems(text: string, channel: GroupChannel): string[] {
   const out: string[] = [];
   for (const [re, label] of BANNED) if (re.test(text)) out.push(`termo proibido: ${label}`);
-  if (/amazon/i.test(text)) out.push('menção à Amazon');
+  // Amazon só com o carimbo "Preço na Amazon em dd/mm às hh:mm" (decisão do dono, 2026-11-10).
+  if (/amazon/i.test(text) && !/Preço na Amazon em \d{2}\/\d{2} às \d{2}:\d{2}/.test(text)) out.push('menção à Amazon sem carimbo de horário');
   if (channel === 'tg' && text.length > TELEGRAM_MAX_CHARS) out.push(`texto acima de ${TELEGRAM_MAX_CHARS} caracteres`);
   if (/\bNaN\b|undefined|null/.test(text)) out.push('variável vazia vazou no texto');
   return out;
@@ -461,4 +573,53 @@ export function buildGroupMessage(input: GroupMessageInput, channel: GroupChanne
 /** Link "Enviar no WhatsApp" (sem número: o dono escolhe o grupo no próprio app). */
 export function waMeLink(text: string): string {
   return `https://wa.me/?text=${encodeURIComponent(text)}`;
+}
+
+// ---------------------------------------------------------------------------
+// Cupom verificado (ponto de ligação: `couponLookup` injetado pelo engenheiro dos cupons; ata §3.5)
+// ---------------------------------------------------------------------------
+export interface CouponInfo {
+  code: string;
+  /** Condições em texto LIDO da loja (valor mínimo, teto, escopo). Nunca inventado. */
+  conditions: string;
+  /** Validade lida da loja (ISO) ou null quando a loja não informa. */
+  expiresAt: string | null;
+  /** Quando o cupom foi visto pela última vez (ISO). */
+  verifiedAt: string;
+}
+
+/** Cupom visto há no máximo 2 h, ainda dentro da validade lida e com código. */
+export const COUPON_MAX_AGE_MIN = 120;
+
+export function couponUsable(c: CouponInfo | null | undefined, now: Date): c is CouponInfo {
+  if (!c || !c.code?.trim()) return false;
+  const seen = new Date(c.verifiedAt).getTime();
+  if (!Number.isFinite(seen)) return false;
+  const ageMin = (now.getTime() - seen) / 60_000;
+  if (ageMin > COUPON_MAX_AGE_MIN || ageMin < -5) return false;
+  if (c.expiresAt) {
+    const exp = new Date(c.expiresAt).getTime();
+    if (!Number.isFinite(exp) || exp <= now.getTime()) return false;
+  }
+  return true;
+}
+
+/**
+ * Insere o bloco do cupom antes da última linha (a do link). Se o cupom não vale, ou se o texto final for reprovado
+ * pela barreira de termos, devolve o texto ORIGINAL (a mensagem sai sem cupom; nunca com cupom duvidoso).
+ */
+export function withCouponBlock(text: string, coupon: CouponInfo | null | undefined, channel: GroupChannel, now: Date): string {
+  if (!couponUsable(coupon, now)) return text;
+  const esc = channel === 'tg' ? escapeTelegramHtml : escapeWhatsapp;
+  const cond = coupon.conditions?.trim() ? `, ${esc(coupon.conditions.trim())}` : '';
+  const until = coupon.expiresAt ? ` Válido até ${fmtStamp(new Date(coupon.expiresAt))} segundo a loja.` : '';
+  const code = channel === 'tg' ? `<code>${esc(coupon.code.trim())}</code>` : esc(coupon.code.trim());
+  const block = `Cupom: ${code}${cond}.${until} Visto em ${fmtStamp(new Date(coupon.verifiedAt))}.`;
+  const lines = text.split('\n');
+  if (lines.length < 2) return text;
+  lines.splice(lines.length - 1, 0, block);
+  const out = lines.join('\n');
+  if (textProblems(out, channel).length > textProblems(text, channel).length) return text;
+  if (channel === 'tg' && out.length > TELEGRAM_MAX_CHARS) return text;
+  return out;
 }

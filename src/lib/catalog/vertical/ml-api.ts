@@ -3,6 +3,8 @@
 
 export class CallBudgetExceeded extends Error {}
 export class RateLimited extends Error {}
+/** Teto DIARIO persistente (seed-budget.ts) atingido: subclasse do teto por execucao para o planejador distinguir. */
+export class DailyBudgetExceeded extends CallBudgetExceeded {}
 
 export interface MlCallRecord {
   n: number;
@@ -25,6 +27,8 @@ export interface MlClientOptions {
   baseUrl?: string;
   fetchImpl?: typeof fetch;
   onCall?: (c: MlCallRecord) => void;
+  /** Chamado ANTES de enviar (apos o teto por execucao). Pode lancar DailyBudgetExceeded; e onde o orcamento diario e cobrado. */
+  beforeCall?: (n: number, endpoint: string) => void;
 }
 
 /** Remove qualquer token de uma URL antes de logar. */
@@ -39,8 +43,9 @@ export function createMlClient(opts: MlClientOptions): MlClient {
   return {
     async get(endpoint) {
       if (hist.length >= opts.maxCalls) throw new CallBudgetExceeded(`teto de ${opts.maxCalls} chamadas ao ML atingido`);
-      const t0 = Date.now();
       const n = hist.length + 1;
+      opts.beforeCall?.(n, sanitizeUrl(endpoint));
+      const t0 = Date.now();
       let status: number | 'rede' = 'rede';
       let json: any = null;
       try {

@@ -7,6 +7,7 @@ import { canSendTelegram, getAdTag, getGroupMessagesMode, isGroupMessagesEnabled
 import { detectGroupCandidates, groupMessagesTableExists } from '@/server/messaging/group-offers';
 import { listQueue } from '@/server/messaging/group-queue';
 import { queueToViewItems, toViewItem, type GroupViewItem } from '@/server/messaging/group-view';
+import { loadAutomationOverview } from '@/server/messaging/group-overview';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,7 @@ export default async function AdminMessagesPage() {
     loadError = e instanceof Error ? e.message.slice(0, 200) : 'erro ao calcular';
   }
   const messages = await listMessagesForAdmin();
+  const overview = await loadAutomationOverview();
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,7 +35,7 @@ export default async function AdminMessagesPage() {
           Mensagens para grupos
         </Text>
         <Text variant="body-sm" color="secondary" className="mt-1">
-          Propostas calculadas do banco (preço, média e menor preço reais). Aprove, copie ou envie. Nada sai sem você.
+          Decisões calculadas do banco (preço, série e menor preço reais). O Telegram pode sair sozinho nas classes seguras quando a automação está em &ldquo;ligada&rdquo;; Shopee, desconto acima de 25%, vendedor sem reputação e nichos novos sempre esperam a sua aprovação. O WhatsApp é sempre assistido.
         </Text>
       </div>
 
@@ -41,6 +43,7 @@ export default async function AdminMessagesPage() {
 
       <GroupMessagesPanel
         items={items}
+        overview={overview}
         flags={{
           enabled: isGroupMessagesEnabled(),
           mode: getGroupMessagesMode(),

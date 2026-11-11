@@ -13,9 +13,11 @@ import {
   markWhatsappSentAction,
   rejectGroupMessageAction,
   sendTelegramNowAction,
+  setAutomationStateAction,
   type GroupActionResult,
 } from '@/server/actions/group-messages';
-import type { GroupViewItem } from '@/server/messaging/group-view';
+import type { GroupSection, GroupViewItem } from '@/server/messaging/group-view';
+import type { AutomationOverview } from '@/server/messaging/group-overview';
 
 export interface GroupPanelFlags {
   enabled: boolean;
@@ -32,7 +34,36 @@ const TRIGGER_LABEL: Record<string, string> = {
   G4: 'Resumo do dia',
   G5: 'Foto de preço pré-Black Friday',
   G6: 'Por departamento',
+  OK1: 'Novo menor preço da série',
+  OK2: 'Queda de ontem para hoje',
+  T1: 'Caiu dois dias seguidos',
+  T2: 'Perto do menor preço registrado',
+  RADAR: 'Radar horário',
+  CUPOM: 'Cupom verificado',
 };
+
+const CLASS_LABEL: Record<string, string> = {
+  alerta: 'A. Alerta imediato',
+  radar: 'B. Radar horário',
+  insight: 'C. Insight',
+  resumo: 'D. Resumo',
+  cupom: 'E. Cupom verificado',
+};
+
+const STATE_LABEL: Record<string, string> = {
+  off: 'DESLIGADA (só propostas manuais)',
+  shadow: 'MODO SOMBRA (decide e registra, não envia)',
+  on: 'LIGADA (envia sozinha as classes seguras)',
+};
+
+const SECTIONS: Array<{ key: GroupSection; title: string; hint: string }> = [
+  { key: 'aprovacao', title: 'Pedem a sua aprovação', hint: 'Shopee, desconto acima de 25%, vendedor sem reputação, nicho novo, ou propostas do modo manual. Nada disto sai sozinho.' },
+  { key: 'retidas', title: 'Retidas', hint: 'Desconto acima de 40% contra a média, queda acima de 45% ou preço abaixo de meia mediana: provável erro de variante. Só aparecem aqui; você pode aprovar uma por uma se conferir.' },
+  { key: 'fila_auto', title: 'Automáticas na fila', hint: 'Classes seguras esperando o turno do cron (um envio por execução, com releitura do preço antes de sair).' },
+  { key: 'sombra', title: 'Decisões do modo sombra', hint: 'O que o cron TERIA enviado. Nada foi enviado ao grupo. Confira estas linhas contra o banco antes de ligar.' },
+  { key: 'ao_vivo', title: 'Candidatos ao vivo', hint: 'Calculados agora, sem gravar.' },
+  { key: 'historico', title: 'Histórico recente', hint: 'Enviadas, rejeitadas, expiradas e com erro.' },
+];
 
 const SQUARE = 'rounded-none';
 
@@ -65,7 +96,8 @@ function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPan
   const [tab, setTab] = useState<'wa' | 'tg'>('wa');
   const text = tab === 'wa' ? item.whatsapp : item.telegram;
   const approved = item.statusTg === 'aprovada' || item.statusWa === 'aprovada';
-  const closed = ['enviada', 'rejeitada', 'expirada', 'erro'].includes(item.statusTg) && ['enviada', 'rejeitada', 'expirada', 'erro', '-'].includes(item.statusWa);
+  const tgClosed = ['enviada', 'rejeitada', 'expirada', 'erro', 'enviando'].includes(item.statusTg);
+  const closed = item.statusTg === 'simulada' || (tgClosed && ['enviada', 'rejeitada', 'expirada', 'erro', '-'].includes(item.statusWa));
   const canSendTg = !live && flags.telegramReady && item.statusTg === 'aprovada' && item.sendable;
   const waSent = item.statusWa === 'enviada';
 
@@ -74,6 +106,9 @@ function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPan
       <CardContent className="flex flex-col gap-3 p-4">
         <div className="flex flex-wrap items-center gap-2">
           <span className={`border border-[var(--color-border-default)] px-2 py-0.5 text-xs ${SQUARE}`}>{item.trigger} · {TRIGGER_LABEL[item.trigger] ?? item.trigger}</span>
+          {item.cls && <span className={`border border-[var(--color-border-default)] px-2 py-0.5 text-xs ${SQUARE}`}>{CLASS_LABEL[item.cls] ?? item.cls}</span>}
+          {item.isSound != null && <span className={`border border-[var(--color-border-default)] px-2 py-0.5 text-xs ${SQUARE}`}>{item.isSound ? 'com som' : 'silenciosa'}</span>}
+          {item.simState && <span className={`border border-[var(--color-border-default)] px-2 py-0.5 text-xs ${SQUARE}`}>{item.simState === 'enviaria_som' ? 'teria saído com som' : 'teria saído silenciosa'}</span>}
           <span className={`border border-[var(--color-border-default)] px-2 py-0.5 text-xs ${SQUARE}`}>{live ? 'ao vivo' : `TG: ${item.statusTg} · WA: ${item.statusWa}`}</span>
           {item.needsReview && (
             <span className={`flex items-center gap-1 border border-[var(--color-accent-danger)] px-2 py-0.5 text-xs ${SQUARE}`}>
@@ -89,7 +124,14 @@ function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPan
           {item.reviewReasons.length > 0 && (
             <Text variant="caption" color="tertiary">Revisar: {item.reviewReasons.join(', ')}</Text>
           )}
+          {item.heldReasons.length > 0 && <Text variant="caption" color="tertiary">Retida por: {item.heldReasons.join(', ')}</Text>}
           {item.notSendableReason && <Text variant="caption" color="tertiary">Bloqueio: {item.notSendableReason}</Text>}
+          {item.recheckNote && (
+            <Text variant="caption" color="tertiary">
+              Reconferência 30 min depois: {item.recheckNote}
+              {item.recheckDivergencePct != null ? ` (divergência de ${item.recheckDivergencePct.toFixed(2).replace('.', ',')}%)` : ''}
+            </Text>
+          )}
           {item.error && <Text variant="caption" color="tertiary">Último erro: {item.error}</Text>}
           <Text variant="caption" color="tertiary">m = {item.messageKey}</Text>
         </div>
@@ -157,7 +199,7 @@ function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPan
             </Button>
           </div>
         )}
-        {!live && item.sendable && !waSent && item.statusWa !== '-' && item.statusWa !== 'rejeitada' && item.statusWa !== 'expirada' && (
+        {!live && item.sendable && !waSent && item.statusWa !== '-' && item.statusWa !== 'rejeitada' && item.statusWa !== 'expirada' && item.statusWa !== 'retida' && (
           <Button size="md" fullWidth variant="outline" className={SQUARE} onClick={() => run(() => markWhatsappSentAction(item.messageKey))}>
             Já enviei no WhatsApp (registrar)
           </Button>
@@ -167,7 +209,52 @@ function Item({ item, flags, live, run }: { item: GroupViewItem; flags: GroupPan
   );
 }
 
-export function GroupMessagesPanel({ items, flags }: { items: GroupViewItem[]; flags: GroupPanelFlags }) {
+function AutomationCard({ overview, pending, run }: { overview: AutomationOverview; pending: boolean; run: (fn: () => Promise<GroupActionResult>) => void }) {
+  const o = overview;
+  const choose = (state: 'off' | 'shadow' | 'on') => {
+    if (state === o.state) return;
+    if (state === 'on' && !window.confirm('Ligar o envio AUTOMÁTICO no Telegram? As classes seguras passam a sair sozinhas (até 30 por dia, no máximo 8 com som). Recomendado só depois de 24 h de modo sombra conferido contra o banco.')) return;
+    run(() => setAutomationStateAction(state));
+  };
+  const fmtTime = (iso: string | null) => (iso ? new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : 'nunca');
+  return (
+    <Card className={SQUARE}>
+      <CardContent className="flex flex-col gap-3 p-4">
+        <Text variant="heading-sm">Automação do Telegram: {STATE_LABEL[o.state]}</Text>
+        <Text variant="caption" color="tertiary">
+          {o.rowExists ? `Linha group_messages_auto atualizada em ${fmtTime(o.updatedAt)}.` : 'Sem linha em feature_flags: vale o padrão desligado.'} A mudança vale para o cron em até 30 segundos.
+        </Text>
+        {!o.v2Ready && (
+          <div className={`flex items-start gap-2 border border-[var(--color-accent-danger)] p-3 text-sm ${SQUARE}`}>
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <span>A migration 0030 (motor v2) ainda não foi aplicada: shadow e ligada ficam recusados e o cron segue só com propostas manuais.</span>
+          </div>
+        )}
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <Button size="lg" fullWidth className={SQUARE} variant={o.state === 'off' ? 'primary' : 'secondary'} disabled={pending} onClick={() => choose('off')}>Desligada</Button>
+          <Button size="lg" fullWidth className={SQUARE} variant={o.state === 'shadow' ? 'primary' : 'secondary'} disabled={pending || !o.v2Ready} onClick={() => choose('shadow')}>Modo sombra</Button>
+          <Button size="lg" fullWidth className={SQUARE} variant={o.state === 'on' ? 'primary' : 'secondary'} disabled={pending || !o.v2Ready} onClick={() => choose('on')}>Ligada</Button>
+        </div>
+        {o.v2Ready && (
+          <div className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
+            <Text variant="body-sm">Enviadas (24 h): {o.sentToday} · com som: {o.soundToday} de 8</Text>
+            <Text variant="body-sm">
+              Inscritos: {o.members.current ?? 'sem leitura'}
+              {o.members.dropPct != null ? ` · queda do pico em 24 h: ${o.members.dropPct.toFixed(2).replace('.', ',')}% (limite ${o.maxMemberDropPct}%)` : ''}
+              {o.members.paused ? ' · FREIO ATIVO: envio automático pausado' : ''}
+              {o.members.stale && o.members.points > 0 ? ' · leitura antiga' : ''}
+            </Text>
+            <Text variant="body-sm">Amazon: {o.amazon.paused ? 'PAUSADA (coleta assistida sem lote há mais de 90 min)' : 'ativa'} · último lote {fmtTime(o.amazon.lastRunAt)}</Text>
+            <Text variant="body-sm">Reconferência de 30 min: {o.rechecked.total} feitas, {o.rechecked.diverged} com divergência acima de 2%</Text>
+            <Text variant="body-sm">Últimas 24 h por status: {Object.entries(o.last24h).map(([k, v]) => `${k} ${v}`).join(' · ') || 'nenhuma decisão gravada'}</Text>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export function GroupMessagesPanel({ items, flags, overview }: { items: GroupViewItem[]; flags: GroupPanelFlags; overview: AutomationOverview }) {
   const router = useRouter();
   const [liveItems, setLiveItems] = useState<GroupViewItem[] | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -187,6 +274,7 @@ export function GroupMessagesPanel({ items, flags }: { items: GroupViewItem[]; f
 
   return (
     <div className="flex flex-col gap-4">
+      <AutomationCard overview={overview} pending={pending} run={run} />
       <Card className={SQUARE}>
         <CardContent className="flex flex-col gap-2 p-4">
           <Text variant="body-sm">
@@ -212,9 +300,22 @@ export function GroupMessagesPanel({ items, flags }: { items: GroupViewItem[]; f
           Nenhuma proposta agora. Toque em &ldquo;Gerar novas propostas&rdquo; para rodar o detector. Sem candidato, não se envia nada (melhor silêncio que lixo).
         </Text>
       )}
-      {shown.map((it) => (
-        <Item key={`${it.messageKey}-${it.status}`} item={it} flags={flags} live={live} run={run} />
-      ))}
+      {SECTIONS.map((sec) => {
+        const list = shown.filter((it) => (live ? it.section === 'ao_vivo' || it.section === sec.key : it.section === sec.key));
+        const inSec = live ? (sec.key === 'ao_vivo' ? shown : []) : list;
+        if (!inSec.length) return null;
+        return (
+          <section key={sec.key} className="flex flex-col gap-3">
+            <div>
+              <Text as="h2" variant="heading-md">{sec.title} ({inSec.length})</Text>
+              <Text variant="caption" color="tertiary">{sec.hint}</Text>
+            </div>
+            {inSec.map((it) => (
+              <Item key={`${it.messageKey}-${it.status}`} item={it} flags={flags} live={live} run={run} />
+            ))}
+          </section>
+        );
+      })}
     </div>
   );
 }

@@ -57,14 +57,18 @@ export async function GET(request: NextRequest) {
       FROM affiliate_offers o
       JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
       JOIN master_products m ON m.id = o.master_product_id
-      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'games' AND m.vertical = 'games'
+      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical
+        AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
         AND o.current_price_cents > 0 AND o.affiliate_url NOT LIKE 'https://meli.la/%'
         AND o.affiliate_url ~ '^https://(produto|www)\\.mercadolivre\\.com\\.br/'
         AND (m.attributes->'catalogGate'->>'verdict') IS DISTINCT FROM 'review'
     ) t ORDER BY t.rn ASC, t.master_product_id LIMIT ${n}`);
   const [tot] = await db.execute<{ n: number }>(sql`
     SELECT count(*)::int AS n FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
-    WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'games' AND o.affiliate_url NOT LIKE 'https://meli.la/%'`);
+    JOIN master_products m ON m.id = o.master_product_id
+    WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical
+      AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
+      AND o.affiliate_url NOT LIKE 'https://meli.la/%'`);
   return NextResponse.json({ pendentes: tot?.n ?? 0, items: rows }, { headers: cors(request) });
 }
 

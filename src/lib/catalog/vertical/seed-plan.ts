@@ -5,7 +5,8 @@ import { domainMatches, type SegmentConfig } from './config';
 import { colorlessTitleKey } from './scope';
 import { gateFor, type VerticalGateResult } from './gate';
 import { evaluateIdentity, normalizeTitleKey, type IdentityResult, type MlAttribute, type MlCatalogPayload } from './identity';
-import { CallBudgetExceeded, RateLimited, type MlClient } from './ml-api';
+import { CallBudgetExceeded, DailyBudgetExceeded, RateLimited, type MlClient } from './ml-api';
+import { pagingDecision, searchPath } from './seed-utils';
 
 /** Consultas de duplicata (somente leitura no banco). Implementadas pelo script; em memória nos testes. */
 export interface ExistingLookup {
@@ -20,8 +21,19 @@ export interface SeedOptions {
   pageLimit?: number;
   /** Offset inicial de /products/search. */
   offset?: number;
+  /** Paginas por termo (padrao 1). Avanca em largura: pagina 1 de todos os termos, depois a 2... Para o termo se a pagina nao rendeu (pagingDecision). */
+  pages?: number;
+  /** Cache negativo de catalogos sem vendedor (404): consulta e registro, sem chamar a API. */
+  isKnownNotFound?: (catalogId: string) => boolean;
+  onNotFound?: (catalogId: string) => void;
+  /** Interrupcao segura (Ctrl+C): checada antes de cada busca e de cada candidato; o que ja foi planejado e mantido. */
+  shouldStop?: () => boolean;
+  /** Filtro de dominio na propria busca (SegmentConfig.searchDomain), quando verificado. */
+  useSearchDomain?: boolean;
   /** Quantos termos da whitelist usar (padrão todos). */
   termsLimit?: number;
+  /** Primeiro termo a usar (0-based): rodadas seguintes continuam a lista de onde a anterior parou. */
+  termsFrom?: number;
   /** Máximo de masters a PLANEJAR criar por segmento. */
   maxCreate?: number;
   log?: (msg: string) => void;
@@ -73,7 +85,13 @@ export interface SeedReport {
   reviews: Array<{ catalogId: string; name: string; reason: string; missing: string[]; domainId: string | null; relatedCatalogId?: string }>;
   errors: string[];
   stoppedBecause: string | null;
+  /** Chamadas acumuladas do cliente ao fim deste segmento. */
   callsUsed: number;
+  /** Chamadas gastas SO neste segmento. */
+  callsSpent: number;
+  /** Paginas de busca pedidas e motivo de parada por termo. */
+  pagesFetched: number;
+  termStops: Record<string, string>;
 }
 
 const bump = (c: Record<string, number>, k: string) => {
@@ -104,7 +122,8 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
   const gate = gateFor(seg.vertical);
   const pageLimit = opts.pageLimit ?? 10;
   const maxCreate = opts.maxCreate ?? 20;
-  const terms = seg.terms.slice(0, opts.termsLimit ?? seg.terms.length);
+  const from = Math.max(0, opts.termsFrom ?? 0);
+  const terms = seg.terms.slice(from, from + (opts.termsLimit ?? seg.terms.length));
   const report: SeedReport = {
     segment: seg.key,
     vertical: seg.vertical,
@@ -117,72 +136,70 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
     errors: [],
     stoppedBecause: null,
     callsUsed: 0,
+    callsSpent: 0,
+    pagesFetched: 0,
+    termStops: {},
   };
+  const startUsed = client.used();
   const seenCatalogs = new Set<string>();
   const skip = (p: MlCatalogPayload, reason: string, detail: string | null = null) => {
     bump(report.counts, reason);
     report.skips.push({ catalogId: p.id, name: p.name ?? '', reason, detail });
   };
 
-  try {
-    outer: for (const term of terms) {
-      const r = await client.get(
-        `/products/search?status=active&site_id=MLB&q=${encodeURIComponent(term)}&limit=${pageLimit}&offset=${opts.offset ?? 0}`
-      );
-      report.termsSearched++;
-      if (r.status !== 200 || !Array.isArray(r.json?.results)) {
-        report.errors.push(`busca "${term}" HTTP ${r.status}`);
-        bump(report.counts, 'erro_busca');
-        continue;
-      }
-      const results: MlCatalogPayload[] = r.json.results;
-      report.searchResults += results.length;
-
-      for (const searchPayload of results) {
-        if (!searchPayload?.id || seenCatalogs.has(searchPayload.id)) continue;
+  /** Processa um candidato da busca. Devolve true para PARAR tudo (teto de criacao / de chamadas). */
+  const processCandidate = async (searchPayload: MlCatalogPayload, term: string): Promise<boolean> => {
+        if (!searchPayload?.id || seenCatalogs.has(searchPayload.id)) return false;
         seenCatalogs.add(searchPayload.id);
         if (report.plans.length >= maxCreate) {
           report.stoppedBecause = 'teto_de_criacao';
-          break outer;
+          return true;
         }
 
         // 1) Identidade na resposta da busca (0 chamadas).
         const idSearch = evaluateIdentity(searchPayload, seg);
         if (idSearch.status === 'off_domain') {
           skip(searchPayload, 'dominio_fora_do_segmento', searchPayload.domain_id ?? null);
-          continue;
+          return false;
         }
         if (idSearch.status === 'rejected') {
           skip(searchPayload, 'rejeitado_' + idSearch.reason, idSearch.matched);
-          continue;
+          return false;
         }
         if (idSearch.status === 'review') {
           bump(report.counts, 'revisao_sem_identidade_forte');
           report.reviews.push({ catalogId: searchPayload.id, name: searchPayload.name ?? '', reason: idSearch.reason, missing: idSearch.missing, domainId: searchPayload.domain_id ?? null });
-          continue;
+          return false;
         }
 
         // 2) Duplicata ANTES de gastar chamadas (0 chamadas de API).
         const dup = await findDuplicate(lookup, report.plans, searchPayload.id, idSearch, searchPayload.name ?? '');
         if (dup) {
           skip(searchPayload, dup.reason, `${dup.master.id} ${dup.master.name}`);
-          continue;
+          return false;
+        }
+
+        // 2b) Cache negativo: catalogo que ja deu 404 nos ultimos dias nao gasta chamada de novo.
+        if (opts.isKnownNotFound?.(searchPayload.id)) {
+          skip(searchPayload, 'sem_vendedor_404_cache');
+          return false;
         }
 
         // 3) /items primeiro: 70% dos catálogos medidos não têm vendedor (404 "No winners found"); descarta sem retentar.
         if (client.remaining() < 2) {
           report.stoppedBecause = 'teto_de_chamadas';
-          break outer;
+          return true;
         }
         const it = await client.get(`/products/${searchPayload.id}/items?limit=100`);
         if (it.status === 404) {
+          opts.onNotFound?.(searchPayload.id);
           skip(searchPayload, 'sem_vendedor_404');
-          continue;
+          return false;
         }
         if (it.status !== 200 && it.status !== 206) {
           report.errors.push(`items ${searchPayload.id} HTTP ${it.status}`);
           bump(report.counts, 'erro_items');
-          continue;
+          return false;
         }
         let page;
         try {
@@ -190,11 +207,11 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
         } catch (e) {
           report.errors.push(`items ${searchPayload.id}: ${(e as Error).message}`);
           bump(report.counts, 'erro_items');
-          continue;
+          return false;
         }
         if (page.items.length === 0) {
           skip(searchPayload, 'sem_anuncio_novo', `brutos=${page.rawIds.length}`);
-          continue;
+          return false;
         }
 
         // 4) Detalhe do catálogo (1 chamada): atributos completos; reavalia identidade e domínio.
@@ -212,13 +229,13 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
             bump(report.counts, 'revisao_sem_identidade_forte');
             report.reviews.push({ catalogId: merged.id, name: merged.name ?? '', reason: identity.reason, missing: identity.missing, domainId: merged.domain_id ?? null });
           } else skip(merged, (identity.status === 'rejected' ? 'rejeitado_' : 'dominio_') + identity.reason, identity.matched);
-          continue;
+          return false;
         }
         if (identity.key !== idSearch.key) {
           const dup2 = await findDuplicate(lookup, report.plans, merged.id, identity, merged.name ?? '');
           if (dup2) {
             skip(merged, dup2.reason, `${dup2.master.id} ${dup2.master.name}`);
-            continue;
+            return false;
           }
         }
 
@@ -236,7 +253,7 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           if (sib) {
             bump(report.counts, 'revisao_variante_de_cor');
             report.reviews.push({ catalogId: merged.id, name: merged.name ?? '', reason: 'variante_de_cor_do_mesmo_modelo', missing: [], domainId: merged.domain_id ?? null, relatedCatalogId: sib.catalogId });
-            continue;
+            return false;
           }
         }
 
@@ -244,7 +261,7 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
         const verdict = gate.evaluate({ segment: seg.key, name: merged.name ?? '', domainId: merged.domain_id ?? null, identity });
         if (verdict.verdict === 'rejected') {
           skip(merged, 'porteiro_rejeitou_' + verdict.reason, verdict.matched);
-          continue;
+          return false;
         }
 
         const prices = page.items.map((i) => i.priceCents);
@@ -274,14 +291,62 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
         });
         bump(report.counts, 'planejado_criar');
         log(`planejado: ${merged.id} | ${merged.name} | ${identity.key} | ${page.items.length} anúncios novos`);
+        return false;
+  };
+
+  try {
+    const pages = Math.max(1, opts.pages ?? 1);
+    const active = new Set(terms);
+    const baseOffset = opts.offset ?? 0;
+    outer: for (let pageIdx = 0; pageIdx < pages && active.size > 0; pageIdx++) {
+      for (const term of terms) {
+        if (!active.has(term)) continue;
+        if (opts.shouldStop?.()) {
+          report.stoppedBecause = 'interrompido';
+          break outer;
+        }
+        const offset = baseOffset + pageIdx * pageLimit;
+        const r = await client.get(searchPath(term, pageLimit, offset, opts.useSearchDomain ? seg.searchDomain : null));
+        report.termsSearched++;
+        report.pagesFetched++;
+        if (r.status !== 200 || !Array.isArray(r.json?.results)) {
+          report.errors.push(`busca "${term}" offset ${offset} HTTP ${r.status}`);
+          bump(report.counts, 'erro_busca');
+          active.delete(term);
+          report.termStops[term] = `erro_http_${r.status}`;
+          continue;
+        }
+        const results: MlCatalogPayload[] = r.json.results;
+        report.searchResults += results.length;
+        const verdict = pagingDecision({
+          returned: results.length,
+          limit: pageLimit,
+          offset,
+          total: typeof r.json?.paging?.total === 'number' ? r.json.paging.total : null,
+          inDomain: results.filter((x) => domainMatches(seg, x?.domain_id)).length,
+          fresh: results.filter((x) => x?.id && !seenCatalogs.has(x.id)).length,
+        });
+        if (!verdict.next) {
+          active.delete(term);
+          report.termStops[term] = `${verdict.reason}@pagina${pageIdx + 1}`;
+        }
+        for (const searchPayload of results) {
+          if (opts.shouldStop?.()) {
+            report.stoppedBecause = 'interrompido';
+            break outer;
+          }
+          if (await processCandidate(searchPayload, term)) break outer;
+        }
       }
     }
   } catch (e) {
-    if (e instanceof CallBudgetExceeded) report.stoppedBecause = 'teto_de_chamadas';
+    if (e instanceof DailyBudgetExceeded) report.stoppedBecause = 'teto_diario';
+    else if (e instanceof CallBudgetExceeded) report.stoppedBecause = 'teto_de_chamadas';
     else if (e instanceof RateLimited) report.stoppedBecause = 'http_429';
     else throw e;
   }
   report.callsUsed = client.used();
+  report.callsSpent = client.used() - startUsed;
   return report;
 }
 

@@ -17,6 +17,7 @@
     "test:coleta": "tsx scripts/test-collector-multicatalog.ts && tsx scripts/test-catalog-placeholder.ts && tsx --test src/lib/collector-runs/collector-runs.test.ts",
     "test:gate": "tsx scripts/test-gate.ts",
     "test:mensagens-grupo": "tsx scripts/test-mensagens-grupo.ts",
+    "test:mensagens-motor-v2": "tsx scripts/test-mensagens-motor-v2.ts",
     "telegram:teste": "tsx --env-file=.env.local scripts/telegram-teste.ts",
     "test:dimensions": "tsx scripts/test-dimensions.ts",
     "test:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/test-vertical-isolation.ts",

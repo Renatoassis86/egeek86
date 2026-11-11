@@ -21,6 +21,29 @@ export interface GroupViewItem {
   whatsapp: string;
   createdAt: string | null;
   error: string | null;
+  /** Classe da mensagem (alerta, radar, insight, resumo, cupom). */
+  cls: string | null;
+  /** Em que bloco da tela aparece. */
+  section: GroupSection;
+  /** Enviada com som? (null = não enviada). */
+  isSound: boolean | null;
+  /** Modo sombra: 'enviaria_som' | 'enviaria_silenciosa'. */
+  simState: string | null;
+  /** Reconferência de 30 min: divergência em % e nota. */
+  recheckDivergencePct: number | null;
+  recheckNote: string | null;
+  heldReasons: string[];
+}
+
+export type GroupSection = 'aprovacao' | 'retidas' | 'sombra' | 'fila_auto' | 'historico' | 'ao_vivo';
+
+export function sectionOf(statusTg: string, statusWa: string): GroupSection {
+  const st = statusTg !== '-' ? statusTg : statusWa;
+  if (st === 'retida') return 'retidas';
+  if (st === 'simulada') return 'sombra';
+  if (st === 'proposta_auto' || st === 'enviando') return 'fila_auto';
+  if (st === 'proposta' || st === 'aprovada') return 'aprovacao';
+  return 'historico';
 }
 
 export function toViewItem(c: Candidate): GroupViewItem {
@@ -43,6 +66,13 @@ export function toViewItem(c: Candidate): GroupViewItem {
     whatsapp: c.texts.whatsapp,
     createdAt: null,
     error: null,
+    cls: c.cls ?? null,
+    section: 'ao_vivo',
+    isSound: null,
+    simState: null,
+    recheckDivergencePct: null,
+    recheckNote: null,
+    heldReasons: c.heldReasons ?? [],
   };
 }
 
@@ -79,6 +109,13 @@ export function queueToViewItems(rows: QueueRow[]): GroupViewItem[] {
       whatsapp: wa?.textBody ?? c.texts.whatsapp,
       createdAt: base.createdAt,
       error: tg?.error ?? wa?.error ?? null,
+      cls: tg?.cls ?? c.cls ?? null,
+      section: sectionOf(tg?.status ?? '-', wa?.status ?? '-'),
+      isSound: tg?.status === 'enviada' ? tg.isSound : null,
+      simState: tg?.simState ?? null,
+      recheckDivergencePct: tg?.recheckDivergencePct ?? null,
+      recheckNote: tg?.recheckNote ?? null,
+      heldReasons: c.heldReasons ?? [],
     });
   }
   return out;

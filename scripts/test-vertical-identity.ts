@@ -140,9 +140,10 @@ check('todas as verticais da config existem na lista fixa do CHECK (VERTICALS)',
 check('nenhum segmento usa games', SEGMENTS.every((s) => s.vertical !== ('games' as string)));
 const ordem = seedOrder().map((s) => s.key);
 check('semeadura: livros, placa de video, impressora primeiro', ordem.slice(0, 3).join() === 'livros,placa-de-video,impressora', ordem);
-check('semeadura: tenis, maquina de lavar, impressora 3D por ultimo', new Set(ordem.slice(-3)).size === 3 && ['tenis-de-corrida', 'maquina-de-lavar', 'impressora-3d'].every((k) => ordem.slice(-3).includes(k)), ordem);
+// Ampliacao 2026-11-10: os 13 segmentos originais mantem a ordem medida (pior por ultimo DENTRO deles); os novos vem depois.
+check('semeadura: entre os 13 originais, tenis, maquina de lavar, impressora 3D por ultimo', ['tenis-de-corrida', 'maquina-de-lavar', 'impressora-3d'].every((k) => ordem.indexOf(k) >= 10 && ordem.indexOf(k) < 13), ordem);
 check('ranks unicos', new Set(SEGMENTS.map((s) => s.seedRank)).size === SEGMENTS.length);
-check('segmentsOf agrupa por departamento', segmentsOf('tecnologia').length === 5 && segmentsOf('esporte').length === 2);
+check('segmentsOf agrupa por departamento (13 originais + 13 novos da ampliacao)', segmentsOf('tecnologia').length === 12 && segmentsOf('esporte').length === 4 && segmentsOf('livros').length === 1 && segmentsOf('eletroeletronicos').length === 4 && segmentsOf('eletrodomesticos').length === 5);
 check('kill-switch desligado por padrao', !isVerticalEnabled('livros', {}));
 check('kill-switch so liga com 1/true', isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '1' }) && isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'true' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '0' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'sim' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '' }));
 check('nome do kill-switch', killSwitchEnvName('eletroeletronicos') === 'VERTICAL_ELETROELETRONICOS_ENABLED');

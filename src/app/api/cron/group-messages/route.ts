@@ -1,49 +1,39 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
-import { getGroupMessagesMode, isGroupMessagesEnabled } from '@/lib/messaging/group-config';
-import { detectGroupCandidates, groupMessagesTableExists } from '@/server/messaging/group-offers';
-import { expireStale, persistProposals, sendApprovedTelegram } from '@/server/messaging/group-queue';
-import { db } from '@/lib/db';
-import { sql } from 'drizzle-orm';
+import { isGroupMessagesEnabled } from '@/lib/messaging/group-config';
+import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
+import { renderHistoryCard } from '@/server/messaging/price-card';
+import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 /**
- * Cron das mensagens para grupos. NÃO está no vercel.json (entra com autorização do dono).
- * - GROUP_MESSAGES_ENABLED ausente/desligado: não faz nada (nem lê o banco).
- * - Ligado: roda o detector, grava propostas (se a tabela existir) e expira as velhas.
- * - GROUP_MESSAGES_MODE=send: envia no Telegram UMA proposta já APROVADA por execução (limites e revalidação em sendApprovedTelegram).
- * Nunca envia proposta não aprovada. Nunca envia ao WhatsApp.
+ * Cron das mensagens para grupos. NÃO está no vercel.json (o dono agenda; sugestão a cada 5 minutos).
+ *
+ * Duas travas, as duas precisam estar abertas para ENVIAR:
+ *  1. ambiente: GROUP_MESSAGES_ENABLED ligado (e GROUP_MESSAGES_MODE=send, token e chat id para enviar);
+ *  2. automação: linha 'group_messages_auto' de feature_flags (off | shadow | on; sem linha = off), lida com cache de 30 s,
+ *     então o kill-switch pela linha vale em até 30 s, sem deploy.
+ * Estados: off = só propostas manuais (aprovadas na tela); shadow = decide e registra 'simulada', não envia;
+ * on = envia sozinho as classes seguras e deixa as de risco para aprovação (ver src/server/messaging/group-auto.ts).
+ *
+ * PONTOS DE LIGAÇÃO (descomente quando os módulos dos outros engenheiros existirem; este arquivo NÃO os importa hoje):
+ *   import { renderHistoryCard } from '@/server/messaging/history-card';      // (masterProductId) => Promise<Buffer | null>
+ *   import { lookupVerifiedCoupon } from '@/server/coupons/lookup';           // (offerId) => Promise<{ code, conditions, expiresAt, verifiedAt } | null>
+ *   ... runGroupMessagesCycle({ renderCard: renderHistoryCard, couponLookup: lookupVerifiedCoupon })
+ * Sem eles o ciclo funciona igual: texto puro, sem linha de cupom.
  */
 export async function GET(request: NextRequest) {
   const denied = rejectUnlessCronAuthorized(request);
   if (denied) return denied;
 
   if (!isGroupMessagesEnabled()) return NextResponse.json({ ok: true, skipped: 'GROUP_MESSAGES_ENABLED desligado' });
-  const mode = getGroupMessagesMode();
 
-  try {
-    const expired = await expireStale();
-    const detection = await detectGroupCandidates();
-    const persisted = await persistProposals(detection);
-    const summary: Record<string, unknown> = {
-      ok: true,
-      mode,
-      tableExists: await groupMessagesTableExists(),
-      expired,
-      persisted,
-      counts: detection.counts,
-      warnings: detection.warnings,
-    };
-    if (mode === 'send') {
-      const next = await db.execute<{ id: string }>(sql`
-        SELECT id FROM group_messages WHERE channel = 'tg' AND status = 'aprovada' AND claimed_at IS NULL ORDER BY approved_at NULLS LAST, created_at LIMIT 1
-      `).catch(() => []);
-      summary.send = next[0] ? await sendApprovedTelegram(String(next[0].id)) : { outcome: 'nada aprovado para enviar' };
-    }
-    return NextResponse.json(summary);
-  } catch (e) {
-    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message.slice(0, 300) : 'erro' }, { status: 500 });
-  }
+  // Cartão de histórico (PNG) e cupom verificado: injeções do ciclo (ambos tolerantes a falha; sem eles a mensagem sai em texto puro).
+  const summary = await runGroupMessagesCycle({
+    renderCard: async (masterProductId: string) => (await renderHistoryCard(masterProductId))?.png ?? null,
+    couponLookup: lookupVerifiedCoupon,
+  });
+  return NextResponse.json(summary, { status: summary.ok ? 200 : 500 });
 }

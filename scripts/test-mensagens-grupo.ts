@@ -21,13 +21,14 @@ import {
   buildDailySummary,
   dailyCap,
   evaluateProduct,
-  isQuietHours,
+  isNightHour,
   priceWithinTolerance,
   productDedupBlock,
   titleIdentityBlock,
   type Candidate,
   type OfferFact,
   type ProductFacts,
+  type SentRecord,
 } from '../src/lib/messaging/group-rules';
 import { buildWhatsappMessage, buildCartWhatsappMessage } from '../src/lib/affiliate/message-template';
 import { canSendTelegram, getAdTag, getGroupMessagesMode, isGroupMessagesEnabled } from '../src/lib/messaging/group-config';
@@ -400,46 +401,56 @@ const cand = (id: string, net = 'mercado-livre', trig: Candidate['trigger'] = 'G
   messageKey: `g2-261111-${id}`, trigger: trig, model: 'abaixo-media', masterProductId: id, offerIds: [`o${id}`], vertical: 'games', networkSlug: net, name: id,
   priceCents: 10000, avgCents: 12500, belowAvgPct: pct, dropPct: null, reason: 'x', status: 'auto', reviewReasons: [], sendable: true, notSendableReason: null,
   confirmedAt: midday.toISOString(), dedupKey: `${id}:${trig}:w`, texts: { telegram: 't', whatsapp: 'w' }, textProblems: [],
+  cls: 'alerta', held: false, heldReasons: [], moveScore: pct, offerSlug: `s${id}`, networkName: 'Mercado Livre',
 });
-ok(isQuietHours(new Date('2026-11-11T01:00:00Z')), 'silêncio às 22h local (01h UTC)');
-ok(isQuietHours(new Date('2026-11-11T10:59:00Z')), 'silêncio às 7h59 local');
-ok(!isQuietHours(new Date('2026-11-11T11:00:00Z')), 'sem silêncio às 8h local');
-ok(isQuietHours(new Date('2026-11-11T09:00:00Z')), 'silêncio às 6h local');
-eq(isQuietHours(new Date('2026-11-11T00:50:00Z')), false, '21h50 local ainda não é silêncio');
-eq(dailyCap(new Date('2026-11-12T15:00:00Z')), 3, 'teto normal 3/dia');
-eq(dailyCap(new Date('2026-11-20T15:00:00Z')), 6, 'teto 6/dia em 20/11');
-eq(dailyCap(new Date('2026-11-27T15:00:00Z')), 6, 'teto 6/dia em 27/11');
-eq(dailyCap(new Date('2026-11-28T15:00:00Z')), 3, 'teto volta a 3 em 28/11');
+// Política v2: NÃO existe mais silêncio noturno; a noite só tira o som (isNightHour).
+ok(isNightHour(new Date('2026-11-11T01:00:00Z')), 'noite às 22h local (01h UTC)');
+ok(isNightHour(new Date('2026-11-11T10:59:00Z')), 'noite às 7h59 local');
+ok(!isNightHour(new Date('2026-11-11T11:00:00Z')), 'dia às 8h local');
+ok(isNightHour(new Date('2026-11-11T09:00:00Z')), 'noite às 6h local');
+eq(isNightHour(new Date('2026-11-11T00:50:00Z')), false, '21h50 local ainda não é noite');
+eq(dailyCap(new Date('2026-11-12T15:00:00Z')), 30, 'teto normal 30/dia');
+eq(dailyCap(new Date('2026-11-20T15:00:00Z')), 40, 'teto 40/dia em 20/11');
+eq(dailyCap(new Date('2026-11-27T15:00:00Z')), 40, 'teto 40/dia em 27/11');
+eq(dailyCap(new Date('2026-11-28T15:00:00Z')), 30, 'teto volta a 30 em 28/11');
 let plan = applyLimits([cand('1')], [], new Date('2026-11-11T01:00:00Z'));
-ok(plan.next === null && plan.deferred[0]?.reason.startsWith('silencio'), 'silêncio noturno segura o envio', plan);
+ok(plan.next?.masterProductId === '1' && plan.nextSound === false, 'à noite o alerta SAI, mas silencioso (sem som)', plan);
 plan = applyLimits([cand('1')], [], midday);
-ok(plan.next?.masterProductId === '1', 'dentro do horário e sem histórico: envia');
-const sent = (id: string, hoursAgo: number, net = 'mercado-livre', price = 10000) => ({ masterProductId: id, priceCents: price, sentAt: new Date(midday.getTime() - hoursAgo * H), networkSlug: net });
+ok(plan.next?.masterProductId === '1' && plan.nextSound === true, 'de dia e sem histórico: envia COM som');
+const sent = (id: string, hoursAgo: number, net = 'mercado-livre', price = 10000, extra: Partial<SentRecord> = {}): SentRecord => ({
+  masterProductId: id, priceCents: price, sentAt: new Date(midday.getTime() - hoursAgo * H), networkSlug: net, cls: 'alerta', sound: true, ...extra,
+});
+plan = applyLimits([cand('1')], [sent('9', 0.1)], midday);
+ok(plan.next === null && plan.deferred[0]?.reason.startsWith('intervalo_minimo_alerta'), 'intervalo mínimo de 15 min entre alertas', plan);
 plan = applyLimits([cand('1')], [sent('9', 0.5)], midday);
-ok(plan.next === null && plan.deferred[0]?.reason === 'limite_1_por_hora', '1 por hora', plan);
-plan = applyLimits([cand('1')], [sent('7', 1.5), sent('8', 3), sent('9', 5)], midday);
-ok(plan.next === null && plan.deferred[0]?.reason === 'teto_diario_3', 'teto diário 3', plan);
+ok(plan.next?.masterProductId === '1', 'depois de 30 min o alerta cabe de novo');
+const full = Array.from({ length: 30 }, (_, i) => sent(`h${i}`, 0.3 + i * 0.01, 'shopee', 1, { cls: 'insight', sound: false }));
+plan = applyLimits([cand('1')], full, new Date(midday.getTime()));
+ok(plan.next === null && plan.deferred[0]?.reason === 'teto_diario_30', 'teto diário 30', plan);
 const bfNow = new Date('2026-11-21T15:00:00Z');
-const bfHist = [1.5, 3, 5].map((h, i) => ({ masterProductId: `h${i}`, priceCents: 1, sentAt: new Date(bfNow.getTime() - h * H), networkSlug: 'shopee' }));
+const bfHist = Array.from({ length: 31 }, (_, i) => ({ masterProductId: `h${i}`, priceCents: 1, sentAt: new Date(bfNow.getTime() - (i + 1) * 60_000), networkSlug: 'shopee', cls: 'insight' as const, sound: false }));
 plan = applyLimits([cand('1')], bfHist, bfNow);
-ok(plan.next?.masterProductId === '1', 'semana da BF: 3 enviados ainda cabem (teto 6)', plan);
+ok(plan.next?.masterProductId === '1', 'semana da BF: 31 enviados ainda cabem (teto 40)', plan);
 // dedup 48 h
 plan = applyLimits([cand('1')], [sent('1', 10)], midday);
 ok(plan.next === null && plan.deferred[0]?.reason.startsWith('produto_ja_enviado'), 'dedup 48 h por produto', plan);
 plan = applyLimits([cand('1')], [sent('1', 49)], midday);
 ok(plan.next?.masterProductId === '1', 'após 48 h o produto pode voltar');
 eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 7, 'mercado-livre', 10000)], midday), null, 'novo menor preço >= 5% depois de 6 h rompe a janela');
+eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'OK1' }, [sent('1', 7, 'mercado-livre', 10000)], midday), null, 'OK1 (novo mínimo) também rompe a janela');
 ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 3, 'mercado-livre', 10000)], midday) !== null, 'antes de 6 h não rompe');
 ok(productDedupBlock({ masterProductId: '1', priceCents: 9800, trigger: 'G1' }, [sent('1', 7, 'mercado-livre', 10000)], midday) !== null, 'menos de 5% não rompe');
-ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G2' }, [sent('1', 7, 'mercado-livre', 10000)], midday) !== null, 'só G1 rompe a janela');
-// rodízio
+ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G2' }, [sent('1', 7, 'mercado-livre', 10000)], midday) !== null, 'só G1/OK1 rompem a janela');
+// rodízio (alertas com 20 min de intervalo da última)
 plan = applyLimits([cand('1', 'mercado-livre', 'G1', 40), cand('2', 'shopee', 'G2', 20)], [sent('9', 2, 'mercado-livre')], midday);
 eq(plan.next?.masterProductId, '2', 'rodízio: não repete a rede da última mensagem');
 plan = applyLimits([cand('1', 'mercado-livre', 'G1', 40), cand('2', 'mercado-livre', 'G2', 20)], [], midday);
 eq(plan.next?.masterProductId, '1', 'prioridade G1 antes de G2');
-// revisão humana nunca sai sozinha
+// revisão humana e retida nunca saem sozinhas
 plan = applyLimits([{ ...cand('1'), status: 'review' }], [], midday);
 ok(plan.next === null, 'candidato em revisão não entra no envio automático');
+plan = applyLimits([{ ...cand('1'), held: true }], [], midday);
+ok(plan.next === null, 'candidato retido não entra no envio automático');
 ok(priceWithinTolerance(10000, 10150) && !priceWithinTolerance(10000, 10300), 'revalidação: preço dentro de 2%');
 
 // ---------------------------------------------------------------------------
