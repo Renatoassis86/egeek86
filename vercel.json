@@ -54,7 +54,7 @@
     },
     {
       "path": "/api/cron/group-messages",
-      "schedule": "*/5 * * * *"
+      "schedule": "* * * * *"
     }
   ]
 }
