@@ -51,7 +51,10 @@ export function parseBrl(p: string | null | undefined): number | null {
   return Number.isFinite(v) && v > 0 ? Math.round(v * 100) : null;
 }
 
-export interface AmzCand { a: string; t: string; p: string | null; l: string | null; s: number }
+export interface AmzCand { a: string; t: string; p: string | null; l: string | null; s: number; /** URL da capa na CDN da Amazon (só o link; a Licença de PI permite guardar o link por até 24 h, então é renovado a cada leitura). */ i?: string | null }
+
+const AMZ_IMG_RE = /^https:\/\/m\.media-amazon\.com\/images\/[A-Za-z0-9_\-\/.%+,]{6,200}$/;
+export const safeAmazonImage = (u: unknown): string | null => (typeof u === 'string' && AMZ_IMG_RE.test(u) ? u : null);
 export interface AmzRow { id: string; q?: string; r: AmzCand[] }
 export interface AmzQueueItem { id: string; q: string }
 
@@ -178,14 +181,15 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
       if (!opts.apply) { if (existing) stats.atualizados++; else stats.novos++; continue; }
       if (existing) {
         await recordPriceSnapshot({ offerId: existing.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
-        await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now() WHERE id = ${existing.id}`);
+        const img = safeAmazonImage(a.c.i);
+        await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now(), image_url = COALESCE(${img}, image_url) WHERE id = ${existing.id}`);
         stats.atualizados++;
         continue;
       }
       const [o] = await db.insert(affiliateOffers).values({
         masterProductId: row.id, vertical: GAMES, networkId: net.id, title: a.c.t.slice(0, 200),
         slug: slugify(`${a.c.t}-amazon-${randomUUID().slice(0, 6)}`), affiliateUrl: `https://www.amazon.com.br/dp/${a.c.a}?tag=${opts.tag}`, affiliateLinkPending: false,
-        imageUrl: null, storeName: 'Amazon', externalRef: ref, currentPriceCents: 0, status: 'active', publishedAt: new Date(), lastCheckedAt: new Date(),
+        imageUrl: safeAmazonImage(a.c.i), storeName: 'Amazon', externalRef: ref, currentPriceCents: 0, status: 'active', publishedAt: new Date(), lastCheckedAt: new Date(),
       }).returning({ id: affiliateOffers.id });
       await recordPriceSnapshot({ offerId: o.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
       await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now() WHERE id = ${o.id}`);
