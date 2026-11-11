@@ -159,7 +159,7 @@ export const RULES = {
 } as const;
 
 /** Departamentos liberados no porteiro e no /go. Os demais geram G6 marcado como não enviável. */
-export const RELEASED_VERTICALS: readonly string[] = ['games'];
+export const RELEASED_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d']; // todas as lojas (dono, 2026-11-11): cada uma envia ao seu canal
 
 export type Trigger = 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'OK1' | 'OK2' | 'T1' | 'T2' | 'RADAR' | 'CUPOM' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
 

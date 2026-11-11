@@ -204,7 +204,7 @@ ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 9400
 ok(!ev.candidates.some((c) => c.trigger === 'OK1'), 'preço sem reconfirmação de 15 min bloqueia');
 ev = evaluateProductV2(product({ catalogGate: 'review' }), ctx);
 ok(!ev.candidates.some((c) => c.trigger === 'OK1'), 'porteiro em review bloqueia');
-ev = evaluateProductV2(product({ vertical: 'livros' }), ctx);
+ev = evaluateProductV2(product({ vertical: 'futuro' }), ctx);
 ok(!ev.candidates.some((c) => c.trigger === 'OK1'), 'nicho não liberado não vira alerta');
 
 // ---------------------------------------------------------------------------

@@ -20,7 +20,7 @@ export const AMAZON_NETWORK_SLUG = 'amazon';
 /** D2: a oferta da Amazon só pesa na média se o preço foi CONFIRMADO nas últimas 24 h (teto de cache da licença de PI da Amazon). */
 export const AMAZON_FRESH_MAX_AGE_MS = 24 * 3_600_000;
 /** D5: só estes departamentos têm Amazon na média até a Black Friday (27/11). */
-export const AMAZON_MODE_VERTICALS: readonly string[] = ['games'];
+export const AMAZON_MODE_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d']; // dono, 2026-11-11: a Amazon entra na média única já, em todas as lojas
 /** D3: régua da Amazon-only usa a mediana oferta-dia dos últimos 14 dias do próprio ASIN, com no mínimo 7 dias de série. */
 export const AMAZON_OWN_WINDOW_DAYS = 14;
 export const AMAZON_OWN_MIN_DAYS = 7;

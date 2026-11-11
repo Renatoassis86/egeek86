@@ -376,10 +376,10 @@ ev = evaluateProduct(product({ productType: 'console', offers: many.slice(0, 10)
 ok(!ev.candidates.some((c) => c.trigger === 'G5'), 'G5 exige >= 20 ofertas');
 
 // G6: departamento não liberado
-ev = evaluateProduct(product({ vertical: 'tecnologia', productType: 'tecnologia', platformLabel: null, minEvent: null }), ctx);
+ev = evaluateProduct(product({ vertical: 'futuro', productType: 'tecnologia', platformLabel: null, minEvent: null }), ctx);
 const g6 = ev.candidates.find((c) => c.trigger === 'G6');
 ok(!!g6 && !g6.sendable && String(g6.notSendableReason).includes('departamento_em_review'), 'G6 marcado como não enviável', ev);
-ok(!!g6 && g6.texts.whatsapp.startsWith('[Tecnologia]'), 'G6 rótulo');
+ok(!!g6 && g6.texts.whatsapp.startsWith('[futuro]'), 'G6 rótulo');
 
 // G4 (resumo)
 const sumFacts = new Map<string, ProductFacts>();

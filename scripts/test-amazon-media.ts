@@ -55,7 +55,7 @@ eq(amazonScope('off'), 'exclude', 'off exclui');
 eq(amazonScope('shadow'), 'exclude', 'shadow exclui (o público lê como off)');
 eq(amazonScope('on'), 'include', 'on inclui');
 ok(amazonCountsIn('on', 'games'), 'on + games conta');
-ok(!amazonCountsIn('on', 'livros') && !amazonCountsIn('on', 'esporte'), 'on fora de games não conta (D5)');
+ok(amazonCountsIn('on', 'livros') && amazonCountsIn('on', 'esporte') && !amazonCountsIn('off', 'games') && !amazonCountsIn('shadow', 'livros'), 'on conta em todas as lojas (dono, 2026-11-11); off e shadow não');
 ok(!amazonCountsIn('off', 'games') && !amazonCountsIn('shadow', 'games'), 'off e shadow nunca contam');
 ok(AMAZON_FRESH_MAX_AGE_MS === 24 * H, 'frescor da Amazon = 24 h');
 
@@ -222,7 +222,7 @@ ok(!!amzCand(r)?.sendable, 'on: exatamente 10,0% abaixo da média passa');
 r = evaluateProductV2(prod({ avg: { cents: 10000, distinctOffers: 4, offerDays: 43, spanDays: 17, eligible: true }, offers: [amzF({ priceCents: 9001 }), offerF({ offerId: 'b', priceCents: 11000 }), offerF({ offerId: 'c', priceCents: 12000 }), offerF({ offerId: 'd', priceCents: 12500 })], amazonSeries: flat(8, 10000) }), onCtx);
 ok(!amzCand(r)?.sendable, 'on: 9,99% abaixo da média não passa');
 // Fora de games: nada muda
-ok(amazonReference({ vertical: 'livros', amazonOnly: false }, { ownMedian14: null }, { cents: 11500, distinctOffers: 4 }, 'on') === null, 'on fora de games: sem referência para a Amazon');
+ok(amazonReference({ vertical: 'livros', amazonOnly: false }, { ownMedian14: null }, { cents: 11500, distinctOffers: 4 }, 'on') !== null, 'on em livros: a Amazon compara com a média do mercado');
 // Os alertas das demais lojas não mudam com a flag (produto sem Amazon)
 const noAmz = prod({ offers: [offerF({ offerId: 'a', priceCents: 9400 }), offerF({ offerId: 'b', priceCents: 11000 }), offerF({ offerId: 'c', priceCents: 12000 })], amazonSeries: [], avg: { cents: 11500, distinctOffers: 3, offerDays: 43, spanDays: 17, eligible: true }, series: flat(8, 10000) });
 ok(strip(evaluateProductV2(noAmz, onCtx)) === strip(evaluateProductV2(noAmz, baseCtx)), 'on: produto sem Amazon gera exatamente as mesmas mensagens que off (ML/Shopee intocados)');

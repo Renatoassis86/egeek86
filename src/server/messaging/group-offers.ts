@@ -492,7 +492,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
  */
 export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<DetectionResult> {
   const now = opts.now ?? new Date();
-  const verticals = (opts.verticals ?? ['games']).filter(isVertical);
+  const verticals = (opts.verticals ?? ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d']).filter(isVertical);
   if (!verticals.length) throw new Error('nenhum departamento válido');
   const maxAgeMin = opts.maxAgeMin ?? RULES.DETECT_MAX_AGE_MIN;
   const eventWindowHours = opts.eventWindowHours ?? 24;
