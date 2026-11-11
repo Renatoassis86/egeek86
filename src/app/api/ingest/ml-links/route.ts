@@ -52,12 +52,16 @@ export async function GET(request: NextRequest) {
   const n = Math.min(Math.max(1, Number(new URL(request.url).searchParams.get('n') ?? 40) || 40), MAX_ROWS);
   const rows = await db.execute<{ id: string; url: string }>(sql`
     SELECT t.id, t.url FROM (
-      SELECT o.id::text AS id, split_part(split_part(o.affiliate_url, '?', 1), '#', 1) AS url,
+      SELECT o.id::text AS id,
+             CASE WHEN o.external_item_id ~ '^MLB[0-9]+$' THEN 'https://produto.mercadolivre.com.br/MLB-' || substr(o.external_item_id, 4)
+                  ELSE split_part(split_part(o.affiliate_url, '?', 1), '#', 1) END AS url,
              row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn, o.master_product_id
       FROM affiliate_offers o
       JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
       JOIN master_products m ON m.id = o.master_product_id
+      LEFT JOIN affiliate_sellers sl ON sl.id = o.seller_id
       WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical
+        AND COALESCE(sl.reputation_level, '') NOT IN ('1_red', '2_orange')
         AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
         AND o.current_price_cents > 0 AND o.affiliate_url NOT LIKE 'https://meli.la/%'
         AND o.affiliate_url ~ '^https://(produto|www)\\.mercadolivre\\.com\\.br/'
