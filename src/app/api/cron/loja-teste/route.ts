@@ -8,6 +8,7 @@ import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { chatForStore, getStoreByVertical } from '@/server/stores';
 import { renderStoreProfileCard } from '@/server/messaging/store-profile-card';
+import { fetchShopeeGraphQL } from '@/server/collector/sources/shopee-auth';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -30,6 +31,16 @@ export async function GET(request: NextRequest) {
   if (auth === 'desligado') return NextResponse.json({ error: 'desligado' }, { status: 503 });
   if (auth === 'negado') return NextResponse.json({ error: 'nao_autorizado' }, { status: 401 });
   const q = new URL(request.url).searchParams;
+  // ?shopee=ofertas: lista as campanhas oficiais (shopeeOfferV2: campanhas e coleções com link de afiliado e período). Só leitura, 1 chamada.
+  if (q.get('shopee') === 'ofertas') {
+    const query = `query O($page: Int, $limit: Int, $keyword: String) { shopeeOfferV2(page: $page, limit: $limit, keyword: $keyword, sortType: 1) { nodes { offerName offerType commissionRate offerLink periodStartTime periodEndTime } pageInfo { hasNextPage } } }`;
+    try {
+      const data = await fetchShopeeGraphQL<{ shopeeOfferV2?: { nodes?: unknown[] } }>(query, { page: 1, limit: 30, keyword: q.get('q') ?? null });
+      return NextResponse.json({ nodes: data?.shopeeOfferV2?.nodes ?? [] });
+    } catch (e) {
+      return NextResponse.json({ erro: String((e as Error).message).slice(0, 300) }, { status: 502 });
+    }
+  }
   // ?perfil=<slug>: devolve o PNG de perfil da loja (canal do Telegram / grupo do WhatsApp).
   const perfil = q.get('perfil');
   if (perfil) {
