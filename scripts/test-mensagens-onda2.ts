@@ -254,7 +254,7 @@ function product(over: Partial<ProductFacts> = {}): ProductFacts {
   return {
     masterProductId: 'p1', masterName: 'Tomba! Edição Especial', vertical: 'games', productType: 'game', platformLabel: 'Switch', format: 'physical', catalogGate: 'approved',
     offers: [offer({ offerId: 'a', priceCents: 9400 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })],
-    avg: { cents: 11500, distinctOffers: 3, offerDays: 43, spanDays: 17, eligible: true },
+    avg: { cents: 11500, distinctOffers: 6, offerDays: 43, spanDays: 17, eligible: true },
     minEvent: null,
     record: { since: new Date('2026-11-03T15:00:00Z'), minCents: 10000 },
     series: flat8,
@@ -285,7 +285,7 @@ ok(!ev.candidates.some((c) => c.trigger === 'G2'), 'média com só 2 ofertas: n�
 ev = evaluateProductV2(medProduct({ avg: { cents: 11500, distinctOffers: 3, offerDays: 0, spanDays: 0, eligible: false } }), ctx);
 ok(!ev.candidates.some((c) => c.trigger === 'G2'), 'série medida de 0 dia: não dispara');
 // série pequena é permitida (dono): 1 dia e 3 ofertas bastam; o texto DIZ a série e não afirma tendência
-ev = evaluateProductV2(medProduct({ series: [], avg: { cents: 11500, distinctOffers: 3, offerDays: 3, spanDays: 1, eligible: false } }), ctx);
+ev = evaluateProductV2(medProduct({ series: [], avg: { cents: 11500, distinctOffers: 6, offerDays: 3, spanDays: 1, eligible: false } }), ctx);
 const medShort = ev.candidates.find((c) => c.trigger === 'G2');
 ok(!!medShort && medShort.sendable, 'série de 1 dia e 3 ofertas já basta (o selo exige 14; o gatilho não)', ev.blocked);
 ok(!!medShort && medShort.texts.telegram.includes('abaixo') && !/tendência|Série de/.test(medShort.texts.telegram), 'série curta: texto objetivo, sem frase de série nem de tendência', medShort?.texts.telegram);
@@ -522,21 +522,21 @@ ok(evaluateProductV2(medProduct(), ctx).candidates.some((c) => c.trigger === 'G2
 const gap18 = evaluateProductV2(product({ series: days([10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000]), offers: [offer({ offerId: 'a', priceCents: 9400 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), realCtx).candidates.find((c) => c.cls === 'alerta' || c.cls === 'insight');
 ok(!!gap18 && gap18.sendable, 'régua: preço bem abaixo da média (>= 10%) é enviável', gap18?.notSendableReason);
 // Nome da loja que dá o preço, em destaque abaixo do preço (dono, 2026-11-11)
-const stMsg = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo X', offer: { slug: 'x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 9400, confirmedAt: NOW, storeName: 'JR_GAMES' }, avg: { cents: 11500, offers: 3 }, seriesDays: 9 }, 'tg');
+const stMsg = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo X', offer: { slug: 'x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 9400, confirmedAt: NOW, storeName: 'JR_GAMES' }, avg: { cents: 11500, offers: 6 }, seriesDays: 9 }, 'tg');
 ok(stMsg.includes('<b>R$ 94,00</b> no Mercado Livre\nVendido por <b>JR GAMES</b>'), 'loja que dá o preço em destaque abaixo do preço', stMsg);
-const stSame = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo X', offer: { slug: 'x', networkSlug: 'amazon', networkName: 'Amazon', priceCents: 9400, confirmedAt: NOW, storeName: 'Amazon' }, avg: { cents: 11500, offers: 3 }, seriesDays: 9 }, 'tg');
+const stSame = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo X', offer: { slug: 'x', networkSlug: 'amazon', networkName: 'Amazon', priceCents: 9400, confirmedAt: NOW, storeName: 'Amazon' }, avg: { cents: 11500, offers: 6 }, seriesDays: 9 }, 'tg');
 ok(!stSame.includes('Vendido por'), 'loja igual ao nome da rede não repete');
 // escape HTML do título e limite
 const evilName = 'Zelda <b>&</b> "Tears" > Kingdom';
 const evilMsg = formatOfferMessage(
-  { model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: evilName, title: evilName, meta: 'Sw<itch>', offer: { slug: 'zz', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 11000, confirmedAt: NOW }, avg: { cents: 11500, offers: 3 }, seriesDays: 9, refCents: 10000, sinceDay: '2026-11-03' },
+  { model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: evilName, title: evilName, meta: 'Sw<itch>', offer: { slug: 'zz', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 11000, confirmedAt: NOW }, avg: { cents: 11500, offers: 6 }, seriesDays: 9, refCents: 10000, sinceDay: '2026-11-03' },
   'tg'
 );
 ok(evilMsg.includes('<b>Zelda &lt;b&gt;&amp;&lt;/b&gt; "Tears" &gt; Kingdom</b>') && evilMsg.includes('<i>Sw&lt;itch&gt;</i>') && !evilMsg.includes('<b>&</b>'), 'escape de <, > e & no título e na plataforma', evilMsg.split('\n')[0]);
-const evilWa = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo *x* _y_ ~z~', offer: { slug: 'zz', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 11000, confirmedAt: NOW }, avg: { cents: 11500, offers: 3 }, seriesDays: 9 }, 'wa');
+const evilWa = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: 'Jogo *x* _y_ ~z~', offer: { slug: 'zz', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 11000, confirmedAt: NOW }, avg: { cents: 11500, offers: 6 }, seriesDays: 9 }, 'wa');
 ok(evilWa.split('\n')[0] === '*Jogo x y z*', 'WhatsApp: formatação do título é removida', evilWa.split('\n')[0]);
 const longTitle = 'Jogo '.repeat(1200);
-const longMsg = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: longTitle, offer: { slug: 'zz', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 11000, confirmedAt: NOW }, avg: { cents: 11500, offers: 3 }, seriesDays: 9 }, 'tg');
+const longMsg = formatOfferMessage({ model: 'media', vertical: 'games', messageKey: 'g2-261111-abc123', adTag: AD, name: longTitle, offer: { slug: 'zz', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 11000, confirmedAt: NOW }, avg: { cents: 11500, offers: 6 }, seriesDays: 9 }, 'tg');
 ok(textProblems(longMsg, 'tg').some((p) => p.includes('4096')), 'título gigante estoura 4096 e a barreira reprova (a mensagem não sai)');
 // cupom: antes do link, com <code>, no máximo 2 emojis
 const cp: CouponInfo = { code: 'GEEK10', conditions: 'R$ 10 acima de R$ 80', expiresAt: new Date(NOW.getTime() + 5 * H).toISOString(), verifiedAt: new Date(NOW.getTime() - 30 * MIN).toISOString() };

@@ -16,7 +16,7 @@ export const INSIGHT_BELOW_AVG_MIN_PCT = 10;
 /** Até esta distância acima do menor registrado vale o insight "a X% do menor preço registrado". */
 export const INSIGHT_NEAR_MIN_PCT = 3;
 /** Média única só vale com 3 ou mais ofertas distintas (mesma regra do site). */
-export const INSIGHT_MIN_OFFERS_FOR_AVG = 3;
+export const INSIGHT_MIN_OFFERS_FOR_AVG = 5; // dono, 2026-11-11: média com menos de 5 ofertas não vira "abaixo da média" no card (caso PS5)
 /** Preço vivo: Mercado Livre/Shopee até 6 h; Amazon até 24 h (contrato do cache de preço dela). */
 export const OFFER_CARD_MAX_AGE_MS = 6 * 3_600_000;
 export const OFFER_CARD_MAX_AGE_AMAZON_MS = 24 * 3_600_000;

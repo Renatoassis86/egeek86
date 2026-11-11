@@ -142,7 +142,7 @@ function product(over: Partial<ProductFacts> = {}): ProductFacts {
   return {
     masterProductId: 'p1', masterName: 'Tomba! Edição Especial', vertical: 'games', productType: 'game', platformLabel: 'Switch', format: 'physical', catalogGate: 'approved',
     offers: [offer({ offerId: 'a', priceCents: 9400 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })],
-    avg: { cents: 11500, distinctOffers: 3, offerDays: 43, spanDays: 17, eligible: true },
+    avg: { cents: 11500, distinctOffers: 6, offerDays: 43, spanDays: 17, eligible: true },
     minEvent: null,
     record: { since: new Date('2026-11-03T15:00:00Z'), minCents: 10000 },
     series: flat8,

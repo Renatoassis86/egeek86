@@ -56,6 +56,9 @@ export function fmtBRL(cents: number): string {
 }
 
 /** Percentual inteiro abaixo da média (arredondado). */
+/** Amostra mínima para AFIRMAR "X% abaixo da média das lojas" (dono, 2026-11-11, caso PS5: média de 3 anúncios com pacotes enganou). Abaixo disso a mensagem sai sem comparar com a média. */
+export const MIN_AVG_OFFERS_CLAIM = 5;
+
 export function pctBelow(priceCents: number, avgCents: number): number {
   if (avgCents <= 0) return 0;
   return Math.round(((avgCents - priceCents) / avgCents) * 100);
@@ -570,7 +573,8 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const price = o.priceCents;
   // Referência de preço: demais lojas = média das lojas (como sempre). Amazon só com PRICE_AMAZON_MODE=on (avg.scope definido) e SEM citar lojas:
   // média do mercado, média na Amazon (produto só nela) ou a mediana do próprio anúncio.
-  const refAvg = !amz ? input.avg ?? null : input.avg?.scope ? input.avg : null;
+  const refAvgAll = !amz ? input.avg ?? null : input.avg?.scope ? input.avg : null;
+  const refAvg = refAvgAll && (refAvgAll.scope === 'own' || refAvgAll.offers >= MIN_AVG_OFFERS_CLAIM) ? refAvgAll : null;
   if (refAvg) {
     const gap = refAvg.cents - price;
     const own = amz && refAvg.scope === 'own';
@@ -606,7 +610,7 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const ind = input.ind ?? null;
   if (ind && ind.days >= 3) mon.push(topic(f, 'Histórico', `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
   const since = input.model === 'movimento' ? input.move.sinceDay : input.sinceDay ?? null;
-  const bf = blackFridayIndicator(o.confirmedAt, since, { price, avgCents: !amz ? input.avg?.cents ?? null : null, firstCents: ind?.firstCents ?? null, firstDay: ind?.firstDay ?? null });
+  const bf = blackFridayIndicator(o.confirmedAt, since, { price, avgCents: !amz && input.avg && input.avg.offers >= MIN_AVG_OFFERS_CLAIM ? input.avg.cents : null, firstCents: ind?.firstCents ?? null, firstDay: ind?.firstDay ?? null });
   if (bf) mon.push(topic(f, 'Black Friday', bf));
   // MENOR PREÇO REGISTRADO: destaque maior (dono, 2026-11-11). Só quando o preço é o menor de toda a série medida; sempre com a data de início.
   const recordSince = input.model === 'movimento' ? (input.move.kind === 'OK1' ? input.move.sinceDay : null) : input.refCents != null && price < input.refCents ? input.sinceDay ?? null : null;

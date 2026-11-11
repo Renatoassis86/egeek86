@@ -1,4 +1,5 @@
 import { effectiveMinBelow, RULES } from '../src/lib/messaging/group-rules';
+import { formatOfferMessage, MIN_AVG_OFFERS_CLAIM } from '../src/lib/messaging/group-messages';
 let ok = 0, bad = 0;
 const eq = (n: string, a: unknown, b: unknown) => { if (a === b) ok++; else { bad++; console.error('FALHOU', n, a, b); } };
 const robust = { cents: 1, distinctOffers: 3, offerDays: 5, spanDays: 14, eligible: true };
@@ -8,5 +9,10 @@ eq('livros jovem = piso', effectiveMinBelow({ vertical: 'livros', avg: young }),
 eq('livros sem media = piso', effectiveMinBelow({ vertical: 'livros', avg: null }), RULES.EARLY_MIN_BELOW_AVG_PCT);
 eq('livros robusto volta a 10', effectiveMinBelow({ vertical: 'livros', avg: robust }), 10);
 eq('contexto 0 (legado) segue 0', effectiveMinBelow({ vertical: 'livros', avg: young }, 0), 0);
+const NOW = new Date();
+const mk = (offers: number) => formatOfferMessage({ model: 'media', name: 'Console X', seriesDays: 9, offer: { slug: 'x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 420000, confirmedAt: NOW }, avg: { cents: 514331, offers }, vertical: 'games', messageKey: 'g2-261111-abc123', adTag: '#publicidade' } as never, 'tg') as string;
+eq('3 ofertas: sem "Vs. média"', /Vs\. média/.test(mk(3)), false);
+eq('amostra mínima = 5', MIN_AVG_OFFERS_CLAIM, 5);
+eq('5 ofertas: com "Vs. média"', /Vs\. média/.test(mk(5)), true);
 console.log(`${ok}/${ok + bad} verificações ok (régua adaptativa)`);
 process.exit(bad ? 1 : 0);
