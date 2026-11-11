@@ -2,6 +2,7 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { loadOwnerBlocks } from '@/server/identity-queue/owner-blocks';
 import { affiliateNetworks, affiliateOffers, masterProducts } from '@/db/schema';
 import { collapseBySeller, sanitizeErrorForSummary } from '@/lib/affiliate/master-consolidation';
 import { mapWithConcurrency } from '@/lib/concurrency';
@@ -209,7 +210,8 @@ async function applyVerticalGroup(
         sellerId,
         consecutiveMissCount: 0,
         // Reativa quem expirou por falha passageira e voltou a aparecer (mesma regra do gamer). Draft não é promovido sozinho.
-        status: existing.status === 'expired' ? 'active' : existing.status,
+        // Decisao do dono ("nao e este produto") vence: expirada bloqueada nao volta a 'active'.
+        status: existing.status === 'expired' && !(await loadOwnerBlocks(db, [existing.id])).draft.has(existing.id) ? 'active' : existing.status,
         lastCheckedAt: new Date(),
       };
       if (existing.vertical !== vertical) upd.vertical = vertical; // corrige vazamento (oferta gravada com o default 'games')
@@ -251,7 +253,12 @@ async function applyVerticalGroup(
       out.rejectedImplausible++;
       continue;
     }
-    await db.update(affiliateOffers).set({ quarantinedAt: null }).where(and(eq(affiliateOffers.id, offerId), sql`${affiliateOffers.vertical} <> 'games'`));
+    await db.update(affiliateOffers).set({ quarantinedAt: null }).where(and(
+      eq(affiliateOffers.id, offerId),
+      sql`${affiliateOffers.vertical} <> 'games'`,
+      // "Preco errado" decidido pelo dono na fila: a coleta nao libera a quarentena.
+      sql`NOT EXISTS (SELECT 1 FROM identity_decisions d WHERE d.offer_id = ${affiliateOffers.id} AND d.undone_at IS NULL AND d.axis = 'preco' AND d.value = 'preco_errado')`,
+    ));
     if (await recordPriceSnapshot({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api' })) out.snapshots++;
     out.priced.push(offerId);
   }

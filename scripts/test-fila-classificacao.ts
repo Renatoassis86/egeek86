@@ -58,6 +58,9 @@ function parteA() {
 class Rollback extends Error {}
 
 async function parteB() {
+  const OBp = await import('../src/server/identity-queue/owner-blocks');
+  const pb = OBp.ownerBlocksFromRows([{ offer_id: 'a', draft: true, quar: false }, { offer_id: 'b', draft: false, quar: true }]);
+  check('ownerBlocksFromRows separa rascunho e quarentena', pb.draft.has('a') && !pb.draft.has('b') && pb.quarantine.has('b') && !pb.quarantine.has('a'));
   console.log('--- B: banco (transacao revertida) ---');
   if (!process.env.DATABASE_URL) { console.log('DATABASE_URL ausente: parte B ignorada.'); return; }
   const { db } = await import('../src/lib/db');
@@ -180,6 +183,39 @@ async function parteB() {
       const m6 = (await st(o6)).m;
       const m7 = (await st(o7)).m;
       check('identidade sem master: cria UM master e a segunda oferta cai no mesmo (sem duplicata)', r6.ok && r7.ok && m6 === m7 && m6 !== mWrong, { m6, m7 });
+
+      // Desfazer decisao que CRIOU master: master vazio e arquivado (nao fica solto); escolher de novo o reativa
+      const dec6 = await one(tx, sql`SELECT id::text AS id, created_master_id::text AS cm FROM identity_decisions WHERE offer_id = ${o6}::uuid AND undone_at IS NULL`);
+      const dec7 = await one(tx, sql`SELECT id::text AS id FROM identity_decisions WHERE offer_id = ${o7}::uuid AND undone_at IS NULL`);
+      const arch = async (id: string) => (await one(tx, sql`SELECT attributes->>'archived' AS a FROM master_products WHERE id = ${id}::uuid`))?.a;
+      if (dec6?.cm || m6 !== mWrong) {
+        const createdId = dec6?.cm ?? (await one(tx, sql`SELECT created_master_id::text AS cm FROM identity_decisions WHERE offer_id = ${o7}::uuid`))?.cm;
+        await Q.undoInTx(tx, { decisionId: dec6.id, userId: null });
+        check('desfazer com outra oferta ainda no master criado NAO arquiva', !createdId || (await arch(createdId)) == null);
+        await Q.undoInTx(tx, { decisionId: dec7.id, userId: null });
+        check('desfazer a ultima oferta do master criado arquiva o master vazio', !createdId || (await arch(createdId)) === 'true', createdId);
+      }
+
+      // Coleta nao desfaz decisao do dono (nao e este / preco errado)
+      const OB = await import('../src/server/identity-queue/owner-blocks');
+      const t8 = `Console Sony PlayStation 5 Digital Bloqueio ${rnd}`;
+      const o8 = await mkOffer(mWrong, t8, `teste-fila-o8-${rnd}`, 460000);
+      await Q.generateQueue(tx, [cand(o8, t8)]);
+      const it8 = (await Q.getPendingCards(tx, 500)).find((c) => c.offerId === o8)!;
+      const ne8 = await Q.applyInTx(tx, { itemId: it8.id, value: 'nao_e_este', userId: uid });
+      await tx.execute(sql`UPDATE affiliate_offers SET status = 'expired' WHERE id = ${o8}::uuid`);
+      const b1 = await OB.loadOwnerBlocks(tx, [o8, o1]);
+      check('coleta enxerga "nao e este" do dono (bloqueia reativacao expired->active)', uid ? b1.draft.has(o8) && !b1.draft.has(o1) : true, [...b1.draft]);
+      await Q.undoInTx(tx, { decisionId: ne8.decisionId!, userId: null });
+      check('desfazer restaura ate oferta que a coleta expirou, e libera o bloqueio', (await st(o8)).s === 'active' && !(await OB.loadOwnerBlocks(tx, [o8])).draft.has(o8), { st: await st(o8), ne8 });
+      const pq = await Q.applyInTx(tx, { itemId: it5.id, value: 'preco_errado', userId: uid });
+      check('coleta enxerga "preco errado" do dono (nao libera quarentena)', uid ? (await OB.loadOwnerBlocks(tx, [o5])).quarantine.has(o5) : true, pq);
+      const sqlGuard = (await one(tx, sql`SELECT count(*)::int AS n FROM affiliate_offers WHERE id = ${o5}::uuid AND NOT EXISTS (SELECT 1 FROM identity_decisions d WHERE d.offer_id = affiliate_offers.id AND d.undone_at IS NULL AND d.axis = 'preco' AND d.value = 'preco_errado')`)).n;
+      check('guarda SQL do coletor de verticais exclui oferta com "preco errado"', uid ? sqlGuard === 0 : true, sqlGuard);
+
+      // Geracao automatica (cron): lock + limite de tempo
+      const gp = await Q.generateQueue(tx, [cand(o6, t6)], { deadlineAt: Date.now() - 1 });
+      check('limite de tempo vencido interrompe a geracao sem erro (parcial)', gp.parcial === true && gp.criados === 0, gp);
 
       throw new Rollback();
     });

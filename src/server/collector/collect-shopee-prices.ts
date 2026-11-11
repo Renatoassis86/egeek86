@@ -1,6 +1,7 @@
 import 'server-only';
 import { and, eq, inArray, isNotNull, isNull, like, lt, or, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { loadOwnerBlocks } from '@/server/identity-queue/owner-blocks';
 import { affiliateOffers, affiliateNetworks } from '@/db/schema';
 import { mapWithConcurrency } from '@/lib/concurrency';
 import { recordPriceSnapshot } from './record-price-snapshot';
@@ -213,7 +214,8 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
       };
       if (node.shopName) patch.storeName = node.shopName;
       if (!offer.imageUrl && node.imageUrl) patch.imageUrl = node.imageUrl;
-      if (offer.status === 'expired') {
+      // Decisao do dono ("nao e este produto") vence: a oferta expirada nao volta a 'active' pela coleta.
+      if (offer.status === 'expired' && !(await loadOwnerBlocks(db, [offer.id])).draft.has(offer.id)) {
         patch.status = 'active';
         patch.publishedAt = new Date();
         summary.reactivated++;

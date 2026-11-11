@@ -2,6 +2,7 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { and, eq, inArray, isNotNull, isNull, or, lt, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { loadOwnerBlocks } from '@/server/identity-queue/owner-blocks';
 import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema';
 import { GAMES } from '@/lib/catalog/verticais';
 import { getPriceSource, listOperationalSourceSlugs } from './price-sources';
@@ -800,6 +801,8 @@ async function applySnapshotsToGroup(
       // (ver MAX_CONSECUTIVE_MISSES). Também reativa quem tinha sido
       // marcada 'expired' por engano numa falha passageira e voltou a
       // aparecer, em vez de ficar presa fora do catálogo pra sempre.
+      // Decisao do dono ("nao e este produto", fila de classificacao): a coleta nao reativa a oferta.
+      const ownerDraft = existingOffer.status === 'expired' && (await loadOwnerBlocks(db, [offerId])).draft.has(offerId);
       const updateData: Partial<typeof affiliateOffers.$inferInsert> = {
         sellerId,
         consecutiveMissCount: 0,
@@ -808,7 +811,7 @@ async function applySnapshotsToGroup(
           ? existingOffer.status === 'active' || existingOffer.status === 'expired'
             ? 'draft'
             : existingOffer.status
-          : existingOffer.status === 'expired'
+          : existingOffer.status === 'expired' && !ownerDraft
             ? 'active'
             : existingOffer.status,
       };

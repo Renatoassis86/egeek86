@@ -57,6 +57,10 @@
       "schedule": "9,29,49 * * * *"
     },
     {
+      "path": "/api/cron/fila-classificacao",
+      "schedule": "13,43 * * * *"
+    },
+    {
       "path": "/api/cron/collector-health",
       "schedule": "*/30 * * * *"
     },

@@ -121,11 +121,13 @@ export async function collectCandidates(exec: Exec): Promise<QueueCandidate[]> {
 }
 
 /** Grava a fila a partir dos candidatos. Idempotente (1 item por oferta+eixo). Titulo com regra aprendida e resolvido sozinho. */
-export async function generateQueue(exec: Exec, candidates?: QueueCandidate[]): Promise<GenerateStats> {
+export async function generateQueue(exec: Exec, candidates?: QueueCandidate[], opts: { deadlineAt?: number } = {}): Promise<GenerateStats & { parcial?: boolean }> {
   const cands = candidates ?? (await collectCandidates(exec));
   const rules = await loadRules(exec);
-  const stats: GenerateStats = { candidatos: cands.length, criados: 0, autoResolvidos: 0, jaExistentes: 0, porFonte: {} };
+  const stats: GenerateStats & { parcial?: boolean } = { candidatos: cands.length, criados: 0, autoResolvidos: 0, jaExistentes: 0, porFonte: {} };
   for (const c of cands) {
+    // Limite de tempo (cron): para limpo; o que faltou entra na proxima rodada (insercao idempotente por oferta+eixo).
+    if (opts.deadlineAt && Date.now() > opts.deadlineAt) { stats.parcial = true; break; }
     const id = await insertItem(exec, c);
     if (!id) { stats.jaExistentes++; continue; }
     stats.criados++;
@@ -194,7 +196,12 @@ export async function ensureConsoleMaster(exec: Exec, create: { name: string; ke
     SELECT id::text AS id FROM master_products
     WHERE vertical = 'games' AND product_type = 'console' AND (attributes->>'mergedInto') IS NULL AND attributes->>'identityKey' = ${create.key}
     ORDER BY created_at LIMIT 1`))[0];
-  if (ex) return { id: ex.id, created: false };
+  if (ex) {
+    // Master arquivado por um desfazer anterior (ficou vazio): volta a valer quando a identidade e escolhida de novo.
+    await exec.execute(sql`UPDATE master_products SET attributes = attributes - 'archived' - 'archivedAt' - 'archivedBy', updated_at = now()
+      WHERE id = ${ex.id}::uuid AND attributes->>'archivedBy' = 'fila-classificacao-desfazer'`);
+    return { id: ex.id, created: false };
+  }
   // Master de console ja existente cuja identidade (lida do nome) e a mesma chave: tambem e o mesmo produto.
   const named = rows<{ id: string; name: string }>(await exec.execute(sql`
     SELECT id::text AS id, name FROM master_products
@@ -304,8 +311,8 @@ export async function applyInTx(tx: Exec, p: { itemId: string; value: string; us
 
 /** Desfaz uma decisao: devolve a oferta ao estado anterior, desliga a regra e reabre o item. Idempotente. */
 export async function undoInTx(tx: Exec, p: { decisionId: string; userId: string | null }): Promise<ApplyResult> {
-  const d = rows<{ id: string; item_id: string | null; offer_id: string; kind: string; axis: string; value: string; from_master_id: string | null; to_master_id: string | null; prev_status: string | null; prev_quarantined_at: string | null; undone_at: string | null; recalc_masters: string[] | string }>(
-    await tx.execute(sql`SELECT id::text AS id, item_id::text AS item_id, offer_id::text AS offer_id, kind, axis, value, from_master_id::text AS from_master_id, to_master_id::text AS to_master_id,
+  const d = rows<{ id: string; item_id: string | null; offer_id: string; kind: string; axis: string; value: string; from_master_id: string | null; to_master_id: string | null; created_master_id: string | null; prev_status: string | null; prev_quarantined_at: string | null; undone_at: string | null; recalc_masters: string[] | string }>(
+    await tx.execute(sql`SELECT id::text AS id, item_id::text AS item_id, offer_id::text AS offer_id, kind, axis, value, from_master_id::text AS from_master_id, to_master_id::text AS to_master_id, created_master_id::text AS created_master_id,
       prev_status, prev_quarantined_at::text AS prev_quarantined_at, undone_at::text AS undone_at, recalc_masters::text[] AS recalc_masters
       FROM identity_decisions WHERE id = ${p.decisionId}::uuid FOR UPDATE`)
   )[0];
@@ -315,8 +322,16 @@ export async function undoInTx(tx: Exec, p: { decisionId: string; userId: string
     await tx.execute(sql`UPDATE affiliate_offers SET master_product_id = ${d.from_master_id}::uuid, updated_at = now() WHERE id = ${d.offer_id}::uuid AND master_product_id = ${d.to_master_id}::uuid`);
     await tx.execute(sql`UPDATE price_daily_offer SET master_product_id = ${d.from_master_id}::uuid WHERE offer_id = ${d.offer_id}::uuid AND master_product_id <> ${d.from_master_id}::uuid`);
   }
+  // Master criado por esta decisao e agora vazio: arquiva (reversivel; reaparece se a identidade for escolhida de novo), em vez de deixar solto.
+  if (d.created_master_id && d.created_master_id !== d.from_master_id) {
+    await tx.execute(sql`UPDATE master_products SET attributes = attributes || ${JSON.stringify({ archived: true, archivedBy: 'fila-classificacao-desfazer', archivedAt: new Date().toISOString() })}::jsonb, updated_at = now()
+      WHERE id = ${d.created_master_id}::uuid AND (attributes->>'createdBy') = 'fila-classificacao' AND (attributes->>'mergedInto') IS NULL
+        AND NOT EXISTS (SELECT 1 FROM affiliate_offers o WHERE o.master_product_id = master_products.id)
+        AND NOT EXISTS (SELECT 1 FROM affiliate_price_watches w WHERE w.master_product_id = master_products.id)`);
+  }
   if (d.prev_status) {
-    await tx.execute(sql`UPDATE affiliate_offers SET status = ${d.prev_status}::affiliate_offer_status, updated_at = now() WHERE id = ${d.offer_id}::uuid AND status = 'draft'`);
+    // 'expired' tambem: a coleta pode ter expirado a oferta-rascunho por falta; a decisao do dono vale ate ser desfeita.
+    await tx.execute(sql`UPDATE affiliate_offers SET status = ${d.prev_status}::affiliate_offer_status, updated_at = now() WHERE id = ${d.offer_id}::uuid AND status IN ('draft', 'expired')`);
   }
   if (d.axis === 'preco' && d.value === 'preco_errado') {
     // Devolve a quarentena ao estado anterior (NULL se a oferta nao estava em quarentena).
@@ -363,4 +378,26 @@ export async function drainRecalc(dbx: typeof Db, limit = 20): Promise<{ decisoe
     await tx.execute(sql`UPDATE identity_decisions SET recalc_done_at = now() WHERE id IN (${idl})`);
   });
   return { decisoes: pend.length, masters: masters.length };
+}
+
+/** Chave do lock de aviso: impede duas geracoes simultaneas (cron x botao). */
+const GENERATE_LOCK_KEY = 4286001142;
+
+/** Geracao automatica (cron): lock de sessao na transacao, limite de tempo e recalculo dos masters tocados. Idempotente. */
+export async function runQueueGeneration(dbx: typeof Db, opts: { budgetMs?: number } = {}): Promise<{ skipped?: 'em_andamento'; stats?: GenerateStats & { parcial?: boolean }; recalc?: { decisoes: number; masters: number }; pendentes?: number }> {
+  const deadlineAt = Date.now() + (opts.budgetMs ?? 40_000);
+  const out = await dbx.transaction(async (tx) => {
+    const t = tx as unknown as Exec;
+    const got = rows<{ ok: boolean }>(await t.execute(sql`SELECT pg_try_advisory_xact_lock(${GENERATE_LOCK_KEY}) AS ok`))[0]?.ok;
+    if (!got) return null;
+    return generateQueue(t, undefined, { deadlineAt });
+  });
+  if (!out) return { skipped: 'em_andamento' };
+  let recalc: { decisoes: number; masters: number } | undefined;
+  try {
+    recalc = await drainRecalc(dbx);
+  } catch (e) {
+    console.error('[fila-classificacao] recalculo adiado:', e instanceof Error ? e.message : e);
+  }
+  return { stats: out, recalc, pendentes: await countPending(dbx) };
 }
