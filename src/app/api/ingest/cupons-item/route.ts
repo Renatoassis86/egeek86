@@ -93,7 +93,8 @@ export async function GET(request: NextRequest) {
         // sem id do anúncio: a oferta é pulada nesta rodada
       }
     }
-    if (itemId) items.push({ id: r.id, url: `https://produto.mercadolivre.com.br/MLB-${itemId.slice(3)}` });
+    // Mesma origem da aba logada (www): a página do catálogo com o anúncio escolhido embute o cupom daquele anúncio.
+    if (itemId) items.push({ id: r.id, url: `https://www.mercadolivre.com.br/p/${r.ref}?pdp_filters=item_id%3A${itemId}` });
   }
   return NextResponse.json({ items }, { headers: cors(request) });
 }
