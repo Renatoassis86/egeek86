@@ -21,6 +21,12 @@
  *   --estado                    so mostra o orcamento do dia e o cache de 404 e sai (0 chamadas).
  *   --out-dir <pasta>           onde gravar log.txt, plano.json e revisao.json (padrao backup/dados/semear-vertical-<ts>/).
  *   --apply                     GRAVA (precisa tambem de --termos-aprovados: a whitelist de termos e provisoria ate o dono curar).
+ *                               Antes do 1o INSERT grava o BACKUP LOGICO (NDJSON dos masters e ofertas das verticais tocadas) em backup/dados/ e,
+ *                               ao final, o LOG de reversao (ids criados) em backup/logs/semear-vertical-<ts>.json.
+ *   --rollback <log.json>       desfaz um apply: apaga so o que o log criou (cotacoes, ofertas e masters); dry-run sem --apply.
+ *
+ * COR JUNTA (filamento/resina, chave por campos): catalogo do ML que e o mesmo produto em outra cor NAO cria master: a oferta dele entra
+ * no master que ja existe (ou que este mesmo plano cria). Ver SeedPlanEntry.mergeInto.
  *
  * Fluxo por candidato: /products/search (termo da whitelist) -> filtra domain_id do segmento -> exige identidade FORTE
  * (ISBN/GTIN/MPN/marca+modelo; sem isso vai para revisao, nunca vira master) -> checa duplicata (catalogo ML, GTIN, chave,
@@ -120,7 +126,10 @@ async function buildLookup(sql: Sql): Promise<ExistingLookup & { remember(e: See
   log(`duplicata por titulo: ${titles.size} titulos normalizados carregados (masters fora de games + console/acessorio gamer)`);
   const one = async (q: Promise<{ id: string; name: string }[]>) => (await q)[0] ?? null;
   return {
-    byCatalogId: (id) => one(sql`select id, name from master_products where meli_catalog_id = ${id} limit 1`),
+    // Catalogo ja cadastrado como master OU como oferta-placeholder anexada a um master (cor junta).
+    byCatalogId: async (id) =>
+      (await one(sql`select id, name from master_products where meli_catalog_id = ${id} limit 1`)) ??
+      (await one(sql`select m.id, m.name from affiliate_offers o join master_products m on m.id = o.master_product_id where o.external_ref = ${id} and o.seller_id is null limit 1`)),
     byGtins: (g) => one(sql`select id, name from master_products where gtin in ${sql(g)} limit 1`),
     byIdentityKey: (k) => one(sql`select id, name from master_products where attributes -> 'vertical' ->> 'identityKey' = ${k} limit 1`),
     byTitleKey: async (k) => titles.get(k) ?? null,
@@ -156,13 +165,14 @@ async function applyEntry(sql: Sql, e: SeedPlanEntry, networkId: string): Promis
   const meliUrl = `https://www.mercadolivre.com.br/p/${e.catalogId}`;
   try {
     return await sql.begin(async (tx) => {
-      let slug = slugify(e.name);
+      const masterName = e.masterName ?? e.name;
+      let slug = slugify(masterName);
       const [coll] = await tx`select id from master_products where slug = ${slug} limit 1`;
-      if (coll) slug = slugify(`${e.name}-${e.catalogId.slice(-6)}`);
+      if (coll) slug = slugify(`${masterName}-${e.catalogId.slice(-6)}`);
       const gtin = e.identity.keyKind === 'gtin' || e.identity.keyKind === 'isbn' ? e.identity.key!.split(':')[1] : null;
       const [m] = await tx<{ id: string }[]>`
         insert into master_products (name, slug, gtin, mpn, manufacturer, meli_catalog_id, default_images, attributes, vertical, product_type, is_verified)
-        values (${e.name}, ${slug}, ${gtin}, ${e.mpn}, ${e.brand}, ${e.catalogId}, ${tx.json(e.pictures)}, ${tx.json(attributes as any)}, ${e.vertical}, 'general'::product_type, false)
+        values (${masterName}, ${slug}, ${gtin}, ${e.mpn}, ${e.brand}, ${e.catalogId}, ${tx.json(e.pictures)}, ${tx.json(attributes as any)}, ${e.vertical}, 'general'::product_type, false)
         returning id`;
       const offerSlug = slugify(`${e.name}-${e.catalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
       const [o] = await tx<{ id: string }[]>`
@@ -182,7 +192,60 @@ async function applyEntry(sql: Sql, e: SeedPlanEntry, networkId: string): Promis
   }
 }
 
+/** Oferta-placeholder de um catalogo ANEXADO (cor junta) a um master que ja existe. Idempotente por (rede, catalogo). */
+async function applyAttach(sql: Sql, e: SeedPlanEntry, networkId: string, masterId: string): Promise<{ masterId: string; offerId: string } | { skipped: string }> {
+  const realToolId = process.env.MELI_TOOL_ID;
+  const meliUrl = `https://www.mercadolivre.com.br/p/${e.catalogId}`;
+  const offerSlug = slugify(`${e.name}-${e.catalogId.slice(-6)}-${randomUUID().slice(0, 6)}`);
+  const [o] = await sql<{ id: string }[]>`
+    insert into affiliate_offers (master_product_id, network_id, title, slug, affiliate_url, affiliate_link_pending, image_url, external_ref,
+                                  current_price_cents, status, published_at, vertical)
+    values (${masterId}, ${networkId}, ${e.name}, ${offerSlug}, ${realToolId ? `${meliUrl}?matt_tool=${realToolId}` : meliUrl}, ${!realToolId},
+            ${e.pictures[0] ?? null}, ${e.catalogId}, 0, 'active', now(), ${e.vertical})
+    on conflict (network_id, external_ref) where external_ref is not null and seller_id is null do nothing
+    returning id`;
+  return o ? { masterId, offerId: o.id } : { skipped: 'oferta_placeholder_ja_existe' };
+}
+
+/** Backup logico (NDJSON) dos masters e ofertas das verticais tocadas, ANTES do primeiro INSERT do apply. */
+async function backupLogico(sql: Sql, verticals: string[]): Promise<string> {
+  const dir = path.resolve('backup', 'dados');
+  fs.mkdirSync(dir, { recursive: true });
+  const file = path.join(dir, `semear-vertical-pre-${stamp}.ndjson`);
+  const lines: string[] = [];
+  for (const v of verticals) {
+    for (const r of await sql`select * from master_products where vertical = ${v}`) lines.push(JSON.stringify({ table: 'master_products', row: r }));
+    for (const r of await sql`select * from affiliate_offers where vertical = ${v}`) lines.push(JSON.stringify({ table: 'affiliate_offers', row: r }));
+  }
+  fs.writeFileSync(file, lines.join(String.fromCharCode(10)) + (lines.length ? String.fromCharCode(10) : ''));
+  return file;
+}
+
+/** Desfaz um apply: so o que o log criou. Dry-run por padrao. */
+async function rollbackFromLog(sql: Sql, logPath: string) {
+  const l = JSON.parse(fs.readFileSync(path.resolve(logPath), 'utf8')) as { stamp: string; mastersCreated: string[]; offersCreated: string[] };
+  log(`ROLLBACK ${APPLY ? '(APPLY)' : '(dry-run)'} do log ${l.stamp}: masters=${l.mastersCreated.length} ofertas=${l.offersCreated.length}`);
+  if (!APPLY) return;
+  await sql.begin(async (tx) => {
+    if (l.offersCreated.length) {
+      await tx`delete from affiliate_price_snapshots where offer_id in ${tx(l.offersCreated)}`;
+      await tx`delete from affiliate_offers where id in ${tx(l.offersCreated)}`;
+    }
+    if (l.mastersCreated.length) await tx`delete from master_products where id in ${tx(l.mastersCreated)}`;
+  });
+  log('ROLLBACK concluido.');
+}
+
 async function main() {
+  const rbIdx = argv.indexOf('--rollback');
+  if (rbIdx >= 0) {
+    const sqlRb = connect();
+    try {
+      return await rollbackFromLog(sqlRb, argv[rbIdx + 1]);
+    } finally {
+      await sqlRb.end({ timeout: 5 });
+    }
+  }
   const today = dayKeySP(new Date());
   const state0 = loadState();
   const effectiveCalls = effectiveMaxCalls(state0, today, MAX_CALLS, DAILY_CAP);
@@ -203,7 +266,11 @@ async function main() {
   }
   const sql = connect();
   const reports: SeedReport[] = [];
-  const applied: Array<{ catalogId: string; masterId?: string; offerId?: string; skipped?: string }> = [];
+  const applied: Array<{ catalogId: string; masterId?: string; offerId?: string; skipped?: string; anexadoA?: string }> = [];
+  const masterByCatalog = new Map<string, string>(); // catalogo -> master criado nesta execucao (para anexar cores)
+  const mastersCreated: string[] = [];
+  const offersCreated: string[] = [];
+  let backupFile: string | null = null;
   let runHandle: { counters: any; finish(o?: any): Promise<void> } | null = null;
   try {
     const token = await readToken(sql);
@@ -255,8 +322,21 @@ async function main() {
         const [net] = await sql<{ id: string }[]>`select id from affiliate_networks where slug = 'mercado-livre' limit 1`;
         if (!net) throw new Error('rede mercado-livre nao cadastrada em affiliate_networks');
         const { recordPriceSnapshot } = await import('../src/server/collector/record-price-snapshot');
+        if (!backupFile) {
+          backupFile = await backupLogico(sql, Array.from(new Set(segments.map((s) => s.vertical))));
+          log(`BACKUP LOGICO gravado antes do primeiro INSERT: ${backupFile}`);
+        }
         for (const p of rep.plans) {
-          const r = await applyEntry(sql, p, net.id);
+          let r: Awaited<ReturnType<typeof applyEntry>>;
+          if (p.mergeInto) {
+            const target = p.mergeInto.kind === 'existing' ? p.mergeInto.ref : masterByCatalog.get(p.mergeInto.ref);
+            if (!target) {
+              applied.push({ catalogId: p.catalogId, skipped: 'master_alvo_da_cor_junta_nao_criado' });
+              log(`  PULADO ${p.catalogId}: master alvo da cor junta nao foi criado`);
+              continue;
+            }
+            r = await applyAttach(sql, p, net.id, target);
+          } else r = await applyEntry(sql, p, net.id);
           if ('skipped' in r) {
             applied.push({ catalogId: p.catalogId, skipped: r.skipped });
             log(`  PULADO ${p.catalogId}: ${r.skipped}`);
@@ -264,24 +344,37 @@ async function main() {
           }
           // Cotacao inicial REAL do placeholder = menor preco entre os anuncios novos devolvidos pela API.
           const wrote = await recordPriceSnapshot({ offerId: r.offerId, priceCents: p.priceMinCents!, listPriceCents: p.bestOriginalPriceCents, source: 'api' });
-          lookup.remember(p, r.masterId);
+          if (!p.mergeInto) {
+            lookup.remember(p, r.masterId);
+            masterByCatalog.set(p.catalogId, r.masterId);
+            mastersCreated.push(r.masterId);
+          }
+          offersCreated.push(r.offerId);
           if (runHandle) {
             runHandle.counters.offersCreated++;
             if (wrote) runHandle.counters.snapshotsWritten++;
           }
-          applied.push({ catalogId: p.catalogId, masterId: r.masterId, offerId: r.offerId });
-          log(`  CRIADO ${p.catalogId}: master=${r.masterId} oferta=${r.offerId} snapshot=${wrote}`);
+          applied.push({ catalogId: p.catalogId, masterId: r.masterId, offerId: r.offerId, ...(p.mergeInto ? { anexadoA: r.masterId } : {}) });
+          log(`  ${p.mergeInto ? 'ANEXADO (cor junta)' : 'CRIADO'} ${p.catalogId}: master=${r.masterId} oferta=${r.offerId} snapshot=${wrote}`);
         }
       }
     }
     const used = client.used();
-    const summary = summarizeReports(reports, applied.filter((a) => a.masterId).length);
+    const summary = summarizeReports(reports, mastersCreated.length);
+    if (APPLY && (mastersCreated.length || offersCreated.length)) {
+      const logsDir = path.resolve('backup', 'logs');
+      fs.mkdirSync(logsDir, { recursive: true });
+      const logJson = path.join(logsDir, `semear-vertical-${stamp}.json`);
+      fs.writeFileSync(logJson, JSON.stringify({ stamp, segmentos: segments.map((s) => s.key), backup: backupFile, mastersCreated, offersCreated, applied }, null, 2));
+      fs.copyFileSync(logFile, path.join(logsDir, `semear-vertical-${stamp}.log`));
+      log(`LOG DE REVERSAO: ${logJson} (reverter: scripts/semear-vertical.ts --rollback <log> --apply)`);
+    }
     for (const line of formatSummary(summary, APPLY)) log(line);
     const after = loadState();
     log(`orcamento diario apos a execucao: usadas=${usedOn(after, today)} restam=${remainingOn(after, today, DAILY_CAP)} de ${DAILY_CAP}`);
     fs.writeFileSync(path.join(outDir, 'relatorio.json'), JSON.stringify({ apply: APPLY, dia: today, resumo: summary, orcamento: { usadas: usedOn(after, today), teto: DAILY_CAP } }, null, 2));
     log(`TOTAL: chamadas ao ML=${used}/${effectiveCalls}; planejados=${reports.reduce((n, r) => n + r.plans.length, 0)}; revisao=${reports.reduce((n, r) => n + r.reviews.length, 0)}; ` +
-      `${APPLY ? `criados=${applied.filter((a) => a.masterId).length}` : 'NADA GRAVADO (dry-run)'}`);
+      `${APPLY ? `masters_criados=${mastersCreated.length} ofertas_criadas=${offersCreated.length}` : 'NADA GRAVADO (dry-run)'}`);
     if (runHandle) {
       runHandle.counters.queries = used;
       runHandle.counters.checked = used;

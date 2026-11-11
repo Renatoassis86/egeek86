@@ -1,6 +1,7 @@
 // Sem 'server-only': função pura (sem banco, sem rede), importável por coletor, scripts tsx e testes.
 import { domainMatches, type SegmentConfig } from './config';
 import { scopeIssue } from './scope';
+import { chaveImpressora3d, marcaComLexico, marcaCanonica, diametroDe, massaOuVolumeDe, materialDe, tipoResinaDe } from './i3d-fields';
 
 /**
  * IDENTIDADE POR DEPARTAMENTO (ADR 0008 item 4). Função pura: dado o payload de catálogo do ML
@@ -57,6 +58,8 @@ export interface IdentityResult {
   missing: string[];
   /** Termo que causou a rejeição (status rejected). */
   matched: string | null;
+  /** true quando a chave foi montada por CAMPOS/FAMÍLIA (cor junta): catálogos da mesma chave são o mesmo produto e se anexam a um master só. */
+  byFields?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -232,6 +235,16 @@ export function evaluateIdentity(p: MlCatalogPayload, seg: SegmentConfig): Ident
     return result({ status: 'review', reason: 'sem_isbn13_valido', missing: ['ISBN-13'] }, base);
   }
 
+  // Impressora 3D de marca com léxico de famílias: chave por família + variante, sem GTIN (cor junta).
+  if (seg.key === 'impressora-3d') {
+    const fam = chaveImpressora3d(brand, p.name ?? '', model);
+    if (fam) return result({ status: 'strong', key: fam, keyKind: 'brand_model', reason: 'marca_familia_variante', byFields: true }, base);
+    if (marcaComLexico(brand, p.name ?? '')) return result({ status: 'review', reason: 'familia_nao_reconhecida', missing: ['FAMILIA'] }, base);
+  }
+
+  // Impressão 3D (filamento/resina): chave por CAMPOS, sem GTIN (cor junta). Título primeiro, atributo estruturado como reserva.
+  if (seg.profile.keyIgnoresGtin) return identityPorCampos(p, seg, base);
+
   // gtin_then_attrs
   if (gtins.length > 0) {
     return result({ status: 'strong', key: `gtin:${gtins[0]}`, keyKind: 'gtin', reason: 'gtin_valido' }, base);
@@ -248,4 +261,41 @@ export function evaluateIdentity(p: MlCatalogPayload, seg: SegmentConfig): Ident
     .filter(([, v]) => v !== '')
     .map(([id, v]) => `${id}=${v}`);
   return result({ status: 'strong', key: `bm:${seg.key}|${parts.join('|')}`, keyKind: 'brand_model', reason: 'marca_modelo_completo' }, base);
+}
+
+/**
+ * Chave por campos do filamento e da resina (cor NUNCA entra; GTIN NUNCA entra):
+ *   filamento : bm:<segmento>|brand=<marca>|material=<PLA|PLA+|PLA-SILK|PETG|ABS|TPU...>|diametro=<1.75mm|2.85mm>|massa=<1kg|500g...>|pack=<N>
+ *   resina    : bm:<segmento>|brand=<marca>|tipo=<standard|abs-like|water-washable...>|volume=<1kg|500ml...>|pack=<N>
+ * Campo obrigatório que não aparece (nem no título nem no atributo) => review com a lista do que faltou; nada é completado por suposição.
+ */
+function identityPorCampos(p: MlCatalogPayload, seg: SegmentConfig, base: Partial<IdentityResult>): IdentityResult {
+  const brand = attrValue(p, 'BRAND');
+  const nome = p.name ?? '';
+  const packN = Number((attrValue(p, 'UNITS_PER_PACK') ?? '1').replace(/\D+/g, '')) || 1;
+  const missing: string[] = [];
+  const parts: string[] = [];
+  if (!brand) missing.push('BRAND');
+  else parts.push('brand=' + marcaCanonica(brand));
+  if (seg.key === 'resina-3d') {
+    const tipo = tipoResinaDe(nome);
+    const volume = massaOuVolumeDe(nome) ?? massaOuVolumeDe(attrValue(p, 'NET_VOLUME') ?? attrValue(p, 'NET_WEIGHT') ?? '');
+    if (!tipo) missing.push('RESIN_TYPE');
+    else parts.push('tipo=' + tipo);
+    if (!volume) missing.push('VOLUME');
+    else parts.push('volume=' + volume);
+  } else {
+    const material = materialDe(nome) ?? materialDe(attrValue(p, 'MATERIAL') ?? attrValue(p, 'FILAMENT_MATERIAL') ?? '');
+    const diametro = diametroDe(nome) ?? diametroDe(attrValue(p, 'FILAMENT_DIAMETER') ?? attrValue(p, 'DIAMETER') ?? '');
+    const massa = massaOuVolumeDe(nome) ?? massaOuVolumeDe(attrValue(p, 'NET_WEIGHT') ?? '');
+    if (!material) missing.push('MATERIAL');
+    else parts.push('material=' + material);
+    if (!diametro) missing.push('FILAMENT_DIAMETER');
+    else parts.push('diametro=' + diametro);
+    if (!massa) missing.push('NET_WEIGHT');
+    else parts.push('massa=' + massa);
+  }
+  if (missing.length > 0) return result({ status: 'review', reason: 'campos_da_chave_incompletos', missing }, base);
+  parts.push('pack=' + packN);
+  return result({ status: 'strong', key: 'bm:' + seg.key + '|' + parts.join('|'), keyKind: 'brand_model', reason: 'marca_material_medida_sem_gtin', byFields: true }, base);
 }

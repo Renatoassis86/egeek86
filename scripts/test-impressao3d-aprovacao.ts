@@ -14,7 +14,7 @@ function check(nome: string, cond: boolean, extra?: unknown) {
   }
 }
 
-const of = (price: number, rep: string | null = '5_green', sales = 1000, title = '3d Pla Uv 1kg', quarentena = false): OfertaCandidata => ({ priceCents: price, networkSlug: 'mercado-livre', quarentena, sellerReputation: rep, sellerSales: sales, title });
+const of = (price: number, rep: string | null = '5_green', sales = 1000, title = '3d Pla Uv', quarentena = false): OfertaCandidata => ({ priceCents: price, networkSlug: 'mercado-livre', quarentena, sellerReputation: rep, sellerSales: sales, title });
 const base = (o: Partial<CandidatoI3d>): CandidatoI3d => ({
   id: 'id', name: 'Impressora 3d Bambu Lab A1', segment: 'impressora-3d', vertical: 'impressao3d', manufacturer: 'Bambu Lab', mpn: null, hasImage: true,
   gate: { verdict: 'review', suggested: 'approved' }, catalogAttributes: { BRAND: 'Bambu Lab', MODEL: 'A1' }, ofertas: [of(300000)], duplicado: false, ...o,
@@ -51,7 +51,7 @@ check('filamento: cor nao e criterio (preto/branco aprovam igual)', avaliarImpre
 check('filamento caneta 3d => fora', motivos(fil('Filamento Pla para Caneta 3d 1,75mm 1kg')).some((m) => m.startsWith('escopo:')));
 
 // resina
-const res = (name: string) => base({ name, segment: 'resina-3d', catalogAttributes: { BRAND: 'Elegoo' }, manufacturer: 'Elegoo' });
+const res = (name: string) => base({ name, segment: 'resina-3d', catalogAttributes: { BRAND: 'Elegoo' }, manufacturer: 'Elegoo', ofertas: [of(300000, '5_green', 1000, 'Resina 3d Uv 1kg')] });
 check('resina completa aprova', avaliarImpressao3d(res('Resina 3d Uv Standard 1kg Elegoo')).aprovavel, motivos(res('Resina 3d Uv Standard 1kg Elegoo')));
 check('resina sem tipo => review', motivos(res('Resina 3d Uv 1kg Elegoo')).includes('tipo_de_resina_ausente'));
 check('resina sem volume => review', motivos(res('Resina 3d Uv Standard Elegoo')).includes('volume_ausente_ou_ambiguo'));
@@ -76,5 +76,6 @@ check('vertical errada nao aprova', motivos(base({ vertical: 'tecnologia' })).in
 check('palavra proibida', motivos(base({ name: 'Impressora 3d Bambu Lab A1 afiliado' })).includes('palavra_proibida'));
 check('atributo unknown => review', motivos(base({ catalogAttributes: { BRAND: 'Bambu Lab', MODEL: 'A1', COLOR: 'unknown' } })).includes('atributo_unknown'));
 
+check('filamento: diametro/material/massa vindos da chave por campos (atributo da API) valem', avaliarImpressao3d(fil('Filamento Abs Bambu Lab Refil 1 kg', { identityKey: 'bm:filamento-3d|brand=bambulab|material=ABS|diametro=1.75mm|massa=1kg|pack=1' })).aprovavel);
 console.log(`${total - fails}/${total} verificacoes passaram`);
 if (fails > 0) process.exit(1);

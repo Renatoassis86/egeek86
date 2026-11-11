@@ -160,15 +160,19 @@ const NICHO: Record<string, { require?: RegExp; forbid?: RegExp }> = {
   // impressora 3D (3d/uv/lcd/dlp/sla), nunca epóxi, poliéster, odontológica ou de artesanato.
   'impressora-3d': {
     require: /\b3d\b/,
-    forbid: /\b(caneta|canetas|pen|scanner|escaner|digitalizador|jato de tinta|ecotank|multifuncional|termica|etiqueta|etiquetas|gravadora|plotter|kit de pecas|kit pecas|pecas de reposicao|pecas para|pecas p)\b/,
+    // PEÇAS E ACESSÓRIOS (ficam para a onda seguinte, segmento peça): qualquer menção no título tira o item da impressora.
+    // "AMS" só vale quando é "com/sem/combo AMS" (variante do produto principal); "AMS" solto, "BMCU" e afins são peça.
+    forbid: /\b(caneta|canetas|pen|scanner|escaner|digitalizador|jato de tinta|ecotank|multifuncional|termica|etiqueta|etiquetas|gravadora|plotter|kit|kits|peca|pecas|reposicao|upgrade|correia|correias|eixo|eixos|motor|motores|extrusao|extrusor|extrusora|gabinete|enclosure|bmcu|bico|bicos|nozzle|hotend|mesa|placa|placas|capa|corpo|carcaca|chassi|tampa|moldura|cabo|cabos|fonte|ventilador|cooler|polia|rolamento|fuso|sensor|display|tela|carretel|suporte|case|adaptador|usado|usada|recondicionado|recondicionada|seminovo|seminova|open box|importado|importada|compativel|bamboo|curso|treinamento|aula|ebook|resin|abs like)\b|\b\d+(?:[.,]\d+)? ?(?:kg|ml|litros?)\b|(?<!\b(?:com|sem|combo|c)\s)\bams\b(?!\s+lite)/,
   },
   'filamento-3d': {
     require: /\b(3d|pla|petg|abs|tpu|asa|nylon|pa12|pva|hips)\b/,
     forbid: /\b(caneta|canetas|pen|lampada|lampadas|led|solda|soldagem|resina)\b/,
   },
   'resina-3d': {
-    require: /\b(3d|uv|lcd|dlp|sla|msla|405nm)\b/,
-    forbid: /\b(epoxi|epoxy|poliester|acrilica|dental|odontologica|protese|artesanato|bijuteria|joia|joias|fibra de vidro|pigmento|corante)\b/,
+    // A resina do ML aparece nos dominios RESINS, 3D_PRINTERS e 3D_PENS: o TITULO decide. Tem que COMECAR pela resina (ate a 4a palavra) e dizer
+    // 3d/uv/lcd/dlp/sla; titulo que comeca por impressora e impressora de resina (outro segmento).
+    require: /^(?:\S+ ){0,3}resinas?\b(?=.*\b(?:3d|uv|lcd|dlp|sla|msla|405nm)\b)/,
+    forbid: /^(?:mini )?impressora\b|\b(epoxi|epoxy|poliester|acrilica|dental|odontologica|protese|artesanato|bijuteria|joia|joias|fibra de vidro|pigmento|corante)\b/,
   },
   teclado: { require: /\b(mecanico|mechanical|gamer|gaming|rgb|switch)\b/ },
   mouse: { require: /\b(gamer|gaming|rgb|dpi)\b/ },
@@ -229,8 +233,8 @@ export function comboIssue(segmentKey: string, name: string): ScopeIssue | null 
   // "Combo" sozinho NÃO é pacote na impressora 3D: é a variante do fabricante (ex.: Bambu Lab A1 Combo = com AMS lite) e SEPARA o master
   // da versão sem combo (plano A4). Kit/combo com quantidade, "pacote" e "leve N" continuam sendo pacote.
   const bundleRe = COMBO_E_VARIANTE.has(segmentKey)
-    ? /\b(?:(kit|combo|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+|com|c)\b|(pacote)\b|leve\s+\d+)/
-    : /\b(?:(kit|combo|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+|com|c)\b|(combo|pacote)\b|leve\s+\d+)/;
+    ? /\b(?:(kit|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+x?|com|c)\b|(pacote)\b|leve\s+\d+)/
+    : /\b(?:(kit|combo|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+x?|com|c)\b|(combo|pacote)\b|leve\s+\d+)/;
   const bundleWord = bundleRe.exec(folded);
   if (bundleWord) {
     return { kind: 'combo', reason: 'combo_pacote', matched: bundleWord[0] };
@@ -300,6 +304,25 @@ const COLOR_WORDS =
   /\b(cor\s?\d+|colorid[oa]s?|multicolor|preto|preta|branco|branca|azul|vermelho|vermelha|verde|amarelo|amarela|rosa|roxo|roxa|laranja|cinza|prata|prateado|prateada|dourado|dourada|grafite|marrom|bege|black|white|blue|red|green|silver|gold|pink|gray|grey|yellow|orange)\b/g;
 
 /** Título sem palavras de cor (e sem "cor01"/"cor 10"): chave para achar a MESMA oferta em cores diferentes. */
+/**
+ * Nome de exibição do master "cor junta": o título do catálogo sem a cor (palavras de cor, "cor", e o valor do atributo COLOR).
+ * Cosmético (o que identifica o produto é a chave); se sobrar menos de 3 palavras, devolve o título original.
+ */
+export function stripColors(title: string, colorAttr?: string | null): string {
+  const attrWords = new Set((colorAttr ? fold(colorAttr).split(' ') : []).filter((w) => w.length > 2));
+  const toks = title.split(/\s+/);
+  const kept = toks.filter((tok, i) => {
+    const f = fold(tok);
+    if (!f) return true;
+    // O valor do atributo COLOR so sai se estiver no FIM do titulo ("... 1kg Cor Cyan"); no meio pode ser nome de modelo ("Kobra").
+    if (f === 'cor' || f === 'cores' || (attrWords.has(f) && i >= toks.length - 3)) return false;
+    return fold(f.replace(COLOR_WORDS, ' ')) !== '' || f.length === 0;
+  });
+  while (kept.length > 0 && /^[-,;:|]+$/.test(kept[kept.length - 1])) kept.pop();
+  const out = kept.join(' ').replace(/(\s[-,;:|])(?=\s[-,;:|](\s|$))/g, '').replace(/\s+[-,;:|]\s*$/, '').trim();
+  return out.split(' ').length >= 3 ? out : title;
+}
+
 export function colorlessTitleKey(title: string): string {
   const tokens = fold(title).replace(COLOR_WORDS, ' ').split(' ').filter(Boolean);
   return Array.from(new Set(tokens)).sort().join(' ');

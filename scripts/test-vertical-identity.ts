@@ -10,7 +10,7 @@ import { evaluateIdentity, extractGtins, isbn10to13, isIsbn13, isValidGtin, norm
 import { gateFor, reviewGateFor } from '../src/lib/catalog/vertical/gate';
 import { fetchVerticalCatalog, VerticalPagingError, type FetchRawPage } from '../src/lib/catalog/vertical/paging';
 import { createMlClient, CallBudgetExceeded, RateLimited } from '../src/lib/catalog/vertical/ml-api';
-import { accessoryIssue, colorlessTitleKey, comboIssue, scopeIssue, splitPlus } from '../src/lib/catalog/vertical/scope';
+import { accessoryIssue, colorlessTitleKey, comboIssue, scopeIssue, splitPlus, stripColors } from '../src/lib/catalog/vertical/scope';
 import { planSeed,type ExistingLookup } from '../src/lib/catalog/vertical/seed-plan';
 import { VERTICALS } from '../src/lib/catalog/verticais';
 
@@ -406,7 +406,7 @@ const run = async () => {
   const res = segmentByKey('resina-3d')!;
   check('impressao3d: impressora-3d, filamento-3d e resina-3d existem e pertencem a impressao3d', [imp, fil, res].every((x) => x?.vertical === 'impressao3d'));
   check('impressao3d: nenhum segmento usa COLOR na chave (cor junta)', [imp, fil, res].every((x) => !x.profile.keyExtras.includes('COLOR') && !x.profile.fallbackAttrs.includes('COLOR')));
-  check('impressao3d: filamento e resina exigem marca+modelo no fallback (nunca marca sozinha)', [fil, res].every((x) => x.profile.fallbackAttrs.join() === 'BRAND,MODEL'));
+  check('impressao3d: filamento e resina usam chave por campos sem GTIN (marca obrigatoria; material/medida vem do titulo)', [fil, res].every((x) => x.profile.keyIgnoresGtin === true && x.profile.fallbackAttrs.join() === 'BRAND'));
   check('impressao3d: impressora separa por voltagem na chave', imp.profile.keyExtras.includes('VOLTAGE'));
   check('impressao3d: domainMatches de filamento/resina nao aceita impressora nem epoxi', !domainMatches(fil, 'MLB-3D_PRINTERS') && domainMatches(fil, 'MLB-3D_PRINTER_FILAMENTS') && !domainMatches(res, 'MLB-EPOXY_RESINS') && domainMatches(res, 'MLB-3D_PRINTER_RESINS'));
   check('impressao3d: termos sem duplicata e todos citam o produto', [imp, fil, res].every((x) => x.terms.length === new Set(x.terms).size && x.terms.every((t) => /impressora|filamento|resina/.test(t))));
@@ -435,11 +435,101 @@ const run = async () => {
   check('impressao3d: o combo de OUTRO segmento continua sendo pacote', comboIssue('soundbar', 'Soundbar Samsung Combo')?.reason === 'combo_pacote');
   const gi = gateFor('impressao3d');
   const rIdent = evaluateIdentity(P({ id: 'MLB-P1', name: 'Impressora 3d Bambu Lab P1s Combo', domain_id: 'MLB-3D_PRINTERS', attributes: [attr('GTIN', gtin('789366910361'))] }), imp);
-  check('impressao3d: impressora com GTIN valido => strong', rIdent.status === 'strong' && rIdent.keyKind === 'gtin', rIdent);
+  check('impressao3d: impressora Bambu com GTIN valido => strong (chave por familia; o GTIN fica guardado)', rIdent.status === 'strong' && rIdent.keyKind === 'brand_model' && rIdent.gtins.includes('7893669103617'), rIdent);
   check('impressao3d: porteiro sugere approved para impressora legitima', gi.evaluate({ segment: 'impressora-3d', name: 'Impressora 3d Bambu Lab P1s Combo', domainId: 'MLB-3D_PRINTERS', identity: rIdent }).verdict === 'approved');
   check('impressao3d: porteiro nao aceita segmento de outro departamento', gateFor('impressao3d').evaluate({ segment: 'impressora', name: 'Impressora Epson', domainId: 'MLB-PRINTERS', identity: rIdent }).verdict === 'review');
   const rUsado = evaluateIdentity(P({ id: 'MLB-P2', name: 'Impressora 3d Ender 3 Usada', domain_id: 'MLB-3D_PRINTERS', attributes: [attr('GTIN', gtin('789366910362'))] }), imp);
   check('impressao3d: usada => rejected', rUsado.status === 'rejected', rUsado);
+
+  // Pecas e acessorios NAO sao impressora (vao para a onda seguinte): lista real do dry-run de 2026-11-11 + palavras do coordenador
+  const pecas = [
+    'Bambu Lab Impressora 3d Correia Eixo Y - A1',
+    'Motor de Extrusao Impressora 3d Bambu Lab A1',
+    'Gabinete Enclosure para Impressora 3d Bambu Lab A1',
+    'AMS BMCU IMPRESSORA 3D BAMBU LAB A1 E A1 Mini',
+    'Impressora 3d Bambu Lab A1 Recondicionado',
+    'Corpo de Capa Impressora 3d Bambu Lab',
+    'Bico Nozzle Hotend Impressora 3d Ender 3',
+    'Mesa Aquecida Placa PEI Impressora 3d',
+    'Kit Pecas Impressora 3d Creality',
+    'Impressora 3d Ender 3 Usada',
+  ];
+  for (const n of pecas) check('impressao3d: peca/acessorio/usado fora da impressora: ' + n, scopeIssue('impressora-3d', n) !== null || rejectionOf({ id: 'x', name: n }) !== null, n);
+  const aparelhos3d = [
+    'Impressora 3d Bambu Lab A1 com AMS',
+    'Impressora 3d Bambu Lab A1 Sem Ams Lite',
+    'Impressora 3d Bambu Lab A1 Combo Ams Prateado',
+    'Bambu Lab A1 Combo Ams Lite Impressora 3d',
+    'Impressora 3D Bambu Lab P1S combo Ams',
+    'Impressora 3d Bambu Lab A1 Mini - A1m Cinza',
+    'Impressora 3d Creality Ender 3 V3 Se',
+  ];
+  for (const n of aparelhos3d) check('impressao3d: impressora de verdade passa (AMS so como com/sem/combo): ' + n, scopeIssue('impressora-3d', n) === null, scopeIssue('impressora-3d', n));
+
+  // COR JUNTA: chave por campos, sem GTIN. Cores/GTINs diferentes => mesma chave; massa, material, diametro, marca, pacote => chave diferente.
+  const fp = (name: string, color: string, g: string, extra: Array<ReturnType<typeof attr>> = []) =>
+    P({ id: 'MLBF', name, domain_id: 'MLB-3D_PRINTER_FILAMENTS', attributes: [attr('BRAND', 'Anycubic'), attr('COLOR', color), attr('GTIN', g), ...extra] });
+  const kf = (name: string, color = 'Cyan', g = '7898580212585', extra: Array<ReturnType<typeof attr>> = []) => evaluateIdentity(fp(name, color, g, extra), fil);
+  const k1 = kf('Filamento Pla Anycubic 1.75mm - 1kg Cor Cyan');
+  check('filamento: chave por campos (marca, material, diametro, massa, pack), sem GTIN', k1.status === 'strong' && k1.key === 'bm:filamento-3d|brand=anycubic|material=PLA|diametro=1.75mm|massa=1kg|pack=1', k1);
+  check('filamento: outra cor e outro GTIN => MESMA chave (cor junta)', kf('Filamento Pla Anycubic 1.75mm - 1kg Cor Magenta', 'Magenta', '7898580212622').key === k1.key && kf('Filamento Pla Anycubic 1,75mm 1 kg Dourado', 'Dourado', '6971636403166').key === k1.key);
+  check('filamento: massa diferente => chave diferente', kf('Filamento Pla Anycubic 1.75mm - 500g Cor Cyan').key !== k1.key);
+  check('filamento: material diferente => chave diferente', kf('Filamento Petg Anycubic 1.75mm - 1kg Cor Cyan').key !== k1.key);
+  check('filamento: diametro diferente => chave diferente', kf('Filamento Pla Anycubic 2.85mm - 1kg Cor Cyan').key !== k1.key);
+  check('filamento: marca diferente => chave diferente', evaluateIdentity(P({ id: 'MLBF', name: 'Filamento Pla Creality 1.75mm - 1kg', domain_id: 'MLB-3D_PRINTER_FILAMENTS', attributes: [attr('BRAND', 'Creality')] }), fil).key !== k1.key);
+  check('filamento: pacote com N rolos separa', kf('Filamento Pla Anycubic 1.75mm - 1kg', 'Cyan', '7898580212585', [attr('UNITS_PER_PACK', '4')]).key !== k1.key);
+  check('filamento: Silk e PLA+ sao materiais proprios', kf('Filamento Pla Silk Anycubic 1.75mm 1kg').key !== k1.key && kf('Filamento Pla+ Anycubic 1.75mm 1kg').key !== k1.key);
+  check('filamento: massa lida do titulo, nao do peso bruto do atributo', kf('Filamento Pla Anycubic 1.75mm - 1kg', 'Cyan', '7898580212585', [attr('WEIGHT', '1.2 kg')]).key === k1.key);
+  const kSem = kf('Filamento 3d Anycubic 1.75mm 1kg');
+  check('filamento sem material => review com o que faltou, nunca master', kSem.status === 'review' && kSem.missing.includes('MATERIAL'), kSem);
+  const kSemMarca = evaluateIdentity(P({ id: 'MLBF', name: 'Filamento Pla 1.75mm 1kg', domain_id: 'MLB-3D_PRINTER_FILAMENTS', attributes: [] }), fil);
+  check('filamento sem marca => review', kSemMarca.status === 'review' && kSemMarca.missing.includes('BRAND'), kSemMarca);
+  const rp = (name: string, color: string, g: string) => evaluateIdentity(P({ id: 'MLBR', name, domain_id: 'MLB-RESINS', attributes: [attr('BRAND', 'Anycubic'), attr('COLOR', color), attr('GTIN', g)] }), segmentByKey('resina-3d')!);
+  const r1 = rp('Resina 3D Anycubic Dura Standard Light Beige 1 kg', 'Bege', '06974662350534');
+  check('resina: chave marca+tipo+volume sem GTIN e sem cor', r1.status === 'strong' && r1.key === 'bm:resina-3d|brand=anycubic|tipo=standard|volume=1kg|pack=1', r1);
+  check('resina: outra cor/GTIN => mesma chave; outro volume => outra', rp('Resina 3D Anycubic Standard Cinza 1 kg', 'Cinza', '06974662350999').key === r1.key && rp('Resina 3D Anycubic Standard Cinza 500 g', 'Cinza', '06974662351000').key !== r1.key);
+  check('resina sem tipo => review', rp('Resina 3D Anycubic Uv 1 kg', 'Cinza', '06974662351111').status === 'review');
+  check('impressora Bambu: GTIN preservado na lista (dedup por GTIN segue valendo)', rIdent.gtins[0] === '7893669103617');
+
+  // Impressora Bambu Lab: cor junta por FAMILIA + variante (combo | solo); cor, GTIN e voltagem nao separam
+  const bp = (name: string, g: string, model = 'A1') => evaluateIdentity(P({ id: 'MLBP', name, domain_id: 'MLB-3D_PRINTERS', attributes: [attr('BRAND', 'Bambu Lab'), attr('MODEL', model), attr('GTIN', g)] }), imp);
+  const a1 = bp('Impressora 3d Bambu Lab A1 Prateado', '6937285515476');
+  check('bambu A1 solo: chave por familia, byFields', a1.key === 'bm:impressora-3d|brand=bambu lab|familia=a1|variante=solo' && a1.byFields === true, a1);
+  check('bambu A1: cor/GTIN/titulo diferentes => MESMA chave (cor junta)', [
+    bp('Impressora 3d Bambu Lab A1 Sem Ams Prateado Cinza', '6977252425421').key,
+    bp('Impressora 3d Fdm Aberta A1 Bambu Lab Cor Branco', '6975337039150').key,
+    bp('Impressora 3D Bambu Lab A1 Ultra Silenciosa e Automatica', '02444503088741', 'PF002-A').key,
+  ].every((k) => k === a1.key));
+  const a1c = bp('Impressora 3d Bambu Lab A1 Combo Ams Prateado', '7898752990723');
+  check('bambu A1 combo separa de A1 solo e junta os combos', a1c.key !== a1.key && bp('Bambu Lab A1 Combo Ams Lite Impressora 3d', '6977252425391').key === a1c.key && bp('Impressora 3d Com Ams Bambu Lab A1combo 220volts', '00293938798754').key === a1c.key && bp('Impressora 3d Bambu Lab A1 com AMS', '6975337038801').key === a1c.key, [a1c.key, a1.key]);
+  check('bambu A1 Mini separa de A1; A1 Mini solo junta', bp('Impressora 3d Bambu Lab A1 Mini - A1m Cinza', '6937285509789', 'A1 Mini').key === 'bm:impressora-3d|brand=bambu lab|familia=a1-mini|variante=solo' && bp('Impressora 3D Bambu Lab A1 Mini cor cinza Sem AMS', '1234567890128', 'A1 Mini').key === 'bm:impressora-3d|brand=bambu lab|familia=a1-mini|variante=solo');
+  check('bambu P1S solo x P1S combo', bp('Impressora 3d Bambu Lab Fechada P1s Preto', '6937285509999', 'P1S').key === 'bm:impressora-3d|brand=bambu lab|familia=p1s|variante=solo' && bp('Impressora 3D Bambu Lab P1S combo Ams', '6937285509998', 'P1S Combo AMS').key === 'bm:impressora-3d|brand=bambu lab|familia=p1s|variante=combo');
+  check('marca fora do lexico segue o caminho normal (GTIN)', evaluateIdentity(P({ id: 'MLBC', name: 'Impressora 3D Flashforge Adventurer 5M', domain_id: 'MLB-3D_PRINTERS', attributes: [attr('BRAND', 'Flashforge'), attr('MODEL', 'Adventurer 5M'), attr('GTIN', gtin('705300791657'))] }), imp).key?.startsWith('gtin:') === true);
+  check('bambu sem familia conhecida nao ganha chave (nunca inventa familia)', bp('Impressora 3D Bambu Lab SA008 cor preto', gtin('693728550240'), 'SA008').key === null);
+  // Creality: familias conferidas; K2 Combo x K2 Pro Combo separam; Ender 3 V3 SE x KE separam; cor/GTIN juntam
+  const cp = (name: string, g: string, model: string) => evaluateIdentity(P({ id: 'MLBK', name, domain_id: 'MLB-3D_PRINTERS', attributes: [attr('BRAND', 'Creality'), attr('MODEL', model), attr('GTIN', g)] }), imp);
+  check('creality Ender 3 V3 KE: dois catalogos (bm e gtin) => MESMA chave', cp('Impressora 3D Creality Ender 3 V3 KE', gtin('705300791650'), 'Ender 3 V3 KE').key === cp('Impressora 3d Creality Ender 3 V3 Ke Preto', gtin('919741081970'), 'Ender 3 V3 KE').key && cp('Impressora 3D Creality Ender 3 V3 KE', gtin('705300791650'), 'x').key === 'bm:impressora-3d|brand=creality|familia=ender-3-v3-ke|variante=solo');
+  check('creality Ender 3 V3 SE x KE separam; Ender-3 V3 Se (hifen) junta com Ender 3 V3 SE', cp('Impressora 3D Creality Ender 3 V3 Se 220x220', gtin('705300791650'), 'x').key !== cp('Impressora 3D Creality Ender 3 V3 KE', gtin('705300791650'), 'x').key && cp('Impressora 3d Creality Ender-3 V3 Se Fdm 250mm/s', gtin('287137263300'), 'x').key === cp('Impressora 3D Creality Ender 3 V3 Se 220x220', gtin('705300791650'), 'x').key);
+  check('creality K2 Combo x K2 Pro Combo x K2 solo separam; K1 Max junta', new Set([cp('Impressora 3D Creality K2 Combo Fdm Grey', gtin('779839135720'), 'x').key, cp('Impressora 3D Creality K2 Pro Combo Fdm Grey', gtin('779839135721'), 'x').key, cp('Impressora 3d Creality K2 Fdm', gtin('779839135722'), 'x').key]).size === 3 && cp('Impressora 3d Creality K1 Max 30x30x30cm', gtin('697163640979'), 'x').key === cp('Impressora 3D Creality K1 Max FDM 300x300x300mm', gtin('697163640980'), 'x').key);
+  // Combo da impressora e variante, nao pacote: "combo 4 cores" e "combo com AMS" passam; "+ filamento" e "kit 2x" continuam sendo pacote
+  check('impressora: combo com AMS / combo 4 cores passam no escopo', scopeIssue('impressora-3d', 'Bambu Lab Impressora 3d A1 Combo Com Ams cor Branco') === null && scopeIssue('impressora-3d', 'Impressora 3d Bambu Lab A1 Com Ams Lite Combo 4 Cores') === null);
+  check('impressora: "+ filamento" e pacote', scopeIssue('impressora-3d', 'Impressora 3D Creality Ender 3 V2 + Filamento PLA')?.kind === 'combo');
+  check('filamento: kit Nx e pacote (nao vira master)', comboIssue('filamento-3d', 'Kit 4x Filamento Tpu Flexivel 1.75mm 1kg')?.reason === 'combo_pacote' && comboIssue('filamento-3d', 'Kit 10x Filamento Tpu Flexivel 1.75mm 1kg')?.reason === 'combo_pacote');
+  check('resina: comeca pela resina; impressora de resina e outro segmento', scopeIssue('resina-3d', 'Resina 3D Anycubic Cinza 1kg Standard Resin (Basic)') === null && scopeIssue('resina-3d', 'Resina 3d Cure Cristal Transparente - 1kg Cor Clear') === null && scopeIssue('resina-3d', 'Impressora 3D Resina Creality Halot One Plus 4k') !== null && scopeIssue('resina-3d', 'Resina Epoxi Cristal 1kg') !== null);
+  check('resina: domain 3D_PRINTERS/3D_PENS/RESINS aceitos, epoxi fora', [ 'MLB-RESINS', 'MLB-3D_PRINTERS', 'MLB-3D_PENS' ].every((d) => domainMatches(res, d)) && !domainMatches(res, 'MLB-EPOXY_RESINS'));
+  check('filamento: marca grafada de dois jeitos (Multfila/Multifila) => mesma chave', evaluateIdentity(P({ id: 'a', name: 'Filamento Petg 1kg 1.75mm Multfila', domain_id: 'MLB-3D_PRINTER_FILAMENTS', attributes: [attr('BRAND', 'Multfila')] }), fil).key === evaluateIdentity(P({ id: 'b', name: 'Filamento Petg 1kg 1.75mm Multifila', domain_id: 'MLB-3D_PRINTER_FILAMENTS', attributes: [attr('BRAND', 'Multifila')] }), fil).key);
+  check('filamento: madeira/carbono nao se misturam com o PLA comum', kf('Filamento Pla Wood Anycubic 1.75mm 1kg').key !== k1.key && kf('Filamento Pla Carbono Anycubic 1.75mm 1kg').key !== k1.key);
+  const rFam = evaluateIdentity(P({ id: 'MLBS', name: 'Impressora 3D Bambu Lab SA008 cor preto', domain_id: 'MLB-3D_PRINTERS', attributes: [attr('BRAND', 'Bambu Lab'), attr('MODEL', 'SA008'), attr('GTIN', gtin('693728550240'))] }), imp);
+  check('bambu com familia desconhecida => REVISAO (nunca master solto)', rFam.status === 'review' && rFam.reason === 'familia_nao_reconhecida', rFam);
+  check('curso/treinamento no titulo tira da impressora', scopeIssue('impressora-3d', 'Impressora 3D Bambu Lab P2s Combo Ams Fdm + Curso 3D Cinza') !== null);
+  check('stripColors: nome do master sem a cor', stripColors('Filamento Pla Anycubic 1.75mm - 1kg Cor Cyan', 'Cyan') === 'Filamento Pla Anycubic 1.75mm - 1kg' && stripColors('Impressora 3d Bambu Lab X2d cor prateado', 'Prateado') === 'Impressora 3d Bambu Lab X2d' && stripColors('Filamento Petg Cinza Premium 1kg 1.75mm F3d', 'Cinza') === 'Filamento Petg Premium 1kg 1.75mm F3d', [stripColors('Filamento Pla Anycubic 1.75mm - 1kg Cor Cyan', 'Cyan'), stripColors('Impressora 3d Bambu Lab X2d cor prateado', 'Prateado'), stripColors('Filamento Petg Cinza Premium 1kg 1.75mm F3d', 'Cinza')]);
+  check('stripColors: titulo curto nao e destruido', stripColors('Cinza Preto', 'Cinza') === 'Cinza Preto');
+  const xp = (brand: string, name: string, g: string) => evaluateIdentity(P({ id: 'MLBX', name, domain_id: 'MLB-3D_PRINTERS', attributes: [attr('BRAND', brand), attr('GTIN', g)] }), imp).key;
+  check('elegoo Centauri Carbon (3 catalogos) => 1 chave; Carbon 2 separa; Neptune 4 Pro x Plus separam', xp('Elegoo', 'Elegoo Centauri Carbon impressora 3d, 256x256', gtin('693270493473')) === xp('Elegoo', 'Impressora 3D Centauri Carbon Elegoo 25x25x25cm Cinza escuro', gtin('693270493474')) && xp('Elegoo', 'Impressora 3D Elegoo Centauri Carbon 2 Combo Black', gtin('693270493475')) !== xp('Elegoo', 'Impressora 3D Elegoo Centauri Carbon Preto FDM', gtin('693270493476')) && xp('Elegoo', 'Impressora 3d Elegoo Neptune 4 Pro Fdm 500 Mm/s', gtin('201744331474')) !== xp('Elegoo', 'Impressora 3D Elegoo Neptune 4 Plus FDM', gtin('201744331475')));
+  check('elegoo Mars 5 Ultra (varias cores/GTINs) => 1 chave', new Set([xp('Elegoo', 'Impressora 3d Elegoo Mars 5 Ultra 9k Resina Sla Preto', gtin('693270493480')), xp('Elegoo', 'Impressora 3d Elegoo Mars 5 Ultra Cinza', gtin('693270493481')), xp('Elegoo', 'Impressora 3d Resina Elegoo Mars 5 Ultra 9k Cinza', gtin('789878281027'))]).size === 1);
+  check('anycubic Photon Mono M7 / M7 Max / Kobra S1 Combo (cores diferentes) juntam; M7 x M7 Max separam', xp('Anycubic', 'Impressora 3D Anycubic Photon Mono M7 Max Preto', gtin('822159550266')) === xp('Anycubic', 'Impressora 3D Anycubic Photon Mono M7 Max Resina 7K', gtin('697466235105')) && xp('Anycubic', 'Impressora 3D Anycubic Photon Mono M7 Resina LCD Preto', gtin('697466235051')) !== xp('Anycubic', 'Impressora 3D Anycubic Photon Mono M7 Max Preto', gtin('822159550266')) && xp('Anycubic', 'Impressora 3D Anycubic Kobra S1 Combo 600mm/s', gtin('779604356902')) === xp('Anycubic', 'Impressora 3D Anycubic Kobra S1 Combo CoreXY Multicor', gtin('697466235100')));
+  check('resina vendida como "impressora 3D ... 1 kg de resina" ou "Resin" (ingles) nao e impressora', scopeIssue('impressora-3d', 'Impressora 3D preta de 1 kg de resina padrao Anycubic') !== null && scopeIssue('impressora-3d', 'Impressora 3D colorida transparente Anycubic ABS Like Resin Pro 2') !== null && scopeIssue('impressora-3d', 'Impressora 3D Resina Elegoo Mars 5 Ultra 9K LCD Mono 7') === null);
+  check('clone/compativel/Bamboo fora do escopo', scopeIssue('impressora-3d', 'Mini Impressora 3d Bambu Lab Pf002 A1 Compativel Com Impressao') !== null && scopeIssue('impressora-3d', 'Impressora 3D Macrotec Bamboo Lab A1 Mini') !== null);
 }
 
 run()

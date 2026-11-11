@@ -2,7 +2,7 @@
 // injetadas (lookup). Não escreve em lugar nenhum: quem grava é scripts/semear-vertical.ts, e só com --apply.
 import { parseMeliCatalogPage } from '@/lib/affiliate/master-consolidation';
 import { domainMatches, type SegmentConfig } from './config';
-import { colorlessTitleKey } from './scope';
+import { colorlessTitleKey, stripColors } from './scope';
 import { gateFor, type VerticalGateResult } from './gate';
 import { evaluateIdentity, normalizeTitleKey, type IdentityResult, type MlAttribute, type MlCatalogPayload } from './identity';
 import { CallBudgetExceeded, DailyBudgetExceeded, RateLimited, type MlClient } from './ml-api';
@@ -64,6 +64,13 @@ export interface SeedPlanEntry {
   parentId: string | null;
   brand: string | null;
   mpn: string | null;
+  /**
+   * COR JUNTA (filamento/resina, chave por campos): este catálogo do ML é o MESMO produto de outro (cor/GTIN diferente). Não cria master:
+   * a oferta-placeholder dele entra no master indicado. 'planned' = master que este mesmo plano cria (catalogId); 'existing' = master do banco (id).
+   */
+  mergeInto?: { kind: 'planned' | 'existing'; ref: string; name: string };
+  /** Nome do MASTER (cor junta): título do catálogo sem a cor. Ausente => usa `name`. A oferta mantém o título original do catálogo. */
+  masterName?: string;
 }
 
 export interface SeedSkip {
@@ -151,7 +158,7 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
   const processCandidate = async (searchPayload: MlCatalogPayload, term: string): Promise<boolean> => {
         if (!searchPayload?.id || seenCatalogs.has(searchPayload.id)) return false;
         seenCatalogs.add(searchPayload.id);
-        if (report.plans.length >= maxCreate) {
+        if (report.plans.filter((p) => !p.mergeInto).length >= maxCreate) {
           report.stoppedBecause = 'teto_de_criacao';
           return true;
         }
@@ -173,11 +180,13 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
         }
 
         // 2) Duplicata ANTES de gastar chamadas (0 chamadas de API).
-        const dup = await findDuplicate(lookup, report.plans, searchPayload.id, idSearch, searchPayload.name ?? '');
-        if (dup) {
+        let mergeInto: SeedPlanEntry['mergeInto'];
+        const dup = await findDuplicate(lookup, report.plans, searchPayload.id, idSearch, searchPayload.name ?? '', idSearch.byFields === true);
+        if (dup && !dup.merge) {
           skip(searchPayload, dup.reason, `${dup.master.id} ${dup.master.name}`);
           return false;
         }
+        if (dup?.merge) mergeInto = { kind: dup.merge, ref: dup.master.id, name: dup.master.name };
 
         // 2b) Cache negativo: catalogo que ja deu 404 nos ultimos dias nao gasta chamada de novo.
         if (opts.isKnownNotFound?.(searchPayload.id)) {
@@ -232,11 +241,12 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           return false;
         }
         if (identity.key !== idSearch.key) {
-          const dup2 = await findDuplicate(lookup, report.plans, merged.id, identity, merged.name ?? '');
-          if (dup2) {
+          const dup2 = await findDuplicate(lookup, report.plans, merged.id, identity, merged.name ?? '', identity.byFields === true);
+          if (dup2 && !dup2.merge) {
             skip(merged, dup2.reason, `${dup2.master.id} ${dup2.master.name}`);
             return false;
           }
+          mergeInto = dup2?.merge ? { kind: dup2.merge, ref: dup2.master.id, name: dup2.master.name } : undefined;
         }
 
         const attributesSnapshot: Record<string, string | null> = {};
@@ -248,7 +258,7 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
 
         // 4b) Variante de cor do MESMO modelo (regra do dono: cor junta, exceto tênis). GTINs diferentes por cor não
         // criam masters irmãos: o irmão vai para revisão apontando o primeiro. A junção em um master só com decisão do dono.
-        if (seg.profile.strategy !== 'review_only') {
+        if (seg.profile.strategy !== 'review_only' && identity.byFields !== true) {
           const sib = findColorSibling(report.plans, seg, merged.name ?? '', attributesSnapshot);
           if (sib) {
             bump(report.counts, 'revisao_variante_de_cor');
@@ -288,9 +298,11 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           parentId: merged.parent_id ?? null,
           brand: identity.brand,
           mpn: identity.mpn,
+          ...(mergeInto ? { mergeInto } : {}),
+          ...(identity.byFields ? { masterName: stripColors(merged.name ?? '', attributesSnapshot.COLOR) } : {}),
         });
-        bump(report.counts, 'planejado_criar');
-        log(`planejado: ${merged.id} | ${merged.name} | ${identity.key} | ${page.items.length} anúncios novos`);
+        bump(report.counts, mergeInto ? 'planejado_anexar_cor_junta' : 'planejado_criar');
+        log(`planejado${mergeInto ? ' (ANEXA ao master ' + mergeInto.name + ')' : ''}: ${merged.id} | ${merged.name} | ${identity.key} | ${page.items.length} anúncios novos`);
         return false;
   };
 
@@ -371,17 +383,27 @@ async function findDuplicate(
   planned: SeedPlanEntry[],
   catalogId: string,
   identity: IdentityResult,
-  name: string
-): Promise<{ reason: string; master: { id: string; name: string } } | null> {
+  name: string,
+  mergeable = false
+): Promise<{ reason: string; master: { id: string; name: string }; merge?: 'planned' | 'existing' } | null> {
   // Dentro da mesma execução: dois catálogos da mesma chave/GTIN/título não viram dois masters.
   const tkPlanned = normalizeTitleKey(name);
   for (const p of planned) {
-    if (p.identity.key && p.identity.key === identity.key) return { reason: 'ja_planejado_chave_identidade', master: { id: p.catalogId, name: p.name } };
+    if (p.identity.key && p.identity.key === identity.key) {
+      // Cor junta: mesma chave por campos => mesmo produto; o catálogo novo anexa a oferta ao master planejado (nunca cria outro).
+      if (mergeable && !p.mergeInto) return { reason: 'cor_junta_planejado', master: { id: p.catalogId, name: p.name }, merge: 'planned' };
+      if (mergeable && p.mergeInto) return { reason: 'cor_junta_planejado', master: { id: p.mergeInto.ref, name: p.mergeInto.name }, merge: p.mergeInto.kind };
+      return { reason: 'ja_planejado_chave_identidade', master: { id: p.catalogId, name: p.name } };
+    }
     if (identity.gtins.some((g) => p.identity.gtins.includes(g))) return { reason: 'ja_planejado_gtin', master: { id: p.catalogId, name: p.name } };
     if (tkPlanned && normalizeTitleKey(p.name) === tkPlanned) return { reason: 'ja_planejado_titulo_conferir', master: { id: p.catalogId, name: p.name } };
   }
   const byCat = await lookup.byCatalogId(catalogId);
   if (byCat) return { reason: 'ja_existe_catalogo_ml', master: byCat };
+  if (mergeable && identity.key) {
+    const byKeyMerge = await lookup.byIdentityKey(identity.key);
+    if (byKeyMerge) return { reason: 'cor_junta_existente', master: byKeyMerge, merge: 'existing' };
+  }
   if (identity.gtins.length > 0) {
     const byGtin = await lookup.byGtins(identity.gtins);
     if (byGtin) return { reason: 'ja_existe_gtin', master: byGtin };

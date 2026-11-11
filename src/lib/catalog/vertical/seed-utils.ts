@@ -103,14 +103,16 @@ export function summarizeReports(reports: SegmentReportLike[], created = 0): See
   const acc: Record<string, number> = {};
   for (const r of reports) for (const [k, v] of Object.entries(r.counts)) acc[k] = (acc[k] ?? 0) + v;
   const discarded = Object.entries(acc)
-    .filter(([k]) => k !== 'planejado_criar')
+    .filter(([k]) => k !== 'planejado_criar' && k !== 'planejado_anexar_cor_junta')
     .map(([reason, n]) => ({ reason, n }))
     .sort((a, b) => b.n - a.n || a.reason.localeCompare(b.reason));
   const calls = reports.reduce((n, r) => n + (r.callsSpent ?? 0), 0);
-  const planned = reports.reduce((n, r) => n + r.plans.length, 0);
+  // Masters a criar: planos que ANEXAM oferta a master (cor junta, mergeInto) não contam.
+  const masters = (r: SegmentReportLike) => r.plans.filter((p) => !(p as { mergeInto?: unknown }).mergeInto).length;
+  const planned = reports.reduce((n, r) => n + masters(r), 0);
   const perSegment = reports.map((r) => {
     const c = r.callsSpent ?? 0;
-    return { segment: r.segment, calls: c, planned: r.plans.length, yieldPerCall: c > 0 ? r.plans.length / c : null, stopped: r.stoppedBecause };
+    return { segment: r.segment, calls: c, planned: masters(r), yieldPerCall: c > 0 ? masters(r) / c : null, stopped: r.stoppedBecause };
   });
   return {
     calls,

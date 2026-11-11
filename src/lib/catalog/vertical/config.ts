@@ -45,6 +45,11 @@ export interface SegmentConfig {
     fallbackAttrs: string[];
     /** Atributos que, SE presentes, entram na chave (separam variantes: voltagem, capacidade...). Nunca juntam. */
     keyExtras: string[];
+    /**
+     * Impressão 3D (filamento, resina): a chave NÃO usa GTIN. É montada por campos (marca+material+diâmetro+massa; resina:
+     * marca+tipo+volume), de modo que cores/GTINs diferentes do mesmo produto caem no MESMO master ("cor junta"). Campo ausente => revisão.
+     */
+    keyIgnoresGtin?: boolean;
   };
   /** Frequência-alvo de recoleta em minutos (ata: TV/notebook 5-10 na BF, eletro 15-30, livros/esporte 60). */
   targetRefreshMin: number;
@@ -265,8 +270,7 @@ export const SEGMENTS: SegmentConfig[] = [
     rationale: 'Domínio misturado com filamento (3 de 10); catálogo medido com 1 vendedor. Combo (com AMS/filamento) é variante legítima e separa master; caneta 3D, scanner e impressora de papel ficam fora (scope.ts).',
   },
   {
-    // ONDA 1 (2026-11-11). Domínio do filamento NÃO medido ao vivo (cota do dia esgotada): regex de varredura, sem searchDomain.
-    // O primeiro dry-run confirma o domain_id real (relatório 'off_domain') e só então se fixa searchDomain.
+    // ONDA 1 (2026-11-11). Domínio do filamento medido no dry-run: MLB-3D_PRINTER_FILAMENTS (regex /FILAMENT/). Sem searchDomain: a busca livre traz mais.
     key: 'filamento-3d',
     vertical: 'impressao3d',
     label: 'Filamento 3D',
@@ -279,7 +283,7 @@ export const SEGMENTS: SegmentConfig[] = [
     // GTIN primeiro. Sem GTIN/MPN, exige MARCA+MODELO (nunca marca sozinha: juntaria materiais, diâmetros e massas diferentes).
     // Material, diâmetro e massa entram na chave quando a API os devolve (ids a confirmar no dry-run; ausentes são ignorados) e são
     // exigidos no TÍTULO pela aprovação em bloco (aprovacao-impressao3d.ts). Cor junta: COLOR nunca entra.
-    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['FILAMENT_MATERIAL', 'MATERIAL', 'FILAMENT_DIAMETER', 'DIAMETER', 'NET_WEIGHT', 'WEIGHT', 'UNITS_PER_PACK'] },
+    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: ['BRAND'], keyExtras: ['MATERIAL', 'FILAMENT_DIAMETER', 'UNITS_PER_PACK'], keyIgnoresGtin: true },
     targetRefreshMin: 60,
     seedRank: 27,
     rationale: 'Domínio a medir no 1º dry-run. Identidade difícil (guardião): material, diâmetro e massa separam; cor junta.',
@@ -289,14 +293,15 @@ export const SEGMENTS: SegmentConfig[] = [
     key: 'resina-3d',
     vertical: 'impressao3d',
     label: 'Resina 3D',
-    domains: [/RESIN/],
+    // Medido em 2026-11-11: resina de impressora 3D vem catalogada em MLB-RESINS, MLB-3D_PRINTERS e MLB-3D_PENS; o filtro real e o TITULO (scope.ts, NICHO).
+    domains: [/RESIN/, /3D_PRINTERS$/, /3D_PENS$/],
     excludeDomains: [/EPOXY|DENTAL|DENTIST|CRAFT|ARTISAN|CASTING|MOLD/],
     terms: dedupeTerms([
       'resina 3d uv 1kg', 'resina 3d 405nm 1kg', 'resina 3d standard 1kg', 'resina 3d abs like', 'resina 3d water washable',
       ...combineTerms('resina 3d', ['1kg', '500g', 'uv'], ['elegoo', 'anycubic', 'creality', 'sunlu', 'siraya tech', 'phrozen', 'esun', 'voolt3d', '3d lab', 'flashforge']),
       'resina 3d flexivel', 'resina 3d transparente', 'resina 3d alta resolucao 8k',
     ]),
-    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: [...BRAND_MODEL], keyExtras: ['MODEL_TYPE', 'RESIN_TYPE', 'NET_VOLUME', 'NET_WEIGHT', 'VOLUME', 'UNITS_PER_PACK'] },
+    profile: { strategy: 'gtin_then_attrs', fallbackAttrs: ['BRAND'], keyExtras: ['UNITS_PER_PACK'], keyIgnoresGtin: true },
     targetRefreshMin: 60,
     seedRank: 28,
     rationale: 'Domínio a medir no 1º dry-run. Tipo de resina e volume separam; cor junta. Exige "3d"/UV no título (scope.ts) para não trazer resina epóxi.',

@@ -80,7 +80,7 @@ async function carregar(sql: Sql): Promise<Array<{ m: RowMaster; cand: Candidato
     const dup = (tk && (porTitulo.get(tk)?.length ?? 0) > 1) || (m.ikey != null && (porChave.get(m.ikey)?.length ?? 0) > 1);
     return {
       m,
-      cand: { id: m.id, name: m.name, segment: m.segment, vertical: m.vertical, manufacturer: m.manufacturer, mpn: m.mpn, hasImage: Boolean(m.image), gate: m.gate, catalogAttributes: m.cat, ofertas: of, duplicado: Boolean(dup) },
+      cand: { id: m.id, name: m.name, segment: m.segment, vertical: m.vertical, manufacturer: m.manufacturer, mpn: m.mpn, hasImage: Boolean(m.image), gate: m.gate, catalogAttributes: m.cat, identityKey: m.ikey, ofertas: of, duplicado: Boolean(dup) },
     };
   });
 }

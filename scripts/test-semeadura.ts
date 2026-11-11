@@ -300,6 +300,41 @@ async function main() {
     const qs = urls.map((u) => decodeURIComponent(new URL('https://x' + u).searchParams.get('q') ?? ''));
     check('termsFrom/termsLimit pegam a janela certa da lista', qs[0] === livros.terms[3] && qs[1] === livros.terms[4] && qs.length === 2, qs);
   }
+  // (k) COR JUNTA (filamento): catalogos de cores/GTINs diferentes do MESMO produto => 1 master + ofertas anexadas
+  {
+    const fil = segmentByKey('filamento-3d')!;
+    const mk = (id: string, name: string, color: string, g: string) => ({
+      id, name, domain_id: 'MLB-3D_PRINTER_FILAMENTS',
+      attributes: [{ id: 'BRAND', value_name: 'Anycubic' }, { id: 'COLOR', value_name: color }, { id: 'GTIN', value_name: g }],
+      pictures: [{ secure_url: `https://x/${id}.jpg` }],
+    });
+    const { client } = fake({
+      pages: {
+        '0': [
+          mk('MLBF1', 'Filamento Pla Anycubic 1.75mm - 1kg Cor Cyan', 'Cyan', '7898580212585'),
+          mk('MLBF2', 'Filamento Pla Anycubic 1.75mm - 1kg Cor Magenta', 'Magenta', '7898580212622'),
+          mk('MLBF3', 'Filamento Pla Anycubic 1.75mm - 500g Cor Cyan', 'Cyan', '7898580212646'),
+          mk('MLBF4', 'Filamento Petg Anycubic 1.75mm - 1kg Cor Cyan', 'Cyan', '7898580212653'),
+        ],
+      },
+    });
+    const r = await planSeed(client, fil, lookupNone, { pageLimit: 10, pages: 1, termsLimit: 1 });
+    const masters = r.plans.filter((p) => !p.mergeInto);
+    const anexos = r.plans.filter((p) => p.mergeInto);
+    check('cor junta: 4 catalogos => 3 masters (cor nao separa; massa e material separam) e 1 anexo', masters.length === 3 && anexos.length === 1, r.plans.map((p) => [p.catalogId, p.identity.key, p.mergeInto]));
+    check('cor junta: o anexo aponta para o master planejado do mesmo produto', anexos[0]?.catalogId === 'MLBF2' && anexos[0]?.mergeInto?.kind === 'planned' && anexos[0]?.mergeInto?.ref === 'MLBF1', anexos);
+    check('cor junta: chave por campos, sem GTIN', masters.every((p) => /^bm:filamento-3d\|brand=anycubic\|material=/.test(p.identity.key ?? '')) && !masters.some((p) => /gtin/.test(p.identity.key ?? '')), masters.map((p) => p.identity.key));
+    check('cor junta: contagem separa criar de anexar', r.counts['planejado_criar'] === 3 && r.counts['planejado_anexar_cor_junta'] === 1, r.counts);
+    // master ja existente no banco com a mesma chave: o catalogo novo ANEXA a ele
+    const lkExist: ExistingLookup = { ...lookupNone, byIdentityKey: async (k) => (k.includes('material=PLA|') ? { id: 'uuid-master', name: 'Filamento Pla Anycubic' } : null) };
+    const f2 = fake({ pages: { '0': [mk('MLBF9', 'Filamento Pla Anycubic 1.75mm - 1kg Cor Bronze', 'Bronze', '7898580212700')] } });
+    const r2 = await planSeed(f2.client, fil, lkExist, { pageLimit: 10, pages: 1, termsLimit: 1 });
+    check('cor junta: master existente com a mesma chave => anexa (kind existing), nao cria', r2.plans.length === 1 && r2.plans[0].mergeInto?.kind === 'existing' && r2.plans[0].mergeInto?.ref === 'uuid-master', r2.plans);
+    // sem material/diametro/massa no titulo e nos atributos => revisao, nunca master
+    const f3 = fake({ pages: { '0': [mk('MLBF8', 'Filamento 3d Anycubic Cor Cyan', 'Cyan', '7898580212717')] } });
+    const r3 = await planSeed(f3.client, fil, lookupNone, { pageLimit: 10, pages: 1, termsLimit: 1 });
+    check('filamento sem material/diametro/massa => revisao', r3.plans.length === 0 && r3.reviews.some((x) => x.reason === 'campos_da_chave_incompletos'), r3.reviews);
+  }
   // (j) plataforma 'unknown' nunca aparece: os planos de games nao passam por aqui e nenhum segmento usa o termo
   check("nenhum segmento menciona platform 'unknown'", SEGMENTS.every((s) => !JSON.stringify(s.terms).includes('unknown')));
 

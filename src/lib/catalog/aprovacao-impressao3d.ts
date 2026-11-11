@@ -10,6 +10,9 @@
 // do anúncio de marcas como a Bambu Lab não os traz; o modelo identifica o aparelho. Decisão do dono se quiser endurecer.
 
 import { scopeIssue } from './vertical/scope';
+import { diametroDe, massaOuVolumeDe, materialDe, tipoResinaDe } from './vertical/i3d-fields';
+
+export { diametroDe, massaOuVolumeDe, materialDe, tipoResinaDe };
 
 export const CRITERIA_I3D_VERSION = 1;
 /** Rótulo gravado em catalogGate.approvedBy: `bloco:<criterio>:<data>` (plano A4). */
@@ -54,6 +57,8 @@ export interface CandidatoI3d {
   ofertas: OfertaCandidata[];
   /** Outro master (de qualquer departamento fora de games) com o mesmo título normalizado, ou com a mesma chave de identidade. */
   duplicado: boolean;
+  /** attributes.vertical.identityKey (os campos material/diametro/massa/tipo/volume dela vieram do titulo OU do atributo estruturado da API no cadastro). */
+  identityKey?: string | null;
 }
 
 export interface AvaliacaoI3d {
@@ -78,68 +83,6 @@ function fold(s: string): string {
 
 const USADO = /\b(usad[oa]s?|seminov[oa]s?|semi novo|segunda mao|recondicionad[oa]s?|refurbished|open ?box|reembalad[oa]s?|vitrine|mostruario|outlet|importad[oa]s?|internacional|paralelo|replica|sem lacre|lacre rompido|avariad[oa]s?|com defeito)\b/;
 const PALAVRA_PROIBIDA = /afiliad/;
-
-/** Material do filamento no texto, em forma canônica (a ordem importa: "pla+" e "petg" antes de "pla"). */
-const MATERIAIS: Array<[string, RegExp]> = [
-  ['PETG', /\bpetg\b/],
-  ['PLA+', /\bpla ?\+|\bpla plus\b|\bpla pro\b/],
-  ['PLA', /\b(pla|silk|seda)\b/],
-  ['ABS', /\babs\b/],
-  ['TPU', /\b(tpu|tpe|flexivel)\b/],
-  ['ASA', /\basa\b/],
-  ['NYLON', /\b(nylon|pa12|pa6)\b/],
-  ['PC', /\bpolicarbonato\b/],
-  ['PVA', /\bpva\b/],
-  ['HIPS', /\bhips\b/],
-];
-
-export function materialDe(texto: string): string | null {
-  const t = fold(texto);
-  for (const [nome, re] of MATERIAIS) if (re.test(t)) return nome;
-  return null;
-}
-
-/** Diâmetro 1,75 ou 2,85 mm. "1.75" sem "mm" também vale quando aparece sozinho como número do filamento. */
-export function diametroDe(texto: string): string | null {
-  const t = fold(texto);
-  const m = /\b(1[.,]75|2[.,]85)\s?(?:mm)?(?![0-9])/.exec(t);
-  return m ? m[1].replace(',', '.') + 'mm' : null;
-}
-
-/**
- * Massa/volume: "1kg", "500 g", "250ml", "1l". Mais de um valor DIFERENTE no texto (ex.: "1kg ... 500g") é ambíguo => null
- * (nunca escolhe um). O diâmetro (1.75mm) não conta como massa.
- */
-export function massaOuVolumeDe(texto: string): string | null {
-  const t = fold(texto).replace(/\b(1[.,]75|2[.,]85)\s?mm\b/g, ' ');
-  const achados = new Set<string>();
-  const re = /\b(\d+(?:[.,]\d+)?)\s?(kg|g|gr|ml|l|litro|litros)\b/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(t))) {
-    const un = m[2] === 'gr' ? 'g' : m[2].startsWith('litro') ? 'l' : m[2];
-    achados.add(`${m[1].replace(',', '.')}${un}`);
-  }
-  if (achados.size !== 1) return null;
-  return [...achados][0];
-}
-
-const TIPOS_RESINA: Array<[string, RegExp]> = [
-  ['standard', /\b(standard|padrao|comum)\b/],
-  ['abs-like', /\babs like\b|\babs-like\b/],
-  ['water-washable', /\b(water washable|lavavel|lavavel em agua|wash)\b/],
-  ['flexivel', /\b(flexivel|flex)\b/],
-  ['tough', /\b(tough|resistente|rigida|engenharia)\b/],
-  ['transparente', /\b(transparente|clear|cristal)\b/],
-  ['plant-based', /\bplant based\b|\bvegetal\b/],
-  ['castable', /\b(castable|fundicao|joalheria)\b/],
-  ['alta-resolucao', /\b(8k|12k|alta resolucao|alta precisao|high detail)\b/],
-];
-
-export function tipoResinaDe(texto: string): string | null {
-  const t = fold(texto).replace(/-/g, ' ');
-  for (const [nome, re] of TIPOS_RESINA) if (re.test(t)) return nome;
-  return null;
-}
 
 /** Texto onde procurar o campo: nome do master + valores (string) do snapshot de atributos do catálogo. */
 function textoDe(c: CandidatoI3d): string {
@@ -231,20 +174,30 @@ export function avaliarImpressao3d(c: CandidatoI3d): AvaliacaoI3d {
     if (!volt) avisos.push('voltagem_nao_escrita');
     campos.combo = /\bcombo\b/.test(t) ? 'combo' : null;
   } else if (tipo === 'filamento') {
-    const material = materialDe(texto);
-    const diametro = diametroDe(texto);
-    const massa = massaOuVolumeDe(texto);
+    const material = materialDe(texto) ?? campoDaChave(c.identityKey, "material");
+    const diametro = diametroDe(texto) ?? campoDaChave(c.identityKey, "diametro");
+    const massa = massaOuVolumeDe(texto) ?? campoDaChave(c.identityKey, "massa");
     Object.assign(campos, { material, diametro, massa });
     if (!material) motivos.push('material_ausente');
     if (!diametro) motivos.push('diametro_ausente');
     if (!massa) motivos.push('massa_ausente_ou_ambigua');
   } else if (tipo === 'resina') {
-    const tipoR = tipoResinaDe(texto);
-    const volume = massaOuVolumeDe(texto);
+    const tipoR = tipoResinaDe(texto) ?? campoDaChave(c.identityKey, "tipo");
+    const volume = massaOuVolumeDe(texto) ?? campoDaChave(c.identityKey, "volume");
     Object.assign(campos, { tipoResina: tipoR, volume });
     if (!tipoR) motivos.push('tipo_de_resina_ausente');
     if (!volume) motivos.push('volume_ausente_ou_ambiguo');
   }
 
   return { aprovavel: motivos.length === 0, rejeitavel, motivos, avisos, tipo, campos };
+}
+
+/** Campo `nome=valor` da chave de identidade por campos (ex.: diametro=1.75mm). Ausente => null. */
+function campoDaChave(chave: string | null | undefined, nome: string): string | null {
+  if (!chave) return null;
+  for (const parte of chave.split('|')) {
+    const i = parte.indexOf('=');
+    if (i > 0 && parte.slice(0, i) === nome) return parte.slice(i + 1) || null;
+  }
+  return null;
 }
