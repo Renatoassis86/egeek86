@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import { redirect } from 'next/navigation';
 import { OnboardingForm } from '@/components/geek-deals/onboarding-form';
@@ -6,10 +7,12 @@ import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
-export const metadata: Metadata = {
-  title: 'Onboarding de Colecionador',
-  description: 'Seja um Colecionador Vendedor no Espaço Geek 86 e agende seus próprios drops na Hype Zone.',
-};
+export const metadata: Metadata = MARKETPLACE_PUBLIC
+  ? {
+    title: 'Onboarding de Colecionador',
+    description: 'Seja um Colecionador Vendedor no Espaço Geek 86 e agende seus próprios drops na Hype Zone.',
+  }
+  : { title: 'Página não encontrada', robots: { index: false, follow: false } };
 
 export const dynamic = 'force-dynamic';
 

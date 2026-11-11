@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -19,10 +20,12 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { sellers } from '@/db/schema';
 
-export const metadata: Metadata = {
-  title: 'Hype Zone',
-  description: 'Drops de colecionadores. O portal de lançamentos de itens raros e edições limitadas do Espaço Geek 86.',
-};
+export const metadata: Metadata = MARKETPLACE_PUBLIC
+  ? {
+    title: 'Hype Zone',
+    description: 'Drops de colecionadores. O portal de lançamentos de itens raros e edições limitadas do Espaço Geek 86.',
+  }
+  : { title: 'Página não encontrada', robots: { index: false, follow: false } };
 
 export const dynamic = 'force-dynamic';
 

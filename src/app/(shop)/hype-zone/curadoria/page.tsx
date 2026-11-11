@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -14,10 +15,12 @@ import { Sparkles } from 'lucide-react';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 import { getUpcomingDrops } from '@/server/queries/hype';
 
-export const metadata: Metadata = {
-  title: 'Conselho de Curadores',
-  description: 'Curadoria comunitária de drops colecionáveis e resgate de milhas de desconto.',
-};
+export const metadata: Metadata = MARKETPLACE_PUBLIC
+  ? {
+    title: 'Conselho de Curadores',
+    description: 'Curadoria comunitária de drops colecionáveis e resgate de milhas de desconto.',
+  }
+  : { title: 'Página não encontrada', robots: { index: false, follow: false } };
 
 export const dynamic = 'force-dynamic';
 

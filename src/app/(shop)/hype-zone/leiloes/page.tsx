@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,10 +19,12 @@ import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { Gavel, Clock, ArrowRight, ShieldCheck, Plus, User } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Geek Hammer - Leilões de Raridades',
-  description: 'Leilões síncronos e assíncronos de colecionáveis do Espaço Geek 86. Dispute com segurança.',
-};
+export const metadata: Metadata = MARKETPLACE_PUBLIC
+  ? {
+    title: 'Geek Hammer - Leilões de Raridades',
+    description: 'Leilões síncronos e assíncronos de colecionáveis do Espaço Geek 86. Dispute com segurança.',
+  }
+  : { title: 'Página não encontrada', robots: { index: false, follow: false } };
 
 export const dynamic = 'force-dynamic';
 

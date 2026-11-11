@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { assertMarketplaceVisible } from '@/lib/auth/marketplace-gate';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -15,10 +16,12 @@ import { Reveal } from '@/components/motion/reveal';
 import { formatBRL } from '@/lib/format';
 import { Flame, Gavel, Plus, ShieldCheck, Clock, Sparkles, AlertCircle } from 'lucide-react';
 
-export const metadata: Metadata = {
-  title: 'Painel do colecionador',
-  description: 'Gerencie seus itens de coleção, agende drops e abra leilões de raridades.',
-};
+export const metadata: Metadata = MARKETPLACE_PUBLIC
+  ? {
+    title: 'Painel do colecionador',
+    description: 'Gerencie seus itens de coleção, agende drops e abra leilões de raridades.',
+  }
+  : { title: 'Página não encontrada', robots: { index: false, follow: false } };
 
 export const dynamic = 'force-dynamic';
 
