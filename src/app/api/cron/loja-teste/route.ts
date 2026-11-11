@@ -10,6 +10,7 @@ import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-ca
 import { chatForStore, getStoreByVertical } from '@/server/stores';
 import { renderStoreProfileCard } from '@/server/messaging/store-profile-card';
 import { fetchShopeeGraphQL } from '@/server/collector/sources/shopee-auth';
+import { queryProductOffers } from '@/server/collector/sources/shopee';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -32,6 +33,15 @@ export async function GET(request: NextRequest) {
   if (auth === 'desligado') return NextResponse.json({ error: 'desligado' }, { status: 503 });
   if (auth === 'negado') return NextResponse.json({ error: 'nao_autorizado' }, { status: 401 });
   const q = new URL(request.url).searchParams;
+  // ?shopee=busca&q=<termo>&fields=a b c : testa quais campos a busca por palavra-chave aceita (só leitura, 1 chamada).
+  if (q.get('shopee') === 'busca') {
+    try {
+      const r = await queryProductOffers({ keyword: q.get('q') ?? 'tenis', limit: 3, sortType: 2, fields: (q.get('fields') ?? 'itemId productName').replace(/[^A-Za-z ]/g, ' ') });
+      return NextResponse.json({ ok: true, n: r.nodes.length, amostra: r.nodes.slice(0, 2) });
+    } catch (e) {
+      return NextResponse.json({ ok: false, erro: String((e as Error).message).slice(0, 200) });
+    }
+  }
   // ?shopee=ofertas: lista as campanhas oficiais (shopeeOfferV2: campanhas e coleções com link de afiliado e período). Só leitura, 1 chamada.
   if (q.get('shopee') === 'ofertas') {
     const query = `query O($page: Int, $limit: Int, $keyword: String) { shopeeOfferV2(page: $page, limit: $limit, keyword: $keyword, sortType: 1) { nodes { offerName offerType commissionRate offerLink periodStartTime periodEndTime } pageInfo { hasNextPage } } }`;
