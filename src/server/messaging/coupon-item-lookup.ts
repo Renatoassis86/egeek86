@@ -2,6 +2,7 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import type { CouponInfo } from '@/lib/messaging/group-messages';
+import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 
 /**
  * Cupom POR ANÚNCIO (dono, 2026-11-11): a aba logada lê a página do item e grava o "preço com cupom" (offer_coupon_reads). Vale 2 horas.
@@ -10,7 +11,7 @@ import type { CouponInfo } from '@/lib/messaging/group-messages';
  */
 const fmt = (cents: number) => `R$ ${(cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-export async function lookupItemCoupon(offerId: string): Promise<CouponInfo | null> {
+export async function lookupItemCoupon(offerId: string): Promise<(CouponInfo & CouponRefMeta) | null> {
   const rows = await db.execute<{
     price_with: number; price_seen: number | null; read_at: string | Date; campaign: string | null; status: string | null;
     kind: string | null; value_num: string | null; min_cents: string | null; cap_cents: string | null; valid_until: string | Date | null; cur: string;
@@ -27,6 +28,8 @@ export async function lookupItemCoupon(offerId: string): Promise<CouponInfo | nu
       ORDER BY ci.last_seen_at DESC LIMIT 1
     ) c ON true
     WHERE r.offer_id = ${offerId}::uuid AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - interval '120 minutes'
+      AND NOT EXISTS ( -- leitura mais nova SEM cupom: a página deixou de mostrar, então não vale mais (Agente de Cupons)
+        SELECT 1 FROM offer_coupon_reads n WHERE n.offer_id = r.offer_id AND n.price_with_coupon_cents IS NULL AND n.read_at > r.read_at)
       AND COALESCE(r.label, '') !~* 'seguir' -- cupom que exige seguir a loja não é cupom geral: fica de fora
     ORDER BY r.read_at DESC, r.price_with_coupon_cents ASC LIMIT 1`);
   const r = rows[0];
@@ -47,5 +50,7 @@ export async function lookupItemCoupon(offerId: string): Promise<CouponInfo | nu
     conditions: `${rule}Ative em Cupons no Mercado Livre antes de pagar. Preço lido na página do anúncio`,
     expiresAt: r.valid_until ? new Date(r.valid_until).toISOString() : null,
     verifiedAt: new Date(r.read_at).toISOString(),
+    couponRef: offerId,
+    annKind: 'anuncio',
   };
 }

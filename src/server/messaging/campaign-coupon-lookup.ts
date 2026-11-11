@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { findCampaignCoupons } from '@/server/coupons/campaign-store';
 import { pickCampaignCoupon, campaignToCouponInfo } from '@/server/coupons/campaign-pick';
 import type { CouponInfo } from '@/lib/messaging/group-messages';
+import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 
 /**
  * Codigo de CAMPANHA cadastrado pelo dono (ex.: TODOSITE1111) para uma oferta. Mesmo formato CouponInfo do coupon-lookup, mas
@@ -12,7 +13,7 @@ import type { CouponInfo } from '@/lib/messaging/group-messages';
  * Ligacao ao ciclo de envio: chamar junto de lookupVerifiedCoupon e escolher um dos dois (campanha tem prioridade quando existir:
  * e o codigo que o publico digita). Nao toca em coupon-lookup.ts.
  */
-export async function lookupCampaignCoupon(offerId: string, now: Date = new Date()): Promise<CouponInfo | null> {
+export async function lookupCampaignCoupon(offerId: string, now: Date = new Date()): Promise<(CouponInfo & CouponRefMeta) | null> {
   const rows = await db.execute<{ net: string; net_name: string; vertical: string | null; price: string; nick: string | null; ext_seller: string | null; store: string | null }>(sql`
     SELECT n.slug AS net, n.name AS net_name, m.vertical AS vertical, o.current_price_cents::text AS price,
            s.nickname AS nick, s.external_seller_id AS ext_seller, o.store_name AS store

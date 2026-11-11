@@ -3,9 +3,8 @@ import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 import { isGroupMessagesEnabled } from '@/lib/messaging/group-config';
 import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
 import { renderHistoryCard } from '@/server/messaging/price-card';
-import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
-import { lookupItemCoupon } from '@/server/messaging/coupon-item-lookup';
-import { lookupCampaignCoupon } from '@/server/messaging/campaign-coupon-lookup';
+import { consultarCupom, registrarDivulgacao } from '@/server/messaging/agente-cupons';
+import { cicloAgenteCupons } from '@/server/messaging/guardiao-cupons';
 import { refreshShopeeCampaigns } from '@/server/collector/shopee-campaigns';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { discoverStoreChats } from '@/server/stores-discover';
@@ -30,6 +29,7 @@ export const maxDuration = 60;
  * Sem eles o ciclo funciona igual: texto puro, sem linha de cupom.
  */
 export async function GET(request: NextRequest) {
+  const startedAt = Date.now();
   const denied = rejectUnlessCronAuthorized(request);
   if (denied) return denied;
 
@@ -50,9 +50,13 @@ export async function GET(request: NextRequest) {
       const input = await loadOfferCardInput(offerId);
       return input ? ((await renderOfferCard(input))?.png ?? null) : null;
     },
-    // Cupom do ANÚNCIO (lido na página do item, 2 h) primeiro; depois o cupom verificado de loja/categoria.
-    couponLookup: async (offerId: string) =>
-      (await lookupItemCoupon(offerId).catch(() => null)) ?? (await lookupCampaignCoupon(offerId).catch(() => null)) ?? lookupVerifiedCoupon(offerId),
+    // Agente de Cupons: consulta única (anúncio -> campanha do dono -> loja/categoria), com auditoria em coupon_consults.
+    couponLookup: (offerId: string) => consultarCupom(offerId),
+    // Mensagem com cupom enviada: o agente passa a acompanhar esse cupom (o guardião avisa o grupo quando ele acabar).
+    onCouponSent: (info, ctx) => registrarDivulgacao(info, ctx),
   });
-  return NextResponse.json(summary, { status: summary.ok ? 200 : 500 });
+  // Guardião de cupons (~5 min, tolerante a falha, orçamento próprio): fecha cupons divulgados que acabaram, avisa o grupo da loja
+  // com um card silencioso e grava o relatório da equipe em collector_runs (job 'agente-cupons').
+  const agente = Date.now() - startedAt < 35_000 ? await cicloAgenteCupons({ budgetMs: 12_000 }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  return NextResponse.json({ ...summary, agenteCupons: agente }, { status: summary.ok ? 200 : 500 });
 }

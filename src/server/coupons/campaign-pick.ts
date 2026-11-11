@@ -47,5 +47,8 @@ export function campaignToCouponInfo(c: StoredCoupon, networkName: string) {
     verifiedAt: c.verifiedAt as string,
     /** Confirmacao do dono vale 24 h (nao 2 h): ver CAMPAIGN_MAX_AGE_MINUTES. */
     maxAgeMinutes: 24 * 60,
+    /** Identificação para o Agente de Cupons acompanhar o encerramento. */
+    couponRef: c.id,
+    annKind: 'campanha' as const,
   };
 }

@@ -17,6 +17,7 @@ import {
   sendQueuedTelegram,
   type CardForFn,
   type CouponLookupFn,
+  type CouponSentFn,
   type RenderCardFn,
   type SendOutcome,
 } from '@/server/messaging/group-queue';
@@ -44,6 +45,7 @@ export interface CycleDeps {
   /** Escolha do cartão por tipo de mensagem (a rota do cron liga). */
   cardFor?: CardForFn;
   couponLookup?: CouponLookupFn;
+  onCouponSent?: CouponSentFn;
 }
 
 export interface CycleSummary {
@@ -182,7 +184,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
           }
           const row = pending.find((r) => r.messageKey === plan.next?.messageKey);
           if (!row) break;
-          const r = await sendQueuedTelegram(row.id, { now, fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup });
+          const r = await sendQueuedTelegram(row.id, { now, fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup, onCouponSent: deps.onCouponSent });
           outcome = r;
           if (r.outcome === 'sent') sentCount++;
           if (r.outcome !== 'expired') break;

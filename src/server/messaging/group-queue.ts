@@ -15,6 +15,7 @@ import {
   type MessageClass,
 } from '@/lib/messaging/group-rules';
 import { getStoreByVertical, chatForStore } from '@/server/stores';
+import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import { sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
 import { setAutomationState } from '@/server/messaging/group-automation-store';
 import { detectGroupCandidates, groupMessagesOnda2Ready, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
@@ -286,7 +287,9 @@ export interface SendOutcome {
 /** Cartão de histórico em PNG (ponto de ligação com o módulo do cartão; ainda não existe). Devolve null se não houver série suficiente. */
 export type RenderCardFn = (masterProductId: string) => Promise<Buffer | null>;
 /** Cupom verificado da oferta (ponto de ligação com o módulo de cupons; ainda não existe). null = sem cupom válido. */
-export type CouponLookupFn = (offerId: string) => Promise<CouponInfo | null>;
+export type CouponLookupFn = (offerId: string) => Promise<(CouponInfo & CouponRefMeta) | null>;
+/** Chamada depois do envio de uma mensagem COM cupom (Agente de Cupons registra a divulgação). Falha nunca afeta o envio. */
+export type CouponSentFn = (info: CouponInfo & CouponRefMeta, ctx: { networkSlug: string; offerId: string; vertical: string; storeId: string | null; groupMessageId: string }) => Promise<void>;
 
 /**
  * Escolha do cartão (injetável; a rota do cron liga): 'oferta' = card de oferta (capa + preço + insight) para alerta/insight de
@@ -300,6 +303,7 @@ export interface SendDeps {
   fetchImpl?: FetchLike;
   renderCard?: RenderCardFn;
   couponLookup?: CouponLookupFn;
+  onCouponSent?: CouponSentFn;
   /** Envio manual ("Enviar agora"): ignora o intervalo mínimo e o mesmo-produto-3h (os tetos continuam valendo). */
   manual?: boolean;
   /** Reconferência ao vivo (padrão: fontes oficiais reais). */
@@ -473,6 +477,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     if (match.messageKey !== row.messageKey) text = text.split(`m=${match.messageKey}`).join(`m=${row.messageKey}`);
 
     let coupon = false;
+    let couponInfo: (CouponInfo & CouponRefMeta) | null = null;
     if (deps.couponLookup && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR') {
       try {
         const info = await timeout(deps.couponLookup(match.offerIds[0]), 4000);
@@ -480,6 +485,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
         if (withCoupon !== text) {
           text = withCoupon;
           coupon = true;
+          couponInfo = info;
         }
       } catch {
         // cupom é opcional: a mensagem sai sem ele
@@ -539,6 +545,11 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
           recheck_due_at = ${recheckAt}::timestamptz
         WHERE id = ${id}::uuid
       `);
+      if (coupon && couponInfo && deps.onCouponSent) {
+        await deps
+          .onCouponSent(couponInfo, { networkSlug: match.networkSlug, offerId: match.offerIds[0], vertical: match.vertical, storeId: storeRow?.id ?? null, groupMessageId: id })
+          .catch(() => undefined);
+      }
       return { ok: true, outcome: 'sent', messageId: sent.messageId, sound: plan.nextSound, card: withCard, coupon };
     }
 

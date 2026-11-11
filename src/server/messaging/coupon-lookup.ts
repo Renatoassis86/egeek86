@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { findVerifiedCoupons } from '@/server/coupons/store';
 import type { CouponInfo } from '@/lib/messaging/group-messages';
+import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import type { StoredCoupon } from '@/server/coupons/types';
 
 /**
@@ -29,7 +30,7 @@ function score(c: StoredCoupon): number {
   return 0;
 }
 
-export async function lookupVerifiedCoupon(offerId: string): Promise<CouponInfo | null> {
+export async function lookupVerifiedCoupon(offerId: string): Promise<(CouponInfo & CouponRefMeta) | null> {
   const rows = await db.execute<{ net: string; mid: string; price: string; ext: string | null; nick: string | null; ext_seller: string | null; url: string }>(sql`
     SELECT n.slug AS net, o.master_product_id::text AS mid, o.current_price_cents::text AS price, o.external_ref AS ext,
            s.nickname AS nick, s.external_seller_id AS ext_seller, o.affiliate_url AS url
@@ -58,5 +59,7 @@ export async function lookupVerifiedCoupon(offerId: string): Promise<CouponInfo 
     conditions: `${where}.${min}${cap}`.replace(/\s+/g, ' ').trim(),
     expiresAt: best.validUntil,
     verifiedAt: best.verifiedAt,
+    couponRef: best.id,
+    annKind: best.scopeKind === 'categoria' ? 'categoria' : 'loja',
   };
 }

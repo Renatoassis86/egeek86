@@ -21,7 +21,7 @@ export const STORE_PROFILES: Record<string, { label: string; tagline: string; bg
 };
 
 let logoUri: string | null = null;
-async function loadLogo(): Promise<string | null> {
+export async function loadLogo(): Promise<string | null> {
   if (logoUri) return logoUri;
   try {
     const buf = await readFile(join(process.cwd(), 'public', 'geek 86.png'));
