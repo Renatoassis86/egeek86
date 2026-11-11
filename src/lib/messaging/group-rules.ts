@@ -468,7 +468,7 @@ export function windowKey(now: Date): string {
   const ms = now.getTime() - 3 * 3600_000; // Brasil sem horário de verão: UTC-3 fixo
   const d = new Date(ms);
   const day = d.toISOString().slice(0, 10).replace(/-/g, '');
-  return `${day}-${Math.floor(d.getUTCHours() / 6)}`;
+  return `${day}-${Math.floor(d.getUTCHours() / 2)}`; // janela de 2 h (era 6 h): o canal fica movimentado e o mesmo produto pode voltar quando o preço mexe
 }
 
 /** Título limpo e "Switch · mídia física" separados, para o layout novo (título em negrito, plataforma em itálico). */
