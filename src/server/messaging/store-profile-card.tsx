@@ -41,17 +41,18 @@ export async function renderStoreProfileCard(slug: string): Promise<Buffer | nul
   const words = p.label.split(' ');
   const lines = p.label.length > 9 && words.length > 1 ? [words.slice(0, -1).join(' '), words[words.length - 1]] : [p.label];
   const longest = Math.max(...lines.map((l) => l.length));
-  const font = Math.min(196, Math.floor(820 / (longest * 0.68))); // cabe na largura útil (margem de 100 px de cada lado)
+  // Tudo dentro do círculo inscrito (a foto de grupo do WhatsApp é redonda; a da comunidade é quadrado arredondado): bloco de no máx. ~640 px de largura.
+  const font = Math.min(170, Math.floor(620 / (longest * 0.68)));
   const res = new ImageResponse(
     (
       <div style={{ width: size, height: size, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: p.bg, color: C.text }}>
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={logo} width={620} height={230} alt="" style={{ width: 620, height: 230 }} />
+          <img src={logo} width={560} height={208} alt="" style={{ width: 560, height: 208 }} />
         ) : (
           <div style={{ display: 'flex', fontSize: 84, color: C.gold }}>ESPAÇO GEEK 86</div>
         )}
-        <div style={{ display: 'flex', width: 460, height: 12, background: p.accent, marginTop: 36, marginBottom: 40 }} />
+        <div style={{ display: 'flex', width: 380, height: 10, background: p.accent, marginTop: 28, marginBottom: 30 }} />
         {lines.map((l) => (
           <div key={l} style={{ display: 'flex', fontSize: font, lineHeight: 1.02, letterSpacing: 2, color: C.text, fontWeight: 700 }}>
             {l}
