@@ -16,9 +16,12 @@
     "test:collector": "tsx --test src/lib/collector-runs/collector-runs.test.ts",
     "test:coleta": "tsx scripts/test-collector-multicatalog.ts && tsx scripts/test-catalog-placeholder.ts && tsx --test src/lib/collector-runs/collector-runs.test.ts",
     "test:gate": "tsx scripts/test-gate.ts",
+    "test:mensagens-grupo": "tsx scripts/test-mensagens-grupo.ts",
+    "telegram:teste": "tsx --env-file=.env.local scripts/telegram-teste.ts",
     "test:dimensions": "tsx scripts/test-dimensions.ts",
     "test:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/test-vertical-isolation.ts",
     "baseline:gamer": "tsx --conditions=react-server --env-file=.env.local scripts/congelar-linha-base-gamer.ts",
+    "test:departamentos": "tsx --conditions=react-server --env-file=.env.local scripts/test-departamentos.ts",
     "test:vertical-identity": "tsx scripts/test-vertical-identity.ts",
     "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts"
   },
