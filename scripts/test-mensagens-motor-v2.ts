@@ -442,7 +442,7 @@ eq(dispOf({}).disposition, 'auto', 'ML verde = automático');
 eq(dispOf({ status: 'review', reviewReasons: ['shopee_so_com_aprovacao_humana'] }).disposition, 'approval', 'Shopee = aprovação');
 eq(dispOf({ status: 'review', reviewReasons: ['vendedor_sem_reputacao'] }).disposition, 'approval', 'vendedor sem reputação = aprovação');
 eq(dispOf({ status: 'review', reviewReasons: ['desconto_acima_de_25pct_da_media'] }).disposition, 'approval', 'desconto > 25% = aprovação');
-eq(dispOf({ vertical: 'livros' }).disposition, 'approval', 'nicho novo = aprovação');
+eq(dispOf({ vertical: 'livros' }).disposition, 'auto', 'loja liberada: nicho não exige mais aprovação (dono, 2026-11-11)');
 eq(dispOf({ held: true }).disposition, 'held', 'retido continua retido');
 eq(dispOf({ held: true, status: 'review' }).disposition, 'held', 'retido vence aprovação');
 // status por estado

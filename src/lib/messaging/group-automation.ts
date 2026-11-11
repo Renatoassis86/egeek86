@@ -62,13 +62,12 @@ export type Disposition = 'auto' | 'approval' | 'held';
 /**
  * Seguro (envio automático), exige aprovação humana ou retido:
  *  - retido: desconto > 40% contra a média, queda > 45%, preço < 0,5x a mediana (nunca sai sozinho);
- *  - aprovação: Shopee, desconto > 25%, vendedor sem reputação/poucas vendas, nicho novo (fora de games), Amazon acima de 30% de queda;
+ *  - aprovação: Shopee, desconto > 25%, vendedor sem reputação/poucas vendas, Amazon acima de 30% de queda (nicho novo deixou de exigir aprovação em 2026-11-11: todas as lojas estão liberadas);
  *  - o resto (ML nas condições seguras, Amazon dentro dos limites) é automático.
  */
 export function dispositionOf(c: Pick<Candidate, 'held' | 'status' | 'vertical' | 'reviewReasons'>): { disposition: Disposition; reasons: string[] } {
   if (c.held) return { disposition: 'held', reasons: [] };
   const reasons = [...c.reviewReasons];
-  if (c.vertical !== 'games') reasons.push('nicho_novo_exige_aprovacao');
   if (c.status === 'review' || reasons.length) return { disposition: 'approval', reasons };
   return { disposition: 'auto', reasons: [] };
 }
