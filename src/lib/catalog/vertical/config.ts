@@ -1,6 +1,7 @@
 // Sem 'server-only': configuração pura (sem banco, sem rede), importável por coletor, scripts tsx e testes.
 import type { Vertical } from '@/lib/catalog/verticais';
 import { combineTerms, dedupeTerms } from './seed-utils';
+import { NOVOS_SEGMENTOS, REQUIRE_BRAND_KEYS, SEARCH_DOMAIN_EXTRAS, TERMOS_EXTRAS } from './config-ampliacao';
 
 /**
  * CONFIGURAÇÃO POR DEPARTAMENTO (vertical) E SEGMENTO. ADR 0008 itens 4 e 5; ata 2026-11-08, Fase 2.
@@ -50,7 +51,15 @@ export interface SegmentConfig {
      * marca+tipo+volume), de modo que cores/GTINs diferentes do mesmo produto caem no MESMO master ("cor junta"). Campo ausente => revisão.
      */
     keyIgnoresGtin?: boolean;
+    /**
+     * Chave de FAMÍLIA (tênis, chuteira, camisa, meia, boné, mochila...; 2026-11-11): sem GTIN, montada por atributos do catálogo
+     * (`required` obrigatórios, `optional` entram se presentes). Cor e tamanho NUNCA entram (cada cor/tamanho é um catálogo do ML,
+     * todos caem no MESMO master). Campo obrigatório ausente => revisão. Implica keyIgnoresGtin.
+     */
+    familyKey?: { required: string[]; optional: string[] };
   };
+  /** Exige marca real (ausente ou "Genérica" => rejeitado): filtro "kit genérico sem marca" da ampliação de 2026-11-11. */
+  requireBrand?: boolean;
   /** Frequência-alvo de recoleta em minutos (ata: TV/notebook 5-10 na BF, eletro 15-30, livros/esporte 60). */
   targetRefreshMin: number;
   /** Ordem de semeadura (1 = primeiro). */
@@ -306,18 +315,6 @@ export const SEGMENTS: SegmentConfig[] = [
     seedRank: 28,
     rationale: 'Domínio a medir no 1º dry-run. Tipo de resina e volume separam; cor junta. Exige "3d"/UV no título (scope.ts) para não trazer resina epóxi.',
   },
-  {
-    key: 'tenis-de-corrida',
-    vertical: 'esporte',
-    label: 'Tênis de corrida',
-    domains: [/SNEAKERS/],
-    terms: ['tenis de corrida asics'],
-    // Medição: GTIN 0/10. Sem identificador confiável: só revisão humana (tamanho é variante da oferta, nunca produto).
-    profile: { strategy: 'review_only', fallbackAttrs: ['BRAND', 'MODEL', 'VERSION', 'GENDER', 'COLOR'], keyExtras: [] },
-    targetRefreshMin: 60,
-    seedRank: 13,
-    rationale: 'Sem GTIN em 10/10 resultados; 0 catálogos com oferta em 2 tentativas. Só revisão.',
-  },
   // ---- Segmentos NOVOS (2026-11-10). Domínios medidos no histograma de busca; GTIN/MODEL a confirmar no 1º dry-run. ----
   {
     key: 'teclado',
@@ -500,6 +497,16 @@ export const SEGMENTS: SegmentConfig[] = [
     rationale: 'Histograma: 46 de 50 no MLB-STATIONARY_BICYCLES.',
   },
 ];
+
+// Ampliação 2026-11-11 (config-ampliacao.ts): segmentos novos, termos extras (anexados ao fim) e filtro de marca.
+SEGMENTS.push(...NOVOS_SEGMENTOS);
+for (const s of SEGMENTS) {
+  const extra = TERMOS_EXTRAS[s.key];
+  if (extra?.length) s.terms = dedupeTerms([...s.terms, ...extra]);
+  const dom = SEARCH_DOMAIN_EXTRAS[s.key];
+  if (dom && !s.searchDomain) s.searchDomain = dom;
+  if (REQUIRE_BRAND_KEYS.has(s.key)) s.requireBrand = true;
+}
 
 export function segmentByKey(key: string): SegmentConfig | undefined {
   return SEGMENTS.find((s) => s.key === key);

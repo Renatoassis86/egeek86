@@ -44,7 +44,7 @@ import { connect } from './_dup-shared';
 import { segmentByKey, segmentsOf, seedOrder, TERMS_STATUS, type NonGamesVertical, type SegmentConfig } from '../src/lib/catalog/vertical/config';
 import { reviewGateFor } from '../src/lib/catalog/vertical/gate';
 import { normalizeTitleKey } from '../src/lib/catalog/vertical/identity';
-import { createMlClient } from '../src/lib/catalog/vertical/ml-api';
+import { createMlClient, RateLimited, type MlClient } from '../src/lib/catalog/vertical/ml-api';
 import { planSeed, type ExistingLookup, type SeedPlanEntry, type SeedReport } from '../src/lib/catalog/vertical/seed-plan';
 import { slugify } from '../src/lib/slugify';
 import { isVertical } from '../src/lib/catalog/verticais';
@@ -76,6 +76,35 @@ const logFile = path.join(outDir, 'log.txt');
 function log(msg: string) {
   console.log(msg);
   fs.appendFileSync(logFile, `${new Date().toISOString()} ${msg}\n`, 'utf8');
+}
+
+/**
+ * HTTP 429 (decisao do dono, 2026-11-11: o limite real e o 429): ESPERA e retoma, sem contornar. Reenvia a MESMA chamada depois de 60 s,
+ * 120 s, 240 s, 480 s e 900 s (cada tentativa e cobrada no orcamento diario, honestamente). Esgotadas, repassa o RateLimited: o segmento para
+ * ('http_429') e a execucao inteira para (retomar depois com --terms-from).
+ */
+const RATE_WAITS_S = [60, 120, 240, 480, 900];
+let rateLimitedOut = false;
+function withRateLimitWait(inner: MlClient): MlClient {
+  return {
+    ...inner,
+    async get(endpoint: string) {
+      for (let i = 0; ; i++) {
+        try {
+          return await inner.get(endpoint);
+        } catch (e) {
+          if (!(e instanceof RateLimited)) throw e;
+          if (i >= RATE_WAITS_S.length || interrupted) {
+            rateLimitedOut = true;
+            throw e;
+          }
+          log(`429 do ML: aguardando ${RATE_WAITS_S[i]} s antes de retomar (tentativa ${i + 1}/${RATE_WAITS_S.length}); nada e contornado`);
+          await new Promise((r) => setTimeout(r, RATE_WAITS_S[i] * 1000));
+        }
+      }
+    },
+    // maxCalls do cliente interno ja conta as chamadas 429 (cada reenvio gasta 1)
+  };
 }
 
 function pickSegments(): SegmentConfig[] {
@@ -274,12 +303,12 @@ async function main() {
   let runHandle: { counters: any; finish(o?: any): Promise<void> } | null = null;
   try {
     const token = await readToken(sql);
-    const client = createMlClient({
+    const client = withRateLimitWait(createMlClient({
       token,
       maxCalls: effectiveCalls,
       beforeCall: () => chargeOne(run, DAILY_CAP),
       onCall: (c) => log(`ML #${c.n}/${effectiveCalls} ${c.endpoint} -> ${c.status} (${c.ms} ms)`),
-    });
+    }));
     let notFoundState = state0;
     const lookup = await buildLookup(sql);
     if (APPLY) {
@@ -308,6 +337,10 @@ async function main() {
       reports.push(rep);
       log(`segmento ${seg.key}: buscas=${rep.termsSearched} resultados=${rep.searchResults} chamadas=${rep.callsSpent} planejados=${rep.plans.length} revisao=${rep.reviews.length} parou=${rep.stoppedBecause ?? '-'}`);
       log(`  paradas por termo: ${JSON.stringify(rep.termStops)}`);
+      if (rateLimitedOut || rep.stoppedBecause === 'http_429') {
+        log('  429 persistente depois de todas as esperas: rodada interrompida. Retomar depois com --terms-from <proximo termo> (ver paradas por termo acima).');
+        break;
+      }
       if (rep.stoppedBecause === 'teto_diario' || rep.stoppedBecause === 'teto_de_chamadas') {
         log('  orcamento acabou neste segmento; os demais nao serao buscados.');
       }

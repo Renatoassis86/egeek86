@@ -35,7 +35,7 @@ const P = (over: Partial<MlCatalogPayload> & { id: string }): MlCatalogPayload =
 
 const livros = segmentByKey('livros')!;
 const placa = segmentByKey('placa-de-video')!;
-const tenis = segmentByKey('tenis-de-corrida')!;
+const tenis = segmentByKey('tenis')!;
 const geladeira = segmentByKey('geladeira')!;
 const ssd = segmentByKey('ssd')!;
 
@@ -108,7 +108,24 @@ check('geladeira mesma voltagem => mesma chave (cor nao separa; ordem de atribut
 
 // --- Tenis: nunca forte ---
 r = evaluateIdentity(P({ id: 'MLBT', name: 'Tenis Asics', domain_id: 'MLB-SNEAKERS', attributes: [attr('GTIN', gtin('789123456789')), attr('BRAND', 'Asics'), attr('MODEL', 'Gel')] }), tenis);
-check('tenis, mesmo com GTIN, so revisao (key null)', r.status === 'review' && r.key === null, r);
+check('tenis sem genero => review (campos da familia incompletos), mesmo com GTIN', r.status === 'review' && r.key === null && r.missing.includes('GENDER'), r);
+{
+  const tp = (name: string, color: string, extra: Array<ReturnType<typeof attr>> = []) => P({ id: 'MLBT', name, domain_id: 'MLB-SNEAKERS', attributes: [attr('BRAND', 'Nike'), attr('MODEL', 'Downshifter'), attr('VERSION', '12'), attr('GENDER', 'Feminino'), attr('COLOR', color), attr('SIZE', '37'), ...extra] });
+  const a = evaluateIdentity(tp('Tenis Nike Downshifter 12 Feminino Preto', 'Preto'), tenis);
+  const b = evaluateIdentity(tp('Tenis Nike Downshifter 12 Feminino Branco', 'Branco', [attr('GTIN', gtin('789123456789'))]), tenis);
+  check('tenis: cor, tamanho e GTIN nao separam => MESMA chave por familia', a.status === 'strong' && a.key === b.key && a.byFields === true, [a, b]);
+  check('tenis: chave = marca+modelo+versao+genero', a.key === 'bm:tenis|brand=nike|model=downshifter|gender=feminino|version=12', a.key);
+  const c2 = evaluateIdentity(P({ id: 'MLBT', name: 'Tenis Nike Downshifter 12 Masculino', domain_id: 'MLB-SNEAKERS', attributes: [attr('BRAND', 'Nike'), attr('MODEL', 'Downshifter'), attr('VERSION', '12'), attr('GENDER', 'Masculino')] }), tenis);
+  check('tenis: genero separa master', c2.status === 'strong' && c2.key !== a.key, c2.key);
+  const rep = evaluateIdentity(tp('Tenis Nike Downshifter 12 Feminino Replica', 'Preto'), tenis);
+  check('tenis: replica/falsificado e rejeitado', rep.status === 'rejected', rep);
+  const gen = evaluateIdentity(P({ id: 'MLBT', name: 'Tenis Esportivo Kit Generico', domain_id: 'MLB-SNEAKERS', attributes: [attr('BRAND', 'Generica'), attr('MODEL', 'X'), attr('GENDER', 'Masculino')] }), tenis);
+  check('tenis: marca generica e rejeitada (kit generico sem marca)', gen.status === 'rejected' && gen.reason === 'marca_ausente_ou_generica', gen);
+  const used = evaluateIdentity(tp('Tenis Nike Downshifter Usado', 'Preto'), tenis);
+  check('tenis: usado e rejeitado', used.status === 'rejected', used);
+  const sebo = evaluateIdentity(P({ id: 'MLB1', name: 'Livro Sebo Dom Casmurro', attributes: [attr('GTIN', isbn)] }), livros);
+  check('livro de sebo e rejeitado como usado', sebo.status === 'rejected' && sebo.reason === 'usado', sebo);
+}
 
 // --- Titulo normalizado ---
 check('normalizeTitleKey ignora acento, caixa, pontuacao e ordem', normalizeTitleKey('Soundbar JBL, 2.1 Canais') === normalizeTitleKey('canais 2.1 soundbar jbl'));
@@ -141,9 +158,9 @@ check('nenhum segmento usa games', SEGMENTS.every((s) => s.vertical !== ('games'
 const ordem = seedOrder().map((s) => s.key);
 check('semeadura: livros, placa de video, impressora primeiro', ordem.slice(0, 3).join() === 'livros,placa-de-video,impressora', ordem);
 // Ampliacao 2026-11-10: os 13 segmentos originais mantem a ordem medida (pior por ultimo DENTRO deles); os novos vem depois.
-check('semeadura: entre os 13 originais, tenis, maquina de lavar, impressora 3D por ultimo', ['tenis-de-corrida', 'maquina-de-lavar', 'impressora-3d'].every((k) => ordem.indexOf(k) >= 10 && ordem.indexOf(k) < 13), ordem);
+check('semeadura: entre os 13 originais, tenis, maquina de lavar, impressora 3D por ultimo', ['tenis', 'maquina-de-lavar', 'impressora-3d'].every((k) => ordem.indexOf(k) >= 10 && ordem.indexOf(k) < 13), ordem);
 check('ranks unicos', new Set(SEGMENTS.map((s) => s.seedRank)).size === SEGMENTS.length);
-check('segmentsOf agrupa por departamento (13 originais + 13 novos da ampliacao; impressora 3D saiu de tecnologia em 2026-11-11 e a impressao3d tem 3 segmentos)', segmentsOf('tecnologia').length === 11 && segmentsOf('impressao3d').map((x) => x.key).join() === 'impressora-3d,filamento-3d,resina-3d' && segmentsOf('esporte').length === 4 && segmentsOf('livros').length === 1 && segmentsOf('eletroeletronicos').length === 4 && segmentsOf('eletrodomesticos').length === 5);
+check('segmentsOf agrupa por departamento (originais + ampliacao 2026-11-11; impressao3d tem 3 segmentos)', ['tecnologia','eletroeletronicos','livros','eletrodomesticos','esporte'].every((v) => segmentsOf(v as any).length >= 1) && segmentsOf('tecnologia').length === 11 && segmentsOf('impressao3d').map((x) => x.key).join() === 'impressora-3d,filamento-3d,resina-3d' && segmentsOf('esporte').length >= 25 && segmentsOf('livros').length === 1 && segmentsOf('eletroeletronicos').length >= 14 && segmentsOf('eletrodomesticos').length >= 19);
 check('kill-switch desligado por padrao', !isVerticalEnabled('livros', {}));
 check('kill-switch so liga com 1/true', isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '1' }) && isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'true' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '0' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'sim' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '' }));
 check('nome do kill-switch', killSwitchEnvName('eletroeletronicos') === 'VERTICAL_ELETROELETRONICOS_ENABLED');
@@ -240,7 +257,7 @@ check('porteiro: titulo de ANUNCIO com pacote => review out_of_scope', gv.verdic
 // --- Cor junta (regra do dono, exceto tenis) ---
 const bolaSeg = segmentByKey('bola')!;
 check('bola: COLOR fora de keyExtras (cor nao separa produto)', !bolaSeg.profile.keyExtras.includes('COLOR'));
-check('so o tenis tem COLOR na config, e e review_only', SEGMENTS.filter((s) => s.profile.keyExtras.includes('COLOR') || s.profile.fallbackAttrs.includes('COLOR')).every((s) => s.key === 'tenis-de-corrida' && s.profile.strategy === 'review_only'));
+check('nenhum segmento tem COLOR na chave (cor junta, inclusive tenis: cor e tamanho nao separam desde 2026-11-11)', SEGMENTS.every((s) => !s.profile.keyExtras.includes('COLOR') && !s.profile.fallbackAttrs.includes('COLOR') && !(s.profile.familyKey?.required.includes('COLOR') || s.profile.familyKey?.optional.includes('COLOR'))));
 const bolaPay = (cor: string): MlCatalogPayload => P({ id: 'MLBB', name: 'Bola Futebol Campo', domain_id: 'MLB-FOOTBALL_BALLS', attributes: [attr('BRAND', 'FLAR IMPORT'), attr('MODEL', 'Numero 5'), attr('COLOR', cor)] });
 check('bola sem GTIN: cores diferentes => MESMA chave bm', evaluateIdentity(bolaPay('Cor 01'), bolaSeg).key === evaluateIdentity(bolaPay('Cor 10'), bolaSeg).key && evaluateIdentity(bolaPay('Cor 01'), bolaSeg).keyKind === 'brand_model');
 check('colorlessTitleKey: cor01/cor10/cor07 colapsam', colorlessTitleKey('Bola Futebol Campo cor01') === colorlessTitleKey('Bola Futebol Campo cor10') && colorlessTitleKey('Bola Futebol Campo cor07') === colorlessTitleKey('Bola Futebol Campo cor 10'));

@@ -20,7 +20,9 @@ import {
 } from '../src/lib/catalog/vertical/seed-budget';
 import { combineTerms, dedupeTerms, estimateMasters, formatSummary, pagingDecision, searchPath, summarizeReports, termKey } from '../src/lib/catalog/vertical/seed-utils';
 import { domainMatches, SEGMENTS, segmentByKey } from '../src/lib/catalog/vertical/config';
-import { scopeIssue } from '../src/lib/catalog/vertical/scope';
+import { scopeIssue, stripSizes } from '../src/lib/catalog/vertical/scope';
+import { evaluateIdentity } from '../src/lib/catalog/vertical/identity';
+import { NOVOS_SEGMENTOS } from '../src/lib/catalog/vertical/config-ampliacao';
 import { createMlClient, DailyBudgetExceeded } from '../src/lib/catalog/vertical/ml-api';
 import { planSeed, type ExistingLookup } from '../src/lib/catalog/vertical/seed-plan';
 import { isValidGtin } from '../src/lib/catalog/vertical/identity';
@@ -121,7 +123,7 @@ async function main() {
     check(`segmento novo existe: ${k}`, !!segmentByKey(k));
   }
   check('bola: mais de 1 termo (antes era 1)', segmentByKey('bola')!.terms.length > 8);
-  check('tenis segue review_only', segmentByKey('tenis-de-corrida')!.profile.strategy === 'review_only');
+  check('tenis: chave de familia marca+modelo+genero (sem GTIN), cor e tamanho nao separam', segmentByKey('tenis')!.profile.familyKey?.required.join() === 'BRAND,MODEL,GENDER');
 
   // ---------------- nicho dos segmentos novos ----------------
   check('cadeira de escritorio comum NAO e cadeira gamer', scopeIssue('cadeira-gamer', 'Cadeira De Escritório Presidente Giratória Preta')?.reason === 'fora_do_nicho');
@@ -337,6 +339,44 @@ async function main() {
   }
   // (j) plataforma 'unknown' nunca aparece: os planos de games nao passam por aqui e nenhum segmento usa o termo
   check("nenhum segmento menciona platform 'unknown'", SEGMENTS.every((s) => !JSON.stringify(s.terms).includes('unknown')));
+
+
+  // ---------------- ampliacao 2026-11-11 (esporte, livros, casa, eletronicos) ----------------
+  check('ampliacao: 50 segmentos novos', NOVOS_SEGMENTOS.length === 50, NOVOS_SEGMENTOS.length);
+  check('ampliacao: todo segmento novo tem searchDomain e exige marca', NOVOS_SEGMENTOS.every((s) => !!s.searchDomain && s.requireBrand === true));
+  check('ampliacao: tenis tem 100+ termos', segmentByKey('tenis')!.terms.length >= 100, segmentByKey('tenis')!.terms.length);
+  check('ampliacao: livros com 500+ termos (generos, editoras, autores)', segmentByKey('livros')!.terms.length >= 500, segmentByKey('livros')!.terms.length);
+  check('ampliacao: termos antigos de livros mantem a posicao (--terms-from)', segmentByKey('livros')!.terms.slice(0, 3).join('|') === 'livro rpg|rpg dungeons and dragons|rpg tormenta');
+  check('camisa de time entra', scopeIssue('camisa-de-time', 'Camisa Flamengo I 2025 Adidas Torcedor Masculina') === null);
+  check('lembranca de time nao e camisa', scopeIssue('camisa-de-time', 'Camisa Bolsa Recipiente Térmico Flamengo') !== null);
+  check('conjunto infantil com camisa+short+meiao nao e camisa', scopeIssue('camisa-de-time', 'Conjunto Infantil Palmeiras Camisa+ Short+ Meião Verde') !== null);
+  check('bone sem marca esportiva fica fora do nicho', scopeIssue('bone', 'Boné Aba Reta Liso Preto')?.reason === 'fora_do_nicho');
+  check('bone nike entra', scopeIssue('bone', 'Boné Nike Heritage86 Aba Curva Unissex') === null);
+  check('mochila escolar generica fica fora do nicho', scopeIssue('mochila-esportiva', 'Mochila Escolar Menina Rosa Reforçada')?.reason === 'fora_do_nicho');
+  check('mochila nike entra', scopeIssue('mochila-esportiva', 'Mochila Nike Brasilia 9.5 Treino 24l') === null);
+  check('power bank: carregador comum nao entra', scopeIssue('power-bank', 'Carregador De Parede Usb C 20w Samsung')?.reason === 'fora_do_nicho');
+  check('carregador: power bank nao entra no carregador', scopeIssue('carregador', 'Carregador Portátil Power Bank 10000mah')?.reason === 'fora_do_nicho');
+  check('capa de ar condicionado e acessorio', scopeIssue('ar-condicionado', 'Capa Condensador Ar Condicionado Split Corino 12000 Btus')?.reason === 'acessorio_ou_peca');
+  check('ar condicionado split entra', scopeIssue('ar-condicionado', 'Ar Condicionado Split Inverter Springer Midea 12000 Btus') === null);
+  check('grelha de fogao e peca', scopeIssue('fogao', 'Grelha Para Fogão 5 Bocas Atlas')?.reason === 'acessorio_ou_peca');
+  check('saco de aspirador e acessorio', scopeIssue('aspirador-de-po', 'Saco Descartável Aspirador Pó Electrolux')?.reason === 'acessorio_ou_peca');
+  check('pulseira de smartwatch e acessorio', scopeIssue('smartwatch', 'Pulseira Silicone Para Xiaomi Mi Band 8')?.reason === 'acessorio_ou_peca');
+  check('capa de kindle e acessorio', scopeIssue('e-reader', 'Capa Para Kindle Paperwhite 11a Geração')?.reason === 'acessorio_ou_peca');
+  check('palmilha nao e tenis', scopeIssue('tenis', 'Palmilha Para Tênis Corrida Gel')?.reason === 'acessorio_ou_peca');
+  check('chinelo nao entra em tenis', scopeIssue('tenis', 'Chinelo Slide Nike Benassi')?.reason === 'fora_do_nicho');
+  check('kit de 5 faixas elasticas e produto (nao e pacote)', scopeIssue('faixa-elastica', 'Kit Com 5 Faixas Elásticas Extensor Exercício') === null);
+  check('tapete de banheiro nao e tapete de yoga', scopeIssue('tapete-de-yoga', 'Tapete De Banheiro Antiderrapante Microfibra')?.reason === 'fora_do_nicho');
+  check('stripSizes tira tamanho do nome do master', stripSizes('Meia Nike Squad Otc Tamanho Gg') === 'Meia Nike Squad Otc' && stripSizes('Tênis Nike Revolution 7 Tam 42') === 'Tênis Nike Revolution 7');
+  check('stripSizes nao estraga nome curto', stripSizes('Tênis Tamanho 42') === 'Tênis Tamanho 42');
+  {
+    const seg = segmentByKey('garrafa-esportiva')!;
+    const semMarca = evaluateIdentity({ id: 'MLB1', name: 'Garrafa Termica Academia 2 Litros', domain_id: 'MLB-SPORT_AND_BAZAAR_BOTTLES', attributes: [{ id: 'GTIN', value_name: '7898357410015' }] }, seg);
+    check('segmento novo sem marca => rejeitado (kit generico)', semMarca.status === 'rejected' && semMarca.reason === 'marca_ausente_ou_generica', semMarca);
+    const longa = evaluateIdentity({ id: 'MLB1', name: 'Garrafa X', domain_id: 'MLB-SPORT_AND_BAZAAR_BOTTLES', attributes: [{ id: 'BRAND', value_name: 'Garrafa térmica Inteligente Premium Inox' }, { id: 'MODEL', value_name: 'A' }] }, seg);
+    check('"marca" com cara de titulo (4+ palavras) => rejeitada', longa.status === 'rejected', longa);
+    const ok = evaluateIdentity({ id: 'MLB1', name: 'Garrafa Stanley Classic 750ml', domain_id: 'MLB-SPORT_AND_BAZAAR_BOTTLES', attributes: [{ id: 'BRAND', value_name: 'Stanley' }, { id: 'MODEL', value_name: 'Classic' }, { id: 'GTIN', value_name: '7898357410015' }] }, seg);
+    check('garrafa com marca e GTIN valido => strong', ok.status === 'strong' && ok.key === 'gtin:7898357410015', ok);
+  }
 
   console.log(`${total} verificacoes; falhas: ${fails}`);
   process.exit(fails ? 1 : 0);

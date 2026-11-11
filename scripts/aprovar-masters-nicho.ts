@@ -29,12 +29,14 @@ const arg = (name: string) => {
 const listaPath = arg('--lista');
 const rollbackPath = arg('--rollback');
 const por = arg('--por');
+// --desde <ISO>: avalia só masters criados a partir desse instante (ampliação 2026-11-11: não reabre decisões antigas do dono).
+const desde = arg('--desde');
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const BACKUPS = path.resolve(process.cwd(), 'docs/backups');
 
 interface RowMaster {
   id: string; name: string; slug: string; vertical: string; gtin: string | null; mpn: string | null;
-  image: string | null; gate: CandidatoMaster['gate']; cat: Record<string, unknown> | null;
+  image: string | null; gate: CandidatoMaster['gate']; cat: Record<string, unknown> | null; segment: string | null; manufacturer: string | null;
 }
 
 function lerLista(p: string): string[] {
@@ -47,9 +49,11 @@ function lerLista(p: string): string[] {
 async function carregar(sql: ReturnType<typeof connect>, ids: string[] | null) {
   const masters = await sql<RowMaster[]>`
     SELECT m.id, m.name, m.slug, m.vertical, m.gtin, m.mpn, m.default_images ->> 0 AS image,
-           m.attributes -> 'catalogGate' AS gate, m.attributes -> 'vertical' -> 'catalogAttributes' AS cat
+           m.attributes -> 'catalogGate' AS gate, m.attributes -> 'vertical' -> 'catalogAttributes' AS cat,
+           m.attributes -> 'vertical' ->> 'segment' AS segment, m.manufacturer AS manufacturer
     FROM master_products m
-    WHERE m.vertical <> 'games' ${ids ? sql`AND m.id IN ${sql(ids)}` : sql``}
+    WHERE m.vertical <> 'games' AND m.vertical <> 'impressao3d' AND (m.attributes ->> 'mergedInto') IS NULL
+      ${ids ? sql`AND m.id IN ${sql(ids)}` : sql``} ${desde ? sql`AND m.created_at >= ${desde}::timestamptz` : sql``}
     ORDER BY m.vertical, m.name`;
   const idList = masters.map((m) => m.id);
   const ofertas = idList.length
@@ -63,7 +67,9 @@ async function carregar(sql: ReturnType<typeof connect>, ids: string[] | null) {
         WHERE o.status = 'active' AND o.master_product_id IN ${sql(idList)}`
     : [];
   const nomes = new Map<string, number>();
-  for (const m of masters) {
+  // Nome duplicado conta contra TODOS os masters do departamento (não só os avaliados: com --desde/--lista o recorte é menor).
+  const todos = await sql<{ vertical: string; name: string }[]>`SELECT vertical, name FROM master_products WHERE vertical <> 'games' AND (attributes ->> 'mergedInto') IS NULL`;
+  for (const m of todos) {
     const k = `${m.vertical}|${normalizarNome(m.name)}`;
     nomes.set(k, (nomes.get(k) ?? 0) + 1);
   }
@@ -76,6 +82,7 @@ async function carregar(sql: ReturnType<typeof connect>, ids: string[] | null) {
       ofertasQuarentena: of.filter((o) => o.quarentena).length,
       titulosOfertas: of.map((o) => o.title),
       nomeDuplicado: (nomes.get(`${m.vertical}|${normalizarNome(m.name)}`) ?? 0) > 1,
+      segment: m.segment, manufacturer: m.manufacturer,
     };
     return { m, cand, ava: avaliarCandidato(cand) };
   });

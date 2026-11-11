@@ -151,13 +151,14 @@ export function extractGtins(p: MlCatalogPayload): string[] {
  * nome do catálogo e aos atributos de condição. Os padrões usam raiz (prefixos) sobre o texto sem acento.
  */
 const REJECT_LEXICON: Array<{ label: string; re: RegExp }> = [
-  { label: 'usado', re: /\b(usad[oa]s?|seminov[oa]s?|semi novo|segunda mao|de segunda)\b/ },
+  { label: 'usado', re: /\b(usad[oa]s?|seminov[oa]s?|semi novo|segunda mao|de segunda|sebo)\b/ },
   { label: 'recondicionado', re: /\b(recondicionad[oa]s?|refurbished|renovad[oa]s?)\b/ },
   { label: 'open_box', re: /\b(open ?box|vitrine|mostruario|outlet|sem caixa|sem lacre|caixa aberta)\b/ },
   { label: 'reembalado', re: /\b(reembalad[oa]s?)\b/ },
   { label: 'importado', re: /\b(importad[oa]s?|importacao|internacional)\b/ },
   { label: 'avariado', re: /\b(avariad[oa]s?|com defeito|defeituos[oa]|sucata|retirada de pecas)\b/ },
-  { label: 'nao_original', re: /\b(replica|falsificad[oa]|paralelo|pirata|compativel generico)\b/ },
+  { label: 'fora_de_linha', re: /\b(modelo antigo|geracao anterior|descontinuad[oa]s?|fora de linha|edicao esgotada|esgotad[oa] na editora|raridade|item raro|livro raro|colecionador|lote de|vintage|retro|lancamento antigo|peca de reposicao usada)\b/ },
+  { label: 'nao_original', re: /\b(replica|falsificad[oa]|paralelo|pirata|compativel generico|tailandesa|primeira linha|1a linha)\b/ },
 ];
 
 const BAD_CONDITION_RE = /\b(usad[oa]|used|recondicionad[oa]|refurbished|reembalad[oa]|open ?box|seminov[oa])\b/;
@@ -222,6 +223,12 @@ export function evaluateIdentity(p: MlCatalogPayload, seg: SegmentConfig): Ident
   const issue = scopeIssue(seg.key, p.name ?? '');
   if (issue) return result({ status: 'review', reason: issue.reason, matched: issue.matched }, base);
 
+  // Marca real obrigatória (ampliação 2026-11-11): sem marca ou "Genérica" = kit genérico, fora.
+  if (seg.requireBrand) {
+    const b = brand ?? attrValue(p, 'MANUFACTURER');
+    if (!b || isGenericBrand(b)) return result({ status: 'rejected', reason: 'marca_ausente_ou_generica', matched: b ?? 'sem_marca' }, base);
+  }
+
   const { strategy, fallbackAttrs, keyExtras } = seg.profile;
   if (strategy === 'review_only') {
     return result({ status: 'review', reason: 'segmento_sem_identificador_confiavel_so_revisao' }, base);
@@ -234,6 +241,9 @@ export function evaluateIdentity(p: MlCatalogPayload, seg: SegmentConfig): Ident
     if (isbn) return result({ status: 'strong', key: `isbn:${isbn}`, keyKind: 'isbn', reason: 'isbn13_valido' }, base);
     return result({ status: 'review', reason: 'sem_isbn13_valido', missing: ['ISBN-13'] }, base);
   }
+
+  // Chave de família (tênis, chuteira, camisa, meia, boné, mochila...): atributos, sem GTIN; cor e tamanho nunca entram.
+  if (seg.profile.familyKey) return identityPorFamilia(p, seg, base);
 
   // Impressora 3D de marca com léxico de famílias: chave por família + variante, sem GTIN (cor junta).
   if (seg.key === 'impressora-3d') {
@@ -261,6 +271,31 @@ export function evaluateIdentity(p: MlCatalogPayload, seg: SegmentConfig): Ident
     .filter(([, v]) => v !== '')
     .map(([id, v]) => `${id}=${v}`);
   return result({ status: 'strong', key: `bm:${seg.key}|${parts.join('|')}`, keyKind: 'brand_model', reason: 'marca_modelo_completo' }, base);
+}
+
+/** Marca ausente de verdade: "Genérica", "Sem marca", ou um "nome de marca" que na prática é o título do anúncio (4+ palavras). */
+export function isGenericBrand(brand: string): boolean {
+  const f = foldText(brand);
+  if (!f) return true;
+  if (/^(generic[oa]s?|sem marca|no brand|nao informad[oa]|nao especificad[oa]|n a|marca generica|oem|outras?|outros?|diversas?|varias?)$/.test(f)) return true;
+  if (f.startsWith('generic')) return true;
+  return f.split(' ').length >= 4;
+}
+
+/**
+ * Chave de família (ver SegmentConfig.profile.familyKey): bm:<segmento>|brand=..|model=..|gender=..|line=..|version=..
+ * Obrigatório ausente => review com a lista do que faltou. Cor e tamanho nunca entram: catálogos do ML que só diferem em cor/tamanho
+ * geram a MESMA chave e se anexam a um master só (byFields).
+ */
+function identityPorFamilia(p: MlCatalogPayload, seg: SegmentConfig, base: Partial<IdentityResult>): IdentityResult {
+  const fam = seg.profile.familyKey!;
+  const missing = fam.required.filter((id) => !attrValue(p, id));
+  if (missing.length > 0) return result({ status: 'review', reason: 'campos_da_familia_incompletos', missing }, base);
+  const parts = [...fam.required, ...fam.optional.filter((id) => !fam.required.includes(id))]
+    .map((id) => [id.toLowerCase(), foldText(attrValue(p, id) ?? '')] as const)
+    .filter(([, v]) => v !== '')
+    .map(([id, v]) => `${id}=${v}`);
+  return result({ status: 'strong', key: `bm:${seg.key}|${parts.join('|')}`, keyKind: 'brand_model', reason: 'marca_modelo_genero_familia', byFields: true }, base);
 }
 
 /**

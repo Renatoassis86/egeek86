@@ -1,4 +1,5 @@
 // Sem 'server-only': funções puras (sem banco, sem rede), importáveis por coletor, scripts tsx e testes.
+import { LEX_AMPLIACAO, NICHO_AMPLIACAO } from './scope-ampliacao';
 
 /**
  * ESCOPO DO TÍTULO (ata 2026-11-08, achados do dry-run 2): o domain_id do catálogo do ML às vezes deixa passar
@@ -36,6 +37,7 @@ interface SegmentLexicon {
 const GENERIC_ACCESSORY = 'cabo|capa|suporte|adaptador|pelicula|protetor|mochila|bolsa|garantia|brinde|bonus|gratis';
 
 const LEX: Record<string, SegmentLexicon> = {
+  ...LEX_AMPLIACAO,
   'placa-de-video': {
     noun: /\b(placa de video|geforce|radeon|rtx|gtx|gpu)\b/,
     accessory: /\b(suporte|cabo|riser|backplate|bracket|waterblock|dissipador|adaptador|capa|fan|ventilador|pasta termica)\b/,
@@ -155,6 +157,7 @@ const LEX: Record<string, SegmentLexicon> = {
  * Falhou => revisão com reason 'fora_do_nicho' (nunca master automático, nunca rejeição definitiva).
  */
 const NICHO: Record<string, { require?: RegExp; forbid?: RegExp }> = {
+  ...NICHO_AMPLIACAO,
   // Impressão 3D (2026-11-11). Impressora: tem que dizer "3d" e não pode ser caneta 3D, scanner, impressora de papel/etiqueta/gravadora
   // nem kit/peças soltas. Filamento: não pode ser caneta 3D nem lâmpada de filamento; tem que dizer 3d ou um material. Resina: só de
   // impressora 3D (3d/uv/lcd/dlp/sla), nunca epóxi, poliéster, odontológica ou de artesanato.
@@ -194,10 +197,13 @@ export function nichoIssue(segmentKey: string, name: string): ScopeIssue | null 
 }
 
 /** Segmentos em que "combo" é variante legítima do produto, não pacote de 2+ produtos. */
+// 
 const COMBO_E_VARIANTE = new Set(['impressora-3d']);
+/** "Kit" é o próprio produto (conjunto de resistências): palavra de pacote não dispara; o "+" com outro produto/acessório continua disparando. */
+const KIT_E_O_PRODUTO = new Set(['faixa-elastica']);
 
 /** Segmentos sem léxico (livros: "capa dura" é legítimo; tênis: só revisão de qualquer forma). */
-const NO_SCOPE_LEXICON = new Set(['livros', 'tenis-de-corrida']);
+const NO_SCOPE_LEXICON = new Set(['livros']);
 
 /** Palavras-especificação que NÃO são produto, mesmo parecendo código de modelo (ex.: gddr6, usb3, hdr10). */
 const SPEC_TOKEN = /^(g?ddr\d*x?|usb\w*|hdmi\w*|wifi\d*|pcie\w*|pci|nvme|m2|hdr\d*|dolby\w*|dts\w*|atmos|bluetooth\w*|sata\w*|\d+k|\d+hz|\d+w|\d+gb|\d+tb|\d+mb|\d+l|\d+v|\d+p|\d+x|\d+gbps|\d+mbps|usbc|type\w*|ip\d+\w*|\d+d)$/;
@@ -236,7 +242,7 @@ export function comboIssue(segmentKey: string, name: string): ScopeIssue | null 
     ? /\b(?:(kit|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+x?|com|c)\b|(pacote)\b|leve\s+\d+)/
     : /\b(?:(kit|combo|pacote|conjunto)\s+(?:de\s+|com\s+|c\s+)?(?:\d+x?|com|c)\b|(combo|pacote)\b|leve\s+\d+)/;
   const bundleWord = bundleRe.exec(folded);
-  if (bundleWord) {
+  if (bundleWord && !KIT_E_O_PRODUTO.has(segmentKey)) {
     return { kind: 'combo', reason: 'combo_pacote', matched: bundleWord[0] };
   }
 
@@ -320,6 +326,19 @@ export function stripColors(title: string, colorAttr?: string | null): string {
   });
   while (kept.length > 0 && /^[-,;:|]+$/.test(kept[kept.length - 1])) kept.pop();
   const out = kept.join(' ').replace(/(\s[-,;:|])(?=\s[-,;:|](\s|$))/g, '').replace(/\s+[-,;:|]\s*$/, '').trim();
+  return out.split(' ').length >= 3 ? out : title;
+}
+
+/**
+ * Nome de exibição sem tamanho (chave de família: cada tamanho é um catálogo do ML, todos no mesmo master): remove "Tamanho GG",
+ * "Tam. 42", "Numero 40", "Tamanho: 38/39" e "Nº 41". Cosmético; se sobrar menos de 3 palavras, devolve o título original.
+ */
+export function stripSizes(title: string): string {
+  const out = title
+    .replace(/\b(?:tamanho|tam\.?|numero|numeração|número|n[º°o]\.?)\s*:?\s*(?:[A-Za-z]{1,3}|\d{1,2}(?:[./-]\d{1,2})?|[úu]nico|un)\b/gi, ' ')
+    .replace(/\s+[-–,;:|]\s*$/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   return out.split(' ').length >= 3 ? out : title;
 }
 

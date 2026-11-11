@@ -2,7 +2,7 @@
 // injetadas (lookup). Não escreve em lugar nenhum: quem grava é scripts/semear-vertical.ts, e só com --apply.
 import { parseMeliCatalogPage } from '@/lib/affiliate/master-consolidation';
 import { domainMatches, type SegmentConfig } from './config';
-import { colorlessTitleKey, stripColors } from './scope';
+import { colorlessTitleKey, stripColors, stripSizes } from './scope';
 import { gateFor, type VerticalGateResult } from './gate';
 import { evaluateIdentity, normalizeTitleKey, type IdentityResult, type MlAttribute, type MlCatalogPayload } from './identity';
 import { CallBudgetExceeded, DailyBudgetExceeded, RateLimited, type MlClient } from './ml-api';
@@ -101,12 +101,15 @@ export interface SeedReport {
   termStops: Record<string, string>;
 }
 
+/** Motivos de rejeição que significam produto não novo ou fora de linha (contador da regra do dono, 2026-11-11). */
+const NAO_NOVO = /usado|recondicionado|open_box|reembalado|avariado|nao_original|fora_de_linha|condicao_nao_nova/;
+
 const bump = (c: Record<string, number>, k: string) => {
   c[k] = (c[k] ?? 0) + 1;
 };
 
 /** Atributos de identidade/auditoria guardados no master (só o que a API devolveu). */
-const SNAPSHOT_ATTRS = ['BRAND', 'MODEL', 'ALPHANUMERIC_MODEL', 'LINE', 'SERIES', 'EDITION', 'MEMORY_SIZE', 'CAPACITY', 'VOLTAGE', 'TOTAL_CAPACITY', 'COLOR', 'VERSION', 'MPN', 'GTIN', 'AUTHOR', 'BOOK_TITLE', 'BOOK_PUBLISHER', 'BOOK_EDITION', 'BOOK_COVER'];
+const SNAPSHOT_ATTRS = ['BRAND', 'MODEL', 'ALPHANUMERIC_MODEL', 'LINE', 'SERIES', 'EDITION', 'MEMORY_SIZE', 'CAPACITY', 'VOLTAGE', 'TOTAL_CAPACITY', 'COLOR', 'VERSION', 'GENDER', 'AGE_GROUP', 'MANUFACTURER', 'MPN', 'GTIN', 'AUTHOR', 'BOOK_TITLE', 'BOOK_PUBLISHER', 'BOOK_EDITION', 'BOOK_COVER'];
 
 function mergeDetail(search: MlCatalogPayload, detail: MlCatalogPayload | null): MlCatalogPayload {
   if (!detail) return search;
@@ -170,6 +173,7 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           return false;
         }
         if (idSearch.status === 'rejected') {
+          if (NAO_NOVO.test(idSearch.reason)) bump(report.counts, 'descartado_nao_novo_ou_fora_de_linha');
           skip(searchPayload, 'rejeitado_' + idSearch.reason, idSearch.matched);
           return false;
         }
@@ -237,7 +241,10 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           if (identity.status === 'review') {
             bump(report.counts, 'revisao_sem_identidade_forte');
             report.reviews.push({ catalogId: merged.id, name: merged.name ?? '', reason: identity.reason, missing: identity.missing, domainId: merged.domain_id ?? null });
-          } else skip(merged, (identity.status === 'rejected' ? 'rejeitado_' : 'dominio_') + identity.reason, identity.matched);
+          } else {
+            if (identity.status === 'rejected' && NAO_NOVO.test(identity.reason)) bump(report.counts, 'descartado_nao_novo_ou_fora_de_linha');
+            skip(merged, (identity.status === 'rejected' ? 'rejeitado_' : 'dominio_') + identity.reason, identity.matched);
+          }
           return false;
         }
         if (identity.key !== idSearch.key) {
@@ -299,7 +306,7 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           brand: identity.brand,
           mpn: identity.mpn,
           ...(mergeInto ? { mergeInto } : {}),
-          ...(identity.byFields ? { masterName: stripColors(merged.name ?? '', attributesSnapshot.COLOR) } : {}),
+          ...(identity.byFields ? { masterName: stripSizes(stripColors(merged.name ?? '', attributesSnapshot.COLOR)) } : {}),
         });
         bump(report.counts, mergeInto ? 'planejado_anexar_cor_junta' : 'planejado_criar');
         log(`planejado${mergeInto ? ' (ANEXA ao master ' + mergeInto.name + ')' : ''}: ${merged.id} | ${merged.name} | ${identity.key} | ${page.items.length} anúncios novos`);

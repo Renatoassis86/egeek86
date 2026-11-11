@@ -54,10 +54,13 @@ const OUT_OF_SCOPE: Record<NonGamesVertical, RegExp> = {
   eletroeletronicos: /\b(controle remoto|suporte|rack|painel|capa|cabo|adaptador|pelicula|antena)\b/,
   livros: /\b(caderno|agenda|planner|fichario|marca pagina|poster|camiseta|caneca|luminaria|papelaria)\b/,
   eletrodomesticos: /\b(peca|pecas|reposicao|mangueira|capa|acessorio|acessorios)\b/,
-  esporte: /\b(balao|bexiga|chaveiro|mochila|bomba|miniatura|pelucia|brinquedo|inflavel|calcador|meiao)\b/,
+  esporte: /\b(balao|bexiga|chaveiro|bomba|miniatura|pelucia|brinquedo|inflavel|calcador)\b/,
   // Impressão 3D (onda 1: impressora, filamento, resina). Peças/bicos/mesas entram só na onda seguinte, com compatibilidade escrita.
   impressao3d: /\b(capa|bolsa|mochila|garantia estendida|miniatura pronta|action figure|estatueta|caneta 3d|scanner|escaner|digitalizador|kit de pecas|pecas de reposicao)\b/,
 };
+
+/** Segmentos cujo próprio produto é o que o léxico do departamento trata como acessório (cabo, adaptador): quem decide é scope.ts. */
+const SKIP_OUT_OF_SCOPE = new Set(['cabo-e-adaptador', 'hub-usb', 'carregador', 'power-bank']);
 
 function evaluateFor(vertical: NonGamesVertical, input: VerticalGateInput): VerticalGateResult {
   const mk = (verdict: VerticalGateVerdict, category: VerticalGateCategory, reason: string, matched: string | null = null): VerticalGateResult => ({
@@ -84,7 +87,7 @@ function evaluateFor(vertical: NonGamesVertical, input: VerticalGateInput): Vert
 
   // 4. Léxico de fora do escopo no nome do catálogo ou nos anúncios.
   const re = OUT_OF_SCOPE[vertical];
-  for (const t of [input.name, ...(input.offerTitles ?? [])]) {
+  for (const t of SKIP_OUT_OF_SCOPE.has(input.segment) ? [] : [input.name, ...(input.offerTitles ?? [])]) {
     const m = re.exec(foldText(t));
     if (m) return mk('review', 'out_of_scope', 'lexico_fora_do_escopo', m[0]);
   }

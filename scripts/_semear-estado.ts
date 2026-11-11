@@ -38,22 +38,71 @@ export function loadState(): BudgetState {
   return backfillFromHistory(st, hist);
 }
 
+function sleepMs(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+
+/**
+ * Trava de arquivo (2026-11-11): varias semeaduras em paralelo (uma por vertical) dividem o MESMO orcamento diario. Sem trava, duas
+ * leituras-modificacoes-gravacoes simultaneas perdem cobrancas e o rename falha com EPERM no Windows.
+ */
+function withLock<T>(fn: () => T): T {
+  const lock = `${STATE_FILE}.lock`;
+  fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
+  for (let i = 0; i < 2000; i++) {
+    let fd: number | null = null;
+    try {
+      fd = fs.openSync(lock, 'wx');
+    } catch (e: any) {
+      if (e?.code !== 'EEXIST' && e?.code !== 'EPERM' && e?.code !== 'EBUSY') throw e;
+      try {
+        if (Date.now() - fs.statSync(lock).mtimeMs > 15_000) fs.unlinkSync(lock); // trava orfa (processo morreu)
+      } catch {
+        // outro processo liberou/removeu: tenta de novo
+      }
+      sleepMs(10 + Math.floor(Math.random() * 30));
+      continue;
+    }
+    try {
+      return fn();
+    } finally {
+      fs.closeSync(fd);
+      try {
+        fs.unlinkSync(lock);
+      } catch {
+        // ja removida
+      }
+    }
+  }
+  throw new Error('nao consegui a trava do estado da semeadura (semear-estado.json.lock)');
+}
+
 export function saveState(st: BudgetState): void {
   fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
   const tmp = `${STATE_FILE}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(st, null, 2), 'utf8');
-  fs.renameSync(tmp, STATE_FILE);
+  for (let i = 0; ; i++) {
+    try {
+      fs.renameSync(tmp, STATE_FILE);
+      return;
+    } catch (e: any) {
+      if (i >= 20 || (e?.code !== 'EPERM' && e?.code !== 'EBUSY' && e?.code !== 'EACCES')) throw e;
+      sleepMs(25);
+    }
+  }
 }
 
 /** Cobra 1 chamada no estado em disco (relido). Lanca DailyBudgetExceeded se estouraria o teto do dia. */
 export function chargeOne(run: { runId: string; startedAt: string; mode: BudgetRun['mode'] }, cap: number): void {
-  const st = loadState();
-  const next = charge(st, dayKeySP(new Date()), run, 1, cap);
-  if (!next) throw new DailyBudgetExceeded(`teto diario de ${cap} chamadas da semeadura atingido (${dayKeySP(new Date())})`);
-  saveState(next);
+  withLock(() => {
+    const st = loadState();
+    const next = charge(st, dayKeySP(new Date()), run, 1, cap);
+    if (!next) throw new DailyBudgetExceeded(`teto diario de ${cap} chamadas da semeadura atingido (${dayKeySP(new Date())})`);
+    saveState(next);
+  });
 }
 
 export function rememberNotFound(catalogId: string): void {
   const now = new Date();
-  saveState(pruneNotFound(markNotFound(loadState(), catalogId, now), now));
+  withLock(() => saveState(pruneNotFound(markNotFound(loadState(), catalogId, now), now)));
 }
