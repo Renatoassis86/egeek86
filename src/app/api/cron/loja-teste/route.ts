@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         title: card.title,
         meta: null,
         offer: { slug: r.slug, networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: card.priceCents, confirmedAt: card.checkedAt, affiliateUrl: r.url },
-        avg: { cents: card.stats.avgCents, offers: card.stats.distinctOffers },
+        avg: { cents: card.stats.avgCents as number, offers: card.stats.distinctOffers },
         seriesDays: card.stats.measuredDays,
         refCents: card.stats.recordCents,
         sinceDay: card.stats.seriesFirstDay,
