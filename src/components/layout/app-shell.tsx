@@ -19,6 +19,8 @@ interface AppShellProps {
   cartCount?: number;
   /** Quem está logado (nome e papel), lido no servidor pelo layout; null = visitante. */
   viewer?: ShellViewer | null;
+  /** Departamentos abertos agora (menu "Departamentos"); vazio/ausente = menu games inalterado. */
+  departamentos?: { slug: string; label: string }[];
 }
 
 /**
@@ -35,6 +37,7 @@ export function AppShell({
   hideFooter,
   cartCount,
   viewer,
+  departamentos,
 }: AppShellProps) {
   return (
     <div className="relative min-h-dvh flex flex-col bg-[var(--color-bg-canvas)] w-full max-w-[100vw] overflow-x-hidden">
@@ -49,7 +52,7 @@ export function AppShell({
       {!hideHeader && (
         <>
           <TopUtilityBar />
-          <AppHeader cartCount={cartCount} viewer={viewer ?? null} />
+          <AppHeader cartCount={cartCount} viewer={viewer ?? null} departamentos={departamentos} />
         </>
       )}
 

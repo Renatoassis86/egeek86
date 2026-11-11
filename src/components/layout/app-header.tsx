@@ -170,8 +170,27 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   );
 }
 
-export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number; viewer?: ShellViewer | null }) {
+export function AppHeader({
+  cartCount = 0,
+  viewer = null,
+  departamentos = [],
+}: {
+  cartCount?: number;
+  viewer?: ShellViewer | null;
+  /** Departamentos abertos agora (vazio = item "Departamentos" não existe). Lido no servidor pelo layout. */
+  departamentos?: { slug: string; label: string }[];
+}) {
   const pathname = usePathname();
+  const navItems: NavItem[] = departamentos.length
+    ? [
+        ...navLinks,
+        {
+          href: `/mercado/${departamentos[0].slug}`,
+          label: 'Departamentos',
+          children: departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label })),
+        },
+      ]
+    : navLinks;
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   return (
@@ -224,7 +243,7 @@ export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number
 
         {/* Nav desktop */}
         <nav className="hidden lg:flex items-center gap-1" aria-label="Navegação principal">
-          {navLinks.map((item) => {
+          {navItems.map((item) => {
             const isActive =
               pathname === item.href ||
               pathname.startsWith(`${item.href}/`) ||
@@ -331,7 +350,7 @@ export function AppHeader({ cartCount = 0, viewer = null }: { cartCount?: number
           </Button>
         </div>
       </div>
-      <MobileNavDrawer viewer={viewer} isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
+      <MobileNavDrawer viewer={viewer} departamentos={departamentos} isOpen={isMobileDrawerOpen} onClose={() => setIsMobileDrawerOpen(false)} />
     </header>
   );
 }

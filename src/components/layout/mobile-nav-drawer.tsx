@@ -37,6 +37,8 @@ import { cn } from '@/lib/cn';
 
 interface MobileNavDrawerProps {
   viewer?: ShellViewer | null;
+  /** Departamentos abertos agora; vazio = grupo não aparece. */
+  departamentos?: { slug: string; label: string }[];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -126,7 +128,7 @@ function NavGroup({
   );
 }
 
-export function MobileNavDrawer({ viewer = null, isOpen, onClose }: MobileNavDrawerProps) {
+export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onClose }: MobileNavDrawerProps) {
   const pathname = usePathname();
   const [mounted, setMounted] = React.useState(false);
 
@@ -191,6 +193,14 @@ export function MobileNavDrawer({ viewer = null, isOpen, onClose }: MobileNavDra
             <NavGroup items={mainMarketModules} onClose={onClose} pathname={pathname} subheading="Mercado e Ofertas" />
             <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone e Drops" />
             <NavGroup items={observatorioModules} onClose={onClose} pathname={pathname} subheading="Observatório Gamer" />
+            {departamentos.length > 0 && (
+              <NavGroup
+                items={departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label, icon: Tag }))}
+                onClose={onClose}
+                pathname={pathname}
+                subheading="Departamentos"
+              />
+            )}
             <NavGroup items={newsModules} onClose={onClose} pathname={pathname} subheading="Notícias" />
             {viewer && <NavGroup items={userModules} onClose={onClose} pathname={pathname} subheading="Minha conta" />}
             <NavGroup items={institutionalModules} onClose={onClose} pathname={pathname} subheading="Institucional e Suporte" />
