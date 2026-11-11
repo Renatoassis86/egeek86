@@ -65,7 +65,7 @@ const cases: C[] = [
   { name: 'Console PlayStation PlayStation Fat Standard 1995', db: 'console', expect: 'rejected' },
   { name: 'Console Nintendo Switch Lite 32gb Amarelo', db: 'console', expect: 'approved' },
   { name: 'Console PlayStation 4 Slim 1TB Preto', db: 'console', expect: 'approved' },
-  { name: 'Console Microsoft Xbox One S 1 TB Branco', db: 'console', expect: 'approved' },
+  { name: 'Console Microsoft Xbox One S 1 TB Branco', db: 'console', expect: 'rejected' }, // Xbox One saiu de linha: só produto novo e em linha (dono, 2026-11-11)
   { name: 'Console PlayStation 5 Slim Digital', db: 'console', expect: 'approved' },
   { name: 'Console Nintendo Switch 2 + Mario Kart World Bundle', db: 'console', expect: 'approved' },
   { name: 'Console Nintendo Switch Oled Edição Wii Sports Club', db: 'console', expect: 'approved' },

@@ -2,7 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { amazonDiscoverQueue, amazonQueue, amazonQueueTotal, amazonRefreshQueue, amazonRefreshTotal, ingestAmazonRows, type AmzRow } from '@/server/collector/amazon-assisted';
+import { isVertical } from '@/lib/catalog/verticais';
+import { amazonDiscoverQueue, amazonDiscoverTotal, amazonQueue, amazonQueueTotal, amazonRefreshQueue, amazonRefreshTotal, ingestAmazonRows, type AmzRow } from '@/server/collector/amazon-assisted';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -52,15 +53,18 @@ export async function GET(request: NextRequest) {
   const offset = Number(url.searchParams.get('offset') ?? 0) || 0;
   const n = Number(url.searchParams.get('n') ?? 40) || 40;
   const mode = url.searchParams.get('mode');
+  // ?vertical=livros restringe a um departamento (opcional; sem o parâmetro, todas as frentes em rodízio). `total` já vem limitado pelo orçamento do ciclo.
+  const vq = url.searchParams.get('vertical');
+  const vertical = isVertical(vq) ? vq : undefined;
   if (mode === 'refresh') {
-    const [items, total] = await Promise.all([amazonRefreshQueue(offset, n), amazonRefreshTotal()]);
+    const [items, total] = await Promise.all([amazonRefreshQueue(offset, n, vertical), amazonRefreshTotal(vertical)]);
     return NextResponse.json({ total, items }, { headers: cors(request) });
   }
   if (mode === 'discover') {
-    const items = await amazonDiscoverQueue(offset, n);
-    return NextResponse.json({ total: items.length, items }, { headers: cors(request) });
+    const [items, total] = await Promise.all([amazonDiscoverQueue(offset, n, vertical), amazonDiscoverTotal(vertical)]);
+    return NextResponse.json({ total, items }, { headers: cors(request) });
   }
-  const [items, total] = await Promise.all([amazonQueue(offset, n), amazonQueueTotal()]);
+  const [items, total] = await Promise.all([amazonQueue(offset, n, vertical), amazonQueueTotal(vertical)]);
   return NextResponse.json({ total, items }, { headers: cors(request) });
 }
 

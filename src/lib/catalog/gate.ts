@@ -162,8 +162,17 @@ const LEGACY_PLATFORM = /\b(?:ps ?[12]|psone|playstation ?[12]|psp|wii|gamecube|
  */
 const RETRO_CONSOLE =
   /\b(?:ps ?[123]|psone|playstation ?[123]|playstation (?:fat|portatil|classic)|psp|ps vita|playstation vita|xbox one(?: [sx])?|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|nintendo nes|nes classic|game ?boy|gba|nintendo ds|ds lite|dsi|3ds|2ds|mega ?drive|master system|dreamcast|saturn|atari)\b/;
-const RETRO_GAME_PLATFORM = /\b(?:ps ?[123]|psone|playstation ?[123]|psp|ps vita|playstation vita|xbox one(?: [sx])?|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|game ?boy|gba|nintendo ds|nds|dsi|3ds|2ds|mega ?drive|master system|dreamcast)\b/;
-const MODERN_CONSOLE = /\b(?:ps ?[45]|playstation ?[45]|xbox series|series [sx]|switch)\b/;
+export const RETRO_GAME_PLATFORM = /\b(?:ps ?[123]|psone|playstation ?[123]|psp|ps vita|playstation vita|xbox one(?: [sx])?|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|game ?boy|gba|nintendo ds|nds|dsi|3ds|2ds|mega ?drive|master system|dreamcast)\b/;
+export const MODERN_CONSOLE = /\b(?:ps ?[45]|playstation ?[45]|xbox series|series [sx]|switch)\b/;
+
+/**
+ * Plataforma retrô ou fora de linha citada no TEXTO (título de anúncio já em minúsculas, sem acento). Título que cita também
+ * PS5/PS4/Series X|S/Switch segue moderno. Reutilizado pela coleta da Amazon (dono, 2026-11-11: só produto novo e em linha).
+ */
+export function mentionsRetroPlatformOnly(foldedTitle: string): string | null {
+  const rg = RETRO_GAME_PLATFORM.exec(foldedTitle) ?? RETRO_CONSOLE.exec(foldedTitle);
+  return rg && !MODERN_CONSOLE.test(foldedTitle) ? rg[0] : null;
+}
 
 const RAW_ONE_TO_ONE = /(?<![\d:])1\s*:\s*1(?![\d:])/;
 /** "Genérico/sem marca": imitação em console/jogo é rejeição; em acessório (cabo, case) vai à revisão (genérico não é cópia por si). */
