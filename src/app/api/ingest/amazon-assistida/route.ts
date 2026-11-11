@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { amazonQueue, amazonQueueTotal, ingestAmazonRows, type AmzRow } from '@/server/collector/amazon-assisted';
+import { amazonDiscoverQueue, amazonQueue, amazonQueueTotal, amazonRefreshQueue, amazonRefreshTotal, ingestAmazonRows, type AmzRow } from '@/server/collector/amazon-assisted';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -51,6 +51,15 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const offset = Number(url.searchParams.get('offset') ?? 0) || 0;
   const n = Number(url.searchParams.get('n') ?? 40) || 40;
+  const mode = url.searchParams.get('mode');
+  if (mode === 'refresh') {
+    const [items, total] = await Promise.all([amazonRefreshQueue(offset, n), amazonRefreshTotal()]);
+    return NextResponse.json({ total, items }, { headers: cors(request) });
+  }
+  if (mode === 'discover') {
+    const items = await amazonDiscoverQueue(offset, n);
+    return NextResponse.json({ total: items.length, items }, { headers: cors(request) });
+  }
   const [items, total] = await Promise.all([amazonQueue(offset, n), amazonQueueTotal()]);
   return NextResponse.json({ total, items }, { headers: cors(request) });
 }

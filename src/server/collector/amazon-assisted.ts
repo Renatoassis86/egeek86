@@ -75,6 +75,45 @@ export async function amazonQueue(offset: number, n: number): Promise<AmzQueueIt
   return rows.map((r) => ({ id: r.id, q: buildAmazonQuery(String(r.name), r.gen)}));
 }
 
+/**
+ * Fila de ATUALIZAÇÃO (tempo quase real): masters que JÁ têm oferta ativa da Amazon, da checagem mais antiga para a mais nova
+ * (ofertas nunca checadas primeiro). Decisão do dono, 2026-11-10: os itens da Amazon devem chegar ao banco em tempo real.
+ */
+export async function amazonRefreshQueue(offset: number, n: number): Promise<AmzQueueItem[]> {
+  const rows = await db.execute<{ id: string; name: string; gen: string | null }>(sql`
+    SELECT m.id::text AS id, m.name, m.game_platform_gen AS gen
+    FROM master_products m
+    JOIN affiliate_offers o ON o.master_product_id = m.id AND o.status = 'active' AND o.quarantined_at IS NULL
+    JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'amazon'
+    WHERE m.vertical = 'games' AND (m.attributes->'catalogGate'->>'verdict') IS DISTINCT FROM 'review'
+    GROUP BY m.id ORDER BY min(o.last_checked_at) ASC NULLS FIRST, m.id
+    OFFSET ${Math.max(0, offset)} LIMIT ${Math.min(Math.max(1, n), 200)}`);
+  return rows.map((r) => ({ id: r.id, q: buildAmazonQuery(String(r.name), r.gen) }));
+}
+
+export async function amazonRefreshTotal(): Promise<number> {
+  const r = await db.execute<{ n: number }>(sql`
+    SELECT count(DISTINCT m.id)::int AS n FROM master_products m
+    JOIN affiliate_offers o ON o.master_product_id = m.id AND o.status = 'active' AND o.quarantined_at IS NULL
+    JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'amazon'
+    WHERE m.vertical = 'games' AND (m.attributes->'catalogGate'->>'verdict') IS DISTINCT FROM 'review'`);
+  return Number(r[0]?.n ?? 0);
+}
+
+/** Fila de DESCOBERTA: masters visíveis SEM oferta ativa da Amazon, com mais ofertas nas outras lojas primeiro. */
+export async function amazonDiscoverQueue(offset: number, n: number): Promise<AmzQueueItem[]> {
+  const rows = await db.execute<{ id: string; name: string; gen: string | null }>(sql`
+    SELECT m.id::text AS id, m.name, m.game_platform_gen AS gen
+    FROM master_products m
+    JOIN affiliate_offers o ON o.master_product_id = m.id AND o.status = 'active' AND o.quarantined_at IS NULL
+    WHERE m.vertical = 'games' AND (m.attributes->'catalogGate'->>'verdict') IS DISTINCT FROM 'review'
+      AND NOT EXISTS (SELECT 1 FROM affiliate_offers a JOIN affiliate_networks an ON an.id = a.network_id AND an.slug = 'amazon'
+                      WHERE a.master_product_id = m.id AND a.status = 'active' AND a.quarantined_at IS NULL)
+    GROUP BY m.id ORDER BY count(o.id) DESC, m.id
+    OFFSET ${Math.max(0, offset)} LIMIT ${Math.min(Math.max(1, n), 200)}`);
+  return rows.map((r) => ({ id: r.id, q: buildAmazonQuery(String(r.name), r.gen) }));
+}
+
 export async function amazonQueueTotal(): Promise<number> {
   const r = await db.execute<{ n: number }>(sql`
     SELECT count(DISTINCT m.id)::int AS n FROM master_products m
