@@ -136,11 +136,11 @@ const m3: GroupMessageInput = {
   avg: { cents: 36705, offers: 9 },
 };
 const r3 = buildGroupMessages(m3);
-ok(r3.telegram.includes('<b>R$ 229,99</b> na Shopee e R$ 320,00 no Mercado Livre (melhor de 6 ofertas lá, que vão até R$ 526,00).'), 'M3 TG preços', r3.telegram);
-ok(r3.telegram.includes('A Shopee está R$ 90,01 abaixo (28%) e 37% abaixo da média do período de R$ 367,05.'), 'M3 TG diferença', r3.telegram);
+ok(r3.telegram.includes('<b>R$ 229,99</b> na Shopee') && r3.telegram.includes('<b>Mercado Livre:</b> R$ 320,00 (melhor de 6 ofertas)'), 'M3 TG preços', r3.telegram);
+ok(r3.telegram.includes('<b>Diferença:</b> R$ 90,01 a menos (28%)') && r3.telegram.includes('<b>Média das lojas:</b> R$ 367,05'), 'M3 TG diferença', r3.telegram);
 ok(r3.telegram.includes('Conferido em 10/11 às 21:30 (Brasília).'), 'M3 usa a conferência mais antiga', r3.telegram);
-ok((r3.telegram.match(/s=tg&amp;m=g3-261110-000ghi/g) ?? []).length === 2, 'M3 dois links com m');
-ok(r3.whatsapp.includes('na Shopee: https://www.egeek86.com/go/jogo-nintendo-switch-sports-midia-fisica-shopee-e3a58b?s=wa&m=g3-261110-000ghi'), 'M3 WA link Shopee', r3.whatsapp);
+ok(!r3.telegram.includes('/go/'), 'M3 TG sem URL no texto (link no botão)');
+ok(r3.whatsapp.includes('https://www.egeek86.com/go/jogo-nintendo-switch-sports-midia-fisica-shopee-e3a58b?s=wa&m=g3-261110-000ghi'), 'M3 WA link da oferta mais barata', r3.whatsapp);
 
 const items = [
   { name: 'Tomba! Edição Especial', platformLabel: 'Switch', offer: tombaOffer, avg: { cents: 43008, offers: 3 } },
@@ -174,12 +174,12 @@ const m5: GroupMessageInput = {
 };
 const r5 = buildGroupMessages(m5);
 ok(r5.telegram.includes('<b>Foto de preço, 10/11: Nintendo Switch 2 (modelo nacional)</b>'), 'M5 título', r5.telegram);
-ok(r5.telegram.includes('Os menores: R$ 3.157,54, R$ 3.231,44 e R$ 3.270,95. Mediana de 62 ofertas: R$ 4.399,00.'), 'M5 três menores', r5.telegram);
-ok(r5.telegram.includes('Menor preço que registramos desde 31/10: R$ 2.906,32.'), 'M5 recorde com janela');
+ok(r5.telegram.includes('<b>Os menores:</b> R$ 3.157,54, R$ 3.231,44 e R$ 3.270,95') && r5.telegram.includes('Mediana de 62 ofertas:</b> R$ 4.399,00'), 'M5 três menores', r5.telegram);
+ok(r5.telegram.includes('<b>Menor registrado:</b> R$ 2.906,32 (desde 31/10)'), 'M5 recorde com janela');
 ok(r5.telegram.includes('Black Friday (27/11)'), 'M5 BF');
 ok(!/desconto|abaixo/i.test(r5.telegram), 'M5 não afirma desconto', r5.telegram);
 const r5b = buildGroupMessages({ ...m5, baseline: { day: '10/11', lowestCents: 315754 } } as GroupMessageInput);
-ok(r5b.whatsapp.includes('Na foto de 10/11 o menor preço era R$ 3.157,54.'), 'M5 comparada com a foto');
+ok(r5b.whatsapp.includes('menor preço era R$ 3.157,54'), 'M5 comparada com a foto');
 const r5c = buildGroupMessages({ ...m5, record: null } as GroupMessageInput);
 ok(!r5c.whatsapp.includes('Menor preço que registramos'), 'M5 variável vazia remove a linha');
 
@@ -364,7 +364,7 @@ const g3p = product({
 ev = evaluateProduct(g3p, ctx);
 const g3 = ev.candidates.find((c) => c.trigger === 'G3');
 ok(!!g3 && g3.offerIds.join() === 'x,y' && !g3.reviewReasons.includes('shopee_so_com_aprovacao_humana'), 'G3 Shopee x ML: Shopee deixa de exigir aprovação só por ser Shopee', g3);
-ok(!!g3 && g3.texts.whatsapp.includes('na Shopee:') && g3.texts.whatsapp.includes('no Mercado Livre:'), 'G3 texto com as duas lojas');
+ok(!!g3 && g3.texts.whatsapp.includes('*Shopee:*') && g3.texts.whatsapp.includes('*Mercado Livre:*'), 'G3 texto com as duas lojas');
 
 // G5
 const many = Array.from({ length: 25 }, (_, i) => offer({ offerId: `m${i}`, priceCents: 315754 + i * 8000, title: 'Console Nintendo Switch 2 Modelo Nacional', sellerId: `s${i}` }));

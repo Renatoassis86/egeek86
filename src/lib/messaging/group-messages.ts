@@ -516,22 +516,63 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const italic = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
   const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
   const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}`;
-  const vars = variationParts(input, amz);
-  const dropMarker = input.model === 'movimento' && input.move.kind !== 'T2' ? `${EMOJI_DROP} ` : '';
-  // Gancho comercial: quanto sobra no bolso em relação à média única (só com dado medido).
-  const saving = !amz && input.avg && input.avg.cents > o.priceCents ? input.avg.cents - o.priceCents : 0;
-  const hook = saving > 0 ? `${dropMarker}${f.b(`Economia de ${fmtBRL(saving)} sobre a média`)}` : null;
-  const rest = hook ? vars.filter((v) => !/abaixo da média/.test(v)) : vars;
-  const varLine = rest.length ? `${hook ? '' : dropMarker}${f.b(rest.join(' · '))}` : null;
-  const story = storySentences(input, amz).join(' ');
-  const storyBlock = channel === 'tg' ? `<blockquote>${escapeTelegramHtml(story)}</blockquote>` : `> ${escapeWhatsapp(story)}`;
+  // Por tópicos, objetivo (dono, 2026-11-11): só o que ajuda a decidir; sem "série de N dias" nem frases longas.
+  const topics: string[] = [];
+  const price = o.priceCents;
+  if (!amz && input.avg) {
+    topics.push(
+      input.avg.cents > price
+        ? topic(f, 'Média das lojas', `${fmtBRL(input.avg.cents)} (${fmtBRL(input.avg.cents - price)} abaixo, ${pct1(((input.avg.cents - price) / input.avg.cents) * 100)}%)`)
+        : topic(f, 'Média das lojas', `${fmtBRL(input.avg.cents)} (preço no nível dela)`)
+    );
+  }
+  if (input.model === 'movimento' && (input.move.kind === 'OK2' || input.move.kind === 'T1') && input.move.prevCents != null && input.move.prevCents > price) {
+    topics.push(topic(f, 'Variação', `${pct1(((input.move.prevCents - price) / input.move.prevCents) * 100)}% a menos que ontem (${fmtBRL(input.move.prevCents)})`));
+  }
+  const ref = input.model === 'movimento' ? input.move.refCents : input.refCents;
+  if (input.model === 'movimento' && input.move.kind === 'OK1') topics.push(topic(f, 'Menor registrado', `novo menor preço (o anterior era ${fmtBRL(input.move.refCents)})`));
+  else if (ref != null) {
+    topics.push(
+      topic(f, 'Menor registrado', price < ref ? `${fmtBRL(ref)} (este preço é ${pct1(((ref - price) / ref) * 100)}% menor)` : price === ref ? `${fmtBRL(ref)} (igual a este)` : `${fmtBRL(ref)} (este preço é ${pct1(((price - ref) / ref) * 100)}% maior)`)
+    );
+  }
   const sellerText = sellerLine(o);
-  const sellerBlock = sellerText ? italic(sellerText) : null;
+  if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
+  const dropMarker = input.model === 'movimento' && input.move.kind !== 'T2' && countEmojis(topics.join('')) === 0 ? `${EMOJI_DROP} ` : '';
+  const leitura = leituraLine(input, amz);
+  const leituraBlock = channel === 'tg' ? `<blockquote>${escapeTelegramHtml(leitura)}</blockquote>` : `> ${escapeWhatsapp(leitura)}`;
   // Telegram: o link vai no BOTÃO (reply_markup) e o texto não leva URL (sem pré-visualização truncada). WhatsApp: o link no texto.
   const link = channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
-  const priceBlock = [priceLine, hook, varLine].filter((l): l is string => !!l).join('\n');
-  return [head, priceBlock, storyBlock, sellerBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+  return [head, `${dropMarker}${priceLine}`, topics.join('\n'), leituraBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+}
+
+/** Tópico "• Rótulo: valor" (rótulo em negrito). */
+function topic(f: Fmt, label: string, value: string): string {
+  return `• ${f.b(`${label}:`)} ${f.t(value)}`;
+}
+
+/** Uma frase de leitura do movimento (só fato medido; nenhuma previsão, nenhuma contagem de dias de série). */
+function leituraLine(input: OfferMessageInput, amz: boolean): string {
+  const price = input.offer.priceCents;
+  const scope = amz ? ' da Amazon' : '';
+  if (input.model === 'media') {
+    return input.avg.cents > price ? `Preço abaixo da média das ${input.avg.offers} ofertas ativas.` : `Preço no nível da média das ${input.avg.offers} ofertas ativas.`;
+  }
+  const m = input.move;
+  const since = fmtDay(dayToDate(m.sinceDay));
+  switch (m.kind) {
+    case 'OK1':
+      return `Menor preço${scope} que registramos desde ${since}.`;
+    case 'OK2':
+      return `Caiu de ${fmtBRL(m.prevCents as number)} para ${fmtBRL(price)} de ontem para hoje.`;
+    case 'T1': {
+      const p = m.path ?? [];
+      return `Caiu dois dias seguidos: ${fmtBRL(p[0])}, ${fmtBRL(p[1])} e ${fmtBRL(p[2])} hoje.`;
+    }
+    case 'T2':
+      return `A ${pct1(m.nearPct ?? 0)}% do menor preço registrado (${fmtBRL(m.refCents)}).`;
+  }
 }
 
 /** Linha do vendedor, só Mercado Livre e só com reputação lida (verde). Nunca inventa nível. */
@@ -541,7 +582,7 @@ export function sellerLine(o: MsgOffer): string | null {
   if (rep !== '5_green' && rep !== '4_light_green') return null;
   const n = o.seller.totalSales ?? 0;
   const vendas = n >= 1000 ? `mais de ${Math.floor(n / 1000)} mil vendas` : n >= 100 ? `mais de ${Math.floor(n / 100) * 100} vendas` : null;
-  return `Vendedor com reputação ${rep === '5_green' ? 'verde (nível máximo)' : 'verde-clara'} no Mercado Livre${vendas ? `, ${vendas}` : ''}`;
+  return `reputação ${rep === '5_green' ? 'verde (nível máximo)' : 'verde-clara'}${vendas ? `, ${vendas}` : ''}`;
 }
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
@@ -602,7 +643,7 @@ export function formatPlatformMessage(input: Extract<GroupMessageInput, { model:
   const url = buildSiteLink(input.path, channel, input.messageKey);
   const link = channel === 'tg' ? f.link(url, label) : url;
   const foot = italic(withTag(conferidoLine(o.confirmedAt), input.adTag));
-  return [head, f.b(headline), f.b(facts), storyBlock, link, foot].filter((l) => l && l.trim() !== '').join('\n');
+  return [head, f.b(headline), f.b(facts), storyBlock, link, foot].filter((l) => l && l.trim() !== '').join('\n\n');
 }
 
 function withTag(body: string, tag: string): string {
@@ -656,26 +697,24 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       const diffPct = Math.round((diff / o.priceCents) * 100);
       const avg = input.avg && input.avg.cents > c.priceCents ? input.avg : null;
       const stamp = c.confirmedAt.getTime() <= o.confirmedAt.getTime() ? c.confirmedAt : o.confirmedAt;
-      lines.push(
+      // Por tópicos (dono, 2026-11-11). Telegram: o link vai no botão; WhatsApp: link da oferta mais barata no texto.
+      const ital = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
+      const topics = [
+        topic(f, inNetwork(c.networkName).replace(/^n[oa] /, ''), `${fmtBRL(c.priceCents)} (a mais barata)`),
+        topic(f, inNetwork(o.networkName).replace(/^n[oa] /, ''), `${fmtBRL(o.priceCents)}${o.offersCount > 1 ? ` (melhor de ${o.offersCount} ofertas)` : ''}`),
+        topic(f, 'Diferença', `${fmtBRL(diff)} a menos (${diffPct}%)`),
+        avg ? topic(f, 'Média das lojas', `${fmtBRL(avg.cents)} (${fmtBRL(avg.cents - c.priceCents)} abaixo)`) : null,
+      ].filter((x): x is string => !!x);
+      const foot = ital(withTag(conferidoLine(stamp), input.adTag));
+      return [
         `${pre}${f.b(input.name)}`,
-        `Mesma mídia, preços diferentes hoje: ${f.b(fmtBRL(c.priceCents))} ${f.t(inNetwork(c.networkName))} e ${fmtBRL(o.priceCents)} ${f.t(inNetwork(o.networkName))}${
-          o.offersCount > 1 ? ` (melhor de ${o.offersCount} ofertas lá, que vão até ${fmtBRL(o.maxCents)})` : ''
-        }.`,
-        `${f.t(theNetwork(c.networkName))} está ${fmtBRL(diff)} abaixo (${diffPct}%)${avg ? ` e ${pctBelow(c.priceCents, avg.cents)}% abaixo da média do período de ${fmtBRL(avg.cents)}` : ''}.`,
-        conferidoLine(stamp)
-      );
-      if (channel === 'tg') {
-        lines.push(
-          withTag(
-            `${f.link(buildGoLink(c.slug, 'tg', input.messageKey), `Ver ${inNetwork(c.networkName)}`)} · ${f.link(buildGoLink(o.slug, 'tg', input.messageKey), `Ver ${inNetwork(o.networkName)}`)}`,
-            input.adTag
-          )
-        );
-      } else {
-        lines.push(`${f.t(inNetwork(c.networkName))}: ${buildGoLink(c.slug, 'wa', input.messageKey)}`);
-        lines.push(withTag(`${f.t(inNetwork(o.networkName))}: ${buildGoLink(o.slug, 'wa', input.messageKey)}`, input.adTag));
-      }
-      break;
+        `${f.b(fmtBRL(c.priceCents))} ${f.t(inNetwork(c.networkName))}`,
+        topics.join('\n'),
+        channel === 'wa' ? buildGoLink(c.slug, 'wa', input.messageKey) : null,
+        foot,
+      ]
+        .filter((l): l is string => !!l && l.trim() !== '')
+        .join('\n\n');
     }
     case 'resumo-dia': {
       if (input.items.length < 2) throw new Error('resumo do dia exige pelo menos 2 itens');
@@ -708,16 +747,24 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       const o = input.offer;
       const top = input.top.slice(0, 3);
       const topTxt = top.length === 3 ? `${fmtBRL(top[0])}, ${fmtBRL(top[1])} e ${fmtBRL(top[2])}` : top.map(fmtBRL).join(', ');
-      lines.push(
+      // Por tópicos (dono, 2026-11-11). Telegram: link no botão; WhatsApp: link no texto.
+      const ital = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
+      const topics = [
+        topic(f, 'Menor preço hoje', `${fmtBRL(o.priceCents)} ${inNetwork(o.networkName)}`),
+        top.length >= 2 ? topic(f, 'Os menores', topTxt) : null,
+        topic(f, `Mediana de ${input.offersCount} ofertas`, fmtBRL(input.medianCents)),
+        input.record ? topic(f, 'Menor registrado', `${fmtBRL(input.record.cents)} (desde ${fmtDay(input.record.since)})`) : null,
+        input.baseline ? topic(f, `Foto de ${input.baseline.day}`, `menor preço era ${fmtBRL(input.baseline.lowestCents)}`) : null,
+      ].filter((x): x is string => !!x);
+      return [
         `${pre}${f.b(`Foto de preço, ${fmtDay(o.confirmedAt)}: ${input.name}`)}`,
-        `Menor preço hoje: ${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}.${top.length >= 2 ? ` Os menores: ${topTxt}.` : ''} Mediana de ${input.offersCount} ofertas: ${fmtBRL(input.medianCents)}.`,
-        input.record ? `Menor preço que registramos desde ${fmtDay(input.record.since)}: ${fmtBRL(input.record.cents)}.` : null,
-        input.baseline ? `Na foto de ${f.t(input.baseline.day)} o menor preço era ${fmtBRL(input.baseline.lowestCents)}.` : null,
-        `Guardamos este registro para comparar com a Black Friday (${BLACK_FRIDAY_LABEL}).`,
-        conferidoLine(o.confirmedAt),
-        withTag(channel === 'tg' ? f.link(buildGoLink(o.slug, 'tg', input.messageKey), 'Ver a oferta') : buildGoLink(o.slug, 'wa', input.messageKey), input.adTag)
-      );
-      return lines.filter((l): l is string => !!l && l.trim() !== '').join('\n');
+        topics.join('\n'),
+        ital(`Registro para comparar com a Black Friday (${BLACK_FRIDAY_LABEL}).`),
+        channel === 'wa' ? buildGoLink(o.slug, 'wa', input.messageKey) : null,
+        ital(withTag(conferidoLine(o.confirmedAt), input.adTag)),
+      ]
+        .filter((l): l is string => !!l && l.trim() !== '')
+        .join('\n\n');
     }
     case 'movimento':
     case 'media':
