@@ -564,13 +564,20 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   if (verdict) topics.push(topic(f, 'Leitura', verdict));
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
-  const dropMarker = input.model === 'movimento' && input.move.kind !== 'T2' && countEmojis(topics.join('')) === 0 ? `${EMOJI_DROP} ` : '';
+  // MENOR PREÇO REGISTRADO: destaque maior (dono, 2026-11-11). Só quando o preço é o menor de toda a série medida; sempre com a data de início.
+  const recordSince = input.model === 'movimento' ? (input.move.kind === 'OK1' ? input.move.sinceDay : null) : input.refCents != null && price < input.refCents ? input.sinceDay ?? null : null;
+  const isRecord = recordSince != null && !amz;
+  const dropMarker = !isRecord && input.model === 'movimento' && input.move.kind !== 'T2' && countEmojis(topics.join('')) === 0 ? `${EMOJI_DROP} ` : '';
+  const recordHead = isRecord ? (channel === 'tg' ? `<b>🏆 MENOR PREÇO REGISTRADO</b>` : `*🏆 MENOR PREÇO REGISTRADO*`) : null;
+  const recordNote = isRecord
+    ? f.b(`Melhor momento de compra segundo o nosso monitoramento: nunca vimos este produto mais barato desde ${fmtDay(dayToDate(recordSince as string))}.`)
+    : null;
   const leitura = leituraLine(input, amz);
   const leituraBlock = channel === 'tg' ? `<blockquote>${escapeTelegramHtml(leitura)}</blockquote>` : `> ${escapeWhatsapp(leitura)}`;
   // Telegram: o link vai no BOTÃO (reply_markup) e o texto não leva URL (sem pré-visualização truncada). WhatsApp: o link no texto.
   const link = channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
-  return [head, `${dropMarker}${priceLine}`, topics.join('\n'), leituraBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+  return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, leituraBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
 /** Leitura descritiva do preço (critério fixo; não é previsão nem promessa): média das lojas e menor registrado. */

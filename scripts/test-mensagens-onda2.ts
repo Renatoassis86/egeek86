@@ -489,10 +489,12 @@ ok(RULES.GREEN_MAX_BELOW_AVG_PCT === 30 && RULES.GREEN_MAX_DROP_PCT === 30 && RU
 const evMsg = evaluateProductV2(product(), ctx);
 const c1 = evMsg.candidates.find((c) => c.trigger === 'OK1') as Candidate;
 const tg = c1.texts.telegram;
-const paras = tg.split('\n\n');
+const paras0 = tg.split('\n\n');
+ok(paras0[0] === '<b>🏆 MENOR PREÇO REGISTRADO</b>' && paras0.some((x) => x.includes('Melhor momento de compra segundo o nosso monitoramento: nunca vimos este produto mais barato desde 03/11.')), 'OK1: destaque maior de menor preço registrado, com a data e o melhor momento de compra', paras0[0]);
+const paras = paras0.slice(1);
 const lines = [...paras[0].split('\n'), ...paras[1].split('\n')];
 ok(lines[0] === '<b>Tomba! Edição Especial</b> <i>Switch · mídia física</i>', 'linha 1: título em negrito e plataforma/formato em itálico', lines[0]);
-ok(lines[1] === '📉 <b>R$ 94,00</b> no Mercado Livre', 'linha 2: preço em negrito com a loja', lines[1]);
+ok(lines[1] === '<b>R$ 94,00</b> no Mercado Livre', 'linha 2: preço em negrito com a loja', lines[1]);
 ok(paras[2].includes('• <b>Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && paras[2].includes('• <b>Menor registrado:</b> novo menor preço') && paras[2].includes('• <b>Histórico medido:</b> mais barato que em') && paras[2].includes('• <b>Leitura:</b> favorável'), 'tópicos: variação vs média, menor registrado, histórico medido e leitura', paras[2]);
 const bq = tg.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
 ok(!!bq && (bq[1].match(/[.!?](\s|$)/g) ?? []).length === 1, 'leitura em <blockquote> com uma frase', bq?.[1]);
@@ -504,7 +506,7 @@ ok(countEmojis(tg) <= MAX_EMOJIS_PER_MESSAGE && !countEmojis(lines[0]), 'no máx
 ok(tg.length < TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024) e no limite (4096)', tg.length);
 ok(textProblems(tg, 'tg').length === 0 && !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off/i.test(tg), 'barreira de texto limpa, sem previsão, de/por ou % OFF');
 const wa = c1.texts.whatsapp;
-ok(wa.startsWith('*Tomba! Edição Especial* _Switch · mídia física_\n\n📉 *R$ 94,00* no Mercado Livre\n\n• *Vs. média das lojas:*') && wa.includes('\n> Menor preço que registramos desde') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
+ok(wa.startsWith('*🏆 MENOR PREÇO REGISTRADO*\n\n*Tomba! Edição Especial* _Switch · mídia física_\n\n*R$ 94,00* no Mercado Livre\n\n• *Vs. média das lojas:*') && wa.includes('\n> Menor preço que registramos desde') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
 ok(wa.includes(`?s=wa&m=${c1.messageKey}`) && wa.trimEnd().endsWith('_'), 'WhatsApp: link s=wa e rodapé em itálico');
 // storytelling por gatilho
 const ok2 = evaluateProductV2(product({ series: days([9000, 9000, 9000, 10000, 10000, 10000, 10000, 10000]), offers: [offer({ offerId: 'a', priceCents: 9100 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx).candidates.find((c) => c.trigger === 'OK2') as Candidate;

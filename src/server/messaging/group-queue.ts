@@ -504,9 +504,15 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       }
     }
 
+    // Um grupo por área (dono, 2026-11-11): games no grupo principal; cada outra área no seu, sem misturar. Sem grupo da área, não envia.
+    const targetChat = telegramChatFor(match.vertical, env);
+    if (!targetChat) {
+      await expire(`sem_grupo_do_departamento_${match.vertical}`);
+      return { ok: false, outcome: 'expired', reason: `sem grupo do departamento ${match.vertical}` };
+    }
     const sent = await sendTelegramGroupMessage({
       token: env.TELEGRAM_BOT_TOKEN,
-      chatId: env.TELEGRAM_GROUP_CHAT_ID,
+      chatId: targetChat,
       text,
       silent: !plan.nextSound,
       photo,
@@ -676,4 +682,11 @@ function buyButton(match: { offerSlug?: string; trigger?: string }, messageKey: 
   } catch {
     return null;
   }
+}
+
+/** Grupo do Telegram de cada área. games = TELEGRAM_GROUP_CHAT_ID; outras = TELEGRAM_GROUP_CHAT_ID_<AREA> (ex.: _TECNOLOGIA). Nunca cai no grupo de games. */
+export function telegramChatFor(vertical: string, env: Record<string, string | undefined>): string | undefined {
+  if (vertical === 'games') return env.TELEGRAM_GROUP_CHAT_ID || undefined;
+  const key = `TELEGRAM_GROUP_CHAT_ID_${vertical.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+  return env[key] || undefined;
 }
