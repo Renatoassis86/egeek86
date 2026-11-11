@@ -49,6 +49,10 @@
       "schedule": "27,57 * * * *"
     },
     {
+      "path": "/api/cron/collect-vertical?v=impressao3d",
+      "schedule": "5,35 * * * *"
+    },
+    {
       "path": "/api/cron/collector-health",
       "schedule": "*/30 * * * *"
     },
