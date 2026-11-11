@@ -493,7 +493,7 @@ const paras = tg.split('\n\n');
 const lines = [...paras[0].split('\n'), ...paras[1].split('\n')];
 ok(lines[0] === '<b>Tomba! Edição Especial</b> <i>Switch · mídia física</i>', 'linha 1: título em negrito e plataforma/formato em itálico', lines[0]);
 ok(lines[1] === '📉 <b>R$ 94,00</b> no Mercado Livre', 'linha 2: preço em negrito com a loja', lines[1]);
-ok(paras[2].includes('• <b>Média das lojas:</b> R$ 115,00 (R$ 21,00 abaixo') && paras[2].includes('• <b>Menor registrado:</b> novo menor preço'), 'tópicos em negrito: média das lojas e menor registrado', paras[2]);
+ok(paras[2].includes('• <b>Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && paras[2].includes('• <b>Menor registrado:</b> novo menor preço') && paras[2].includes('• <b>Histórico medido:</b> mais barato que em') && paras[2].includes('• <b>Leitura:</b> favorável'), 'tópicos: variação vs média, menor registrado, histórico medido e leitura', paras[2]);
 const bq = tg.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
 ok(!!bq && (bq[1].match(/[.!?](\s|$)/g) ?? []).length === 1, 'leitura em <blockquote> com uma frase', bq?.[1]);
 ok(!tg.includes('/go/') && !tg.includes('<a '), 'Telegram sem URL no texto (o link vai no botão inline)');
@@ -504,13 +504,13 @@ ok(countEmojis(tg) <= MAX_EMOJIS_PER_MESSAGE && !countEmojis(lines[0]), 'no máx
 ok(tg.length < TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024) e no limite (4096)', tg.length);
 ok(textProblems(tg, 'tg').length === 0 && !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off/i.test(tg), 'barreira de texto limpa, sem previsão, de/por ou % OFF');
 const wa = c1.texts.whatsapp;
-ok(wa.startsWith('*Tomba! Edição Especial* _Switch · mídia física_\n\n📉 *R$ 94,00* no Mercado Livre\n\n• *Média das lojas:*') && wa.includes('\n> Menor preço que registramos desde') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
+ok(wa.startsWith('*Tomba! Edição Especial* _Switch · mídia física_\n\n📉 *R$ 94,00* no Mercado Livre\n\n• *Vs. média das lojas:*') && wa.includes('\n> Menor preço que registramos desde') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);
 ok(wa.includes(`?s=wa&m=${c1.messageKey}`) && wa.trimEnd().endsWith('_'), 'WhatsApp: link s=wa e rodapé em itálico');
 // storytelling por gatilho
 const ok2 = evaluateProductV2(product({ series: days([9000, 9000, 9000, 10000, 10000, 10000, 10000, 10000]), offers: [offer({ offerId: 'a', priceCents: 9100 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx).candidates.find((c) => c.trigger === 'OK2') as Candidate;
 ok(ok2.texts.telegram.includes('9,0% a menos que ontem (R$ 100,00)') && ok2.texts.telegram.includes('Caiu de R$ 100,00 para R$ 91,00'), 'OK2: variação vs ontem como tópico e na leitura', ok2.texts.telegram);
 const medMsg = evaluateProductV2(medProduct(), ctx).candidates.find((c) => c.trigger === 'G2') as Candidate;
-ok(medMsg.texts.telegram.includes('R$ 115,00 (R$ 5,00 abaixo, 4,3%)') && medMsg.texts.telegram.includes('este preço é 10,0% maior'), 'G2: média e distância do menor registrado como tópicos', medMsg.texts.telegram);
+ok(medMsg.texts.telegram.includes('4,3% abaixo (R$ 5,00); média R$ 115,00') && medMsg.texts.telegram.includes('este preço é 10,0% maior'), 'G2: variação vs média e distância do menor registrado como tópicos', medMsg.texts.telegram);
 ok(!medMsg.texts.telegram.includes('📉') && countEmojis(medMsg.texts.telegram) === 0, 'G2 não leva o marcador de queda (não houve queda)');
 // escape HTML do título e limite
 const evilName = 'Zelda <b>&</b> "Tears" > Kingdom';

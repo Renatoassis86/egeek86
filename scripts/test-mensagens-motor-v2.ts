@@ -158,7 +158,7 @@ ok(!!ok1 && ok1.cls === 'alerta' && ok1.status === 'auto' && !ok1.held && ok1.se
 ok(!!ok1 && ok1.move?.dropPct === 6 && ok1.move?.seriesDays === 9, 'OK1: 6,0% e 9 dias de série');
 ok(!!ok1 && ok1.texts.telegram.includes('Menor registrado:</b> novo menor preço (o anterior era R$ 100,00)') && ok1.texts.telegram.includes('Menor preço que registramos desde 03/11.'), 'OK1: texto com janela e anterior', ok1?.texts.telegram);
 ok(!!ok1 && !ok1.texts.telegram.includes('/go/') && ok1.texts.whatsapp.includes(`?s=wa&m=${ok1.messageKey}`), 'OK1: Telegram sem URL no texto (vai no botão); WhatsApp com link /go/?s=wa&m=<id>');
-ok(!!ok1 && ok1.texts.telegram.includes('Média das lojas:</b> R$ 115,00 (R$ 21,00 abaixo') && !/Série de|dias de série/.test(ok1.texts.telegram), 'média como tópico, sem frase de série', ok1?.texts.telegram);
+ok(!!ok1 && ok1.texts.telegram.includes('Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && !/Série de|dias de série/.test(ok1.texts.telegram), 'variação vs média como tópico, sem frase de série', ok1?.texts.telegram);
 ok(!ev.candidates.some((c) => c.trigger === 'G1' || c.trigger === 'G2'), 'G1/G2 legados saem da v2');
 // o gatilho não exige média
 ev = evaluateProductV2(product({ avg: null }), ctx);

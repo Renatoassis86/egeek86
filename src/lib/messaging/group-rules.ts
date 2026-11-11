@@ -7,6 +7,7 @@ import {
   fmtBRL,
   makeMessageKey,
   pctBelow,
+  priceIndicators,
   productDisplayName,
   departmentLabel,
   type GroupMessageInput,
@@ -976,6 +977,7 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
         seriesDays: avg.spanDays,
         refCents,
         sinceDay: series?.[0]?.day ?? daysBefore(today, Math.max(0, avg.spanDays - 1)),
+        ind: priceIndicators(series, o.priceCents),
       };
       candidates.push(
         finish(p, 'G2', input, {
@@ -1025,6 +1027,7 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
       offer: toMsgOffer(o),
       move,
       avg: avgIn,
+      ind: isAmz ? null : priceIndicators(series, o.priceCents),
     };
     const score = hit.kind === 'T2' ? Math.max(0, RULES.T2_NEAR_PCT - (hit.nearPct ?? RULES.T2_NEAR_PCT)) : hit.dropPct;
     candidates.push(

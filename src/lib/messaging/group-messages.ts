@@ -235,6 +235,22 @@ export interface MsgAvg {
   /** Ofertas distintas que entram na média do período. */
   offers: number;
 }
+/** Indicadores de decisão calculados da série medida (menor preço de cada dia anterior). Só dado real. */
+export interface PriceInd {
+  /** Dias medidos na série. */
+  days: number;
+  /** Em quantos desses dias o menor preço foi MAIOR que o de hoje. */
+  cheaperThanDays: number;
+  minCents: number;
+  maxCents: number;
+}
+export function priceIndicators(series: Array<{ minCents: number }> | null | undefined, priceCents: number): PriceInd | null {
+  if (!series || series.length < 3) return null;
+  const v = series.map((x) => x.minCents).filter((x) => x > 0);
+  if (v.length < 3) return null;
+  return { days: v.length, cheaperThanDays: v.filter((x) => x > priceCents).length, minCents: Math.min(...v), maxCents: Math.max(...v) };
+}
+
 interface Common {
   /** Departamento (rótulo "[Tecnologia]" aparece fora de games). */
   vertical: string;
@@ -277,7 +293,7 @@ export type GroupMessageInput = Common &
         others?: { minCents: number; maxCents: number } | null;
         avg?: MsgAvg | null;
       }
-    | { model: 'movimento'; name: string; offer: MsgOffer; move: MoveDetail; avg?: MsgAvg | null; title?: string; meta?: string | null }
+    | { model: 'movimento'; name: string; offer: MsgOffer; move: MoveDetail; avg?: MsgAvg | null; title?: string; meta?: string | null; ind?: PriceInd | null }
     | {
         /** "Na média ou abaixo": preço atual <= média única oferta-dia (dono, 2026-11-11). */
         model: 'media';
@@ -289,6 +305,7 @@ export type GroupMessageInput = Common &
         /** Menor valor registrado na série (dias anteriores) e o primeiro dia dela. */
         refCents?: number | null;
         sinceDay?: string | null;
+        ind?: PriceInd | null;
         title?: string;
         meta?: string | null;
       }
@@ -520,10 +537,13 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const topics: string[] = [];
   const price = o.priceCents;
   if (!amz && input.avg) {
+    const gap = input.avg.cents - price;
     topics.push(
-      input.avg.cents > price
-        ? topic(f, 'Média das lojas', `${fmtBRL(input.avg.cents)} (${fmtBRL(input.avg.cents - price)} abaixo, ${pct1(((input.avg.cents - price) / input.avg.cents) * 100)}%)`)
-        : topic(f, 'Média das lojas', `${fmtBRL(input.avg.cents)} (preço no nível dela)`)
+      gap > 0
+        ? topic(f, 'Vs. média das lojas', `${pct1((gap / input.avg.cents) * 100)}% abaixo (${fmtBRL(gap)}); média ${fmtBRL(input.avg.cents)}`)
+        : gap === 0
+          ? topic(f, 'Vs. média das lojas', `no nível da média (${fmtBRL(input.avg.cents)})`)
+          : topic(f, 'Vs. média das lojas', `${pct1((-gap / input.avg.cents) * 100)}% acima; média ${fmtBRL(input.avg.cents)}`)
     );
   }
   if (input.model === 'movimento' && (input.move.kind === 'OK2' || input.move.kind === 'T1') && input.move.prevCents != null && input.move.prevCents > price) {
@@ -536,6 +556,12 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
       topic(f, 'Menor registrado', price < ref ? `${fmtBRL(ref)} (este preço é ${pct1(((ref - price) / ref) * 100)}% menor)` : price === ref ? `${fmtBRL(ref)} (igual a este)` : `${fmtBRL(ref)} (este preço é ${pct1(((price - ref) / ref) * 100)}% maior)`)
     );
   }
+  const ind = input.ind ?? null;
+  if (ind) {
+    topics.push(topic(f, 'Histórico medido', `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
+  }
+  const verdict = readingOf(price, !amz ? input.avg?.cents ?? null : null, ref ?? null);
+  if (verdict) topics.push(topic(f, 'Leitura', verdict));
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
   const dropMarker = input.model === 'movimento' && input.move.kind !== 'T2' && countEmojis(topics.join('')) === 0 ? `${EMOJI_DROP} ` : '';
@@ -545,6 +571,18 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const link = channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
   return [head, `${dropMarker}${priceLine}`, topics.join('\n'), leituraBlock, link, foot].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+}
+
+/** Leitura descritiva do preço (critério fixo; não é previsão nem promessa): média das lojas e menor registrado. */
+export function readingOf(price: number, avg: number | null, min: number | null): string | null {
+  if (avg == null) return null;
+  const below = (avg - price) / avg;
+  const nearMin = min != null && price <= min * 1.05;
+  if (below >= 0.05 && nearMin) return 'favorável (abaixo da média e perto do menor preço registrado)';
+  if (below >= 0.05) return 'abaixo da média das lojas';
+  if (below > 0) return 'levemente abaixo da média';
+  if (below === 0) return 'no nível da média';
+  return 'acima da média das lojas';
 }
 
 /** Tópico "• Rótulo: valor" (rótulo em negrito). */
