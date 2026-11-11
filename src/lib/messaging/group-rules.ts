@@ -48,7 +48,7 @@ export const RULES = {
   /** Revalidação no envio: tolerância de variação do preço. */
   SEND_PRICE_TOLERANCE_PCT: 2,
   /** Vendedor ML. */
-  ML_MIN_SALES: 50,
+  ML_MIN_SALES: 10,
   ML_OK_REPUTATIONS: ['5_green', '4_light_green'],
 
   // ---- Política v2 (ata 2026-11-10 §1, pacote aprovado pelo dono) ----
@@ -211,6 +211,8 @@ export interface OfferFact {
   /** last_price_change_at (ou created_at): quando o preço atual apareceu. */
   priceSince: Date | null;
   affiliateLinkPending: boolean;
+  /** Link oficial de afiliado (meli.la) já gravado: o programa só gera link para vendedor amarelo ou melhor, então vale como reputação mínima. */
+  officialLink?: boolean;
   quarantined: boolean;
   /** Amazon: ausências seguidas na busca da coleta assistida (consecutive_miss_count). > 0 = fora dos gatilhos. */
   missCount?: number;
@@ -369,7 +371,10 @@ export function judgeOffer(o: OfferFact, p: Pick<ProductFacts, 'masterName'>, no
   if (kind === 'shopee') reasons.push('shopee_so_com_aprovacao_humana');
   if (kind === 'ml') {
     const rep = o.sellerReputation;
-    if (!rep) reasons.push('vendedor_sem_reputacao');
+    if (!rep) {
+      // Sem reputação gravada, mas com link oficial (o ML só gera link para vendedor amarelo ou melhor): segue sem pedir aprovação (dono, 2026-11-11).
+      if (!o.officialLink) reasons.push('vendedor_sem_reputacao');
+    }
     else if (!(RULES.ML_OK_REPUTATIONS as readonly string[]).includes(rep)) return block(`vendedor_reputacao_${rep}`);
     else if ((o.sellerTotalSales ?? 0) < RULES.ML_MIN_SALES) reasons.push('vendedor_poucas_vendas');
   }
