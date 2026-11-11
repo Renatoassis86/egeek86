@@ -7,6 +7,7 @@ import { formatOfferMessage, makeMessageKey } from '@/lib/messaging/group-messag
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { chatForStore, getStoreByVertical } from '@/server/stores';
+import { renderStoreProfileCard } from '@/server/messaging/store-profile-card';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -29,6 +30,13 @@ export async function GET(request: NextRequest) {
   if (auth === 'desligado') return NextResponse.json({ error: 'desligado' }, { status: 503 });
   if (auth === 'negado') return NextResponse.json({ error: 'nao_autorizado' }, { status: 401 });
   const q = new URL(request.url).searchParams;
+  // ?perfil=<slug>: devolve o PNG de perfil da loja (canal do Telegram / grupo do WhatsApp).
+  const perfil = q.get('perfil');
+  if (perfil) {
+    const png = await renderStoreProfileCard(perfil.replace(/[^a-z0-9-]/g, ''));
+    if (!png) return NextResponse.json({ error: 'loja_desconhecida' }, { status: 404 });
+    return new NextResponse(new Uint8Array(png), { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'no-store' } });
+  }
   const vertical = (q.get('vertical') ?? 'impressao3d').replace(/[^a-z0-9]/g, '');
   const n = Math.min(Math.max(1, Number(q.get('n') ?? 3) || 3), 5);
   const dry = q.get('dry') === '1';
