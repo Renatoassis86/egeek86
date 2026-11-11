@@ -100,7 +100,7 @@ async function parteB() {
       check('geracao cria 2 itens a partir das incertezas', g1.criados === 2 && g1.autoResolvidos === 0, g1);
       const g1b = await Q.generateQueue(tx, [cand(o1, t1), cand(o3, t3)]);
       check('geracao e idempotente (segunda rodada nao cria nada)', g1b.criados === 0 && g1b.jaExistentes === 2, g1b);
-      const pend = await Q.getPendingCards(tx, 500);
+      const pend = await Q.getPendingCards(tx, 100000);
       const it1 = pend.find((c) => c.offerId === o1)!;
       check('item pendente traz titulo, preco, opcoes e produto atual', !!it1 && it1.priceCents === 400000 && it1.options.length === 5 && it1.masterName != null, it1);
       const smoke = await Q.collectCandidates(tx);
@@ -117,7 +117,7 @@ async function parteB() {
       check('desfazer devolve a oferta ao master anterior', (await st(o1)).m === mWrong);
       const undoAgain = await Q.undoInTx(tx, { decisionId: a1.decisionId!, userId: null });
       check('desfazer duas vezes e idempotente', undoAgain.ok && undoAgain.already === true);
-      check('apos desfazer o item volta a fila', (await Q.getPendingCards(tx, 500)).some((c) => c.offerId === o1));
+      check('apos desfazer o item volta a fila', (await Q.getPendingCards(tx, 100000)).some((c) => c.offerId === o1));
 
       // Decisao do dono vira regra (precisa de um perfil real para decided_by; sem perfil, so a parte sem regra roda)
       const a2 = await Q.applyInTx(tx, { itemId: it1.id, value: 'slim', userId: uid });
@@ -128,22 +128,22 @@ async function parteB() {
       // Aprendizado: titulo muito parecido e resolvido sozinho
       const g2 = await Q.generateQueue(tx, [cand(o2, t2)]);
       check('titulo parecido ja decidido e resolvido SEM perguntar (regra)', uid ? g2.autoResolvidos === 1 && (await st(o2)).m === mSlim : true, { g2 });
-      check('item resolvido por regra nao aparece na fila', uid ? !(await Q.getPendingCards(tx, 500)).some((c) => c.offerId === o2) : true);
+      check('item resolvido por regra nao aparece na fila', uid ? !(await Q.getPendingCards(tx, 100000)).some((c) => c.offerId === o2) : true);
       const rd = await one(tx, sql`SELECT kind, rule_source_id IS NOT NULL AS tem_origem FROM identity_decisions WHERE offer_id = ${o2}::uuid`);
       check('decisao automatica registra a regra de origem', !uid || (rd?.kind === 'auto_regra' && rd.tem_origem === true), rd);
-      const o3item = (await Q.getPendingCards(tx, 500)).find((c) => c.offerId === o3)!;
+      const o3item = (await Q.getPendingCards(tx, 100000)).find((c) => c.offerId === o3)!;
       check('titulo diferente continua na fila (nao coberto pela regra)', !!o3item);
 
       // Nao sei: nao vira regra e adia
       const ns = await Q.applyInTx(tx, { itemId: o3item.id, value: 'nao_sei', userId: uid });
       const rulesNs = await Q.countRulesLearned(tx);
-      check('"nao sei" nao muda a oferta, nao vira regra e adia a pergunta', ns.ok && (await st(o3)).m === mWrong && rulesNs === rules1 && !(await Q.getPendingCards(tx, 500)).some((c) => c.offerId === o3), { rulesNs, rules1 });
+      check('"nao sei" nao muda a oferta, nao vira regra e adia a pergunta', ns.ok && (await st(o3)).m === mWrong && rulesNs === rules1 && !(await Q.getPendingCards(tx, 100000)).some((c) => c.offerId === o3), { rulesNs, rules1 });
 
       // Nao e este produto: sai da media (draft) e fica visivel; desfazer restaura
       const t4 = `Console Sony PlayStation 5 Digital Kit Estranho ${rnd}`;
       const o4 = await mkOffer(mWrong, t4, `teste-fila-o4-${rnd}`, 430000);
       await Q.generateQueue(tx, [cand(o4, t4)]);
-      const it4 = (await Q.getPendingCards(tx, 500)).find((c) => c.offerId === o4)!;
+      const it4 = (await Q.getPendingCards(tx, 100000)).find((c) => c.offerId === o4)!;
       const ne = await Q.applyInTx(tx, { itemId: it4.id, value: 'nao_e_este', userId: uid });
       const s4 = await st(o4);
       check('"nao e este produto": oferta vai para rascunho (fora da media), sem apagar', ne.ok && s4.s === 'draft' && s4.m === mWrong, s4);
@@ -158,7 +158,7 @@ async function parteB() {
         ...[o1, o2, o3].map((id, i) => ({ id, price: 400000 + i * 1000, title: `x${i}` })),
       ]).filter((c) => c.offerId === o5);
       await Q.generateQueue(tx, pc);
-      const it5 = (await Q.getPendingCards(tx, 500)).find((c) => c.offerId === o5)!;
+      const it5 = (await Q.getPendingCards(tx, 100000)).find((c) => c.offerId === o5)!;
       check('preco implausivel entra na fila (eixo preco)', !!it5 && it5.axis === 'preco');
       const rulesBeforePrice = await Q.countRulesLearned(tx);
       const pe = await Q.applyInTx(tx, { itemId: it5.id, value: 'preco_errado', userId: uid });
@@ -177,7 +177,7 @@ async function parteB() {
       const o6 = await mkOffer(mWrong, t6, `teste-fila-o6-${rnd}`, 440000);
       const o7 = await mkOffer(mWrong, t7, `teste-fila-o7-${rnd}`, 450000);
       await Q.generateQueue(tx, [cand(o6, t6), cand(o7, t7)]);
-      const cards = (await Q.getPendingCards(tx, 500)).filter((c) => c.offerId === o6 || c.offerId === o7);
+      const cards = (await Q.getPendingCards(tx, 100000)).filter((c) => c.offerId === o6 || c.offerId === o7);
       const r6 = await Q.applyInTx(tx, { itemId: cards.find((c) => c.offerId === o6)!.id, value: 'pro', userId: uid });
       const r7 = await Q.applyInTx(tx, { itemId: cards.find((c) => c.offerId === o7)!.id, value: 'pro', userId: uid });
       const m6 = (await st(o6)).m;
@@ -201,7 +201,7 @@ async function parteB() {
       const t8 = `Console Sony PlayStation 5 Digital Bloqueio ${rnd}`;
       const o8 = await mkOffer(mWrong, t8, `teste-fila-o8-${rnd}`, 460000);
       await Q.generateQueue(tx, [cand(o8, t8)]);
-      const it8 = (await Q.getPendingCards(tx, 500)).find((c) => c.offerId === o8)!;
+      const it8 = (await Q.getPendingCards(tx, 100000)).find((c) => c.offerId === o8)!;
       const ne8 = await Q.applyInTx(tx, { itemId: it8.id, value: 'nao_e_este', userId: uid });
       await tx.execute(sql`UPDATE affiliate_offers SET status = 'expired' WHERE id = ${o8}::uuid`);
       const b1 = await OB.loadOwnerBlocks(tx, [o8, o1]);

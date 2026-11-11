@@ -14,6 +14,7 @@ import {
   type QueueCandidate,
   type QueueOption,
 } from '@/lib/identity-queue/model';
+import type { MlEvidence } from '@/lib/identity-queue/api-evidence';
 
 /**
  * Motor da FILA DE CLASSIFICACAO (dono, 2026-11-11). Todas as funcoes recebem um executor (`db` ou uma transacao), para o teste rodar dentro de
@@ -147,6 +148,8 @@ export async function generateQueue(exec: Exec, candidates?: QueueCandidate[], o
 export interface QueueCard {
   id: string; offerId: string; axis: QueueAxis; source: string; reason: string; understood: Record<string, unknown>; options: QueueOption[];
   title: string; vertical: string; masterName: string | null; priceCents: number | null; imageUrl: string | null; store: string | null; network: string | null;
+  /** Evidencia da API oficial da loja (R4; migration 0043). null = nao consultada ou migration ainda nao aplicada. */
+  evidence?: MlEvidence | null;
 }
 
 const CARD_SELECT = sql`
@@ -167,11 +170,33 @@ function toCard(r: Record<string, unknown>): QueueCard {
   };
 }
 
+let evidenceColumn = false;
+/** A migration 0043 (colunas de evidencia) esta aplicada? Consulta ao catalogo (nao quebra transacao). Cacheia so o "sim". */
+export async function hasEvidenceColumns(exec: Exec): Promise<boolean> {
+  if (evidenceColumn) return true;
+  const r = rows<{ n: number }>(await exec.execute(sql`
+    SELECT count(*)::int AS n FROM information_schema.columns
+    WHERE table_schema = 'public' AND ((table_name = 'identity_review_items' AND column_name IN ('api_evidence', 'api_checked_at')) OR (table_name = 'identity_decisions' AND column_name = 'decided_via'))`));
+  evidenceColumn = num(r[0]?.n) === 3;
+  return evidenceColumn;
+}
+
+/** Anexa a evidencia da API aos cartoes (leitura separada: o popup continua igual antes da 0043). */
+async function attachEvidence(exec: Exec, cards: QueueCard[]): Promise<QueueCard[]> {
+  if (!cards.length || !(await hasEvidenceColumns(exec))) return cards;
+  const ids = cards.map((c) => c.id.replace(/[^0-9a-f-]/gi, ''));
+  const r = rows<{ id: string; ev: MlEvidence | null }>(await exec.execute(sql`
+    SELECT id::text AS id, api_evidence AS ev FROM identity_review_items WHERE api_evidence IS NOT NULL
+      AND id = ANY(${sql.raw(`ARRAY[${ids.map((i) => `'${i}'`).join(',')}]::uuid[]`)})`));
+  const byId = new Map(r.map((x) => [x.id, x.ev]));
+  return cards.map((c) => ({ ...c, evidence: byId.get(c.id) ?? null }));
+}
+
 export async function getPendingCards(exec: Exec, limit = 50): Promise<QueueCard[]> {
   const r = await exec.execute(sql`${CARD_SELECT}
     WHERE i.status = 'pending' AND (i.snoozed_until IS NULL OR i.snoozed_until < now())
     ORDER BY (i.source = 'preco') DESC, i.created_at, i.id LIMIT ${limit}`);
-  return rows<Record<string, unknown>>(r).map(toCard);
+  return attachEvidence(exec, rows<Record<string, unknown>>(r).map(toCard));
 }
 
 export async function countPending(exec: Exec): Promise<number> {
@@ -182,7 +207,7 @@ export async function countPending(exec: Exec): Promise<number> {
 export async function getCard(exec: Exec, itemId: string): Promise<QueueCard | null> {
   const r = await exec.execute(sql`${CARD_SELECT} WHERE i.id = ${itemId}::uuid`);
   const x = rows<Record<string, unknown>>(r)[0];
-  return x ? toCard(x) : null;
+  return x ? (await attachEvidence(exec, [toCard(x)]))[0] : null;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -235,7 +260,7 @@ export async function ensureConsoleMaster(exec: Exec, create: { name: string; ke
 interface ItemRow { id: string; offer_id: string; master_id: string | null; vertical: string; axis: QueueAxis; title: string; title_norm: string; options: QueueOption[]; status: string; decision_id: string | null }
 
 /** Aplica a resposta a um item da fila DENTRO de uma transacao do chamador. Idempotente: item ja resolvido devolve `already`. */
-export async function applyInTx(tx: Exec, p: { itemId: string; value: string; userId: string | null; ruleSourceId?: string | null }): Promise<ApplyResult> {
+export async function applyInTx(tx: Exec, p: { itemId: string; value: string; userId: string | null; ruleSourceId?: string | null; via?: 'api_oficial' }): Promise<ApplyResult> {
   const item = rows<ItemRow>(await tx.execute(sql`SELECT id::text AS id, offer_id::text AS offer_id, master_id::text AS master_id, vertical, axis, title, title_norm, options, status, decision_id::text AS decision_id
     FROM identity_review_items WHERE id = ${p.itemId}::uuid FOR UPDATE`))[0];
   if (!item) return { ok: false, error: 'item_inexistente' };
@@ -253,7 +278,8 @@ export async function applyInTx(tx: Exec, p: { itemId: string; value: string; us
   const recalc = new Set<string>();
   let prevStatus: string | null = null;
   let prevQuarantine: string | null = null;
-  let kind: 'escolha' | 'nao_sei' | 'nao_e_este' | 'auto_regra' = p.ruleSourceId ? 'auto_regra' : opt.kind;
+  // Decisao pela prova da API oficial (R4): kind 'auto_regra' (conta como resposta dada, mas NUNCA vira regra por titulo: is_rule = false).
+  let kind: 'escolha' | 'nao_sei' | 'nao_e_este' | 'auto_regra' = p.ruleSourceId || p.via ? 'auto_regra' : opt.kind;
 
   if (opt.kind === 'nao_sei') {
     // Nada muda na oferta; a pergunta volta depois.
@@ -295,10 +321,10 @@ export async function applyInTx(tx: Exec, p: { itemId: string; value: string; us
   const recalcArr = [...recalc];
   const dec = rows<{ id: string }>(await tx.execute(sql`
     INSERT INTO identity_decisions (item_id, offer_id, vertical, axis, value, value_label, kind, title, title_norm, from_master_id, to_master_id, created_master_id,
-      prev_status, prev_quarantined_at, decided_by, rule_source_id, is_rule, recalc_masters)
+      prev_status, prev_quarantined_at, decided_by, rule_source_id, is_rule, recalc_masters${p.via ? sql`, decided_via` : sql``})
     VALUES (${item.id}::uuid, ${offer.id}::uuid, ${item.vertical}, ${item.axis}, ${opt.value}, ${opt.label}, ${kind}, ${item.title}, ${item.title_norm},
       ${fromMaster}::uuid, ${toMaster}::uuid, ${createdMaster}::uuid, ${prevStatus}, ${prevQuarantine}::timestamptz, ${p.userId}::uuid, ${p.ruleSourceId ?? null}::uuid, ${isRule},
-      ${sql.raw(`ARRAY[${recalcArr.map((i) => `'${i.replace(/[^0-9a-f-]/gi, '')}'`).join(',')}]::uuid[]`)})
+      ${sql.raw(`ARRAY[${recalcArr.map((i) => `'${i.replace(/[^0-9a-f-]/gi, '')}'`).join(',')}]::uuid[]`)}${p.via ? sql`, ${p.via}` : sql``})
     RETURNING id::text AS id`))[0];
 
   if (opt.kind === 'nao_sei') {

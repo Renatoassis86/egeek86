@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/compone
 import { Button } from '@/components/ui/button';
 import { formatBRL } from '@/lib/format';
 import { atualizarFilaClassificacao, desfazerDecisaoFila, responderItemFila } from '@/server/actions/fila-classificacao';
+import { evidenceLines } from '@/lib/identity-queue/api-evidence';
 import type { QueueCard } from '@/server/identity-queue/queue';
 
 const AXIS_LABEL: Record<string, string> = { modelo: 'Modelo', midia: 'Mídia', armazenamento: 'Armazenamento', identidade: 'Identidade', preco: 'Preço' };
@@ -109,6 +110,13 @@ export function FilaClassificacaoPopup({ initialCards, pendentes: pend0, regrasA
                   </p>
                 </div>
               </div>
+              {evidenceLines(card.evidence).length ? (
+                <div className="border border-[var(--color-border-subtle)] p-2 text-body-sm" data-testid="fila-evidencia-api">
+                  {evidenceLines(card.evidence).map((l) => (
+                    <p key={l} className="break-words">{l}</p>
+                  ))}
+                </div>
+              ) : null}
               <p className="text-body-sm"><strong>Dúvida ({AXIS_LABEL[card.axis] ?? card.axis}):</strong> {card.reason}</p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {card.options.map((o, i) => (

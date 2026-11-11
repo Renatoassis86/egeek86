@@ -17,6 +17,7 @@
     "test:coleta": "tsx scripts/test-collector-multicatalog.ts && tsx scripts/test-catalog-placeholder.ts && tsx --test src/lib/collector-runs/collector-runs.test.ts",
     "test:gate": "tsx scripts/test-gate.ts",
     "test:amazon": "tsx scripts/test-amazon-identidade.ts",
+    "test:r4-api": "tsx scripts/test-r4-api-oficial.ts",
     "test:mensagens-grupo": "tsx scripts/test-mensagens-grupo.ts",
     "test:mensagens-motor-v2": "tsx scripts/test-mensagens-motor-v2.ts",
     "test:mensagens-onda2": "tsx scripts/test-mensagens-onda2.ts",

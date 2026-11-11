@@ -61,6 +61,10 @@
       "schedule": "13,43 * * * *"
     },
     {
+      "path": "/api/cron/fila-api-oficial?apply=1&limit=10",
+      "schedule": "8,28,48 * * * *"
+    },
+    {
       "path": "/api/cron/collector-health",
       "schedule": "*/30 * * * *"
     },
