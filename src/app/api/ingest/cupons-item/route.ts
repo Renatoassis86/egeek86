@@ -15,7 +15,7 @@ export const maxDuration = 60;
  * (matt_tool_id, matt_tracing_id, source=affiliate-profile). Mesma proteção da rota da Amazon: origem fixa, token dedicado
  * (sem token = 503 = kill-switch). Cada gravação guarda o link antigo em collector_runs.meta (reversível).
  */
-const ALLOWED_ORIGINS = new Set(['https://www.mercadolivre.com.br', 'https://mercadolivre.com.br']);
+const ALLOWED_ORIGINS = new Set(['https://www.mercadolivre.com.br', 'https://mercadolivre.com.br', 'https://produto.mercadolivre.com.br']);
 const MAX_ROWS = 100;
 
 function cors(request: NextRequest): Record<string, string> {

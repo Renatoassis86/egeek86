@@ -231,6 +231,14 @@ export interface MsgOffer {
   seller?: { reputation: string | null; totalSales: number | null } | null;
   /** Link de afiliado do dono (meli.la, s.shopee, amazon com tag): aparece no TEXTO além do botão (o WhatsApp só tem o texto). */
   affiliateUrl?: string | null;
+  /**
+   * Selos (dono, 2026-11-11), SÓ com dado gravado para a oferta. Hoje o coletor NÃO guarda frete nem loja oficial: sem o dado, a linha
+   * não existe. freeShipping só vale como `true` (false/undefined = nada aparece). officialStore = nome da loja oficial lido da API.
+   */
+  freeShipping?: boolean;
+  officialStore?: string | null;
+  /** Shopee: link da campanha oficial (categoria "Gaming & Consoles" ou a mais adequada, ainda no prazo). Só diz ONDE resgatar; nunca promete valor. */
+  shopeeCampaignUrl?: string | null;
 }
 export interface MsgAvg {
   cents: number;
@@ -565,6 +573,7 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   }
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
+  for (const t of seloLines(o, f)) topics.push(t);
   // Detalhes do monitoramento: SÓ no fim da mensagem (dono, 2026-11-11).
   const ref = input.model === 'movimento' ? input.move.refCents : input.refCents;
   const mon: string[] = [];
@@ -669,6 +678,31 @@ function leituraLine(input: OfferMessageInput, amz: boolean): string {
     case 'T2':
       return `A ${pct1(m.nearPct ?? 0)}% do menor preço registrado (${fmtBRL(m.refCents)}).`;
   }
+}
+
+/** Nome de loja oficial aceito no selo: texto curto, sem URL nem marcação. */
+function cleanStoreName(v: string | null | undefined): string | null {
+  const s = (v ?? '').replace(/\s+/g, ' ').trim();
+  if (!s || s.length > 60 || /https?:|www\./i.test(s)) return null;
+  return s;
+}
+
+/**
+ * Tópicos de selo (dono, 2026-11-11), sempre atrás de dado real e fora da Amazon (Amazon fica só com o carimbo):
+ *   • Frete: grátis            (só com freeShipping === true)
+ *   • Loja oficial: <nome>     (só com o nome lido da API)
+ *   • Cupons e ofertas Shopee: <link>   (só Shopee, só com link https de campanha oficial; não promete valor)
+ */
+function seloLines(o: MsgOffer, f: Fmt): string[] {
+  if (isAmazonOffer(o)) return [];
+  const out: string[] = [];
+  if (o.freeShipping === true) out.push(topic(f, 'Frete', 'grátis'));
+  const store = cleanStoreName(o.officialStore);
+  if (store) out.push(topic(f, 'Loja oficial', store));
+  if (/shopee/i.test(o.networkSlug) && o.shopeeCampaignUrl && /^https:\/\/[^\s<>"]+$/.test(o.shopeeCampaignUrl)) {
+    out.push(`• ${f.b('Cupons e ofertas Shopee:')} ${f.link(o.shopeeCampaignUrl, o.shopeeCampaignUrl)}`);
+  }
+  return out;
 }
 
 /** Linha do vendedor, só Mercado Livre e só com reputação lida (verde). Nunca inventa nível. */
@@ -983,8 +1017,10 @@ export interface CouponInfo {
   conditions: string;
   /** Validade lida da loja (ISO) ou null quando a loja não informa. */
   expiresAt: string | null;
-  /** Quando o cupom foi visto pela última vez (ISO). */
+  /** Quando o cupom foi visto pela última vez (ISO). Código de campanha: quando o dono cadastrou/confirmou. */
   verifiedAt: string;
+  /** Idade máxima de verifiedAt (min). Omitido = 120 (leitura da aba). Código de campanha do dono usa 1440 (24 h). */
+  maxAgeMinutes?: number;
 }
 
 /** Cupom visto há no máximo 2 h, ainda dentro da validade lida e com código. */
@@ -995,7 +1031,7 @@ export function couponUsable(c: CouponInfo | null | undefined, now: Date): c is 
   const seen = new Date(c.verifiedAt).getTime();
   if (!Number.isFinite(seen)) return false;
   const ageMin = (now.getTime() - seen) / 60_000;
-  if (ageMin > COUPON_MAX_AGE_MIN || ageMin < -5) return false;
+  if (ageMin > (c.maxAgeMinutes ?? COUPON_MAX_AGE_MIN) || ageMin < -5) return false;
   if (c.expiresAt) {
     const exp = new Date(c.expiresAt).getTime();
     if (!Number.isFinite(exp) || exp <= now.getTime()) return false;

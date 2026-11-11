@@ -20,6 +20,7 @@ export const adminNavItems: AdminNavItem[] = [
   { href: '/admin/carrinhos', label: 'Listas de interesse', icon: ShoppingBag },
   { href: '/admin/redes', label: 'Redes', icon: Network },
   { href: '/admin/cupons', label: 'Cupons', icon: Ticket },
+  { href: '/admin/cupons-campanha', label: 'Códigos de campanha', icon: Ticket },
   { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
   { href: '/admin/pesquisa', label: 'Pesquisa', icon: ClipboardList },
   { href: '/admin/mensagens', label: 'Mensagens', icon: MessageSquareText },
@@ -45,7 +46,7 @@ export function AdminNavLinks({
   return (
     <nav className={cn('flex flex-col gap-1', className)} aria-label="Navegação admin">
       {adminNavItems.map((item) => {
-        const isActive = item.href === '/admin' ? pathname === item.href : pathname?.startsWith(item.href);
+        const isActive = item.href === '/admin' ? pathname === item.href : (pathname === item.href || pathname?.startsWith(item.href + '/'));
         return (
           <Link
             key={item.href}

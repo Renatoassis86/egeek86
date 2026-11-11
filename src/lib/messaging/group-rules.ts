@@ -222,6 +222,11 @@ export interface OfferFact {
   returnedAt?: Date | null;
   /** Preço conferido AO VIVO na API oficial neste ciclo de envio: dispensa o intervalo de 15 min entre duas coletas. */
   liveVerifiedAt?: Date | null;
+  /** Selos (opcionais; o coletor ainda NÃO guarda frete nem loja oficial, então hoje chegam vazios e a linha não aparece). */
+  freeShipping?: boolean;
+  officialStore?: string | null;
+  /** Shopee: link da campanha oficial adequada ao departamento (tabela shopee_campaigns). */
+  shopeeCampaignUrl?: string | null;
 }
 
 export interface ProductFacts {
@@ -564,7 +569,7 @@ export function finish(
 }
 
 export function toMsgOffer(o: OfferFact) {
-  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date, seller: { reputation: o.sellerReputation, totalSales: o.sellerTotalSales }, affiliateUrl: o.affiliateUrl ?? null };
+  return { slug: o.slug, networkSlug: o.networkSlug, networkName: o.networkName, priceCents: o.priceCents, confirmedAt: o.confirmedAt as Date, seller: { reputation: o.sellerReputation, totalSales: o.sellerTotalSales }, affiliateUrl: o.affiliateUrl ?? null, freeShipping: o.freeShipping === true ? true : undefined, officialStore: o.officialStore ?? null, shopeeCampaignUrl: o.shopeeCampaignUrl ?? null };
 }
 
 function humanReview(price: number, avg: number | null, dropPct: number | null, median: number | null): string[] {

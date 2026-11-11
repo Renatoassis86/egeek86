@@ -18,7 +18,7 @@ export function isMissingCouponTable(e: unknown): boolean {
   return /coupon_(items|reads)/.test(m) && /does not exist|relation/.test(m);
 }
 
-type Row = {
+export type Row = {
   id: string; network_slug: CouponNetwork; code: string | null; kind: StoredCoupon['kind']; value_num: string | null; value_unit: StoredCoupon['valueUnit'];
   min_order_cents: string | null; max_discount_cents: string | null; conditions_raw: string; audience: StoredCoupon['audience']; audience_text: string | null;
   eligible_on_read_account: boolean | null; scope_kind: StoredCoupon['scopeKind']; scope: CouponScopeRef; source_url: string;
@@ -26,7 +26,7 @@ type Row = {
   first_seen_at: string; streak_started_at: string; last_seen_at: string; verified_at: string | null; last_page_price_cents: string | null;
 };
 
-const SELECT_COLS = sql`
+export const SELECT_COLS = sql`
   id::text AS id, network_slug, code, kind, value_num::text AS value_num, value_unit, min_order_cents::text AS min_order_cents,
   max_discount_cents::text AS max_discount_cents, conditions_raw, audience, audience_text, eligible_on_read_account, scope_kind, scope, source_url,
   ${ts('valid_from')}, ${ts('valid_until')}, validity_source, state, ${ts('first_seen_at')}, ${ts('streak_started_at')}, ${ts('last_seen_at')},
@@ -68,7 +68,7 @@ export async function findVerifiedCoupons(input: FindVerifiedCouponsInput): Prom
   try {
     rows = (await db.execute<Row>(sql`
       SELECT ${SELECT_COLS} FROM coupon_items
-      WHERE network_slug = ${input.networkSlug} AND state = 'verificado' AND verified_at >= ${since}::timestamptz
+      WHERE network_slug = ${input.networkSlug} AND state = 'verificado' AND source_kind <> 'manual_dono' AND verified_at >= ${since}::timestamptz
       ORDER BY verified_at DESC LIMIT ${Math.min(Math.max(1, input.limit ?? 200), 500)}`)) as unknown as Row[];
   } catch (e) {
     if (isMissingCouponTable(e)) return [];
@@ -85,7 +85,7 @@ export async function findVerifiedCoupons(input: FindVerifiedCouponsInput): Prom
 export async function listActiveCoupons(network: CouponNetwork | null, limit = 200): Promise<StoredCoupon[]> {
   const rows = (await db.execute<Row>(sql`
     SELECT ${SELECT_COLS} FROM coupon_items
-    WHERE state IN ('nao_verificado', 'verificado') AND (valid_until IS NULL OR valid_until > now())
+    WHERE state IN ('nao_verificado', 'verificado') AND source_kind <> 'manual_dono' AND (valid_until IS NULL OR valid_until > now())
       ${network ? sql`AND network_slug = ${network}` : sql``}
     ORDER BY last_seen_at DESC LIMIT ${Math.min(Math.max(1, limit), 500)}`)) as unknown as Row[];
   return rows.map(mapRow);
@@ -164,7 +164,7 @@ export async function ingestCouponBatch(v: BatchValidation): Promise<IngestSumma
     const notSeen: SQL = seen.length ? sql`AND dedup_hash NOT IN (${sql.join(seen.map((h) => sql`${h}`), sql`, `)})` : sql``;
     const gone = (await db.execute<{ id: string }>(sql`
       UPDATE coupon_items SET state = 'vencido', state_reason = 'sumiu_da_releitura_completa', verified_at = NULL, updated_at = now()
-      WHERE network_slug = ${network} AND source_url = ${batchSourceUrl} AND state IN ('nao_verificado', 'verificado')
+      WHERE network_slug = ${network} AND source_url = ${batchSourceUrl} AND source_kind <> 'manual_dono' AND state IN ('nao_verificado', 'verificado')
         AND last_seen_at < ${readAt}::timestamptz ${notSeen}
       RETURNING id::text AS id`)) as unknown as { id: string }[];
     summary.vencidos_por_ausencia = gone.length;
@@ -180,7 +180,7 @@ export async function ingestCouponBatch(v: BatchValidation): Promise<IngestSumma
   // Varredura por prazo lido (nao depende da fonte): vencido por data.
   const expired = (await db.execute<{ id: string }>(sql`
     UPDATE coupon_items SET state = 'vencido', state_reason = 'prazo_lido_vencido', verified_at = NULL, updated_at = now()
-    WHERE network_slug = ${network} AND state IN ('nao_verificado', 'verificado') AND valid_until IS NOT NULL AND valid_until <= ${readAt}::timestamptz
+    WHERE network_slug = ${network} AND source_kind <> 'manual_dono' AND state IN ('nao_verificado', 'verificado') AND valid_until IS NOT NULL AND valid_until <= ${readAt}::timestamptz
     RETURNING id::text AS id`)) as unknown as { id: string }[];
   summary.vencidos_por_prazo += expired.length;
   return summary;

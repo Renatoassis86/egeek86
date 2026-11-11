@@ -7,6 +7,7 @@ import { addDays, computePeriodMetrics, spDay, PRICE_DAILY_REGIME_START } from '
 import { readPlatform } from '@/lib/catalog/platform';
 import { isVertical } from '@/lib/catalog/verticais';
 import { getAdTag } from '@/lib/messaging/group-config';
+import { loadShopeeCampaignUrl } from '@/server/collector/shopee-campaigns';
 import { buildPlatformCandidates } from '@/lib/messaging/group-platform';
 import {
   RULES,
@@ -354,6 +355,14 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     }
   }
 
+  // Shopee: link da campanha oficial por departamento (uma consulta por departamento; sem tabela/sem campanha = null e a linha não aparece).
+  const verticalBy = new Map(products.map((p) => [String(p.id), String(p.vertical)]));
+  const shopeeUrlBy = new Map<string, string | null>();
+  for (const r of offers) {
+    if (!/shopee/i.test(String(r.net_slug))) continue;
+    const v = verticalBy.get(String(r.master_product_id));
+    if (v && !shopeeUrlBy.has(v)) shopeeUrlBy.set(v, await loadShopeeCampaignUrl(v, o.now));
+  }
   const offersBy = new Map<string, OfferFact[]>();
   for (const r of offers) {
     const mid = String(r.master_product_id);
@@ -376,6 +385,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       missCount: r.miss_count == null ? 0 : Number(r.miss_count),
       returnedAt: returnedBy.get(String(r.id)) ?? null,
       liveVerifiedAt: o.liveVerified?.has(String(r.id)) ? o.now : null,
+      shopeeCampaignUrl: /shopee/i.test(String(r.net_slug)) ? shopeeUrlBy.get(verticalBy.get(mid) ?? '') ?? null : null,
     };
     (offersBy.get(mid) ?? offersBy.set(mid, []).get(mid)!).push(f);
   }

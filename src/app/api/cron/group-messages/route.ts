@@ -5,6 +5,8 @@ import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
 import { renderHistoryCard } from '@/server/messaging/price-card';
 import { lookupVerifiedCoupon } from '@/server/messaging/coupon-lookup';
 import { lookupItemCoupon } from '@/server/messaging/coupon-item-lookup';
+import { lookupCampaignCoupon } from '@/server/messaging/campaign-coupon-lookup';
+import { refreshShopeeCampaigns } from '@/server/collector/shopee-campaigns';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { discoverStoreChats } from '@/server/stores-discover';
 
@@ -33,6 +35,9 @@ export async function GET(request: NextRequest) {
 
   if (!isGroupMessagesEnabled()) return NextResponse.json({ ok: true, skipped: 'GROUP_MESSAGES_ENABLED desligado' });
 
+  // Campanhas oficiais da Shopee (links de afiliado por categoria): 1x por hora, no minuto 7 (poucas chamadas; tolerante a falha).
+  if (new Date().getUTCMinutes() === 7) await refreshShopeeCampaigns().catch(() => undefined);
+
   // Canais novos das lojas: o bot resolve o link público em chat id (só leitura; tolerante a falha).
   await discoverStoreChats(process.env.TELEGRAM_BOT_TOKEN).catch(() => []);
 
@@ -46,7 +51,8 @@ export async function GET(request: NextRequest) {
       return input ? ((await renderOfferCard(input))?.png ?? null) : null;
     },
     // Cupom do ANÚNCIO (lido na página do item, 2 h) primeiro; depois o cupom verificado de loja/categoria.
-    couponLookup: async (offerId: string) => (await lookupItemCoupon(offerId).catch(() => null)) ?? lookupVerifiedCoupon(offerId),
+    couponLookup: async (offerId: string) =>
+      (await lookupItemCoupon(offerId).catch(() => null)) ?? (await lookupCampaignCoupon(offerId).catch(() => null)) ?? lookupVerifiedCoupon(offerId),
   });
   return NextResponse.json(summary, { status: summary.ok ? 200 : 500 });
 }

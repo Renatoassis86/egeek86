@@ -19,6 +19,7 @@
     "test:mensagens-grupo": "tsx scripts/test-mensagens-grupo.ts",
     "test:mensagens-motor-v2": "tsx scripts/test-mensagens-motor-v2.ts",
     "test:mensagens-onda2": "tsx scripts/test-mensagens-onda2.ts",
+    "test:campanhas": "tsx scripts/test-campanhas-selos.ts",
     "telegram:teste": "tsx --env-file=.env.local scripts/telegram-teste.ts",
     "test:dimensions": "tsx scripts/test-dimensions.ts",
     "test:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/test-vertical-isolation.ts",
