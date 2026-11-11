@@ -615,6 +615,10 @@ export function evaluateProduct(p: ProductFacts, ctx: EvalContext): { candidates
     stop('G2', ['plataforma_desconhecida']);
     return { candidates, blocked };
   }
+  if (isOutOfLine(p)) {
+    stop('G2', ['fora_de_linha_ou_retro']);
+    return { candidates, blocked };
+  }
 
   const verdicts = p.offers.map((o) => ({ o, v: judgeOffer(o, p, ctx.now, ctx.maxAgeMin) }));
   const usable = verdicts.filter((x) => x.v.kind !== 'block').sort((a, b) => a.o.priceCents - b.o.priceCents);
@@ -902,7 +906,14 @@ export function riskAssess(
   return { review, held };
 }
 
+/** Só produto NOVO e EM LINHA (dono, 2026-11-11): plataformas retrô e as que saíram de linha (Xbox One, Xbox 360, PS3 e anteriores, Wii, DS/3DS...) nunca vão para mensagem. */
+const OUT_OF_LINE_PLATFORM = /(?:xbox one(?: [sx])?|xbox 360|ps ?[123]|playstation ?[123]|psp|ps vita|wii(?: u)?|3ds|2ds|nintendo ds|gamecube|n64|nintendo 64|snes|game ?boy|mega ?drive|dreamcast)/i;
+export function isOutOfLine(p: Pick<ProductFacts, 'vertical' | 'platformLabel'>): boolean {
+  return p.vertical === 'games' && OUT_OF_LINE_PLATFORM.test(p.platformLabel ?? '');
+}
+
 function scopeBlock(p: ProductFacts): string | null {
+  if (isOutOfLine(p)) return 'fora_de_linha_ou_retro';
   if (p.vertical === 'games' && p.productType !== 'game' && p.productType !== 'console') return 'tipo_de_produto_fora_do_escopo';
   if (p.catalogGate === 'review' || p.catalogGate === 'rejected') return `porteiro_${p.catalogGate}`;
   if (p.vertical === 'games' && !p.platformLabel) return 'plataforma_desconhecida';

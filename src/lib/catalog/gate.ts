@@ -161,9 +161,9 @@ const LEGACY_PLATFORM = /\b(?:ps ?[12]|psone|playstation ?[12]|psp|wii|gamecube|
  * Vale só para a dimensão console e para o nome do master; título que cita geração atual (bundle, "compatível") não rejeita.
  */
 const RETRO_CONSOLE =
-  /\b(?:ps ?[123]|psone|playstation ?[123]|playstation (?:fat|portatil|classic)|psp|ps vita|playstation vita|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|nintendo nes|nes classic|game ?boy|gba|nintendo ds|ds lite|dsi|3ds|2ds|mega ?drive|master system|dreamcast|saturn|atari)\b/;
-const RETRO_GAME_PLATFORM = /\b(?:ps ?[123]|psone|playstation ?[123]|psp|ps vita|playstation vita|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|game ?boy|gba|nintendo ds|nds|dsi|3ds|2ds|mega ?drive|master system|dreamcast)\b/;
-const MODERN_CONSOLE = /\b(?:ps ?[45]|playstation ?[45]|xbox one|xbox series|series [sx]|switch)\b/;
+  /\b(?:ps ?[123]|psone|playstation ?[123]|playstation (?:fat|portatil|classic)|psp|ps vita|playstation vita|xbox one(?: [sx])?|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|nintendo nes|nes classic|game ?boy|gba|nintendo ds|ds lite|dsi|3ds|2ds|mega ?drive|master system|dreamcast|saturn|atari)\b/;
+const RETRO_GAME_PLATFORM = /\b(?:ps ?[123]|psone|playstation ?[123]|psp|ps vita|playstation vita|xbox one(?: [sx])?|xbox 360|x ?360|xbox classic|xbox original|wii u|wii|gamecube|game ?cube|n64|nintendo 64|snes|super nintendo|game ?boy|gba|nintendo ds|nds|dsi|3ds|2ds|mega ?drive|master system|dreamcast)\b/;
+const MODERN_CONSOLE = /\b(?:ps ?[45]|playstation ?[45]|xbox series|series [sx]|switch)\b/;
 
 const RAW_ONE_TO_ONE = /(?<![\d:])1\s*:\s*1(?![\d:])/;
 /** "Genérico/sem marca": imitação em console/jogo é rejeição; em acessório (cabo, case) vai à revisão (genérico não é cópia por si). */
