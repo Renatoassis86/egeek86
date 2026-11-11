@@ -37,3 +37,11 @@
 ## 6. Pendências técnicas
 - Mesmo jogo físico às vezes catalogado sob dois `catalog_product_id`: a duplicata é tratada por `findExistingMasterProduct` (título + plataforma).
 - Gerenciamento de IP do app: deixado de fora (Vercel não tem IP fixo).
+
+## 7. Links de afiliado (achado de 2026-11-10, validado no painel do dono)
+- Programa de afiliados do dono: perfil **"EGeek 86"** (Games), etiqueta `renatosilvadeassis`, ID `matt_tool=23952458` (confirmado no link oficial do Gerador de links; é o `MELI_TOOL_ID` da Vercel).
+- **Formato dos links do banco até 2026-11-10:** `https://produto.mercadolivre.com.br/MLB-<id>?matt_tool=23952458` (direto ao anúncio, sem `matt_word`). Evidência de que esse formato **não rastreia bem**: o site registrou 19 cliques em 7 dias para ML; o painel de afiliados do ML contou 1 clique e 0 pedidos no mesmo período (dados do painel podem ter defasagem).
+- **Formato oficial (Gerador de links, https://www.mercadolivre.com.br/afiliados/linkbuilder):** link curto `https://meli.la/<código>`. Ele abre a **página de afiliado do dono** (`/social/renatosilvadeassis?matt_word=renatosilvadeassis&matt_tool=23952458&forceInApp=true&ref=...`) com o produto em destaque e o botão **"Ir para produto"**, que leva ao anúncio com rastreio completo (`matt_tool_id`, `matt_tracing_id`, `matt_event_ts`, `source=affiliate-profile`) e a barra de Afiliados do ML (ganho de 12% em games). Validado em 3 produtos.
+- **Efeitos colaterais da geração:** cada link gerado adiciona o produto à lista pública "Minhas recomendações" do perfil. O gerador aceita várias URLs, mas **não informa qual link pertence a qual URL** e recusa algumas (2 de 30 no teste) — por isso a geração é feita **um link por vez**.
+- **Operação:** laço na aba logada do ML → `/api/ingest/ml-links` (fila: a oferta mais barata de cada produto primeiro; grava `affiliate_url = meli.la/...` e guarda o link antigo em `collector_runs.meta.trocas`, reversível). Para reverter: `UPDATE affiliate_offers SET affiliate_url = <old>` a partir dessas linhas, ou reconstruir `https://produto.mercadolivre.com.br/MLB-<id>?matt_tool=<MELI_TOOL_ID>`.
+- Cliques e comissões: conferir em https://www.mercadolivre.com.br/afiliados/dashboard.
