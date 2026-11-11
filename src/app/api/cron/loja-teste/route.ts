@@ -65,17 +65,23 @@ export async function GET(request: NextRequest) {
     WHERE m.vertical = ${vertical} AND o.vertical = m.vertical AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
       AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND COALESCE(o.affiliate_url, '') <> ''
     ORDER BY o.master_product_id, o.current_price_cents ASC
-    LIMIT 20`);
+    LIMIT 30`);
 
   const now = new Date();
   const out: Array<Record<string, unknown>> = [];
+  // Régua de 10% também no teste: só amostras que o motor realmente enviaria (>= minBelow abaixo da média); ?todos=1 ignora a régua.
+  const minBelow = q.get('todos') === '1' ? -100 : Number(q.get('min') ?? 10);
+  const ranked: Array<{ r: (typeof rows)[number]; card: NonNullable<Awaited<ReturnType<typeof loadOfferCardInput>>>; below: number }> = [];
   for (const r of rows) {
+    const c = await loadOfferCardInput(r.id).catch(() => null);
+    if (!c || c.stats.avgCents == null || c.stats.avgCents <= 0) continue;
+    const b = ((c.stats.avgCents - c.priceCents) / c.stats.avgCents) * 100;
+    if (b >= minBelow) ranked.push({ r, card: c, below: b });
+  }
+  ranked.sort((a, b) => b.below - a.below);
+  if (!ranked.length) out.push({ pulado: `nenhuma_oferta_${minBelow}pct_abaixo_da_media` });
+  for (const { r, card } of ranked) {
     if (out.length >= n) break;
-    const card = await loadOfferCardInput(r.id).catch(() => null);
-    if (!card || card.stats.avgCents == null) {
-      out.push({ offer: r.id, pulado: 'sem_card_ou_media' });
-      continue;
-    }
     const messageKey = makeMessageKey('G2', `teste:${r.id}:${now.toISOString().slice(0, 13)}`, now);
     const text0 = formatOfferMessage(
       {
