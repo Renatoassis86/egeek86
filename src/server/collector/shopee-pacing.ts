@@ -5,7 +5,7 @@
  * Estado por instância de execução (cada rodada do cron cria o seu): espaçamento mínimo entre INÍCIOS de chamada,
  * dobrado após cada 10030 (teto 2 s) para a própria rodada se adaptar ao limite real.
  */
-export const SHOPEE_MIN_SPACING_MS = 600; // ~1,7 chamada/s, abaixo do teto médio de 2,2/s do limite horário
+export const SHOPEE_MIN_SPACING_MS = 480; // ~1,7 chamada/s, abaixo do teto médio de 2,2/s do limite horário
 export const SHOPEE_MAX_SPACING_MS = 2000;
 export const SHOPEE_RATE_LIMIT_WAIT_MS = 8000;
 

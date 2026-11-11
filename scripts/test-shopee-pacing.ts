@@ -4,11 +4,11 @@ const t = (n: string, ok: boolean, d?: unknown) => { console.log(ok ? 'PASS' : '
 (async () => {
   let clock = 1000;
   const waits: number[] = [];
-  const p = createShopeePacer(600, () => clock, async (ms) => { waits.push(ms); clock += ms; });
+  const p = createShopeePacer(480, () => clock, async (ms) => { waits.push(ms); clock += ms; });
   await p.wait(); await p.wait(); await p.wait();
-  t('1ª chamada sem espera; seguintes espaçadas em 600 ms', waits.length === 2 && waits[0] === 600 && waits[1] === 600, waits);
+  t('1ª chamada sem espera; seguintes espaçadas em 480 ms', waits.length === 2 && waits[0] === 480 && waits[1] === 480, waits);
   p.onRateLimit();
-  t('após 10030 o espaçamento dobra (1200)', p.spacingMs() === 1200, p.spacingMs());
+  t('após 10030 o espaçamento dobra (960)', p.spacingMs() === 960, p.spacingMs());
   p.onRateLimit(); p.onRateLimit();
   t('espaçamento tem teto de 2000 ms', p.spacingMs() === 2000, p.spacingMs());
   // concorrentes não furam a fila: 4 wait() simultâneos reservam instantes distintos

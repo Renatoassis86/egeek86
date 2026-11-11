@@ -39,12 +39,12 @@ const run = { runId: 'r1', startedAt: '2026-11-10T15:00:00.000Z', mode: 'dry-run
 
 async function main() {
   // ---------------- orcamento diario ----------------
-  check('teto diario autorizado = 480', DAILY_CALL_CAP === 480);
+  check('teto diario = 12000 (so impede loop descontrolado; o limite real e o 429 do ML)', DAILY_CALL_CAP === 12000);
   check('dia de Sao Paulo, nao UTC (02:30Z do dia 10 ainda e dia 09)', dayKeySP(new Date('2026-11-10T02:30:00.000Z')) === '2026-11-09');
   check('dia de Sao Paulo (03:00Z ja e dia 10)', dayKeySP(new Date('2026-11-10T03:00:00.000Z')) === '2026-11-10');
   let st = emptyState();
-  check('estado vazio: 0 usadas, 480 restam', usedOn(st, '2026-11-10') === 0 && remainingOn(st, '2026-11-10') === 480);
-  for (let i = 0; i < 480; i++) {
+  check('estado vazio: 0 usadas, DAILY_CALL_CAP restam', usedOn(st, '2026-11-10') === 0 && remainingOn(st, '2026-11-10') === DAILY_CALL_CAP);
+  for (let i = 0; i < DAILY_CALL_CAP; i++) {
     const n = charge(st, '2026-11-10', run, 1);
     if (!n) {
       check(`cobranca ${i + 1} deveria caber`, false);
@@ -52,9 +52,9 @@ async function main() {
     }
     st = n;
   }
-  check('apos 480 cobrancas: 480 usadas, 0 restam', usedOn(st, '2026-11-10') === 480 && remainingOn(st, '2026-11-10') === 0);
-  check('a 481a cobranca e RECUSADA (null) e nada muda', charge(st, '2026-11-10', run, 1) === null && usedOn(st, '2026-11-10') === 480);
-  check('outro dia comeca zerado', remainingOn(st, '2026-11-11') === 480);
+  check('apos o teto: tudo usado, 0 restam', usedOn(st, '2026-11-10') === DAILY_CALL_CAP && remainingOn(st, '2026-11-10') === 0);
+  check('a cobranca acima do teto e RECUSADA (null) e nada muda', charge(st, '2026-11-10', run, 1) === null && usedOn(st, '2026-11-10') === DAILY_CALL_CAP);
+  check('outro dia comeca zerado', remainingOn(st, '2026-11-11') === DAILY_CALL_CAP);
   check('cobranca imutavel (estado original intacto)', usedOn(emptyState(), '2026-11-10') === 0);
   const s1 = charge(emptyState(), '2026-11-10', run, 5)!;
   check('registro da execucao soma as chamadas', s1.days['2026-11-10'].runs.length === 1 && s1.days['2026-11-10'].runs[0].calls === 5);
@@ -62,9 +62,9 @@ async function main() {
   check('mesma execucao acumula numa linha so', s2.days['2026-11-10'].runs.length === 1 && s2.days['2026-11-10'].runs[0].calls === 7 && usedOn(s2, '2026-11-10') === 7);
   const s3 = charge(s2, '2026-11-10', { ...run, runId: 'r2' }, 3)!;
   check('execucao nova abre outra linha', s3.days['2026-11-10'].runs.length === 2 && usedOn(s3, '2026-11-10') === 10);
-  check('cobrar n maior que o saldo recusa sem cobrar nada', charge(s3, '2026-11-10', run, 471) === null);
-  check('cobrar exatamente o saldo cabe', usedOn(charge(s3, '2026-11-10', run, 470)!, '2026-11-10') === 480);
-  check('effectiveMaxCalls limita ao saldo do dia', effectiveMaxCalls(s3, '2026-11-10', 1000) === 470);
+  check('cobrar n maior que o saldo recusa sem cobrar nada', charge(s3, '2026-11-10', run, DAILY_CALL_CAP - 9) === null);
+  check('cobrar exatamente o saldo cabe', usedOn(charge(s3, '2026-11-10', run, DAILY_CALL_CAP - 10)!, '2026-11-10') === DAILY_CALL_CAP);
+  check('effectiveMaxCalls limita ao saldo do dia', effectiveMaxCalls(s3, '2026-11-10', DAILY_CALL_CAP + 500) === DAILY_CALL_CAP - 10);
   check('effectiveMaxCalls respeita o pedido menor', effectiveMaxCalls(s3, '2026-11-10', 40) === 40);
   check('effectiveMaxCalls com dia esgotado = 0', effectiveMaxCalls(st, '2026-11-10', 40) === 0);
   check('effectiveMaxCalls com cap reduzido', effectiveMaxCalls(emptyState(), '2026-11-10', 100, 60) === 60);

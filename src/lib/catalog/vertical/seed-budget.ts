@@ -13,7 +13,9 @@
  *   para nao gastar a mesma chamada em outra pagina/termo/rodada. Vencido o prazo, tenta de novo (o catalogo pode ter ganho vendedor).
  */
 
-export const DAILY_CALL_CAP = 480;
+// Teto de seguranca contra laco descontrolado, NAO limite da plataforma (dono, 2026-11-11: usar o que a documentacao permite). O ML nao publica
+// cota diaria; o limite real e o HTTP 429, que ja para a execucao (ml-api: RateLimited). Era 480/dia (autoimposto em 2026-11-10).
+export const DAILY_CALL_CAP = 12000;
 export const NOT_FOUND_TTL_DAYS = 3;
 
 export interface BudgetRun {
