@@ -296,7 +296,8 @@ export async function applyInTx(tx: Exec, p: { itemId: string; value: string; us
   } else if (item.axis === 'identidade') {
     // 'sim': confirma que a oferta pertence ao master; nada se move. Exceção: oferta Shopee nascida de dúvida de cobertura
     // (rascunho criado por shopee-fila.ts) é ATIVADA aqui; o status anterior fica na decisão, então desfazer a devolve a rascunho.
-    if (opt.value === 'sim' && offer.status === 'draft' && item.understood?.origem === 'shopee_cobertura') {
+    // Idem a Amazon (rascunho de amazon-fila.ts, origem 'amazon_cobertura'): "sim" ativa, desfazer devolve a rascunho.
+    if (opt.value === 'sim' && offer.status === 'draft' && (item.understood?.origem === 'shopee_cobertura' || item.understood?.origem === 'amazon_cobertura')) {
       prevStatus = offer.status;
       await tx.execute(sql`UPDATE affiliate_offers SET status = 'active', published_at = COALESCE(published_at, now()), updated_at = now() WHERE id = ${offer.id}::uuid AND status = 'draft'`);
       recalc.add(fromMaster);
@@ -367,7 +368,7 @@ export async function undoInTx(tx: Exec, p: { decisionId: string; userId: string
   }
   if (d.axis === 'identidade' && d.value === 'sim' && d.prev_status === 'draft') {
     // Oferta Shopee de dúvida de cobertura que o "sim" ativou: desfazer a devolve a rascunho (fora da média).
-    await tx.execute(sql`UPDATE affiliate_offers SET status = 'draft', updated_at = now() WHERE id = ${d.offer_id}::uuid AND status = 'active' AND external_ref LIKE 'shopee-%'`);
+    await tx.execute(sql`UPDATE affiliate_offers SET status = 'draft', updated_at = now() WHERE id = ${d.offer_id}::uuid AND status = 'active' AND (external_ref LIKE 'shopee-%' OR external_ref LIKE 'amazon-%')`);
   }
   if (d.axis === 'preco' && d.value === 'preco_errado') {
     // Devolve a quarentena ao estado anterior (NULL se a oferta nao estava em quarentena).

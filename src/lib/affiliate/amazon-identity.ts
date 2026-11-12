@@ -31,7 +31,35 @@ export interface AmzCand {
   s: number;
   /** URL da capa na CDN da Amazon (só o link; a Licença de PI permite guardar o link por até 24 h, então é renovado a cada leitura). */
   i?: string | null;
+  /** 1 = o preço `p` foi lido na PÁGINA do produto (/dp/ASIN), nunca no card da busca. Só assim um resultado patrocinado pode ser aceito. */
+  pg?: number;
 }
+
+/**
+ * FLEXIBILIZACAO DA APROVACAO (dono, 2026-11-12). Liga por padrao; `AMAZON_ID_FLEX=off` (variavel de ambiente) volta ao comportamento
+ * anterior sem deploy de codigo, e cada funcao de veredito aceita `{ flex: false }` (usado nos testes e na simulacao "antes").
+ * Principio: os portoes DUROS (condicao nova, pacote/kit/acessorio, plataforma, edicao, regiao, voltagem, tamanho/capacidade, variante,
+ * modelo diferente, retro/fora de linha) nao mudam. So o limiar de COBERTURA DE TITULO baixa, e apenas quando ha chave forte
+ * (marca + codigo de modelo); o que fica na fronteira vira rascunho + pergunta na fila de classificacao, nunca vai direto para a media.
+ */
+export const AMAZON_FLEX_DEFAULT = (process.env.AMAZON_ID_FLEX ?? 'on').toLowerCase() !== 'off';
+export interface JudgeOpts {
+  flex?: boolean;
+  /** ASINs de ofertas ATIVAS ja cadastradas para este master (identidade ja comprovada); usado para aceitar o resultado patrocinado. */
+  knownAsins?: ReadonlySet<string>;
+}
+/**
+ * Limiares da flexibilizacao (objeto mutavel so para a simulacao calibrar; em producao ficam estes valores).
+ *  strongAccept/strongBorder: marca + codigo de modelo; cobertura do master >= strongAccept aceita; entre strongBorder e strongAccept vai para a fila.
+ *  noCodeBorder*: sem codigo de modelo (so com marca no titulo): nunca aceita sozinho, so fronteira.
+ *  game*: jogos (sem marca/codigo): plataforma e edicao ja iguais; todos os tokens do master presentes e covC >= gameAcceptC aceita;
+ *  covM >= gameBorderM e covC >= gameBorderC vai para a fila.
+ */
+export const FLEX = {
+  strongAccept: 0.3, strongBorder: 0.15,
+  noCodeBorderM: 0.65, noCodeBorderC: 0.35,
+  gameAcceptC: 0.4, gameBorderM: 0.5, gameBorderC: 0.75,
+};
 
 export type VerdictCounter = 'fora_de_linha_ou_retro' | 'aceito' | 'draft_identidade' | 'rejeitado_condicao' | 'rejeitado_composicao' | 'sem_match' | 'patrocinado' | 'invalido';
 
@@ -43,6 +71,12 @@ export interface Verdict {
   score: number;
   /** Preço lido, em centavos (só em accept/draft). */
   price?: number;
+  /** Rascunho de FRONTEIRA (chave forte, cobertura baixa): vai para a fila de classificação com pergunta ao dono. */
+  border?: boolean;
+  /** Resultado patrocinado que seria aceito se o preço vier da página do produto: o cliente deve abrir /dp/ASIN e reenviar com pg=1. */
+  needsPage?: boolean;
+  covM?: number;
+  covC?: number;
 }
 
 /** Master como o coletor o enxerga (vem de master_products + brands + attributes.vertical). */
@@ -86,13 +120,38 @@ function reject(counter: VerdictCounter, reason: string, score = 0): Verdict {
   return { outcome: 'reject', counter, reason, score };
 }
 
-/** Pré-filtros comuns (ASIN válido, não patrocinado, preço lido). Devolve o preço ou o veredito de saída. */
-function precheck(c: AmzCand): { price: number } | { out: Verdict } {
+/**
+ * Pré-filtros comuns (ASIN válido, preço lido). Devolve o preço ou o veredito de saída.
+ * Patrocinado: sem `flex` é sempre recusado. Com `flex`, o card patrocinado NUNCA fornece preço: o título é julgado normalmente e,
+ * se o resultado seria aceito/duvidoso, o veredito pede a PÁGINA do produto (`needsPage`); só com pg=1 (preço lido na /dp/ASIN)
+ * o patrocinado é aceito (ver `finishSponsored`).
+ */
+function precheck(c: AmzCand, flex: boolean): { price: number; sponsored: boolean } | { out: Verdict } {
   if (!c || typeof c.a !== 'string' || !ASIN_RE.test(c.a)) return { out: invalid('asin_invalido') };
-  if (c.s) return { out: reject('patrocinado', 'patrocinado') };
+  const sponsored = Boolean(c.s);
+  if (sponsored && !flex) return { out: reject('patrocinado', 'patrocinado') };
   const price = parseBrl(c.p);
+  if (sponsored && c.pg !== 1) return { price: price ?? 1, sponsored }; // preço do card ignorado; o julgamento segue só pelo título
   if (!price) return { out: invalid('sem_preco') };
-  return { price };
+  return { price, sponsored };
+}
+
+/** Pós-julgamento do patrocinado: sem página, só pede a página (ou recusa); com página (pg=1), vale o veredito do título + a regra do ASIN conhecido. */
+function finishSponsored(judged: Verdict, c: AmzCand, opts: JudgeOpts): Verdict {
+  if (c.pg !== 1) {
+    const knownLowCov = (opts.knownAsins?.has(c.a) ?? false) && judged.outcome === 'reject' && judged.reason === 'cobertura_baixa';
+    return judged.outcome === 'reject' && !knownLowCov
+      ? reject('patrocinado', 'patrocinado')
+      : { outcome: 'reject', counter: 'patrocinado', reason: 'patrocinado_precisa_pagina', score: judged.score, needsPage: true };
+  }
+  const known = opts.knownAsins?.has(c.a) ?? false;
+  // ASIN já cadastrado e ativo neste master: a identidade já foi aprovada antes; cobertura de título baixa não derruba.
+  if (known && judged.outcome === 'reject' && judged.counter === 'sem_match' && judged.reason === 'cobertura_baixa') {
+    return { outcome: 'accept', counter: 'aceito', reason: 'patrocinado_asin_conhecido', score: judged.score, price: parseBrl(c.p) as number };
+  }
+  if (judged.outcome === 'accept') return { ...judged, reason: `patrocinado_pagina:${judged.reason}` };
+  if (judged.outcome === 'draft') return { ...judged, reason: `patrocinado_pagina:${judged.reason}` };
+  return judged;
 }
 
 // ---------------------------------------------------------------------------
@@ -172,9 +231,20 @@ export function prepareGame(m: { name: string; gen: string | null }): GameCtx | 
   return { mPlat, mTok: gameTokens(m.name), mEd: editionSet(m.name), mCol: colorSet(m.name), mDigital: /\bdigital\b/.test(norm(m.name)) };
 }
 
-export function judgeGame(ctx: GameCtx, c: AmzCand): Verdict {
-  const pre = precheck(c);
+/** Numerais romanos de sequência/edição anual (ex.: "II", "XXIII"). Só tokens inequívocos; "x", "xl", "xxl" ficam de fora (tamanhos). */
+const ROMAN_TOKENS = new Set('ii iii iv vi vii viii ix xi xii xiii xiv xv xvi xvii xviii xix xxi xxii xxiii xxiv xxv xxvi xxvii'.split(' '));
+const romanSet = (nrm: string): Set<string> => new Set(nrm.split(' ').filter((t) => ROMAN_TOKENS.has(t)));
+const isNumeralToken = (t: string) => /^\d{1,4}$/.test(t) || ROMAN_TOKENS.has(t);
+
+export function judgeGame(ctx: GameCtx, c: AmzCand, opts: JudgeOpts = {}): Verdict {
+  const flex = opts.flex ?? AMAZON_FLEX_DEFAULT;
+  const pre = precheck(c, flex);
   if ('out' in pre) return pre.out;
+  const v = judgeGameTitle(ctx, c, pre.price, flex);
+  return pre.sponsored ? finishSponsored(v, c, opts) : v;
+}
+
+function judgeGameTitle(ctx: GameCtx, c: AmzCand, price: number, flex: boolean): Verdict {
   const title = String(c.t ?? '').slice(0, 300);
   const ct = norm(title);
   const retro = mentionsRetroPlatformOnly(ct) ?? (/\b(xbox one|ps ?[123]|wii|3ds|nintendo ds)\b/.test(ct) && !MODERN_RE.test(ct) ? 'retro' : null);
@@ -191,8 +261,24 @@ export function judgeGame(ctx: GameCtx, c: AmzCand): Verdict {
   const cTok = gameTokens(title), cs = new Set(cTok);
   const inter = ctx.mTok.filter((w) => cs.has(w)).length;
   const covM = ctx.mTok.length ? inter / ctx.mTok.length : 0, covC = cTok.length ? inter / cTok.length : 0;
-  if (covM < 0.8 || covC < 0.5) return reject('sem_match', 'cobertura_baixa');
-  return { outcome: 'accept', counter: 'aceito', reason: 'jogo_cobertura', score: covM * 0.6 + covC * 0.4, price: pre.price };
+  const score = covM * 0.6 + covC * 0.4;
+  if (covM >= 0.8 && covC >= 0.5) {
+    if (flex && !eqSet(romanSet(norm(ctx.mTok.join(' '))), romanSet(ct))) return { ...reject('sem_match', 'sequencia_romana_diferente', score), covM, covC };
+    return { outcome: 'accept', counter: 'aceito', reason: 'jogo_cobertura', score, price, covM, covC };
+  }
+  if (!flex) return reject('sem_match', 'cobertura_baixa');
+  // Flexibilizacao (jogos): plataforma e edicao ja sao iguais. O que sobra de diferenca esta nos tokens extras do titulo (subtitulo,
+  // editora, "Midia Fisica"...). Numeral/romano extra ou faltando = outra sequencia: recusa. Sem isso: aceite (todos os tokens do master
+  // presentes e cobertura razoavel) ou fronteira (fila).
+  const ms = new Set(ctx.mTok);
+  const extras = cTok.filter((t) => !ms.has(t));
+  if (extras.some(isNumeralToken)) return { ...reject('sem_match', 'numeral_extra_no_titulo', score), covM, covC };
+  if (!eqSet(romanSet(norm(ctx.mTok.join(' '))), romanSet(ct))) return { ...reject('sem_match', 'sequencia_romana_diferente', score), covM, covC };
+  if (covM >= 0.8 && covC >= FLEX.gameAcceptC && covM === 1) return { outcome: 'accept', counter: 'aceito', reason: 'jogo_cobertura_flex', score, price, covM, covC };
+  if (covM >= FLEX.gameBorderM && covC >= FLEX.gameBorderC) {
+    return { outcome: 'draft', counter: 'draft_identidade', reason: 'fronteira:jogo_cobertura', score, price, border: true, covM, covC };
+  }
+  return { ...reject('sem_match', 'cobertura_baixa', score), covM, covC };
 }
 
 // ---------------------------------------------------------------------------
@@ -235,6 +321,10 @@ export interface Feat {
   region: Set<string>;
   nums: Set<string>;
   years: Set<string>;
+  /** Códigos de modelo FRACOS (hifenizados: "AFON-12L", "PE-45-6X"). Só servem para CONFIRMAR um modelo; nunca para recusar por "modelo diferente". */
+  hcodes: string[];
+  /** Numerais romanos do título (sequência/edição anual: "II", "XXIII"). */
+  roman: Set<string>;
 }
 
 function parseNum(s: string): number {
@@ -313,7 +403,14 @@ export function extractFeat(text: string, segment: string | null = null): Feat {
     if (GENERIC_STOP.has(t) || t.length < 2) continue;
     tokens.push(t);
   }
-  return { norm: nrm, compact: nrm.replace(/ /g, ''), words, tokens, codes, inches, qty, volts, gender, variants, editions, region, nums, years };
+  // Códigos hifenizados: primeiro segmento só letras (2+), tem dígito, 5+ caracteres juntos, e não é ruído técnico (wi-fi6, usb-c3...).
+  const hcodes: string[] = [];
+  for (const m of fold(text).matchAll(/\b([a-z]{2,}(?:[-/][a-z0-9]+)+)\b/g)) {
+    const c = m[1].replace(/[-/]/g, '');
+    if (c.length >= 5 && c.length <= 24 && /\d/.test(c) && !CODE_NOISE.test(c) && !hcodes.includes(c)) hcodes.push(c);
+  }
+  const roman = new Set(nrm.split(' ').filter((t) => ROMAN_TOKENS.has(t)));
+  return { norm: nrm, compact: nrm.replace(/ /g, ''), words, tokens, codes, inches, qty, volts, gender, variants, editions, region, nums, years, hcodes, roman };
 }
 
 // ---------------------------------------------------------------------------
@@ -325,6 +422,12 @@ function codeMatch(a: string, b: string): boolean {
   const [s, l] = a.length <= b.length ? [a, b] : [b, a];
   if (s.length >= 7 && l.includes(s)) return true;
   return s.length >= 5 && l.startsWith(s) && l.length - s.length <= 6;
+}
+
+/** Casamento FRACO (candidato com código hifenizado, normalmente sem o sufixo de cor/região): igual, ou o do master = o do candidato + até 4 LETRAS (sem dígito). "ZV-E10" não casa "zve10m2" (M2 = Mark II). */
+function weakCodeMatch(masterCode: string, cand: string): boolean {
+  if (masterCode === cand) return true;
+  return cand.length >= 5 && masterCode.startsWith(cand) && /^[a-z]{1,4}$/.test(masterCode.slice(cand.length));
 }
 
 /** Códigos do master: atributos MODEL/ALPHANUMERIC_MODEL/MPN (na forma compacta) + tokens do nome. */
@@ -506,15 +609,21 @@ function judgeI3d(ctx: GenericCtx, cNorm: string, title: string, price: number):
   return ok('campos_iguais');
 }
 
-export function judgeGeneric(ctx: GenericCtx, c: AmzCand): Verdict {
-  const pre = precheck(c);
+export function judgeGeneric(ctx: GenericCtx, c: AmzCand, opts: JudgeOpts = {}): Verdict {
+  const flex = opts.flex ?? AMAZON_FLEX_DEFAULT;
+  const pre = precheck(c, flex);
   if ('out' in pre) return pre.out;
+  const v = judgeGenericTitle(ctx, c, pre.price, flex);
+  return pre.sponsored ? finishSponsored(v, c, opts) : v;
+}
+
+function judgeGenericTitle(ctx: GenericCtx, c: AmzCand, price0: number, flex: boolean): Verdict {
   const title = String(c.t ?? '').slice(0, 300);
-  if (ctx.m.vertical === 'livros') return judgeBook(ctx, c, title, pre.price);
+  if (ctx.m.vertical === 'livros') return judgeBook(ctx, c, title, price0);
   const cNorm = norm(title);
   const early = conditionOrPack(ctx, cNorm, title);
   if (early) return early;
-  const price = pre.price;
+  const price = price0;
 
   const i3dv = judgeI3d(ctx, cNorm, title, price);
   if (i3dv) return i3dv;
@@ -532,8 +641,17 @@ export function judgeGeneric(ctx: GenericCtx, c: AmzCand): Verdict {
   // Modelo: código igual = chave forte; códigos presentes e nenhum igual = outro modelo.
   const codeHit = ctx.codes.some((mc) => cf.codes.some((cc) => codeMatch(mc, cc)) || (mc.length >= 6 && cf.compact.includes(mc)));
   if (ctx.codes.length && cf.codes.length && !codeHit) return reject('sem_match', 'modelo_diferente');
-  const strong = codeHit;
-  if (ctx.codes.length && !cf.codes.length && !codeHit) doubts.push('modelo_ausente_no_candidato');
+  // Flex: código hifenizado do título ("AFON-12L") confirma o modelo (casamento fraco, nunca recusa).
+  const weakHit = flex && !codeHit && ctx.codes.some((mc) => cf.hcodes.some((hc) => weakCodeMatch(mc, hc)));
+  const strong = codeHit || weakHit;
+  if (ctx.codes.length && !cf.codes.length && !strong) doubts.push('modelo_ausente_no_candidato');
+
+  // Flex: numeral romano (sequência / edição anual: "Player XXIII" x "XXV", "Slick II"): diferente = outro produto; só num lado = dúvida.
+  if (flex) {
+    const mr = mf.roman, cr = cf.roman;
+    if (mr.size && cr.size) { if (!eqSet(mr, cr)) return reject('sem_match', `numeral_romano_diferente:${[...mr].join('/')}x${[...cr].join('/')}`); }
+    else if (mr.size || cr.size) doubts.push('numeral_romano_so_num_lado');
+  }
 
   // Marca.
   if (!ctx.brand) doubts.push('marca_do_master_desconhecida');
@@ -583,13 +701,23 @@ export function judgeGeneric(ctx: GenericCtx, c: AmzCand): Verdict {
   // Cobertura de título.
   const { covM, covC } = coverage(mf.tokens, cf.tokens);
   const score = covM * 0.6 + covC * 0.4;
-  if (strong ? covM < 0.5 : covM < 0.8 || covC < 0.45) return reject('sem_match', 'cobertura_baixa', score);
+  const brandOk = Boolean(ctx.brand && brandInTitle(ctx.brand, cf));
+  const strongId = strong && brandOk; // marca + código de modelo
+  let borderWhy: string | null = null;
+  if (strong ? covM < 0.5 : covM < 0.8 || covC < 0.45) {
+    if (flex && strongId && covM >= FLEX.strongAccept) {
+      // marca + código de modelo coincidem: cobertura baixa de título (título do master cheio de ruído) não derruba
+    } else if (flex && strongId && covM >= FLEX.strongBorder) borderWhy = 'marca_modelo_cobertura_baixa';
+    else if (flex && !strong && brandOk && covM >= FLEX.noCodeBorderM && covC >= FLEX.noCodeBorderC) borderWhy = 'marca_sem_modelo_cobertura_media';
+    else return { ...reject('sem_match', 'cobertura_baixa', score), covM, covC };
+  }
 
   const reasons = [...doubts, ...(strong ? [] : soft)];
-  if (reasons.length) return { outcome: 'draft', counter: 'draft_identidade', reason: reasons.join('+'), score, price };
-  if (strong) return { outcome: 'accept', counter: 'aceito', reason: 'modelo_igual', score, price };
-  if (!ctx.codes.length && covM >= 0.85 && covC >= 0.6) return { outcome: 'accept', counter: 'aceito', reason: 'marca_modelo_cobertura', score, price };
-  return { outcome: 'draft', counter: 'draft_identidade', reason: 'cobertura_intermediaria', score, price };
+  if (borderWhy) return { outcome: 'draft', counter: 'draft_identidade', reason: `fronteira:${[borderWhy, ...reasons].join('+')}`, score, price, border: true, covM, covC };
+  if (reasons.length) return { outcome: 'draft', counter: 'draft_identidade', reason: reasons.join('+'), score, price, covM, covC };
+  if (strong) return { outcome: 'accept', counter: 'aceito', reason: weakHit ? 'modelo_igual_hifenizado' : 'modelo_igual', score, price, covM, covC };
+  if (!ctx.codes.length && covM >= 0.85 && covC >= 0.6) return { outcome: 'accept', counter: 'aceito', reason: 'marca_modelo_cobertura', score, price, covM, covC };
+  return { outcome: 'draft', counter: 'draft_identidade', reason: 'cobertura_intermediaria', score, price, covM, covC };
 }
 
 // ---------------------------------------------------------------------------

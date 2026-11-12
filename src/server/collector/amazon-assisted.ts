@@ -12,6 +12,7 @@ import {
   type AmzCand, type MasterIdentity, type Verdict,
 } from '@/lib/affiliate/amazon-identity';
 import { recordPriceSnapshot } from './record-price-snapshot';
+import { enfileirarDuvidaAmazon } from './amazon-fila';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 
 /**
@@ -134,6 +135,14 @@ export interface AmzStats {
   por_vertical: Record<string, Counters & { buscas: number }>;
   rascunhos_novos: number; rascunhos_atualizados: number;
   amostra_draft: Array<{ master: string; asin: string; motivo: string }>;
+  /** Rascunhos de FRONTEIRA (marca+modelo/plataforma+edicao iguais, cobertura de título baixa): vão para a fila de classificação em vez de serem descartados. */
+  fronteira: number;
+  /** Perguntas novas criadas na fila de classificação (rascunhos da Amazon em dúvida). */
+  fila_criados: number;
+  /** Patrocinados que seriam aceitos se o preço vier da página do produto: o cliente abre /dp/ASIN e reenvia o candidato com pg=1 e o preço da página. */
+  paginas_pendentes: Array<{ id: string; a: string }>;
+  /** Amostra de candidatos RECUSADOS (sem preço): permite simular regras novas sobre dado real nas próximas rodadas. Truncada em 30 por chamada. */
+  amostra_recusados: Array<{ master: string; vertical: string; asin: string; titulo: string; motivo: string; covM?: number; covC?: number }>;
 }
 export interface AmzLogEntry { id: string; master?: string; asin?: string; titulo?: string; preco?: number; score?: number; resultado: string; refs?: number; motivo?: string }
 
@@ -148,7 +157,7 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
   if (!net) throw new Error('rede amazon não existe');
   const stats: AmzStats = {
     buscas: 0, sem_candidato: 0, aceitos: 0, novos: 0, atualizados: 0, rejeitados: 0, motivos: {}, contadores: zero(), por_vertical: {},
-    rascunhos_novos: 0, rascunhos_atualizados: 0, amostra_draft: [],
+    rascunhos_novos: 0, rascunhos_atualizados: 0, amostra_draft: [], fronteira: 0, fila_criados: 0, paginas_pendentes: [], amostra_recusados: [],
   };
   const bump = (m: string) => { stats.motivos[m] = (stats.motivos[m] ?? 0) + 1; stats.rejeitados++; };
   const log: AmzLogEntry[] = [];
@@ -165,18 +174,23 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
     pv.buscas++;
     const name = master.name;
 
+    // ASINs das ofertas ATIVAS da Amazon neste master: identidade já comprovada (usado só para aceitar o resultado patrocinado lido na página).
+    const knownAsins = new Set((await db.execute<{ r: string }>(sql`
+      SELECT o.external_ref AS r FROM affiliate_offers o WHERE o.network_id = ${net.id} AND o.master_product_id = ${row.id}::uuid AND o.status = 'active' AND o.external_ref LIKE 'amazon-%'`))
+      .map((x) => String(x.r).replace(/^amazon-/, '')));
     let judge: (c: AmzCand) => Verdict;
     if (v === 'games') {
       const ctx = prepareGame({ name, gen: master.gen });
       if (!ctx) { bump('master_sem_plataforma'); continue; }
-      judge = (c) => judgeGame(ctx, c);
+      judge = (c) => judgeGame(ctx, c, { knownAsins });
     } else {
       const ctx = prepareGeneric(master);
-      judge = (c) => judgeGeneric(ctx, c);
+      judge = (c) => judgeGeneric(ctx, c, { knownAsins });
     }
 
-    const accepted: { c: AmzCand; price: number; score: number; reason: string }[] = [];
-    const drafts: { c: AmzCand; price: number; score: number; reason: string }[] = [];
+    type Hit = { c: AmzCand; price: number; score: number; reason: string; border?: boolean; covM?: number; covC?: number };
+    const accepted: Hit[] = [];
+    const drafts: Hit[] = [];
     for (const raw of (row.r ?? []).slice(0, 10)) {
       const c = raw && typeof raw === 'object' ? { ...raw, t: String(raw.t ?? '').slice(0, 300) } : raw;
       const vd = judge(c);
@@ -184,9 +198,13 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
       if (vd.outcome === 'reject') {
         if (k === 'rejeitado_condicao' || k === 'rejeitado_composicao' || k === 'fora_de_linha_ou_retro' || k === 'patrocinado') { stats.contadores[k]++; pv[k]++; }
         stats.motivos[`${k}:${vd.reason}`] = (stats.motivos[`${k}:${vd.reason}`] ?? 0) + 1;
+        if (vd.needsPage && stats.paginas_pendentes.length < 40) stats.paginas_pendentes.push({ id: row.id, a: c.a });
+        if ((k === 'sem_match' || k === 'patrocinado') && stats.amostra_recusados.length < 30 && c && typeof c === 'object') {
+          stats.amostra_recusados.push({ master: name.slice(0, 80), vertical: v, asin: String(c.a), titulo: String(c.t).slice(0, 120), motivo: vd.reason, covM: vd.covM != null ? Number(vd.covM.toFixed(2)) : undefined, covC: vd.covC != null ? Number(vd.covC.toFixed(2)) : undefined });
+        }
         continue;
       }
-      (vd.outcome === 'accept' ? accepted : drafts).push({ c, price: vd.price as number, score: vd.score, reason: vd.reason });
+      (vd.outcome === 'accept' ? accepted : drafts).push({ c, price: vd.price as number, score: vd.score, reason: vd.reason, border: vd.border, covM: vd.covM, covC: vd.covC });
     }
     accepted.sort((x, y) => y.score - x.score);
     drafts.sort((x, y) => y.score - x.score);
@@ -209,6 +227,7 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
       const isDraft = a.kind === 'draft';
       if (isDraft) {
         stats.contadores.draft_identidade++; pv.draft_identidade++;
+        if (a.border) stats.fronteira++;
         if (stats.amostra_draft.length < 25) stats.amostra_draft.push({ master: name.slice(0, 80), asin: a.c.a, motivo: a.reason });
         scanResult = scanResult === 'aceito' ? 'aceito' : 'draft';
       } else { stats.aceitos++; stats.contadores.aceito++; pv.aceito++; scanResult = 'aceito'; }
@@ -221,7 +240,10 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
         await recordPriceSnapshot({ offerId: existing.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
         const img = safeAmazonImage(a.c.i);
         await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now(), image_url = COALESCE(${img}, image_url) WHERE id = ${existing.id}`);
-        if (existing.status === 'draft') stats.rascunhos_atualizados++; else stats.atualizados++;
+        if (existing.status === 'draft') {
+          stats.rascunhos_atualizados++;
+          if (await enfileirarDuvidaAmazon(db, { offerId: existing.id, masterId: row.id, masterNome: name, vertical: v, asin: a.c.a, titulo: a.c.t, motivo: a.reason, fronteira: Boolean(a.border), score: a.score, covM: a.covM, covC: a.covC })) stats.fila_criados++;
+        } else stats.atualizados++;
         continue;
       }
       const [o] = await db.insert(affiliateOffers).values({
@@ -232,7 +254,10 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
       }).returning({ id: affiliateOffers.id });
       await recordPriceSnapshot({ offerId: o.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
       await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now() WHERE id = ${o.id}`);
-      if (isDraft) stats.rascunhos_novos++; else stats.novos++;
+      if (isDraft) {
+        stats.rascunhos_novos++;
+        if (await enfileirarDuvidaAmazon(db, { offerId: o.id, masterId: row.id, masterNome: name, vertical: v, asin: a.c.a, titulo: a.c.t, motivo: a.reason, fronteira: Boolean(a.border), score: a.score, covM: a.covM, covC: a.covC })) stats.fila_criados++;
+      } else stats.novos++;
     }
 
     // Rodízio da descoberta: registra a busca (quando e com que resultado) no próprio master; sem migração.
