@@ -18,6 +18,7 @@ import {
 } from '../src/lib/messaging/group-messages';
 import {
   applyLimits,
+  NO_CAP,
   buildDailySummary,
   dailyCap,
   evaluateProduct,
@@ -409,10 +410,10 @@ ok(isNightHour(new Date('2026-11-11T10:59:00Z')), 'noite às 7h59 local');
 ok(!isNightHour(new Date('2026-11-11T11:00:00Z')), 'dia às 8h local');
 ok(isNightHour(new Date('2026-11-11T09:00:00Z')), 'noite às 6h local');
 eq(isNightHour(new Date('2026-11-11T00:50:00Z')), false, '21h50 local ainda não é noite');
-eq(dailyCap(new Date('2026-11-12T15:00:00Z')), 400, 'teto normal 400/dia (dono, 2026-11-11)');
-eq(dailyCap(new Date('2026-11-20T15:00:00Z')), 400, 'teto 400/dia em 20/11');
-eq(dailyCap(new Date('2026-11-27T15:00:00Z')), 400, 'teto 400/dia em 27/11');
-eq(dailyCap(new Date('2026-11-28T15:00:00Z')), 400, 'teto 400/dia em 28/11');
+eq(dailyCap(new Date('2026-11-12T15:00:00Z')), NO_CAP, 'sem teto diário no Telegram (2026-11-12)');
+eq(dailyCap(new Date('2026-11-20T15:00:00Z')), NO_CAP, 'sem teto diário no Telegram (2026-11-20)');
+eq(dailyCap(new Date('2026-11-27T15:00:00Z')), NO_CAP, 'sem teto diário no Telegram (2026-11-27)');
+eq(dailyCap(new Date('2026-11-28T15:00:00Z')), NO_CAP, 'sem teto diário no Telegram (2026-11-28)');
 let plan = applyLimits([cand('1')], [], new Date('2026-11-11T01:00:00Z'));
 ok(plan.next?.masterProductId === '1' && plan.nextSound === false, 'à noite o alerta SAI, mas silencioso (sem som)', plan);
 plan = applyLimits([cand('1')], [], midday);
@@ -420,13 +421,27 @@ ok(plan.next?.masterProductId === '1' && plan.nextSound === true, 'de dia e sem 
 const sent = (id: string, hoursAgo: number, net = 'mercado-livre', price = 10000, extra: Partial<SentRecord> = {}): SentRecord => ({
   masterProductId: id, priceCents: price, sentAt: new Date(midday.getTime() - hoursAgo * H), networkSlug: net, cls: 'alerta', sound: true, ...extra,
 });
-plan = applyLimits([cand('1')], [sent('9', 0.005)], midday);
-ok(plan.next === null && plan.deferred[0]?.reason.startsWith('intervalo_minimo_'), 'intervalo mínimo de 1 min entre mensagens', plan);
+plan = applyLimits([cand('1')], [sent('9', 0.0005, 'mercado-livre', 10000, { vertical: 'games' })], midday);
+ok(plan.next === null && plan.deferred[0]?.reason.startsWith('intervalo_chat_'), 'espaçamento por CHAT: 1,8 s desde a última do mesmo chat = ainda não', plan);
+plan = applyLimits([cand('1')], [sent('9', 0.0005, 'mercado-livre', 10000, { vertical: 'tecnologia' })], midday);
+ok(plan.next?.masterProductId === '1', 'outra loja (chat) não bloqueia: espaçamento é por chat', plan);
+plan = applyLimits([cand('1')], [sent('9', 0.002, 'mercado-livre', 10000, { vertical: 'games' })], midday);
+ok(plan.next?.masterProductId === '1', '7,2 s desde a última do mesmo chat = libera (sem espaçamento global de 1 min)', plan);
 plan = applyLimits([cand('1')], [sent('9', 0.5)], midday);
 ok(plan.next?.masterProductId === '1', 'depois de 30 min o alerta cabe de novo');
 const full = Array.from({ length: 60 }, (_, i) => sent(`h${i}`, 0.3 + i * 0.01, 'shopee', 1, { cls: 'insight', sound: false }));
 plan = applyLimits([cand('1')], full, new Date(midday.getTime()));
-ok(plan.next === null && plan.deferred[0]?.reason === 'teto_horario_60', 'teto de 60 por hora', plan);
+ok(plan.next?.masterProductId === '1', 'Telegram: 60 na última hora NÃO bloqueia (sem teto horário)', plan);
+plan = applyLimits([cand('1')], full, new Date(midday.getTime()), { caps: { hourly: 60 } });
+ok(plan.next === null && plan.deferred[0]?.reason === 'teto_horario_60', 'o conceito do teto por hora continua disponível via opts.caps (WhatsApp/manual)', plan);
+const dayMany = Array.from({ length: 450 }, (_, i) => sent(`d${i}`, 6 + i * 0.01, 'shopee', 1, { cls: 'insight', sound: false, vertical: 'games' }));
+plan = applyLimits([cand('1')], dayMany, midday);
+ok(plan.next?.masterProductId === '1', 'Telegram: 450 enviadas no dia NÃO bloqueiam (sem teto diário)', plan);
+plan = applyLimits([cand('1')], dayMany, midday, { caps: { daily: 400 } });
+ok(plan.next === null && plan.deferred[0]?.reason === 'teto_diario_400', 'teto diário só existe se passado explicitamente', plan);
+const burst = Array.from({ length: 20 }, (_, i) => sent(`b${i}`, (i * 2.5 + 3) / 3600, 'shopee', 1, { cls: 'insight', sound: false, vertical: 'games' }));
+plan = applyLimits([cand('1')], burst, midday);
+ok(plan.next === null && plan.deferred[0]?.reason.startsWith('limite_telegram_20_por_minuto'), 'limite real do Telegram: 20/min por chat', plan);
 const bfNow = new Date('2026-11-21T15:00:00Z');
 const bfHist = Array.from({ length: 31 }, (_, i) => ({ masterProductId: `h${i}`, priceCents: 1, sentAt: new Date(bfNow.getTime() - (i + 1) * 180_000), networkSlug: 'shopee', cls: 'insight' as const, sound: false }));
 plan = applyLimits([cand('1')], bfHist, bfNow);
@@ -516,6 +531,11 @@ async function tgTests() {
   h = fakeFetch([{ status: 429, body: { ok: false, error_code: 429, parameters: { retry_after: 3000 } } }]);
   r = await sendTelegramGroupMessage({ ...base, text: 'x', fetchImpl: h.f });
   ok(!r.ok && r.retryable === true && h.calls.length === 1, '429 com espera longa: não trava a função, volta para tentar depois', r);
+  ok(r.retryAfterSec === 3000 && r.status === 429, '429 longo devolve status e retry_after para o chamador reenfileirar sem perder a mensagem', r);
+  h = fakeFetch([{ status: 429, body: { ok: false, error_code: 429, parameters: { retry_after: 20 } } }, { status: 429, body: { ok: false, error_code: 429, parameters: { retry_after: 20 } } }]);
+  sleeps.length = 0;
+  r = await sendTelegramGroupMessage({ ...base, text: 'x', fetchImpl: h.f, maxRetryAfterSec: 8 });
+  ok(!r.ok && r.status === 429 && h.calls.length === 1 && sleeps.length === 0, '429 acima do limite de espera da execução: não dorme, não reenvia (sem duplicar) e devolve retry_after', { r, sleeps });
 
   const boom: FetchLike = async () => {
     throw new Error(`falha em https://api.telegram.org/bot${TOKEN}/sendMessage`);

@@ -6,7 +6,7 @@ import { canAutoSend, memberBrake, shouldCountMembers, type AutomationState, typ
 import { applyLimits, type Candidate } from '@/lib/messaging/group-rules';
 import { getTelegramMemberCount, type FetchLike } from '@/lib/messaging/telegram-send';
 import { getAutomation } from '@/server/messaging/group-automation-store';
-import { detectGroupCandidates, groupMessagesTableExists, groupMessagesV2Ready, type DetectionResult } from '@/server/messaging/group-offers';
+import { detectGroupCandidates, groupMessagesTableExists, loadSentHistory, groupMessagesV2Ready, type DetectionResult } from '@/server/messaging/group-offers';
 import {
   expireStale,
   listPendingForSend,
@@ -23,6 +23,13 @@ import {
 } from '@/server/messaging/group-queue';
 
 type Row = Record<string, unknown>;
+
+/** Orçamento do envio por execução do cron (maxDuration da rota = 60 s; sobra tempo para reconferência e guardião de cupons). */
+export const SEND_BUDGET_MS = 38_000;
+/** Teto de segurança de voltas por execução (não é teto diário: a próxima execução continua de onde parou). */
+export const MAX_SENDS_PER_RUN = 60;
+/** Linhas lidas da fila por execução (fila acumulada + novas). */
+export const PENDING_LIMIT = 300;
 
 /**
  * Ciclo do cron das mensagens (a cada 5 min quando for agendado; NÃO está no vercel.json). Idempotente e tolerante a
@@ -173,23 +180,42 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     if (mode === 'send' && gate.ok && state !== 'shadow') {
       const statuses = auto.ok ? (['aprovada', 'proposta_auto'] as const) : (['aprovada'] as const);
       if (v2) {
-        let pending = await listPendingForSend([...statuses]);
+        let pending = await listPendingForSend([...statuses], PENDING_LIMIT);
         let outcome: SendOutcome | { outcome: string; reason?: string } = { outcome: 'nada na fila para enviar' };
-        for (let attempt = 0; attempt < 3 && pending.length; attempt++) {
+        let history = detection.history;
+        const sentBy: Record<string, number> = {};
+        let expiredCount = 0;
+        let guard = 0;
+        // Esvazia a fila acumulada dentro do orçamento de tempo (sem teto diário; o freio é o espaçamento por chat e o 429).
+        // Cada volta envia UMA linha e relê o histórico (a recém-enviada passa a contar para o espaçamento do chat e o dedup).
+        while (pending.length && guard++ < MAX_SENDS_PER_RUN && Date.now() - started.getTime() < SEND_BUDGET_MS) {
           const cands: Candidate[] = pending.map((r) => ({ ...r.candidate, status: 'auto', held: false, sendable: true }));
-          const plan = applyLimits(cands, detection.history, now);
+          const plan = applyLimits(cands, history, new Date(Math.max(now.getTime(), Date.now())));
           if (!plan.next) {
+            // Espaçamento por chat: se só falta esperar poucos segundos, espera dentro do orçamento em vez de perder a vez.
+            const wait = plan.deferred.some((d) => d.reason.startsWith('intervalo_chat_')) && !plan.deferred.some((d) => !d.reason.startsWith('intervalo_chat_') && !d.reason.startsWith('produto_ja_enviado') && !d.reason.startsWith('mesmo_produto'));
+            if (wait && Date.now() - started.getTime() + 3_500 < SEND_BUDGET_MS) {
+              await new Promise((r) => setTimeout(r, 3_100));
+              history = (await loadSentHistory('tg', new Date())).records;
+              continue;
+            }
             outcome = { outcome: 'adiada', reason: plan.deferred[0]?.reason ?? 'limite' };
             break;
           }
           const row = pending.find((r) => r.messageKey === plan.next?.messageKey);
           if (!row) break;
-          const r = await sendQueuedTelegram(row.id, { now, fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup, onCouponSent: deps.onCouponSent });
+          const r = await sendQueuedTelegram(row.id, { now: new Date(), fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup, onCouponSent: deps.onCouponSent });
           outcome = r;
-          if (r.outcome === 'sent') sentCount++;
-          if (r.outcome !== 'expired') break;
-          pending = pending.filter((x) => x.id !== row.id); // expirou: tenta a próxima do plano (no máximo 3 por execução)
+          pending = pending.filter((x) => x.id !== row.id);
+          if (r.outcome === 'sent') {
+            sentCount++;
+            sentBy[row.candidate.vertical] = (sentBy[row.candidate.vertical] ?? 0) + 1;
+            history = (await loadSentHistory('tg', new Date())).records;
+          } else if (r.outcome === 'expired') expiredCount++;
+          else if (r.outcome === 'deferred') continue; // a linha foi devolvida à fila; tenta a próxima do plano
+          else break; // blocked / failed (inclui 429 longo): para; a linha volta à fila para o próximo ciclo
         }
+        summary.sendRun = { sent: sentCount, expired: expiredCount, byStore: sentBy, remainingInQueue: pending.length, ms: Date.now() - started.getTime() };
         summary.send = outcome;
       } else {
         const next = await db

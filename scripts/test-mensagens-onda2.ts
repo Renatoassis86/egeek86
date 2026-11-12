@@ -8,6 +8,7 @@
 import {
   RULES,
   applyLimits,
+  NO_CAP,
   compareCandidates,
   diversityKey,
   evaluateProductV2,
@@ -351,13 +352,15 @@ eq(jitterMin(NOW, 5), jitterMin(new Date(NOW.getTime()), 5), 'jitter: mesmo inst
 const gDay = minGapMinutes(NOW, cfg);
 const gNight = minGapMinutes(new Date('2026-11-11T04:00:00Z'), cfg);
 ok(gDay >= 20 && gDay <= 30 && gNight >= 55 && gNight <= 65, 'com 25/60 e jitter: dia entre 20 e 30, noite entre 55 e 65', [gDay, gNight]);
-let lp = applyLimits([mkc('1', 'alerta')], [rec('h', gDay - 1)], NOW, { spacing: cfg });
-ok(lp.next === null && lp.deferred[0].reason === `intervalo_minimo_${gDay}min_desde_a_ultima`, 'dia: 1 min antes do intervalo vigente = ainda não', lp.deferred);
+let lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.02)], NOW, { spacing: cfg });
+ok(lp.next === null && lp.deferred[0].reason === 'intervalo_chat_3s', 'dia: 1,2 s desde a última do mesmo chat = ainda não (espaçamento por chat)', lp.deferred);
+lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.02, { vertical: 'tecnologia' })], NOW, { spacing: cfg });
+ok(lp.next !== null, 'outra loja (chat) não bloqueia o envio');
 lp = applyLimits([mkc('1', 'alerta')], [rec('h', gDay)], NOW, { spacing: cfg });
 ok(lp.next !== null, 'dia: no intervalo vigente = pode');
 const NIGHT = new Date('2026-11-11T04:00:00Z');
-lp = applyLimits([mkc('1', 'alerta')], [rec('h', gNight - 1, { sentAt: new Date(NIGHT.getTime() - (gNight - 1) * MIN) })], NIGHT, { spacing: cfg });
-ok(lp.next === null, 'noite: 1 min antes dos 60 (± jitter) = ainda não');
+lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.02, { sentAt: new Date(NIGHT.getTime() - 1200) })], NIGHT, { spacing: cfg });
+ok(lp.next === null, 'noite: 1,2 s desde a última do mesmo chat = ainda não');
 lp = applyLimits([mkc('1', 'alerta')], [rec('h', gNight, { sentAt: new Date(NIGHT.getTime() - gNight * MIN) })], NIGHT, { spacing: cfg });
 ok(lp.next !== null && lp.nextSound === false, 'noite: no intervalo vigente = pode, e SEM som');
 // próxima liberação
@@ -370,12 +373,14 @@ ok(lp.next !== null, 'registro de item de radar (itemOnly) não conta no interva
 // teto por hora: 60 (dono, 2026-11-11; antes 30)
 const sixty = Array.from({ length: 60 }, (_, i) => rec(`t${i}`, 2 + i * 0.9, { cls: 'insight' }));
 lp = applyLimits([mkc('1', 'alerta')], sixty, NOW);
-ok(lp.next === null && lp.deferred[0].reason === 'teto_horario_60', '60 na última hora: teto por hora', lp.deferred);
-lp = applyLimits([mkc('1', 'alerta')], sixty.slice(1), NOW);
+ok(lp.next !== null, 'Telegram: 60 na última hora NÃO bloqueia (sem teto por hora)', lp.deferred);
+lp = applyLimits([mkc('1', 'alerta')], sixty, NOW, { caps: { hourly: 60 } });
+ok(lp.next === null && lp.deferred[0].reason === 'teto_horario_60', 'com teto explícito (opts.caps) o conceito continua: 60 na última hora', lp.deferred);
+lp = applyLimits([mkc('1', 'alerta')], sixty.slice(1), NOW, { caps: { hourly: 60 } });
 ok(lp.next !== null, '59 na última hora: ainda cabe');
-lp = applyLimits([mkc('1', 'alerta')], sixty, NOW, { ignoreSpacing: true });
-ok(lp.next === null, 'o envio manual NÃO fura o teto por hora');
-lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.2)], NOW, { ignoreSpacing: true });
+lp = applyLimits([mkc('1', 'alerta')], sixty, NOW, { ignoreSpacing: true, caps: { hourly: 60 } });
+ok(lp.next === null, 'o envio manual NÃO fura o teto por hora quando ele existe');
+lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.02)], NOW, { ignoreSpacing: true });
 ok(lp.next !== null, 'o envio manual ignora o intervalo mínimo');
 // mesmo produto: 90 min (exceto novo mínimo, que repete depois de 30 min com preço menor)
 const price9 = { priceCents: 9000 };
@@ -430,7 +435,7 @@ ok(RULES.PROPOSAL_MAX_AGE_HOURS === 6, 'constante de 6 h');
 // 8) Plano do dia (puro)
 // ---------------------------------------------------------------------------
 const sentToday = [rec('a', 120, { sound: true }), rec('b', 60), rec('c', 30, { sound: true })];
-let dp = planDaySlots(NOW, sentToday);
+let dp = planDaySlots(NOW, sentToday, { daily: 400, hourly: 60 });
 ok(dp.sentToday === 3 && dp.remaining === 397 && dp.dailyCap === 400 && dp.soundRemaining === 18, 'plano: 3 enviadas, restam 397 e 18 sonoras', dp);
 ok(dp.slots.length === 397 && dp.slots[0].at.getTime() >= NOW.getTime(), 'plano: um slot para cada mensagem que ainda cabe, a partir de agora');
 const perHour = new Map<string, number>();
@@ -450,10 +455,10 @@ ok(night.length >= 1 && night.every((s) => !s.soundWindow), 'plano: faixa das 22
 ok(dp.slots.filter((s) => s.band === 'inicio-noite').every((s) => s.soundWindow), 'plano: início da noite (18h a 22h) ainda pode ter som');
 // teto por hora empurra o slot
 const heavy = Array.from({ length: 60 }, (_, i) => rec(`k${i}`, 1 + i * 0.9, { cls: 'insight' }));
-dp = planDaySlots(NOW, heavy);
+dp = planDaySlots(NOW, heavy, { hourly: 60 });
 ok(dp.nextEligibleAt.getTime() > NOW.getTime() + 5 * MIN && dp.slots[0].at.getTime() === dp.nextEligibleAt.getTime(), 'plano: 60 na última hora empurra o primeiro slot', dp.nextEligibleAt);
 // dia cheio
-dp = planDaySlots(NOW, Array.from({ length: 400 }, (_, i) => rec(`d${i}`, 70 + i % 10, { sentAt: new Date('2026-11-11T09:00:00Z') })));
+dp = planDaySlots(NOW, Array.from({ length: 400 }, (_, i) => rec(`d${i}`, 70 + i % 10, { sentAt: new Date('2026-11-11T09:00:00Z') })), { daily: 400 });
 ok(dp.remaining === 0 && dp.slots.length === 0, 'plano: dia cheio = 0 slots');
 // fim do dia
 dp = planDaySlots(new Date('2026-11-12T01:50:00Z'), [], {}, { dayMin: 25, nightMin: 60, jitterAmp: 0 }); // 22:50 local
@@ -479,7 +484,7 @@ ok(lp.next !== null && lp.nextSound === false, 'dono: sem janela de horário nen
 // ---------------------------------------------------------------------------
 // 10) Tetos
 // ---------------------------------------------------------------------------
-ok(RULES.DAILY_CAP === 400 && RULES.HOURLY_CAP === 60 && RULES.SOUND_CAP === 20 && RULES.PRODUCT_GAP_MIN === 60 && RULES.MIN_BELOW_AVG_PCT === 10 && RULES.NEW_MIN_REPEAT_MIN === 30, 'tetos: 400/dia, 60/hora, 20 sonoras, mesmo produto 1 h (novo mínimo 30 min), régua de 10% abaixo da média');
+ok(RULES.DAILY_CAP === NO_CAP && RULES.HOURLY_CAP === NO_CAP && RULES.SOUND_CAP === 20 && RULES.PRODUCT_GAP_MIN === 60 && RULES.MIN_BELOW_AVG_PCT === 10 && RULES.NEW_MIN_REPEAT_MIN === 30, 'sem teto diário nem horário (NO_CAP), 20 sonoras, mesmo produto 1 h (novo mínimo 30 min), régua de 10% abaixo da média');
 ok(RULES.DETECT_MAX_AGE_MIN === 180, 'frescor na detecção: 3 h');
 ok(RULES.GREEN_MAX_BELOW_AVG_PCT === 30 && RULES.GREEN_MAX_DROP_PCT === 30 && RULES.REVIEW_ABOVE_BELOW_AVG_PCT === 45 && RULES.REVIEW_ABOVE_DROP_PCT === 45 && RULES.SHOPEE_AUTO_MAX_DROP_PCT === 20, 'faixas: verde até 30%, aprovação 30-45, retida > 45; Shopee até 20%');
 
@@ -671,11 +676,11 @@ lp = applyLimits([mkc('a', 'alerta')], manyPlat, NOW);
 ok(lp.next !== null && lp.state.sentToday === 0, 'mensagens de plataforma não contam nos tetos diário e horário de preço');
 lp = applyLimits([mkc('a', 'alerta'), platC('P4', 'z')], [plat1('P3', 60), ...Array.from({ length: 60 }, (_, i) => rec(`t${i}`, 2 + i * 0.9, { cls: 'insight' }))], NOW);
 ok(lp.next?.trigger === 'P4', 'com o teto horário de preço cheio, a plataforma ainda sai (respeitando o intervalo de 1 min)', lp.deferred);
-lp = applyLimits([platC('P4', 'z')], [rec('h', 0.3)], NOW);
-ok(lp.next === null, 'a plataforma também respeita o intervalo mínimo de 1 min');
+lp = applyLimits([platC('P4', 'z')], [rec('h', 0.02)], NOW);
+ok(lp.next === null, 'a plataforma também respeita o espaçamento por chat (3 s)');
 ok(soundDecision('plataforma', [], NOW) === false, 'plataforma nunca tem som');
 const plan0 = planDaySlots(NOW, [plat1('P1', 5), plat1('P2', 3)]);
-ok(plan0.sentToday === 0 && plan0.remaining === 400, 'plano do dia não conta as de plataforma como preço');
+ok(plan0.sentToday === 0 && plan0.remaining === NO_CAP, 'plano do dia não conta as de plataforma como preço');
 
 console.log('');
 liveTests()

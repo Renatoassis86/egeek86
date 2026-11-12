@@ -2,6 +2,7 @@
 // Leitura do banco em src/server/stores.ts. Plano: docs/plano-lojas-secoes-canais-2026-11-11.md. INERTE: nada do envio lê isto ainda.
 import { VERTICALS } from '@/lib/catalog/verticais';
 import type { Vertical } from '@/lib/catalog/verticais';
+import { NO_CAP } from '@/lib/messaging/group-rules';
 
 export const LOJA_GAMES = 'games';
 
@@ -64,19 +65,19 @@ export const DEFAULT_STORE_LIMITS: StoreLimits = {
  * paridade (o teste compara com RULES e com a linha gravada pela migração 0032).
  */
 export const GAMES_STORE_LIMITS: StoreLimits = {
-  dailyCap: 400,
-  hourlyCap: 60,
+  dailyCap: NO_CAP, // Telegram sem teto de quantidade (dono, 2026-11-11); freio = espaçamento por chat + 429
+  hourlyCap: NO_CAP,
   soundCap: 20,
   spacingDayMin: 1,
   spacingNightMin: 1,
-  classCaps: { alerta: 400, radar: 400, insight: 400, resumo: 400, cupom: 400, plataforma: 400 },
+  classCaps: { alerta: NO_CAP, radar: NO_CAP, insight: NO_CAP, resumo: NO_CAP, cupom: NO_CAP, plataforma: NO_CAP },
   productGapMin: 90,
   cardDailyCap: 4,
   night: { from: 22, until: 8 },
   radarComposite: false,
   diversityBy: 'platform',
   classes: ['alerta', 'insight', 'radar', 'resumo', 'cupom', 'plataforma'],
-  blackFridayDailyCap: 400,
+  blackFridayDailyCap: NO_CAP,
 };
 
 export interface StoreSection {

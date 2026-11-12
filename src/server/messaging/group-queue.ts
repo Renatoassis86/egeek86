@@ -533,6 +533,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       photo,
       button: match.cls === 'plataforma' ? null : buyButton(match, row.messageKey),
       fetchImpl: deps.fetchImpl,
+      maxRetryAfterSec: 8, // 429: espera até 8 s dentro da execução; acima disso devolve a linha à fila (não perde, não duplica)
     });
 
     if (sent.ok) {
@@ -561,6 +562,14 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       // Falha definitiva (token revogado, bot removido, chat inexistente): pausa a automação inteira até o dono olhar.
       await setAutomationState('off', `pausa automática: ${(sent.error ?? 'erro definitivo de envio').slice(0, 120)}`).catch(() => undefined);
       return { ok: false, outcome: 'failed', reason: sent.error };
+    }
+    // 429 (limite de taxa do Telegram): NADA foi enviado. A linha volta para a fila SEM gastar tentativa (não vira 'erro' por limite de taxa).
+    if (sent.status === 429) {
+      await db.execute(sql`
+        UPDATE group_messages SET claimed_at = NULL, updated_at = now(), error = ${`telegram_429_retry_after_${sent.retryAfterSec ?? '?'}s`}, status = ${claimFrom}
+        WHERE id = ${id}::uuid AND status = 'enviando'
+      `);
+      return { ok: false, outcome: 'failed', reason: `telegram_429_retry_after_${sent.retryAfterSec ?? '?'}s` };
     }
     // Temporária (429 longo, 5xx, rede): volta para a fila; na terceira tentativa vira 'erro'.
     await db.execute(sql`

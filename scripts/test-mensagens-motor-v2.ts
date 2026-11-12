@@ -9,6 +9,7 @@ import {
   applyLimits,
   cardAllowed,
   classCap,
+  NO_CAP,
   composeRadar,
   detectMovement,
   evaluateProductV2,
@@ -316,16 +317,18 @@ const rec = (id: string, minAgo: number, over: Partial<SentRecord> = {}): SentRe
   masterProductId: id, priceCents: 10000, sentAt: new Date(NOW.getTime() - minAgo * MIN), networkSlug: 'shopee', cls: 'alerta', sound: true, ...over,
 });
 // tetos por classe (onda 2: o dono trocou os tetos por classe por 120/dia e 30/hora; resumo e cupom seguem)
-eq([classCap('alerta', NOW), classCap('radar', NOW), classCap('insight', NOW), classCap('resumo', NOW), classCap('cupom', NOW)], [400, 400, 400, 400, 400], 'tetos por classe (normal)');
-eq([classCap('alerta', new Date('2026-11-22T15:00:00Z')), classCap('radar', new Date('2026-11-22T15:00:00Z')), classCap('cupom', new Date('2026-11-22T15:00:00Z'))], [400, 400, 400], 'tetos por classe (20 a 27/11)');
+eq([classCap('alerta', NOW), classCap('radar', NOW), classCap('insight', NOW), classCap('resumo', NOW), classCap('cupom', NOW)], [NO_CAP, NO_CAP, NO_CAP, NO_CAP, NO_CAP], 'sem teto por classe no Telegram (normal)');
+eq([classCap('alerta', new Date('2026-11-22T15:00:00Z')), classCap('radar', new Date('2026-11-22T15:00:00Z')), classCap('cupom', new Date('2026-11-22T15:00:00Z'))], [NO_CAP, NO_CAP, NO_CAP], 'sem teto por classe (20 a 27/11)');
 // teto diário de 400 (dono, 2026-11-11)
 let lp = applyLimits([mkc('1', 'alerta')], Array.from({ length: 400 }, (_, i) => rec(`h${i}`, 61 + i, { sound: false })).map((r) => ({ ...r, sentAt: new Date('2026-11-11T10:00:00Z') })), NOW);
-ok(lp.next === null && lp.deferred[0].reason === 'teto_diario_400', 'teto de 400 mensagens por dia', lp.deferred);
+ok(lp.next !== null, 'Telegram: 400 mensagens no dia NÃO bloqueiam mais (sem teto diário)', lp.deferred);
+lp = applyLimits([mkc('1', 'alerta')], Array.from({ length: 400 }, (_, i) => rec(`h${i}`, 61 + i, { sound: false })).map((r) => ({ ...r, sentAt: new Date('2026-11-11T10:00:00Z') })), NOW, { caps: { daily: 400 } });
+ok(lp.next === null && lp.deferred[0].reason === 'teto_diario_400', 'o teto diário só existe se passado em opts.caps', lp.deferred);
 // intervalo mínimo de 1 min entre quaisquer mensagens (onda 2, decisão do dono)
-lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.5)], NOW);
-ok(lp.next === null && lp.deferred[0].reason === 'intervalo_minimo_1min_desde_a_ultima', 'qualquer classe: 30 s desde a última = ainda não', lp.deferred);
-lp = applyLimits([mkc('1', 'alerta')], [rec('h', 1)], NOW);
-ok(lp.next !== null, 'qualquer classe: 1 min desde a última = pode');
+lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.02, { vertical: 'games' })], NOW);
+ok(lp.next === null && lp.deferred[0].reason === 'intervalo_chat_3s', 'mesmo chat: 1,2 s desde a última = ainda não', lp.deferred);
+lp = applyLimits([mkc('1', 'alerta')], [rec('h', 0.1, { vertical: 'games' })], NOW);
+ok(lp.next !== null, 'mesmo chat: 6 s desde a última = pode (sem intervalo global de 1 min)');
 lp = applyLimits([mkc('1', 'insight', { trigger: 'G2' })], [rec('h', 1, { cls: 'radar', sound: false })], NOW);
 ok(lp.next !== null, 'o intervalo vale entre classes diferentes e é de só 1 min');
 // radar composto é opcional: no máximo 1 a cada 45 min

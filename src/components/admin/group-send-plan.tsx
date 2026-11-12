@@ -43,7 +43,7 @@ export function GroupSendPlan({ plan }: { plan: QueuePlanDTO }) {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat label="Intervalo mínimo vigente" value={`${plan.minGapMin} min`} hint={plan.lastSentAt ? `última mensagem às ${hhmm(plan.lastSentAt)}` : 'nenhuma enviada ainda'} />
           <Stat label="Próxima pode sair" value={next} hint={`${plan.hourSent} de ${plan.hourlyCap} na última hora`} />
-          <Stat label="Hoje" value={`${plan.day.sentToday} de ${plan.day.dailyCap}`} hint={`restam ${plan.day.remaining}; ${plan.day.soundRemaining} de ${plan.day.soundCap} sonoras`} />
+          <Stat label="Hoje" value={plan.day.dailyCap >= 1_000_000 ? `${plan.day.sentToday} (sem teto)` : `${plan.day.sentToday} de ${plan.day.dailyCap}`} hint={`${plan.day.dailyCap >= 1_000_000 ? 'sem teto diário; ' : `restam ${plan.day.remaining}; `}${plan.day.soundRemaining} de ${plan.day.soundCap} sonoras`} />
           <Stat label="Slots que restam hoje" value={String(plan.day.slotsLeft)} hint="respeitando intervalo e teto por hora" />
         </div>
 

@@ -21,6 +21,15 @@ import { emFaseDeFormacao, mediaSimples, minLojas } from '@/lib/messaging/fase-f
 // ---------------------------------------------------------------------------
 // Limiares (medidos e decididos na ata)
 // ---------------------------------------------------------------------------
+/**
+ * Sem teto de quantidade (dono, 2026-11-11: "enviar a quantidade que o Telegram permitir, para todas as lojas").
+ * O Telegram NAO limita mensagens por dia: limita a taxa (~1/s por chat, ~20/min por grupo, ~30/s no total). Por isso o teto
+ * diario, o horario, o por classe e o de alertas noturnos valem este numero (efetivamente infinito, finito para somar/serializar),
+ * e o freio real e o espacamento por CHAT (SPACING_CHAT_SEC) mais o tratamento do HTTP 429 (retry_after) no envio.
+ * O conceito dos tetos continua nas funcoes (dailyCap, applyLimits) para WhatsApp/propostas manuais: basta baixar a constante.
+ */
+export const NO_CAP = 1_000_000;
+
 export const RULES = {
   /** G1 (legado): queda mínima sobre o menor anterior. */
   G1_MIN_DROP_PCT: 8,
@@ -59,9 +68,9 @@ export const RULES = {
   // ---- Política v2 (ata 2026-11-10 §1, pacote aprovado pelo dono) ----
   /** Teto global por dia (Brasília). SEM silêncio noturno: a noite vira mensagem silenciosa. */
   // Decisão do dono (2026-11-11): 400 por dia e 60 por hora ("eu quero o canal movimentado"; antes 30/40 por dia).
-  DAILY_CAP: 400,
-  DAILY_CAP_BLACK_FRIDAY: 400,
-  HOURLY_CAP: 60,
+  DAILY_CAP: NO_CAP,
+  DAILY_CAP_BLACK_FRIDAY: NO_CAP,
+  HOURLY_CAP: NO_CAP,
   BLACK_FRIDAY_WEEK: { from: '2026-11-20', to: '2026-11-27' },
   /** No máximo 8 mensagens por dia com notificação sonora; o resto sai com disable_notification. */
   SOUND_CAP: 20,
@@ -70,9 +79,9 @@ export const RULES = {
   /** Noite = das 22h às 8h (Brasília): tudo silencioso; classes C, D, E não saem; no máximo 3 alertas. */
   NIGHT_FROM_HOUR: 22,
   NIGHT_UNTIL_HOUR: 8,
-  NIGHT_ALERT_CAP: 400,
+  NIGHT_ALERT_CAP: NO_CAP,
   /** Tetos por classe [normal, 20 a 27/11]. */
-  CLASS_CAP: { alerta: [400, 400], radar: [400, 400], insight: [400, 400], resumo: [400, 400], cupom: [400, 400], plataforma: [400, 400] },
+  CLASS_CAP: { alerta: [NO_CAP, NO_CAP], radar: [NO_CAP, NO_CAP], insight: [NO_CAP, NO_CAP], resumo: [NO_CAP, NO_CAP], cupom: [NO_CAP, NO_CAP], plataforma: [NO_CAP, NO_CAP] },
   /** Intervalo mínimo entre duas mensagens da mesma classe (minutos). */
   CLASS_GAP_MIN: { alerta: 0, radar: 45, insight: 0, resumo: 0, cupom: 0, plataforma: 20 },
   /** Radar: UMA mensagem com 3 a 6 itens, na hora cheia (execuções dos minutos 0 a 14), das 7h às 23h. */
@@ -130,6 +139,10 @@ export const RULES = {
   SPACING_NIGHT_MIN: 1,
   /** Amplitude do jitter determinístico por hora (dia + hora). 0 = desligado (decisão do dono). */
   SPACING_JITTER_MIN: 0,
+  /** Telegram automatico: intervalo minimo entre duas mensagens do MESMO chat/loja, em segundos (limite da API: ~1/s por chat e 20/min por grupo => 3 s). Lojas diferentes nao se bloqueiam. */
+  SPACING_CHAT_SEC: 3,
+  /** Maximo de mensagens por chat em 60 s (limite do Telegram para grupos/canais). */
+  CHAT_MAX_PER_MINUTE: 20,
   /** Mesmo produto (mesmo vendedor, mesmo preço): só volta depois de 1 h, se ainda estiver ativo (dono, 2026-11-11, régua anti-saturação). */
   PRODUCT_GAP_MIN: 60,
   /** Novo mínimo (OK1/G1) pode repetir o produto depois disto, se o preço for menor que o do último envio. */
@@ -1507,6 +1520,21 @@ export interface LimitOptions {
   /** Envio manual ("Enviar agora" do admin): ignora o intervalo mínimo (os tetos e a duplicata do produto continuam). */
   ignoreSpacing?: boolean;
   spacing?: SpacingCfg;
+  /** Tetos opcionais (WhatsApp/propostas manuais/testes). Ausente = RULES (hoje sem teto: NO_CAP). */
+  caps?: { daily?: number; hourly?: number; nightAlert?: number; byClass?: Partial<Record<MessageClass, number>> };
+}
+
+/**
+ * Espaçamento POR CHAT (um chat por loja/departamento): o Telegram aceita ~1 mensagem/s por chat e 20/min por grupo. Uma loja
+ * não bloqueia a outra. null = pode enviar agora.
+ */
+export function chatSpacingBlock(vertical: string, history: SentRecord[], now: Date): string | null {
+  const mine = history.filter((h) => !h.itemOnly && (h.vertical ?? '') === (vertical ?? '') && h.sentAt.getTime() <= now.getTime() + 5_000);
+  const last = [...mine].sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
+  if (last && now.getTime() - last.sentAt.getTime() < RULES.SPACING_CHAT_SEC * 1000) return `intervalo_chat_${RULES.SPACING_CHAT_SEC}s`;
+  const lastMinute = mine.filter((h) => now.getTime() - h.sentAt.getTime() < 60_000).length;
+  if (lastMinute >= RULES.CHAT_MAX_PER_MINUTE) return `limite_telegram_${RULES.CHAT_MAX_PER_MINUTE}_por_minuto_no_chat`;
+  return null;
 }
 
 const PLATFORM_ORDER: Trigger[] = ['P1', 'P2', 'P3', 'P4', 'P5'];
@@ -1552,20 +1580,15 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   const byClass: Record<MessageClass, number> = { alerta: 0, radar: 0, insight: 0, resumo: 0, cupom: 0, plataforma: 0 };
   for (const h of all) if (h.cls && spDayStr(h.sentAt) === today) byClass[h.cls]++;
   const soundToday = sentToday.filter((h) => h.sound).length;
-  const cap = dailyCap(now);
+  const cap = opts.caps?.daily ?? dailyCap(now);
   const night = isNightHour(now);
-  const spacing = spacingState(all, now, opts.spacing ?? DEFAULT_SPACING);
+  const spacing = spacingState(all, now, opts.spacing ?? DEFAULT_SPACING, opts.caps?.hourly ?? RULES.HOURLY_CAP);
   const state = { night, sentToday: sentToday.length, dailyCap: cap, soundToday, byClass, spacing };
   const pool = cands.filter((c) => c.sendable && c.status === 'auto' && !c.held);
 
-  // Teto diário/horário de PREÇO: a plataforma segue podendo sair (não conta nos tetos), mas respeita o intervalo mínimo.
+  // Teto diário/horário de PREÇO (hoje sem teto: NO_CAP); a plataforma não conta. O espaçamento agora é POR CHAT (abaixo), não global.
   const dayFull = sentToday.length >= cap;
   const hourFull = spacing.hourSent >= spacing.hourlyCap;
-  const spaceBlocked = spacing.blocked && !opts.ignoreSpacing && !spacing.reason?.startsWith('teto_horario');
-  if (spaceBlocked) {
-    for (const c of pool) deferred.push({ messageKey: c.messageKey, reason: spacing.reason as string });
-    return { next: null, nextSound: false, deferred, state };
-  }
 
   const lastRadar = all.filter((h) => h.trigger === 'RADAR').sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
   const lastOf = (cls: MessageClass) => all.filter((h) => h.cls === cls).sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
@@ -1580,7 +1603,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     let why: string | null = null;
     if (!platform && dayFull) why = `teto_diario_${cap}`;
     else if (!platform && hourFull) why = `teto_horario_${spacing.hourlyCap}`;
-    else if (byClass[cls] >= classCap(cls, now)) why = `teto_classe_${cls}_${classCap(cls, now)}`;
+    else if (byClass[cls] >= (opts.caps?.byClass?.[cls] ?? classCap(cls, now))) why = `teto_classe_${cls}_${opts.caps?.byClass?.[cls] ?? classCap(cls, now)}`;
     else if (!platform) {
       // Radar composto: no máximo 1 a cada 45 min. Item de radar é mensagem individual, como as demais.
       const last = composite ? lastRadar : cls === 'radar' ? undefined : lastOf(cls);
@@ -1591,7 +1614,8 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
       if (lastPlat && lastPlat.trigger === c.trigger) why = 'plataforma_mesmo_modelo_seguido';
       else if (all.some((h) => h.cls === 'plataforma' && h.platformProductId && h.platformProductId === c.masterProductId && spDayStr(h.sentAt) === today)) why = 'plataforma_produto_ja_hoje';
     }
-    if (!why && !platform && night && cls === 'alerta' && nightAlerts >= RULES.NIGHT_ALERT_CAP) why = `noite_maximo_${RULES.NIGHT_ALERT_CAP}_alertas`;
+    if (!why && !opts.ignoreSpacing) why = chatSpacingBlock(c.vertical, all, now);
+    if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (why) deferred.push({ messageKey: c.messageKey, reason: why });
