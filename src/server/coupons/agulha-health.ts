@@ -2,6 +2,8 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { AGULHA } from '@/lib/coupons/agulha';
+import { lerBatimentos } from '@/server/coupons/heartbeat-store';
+import { situacaoBatimento, type RedeBatimento, type SituacaoBatimento } from '@/lib/coupons/heartbeat';
 import { type CoberturaLinha, type ListasLinha, type MensagensLinha, type MotivoSemCupom } from '@/lib/coupons/agulha-health-model';
 
 /**
@@ -16,6 +18,8 @@ export interface SaudeAgulha {
   /** Motivos de "não saiu cupom" registrados pela consulta (coupon_consults.miss_reason, após a migration 0041), 24 h. null = migration ausente. */
   motivosRegistrados: { motivo: string; consultas: number }[] | null;
   guardiao: { abertos: number; encerrados24h: number; avisosPendentes: number } | null;
+  /** Último batimento do loop 24 h por rede (Amazon, Shopee). null = collector_runs indisponível. */
+  batimentos: (RedeBatimento & { situacao: SituacaoBatimento })[] | null;
 }
 
 const num = (v: unknown) => Number(v ?? 0);
@@ -142,7 +146,15 @@ export async function saudeAgulha(): Promise<SaudeAgulha> {
     guardiao = null;
   }
 
-  return { geradoEm: new Date().toISOString(), cobertura, listas, mensagens24h: [...byKey.values()], motivosRegistrados, guardiao };
+  let batimentos: SaudeAgulha['batimentos'] = null;
+  try {
+    const agora = new Date();
+    batimentos = (await lerBatimentos()).map((b) => ({ ...b, situacao: situacaoBatimento(b, agora) }));
+  } catch {
+    batimentos = null; // collector_runs ausente (migration 0025)
+  }
+
+  return { geradoEm: new Date().toISOString(), cobertura, listas, mensagens24h: [...byKey.values()], motivosRegistrados, guardiao, batimentos };
 }
 
 /** Resumo numérico pequeno para collector_runs.meta (histórico da cobertura a cada ciclo). */

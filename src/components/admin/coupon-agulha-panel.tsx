@@ -3,6 +3,7 @@ import { Text } from '@/components/ui/text';
 import { AGULHA, ITEM_READ_NETWORKS } from '@/lib/coupons/agulha';
 import { COUPON_ADAPTERS } from '@/lib/coupons/network-adapters';
 import { MOTIVO_LABEL, idadeLabel, pct, semaforoLeitura, type MotivoSemCupom, type Semaforo } from '@/lib/coupons/agulha-health-model';
+import { HEARTBEAT_STALE_MIN } from '@/lib/coupons/heartbeat';
 import type { SaudeAgulha } from '@/server/coupons/agulha-health';
 
 const NET_LABEL: Record<string, string> = { 'mercado-livre': 'Mercado Livre', shopee: 'Shopee', amazon: 'Amazon' };
@@ -92,6 +93,7 @@ export function CouponAgulhaPanel({ saude }: { saude: SaudeAgulha | null }) {
                 Alvo {a} · lidas em 2 h {l} ({fmtPct(pct(l, a))}) · cupom na agulha {n} · última leitura há {idadeLabel(ult.length ? Math.min(...ult) : null)}
                 {' '}({COUPON_ADAPTERS[rede as keyof typeof COUPON_ADAPTERS]?.itemRead === 'ativo' ? 'rota ativa; a leitura depende do Chrome do dono' : 'aguarda decisão do dono'}).
               </Text>
+              <Text variant="body-sm" color="secondary">{batimentoTexto(saude.batimentos, rede)}</Text>
               {linhas.map((c) => (
                 <Text key={`${rede}-${c.vertical}`} variant="body-sm" color="secondary">
                   {c.vertical}: alvo {c.ofertasAlvo} · lidas {c.lidas2h} · na agulha {c.naAgulha} · cupom visto em 24 h mas velho {c.cupomVelho}
@@ -146,6 +148,19 @@ export function CouponAgulhaPanel({ saude }: { saude: SaudeAgulha | null }) {
       </CardContent>
     </Card>
   );
+}
+
+const SIT_TEXTO: Record<string, string> = {
+  em_dia: 'loop em dia', pausado: 'loop em pausa (recuo automático)', parado: 'loop parado', sem_leitura: `SEM LEITURA: mais de ${HEARTBEAT_STALE_MIN} min sem batimento ok`, nunca: 'loop nunca iniciado',
+};
+
+/** Linha "último batimento por rede" do loop 24 h (collector_runs, job cupons-batimento). */
+function batimentoTexto(bat: SaudeAgulha['batimentos'], rede: string): string {
+  if (!bat) return 'Último batimento do loop: indisponível (collector_runs).';
+  const b = bat.find((x) => x.rede === rede);
+  if (!b || !b.ultimoEm) return `Último batimento do loop: nunca (${SIT_TEXTO.nunca}).`;
+  const min = Math.max(0, Math.round((Date.now() - b.ultimoEm.getTime()) / 60_000));
+  return `Último batimento do loop: há ${idadeLabel(min)} (ciclo ${b.ultimoCiclo ?? '?'}, ${b.ultimoEstado ?? '?'}${b.ultimoMotivo ? `: ${b.ultimoMotivo}` : ''}) · ${SIT_TEXTO[b.situacao]}.`;
 }
 
 function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {

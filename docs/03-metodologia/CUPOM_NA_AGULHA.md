@@ -61,3 +61,49 @@ Decisão do dono, 2026-11-11: leitura de cupom da Shopee e da Amazon autorizada,
 - Diagnóstico (somente SELECT): `npx tsx --conditions=react-server --env-file=.env.local scripts/diagnostico-cupons-agulha.ts [--consultar]`.
 - Testes: `npx tsx --conditions=react-server scripts/test-cupom-agulha.ts`.
 - Migration 0041 (dry-run por padrão): `npx tsx --env-file=.env.local scripts/apply-cupom-agulha.ts [--apply | --rollback]`.
+
+## Loop 24 h (Amazon e Shopee), sem colar nada no console
+
+Pedido do dono, 2026-11-11: a equipe de cupons trabalha 24 h por dia. Arquivo: `scripts/chrome/cupons-24h.js` (substitui o uso manual de `cupons-leitura-loop.js`, que continua como alternativa com prompt). Quem opera a aba logada injeta a configuração e o arquivo; o loop roda em segundo plano (setTimeout encadeado) e a chamada de injeção devolve na hora (limite de 45 s por chamada do `javascript_tool` não atrapalha).
+
+### Como injetar (uma aba por rede)
+
+1. Abrir uma aba logada em `https://www.amazon.com.br` (ou `https://shopee.com.br`). Manter a aba aberta, de preferência numa janela própria, sem suspensão de aba.
+2. Chamada 1 (configuração; o token vem do ambiente do operador e nunca é gravado em arquivo, localStorage ou log): `window.__CUP_CFG = { api: 'https://<site>', token: '<token>', rede: 'amazon', enviar: false };`
+3. Chamada 2: o conteúdo inteiro de `scripts/chrome/cupons-24h.js`. Ele apaga `window.__CUP_CFG`, guarda o token só na closure e inicia.
+4. Começar com `enviar: false` (simulação: lê, mostra em `status().linhas`, só manda batimento). Conferir rótulos e preços; reinjetar com `enviar: true` para gravar.
+5. Acompanhar: `JSON.stringify(window.__cup.status())` (ciclos, último ciclo, pausa, erros, últimas linhas, batimento; nunca contém o token). Parar: `window.__cup.stop()` (manda batimento `parado/operador`; o vigia não avisa).
+
+Opcionais em `__CUP_CFG`: `lote` (15), `pausaMs` ([6000, 11000], piso fixo de 4 s), `idleMin` (3, espera com fila vazia), `cuponsPaginaMin` (60), `cuponsUrl` (informar se a descoberta falhar), `shopeeLinkCurto` (`'pular'` por padrão; `'permitir'` só após o dono aceitar o clique de afiliado do link curto `s.shopee.com.br`).
+
+### O que o loop faz
+
+- A cada ciclo: `GET /api/ingest/cupons-revalidar?rede=...` (só itens devidos), lê cada item com pausa aleatória, `POST` das linhas (só com `enviar: true`) e `POST /api/ingest/cupons-heartbeat`. Fila vazia: espera `idleMin`; fila com itens: novo ciclo em 30 s.
+- Amazon: página do produto em iframe oculto de mesma origem, esperando o navegador desenhar o selo; só os ids `#couponsInBuybox_feature_div`, `#couponBadgeRegularVpc`, `#couponTextpctch*`; nunca `sp_detail*` nem selo dentro de carrossel/patrocinado nem id com ASIN de outro produto. A página oficial de cupons (URL descoberta pelo menu; `status().cuponsUrl`) é lida no máximo 1 vez por hora, só leitura: reordena a fila (ASIN com cupom na lista vai primeiro) e cobre o selo quando o produto não o mostra (`fonte: lista-oficial`). Produto que não renderizou ou sem preço lido é descartado, nunca "sem cupom".
+- Shopee: voucher na página do item (popup de mesma origem; sem popup, iframe). Link curto de afiliado é pulado (contador `puladosLinkCurto`) até o dono decidir.
+- Bloqueio: captcha, login, 403 ou 429 do site pausam com recuo (15, 30, 60, 120 min; login 30, 60, 120) e retomam sozinhos; 5 captchas/403/429 seguidos (4 logins) PARAM o loop. Token recusado (401), origem recusada (403 do servidor) e popup bloqueado param de imediato. 503 do servidor (kill-switch) recua 10 a 60 min. Nunca contorna captcha.
+
+### Heartbeat e vigia
+
+- `POST /api/ingest/cupons-heartbeat?rede=amazon|shopee` (mesmo guard: origem fixa por rede + token; sem token 503; corpo até 2 KB; só números e códigos curtos). Grava em `collector_runs` (job `cupons-batimento`, status ok/partial=pausado/error=parado). Exige a migration 0025; sem ela a rota responde `gravado: false`, o painel mostra "indisponível" e o vigia não age.
+- Painel `/admin/mensagens`, bloco "Cupom na agulha, por loja": linha "Último batimento do loop" por rede (idade, ciclo, estado, situação).
+- Vigia (passo do `cicloAgenteCupons`, a cada ~5 min): rede com último batimento `ok` há mais de 60 min (inclui pausa longa e parada por captcha) gera aviso interno pelo canal já usado nos alertas da equipe (`sendTelegramMessage` para `TELEGRAM_ALERT_CHAT_ID`, exige `COLLECTOR_ALERTS=1`; sem isso só registra) e uma linha de auditoria em `collector_runs` (job `cupons-vigia`, `meta.evento = 'rede_sem_leitura'`). No máximo 1 aviso por rede a cada 6 h. Não avisa: rede que nunca bateu, sem sinal há mais de 7 dias, parada pedida pelo operador. O resumo do ciclo (`agente-cupons`) inclui `vigiaAvisados` e `vigiaRedesSemLeitura`.
+
+### Runbook: reinjetar e o que fazer se cair
+
+- Recarregou ou fechou a aba, ou o Chrome reiniciou: o loop morreu. Reinjetar (passos 2 e 3). Reinjetar sobre um loop vivo o substitui sem duplicar.
+- `status().rodando === false` e `parou.motivo`:
+  - `token_recusado`: token trocado ou errado; reinjetar com o token vigente.
+  - `origem_recusada`: a aba não está no domínio da rede (ou `COUPON_ALLOWED_ORIGINS` mudou).
+  - `popup_bloqueado`: permitir pop-ups para shopee.com.br e reinjetar.
+  - `captcha_seguidos`, `http_403_seguidos`, `http_429_seguidos`, `login_seguidos`: o site está barrando. Abrir a aba, resolver o captcha ou entrar na conta como pessoa, esperar e reinjetar. Não reduzir pausas.
+- `status().pausa` preenchido: recuo em andamento, nada a fazer; retoma em `pausa.ate`.
+- `batimento.falhas` crescendo: o servidor não recebe o batimento (CSP da página, rede ou 5xx); ver `erros`. Sem batimento por 60 min o vigia avisa a equipe.
+- Aviso "rede sem leitura" recebido: abrir a aba da rede, `status()`, aplicar o item acima. Próximo aviso da mesma rede só em 6 h.
+- Aba em segundo plano: o Chrome limita timers (cerca de 1 por minuto após alguns minutos); o ritmo do loop (pausas de segundos entre itens) fica mais lento mas continua. Aba descartada pelo Chrome mata o loop; o vigia avisa.
+
+Testes do loop: `npx tsx --conditions=react-server scripts/test-cupons-24h.ts` (batimento, guard, vigia e lógica pura do leitor; fixtures marcadas como tais, sem rede e sem banco).
+
+### Não validado em produção
+
+Seletores de preço da Amazon e da Shopee, os ids do selo e a URL da página de cupons são os indicados pelo dono/palpite; começar em simulação. A Shopee pode impedir iframe (X-Frame-Options) e popup sem gesto do usuário. O link normal da Shopee exige o `shopId`, que a fila ainda não entrega (só o link de afiliado da oferta): enquanto isso os itens de link curto são pulados.
