@@ -1,0 +1,10 @@
+{
+  "quando": "2026-11-12T17:07:20.732Z",
+  "acao": "apply",
+  "estado_antes": {
+    "linhas_group_messages": 5881,
+    "coluna_short_code": false,
+    "indice_unico": false
+  },
+  "nota": "Migration aditiva (coluna anulavel). Nenhum dado existente e reescrito; o estado antes basta para reverter (rollback SQL)."
+}

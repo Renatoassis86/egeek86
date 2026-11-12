@@ -2,14 +2,19 @@
 // Nada aqui lê banco, relógio ou env: o chamador passa `now` e os fatos medidos.
 
 import {
+  buildGoLink,
   buildGroupMessages,
   cleanProductName,
   fmtBRL,
+  getSlogan,
   makeMessageKey,
   pctBelow,
   priceIndicators,
   productDisplayName,
   departmentLabel,
+  stampLine,
+  textProblems,
+  withTag,
   type GroupMessageInput,
   type MoveDetail,
   type MoveKind,
@@ -17,6 +22,7 @@ import {
 } from '@/lib/messaging/group-messages';
 import { AMAZON_OWN_MIN_DAYS, amazonCountsIn, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { emFaseDeFormacao, mediaSimples, minLojas } from '@/lib/messaging/fase-formacao';
+import { calcularVeredito, reguaConfig, reguaDaLoja, reguaInfoDe, reguaTelegram, reguaWhatsapp, type ReguaInfo } from '@/lib/messaging/regua';
 import { AGULHA } from '@/lib/coupons/agulha';
 import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import type { CouponInfo } from '@/lib/messaging/group-messages';
@@ -587,6 +593,8 @@ export interface Candidate {
   couponFinalCents?: number;
   /** Gatilho CUPOM: nome do cupom (ou rótulo do valor, quando sem nome) para o card simples. */
   couponName?: string;
+  /** Régua de destaque (regua.ts, 2026-11-12): degrau, veredito e texto do botão. Só em lojas liberadas por GROUP_REGUA_LOJAS. */
+  regua?: ReguaInfo;
 }
 
 export interface RadarItemMeta {
@@ -651,14 +659,73 @@ function relaxShopee(reasons: string[], primary: OfferFact, dropPct: number | nu
   return reasons.filter((r) => r !== SHOPEE_REVIEW_REASON);
 }
 
+/** Média única oferta-dia do produto com o mínimo do dono (>= 3 ofertas e 1 dia de série): base da régua de destaque. */
+function mediaUnicaElegivel(p: { avg?: ProductFacts['avg'] }): boolean {
+  return !!p.avg && p.avg.cents > 0 && p.avg.distinctOffers >= RULES.MED_MIN_OFFERS && p.avg.spanDays >= RULES.MED_MIN_SERIES_DAYS;
+}
+
 /**
- * Régua efetiva de % abaixo da média: 10 (ou o valor do contexto). Nas lojas que não são Games, ANTES da data de corte
- * (emFaseDeFormacao), só o piso EARLY ("abaixo da média"). Games e, depois da data de corte, todas: régua cheia, sem deploy.
+ * Fase de formação POR PRODUTO. Nas lojas com a régua de destaque ligada (GROUP_REGUA_LOJAS), o produto que já tem média única oferta-dia
+ * sai da formação e passa a ser julgado pela régua (corte, degraus e percentual sobre a MESMA média do selo); o produto sem média única
+ * continua na formação (média simples, sem percentual). Desligar a chave devolve tudo ao comportamento anterior.
  */
-export function effectiveMinBelow(p: Pick<ProductFacts, 'vertical'>, ctxMin: number | undefined, now: Date): number {
-  const base = ctxMin ?? RULES.MIN_BELOW_AVG_PCT;
-  if (base > 0 && emFaseDeFormacao(p.vertical, now)) return Math.min(base, RULES.EARLY_MIN_BELOW_AVG_PCT);
+export function formacaoDoProduto(p: Pick<ProductFacts, 'vertical'> & { avg?: ProductFacts['avg'] }, now: Date): boolean {
+  if (!emFaseDeFormacao(p.vertical, now)) return false;
+  return !(reguaDaLoja(p.vertical) && mediaUnicaElegivel(p));
+}
+
+/**
+ * Régua efetiva de % abaixo da média: 10 (ou o valor do contexto). Lojas liberadas pela régua de destaque (GROUP_REGUA_PCT_MIN, ex.: 3)
+ * usam o corte dela. Nas lojas que não são Games, ANTES da data de corte (formação), só o piso EARLY ("abaixo da média"), exceto o produto
+ * que a régua assumiu (formacaoDoProduto). Games e, depois da data de corte, todas: régua cheia, sem deploy.
+ */
+export function effectiveMinBelow(p: Pick<ProductFacts, 'vertical'> & { avg?: ProductFacts['avg'] }, ctxMin: number | undefined, now: Date): number {
+  const cfg = reguaConfig();
+  const liberada = cfg.pctMin > 0 && cfg.lojas.has(p.vertical);
+  const base = ctxMin ?? (liberada ? cfg.pctMin : RULES.MIN_BELOW_AVG_PCT);
+  if (base > 0 && formacaoDoProduto(p, now)) return Math.min(base, RULES.EARLY_MIN_BELOW_AVG_PCT);
   return base;
+}
+
+/**
+ * Régua de destaque da mensagem (regua.ts): só loja liberada, só mensagem de preço com média (modelos 'media' e 'movimento'), nunca Amazon
+ * (a Amazon segue o texto e o frescor próprios). Devolve o veredito e os textos Telegram/WhatsApp; null = formato de sempre.
+ */
+function aplicarRegua(
+  p: ProductFacts,
+  input: GroupMessageInput,
+  primary: OfferFact,
+  avgCents: number | null,
+  priceClass: MessageClass,
+  cfg: ReturnType<typeof reguaConfig>,
+  now: Date
+): { info: ReguaInfo; telegram: string; whatsapp: string } | null {
+  if (!(cfg.pctMin > 0 && cfg.lojas.has(p.vertical))) return null;
+  if (input.model !== 'media' && input.model !== 'movimento') return null;
+  if (priceClass !== 'alerta' && priceClass !== 'insight' && priceClass !== 'radar') return null;
+  if (netKind(primary) === 'amazon' || !input.avg || input.avg.scope === 'own' || !avgCents || avgCents <= 0) return null;
+  // Produto que continua na formação (sem média única): formato de sempre, sem percentual.
+  if (formacaoDoProduto(p, now)) return null;
+  const pct = ((avgCents - primary.priceCents) / avgCents) * 100;
+  // Mínima registrada: menor preço diário medido nos últimos 90 dias ANTES de hoje (série ML/Shopee do estado diário), com os dias medidos.
+  const serie = (p.series ?? []).filter((x) => x.minCents > 0).slice(-90);
+  const minCents = serie.length ? Math.min(...serie.map((x) => x.minCents)) : null;
+  const v = calcularVeredito({ pct, nOfertas: input.avg.offers, precoCents: primary.priceCents, minCents, diasHistorico: serie.length, minDias: cfg.minDias });
+  if (!v) return null;
+  const msg = toMsgOffer(primary);
+  const common = {
+    veredito: v,
+    titulo: ('title' in input && input.title ? input.title : input.name) as string,
+    meta: 'meta' in input ? input.meta ?? null : null,
+    precoCents: primary.priceCents,
+    mediaCents: avgCents,
+    loja: primary.networkName,
+    plataforma: p.platformLabel,
+    carimbo: withTag(stampLine(msg), input.adTag),
+    marca: `Espaço Geek 86 · ${getSlogan()}`,
+  };
+  const link = buildGoLink(primary.slug, 'wa', input.messageKey);
+  return { info: reguaInfoDe(v), telegram: reguaTelegram(common), whatsapp: reguaWhatsapp({ ...common, link }) };
 }
 
 export function finish(
@@ -684,9 +751,17 @@ export function finish(
 ): Candidate {
   let rendered: RenderedGroupMessage;
   let problems: string[] = [];
+  let reguaInfo: ReguaInfo | undefined;
   try {
     rendered = buildGroupMessages(input);
     problems = rendered.problems;
+    // Régua de destaque (loja liberada): troca o texto de preço pelo da régua e reaplica a barreira de termos a TODOS os textos.
+    const rg = aplicarRegua(p, input, base.primary, base.avgCents, (base.cls ?? TRIGGER_CLASS[trigger]) as MessageClass, reguaConfig(), ctx.now);
+    if (rg) {
+      reguaInfo = rg.info;
+      rendered = { telegram: rg.telegram, whatsapp: rg.whatsapp, problems: [] };
+      problems = [...textProblems(rg.telegram, 'tg'), ...textProblems(rg.whatsapp, 'wa')];
+    }
   } catch (e) {
     rendered = { telegram: '', whatsapp: '', problems: [] };
     problems = [e instanceof Error ? e.message : 'erro ao montar texto'];
@@ -733,6 +808,7 @@ export function finish(
     dedupKey: `${p.masterProductId}:${trigger}:${base.dedupSuffix ?? windowKey(ctx.now)}`,
     texts: { telegram: rendered.telegram, whatsapp: rendered.whatsapp },
     textProblems: problems,
+    ...(reguaInfo ? { regua: reguaInfo } : {}),
   };
 }
 
@@ -1232,13 +1308,13 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
   const today = spDayStr(ctx.now);
   const jopts: JudgeOptions = { allowAmazon: true, amazonMaxAgeMin: ctx.amazonMaxAgeMin, amazonPaused: ctx.amazonPaused };
   // FASE DE FORMAÇÃO (dono, 2026-11-11; fase-formacao.ts): lojas que não são games, antes da data de corte.
-  const formacao = emFaseDeFormacao(p.vertical, ctx.now);
+  const formacao = formacaoDoProduto(p, ctx.now);
   // Identidade 'incerta' (fila de classificação): na formação o item sai de tudo (média simples, preço mais baixo, escolha da oferta) até ser resolvido.
   const verdicts = p.offers
     .filter((o) => !o.avgExcluded && !(formacao && o.identidade === 'incerta'))
     .map((o) => ({ o, v: judgeOffer(o, p, ctx.now, ctx.maxAgeMin, jopts) }));
   const stores = countStores(verdicts.filter((x) => x.v.kind !== 'block').map((x) => x.o));
-  const minStores = minLojas(p.vertical, ctx.now, RULES.MIN_STORES);
+  const minStores = formacao ? minLojas(p.vertical, ctx.now, RULES.MIN_STORES) : RULES.MIN_STORES;
   const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon' && !o.avgExcluded).map((o) => o.priceCents));
   // Média do V2. Games e depois da corte: a mesma do selo (oferta-dia), com o critério do dono (>= 3 ofertas e >= 1 dia de série medida).
   // Formação: MÉDIA SIMPLES das ofertas ativas (uma por oferta; sem série, sem 14 dias), sem Amazon, sem condição/região/edição
@@ -1579,6 +1655,8 @@ export interface SentRecord {
   tipo?: string | null;
   /** Oferta cujo cupom foi divulgado nesta mensagem (mensagem de cupom OU mensagem de preco com bloco de cupom). */
   couponOfferId?: string | null;
+  /** Degrau da régua (1 a 5) da mensagem enviada, quando houve (candidate.regua.degrau). */
+  degrau?: number | null;
 }
 
 /** Noite (22h às 8h, Brasília): não há silêncio; a mensagem sai SEM notificação sonora. */
@@ -1816,7 +1894,7 @@ export function pickNext(sorted: Candidate[], last: DiversitySource | null): Can
   if (!last) return top;
   const lk = diversityKey(last);
   if (diversityKey(top) !== lk) return top;
-  const alt = sorted.find((c) => c.cls === top.cls && diversityKey(c) !== lk && (top.moveScore <= 0 || c.moveScore >= top.moveScore * RULES.DIVERSITY_MIN_QUALITY_RATIO));
+  const alt = sorted.find((c) => c.cls === top.cls && (c.regua?.degrau ?? 0) >= (top.regua?.degrau ?? 0) && diversityKey(c) !== lk && (top.moveScore <= 0 || c.moveScore >= top.moveScore * RULES.DIVERSITY_MIN_QUALITY_RATIO));
   return alt ?? top;
 }
 
@@ -1832,6 +1910,18 @@ export function orderQueue(cands: Candidate[], history: SentRecord[]): Candidate
     last = n;
   }
   return out;
+}
+
+/**
+ * Régua de destaque (dono, 2026-11-12): o degrau 1 (queda de 3% a menos de 6%) ocupa no máximo 1/3 das mensagens da última hora em cada
+ * grupo (GROUP_REGUA_D1_SHARE_PCT; padrão 33,33). A primeira da hora sempre passa (o grupo não fica parado); o excedente ADIA, não descarta.
+ * Conta tudo o que o grupo recebeu na hora (qualquer gatilho), porque o objetivo é não afogar o grupo em avisos fracos.
+ */
+export function degrau1ShareBlock(c: Pick<Candidate, 'vertical'>, sent: SentRecord[], now: Date, sharePct: number = reguaConfig().d1SharePct): string | null {
+  const grupo = sent.filter((h) => !h.itemOnly && h.cls !== 'plataforma' && h.vertical === c.vertical && now.getTime() - h.sentAt.getTime() < 3600_000 && h.sentAt.getTime() <= now.getTime());
+  const d1 = grupo.filter((h) => h.degrau === 1).length;
+  if (d1 < 1) return null;
+  return ((d1 + 1) / (grupo.length + 1)) * 100 > sharePct + 1e-9 ? 'regua_degrau1_acima_de_um_terco_da_hora' : null;
 }
 
 export interface LimitPlan {
@@ -1958,6 +2048,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && !opts.ignoreSpacing) why = chatSpacingBlock(c.vertical, all, now);
     if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
+    if (!why && c.regua?.degrau === 1) why = degrau1ShareBlock(c, all, now);
     if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);
@@ -1999,6 +2090,8 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     .filter((c) => c.cls !== 'plataforma')
     .sort((a, b) =>
       CLASS_RANK[a.cls] - CLASS_RANK[b.cls] ||
+      // Régua de destaque (2026-11-12): o degrau mais alto vai primeiro dentro da classe (sem régua = 0, ordem de sempre).
+      (b.regua?.degrau ?? 0) - (a.regua?.degrau ?? 0) ||
       (rotates(a) ? Number(a.trigger === 'AC') : 0) - (rotates(b) ? Number(b.trigger === 'AC') : 0) ||
       (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||
       compareCandidates(a, b)

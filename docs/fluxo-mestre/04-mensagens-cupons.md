@@ -417,3 +417,13 @@ Severidade: **Alta** = perde ou duplica mensagem ou esconde falha; **Média** = 
 - Não medi a taxa de cliques (`/go`) nem a atribuição por `m=<messageKey>`.
 - Não reproduzi a revalidação em ambiente de teste; as causas de 7.1, 7.3 e 7.9 são hipóteses.
 - A divergência entre "905 de 17.153 ofertas ML pendentes" e "65 a 75% sem meli.la nas lojas Plus" depende de critérios diferentes de contagem (coluna versus prefixo da URL) e precisa de uma consulta única.
+
+---
+
+## 9. Régua de destaque (2026-11-12, R-44, ata `2026-11-12-regua-mensagens`)
+
+- **Onde vive:** `src/lib/messaging/regua.ts` (único módulo de degraus, veredito, texto Telegram/WhatsApp e front); gancho do corte em `effectiveMinBelow` e `formacaoDoProduto` (`group-rules.ts`); texto em `finish`; prioridade e terço em `applyLimits`/`degrau1ShareBlock` e em `listPendingForSend`; Destaques e link curto em `group-queue.ts`; cartão em `offer-card.tsx`.
+- **Chaves (Vercel, produção):** `GROUP_REGUA_PCT_MIN=3`, `GROUP_REGUA_LOJAS=eletrodomesticos,esporte`; opcionais `GROUP_REGUA_D1_SHARE_PCT` (33,33), `GROUP_REGUA_MIN_DIAS` (14), `TELEGRAM_DESTAQUES_CHAT_ID` (ausente = canal Destaques desligado). Variável nova só por `printf v | vercel env add NAME production` e redeploy.
+- **Fluxo:** candidato de preço (modelos `media` e `movimento`, nunca Amazon) em loja liberada recebe `candidate.regua` (`degrau`, `rotulo`, `pct`, `mostrarPct`, `minLinha`, `botao`) e textos da régua; a fila ordena por degrau; o degrau 1 respeita 1/3 da hora por grupo; ao enviar, degraus 4 e 5 também vão ao Destaques; a linha `wa` ganha `short_code` e o link curto no texto.
+- **Reverter:** apagar `GROUP_REGUA_PCT_MIN` (ou esvaziar `GROUP_REGUA_LOJAS`) e redeploy: o corte volta a 10% e o texto ao formato anterior (mensagens já enviadas não mudam). A coluna `short_code` fica inerte; rollback SQL em `drizzle/migrations/0050_group_messages_short_code.rollback.sql`.
+- **Limitação conhecida:** a mínima só existe com histórico real (Casa desde 2026-11-08, esporte desde 2026-11-11); "Compre agora" e a linha da mínima exigem 14 dias, então o degrau 4 aparece como "Ótima compra" até lá e o canal Destaques só recebe degrau 5 (que passa por aprovação humana, R-28).

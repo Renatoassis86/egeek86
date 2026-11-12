@@ -1,3 +1,4 @@
+import { DEGRAUS } from '@/lib/messaging/regua';
 import { NextResponse, type NextRequest } from 'next/server';
 import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 import { isGroupMessagesEnabled } from '@/lib/messaging/group-config';
@@ -58,6 +59,11 @@ export async function GET(request: NextRequest) {
         return simple ? ((await renderOfferCard(simple))?.png ?? null) : null;
       }
       const input = await loadOfferCardInput(offerId);
+      if (input && candidate.regua) {
+        // Régua de destaque: faixa da cor do degrau com o veredito em texto e as marcas (a cor nunca fica sozinha).
+        const d = DEGRAUS[candidate.regua.degrau];
+        input.regua = { degrau: candidate.regua.degrau, rotulo: candidate.regua.rotulo, cor: d.cor, corTexto: d.corTexto, pctTexto: candidate.regua.mostrarPct ? `${candidate.regua.pct.toFixed(1).replace('.', ',')}% abaixo da média das lojas` : null };
+      }
       return input ? ((await renderOfferCard(input))?.png ?? null) : null;
     },
     // Agente de Cupons: consulta única (anúncio -> campanha do dono -> loja/categoria), com auditoria em coupon_consults.

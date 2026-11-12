@@ -71,6 +71,11 @@ export interface OfferCardInput {
    * (nenhum insight). `withoutCouponCents` (só Cupom): preço do anúncio sem cupom, mostrado riscado e menor; o `priceCents` é o com cupom.
    */
   simple?: { withoutCouponCents?: number | null; couponName?: string | null };
+  /**
+   * Faixa da régua de destaque (regua.ts, 2026-11-12): degrau, rótulo do veredito e cor. A cor nunca fica sozinha: leva o rótulo em texto,
+   * as marcas (triângulos desenhados) e, quando a amostra permite, o percentual. null = cartão de sempre.
+   */
+  regua?: { degrau: 1 | 2 | 3 | 4 | 5; rotulo: string; cor: string; corTexto: string; pctTexto: string | null } | null;
 }
 
 export type InsightKind = 'new_record' | 'drop' | 'below_avg' | 'near_record' | 'equal_record';
@@ -221,6 +226,7 @@ export function buildOfferAlt(input: OfferCardInput, insight: string | null): st
   const parts = [
     `${truncateTitle(input.title, 120)}${input.platformLabel ? ` (${input.platformLabel})` : ''}`,
     `${formatMoney(input.priceCents)} ${storePhrase(input.store)}.`,
+    input.regua ? `Faixa ${input.regua.rotulo}${input.regua.pctTexto ? `, ${input.regua.pctTexto}` : ''}.` : '',
     insight ? `${insight}.` : '',
     input.simple?.couponName ? `Cupom ${input.simple.couponName}.` : '',
     input.simple?.withoutCouponCents ? `Sem o cupom: ${formatMoney(input.simple.withoutCouponCents)}.` : '',

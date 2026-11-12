@@ -195,6 +195,20 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
   const panelH = hasCover ? panel.h : 580;
   return (
     <div style={{ width: OFFER_CARD_SIZE, height: OFFER_CARD_SIZE, display: 'flex', position: 'relative', background: C.canvas, color: C.text }}>
+      {input.regua ? (
+        <>
+          <div style={abs(0, 0, { width: OFFER_CARD_SIZE, height: 16, background: input.regua.cor })} />
+          <div style={abs(G.pad + OFFER_CARD_SIZE - 2 * G.pad - 560, 44, { width: 560, height: 70, background: input.regua.cor, color: input.regua.corTexto, alignItems: 'center', justifyContent: 'center' })}>
+            <div style={{ display: 'flex', marginRight: 14 }}>
+              {Array.from({ length: input.regua.degrau }).map((_, i) => (
+                <div key={i} style={{ display: 'flex', width: 0, height: 0, marginRight: 4, borderLeft: '9px solid transparent', borderRight: '9px solid transparent', borderTop: `16px solid ${input.regua?.corTexto}` }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', fontSize: 28, fontWeight: 700 }}>{input.regua.rotulo.toLocaleUpperCase('pt-BR')}</div>
+          </div>
+          {input.regua.pctTexto ? <div style={abs(G.pad + OFFER_CARD_SIZE - 2 * G.pad - 560, 118, { width: 560, justifyContent: 'center', fontSize: 24, color: C.secondary })}>{input.regua.pctTexto}</div> : null}
+        </>
+      ) : null}
       {logo ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={logo} width={G.logoW} height={G.logoH} alt="" style={{ position: 'absolute', left: G.pad, top: G.logoTop, width: G.logoW, height: G.logoH }} />

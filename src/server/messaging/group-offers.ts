@@ -1,5 +1,6 @@
 import 'server-only';
 import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
+import { reguaDaLoja } from '@/lib/messaging/regua';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
@@ -167,6 +168,22 @@ export async function groupMessagesOnda2Ready(): Promise<boolean> {
   return ok;
 }
 
+let shortCodeCache: { at: number; ok: boolean } | null = null;
+
+/** Migration 0050 aplicada (coluna group_messages.short_code, link curto do WhatsApp)? Sem ela o WhatsApp segue com o link longo. */
+export async function groupMessagesShortCodeReady(): Promise<boolean> {
+  if (shortCodeCache && Date.now() - shortCodeCache.at < 60_000) return shortCodeCache.ok;
+  let ok = false;
+  try {
+    const rows = await db.execute<Row>(sql`SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'group_messages' AND column_name = 'short_code') AS ok`);
+    ok = rows[0]?.ok === true;
+  } catch {
+    ok = false;
+  }
+  shortCodeCache = { at: Date.now(), ok };
+  return ok;
+}
+
 let achadoCache: { at: number; ok: boolean } | null = null;
 
 /** Migration 0032 aplicada (o CHECK group_messages_trigger_chk aceita 'AC')? Sem ela o ACHADO fica desligado (a gravação falharia). */
@@ -276,7 +293,7 @@ export async function loadSentHistory(
     v2
       ? sql`
     SELECT master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
-           candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state,
+           candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state, candidate -> 'regua' ->> 'degrau' AS degrau_c,
            vertical AS vert, candidate ->> 'platformLabel' AS platform_label, candidate ->> 'tipo' AS tipo_c, candidate ->> 'name' AS nome_c,
            CASE WHEN trigger ~ '^P[1-5]$' THEN candidate ->> 'masterProductId' END AS plat_pid,
            CASE WHEN trigger = 'CUPOM' OR text_body LIKE '%CUPOM:%' OR text_body LIKE '%Cupom:%' THEN offer_id::text END AS cup_offer
@@ -312,6 +329,7 @@ export async function loadSentHistory(
       cls,
       sound: r.is_sound === true,
       card: r.has_card === true,
+      degrau: r.degrau_c != null ? Number(r.degrau_c) : null,
     });
     const items = typeof r.items === 'string' ? JSON.parse(r.items) : r.items;
     if (Array.isArray(items)) {
@@ -771,7 +789,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
   const needsDays = (p: Row): boolean => {
     const id = String(p.id);
     const offs = offersBy.get(id) ?? [];
-    if (!offs.length || emFaseDeFormacao(String(p.vertical), o.now)) return false;
+    if (!offs.length || (emFaseDeFormacao(String(p.vertical), o.now) && !reguaDaLoja(String(p.vertical)))) return false;
     const mainPrices = offs.filter((x) => !/amazon/i.test(x.networkSlug)).map((x) => x.priceCents);
     const cheapestMain = mainPrices.length ? Math.min(...mainPrices) : 0;
     const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today).length > 0;
@@ -799,7 +817,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     // PRICE_AMAZON_MODE=on: a Amazon também compara com a média única, então produto com oferta Amazon precisa dela (games).
     const needsAmzAvg = amazonCountsIn(o.amazonMode, String(p.vertical)) && offs.some((x) => /amazon/i.test(x.networkSlug));
     // Fase de formação (lojas que não são games, antes da data de corte): a média simples sai das ofertas já carregadas, dentro do avaliador; não precisa da consulta de série.
-    if (!emFaseDeFormacao(String(p.vertical), o.now) && (hasMove || maybeMed || needsAmzAvg)) {
+    if ((!emFaseDeFormacao(String(p.vertical), o.now) || reguaDaLoja(String(p.vertical))) && (hasMove || maybeMed || needsAmzAvg)) {
       const days = daysBy.get(id) ?? [];
       const pm = computePeriodMetrics(days, null);
       if (pm.avgOfferDayCents != null) {

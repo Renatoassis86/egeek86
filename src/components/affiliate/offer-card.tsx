@@ -16,6 +16,7 @@ import {
   sellerTrustTextColor,
 } from '@/lib/affiliate/labels';
 import type { OfferListingMetrics, OfferWithRelations } from '@/server/queries/affiliate';
+import { ReguaEtiqueta, ReguaMarcadores, reguaDoFront } from '@/components/regua/regua-oferta';
 
 /** Tipo efetivo (cartela) do item da oferta; cai no tipo gravado se a cartela o esconder. */
 export function effectiveOfferType(offer: OfferWithRelations) {
@@ -46,6 +47,8 @@ export function OfferCard({
   // Veredito único de 3 faixas (±5% da média única do produto); selo de recorde
   // não vale para vendedor de reputação baixa (F-24).
   const verdict = metrics?.verdict ?? null;
+  // Régua de destaque (mesmos degraus das mensagens): só com média elegível; sem ela, o veredito de 3 faixas de sempre.
+  const regua = offer.currentPriceCents > 0 ? reguaDoFront(offer.currentPriceCents, metrics) : null;
   const showLowBadge = metrics?.isLowestEver === true && sellerTier(offer.seller) !== 'low';
 
   const specLine = [
@@ -128,14 +131,23 @@ export function OfferCard({
                   {formatBRL(offer.currentPriceCents)}
                 </Text>
 
-                {verdict && (
-                  <Text
-                    variant="caption"
-                    color={verdict.kind === 'below' ? 'success' : verdict.kind === 'above' ? 'danger' : 'tertiary'}
-                  >
-                    {verdictLabel(verdict.kind).label}
+                {regua?.veredito ? (
+                  <ReguaEtiqueta regua={regua} />
+                ) : regua?.espere ? (
+                  <Text variant="caption" color="danger">
+                    {regua.frase}
                   </Text>
+                ) : (
+                  verdict && (
+                    <Text
+                      variant="caption"
+                      color={verdict.kind === 'below' ? 'success' : verdict.kind === 'above' ? 'danger' : 'tertiary'}
+                    >
+                      {verdictLabel(verdict.kind).label}
+                    </Text>
+                  )
                 )}
+                {regua?.veredito && isFeature ? <ReguaMarcadores regua={regua} /> : null}
 
                 {metrics && metrics.eligibility.eligible && !showLowBadge && (
                   <Text variant="caption" color="secondary" className="inline-flex items-center gap-1">

@@ -18,7 +18,9 @@ import { getStoreByVertical, chatForStore } from '@/server/stores';
 import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import { captionVisibleLength, sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
 import { setAutomationState } from '@/server/messaging/group-automation-store';
-import { detectGroupCandidates, groupMessagesOnda2Ready, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
+import { detectGroupCandidates, groupMessagesOnda2Ready, groupMessagesShortCodeReady, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
+import { gerarCodigoCurto, linkCurto } from '@/lib/messaging/short-code';
+import { vaiParaDestaques } from '@/lib/messaging/regua';
 import { runLivePhase, type LiveCheckLog, type LiveDeps } from '@/lib/messaging/live-recheck';
 import { loadLiveTargets, realLiveDeps } from '@/server/messaging/live-recheck';
 
@@ -108,7 +110,7 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   // com 'rn' como primeira chave de ordem. Nao ha teto de envio: so a leitura deixa de ser monopolizada por um unico gatilho bloqueado.
   const rows = await db.execute<Row>(sql`
     SELECT * FROM (
-      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical ORDER BY g.created_at) AS rn_fair
+      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, g.created_at) AS rn_fair
       FROM group_messages g
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
         -- Pre-filtro SEGURO (subconjunto do que o plano ja barra): produto ja enviado dentro da janela do proprio gatilho (Achado 24 h, cupom 1 h, demais 1 h
@@ -172,6 +174,7 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
     `);
     for (const r of op) openByProduct.add(`${String(r.channel)}|${String(r.master_product_id)}|${r.cupom === true}`);
   }
+  const shortReady = v2 && (await groupMessagesShortCodeReady());
   for (const c of result.candidates) {
     if (!c.sendable) {
       out.skipped++;
@@ -252,6 +255,8 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
       if (n(res) > 0) {
         out.inserted++;
         out.byStatus[status] = (out.byStatus[status] ?? 0) + 1;
+        // Link curto do WhatsApp (régua de destaque): código aleatório único gravado na linha 'wa' e no texto; falhou = fica o link longo.
+        if (ch === 'wa' && c.regua && c.offerSlug && shortReady) await atribuirCodigoCurto(c.messageKey, buildGoLink(c.offerSlug, 'wa', c.messageKey));
         if (ch === 'tg' && status === 'simulada' && opts.plannedAt && (await groupMessagesOnda2Ready())) {
           await db.execute(sql`UPDATE group_messages SET planned_at = ${opts.plannedAt.toISOString()}::timestamptz WHERE message_key = ${c.messageKey} AND channel = 'tg'`).catch(() => undefined);
         }
@@ -266,6 +271,27 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
  * retida em 24 h. Linha 'enviando' parada há mais de 10 min NUNCA volta para a fila (poderia duplicar a mensagem no canal):
  * vira 'erro' com o aviso para conferir o canal. Mensagem já enviada ao canal nunca é apagada.
  */
+/**
+ * Atribui o código curto (base62, 5 caracteres, aleatório) à linha 'wa' da mensagem e troca o link longo do texto pelo curto.
+ * Colisão do índice único: tenta outro código (até 5 vezes). Qualquer falha deixa o link longo, que continua válido.
+ */
+export async function atribuirCodigoCurto(messageKey: string, linkLongo: string): Promise<string | null> {
+  for (let i = 0; i < 5; i++) {
+    const code = gerarCodigoCurto();
+    try {
+      const r = await db.execute(sql`
+        UPDATE group_messages SET short_code = ${code}, text_body = replace(text_body, ${linkLongo}, ${linkCurto(code)}), updated_at = now()
+        WHERE message_key = ${messageKey} AND channel = 'wa' AND short_code IS NULL
+      `);
+      return n(r) > 0 ? code : null;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '';
+      if (!/23505|unique|duplicate/i.test(msg)) return null;
+    }
+  }
+  return null;
+}
+
 export async function expireStale(): Promise<number> {
   if (!(await groupMessagesTableExists())) return 0;
   const v2 = await groupMessagesV2Ready();
@@ -606,6 +632,19 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
           recheck_due_at = ${recheckAt}::timestamptz
         WHERE id = ${id}::uuid
       `);
+      // Canal Destaques (degraus 4 e 5): segunda publicação com o MESMO texto, cartão e botão. Isolada: a linha já está 'enviada', então falha aqui
+      // não reenvia a da loja nem a muda de status; o resultado fica em candidate.destaques. Desligado sem TELEGRAM_DESTAQUES_CHAT_ID.
+      const destChat = (env as Record<string, string | undefined>).TELEGRAM_DESTAQUES_CHAT_ID;
+      if (vaiParaDestaques(match.regua?.degrau) && destChat) {
+        const dest = await timeout(
+          sendTelegramGroupMessage({ token: env.TELEGRAM_BOT_TOKEN, chatId: destChat, text, silent: !plan.nextSound, photo, button: buyButton(match, row.messageKey), fetchImpl: deps.fetchImpl, maxRetryAfterSec: 2 }),
+          6000
+        ).catch(() => null);
+        const res = dest ?? { ok: false, messageId: undefined, error: 'sem resposta em 6 s' };
+        await db
+          .execute(sql`UPDATE group_messages SET candidate = jsonb_set(candidate, '{destaques}', ${JSON.stringify({ ok: res.ok, messageId: res.messageId ?? null, at: new Date().toISOString(), error: res.ok ? null : String(res.error ?? 'erro').slice(0, 120) })}::jsonb) WHERE id = ${id}::uuid`)
+          .catch(() => undefined);
+      }
       if (coupon && couponInfo && deps.onCouponSent) {
         await deps
           .onCouponSent(couponInfo, { networkSlug: match.networkSlug, offerId: match.offerIds[0], vertical: match.vertical, storeId: storeRow?.id ?? null, groupMessageId: id })
@@ -764,10 +803,10 @@ export async function runRechecks(now = new Date(), limit = 20): Promise<Recheck
 }
 
 /** Botão "Comprar agora" do Telegram: o mesmo link rastreado /go/<slug> da mensagem (só mensagens de oferta). */
-function buyButton(match: { offerSlug?: string; trigger?: string }, messageKey: string): { text: string; url: string } | null {
+function buyButton(match: { offerSlug?: string; trigger?: string; regua?: { botao?: string } }, messageKey: string): { text: string; url: string } | null {
   if (!match.offerSlug || match.trigger === 'RADAR') return null;
   try {
-    return { text: 'Ver oferta e comprar', url: buildGoLink(match.offerSlug, 'tg', messageKey) };
+    return { text: match.regua?.botao ?? 'Ver oferta e comprar', url: buildGoLink(match.offerSlug, 'tg', messageKey) };
   } catch {
     return null;
   }

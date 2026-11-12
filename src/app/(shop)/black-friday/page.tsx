@@ -9,6 +9,8 @@ import { classifyCatalogItem, dimensionToProductType } from '@/lib/catalog/dimen
 import { isHighlightEligibleSeller } from '@/lib/affiliate/price-verdict';
 import { getOfferListingMetrics, listRankedOffers, type OfferWithRelations } from '@/server/queries/affiliate';
 import type { ProductType } from '@/db/schema';
+import { DEGRAUS, type Degrau } from '@/lib/messaging/regua';
+import { ReguaLegenda, reguaDoFront } from '@/components/regua/regua-oferta';
 
 export const dynamic = 'force-dynamic';
 
@@ -70,6 +72,26 @@ export default async function BlackFridayPage() {
     if (quedas.length >= MAX_PER_SHELF) break;
   }
 
+  // Seções por degrau da régua (mesma régua das mensagens): o degrau vem da queda sobre a média única, com a elegibilidade do site.
+  // Só produto com veredito (média elegível); do degrau mais alto de compra (4) ao de confirmação (5), depois 3, 2 e 1.
+  const porDegrau = new Map<Degrau, OfferWithRelations[]>();
+  for (const o of candidates) {
+    const m = metricsMap.get(o.id);
+    if (!ok(o) || !m || m.verdict.kind !== 'below') continue;
+    const r = reguaDoFront(o.currentPriceCents, m);
+    const d = r?.veredito?.degrau;
+    if (!d) continue;
+    const lista = porDegrau.get(d) ?? [];
+    lista.push(o);
+    porDegrau.set(d, lista);
+  }
+  for (const [d, lista] of porDegrau) {
+    lista.sort((a, b) => (metricsMap.get(a.id)?.verdict.deltaPercent ?? 0) - (metricsMap.get(b.id)?.verdict.deltaPercent ?? 0));
+    porDegrau.set(d, lista.slice(0, MAX_PER_SHELF));
+  }
+  const ordemDegraus: Degrau[] = [4, 3, 2, 1, 5];
+  const degrausVisiveis = ordemDegraus.filter((d) => (porDegrau.get(d)?.length ?? 0) >= MIN_SHELF);
+
   const mostraHoje = hoje.length >= MIN_SHELF;
   const mostraQuedas = quedas.length >= MIN_SHELF;
 
@@ -105,7 +127,26 @@ export default async function BlackFridayPage() {
             metricsMap={metricsMap}
           />
         )}
-        {!mostraHoje && !mostraQuedas && (
+        {degrausVisiveis.length > 0 && (
+          <div className="flex min-w-0 flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <Text as="h2" variant="heading-lg" className="font-black tracking-tight">Por tamanho da queda</Text>
+              <ReguaLegenda />
+            </div>
+            {degrausVisiveis.map((d) => (
+              <GroupedOfferShelf
+                key={d}
+                id={`degrau-${d}`}
+                title={`${DEGRAUS[d].marcas} ${DEGRAUS[d].rotulo}`}
+                subtitle={d === 5 ? 'Preço muito abaixo da média: confirme o anúncio (modelo, vendedor e frete) antes de comprar.' : 'Queda sobre a média única de todas as lojas, com histórico elegível.'}
+                icon={<span aria-hidden className="inline-block size-4" style={{ background: DEGRAUS[d].cor }} />}
+                offers={porDegrau.get(d) ?? []}
+                metricsMap={metricsMap}
+              />
+            ))}
+          </div>
+        )}
+        {!mostraHoje && !mostraQuedas && degrausVisiveis.length === 0 && (
           <div className="flex flex-col gap-2 border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-4">
             <Text variant="body-md">Ainda não há quedas com prova suficiente em games.</Text>
             <Text variant="body-sm" color="secondary">Não completamos a vitrine com preço sem comprovação.</Text>

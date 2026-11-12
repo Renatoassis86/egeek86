@@ -480,7 +480,7 @@ function moveSentence(m: MoveDetail, price: number, amazon: boolean): string {
 }
 
 /** Carimbo: Amazon sempre "Preço na Amazon em dd/mm às hh:mm, sujeito a alteração."; demais "Conferido em ...". */
-function stampLine(o: MsgOffer): string {
+export function stampLine(o: MsgOffer): string {
   return isAmazonOffer(o) ? `Preço na Amazon em ${fmtStamp(o.confirmedAt)}, sujeito a alteração.` : conferidoLine(o.confirmedAt);
 }
 
@@ -967,7 +967,7 @@ export function formatPlatformMessage(input: Extract<GroupMessageInput, { model:
   return [head, f.b(headline), bullets, explain, link, foot].filter((l) => l && l.trim() !== '').join('\n\n');
 }
 
-function withTag(body: string, tag: string): string {
+export function withTag(body: string, tag: string): string {
   return tag ? `${body} ${tag}` : body;
 }
 
@@ -1159,6 +1159,10 @@ const BANNED: Array<[RegExp, string]> = [
   [/previs[aã]o/i, 'previsão'],
   [/hora de comprar/i, 'hora de comprar'],
   [/garantid[oa]/i, 'garantido'],
+  // Ordens do dono de 2026-11-12 (FM-16): a metodologia e a amostra nunca vao ao cliente; o horario nao leva "(Brasilia)".
+  [/metodologia/i, 'metodologia'],
+  [/amostra pequena/i, 'amostra pequena'],
+  [/\(Bras[ií]lia\)/i, '(Brasília)'],
 ];
 
 /** Devolve os problemas encontrados no texto final (vazio = limpo). */
