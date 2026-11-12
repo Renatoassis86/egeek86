@@ -26,6 +26,10 @@ type Row = Record<string, unknown>;
 
 /** Orçamento do envio por execução do cron (maxDuration da rota = 60 s; sobra tempo para reconferência e guardião de cupons). */
 export const SEND_BUDGET_MS = 38_000;
+/** Janela MÍNIMA do envio depois da detecção (P0 2026-11-12): se a detecção consumir os 38 s, o envio ainda ganha esta janela, sem passar do teto. */
+export const SEND_MIN_WINDOW_MS = 14_000;
+/** Teto absoluto do ciclo (maxDuration da rota = 60 s; um envio em andamento pode levar até ~12 s com reconferência e cartão). */
+export const CYCLE_HARD_CAP_MS = 46_000;
 /** Teto de segurança de voltas por execução (não é teto diário: a próxima execução continua de onde parou). */
 export const MAX_SENDS_PER_RUN = 60;
 /** Linhas lidas da fila por execução (fila acumulada + novas). */
@@ -189,15 +193,17 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
         let cupomSent = 0;
         let expiredCount = 0;
         let guard = 0;
+        // Prazo do envio: o orçamento de 38 s do ciclo, mas nunca menos que SEND_MIN_WINDOW_MS a partir de agora (a detecção lenta não pode zerar o envio) e nunca além do teto do ciclo.
+        const sendDeadline = Math.min(started.getTime() + CYCLE_HARD_CAP_MS, Math.max(started.getTime() + SEND_BUDGET_MS, Date.now() + SEND_MIN_WINDOW_MS));
         // Esvazia a fila acumulada dentro do orçamento de tempo (sem teto diário; o freio é o espaçamento por chat e o 429).
         // Cada volta envia UMA linha e relê o histórico (a recém-enviada passa a contar para o espaçamento do chat e o dedup).
-        while (pending.length && guard++ < MAX_SENDS_PER_RUN && Date.now() - started.getTime() < SEND_BUDGET_MS) {
+        while (pending.length && guard++ < MAX_SENDS_PER_RUN && Date.now() < sendDeadline) {
           const cands: Candidate[] = pending.map((r) => ({ ...r.candidate, status: 'auto', held: false, sendable: true }));
           const plan = applyLimits(cands, history, new Date(Math.max(now.getTime(), Date.now())));
           if (!plan.next) {
             // Espaçamento por chat: se só falta esperar poucos segundos, espera dentro do orçamento em vez de perder a vez.
             const wait = plan.deferred.some((d) => d.reason.startsWith('intervalo_chat_')) && !plan.deferred.some((d) => !d.reason.startsWith('intervalo_chat_') && !d.reason.startsWith('produto_ja_enviado') && !d.reason.startsWith('mesmo_produto'));
-            if (wait && Date.now() - started.getTime() + 3_500 < SEND_BUDGET_MS) {
+            if (wait && Date.now() + 3_500 < sendDeadline) {
               await new Promise((r) => setTimeout(r, 3_100));
               history = (await loadSentHistory('tg', new Date())).records;
               continue;

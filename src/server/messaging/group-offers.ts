@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { avgExcludedFlagSql, inAverageSql } from '@/server/queries/public-offers';
 import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
-import { loadOffers, loadPeriodDays } from '@/server/pricing/price-daily';
+import { loadOffers, loadPeriodDaysMany } from '@/server/pricing/price-daily';
 import { addDays, computePeriodMetrics, ownSeriesMedian, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
 import { AMAZON_OWN_MIN_DAYS, AMAZON_OWN_WINDOW_DAYS, amazonCountsIn, amazonScope, getAmazonMode, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { readPlatform } from '@/lib/catalog/platform';
@@ -662,6 +662,21 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
   const out: ProductFacts[] = [];
   const platStats = products.some((p) => String(p.vertical) === 'games') ? await loadPlatStats(o.now).catch(() => new Map<string, { median: number; n: number }>()) : new Map<string, { median: number; n: number }>();
   const tipoStats = products.some((p) => String(p.vertical) !== 'games') ? await loadTipoStats(o.now).catch(() => new Map<string, { median: number; n: number }>()) : new Map<string, { median: number; n: number }>();
+  // Quem precisa da média (movimento, "na média ou abaixo", Amazon na média única): os dias de cada um vêm de UMA consulta em lote
+  // (antes uma consulta por produto em série, ~80 por ciclo; P0 2026-11-12). Mesmas condições do bloco abaixo.
+  const needsDays = (p: Row): boolean => {
+    const id = String(p.id);
+    const offs = offersBy.get(id) ?? [];
+    if (!offs.length || emFaseDeFormacao(String(p.vertical), o.now)) return false;
+    const mainPrices = offs.filter((x) => !/amazon/i.test(x.networkSlug)).map((x) => x.priceCents);
+    const cheapestMain = mainPrices.length ? Math.min(...mainPrices) : 0;
+    const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today).length > 0;
+    const stateAvg = stateAvgBy.get(id);
+    const maybeMed = offs.length >= 3 && cheapestMain > 0 && stateAvg != null && cheapestMain <= stateAvg && (seriesBy.get(id)?.main.length ?? 0) >= RULES.MED_MIN_SERIES_DAYS - 1;
+    const needsAmzAvg = amazonCountsIn(o.amazonMode, String(p.vertical)) && offs.some((x) => /amazon/i.test(x.networkSlug));
+    return hasMove || maybeMed || needsAmzAvg;
+  };
+  const daysBy = await loadPeriodDaysMany(db, products.filter(needsDays).map((p) => String(p.id)), from, today);
   for (const p of products) {
     const id = String(p.id);
     const offs = offersBy.get(id) ?? [];
@@ -681,7 +696,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     const needsAmzAvg = amazonCountsIn(o.amazonMode, String(p.vertical)) && offs.some((x) => /amazon/i.test(x.networkSlug));
     // Fase de formação (lojas que não são games, antes da data de corte): a média simples sai das ofertas já carregadas, dentro do avaliador; não precisa da consulta de série.
     if (!emFaseDeFormacao(String(p.vertical), o.now) && (hasMove || maybeMed || needsAmzAvg)) {
-      const days = await loadPeriodDays(db, id, from, today);
+      const days = daysBy.get(id) ?? [];
       const pm = computePeriodMetrics(days, null);
       if (pm.avgOfferDayCents != null) {
         avg = { cents: Math.round(pm.avgOfferDayCents), distinctOffers: pm.distinctOffers, offerDays: pm.offerDays, spanDays: pm.spanDays, eligible: pm.eligible };

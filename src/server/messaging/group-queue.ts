@@ -138,6 +138,24 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
   const out: PersistResult = { inserted: 0, skipped: 0, byStatus: {} };
   if (!(await groupMessagesTableExists())) return out;
   const v2 = await groupMessagesV2Ready();
+  // P0 2026-11-12: antes cada candidato fazia 2 INSERT ... WHERE NOT EXISTS em série (~900 idas ao banco por ciclo, quase todas sem efeito
+  // porque a linha já existia), o que sozinho consumia o orçamento de 38 s do envio. Agora duas leituras em lote decidem o que já existe e
+  // o INSERT (com as mesmas travas SQL, para corrida entre ciclos) só roda para o que é de fato novo. Mesma regra, menos consultas.
+  const existing = new Set<string>();
+  const openByProduct = new Set<string>();
+  if (v2) {
+    const sendableKeys = result.candidates.filter((c) => c.sendable).map((c) => c.dedupKey);
+    if (sendableKeys.length) {
+      const ex = await db.execute<Row>(sql`SELECT dedup_key, channel FROM group_messages WHERE dedup_key IN (${sql.join(sendableKeys.map((k) => sql`${k}`), sql`, `)})`);
+      for (const r of ex) existing.add(`${String(r.dedup_key)}|${String(r.channel)}`);
+    }
+    const op = await db.execute<Row>(sql`
+      SELECT channel, master_product_id, (trigger = 'CUPOM') AS cupom FROM group_messages
+      WHERE master_product_id IS NOT NULL AND status IN ('proposta', 'aprovada', 'proposta_auto', 'retida', 'enviando') AND created_at >= now() - interval '6 hours'
+      GROUP BY 1, 2, 3
+    `);
+    for (const r of op) openByProduct.add(`${String(r.channel)}|${String(r.master_product_id)}|${r.cupom === true}`);
+  }
   for (const c of result.candidates) {
     if (!c.sendable) {
       out.skipped++;
@@ -180,6 +198,12 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
       const text = ch === 'tg' ? c.texts.telegram : c.texts.whatsapp;
       const status = ch === 'tg' ? tgStatus : waStatus;
       const needsReview = disp.disposition !== 'auto';
+      if (v2) {
+        if (existing.has(`${c.dedupKey}|${ch}`) || (productId && openByProduct.has(`${ch}|${productId}|${isCupom}`))) {
+          out.skipped++;
+          continue;
+        }
+      }
       const res = v2
         ? await db.execute(sql`
         INSERT INTO group_messages (message_key, trigger, channel, vertical, master_product_id, offer_id, price_cents_detected, avg_cents, needs_review, candidate, text_body, dedup_key,
@@ -205,6 +229,10 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
         )
         ON CONFLICT (dedup_key, channel) DO NOTHING
       `);
+      if (v2) {
+        existing.add(`${c.dedupKey}|${ch}`);
+        if (productId && n(res) > 0) openByProduct.add(`${ch}|${productId}|${isCupom}`);
+      }
       if (n(res) > 0) {
         out.inserted++;
         out.byStatus[status] = (out.byStatus[status] ?? 0) + 1;

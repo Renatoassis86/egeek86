@@ -267,6 +267,29 @@ export async function loadPeriodDays(exec: Exec, productId: string, fromDay: str
   }));
 }
 
+/** Mesma leitura de `loadPeriodDays` para VÁRIOS produtos em UMA consulta (evita N idas ao banco em série). Produto sem dia fica com lista vazia. */
+export async function loadPeriodDaysMany(exec: Exec, productIds: string[], fromDay: string, toDay: string): Promise<Map<string, Array<PeriodDay & { minOfferId: string | null; quality: string }>>> {
+  const out = new Map<string, Array<PeriodDay & { minOfferId: string | null; quality: string }>>();
+  if (!productIds.length) return out;
+  const rows = await exec.execute<Row>(sql`
+    SELECT master_product_id AS pid, day::text AS day, members, min_cents, min_offer_id, quality FROM price_daily_state
+    WHERE master_product_id IN (${sql.join(productIds.map((id) => sql`${id}::uuid`), sql`, `)}) AND day BETWEEN ${fromDay}::date AND ${toDay}::date AND quality IN ('complete', 'partial')
+    ORDER BY master_product_id, day
+  `);
+  for (const r of rows) {
+    const pid = String(r.pid);
+    const list = out.get(pid) ?? out.set(pid, []).get(pid)!;
+    list.push({
+      day: String(r.day),
+      members: ((typeof r.members === 'string' ? JSON.parse(r.members) : r.members) ?? {}) as Record<string, number>,
+      minCents: r.min_cents == null ? null : Number(r.min_cents),
+      minOfferId: (r.min_offer_id as string | null) ?? null,
+      quality: String(r.quality),
+    });
+  }
+  return out;
+}
+
 // ------------------------------------------------------------------------------------------------
 // 4) price_min_events
 // ------------------------------------------------------------------------------------------------
