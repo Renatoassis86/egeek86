@@ -2,13 +2,14 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { CartaoLojaPlus } from '@/components/plus/cartao-loja-plus';
-import { getLojasPlus } from '@/server/plus';
+import { GruposWhatsapp } from '@/components/plus/grupos-whatsapp';
+import { getLojasPlus, getGruposWhatsapp } from '@/server/plus';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 /** Seção "Espaço Geek Plus" da home: um cartão por departamento além de games. Dado real (estado e contagem vêm do catálogo). */
 export async function SecaoPlusHome() {
   const perfil = await getCurrentProfile().catch(() => null);
-  const lojas = await getLojasPlus(perfil?.role);
+  const [lojas, grupos] = await Promise.all([getLojasPlus(perfil?.role), getGruposWhatsapp()]);
   return (
     <section aria-labelledby="plus-titulo" className="w-full border-y border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] py-12 lg:py-16">
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
@@ -31,6 +32,7 @@ export async function SecaoPlusHome() {
             </li>
           ))}
         </ul>
+        <GruposWhatsapp grupos={grupos} id="plus-grupos-titulo" />
       </div>
     </section>
   );

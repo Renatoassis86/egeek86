@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Box, Cpu, BookOpen, House, Tv, Dumbbell, Send, MessageCircle } from 'lucide-react';
+import { ArrowRight, Box, Cpu, BookOpen, House, Tv, Dumbbell } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
@@ -14,33 +14,11 @@ const ICONES: Record<string, ComponentType<{ className?: string }>> = {
   esporte: Dumbbell,
 };
 
-/** Cartão de uma loja do Espaço Geek Plus. Área aberta leva aos produtos; fechada mostra o estado e os canais. Sem imagem (ícone), sem selo. */
+/** Cartão de uma loja do Espaço Geek Plus. Área aberta leva aos produtos; fechada mostra o estado. Sem imagem (ícone), sem selo. */
+export const ICONES_LOJA_PLUS = ICONES;
+
 export function CartaoLojaPlus({ loja }: { loja: LojaPlusView }) {
   const Icone = ICONES[loja.dept] ?? Box;
-  const canais = (
-    <div className="flex flex-wrap gap-2 text-[13px]">
-      {loja.telegramUrl ? (
-        <a
-          href={loja.telegramUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-9 items-center gap-1.5 border border-[var(--color-border-default)] px-3 hover:border-[var(--color-accent-primary)]"
-        >
-          <Send className="size-3.5" /> Telegram
-        </a>
-      ) : null}
-      {loja.whatsappUrl ? (
-        <a
-          href={loja.whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-9 items-center gap-1.5 border border-[var(--color-border-default)] px-3 hover:border-[var(--color-accent-primary)]"
-        >
-          <MessageCircle className="size-3.5" /> WhatsApp
-        </a>
-      ) : null}
-    </div>
-  );
   return (
     <Card className="flex h-full flex-col gap-4 p-5">
       <div className="flex items-start justify-between gap-3">
@@ -56,7 +34,7 @@ export function CartaoLojaPlus({ loja }: { loja: LojaPlusView }) {
         <Text variant="body-sm" color="secondary">{loja.chamada}</Text>
         {!loja.aberta ? (
           <Text variant="caption" color="tertiary" className="mt-1">
-            A área abre quando houver produtos aprovados com oferta verificada. Enquanto isso, o aviso de preços já corre no canal da loja.
+            A área abre quando houver produtos aprovados com oferta verificada.
           </Text>
         ) : null}
       </div>
@@ -69,7 +47,6 @@ export function CartaoLojaPlus({ loja }: { loja: LojaPlusView }) {
             Ver produtos de {loja.rotulo} <ArrowRight className="size-4" />
           </Link>
         ) : null}
-        {canais}
       </div>
     </Card>
   );

@@ -39,3 +39,25 @@ export async function getLojasPlus(role?: string | null): Promise<LojaPlusView[]
     };
   });
 }
+
+export interface GrupoWhatsappView {
+  storeSlug: string;
+  /** departamento Plus (para o ícone); null = Games. */
+  dept: LojaPlus['dept'] | null;
+  rotulo: string;
+  /** null = ainda sem grupo cadastrado ("Grupo em breve"). */
+  url: string | null;
+}
+
+/** Grupos de WhatsApp por loja (Games + 6 lojas Plus), lidos de store_sections.whatsapp_group_url. Falha segura: tudo "em breve". */
+export async function getGruposWhatsapp(): Promise<GrupoWhatsappView[]> {
+  const stores = await getStores().catch(() => []);
+  const url = (slug: string) => {
+    const u = stores.find((x) => x.slug === slug)?.whatsappGroupUrl?.trim();
+    return u && /^https:\/\//i.test(u) ? u : null;
+  };
+  return [
+    { storeSlug: 'games', dept: null, rotulo: 'Games', url: url('games') },
+    ...LOJAS_PLUS.map((l) => ({ storeSlug: l.storeSlug, dept: l.dept, rotulo: l.rotulo, url: url(l.storeSlug) })),
+  ];
+}

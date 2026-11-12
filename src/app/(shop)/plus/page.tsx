@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Text } from '@/components/ui/text';
 import { CartaoLojaPlus } from '@/components/plus/cartao-loja-plus';
-import { getLojasPlus } from '@/server/plus';
+import { GruposWhatsapp } from '@/components/plus/grupos-whatsapp';
+import { getLojasPlus, getGruposWhatsapp } from '@/server/plus';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function PlusPage() {
   const perfil = await getCurrentProfile().catch(() => null);
-  const lojas = await getLojasPlus(perfil?.role);
+  const [lojas, grupos] = await Promise.all([getLojasPlus(perfil?.role), getGruposWhatsapp()]);
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
       <header className="mb-8 flex flex-col gap-2 border-l-2 border-[var(--color-accent-primary)] pl-4">
@@ -35,6 +36,8 @@ export default async function PlusPage() {
           </li>
         ))}
       </ul>
+
+      <GruposWhatsapp grupos={grupos} />
 
       <p className="mt-8 text-[14px]">
         <Link href="/ofertas" className="underline underline-offset-2">Voltar para as ofertas de games</Link>
