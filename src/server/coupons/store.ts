@@ -113,11 +113,30 @@ export interface IngestSummary {
   rejeitados: { index: number; reason: string }[];
 }
 
-async function upsertOne(c: NormalizedCoupon, summary: IngestSummary): Promise<void> {
-  const found = (await db.execute<{ id: string; state: StoredCoupon['state']; streak_started_at: string; last_seen_at: string }>(sql`
-    SELECT id::text AS id, state, ${ts('streak_started_at')}, ${ts('last_seen_at')} FROM coupon_items
-    WHERE network_slug = ${c.network} AND dedup_hash = ${c.dedupHash}`)) as unknown as { id: string; state: StoredCoupon['state']; streak_started_at: string; last_seen_at: string }[];
-  const ex = found[0];
+type ExistingRow = { id: string; state: StoredCoupon['state']; streak_started_at: string; last_seen_at: string; dedup_hash?: string };
+
+/** Uma única consulta traz o que já existe de todo o lote (antes: 1 SELECT por cupom; o lote da Amazon chega a 100 cupons). */
+async function prefetchExisting(network: string, hashes: string[]): Promise<Map<string, ExistingRow>> {
+  const m = new Map<string, ExistingRow>();
+  if (!hashes.length) return m;
+  const rows = (await db.execute<ExistingRow>(sql`
+    SELECT id::text AS id, state, dedup_hash, ${ts('streak_started_at')}, ${ts('last_seen_at')} FROM coupon_items
+    WHERE network_slug = ${network} AND dedup_hash IN (${sql.join(hashes.map((h) => sql`${h}`), sql`, `)})`)) as unknown as ExistingRow[];
+  for (const r of rows) if (r.dedup_hash) m.set(r.dedup_hash, r);
+  return m;
+}
+
+interface ReadRow { id: string; c: NormalizedCoupon; state: string }
+
+async function upsertOne(c: NormalizedCoupon, summary: IngestSummary, pre?: Map<string, ExistingRow>, reads?: ReadRow[]): Promise<void> {
+  let ex: ExistingRow | undefined;
+  if (pre) ex = pre.get(c.dedupHash);
+  else {
+    const found = (await db.execute<ExistingRow>(sql`
+      SELECT id::text AS id, state, ${ts('streak_started_at')}, ${ts('last_seen_at')} FROM coupon_items
+      WHERE network_slug = ${c.network} AND dedup_hash = ${c.dedupHash}`)) as unknown as ExistingRow[];
+    ex = found[0];
+  }
   const d = decideState(ex ? { state: ex.state, streakStartedAt: ex.streak_started_at, lastSeenAt: ex.last_seen_at } : null, c);
   if (!d.applies) { summary.fora_de_ordem++; return; }
 
@@ -152,7 +171,8 @@ async function upsertOne(c: NormalizedCoupon, summary: IngestSummary): Promise<v
         verified_by = ${verifiedBy}, last_page_price_cents = ${c.pagePriceCents}, updated_at = now()
       WHERE id = ${id}::uuid`);
   }
-  await db.execute(sql`
+  if (reads) reads.push({ id, c, state: d.state });
+  else await db.execute(sql`
     INSERT INTO coupon_reads (coupon_id, read_at, source_url, state_seen, evidence_hash, page_price_cents, state_after)
     VALUES (${id}::uuid, ${c.readAt}::timestamptz, ${c.sourceUrl}, 'visto', ${c.evidenceHash}, ${c.pagePriceCents}, ${d.state})`);
   summary.gravados++;
@@ -167,7 +187,19 @@ export async function ingestCouponBatch(v: BatchValidation): Promise<IngestSumma
     recebidos: v.coupons.length + v.rejected.length, gravados: 0, novos: 0, verificados: 0, fora_de_ordem: 0,
     vencidos_por_ausencia: 0, vencidos_por_prazo: 0, rejeitados: v.rejected,
   };
-  for (const c of v.coupons) await upsertOne(c, summary);
+  // Poucas idas ao banco: 1 SELECT do lote, 1 gravação por cupom e 1 INSERT único das leituras (antes 3 por cupom; sob o pooler instável, cada ida é um risco).
+  const pre = await prefetchExisting(network, [...new Set(v.coupons.map((c) => c.dedupHash))]);
+  const reads: ReadRow[] = [];
+  const contagem = new Map<string, number>();
+  for (const c of v.coupons) contagem.set(c.dedupHash, (contagem.get(c.dedupHash) ?? 0) + 1);
+  // hash repetido no mesmo lote: relê do banco (estado atualizado pela ocorrência anterior)
+  for (const c of v.coupons) await upsertOne(c, summary, (contagem.get(c.dedupHash) ?? 0) > 1 ? undefined : pre, reads);
+  for (let i = 0; i < reads.length; i += 50) {
+    const part = reads.slice(i, i + 50);
+    await db.execute(sql`
+      INSERT INTO coupon_reads (coupon_id, read_at, source_url, state_seen, evidence_hash, page_price_cents, state_after)
+      VALUES ${sql.join(part.map(({ id, c, state }) => sql`(${id}::uuid, ${c.readAt}::timestamptz, ${c.sourceUrl}, 'visto', ${c.evidenceHash}, ${c.pagePriceCents}, ${state})`), sql`, `)}`);
+  }
 
   if (v.complete) {
     // Releitura COMPLETA da fonte: o que o servidor conhece dessa fonte e nao veio agora sumiu da pagina -> vencido (ausencia nao prova validade).

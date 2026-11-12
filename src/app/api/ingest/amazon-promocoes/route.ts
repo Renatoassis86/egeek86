@@ -32,7 +32,13 @@ export async function POST(request: NextRequest) {
     const r = await ingestPromocaoAmazon(body);
     return NextResponse.json(r, { status: r.ok || r.motivo ? 200 : 400, headers });
   } catch (e) {
-    console.error('[amazon-promocoes] falhou', e instanceof Error ? e.message : e);
-    return NextResponse.json({ error: 'erro_interno' }, { status: 500, headers });
+    const cause = (e as { cause?: { code?: string; message?: string } } | null)?.cause;
+    const code = cause?.code ?? (e as { code?: string } | null)?.code ?? '';
+    console.error('[amazon-promocoes] falhou', code, cause?.message ?? (e instanceof Error ? e.message.slice(0, 200) : e));
+    // Pooler/rede instável (consulta sem resposta, conexão derrubada): transitório, a aba tenta de novo; todas as gravações são idempotentes.
+    if (/SOCKET_TIMEOUT|CONNECTION_|ECONNRESET|ETIMEDOUT|57014/.test(code)) {
+      return NextResponse.json({ error: 'banco_instavel', motivo: code }, { status: 503, headers: { ...headers, 'Retry-After': '30' } });
+    }
+    return NextResponse.json({ error: 'erro_interno', motivo: code || undefined }, { status: 500, headers });
   }
 }
