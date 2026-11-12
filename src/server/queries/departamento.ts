@@ -3,6 +3,8 @@ import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { verticalSql } from '@/lib/catalog/verticais';
+import { createCachedQuery } from '@/lib/cache/server-cache';
+import { classificarTipo, contarTipos, type TipoContagem } from '@/lib/catalog/tipos-produto';
 import {
   MIN_VENDEDORES_MEDIANA,
   OFERTA_CLICAVEL_MAX_HORAS,
@@ -132,25 +134,59 @@ function mapCartao(r: RowLista): CartaoDepartamento {
   };
 }
 
-export const ORDENS_DEPARTAMENTO = ['menor', 'maior', 'nome', 'vendedores'] as const;
+/** 'ofertas' (mais vendedores primeiro) é o padrão: não enterra produtos caros atrás de itens baratos. */
+export const ORDENS_DEPARTAMENTO = ['ofertas', 'menor', 'maior', 'nome'] as const;
 export type OrdemDepartamento = (typeof ORDENS_DEPARTAMENTO)[number];
 export function normalizarOrdem(v: unknown): OrdemDepartamento {
-  return (ORDENS_DEPARTAMENTO as readonly string[]).includes(v as string) ? (v as OrdemDepartamento) : 'menor';
+  if (v === 'vendedores') return 'ofertas'; // URLs antigas
+  return (ORDENS_DEPARTAMENTO as readonly string[]).includes(v as string) ? (v as OrdemDepartamento) : 'ofertas';
 }
 
-/** Lista paginada (24 por página) com busca interna por nome, ordenada pelo menor preço. */
-export async function listarDepartamento(vertical: string, opts: { pagina?: number; q?: string | null; ordem?: OrdemDepartamento } = {}): Promise<PaginaDepartamento> {
+export interface IndiceTipos {
+  /** master id -> slug do tipo (derivado do título). */
+  porId: Record<string, string>;
+  /** Tipos com pelo menos 1 produto visível, com contagem. */
+  tipos: TipoContagem[];
+}
+
+/** Índice de tipos do departamento: todos os masters visíveis (mesma base da lista), classificados pelo título. */
+async function calcularIndiceTipos(vertical: string): Promise<IndiceTipos> {
+  assertDepartamento(vertical);
+  const rows = await db.execute<{ id: string; name: string }>(sql`
+    WITH ${departamentoClicaveisCtes(vertical)}
+    SELECT m.id, m.name
+    FROM master_products m
+    WHERE ${verticalSql('m', vertical)} AND m.id IN (SELECT master_product_id FROM seller_best)
+  `);
+  const porId: Record<string, string> = {};
+  for (const r of rows) porId[r.id] = classificarTipo(vertical, r.name);
+  return { porId, tipos: contarTipos(vertical, rows.map((r) => r.name)) };
+}
+
+const indiceTiposCache = createCachedQuery(calcularIndiceTipos, ['dept-indice-tipos-v1'], { revalidate: 120, maxStaleSeconds: 900 });
+export async function indiceTiposDepartamento(vertical: string): Promise<IndiceTipos> {
+  return indiceTiposCache(vertical);
+}
+
+/** Lista paginada (24 por página) com busca interna por nome e filtro por tipo; padrão: mais ofertas primeiro. */
+export async function listarDepartamento(vertical: string, opts: { pagina?: number; q?: string | null; ordem?: OrdemDepartamento; tipo?: string | null } = {}): Promise<PaginaDepartamento> {
   assertDepartamento(vertical);
   const pagina = Math.max(1, Math.min(500, Math.trunc(opts.pagina ?? 1) || 1));
   const termos = termosBusca(opts.q);
-  const busca = termos.length ? sql.join(termos.map((t) => sql`AND m.name ILIKE ${'%' + t + '%'}`), sql` `) : sql``;
+  let busca = termos.length ? sql.join(termos.map((t) => sql`AND m.name ILIKE ${'%' + t + '%'}`), sql` `) : sql``;
+  if (opts.tipo) {
+    const { porId } = await indiceTiposDepartamento(vertical);
+    const ids = Object.keys(porId).filter((id) => porId[id] === opts.tipo && /^[0-9a-f-]{36}$/i.test(id));
+    if (!ids.length) return { itens: [], total: 0, pagina, totalPaginas: 1 };
+    busca = sql`${busca} AND m.id IN (${sql.join(ids.map((id) => sql`${id}::uuid`), sql`, `)})`;
+  }
   const minV = sql.raw(String(MIN_VENDEDORES_MEDIANA));
   // Ordenação de uma lista fixa (sem texto livre no SQL).
   const ordem = normalizarOrdem(opts.ordem);
   const ordemSql =
     ordem === 'maior' ? sql`ORDER BY MIN(sb.current_price_cents) DESC, m.name ASC`
     : ordem === 'nome' ? sql`ORDER BY m.name ASC`
-    : ordem === 'vendedores' ? sql`ORDER BY COUNT(*) DESC, MIN(sb.current_price_cents) ASC, m.name ASC`
+    : ordem === 'ofertas' ? sql`ORDER BY COUNT(*) DESC, MIN(sb.current_price_cents) DESC, m.name ASC`
     : sql`ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC`;
   const rows = await db.execute<RowLista>(sql`
     WITH ${departamentoClicaveisCtes(vertical)}

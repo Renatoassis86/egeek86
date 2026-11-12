@@ -6,6 +6,7 @@ import { VerificadoHa } from '@/components/affiliate/verificado-ha';
 import { formatBRL } from '@/lib/format';
 import { getLojasPlus } from '@/server/plus';
 import { getDestaquesPlus } from '@/server/plus-destaques';
+import { getTiposPrincipaisPlus } from '@/server/plus-tipos';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 /**
@@ -17,7 +18,7 @@ export async function FaixasPlusHome() {
   const perfil = await getCurrentProfile().catch(() => null);
   const lojas = (await getLojasPlus(perfil?.role)).filter((l) => l.aberta);
   if (lojas.length === 0) return null;
-  const destaques = await getDestaquesPlus(lojas.map((l) => l.dept));
+  const [destaques, tipos] = await Promise.all([getDestaquesPlus(lojas.map((l) => l.dept)), getTiposPrincipaisPlus(lojas.map((l) => l.dept))]);
   const visiveis = lojas.filter((l) => (destaques[l.dept] ?? []).length > 0);
   if (visiveis.length === 0) return null;
 
@@ -41,6 +42,17 @@ export async function FaixasPlusHome() {
                   Ver todos de {l.rotulo} <ArrowRight className="size-4" aria-hidden />
                 </Link>
               </div>
+              {(tipos[l.dept] ?? []).length > 0 ? (
+                <ul className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0" aria-label={`Tipos em ${l.rotulo}`}>
+                  {tipos[l.dept].map((t) => (
+                    <li key={t.slug} className="shrink-0">
+                      <Link href={`/mercado/${l.dept}?tipo=${t.slug}`} className="inline-flex min-h-11 items-center gap-2 border border-[var(--color-border-default)] px-3 text-[13px] font-bold text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] focus-visible:outline-2 focus-visible:outline-[var(--color-border-focus)]">
+                        {t.rotulo} <span className="font-mono text-[12px] font-normal text-[var(--color-text-tertiary)]">{t.n}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               <ul className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 lg:mx-0 lg:px-0">
                 {itens.map((m) => (
                   <li key={m.id} className="w-[62vw] shrink-0 snap-start sm:w-56 lg:w-[calc((100%-3*0.75rem)/4)] xl:w-[calc((100%-4*0.75rem)/5)]">

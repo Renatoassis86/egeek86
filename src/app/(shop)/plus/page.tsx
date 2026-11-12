@@ -4,6 +4,7 @@ import { Text } from '@/components/ui/text';
 import { CartaoLojaPlus } from '@/components/plus/cartao-loja-plus';
 import { GruposWhatsapp } from '@/components/plus/grupos-whatsapp';
 import { getLojasPlus, getGruposWhatsapp } from '@/server/plus';
+import { getTiposPrincipaisPlus } from '@/server/plus-tipos';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default async function PlusPage() {
   const perfil = await getCurrentProfile().catch(() => null);
   const [lojas, grupos] = await Promise.all([getLojasPlus(perfil?.role), getGruposWhatsapp()]);
+  const tipos = await getTiposPrincipaisPlus(lojas.filter((l) => l.aberta).map((l) => l.dept));
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
       <header className="mb-8 flex flex-col gap-2 border-l-2 border-[var(--color-accent-primary)] pl-4">
@@ -32,7 +34,7 @@ export default async function PlusPage() {
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {lojas.map((l) => (
           <li key={l.dept}>
-            <CartaoLojaPlus loja={l} />
+            <CartaoLojaPlus loja={l} tipos={tipos[l.dept]} />
           </li>
         ))}
       </ul>

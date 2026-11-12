@@ -4,6 +4,7 @@ import type { ComponentType } from 'react';
 import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import type { LojaPlusView } from '@/server/plus';
+import type { TipoLink } from '@/server/plus-tipos';
 
 const ICONES: Record<string, ComponentType<{ className?: string }>> = {
   impressao3d: Box,
@@ -17,7 +18,7 @@ const ICONES: Record<string, ComponentType<{ className?: string }>> = {
 /** Cartão de uma loja do Espaço Geek Plus. Área aberta leva aos produtos; fechada mostra o estado. Sem imagem (ícone), sem selo. */
 export const ICONES_LOJA_PLUS = ICONES;
 
-export function CartaoLojaPlus({ loja }: { loja: LojaPlusView }) {
+export function CartaoLojaPlus({ loja, tipos }: { loja: LojaPlusView; tipos?: TipoLink[] }) {
   const Icone = ICONES[loja.dept] ?? Box;
   return (
     <Card className="flex h-full flex-col gap-4 p-5">
@@ -38,6 +39,17 @@ export function CartaoLojaPlus({ loja }: { loja: LojaPlusView }) {
           </Text>
         ) : null}
       </div>
+      {loja.aberta && tipos && tipos.length > 0 ? (
+        <ul className="flex flex-wrap gap-2" aria-label={`Tipos em ${loja.rotulo}`}>
+          {tipos.map((t) => (
+            <li key={t.slug}>
+              <Link href={`/mercado/${loja.dept}?tipo=${t.slug}`} className="inline-flex min-h-9 items-center gap-1.5 border border-[var(--color-border-default)] px-2.5 text-[13px] text-[var(--color-text-secondary)] hover:border-[var(--color-accent-primary)] focus-visible:outline-2 focus-visible:outline-[var(--color-border-focus)]">
+                {t.rotulo} <span className="font-mono text-[12px] text-[var(--color-text-tertiary)]">{t.n}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       <div className="mt-auto flex flex-col gap-3">
         {loja.aberta ? (
           <Link
