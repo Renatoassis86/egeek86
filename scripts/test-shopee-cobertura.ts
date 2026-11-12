@@ -5,7 +5,7 @@
  */
 import {
   avancarCursor, casarItem, coberturaLigada, criarIndice, fontesDe, lerConfigCobertura, PAGINAS_MAX_POR_FONTE, paradaPorErro, parseParametrosCobertura,
-  proximaFonte, resumirCategorias, type CursorMapa,
+  emDescanso, proximaFonte, resumirCategorias, type CursorMapa,
 } from '../src/lib/affiliate/shopee-cobertura';
 import type { MasterIdentity } from '../src/lib/affiliate/amazon-identity';
 
@@ -59,6 +59,13 @@ check('cursor: teto de paginas recomeca', avancarCursor({ page: PAGINAS_MAX_POR_
   }
   check('fontes em rodizio (espalha, nao esgota uma por vez)', new Set(ordem.slice(0, 4)).size === 4 && ordem.slice(0, 4).join() === ordem.slice(4).join(), ordem);
   check('sem fontes => null', proximaFonte([], {}) === null);
+  // fonte com 2+ falhas 10000 descansa 6 h e depois volta
+  const agora = new Date('2026-11-12T18:30:00Z');
+  const cur: CursorMapa = { [fontes[0].chave]: { page: 1, voltas: 0, falhas: 2, atualizadoEm: '2026-11-12T18:00:00Z' } };
+  check('fonte com 2 falhas recentes descansa', emDescanso(cur[fontes[0].chave], agora) && proximaFonte(fontes, cur, agora)!.chave !== fontes[0].chave);
+  check('1 falha nao descansa', !emDescanso({ page: 1, voltas: 0, falhas: 1, atualizadoEm: '2026-11-12T18:00:00Z' }, agora));
+  check('descanso acaba em 6 h', !emDescanso(cur[fontes[0].chave], new Date('2026-11-13T00:01:00Z')));
+  check('todas em descanso => null', proximaFonte([fontes[0]], cur, agora) === null);
 }
 
 // --- parada por erro: PRIMEIRO 10030 para ---

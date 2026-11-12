@@ -43,6 +43,8 @@ const LIST_FIELDS_COM_CAT = `${LIST_FIELDS} productCatIds`;
 const MIN_VENDAS = 0;
 const MIN_NOTA = 4;
 const MAX_POR_MASTER = 3;
+/** Fontes com System Error 10000 toleradas por execucao (1 chamada cada); acima disso a execucao encerra. */
+const MAX_FONTES_COM_10000 = 8;
 
 /** Chave de desligamento da aprovacao automatica (APROVACAO_AUTO=off): masters novos voltam a nascer em revisao. */
 const aprovacaoAutoLigada = () => (process.env.APROVACAO_AUTO ?? '').trim().toLowerCase() !== 'off';
@@ -230,7 +232,7 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
   const metaAtual = (extra?: Record<string, unknown>) => ({
     apply: o.apply, calls: res.chamadas.usadas, parou: res.parou, erroApi: res.erroApi, offersCreated: res.offersCreated, draftOffers: res.draftOffers,
     mastersCreated: res.mastersCreated, quarentenadas: res.quarentenadas, variantes: res.variantes,
-    fontes: res.fontes, ...extra,
+    fontes: res.fontes, avisos: res.avisos, ...extra,
   });
   const fecharRun = async (erro?: Error) => {
     if (!runId) return;
@@ -336,7 +338,7 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
     let falhasListagem = 0;
     laco: while (paginasLidas < o.paginas) {
       const fonte = proximaFonte(fontes, cursor);
-      if (!fonte) break;
+      if (!fonte) { if (paginasLidas === 0) res.avisos.push('todas_as_fontes_em_descanso_por_10000'); break; }
       const cur = cursor[fonte.chave] ?? { page: 1, voltas: 0 };
       let r;
       try {
@@ -346,8 +348,8 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
         });
       } catch (e) {
         const parada = (e as { parada?: MotivoParada }).parada;
-        // 10000 (System Error) e intermitente/por fonte (medido 2026-11-12): a fonte vai para o fim da fila (cursor) e a execucao segue; 3 por execucao encerram.
-        if (!parada && res.erroApi?.code === 10000 && ++falhasListagem <= 3) {
+        // 10000 (System Error) e intermitente/por fonte (medido 2026-11-12): a fonte vai para o fim da fila (cursor) e a execucao segue; ate MAX_FONTES_COM_10000 por execucao; fonte com 2+ falhas descansa 6 h (proximaFonte).
+        if (!parada && res.erroApi?.code === 10000 && ++falhasListagem <= MAX_FONTES_COM_10000) {
           cursor[fonte.chave] = { ...cur, atualizadoEm: new Date().toISOString(), falhas: (cur.falhas ?? 0) + 1 };
           res.avisos.push(`fonte_com_10000:${fonte.chave}`);
           errosSeguidos = 0;

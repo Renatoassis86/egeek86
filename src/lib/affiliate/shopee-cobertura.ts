@@ -108,10 +108,17 @@ export function avancarCursor(c: CursorFonte | undefined, r: { temProxima: boole
   return { page: atual.page + 1, voltas: atual.voltas, atualizadoEm: agora.toISOString() };
 }
 
-/** Fonte da vez: a de menor (voltas, página mais antiga). Espalha o trabalho entre as fontes em vez de esgotar uma por vez. */
-export function proximaFonte(fontes: FonteListagem[], cursor: CursorMapa): FonteListagem | null {
-  if (fontes.length === 0) return null;
-  return [...fontes].sort((a, b) => {
+/** Fonte com 2+ erros 10000 seguidos descansa 6 h (a API devolve System Error para certos productCatId; medido em 2026-11-12) e depois e tentada de novo. */
+export const FALHAS_PARA_DESCANSO = 2;
+export const DESCANSO_FONTE_MS = 6 * 3_600_000;
+export const emDescanso = (c: CursorFonte | undefined, agora = new Date()): boolean =>
+  (c?.falhas ?? 0) >= FALHAS_PARA_DESCANSO && !!c?.atualizadoEm && agora.getTime() - Date.parse(c.atualizadoEm) < DESCANSO_FONTE_MS;
+
+/** Fonte da vez: a de menor (voltas, página mais antiga), fora as que estão em descanso por erro. Espalha o trabalho entre as fontes em vez de esgotar uma por vez. */
+export function proximaFonte(fontes: FonteListagem[], cursor: CursorMapa, agora = new Date()): FonteListagem | null {
+  const livres = fontes.filter((f) => !emDescanso(cursor[f.chave], agora));
+  if (livres.length === 0) return null;
+  return [...livres].sort((a, b) => {
     const ca = cursor[a.chave] ?? { page: 1, voltas: 0 };
     const cb = cursor[b.chave] ?? { page: 1, voltas: 0 };
     return ca.voltas - cb.voltas || (ca.atualizadoEm ?? '').localeCompare(cb.atualizadoEm ?? '') || a.chave.localeCompare(b.chave);
