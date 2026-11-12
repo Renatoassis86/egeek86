@@ -38,9 +38,9 @@ export const REDES_DEPARTAMENTO = ['mercado-livre', 'shopee'] as const;
 
 export const DEPARTAMENTOS: readonly Departamento[] = [
   { slug: 'tecnologia', rotulo: 'Tecnologia', descricao: 'Hardware, armazenamento, impressoras e periféricos.', tipoCartao: 'tecnologia', flag: 'dept_tecnologia' },
-  { slug: 'eletroeletronicos', rotulo: 'Eletroeletrônicos', descricao: 'TVs, áudio e vídeo.', tipoCartao: 'eletro', flag: 'dept_eletroeletronicos' },
+  { slug: 'eletroeletronicos', rotulo: 'Eletrônicos', descricao: 'TVs, áudio e vídeo.', tipoCartao: 'eletro', flag: 'dept_eletroeletronicos' },
   { slug: 'livros', rotulo: 'Livros', descricao: 'Livros identificados por ISBN.', tipoCartao: 'livro', flag: 'dept_livros' },
-  { slug: 'eletrodomesticos', rotulo: 'Eletrodomésticos', descricao: 'Eletrodomésticos para a casa.', tipoCartao: 'eletro', flag: 'dept_eletrodomesticos' },
+  { slug: 'eletrodomesticos', rotulo: 'Casa', descricao: 'Eletrodomésticos para a casa.', tipoCartao: 'eletro', flag: 'dept_eletrodomesticos' },
   { slug: 'esporte', rotulo: 'Esporte', descricao: 'Artigos esportivos.', tipoCartao: 'esporte', flag: 'dept_esporte' },
   // Fechado ao público: não existe linha dept_impressao3d em feature_flags e MERCADO_UI segue desligada (ata 2026-11-11).
   { slug: 'impressao3d', rotulo: 'Impressão 3D', descricao: 'Impressoras 3D, filamentos e resinas.', tipoCartao: 'tecnologia', flag: 'dept_impressao3d' },

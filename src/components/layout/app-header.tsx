@@ -85,7 +85,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (!item.children) {
+  if (!item.children || item.children.length === 0) {
     return (
       <Link
         href={item.href}
@@ -180,7 +180,7 @@ export function AppHeader({
       href: '/plus',
       label: 'Plus',
       children: [
-        { href: '/plus', label: 'Todos os departamentos' },
+        // O item "Plus" já leva a /plus; o submenu lista só os departamentos (rótulos = cartões do Plus).
         ...departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label })),
       ],
     },
