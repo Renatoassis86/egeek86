@@ -66,6 +66,9 @@ export async function validateCouponOffers(offerIds: string[], now: Date, concur
         ruleKnown: d.ruleKnown,
         conditions: r.info.conditions,
         activation: d.activation,
+        code: d.code,
+        howTo: d.howTo,
+        named: d.named,
         readAt: new Date(d.readAt),
         expiresAt: r.info.expiresAt ? new Date(r.info.expiresAt) : null,
       });

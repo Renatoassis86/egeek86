@@ -55,7 +55,7 @@ function coupon(over: Partial<CouponOfferFact> & { offerId: string }): CouponOff
   return {
     couponRef: over.offerId, name: '10% de desconto', offerPriceCents, finalCents, offCents: offerPriceCents - finalCents, pct: Math.round(((offerPriceCents - finalCents) / offerPriceCents) * 1000) / 10,
     minOrderCents: null, maxDiscountCents: null, ruleKnown: false, conditions: 'Desconto de R$ 300,00 (10%): você paga R$ 2.700,00. Ative em Cupons no Mercado Livre antes de pagar. Preço lido na página do anúncio',
-    activation: 'Ative em Cupons no Mercado Livre antes de pagar.', readAt: new Date(NOW.getTime() - 20 * MIN), expiresAt: null, ...over,
+    activation: '1. Abra o anúncio; 2. Em Cupons, ative o cupom de R$ 300,00; 3. Finalize a compra.', howTo: ['Abra o anúncio', 'Em Cupons, ative o cupom de R$ 300,00', 'Finalize a compra'], named: false, readAt: new Date(NOW.getTime() - 20 * MIN), expiresAt: null, ...over,
   };
 }
 function prod(over: Partial<ProductFacts> = {}): ProductFacts {
@@ -88,7 +88,7 @@ const blockedCup = (r: { blocked: Array<{ trigger: string; reasons: string[] }> 
   ok(tg.includes('CUPOM ATIVO') && tg.includes('10% de desconto'), 'Telegram: titulo e nome do cupom');
   ok(tg.includes('R$ 2.700,00') && tg.includes('com o cupom'), 'Telegram: preco COM cupom rotulado', tg);
   ok(tg.includes('R$ 300,00 (10%)') && tg.includes('R$ 3.000,00'), 'Telegram: quanto da (R$ e %) e o preco do anuncio sem cupom');
-  ok(tg.includes('Como ativar:') && tg.includes('Ative em Cupons no Mercado Livre antes de pagar.'), 'Telegram: como ativar');
+  ok(tg.includes('Como usar:') && tg.includes('Em Cupons, ative o cupom') && tg.includes('Finalize a compra'), 'Telegram: como usar em passos');
   ok(/Preço lido na página do anúncio em \d{2}\/\d{2} às \d{2}:\d{2}/.test(tg), 'Telegram: "Preço lido na página do anúncio" com horário da leitura', tg);
   ok(tg.includes('11/11 às') === false && tg.includes('12/11 às 11:40'), 'horario = o da leitura (11:40 BRT), nao o de agora');
   ok(tg.includes('regra completa na tela do cupom'), 'regra nao lida: avisa que a regra completa esta na tela do cupom');

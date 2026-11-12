@@ -5,7 +5,8 @@
  * Contrato real (src/app/api/ingest/cupons-revalidar e cupons-item; docs/03-metodologia/CUPOM_NA_AGULHA.md):
  *   GET  /api/ingest/cupons-revalidar?rede=mercado-livre&n=20 -> { items: [{ id, url, prioridade, motivo, ultima_leitura_min }] }
  *        (já na ordem de prioridade da agulha e SÓ com leitura devida: meta 45 min p/ prioridades 0-3; janela de frescor da agulha = 120 min)
- *   POST /api/ingest/cupons-item { rows: [{ id, coupons: [{ campaign_id?, label, status }] }] }  (coupons vazio = lido e sem cupom)
+ *   POST /api/ingest/cupons-item { rows: [{ id, coupons: [{ campaign_id?, label, status, name?, code? }] }] }  (coupons vazio = lido e sem cupom)
+ *        name/code (opcionais, só o que a página mostrou; validados no servidor): a mensagem ao cliente leva o NOME do cupom com prioridade.
  *        o servidor só aceita rótulo com "cupom" e preço com cupom MENOR que o preço da oferta.
  *
  * Como iniciar (aba em https://www.mercadolivre.com.br, de preferência OUTRA aba que a do gerador de links; token só em memória):
@@ -17,7 +18,7 @@
  *
  * Segurança da leitura: só conta "sem cupom" quando a página provou ser o anúncio certo (o itemId aparece nela) E nenhuma menção a cupom
  * ficou sem ser lida (menção a cupom que não virou "R$ x com cupom" = leitura ambígua: NADA é enviado, o item volta à fila).
- * 429 do ML => pausa longa (15, 30, 60 min; fica em 60) e retoma sozinho. 5xx do ML/servidor/rede => recuo curto. Nunca contorna captcha/login: para.
+ * NUNCA para sozinho: 429/login/captcha/token/origem/5xx/rede/exceção viram pausa com recuo (teto 30 min) e retomada automática. Nunca contorna captcha/login; só __mlc.stop() do operador para.
  */
 (function () {
   'use strict';
@@ -55,6 +56,28 @@
    *  - lidas: quantas viraram "R$ x com cupom";
    *  - ambiguo: há menção a cupom no texto mas nenhuma foi lida como preço com cupom => não afirmar "sem cupom".
    */
+  /**
+   * NOME da promoção do cupom (ordem do dono, 2026-11-12: a mensagem leva o NOME do cupom). Só o que a página escreve junto do campaign_id no estado
+   * embutido (JSON: title/text/label/name/description) e que tem a cara de nome de promoção ("R$ 100 OFF em TV Toshiba", "10% OFF"): começa com
+   * valor (R$ ou %) seguido de OFF/de desconto, até 80 caracteres, sem marcação. Nada é inventado: sem texto assim, devolve null e o servidor usa o
+   * título da lista de cupons ou o passo a passo "ative em Cupons". NÃO VALIDADO em produção: conferir em status().linhas (simulação) antes de enviar:true.
+   */
+  PURO.nomeDaCampanha = function (cru, campaignId) {
+    cru = String(cru || '');
+    if (!campaignId) return null;
+    var marca = /"campaign_id"\s*:\s*"?(\d{3,12})"?/g, k, achado = null;
+    while (!achado && (k = marca.exec(cru))) {
+      if (k[1] !== String(campaignId)) continue;
+      var janela = cru.slice(Math.max(0, k.index - 1200), k.index + 1200);
+      var re = /"(?:title|text|label|name|description|subtitle)"\s*:\s*"((?:[^"\\]|\\.){3,120})"/g, m;
+      while (!achado && (m = re.exec(janela))) {
+        var t = m[1].replace(/\\u0026/g, '&').replace(/\\"/g, '"').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+        if (t.length <= 80 && /^(?:R\$\s*\d[\d.,]*|\d{1,2}(?:[.,]\d+)?\s*%)\s*(?:OFF|de desconto)(?![A-Za-z])/i.test(t) && !/<|>|http/i.test(t)) achado = t;
+      }
+    }
+    return achado;
+  };
+
   PURO.extrairCupons = function (html) {
     var texto = PURO.textoDoHtml(html);
     var vistos = {}, cupons = [];
@@ -73,7 +96,11 @@
       if (pos < 0) return;
       var janela = cru.slice(Math.max(0, pos - 800), pos + 800);
       var k = /"campaign_id"\s*:\s*"?(\d{3,12})"?/.exec(janela);
-      if (k && /coupon|cupom/i.test(janela)) c.campaign_id = k[1];
+      if (k && /coupon|cupom/i.test(janela)) {
+        c.campaign_id = k[1];
+        var nome = PURO.nomeDaCampanha(cru, k[1]);
+        if (nome) c.name = nome;
+      }
     });
     var mencoes = (texto.match(/cupom|cupon/gi) || []).length;
     return { cupons: cupons, mencoes: mencoes, lidas: cupons.length, ambiguo: cupons.length === 0 && mencoes > 0 };
@@ -99,17 +126,19 @@
     return 'ok';
   };
 
+  // REGRA DO DONO (2026-11-12): NENHUM LOOP PODE PARAR. Todo problema (login, captcha, token, origem, 403/429, 5xx, rede, exceção) vira PAUSA com recuo
+  // (teto 30 min) e retomada automática, tentando de novo para sempre. Só window.__mlc.stop() chamado pelo operador para.
   var RECUO = {
-    http_429: [15, 30, 60],               // ML limitando: pausa longa; depois fica em 60 min para sempre
+    http_429: [15, 30],                   // ML limitando: pausa longa; depois fica em 30 min
     http_5xx: [1, 2, 5, 10],              // erro do ML: recuo curto
     rede: [1, 2, 5, 10, 20],
     http_5xx_servidor: [1, 2, 5, 10, 20],
-    servidor_desligado: [10, 20, 40, 60],
+    servidor_desligado: [10, 20, 30],
+    login: [15, 30], captcha: [15, 30], token_recusado: [15, 30], origem_recusada: [15, 30],
   };
 
-  /** Política: tipo + seguidos => { acao, min }. Login/captcha/token/origem param; o resto recua e volta sozinho. */
+  /** Política: tipo + seguidos => { acao, min }. Nunca devolve 'parar'. */
   PURO.politica = function (tipo, seguidos) {
-    if (tipo === 'login' || tipo === 'captcha' || tipo === 'token_recusado' || tipo === 'origem_recusada') return { acao: 'parar', motivo: tipo, min: 0 };
     var lista = RECUO[tipo] || RECUO.rede;
     return { acao: 'pausar', motivo: tipo, min: lista[Math.min(Math.max(1, seguidos | 0), lista.length) - 1] };
   };
@@ -212,7 +241,6 @@
     S.seguidos[tipo] = (S.seguidos[tipo] || 0) + 1;
     var p = PURO.politica(tipo, S.seguidos[tipo]);
     if (detalhe) erro(tipo + ': ' + detalhe);
-    if (p.acao === 'parar') { S.rodando = false; S.parou = { em: agora(), motivo: p.motivo }; S.pausa = null; return true; }
     if (tipo === 'http_429') S.pausasLongas++;
     S.pausa = { ate: new Date(Date.now() + p.min * 60000).toISOString(), motivo: p.motivo, min: p.min, seguidos: S.seguidos[tipo] };
     await dormir(p.min * 60000);
@@ -296,7 +324,7 @@
       }
       sucesso();
       lidosEm[it.id] = Date.now(); S.totais.lidos++; c.lidos++;
-      if (res.row) { rows.push(res.row); linha({ id: it.id, prio: it.prioridade, cupons: res.row.coupons.map(function (x) { return x.label + (x.campaign_id ? ' #' + x.campaign_id : ''); }) }); }
+      if (res.row) { rows.push(res.row); linha({ id: it.id, prio: it.prioridade, cupons: res.row.coupons.map(function (x) { return x.label + (x.campaign_id ? ' #' + x.campaign_id : '') + (x.name ? ' [nome: ' + x.name + ']' : ''); }) }); }
       else { c.descartados++; linha({ id: it.id, descartado: res.descarte }); }
       if (i < novos.length - 1) await dormir(PURO.pausaEntreItens(CFG.pausaMs, null, PISO_PAUSA_MS));
     }

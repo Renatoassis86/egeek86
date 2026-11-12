@@ -357,6 +357,12 @@ export interface CouponOfferFact {
   /** Texto completo do cupom (CouponInfo.conditions) para o registro da divulgacao. */
   conditions: string;
   activation: string;
+  /** Código digitável lido na página (tipo a), se houver. */
+  code?: string | null;
+  /** Passo a passo curto da loja. */
+  howTo?: string[];
+  /** false = cupom sem nome (clicar e ativar): `name` é o rótulo do valor lido. */
+  named?: boolean;
   readAt: Date;
   expiresAt: Date | null;
 }
@@ -579,6 +585,8 @@ export interface Candidate {
   couponInfo?: CouponInfo & CouponRefMeta;
   /** Gatilho CUPOM: preço COM o cupom lido na página do anúncio (centavos); `priceCents` segue sendo o do anúncio sem cupom. Alimenta o card simples. */
   couponFinalCents?: number;
+  /** Gatilho CUPOM: nome do cupom (ou rótulo do valor, quando sem nome) para o card simples. */
+  couponName?: string;
 }
 
 export interface RadarItemMeta {
@@ -1188,7 +1196,7 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
     title: parts.title,
     meta: parts.meta,
     offer: toMsgOffer(o),
-    coupon: { name: cf.name, offCents: cf.offCents, pct: cf.pct, finalCents: cf.finalCents, minOrderCents: cf.minOrderCents, maxDiscountCents: cf.maxDiscountCents, ruleKnown: cf.ruleKnown, activation: cf.activation, readAt: cf.readAt, expiresAt: cf.expiresAt },
+    coupon: { name: cf.name, offCents: cf.offCents, pct: cf.pct, finalCents: cf.finalCents, minOrderCents: cf.minOrderCents, maxDiscountCents: cf.maxDiscountCents, ruleKnown: cf.ruleKnown, activation: cf.activation, code: cf.code ?? null, howTo: cf.howTo, named: cf.named, readAt: cf.readAt, expiresAt: cf.expiresAt },
     cheaperOther: cheaper ? { cents: cheaper.priceCents, networkName: cheaper.networkName } : null,
   };
   const cand = finish(p, 'CUPOM', input, {
@@ -1208,7 +1216,8 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
     ...cand,
     couponRef: cf.couponRef,
     couponFinalCents: cf.finalCents,
-    couponInfo: { code: cf.name, conditions: cf.conditions, expiresAt: cf.expiresAt ? cf.expiresAt.toISOString() : null, verifiedAt: cf.readAt.toISOString(), couponRef: cf.couponRef, annKind: 'anuncio' },
+    couponName: cf.name,
+    couponInfo: { code: cf.name, typedCode: cf.code ?? null, unnamed: cf.named === false, conditions: cf.conditions, expiresAt: cf.expiresAt ? cf.expiresAt.toISOString() : null, verifiedAt: cf.readAt.toISOString(), couponRef: cf.couponRef, annKind: 'anuncio' },
   });
   return { candidates, blocked };
 }

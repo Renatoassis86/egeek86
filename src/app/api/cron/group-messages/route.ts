@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
         const simple = await loadOfferCardInput(offerId, {
           simple: true,
           couponFinalCents: candidate.trigger === 'CUPOM' ? candidate.couponFinalCents ?? null : null,
+          couponName: candidate.trigger === 'CUPOM' ? candidate.couponName ?? null : null,
           couponReadAt: candidate.trigger === 'CUPOM' && candidate.couponInfo?.verifiedAt ? new Date(candidate.couponInfo.verifiedAt) : null,
         });
         return simple ? ((await renderOfferCard(simple))?.png ?? null) : null;

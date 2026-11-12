@@ -6,6 +6,7 @@ import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import { AGULHA, evaluateAgulha, ITEM_READ_NETWORKS, type AgulhaRule, type MissTrace } from '@/lib/coupons/agulha';
 import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
+import { resolveCouponUse } from '@/lib/coupons/coupon-name';
 
 /**
  * Cupom POR ANÚNCIO (dono, 2026-11-11): a aba logada lê a página do item e grava o "preço com cupom" (offer_coupon_reads). Vale 2 horas.
@@ -22,7 +23,8 @@ type ReadRow = {
   pw: number | null; ps: number | null; read_at: string | Date; campaign: string | null; label: string | null; status: string | null;
   cur: string; ostatus: string; net: string; vertical: string | null;
   c_kind: string | null; c_value: string | null; c_min: string | null; c_cap: string | null; c_valid: string | Date | null; c_state: string | null;
-  c_aud: string | null; c_elig: boolean | null; c_scope: string | null; c_cats: string | null; c_raw: string | null; c_title: string | null;
+  c_aud: string | null; c_elig: boolean | null; c_scope: string | null; c_cats: string | null; c_raw: string | null; c_title: string | null; c_where: string | null; c_ativ: string | null;
+  p_name: string | null; p_code: string | null;
 };
 
 /**
@@ -40,6 +42,12 @@ export interface ItemCouponDetail {
   maxDiscountCents: number | null;
   ruleKnown: boolean;
   activation: string;
+  /** Nome do cupom (já em `name`) é da loja? false = sem nome: `name` é o rótulo do valor e `howTo` explica como usar. */
+  named: boolean;
+  /** Código digitável lido (tipo a), se houver. */
+  code: string | null;
+  /** Passo a passo curto da loja. */
+  howTo: string[];
   readAt: string;
   priceSeenCents: number | null;
   validUntil: string | null;
@@ -54,13 +62,14 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
     SELECT r.price_with_coupon_cents AS pw, r.price_seen_cents AS ps, r.read_at, r.campaign_id AS campaign, r.label, r.status,
            o.current_price_cents::text AS cur, o.status::text AS ostatus, nn.slug AS net, o.vertical,
            c.kind AS c_kind, c.value_num::text AS c_value, c.min_order_cents::text AS c_min, c.max_discount_cents::text AS c_cap, c.valid_until AS c_valid,
-           c.state AS c_state, c.audience AS c_aud, c.eligible_on_read_account AS c_elig, c.scope_kind AS c_scope, c.scope->'categorias'->>0 AS c_cats, c.conditions_raw AS c_raw, c.title AS c_title
+           c.state AS c_state, c.audience AS c_aud, c.eligible_on_read_account AS c_elig, c.scope_kind AS c_scope, c.scope->'categorias'->>0 AS c_cats, c.conditions_raw AS c_raw, c.title AS c_title, c.onde AS c_where, c.ativ AS c_ativ,
+           to_jsonb(r)->>'coupon_name' AS p_name, to_jsonb(r)->>'coupon_code' AS p_code
     FROM offer_coupon_reads r
     JOIN affiliate_offers o ON o.id = r.offer_id
     JOIN affiliate_networks nn ON nn.id = o.network_id
     LEFT JOIN LATERAL (
       SELECT ci.kind, ci.value_num, ci.min_order_cents, ci.max_discount_cents, ci.valid_until, ci.state, ci.audience, ci.eligible_on_read_account,
-             ci.scope_kind, ci.scope, ci.conditions_raw, split_part(ci.raw_text, ' | ', 1) AS title
+             ci.scope_kind, ci.scope, ci.conditions_raw, split_part(ci.raw_text, ' | ', 1) AS title, split_part(ci.raw_text, ' | ', 2) AS onde, ci.conditions->>'ativacao' AS ativ
       FROM coupon_items ci
       WHERE ci.network_slug = 'mercado-livre' AND r.campaign_id IS NOT NULL AND ci.conditions->>'campanha_id' = r.campaign_id
       ORDER BY ci.last_seen_at DESC LIMIT 1
@@ -101,27 +110,30 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
     });
     if (!verdict.ok) { lastReason = verdict.reason; continue; }
     const parts: string[] = [];
-    // Nome do cupom: o título que a loja deu à campanha (lista de cupons). Sem título lido, o nome é o selo da regra; sem regra, "Cupom do anúncio".
-    // A barreira de termos proíbe '% OFF' e 'de R$ X por R$ Y' no texto: o título da loja é reescrito sem eles.
-    const title = (r.c_title ?? '').replace(/(\d+(?:[.,]\d+)?)\s*%\s*OFF/gi, '$1% de desconto').trim();
-    let name = title;
-    if (!name && rule?.kind === 'percentual' && rule.valueNum) name = `${rule.valueNum}% de desconto`;
-    if (!name && rule?.kind === 'valor_fixo' && rule.valueNum) name = `R$ ${rule.valueNum} OFF`;
-    if (!name) name = 'Cupom do anúncio';
     // Quanto ele dá: diferença real entre o preço da oferta e o preço com cupom lido na página.
     const off = current - Number(r.pw);
     const pct = current > 0 ? Math.round((off / current) * 1000) / 10 : 0;
+    // NOME DO CUPOM (ordem do dono, 2026-11-12): prioridade ao nome lido na página, depois ao título da campanha na lista de cupons (com o escopo),
+    // depois ao código digitável. Sem nome nenhum (cupom de clicar e ativar): rótulo do valor lido + passo a passo da loja. Nunca "Cupom do anúncio".
+    // A barreira de termos proíbe '% OFF': o texto da loja é reescrito ('25% de desconto') dentro de resolveCouponUse.
+    const use = resolveCouponUse({
+      net: r.net, code: r.p_code, pageName: r.p_name, listTitle: r.c_title, listScope: r.c_where, ativacao: r.c_ativ, offCents: off, pct,
+      rule: rule ? { kind: rule.kind, valueNum: rule.valueNum } : null,
+    });
+    const name = use.name;
     const dlinha = `Desconto de ${fmt(off)} (${String(pct).replace('.', ',')}%): você paga ${fmt(Number(r.pw))}. `;
     if (rule?.minOrderCents) parts.push(`Compra mínima ${fmt(rule.minOrderCents)}`);
     if (rule?.maxDiscountCents) parts.push(`desconto máximo ${fmt(rule.maxDiscountCents)}`);
     const ruleText = `${dlinha}${parts.length ? `${parts.join(', ')}. ` : ''}`;
     // Regra não lida na lista: o preço é o que a página mostrou, e a mensagem diz isso sem inventar compra mínima ou teto.
     const tail = verdict.ruleKnown ? 'Preço lido na página do anúncio' : 'Preço lido na página do anúncio; regra completa na tela do cupom';
-    const ativar = r.net === 'amazon' ? 'Marque o cupom na página do produto antes de pagar.' : r.net === 'shopee' ? 'Aplique o voucher no carrinho antes de pagar.' : 'Ative em Cupons no Mercado Livre antes de pagar.';
+    const ativar = use.activation;
     return {
       info: {
         code: name,
-        conditions: `${ruleText}${ativar} ${tail}`,
+        typedCode: use.code,
+        unnamed: !use.named,
+        conditions: `${ruleText}Como usar: ${ativar} ${tail}`,
         expiresAt: rule?.validUntil ?? null,
         verifiedAt: readIso,
         couponRef: offerId,
@@ -130,7 +142,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
       detail: {
         net: r.net, offerPriceCents: current, finalCents: Number(r.pw), offCents: off, pct, name,
         minOrderCents: rule?.minOrderCents ?? null, maxDiscountCents: rule?.maxDiscountCents ?? null, ruleKnown: verdict.ruleKnown,
-        activation: ativar, readAt: readIso, priceSeenCents: r.ps, validUntil: rule?.validUntil ?? null,
+        activation: ativar, named: use.named, code: use.code, howTo: use.howTo, readAt: readIso, priceSeenCents: r.ps, validUntil: rule?.validUntil ?? null,
       },
     };
   }

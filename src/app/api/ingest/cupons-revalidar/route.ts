@@ -21,8 +21,9 @@ export const maxDuration = 60;
  * Amazon e Shopee (autorizadas pelo dono em 2026-11-11): mesma fila por ?rede=amazon|shopee. items: [{ id, url, ref, preco_cents, prioridade, motivo, ultima_leitura_min }].
  * A aba logada da própria rede (origem fixa por rede) abre `url` SEM raspagem em massa: só a fila, no ritmo da meta de releitura.
  *
- *   POST /api/ingest/cupons-revalidar?rede=amazon|shopee   { rows: [{ id, ref, price_seen_cents, coupons: [{ label, price_with_cents? }] }] }
+ *   POST /api/ingest/cupons-revalidar?rede=amazon|shopee   { rows: [{ id, ref, price_seen_cents, coupons: [{ label, price_with_cents?, name?, code? }] }] }
  *     -> { ok, rede, recebidos, lidas, com_cupom, recusadas: { motivo: n } }
+ *   `name` (título da promoção como a página escreve, até 80) e `code` (código digitável, 4 a 20) são opcionais, validados no servidor e nunca inventados: a mensagem mostra o nome do cupom com prioridade.
  *   `ref` = ASIN / itemId lido na página (confere que abriu o item certo); `price_seen_cents` = preço do item lido na página;
  *   `coupons` vazio = lido e sem cupom. Preço com cupom: o que a página mostra (`price_with_cents`) ou, sem ele, o servidor deriva da regra
  *   escrita no selo; selo sem regra legível é descartado. Grava offer_coupon_reads com source amazon-pagina / shopee-pagina.

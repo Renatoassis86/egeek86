@@ -48,7 +48,7 @@ const COVER_MAX_BYTES = 6 * 1024 * 1024;
 
 export async function loadOfferCardInput(
   offerId: string,
-  opts?: { now?: Date; simple?: boolean; couponFinalCents?: number | null; couponReadAt?: Date | null }
+  opts?: { now?: Date; simple?: boolean; couponFinalCents?: number | null; couponReadAt?: Date | null; couponName?: string | null }
 ): Promise<OfferCardInput | null> {
   if (!UUID.test(offerId)) return null;
   const now = opts?.now ?? new Date();
@@ -123,7 +123,7 @@ export async function loadOfferCardInput(
   // Cupom: o preço do card é o COM cupom (lido na página do anúncio) e o do anúncio sem cupom vai riscado; só vale se o com-cupom é menor.
   const withCoupon = opts?.simple && opts.couponFinalCents && opts.couponFinalCents > 0 && opts.couponFinalCents < priceCents ? opts.couponFinalCents : null;
   return {
-    simple: opts?.simple ? { withoutCouponCents: withCoupon ? priceCents : null } : undefined,
+    simple: opts?.simple ? { withoutCouponCents: withCoupon ? priceCents : null, couponName: withCoupon ? couponCardName(opts.couponName) : null } : undefined,
     title,
     platformLabel: platformLabel(rp.platform, rp.legacyLabel),
     store: String(r.net_name),
@@ -174,6 +174,13 @@ async function fetchCover(url: string | null): Promise<string | null> {
 // Desenho
 // ------------------------------------------------------------------------------------------------
 
+/** Nome do cupom no card: curto (cabe ao lado do preço) e só texto; vazio = o card mantém "com o cupom". */
+function couponCardName(raw: string | null | undefined): string | null {
+  const t = (raw ?? '').replace(/\s+/g, ' ').trim();
+  if (!t) return null;
+  return t.length > 30 ? `${t.slice(0, 29).trimEnd()}…` : t;
+}
+
 const abs = (left: number, top: number, extra: Record<string, string | number> = {}) => ({ position: 'absolute' as const, display: 'flex' as const, left, top, ...extra });
 
 function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput; cover: string | null; logo: string | null; insight: string | null }) {
@@ -216,7 +223,7 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
       <div style={abs(G.pad, G.priceTop, { width: G.contentW, height: G.priceBoxH, alignItems: 'flex-end' })}>
         <div style={{ display: 'flex', fontSize: fs.price, lineHeight: 1, color: C.text, letterSpacing: -2 }}>{price}</div>
         <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 22, marginBottom: Math.round(fs.price * 0.1) }}>
-          {wc ? <div style={{ display: 'flex', fontSize: Math.round(fs.store * 0.9), color: C.gold, marginBottom: 6 }}>com o cupom</div> : null}
+          {wc ? <div style={{ display: 'flex', fontSize: Math.round(fs.store * 0.9), color: C.gold, marginBottom: 6 }}>{input.simple?.couponName ? `cupom ${input.simple.couponName}` : 'com o cupom'}</div> : null}
           <div style={{ display: 'flex', fontSize: fs.store, color: C.secondary }}>{storeText}</div>
           {sellerText ? <div style={{ display: 'flex', fontSize: Math.round(fs.store * 0.9), color: C.gold, marginTop: 6 }}>{sellerText}</div> : null}
         </div>

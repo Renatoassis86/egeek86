@@ -1,6 +1,7 @@
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { nomeColunasLigadas } from '@/server/coupons/nome-colunas';
 import { normalizePageRow, PAGE_SOURCE, type PageNetwork, type PageRowIn } from '@/lib/coupons/page-read';
 
 export interface PageIngestStats {
@@ -32,9 +33,15 @@ export async function ingestPageReads(network: PageNetwork, rows: PageRowIn[]): 
       await db.execute(sql`INSERT INTO offer_coupon_reads (offer_id, status, price_seen_cents, source) VALUES (${String(r.id)}::uuid, 'sem_cupom', ${res.seen}::int, ${source})`);
     } else {
       for (const c of res.coupons) {
-        await db.execute(sql`
-          INSERT INTO offer_coupon_reads (offer_id, status, label, price_with_coupon_cents, price_seen_cents, source)
-          VALUES (${String(r.id)}::uuid, ${c.status}, ${c.label}, ${c.priceWithCents}::int, ${res.seen}::int, ${source})`);
+        if (nomeColunasLigadas()) {
+          await db.execute(sql`
+            INSERT INTO offer_coupon_reads (offer_id, status, label, price_with_coupon_cents, price_seen_cents, source, coupon_name, coupon_code)
+            VALUES (${String(r.id)}::uuid, ${c.status}, ${c.label}, ${c.priceWithCents}::int, ${res.seen}::int, ${source}, ${c.name}, ${c.code})`);
+        } else {
+          await db.execute(sql`
+            INSERT INTO offer_coupon_reads (offer_id, status, label, price_with_coupon_cents, price_seen_cents, source)
+            VALUES (${String(r.id)}::uuid, ${c.status}, ${c.label}, ${c.priceWithCents}::int, ${res.seen}::int, ${source})`);
+        }
         stats.com_cupom++;
       }
     }

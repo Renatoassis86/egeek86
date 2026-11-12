@@ -17,7 +17,10 @@
  *   quando o produto não o mostra.
  * Shopee: voucher na página do item (popup/iframe de mesma origem), preferindo o link normal; link curto de afiliado (s.shopee.com.br) é PULADO
  *   por padrão (shopeeLinkCurto: 'permitir' só depois da decisão do dono).
- * Para sozinho ou recua em captcha/login/403/429 (nunca contorna); sem preço lido ou sem selo legível a linha é descartada (nada é inventado).
+ * Contrato do POST (cupons-revalidar): rows[].coupons[] = { label, price_with_cents?, name?, code? }. `code` = código digitável quando o selo/voucher o escreve
+ *   (ex.: 'Código: PRIMEBLACK20'); `name` = título da promoção quando a página o mostra. Opcionais, validados no servidor, nunca inventados: sem eles a mensagem
+ *   explica como ativar (Amazon: 'Aplicar cupom' abaixo do preço). NÃO VALIDADO em produção: conferir em status().linhas (simulação) antes de enviar:true.
+ * NUNCA para sozinho: captcha/login/403/429/token/origem/pop-up/exceção viram pausa com recuo (teto 30 min) e retomada automática (nunca contorna); só __cup.stop() do operador para; sem preço lido ou sem selo legível a linha é descartada (nada é inventado).
  * Cada ciclo envia batimento a POST /api/ingest/cupons-heartbeat; o servidor avisa a equipe se a rede ficar mais de 60 min sem batimento ok.
  */
 (function () {
@@ -48,6 +51,29 @@
     var outro = /(B0[A-Z0-9]{8})/.exec(id);
     if (outro && asin && outro[1].toUpperCase() !== String(asin).toUpperCase()) return false;
     return true;
+  };
+
+  /**
+   * CÓDIGO digitável do cupom, só quando o texto do selo/voucher o escreve ("Código: PRIMEBLACK20", "Use o código BLACK10"). Ordem do dono, 2026-11-12:
+   * a mensagem leva o NOME do cupom com prioridade e, se digitável, "Código: XXXX". Exige o código em MAIÚSCULAS (4 a 20, com letra), logo depois da
+   * palavra "código"; palavras comuns ("DESCONTO", "CUPOM") são recusadas. Sem isso devolve null (o servidor também valida). Nada é inventado.
+   */
+  PURO.codigoDoTexto = function (texto) {
+    var t = String(texto || '').replace(/\s+/g, ' ');
+    var re = /c[oó]digo(?: promocional)?\s*:?\s*/gi, m;
+    var comuns = { CUPOM: 1, CUPONS: 1, VOUCHER: 1, DESCONTO: 1, APLICAR: 1, CODIGO: 1, PROMO: 1, OFERTA: 1, FRETE: 1, GRATIS: 1, ATIVAR: 1, RESGATAR: 1 };
+    while ((m = re.exec(t))) {
+      var r = /^([A-Z0-9][A-Z0-9_-]{3,19})(?![A-Za-z0-9])/.exec(t.slice(m.index + m[0].length));
+      if (r && /[A-Z]/.test(r[1]) && !comuns[r[1]]) return r[1];
+    }
+    return null;
+  };
+
+  /** Anexa o código digitável ao cupom, se o trecho de página próximo dele o escreve. */
+  PURO.comCodigo = function (cupom, trecho) {
+    var cod = PURO.codigoDoTexto(trecho);
+    if (cod) cupom.code = cod;
+    return cupom;
   };
 
   /** Mantém o texto mais completo (descarta o que está contido em outro) e só rótulos com "cupom"/"voucher" curtos. */
@@ -156,19 +182,18 @@
     return null;
   };
 
+  // REGRA DO DONO (2026-11-12): NENHUM LOOP PODE PARAR. Todo problema vira PAUSA com recuo (teto 30 min) e retomada automática, tentando de novo
+  // para sempre. Só window.__cup.stop() chamado pelo operador para. Cada pausa manda batimento 'pausado' (o servidor avisa se ficar 60 min sem batimento ok).
   var RECUO = {
-    captcha: [15, 30, 60, 120], http_403: [15, 30, 60, 120], http_429: [15, 30, 60, 120],
-    login: [30, 60, 120], servidor_desligado: [10, 20, 40, 60], servidor_instavel: [2, 5, 10, 20, 30],
+    captcha: [15, 30], http_403: [15, 30], http_429: [15, 30], login: [15, 30],
+    token_recusado: [15, 30], origem_recusada: [15, 30], popup_bloqueado: [15, 30],
+    servidor_desligado: [10, 20, 30], servidor_instavel: [2, 5, 10, 20, 30],
   };
-  var MAX_SEGUIDOS = { captcha: 4, http_403: 4, http_429: 4, login: 3, servidor_desligado: 12, servidor_instavel: 20 };
 
-  /** Política: n-ésima ocorrência seguida do mesmo problema -> pausa com recuo (min) ou parada. Token/origem recusados param de vez. */
+  /** Política: n-ésima ocorrência seguida do mesmo problema -> pausa com recuo (min, teto 30). Nunca devolve 'parar'. */
   PURO.politica = function (tipo, seguidos) {
-    if (tipo === 'token_recusado' || tipo === 'origem_recusada' || tipo === 'popup_bloqueado') return { acao: 'parar', motivo: tipo, min: 0 };
-    var rec = RECUO[tipo];
-    if (!rec) return { acao: 'pausar', motivo: String(tipo), min: 15 };
-    if (seguidos > MAX_SEGUIDOS[tipo]) return { acao: 'parar', motivo: tipo + '_seguidos', min: 0 };
-    return { acao: 'pausar', motivo: tipo, min: rec[Math.min(seguidos, rec.length) - 1] };
+    var rec = RECUO[tipo] || [5, 15, 30];
+    return { acao: 'pausar', motivo: String(tipo), min: rec[Math.min(Math.max(1, seguidos | 0), rec.length) - 1] };
   };
 
   /** Pausa entre itens: aleatória em [a, b], nunca abaixo do piso. */
@@ -405,7 +430,7 @@
         var com = PURO.centsFrom('R$ ' + mc[1]);
         var base = mc[2] ? PURO.centsFrom('R$ ' + mc[2]) : null;
         if (!base || !com || com >= base) return { descarte: 'cupom_sem_preco_base' };
-        return { ok: true, asin: id, seen: base, selos: ['R$ ' + mc[1] + ' com cupom'], cupons: [{ label: 'R$ ' + mc[1] + ' com cupom', price_with_cents: com }], fonte: 'produto' };
+        return { ok: true, asin: id, seen: base, selos: ['R$ ' + mc[1] + ' com cupom'], cupons: [PURO.comCodigo({ label: 'R$ ' + mc[1] + ' com cupom', price_with_cents: com }, corpo.slice(Math.max(0, mc.index - 250), mc.index + 250))], fonte: 'produto' };
       }
       // Sem o bloco 'com cupom' a página não prova o preço do produto (o texto traz preços de recomendados): não lê nada, nunca chuta preço.
       return { descarte: 'sem_bloco_de_cupom_ou_pagina_sem_detalhe' };
@@ -420,11 +445,6 @@
     S.seguidos[tipo] = (S.seguidos[tipo] || 0) + 1;
     var p = PURO.politica(tipo, S.seguidos[tipo]);
     if (detalhe) erro(tipo + ': ' + detalhe);
-    if (p.acao === 'parar') {
-      S.rodando = false; S.parou = { em: agora(), motivo: p.motivo }; S.proximoEm = null;
-      await batimento('parado', p.motivo);
-      return;
-    }
     S.pausa = { ate: new Date(Date.now() + p.min * 60000).toISOString(), motivo: p.motivo, min: p.min, seguidos: S.seguidos[tipo] };
     await batimento('pausado', p.motivo);
     agendar(p.min * 60000);
@@ -460,8 +480,8 @@
         var selos = res.selos;
         var fonte = res.fonte;
         if (REDE === 'amazon' && !selos.length && S.cuponsAsins[item.ref]) { selos = [S.cuponsAsins[item.ref]]; fonte = 'lista-oficial'; }
-        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, coupons: res.cupons || selos.map(function (label) { return { label: label }; }) });
-        linha({ ref: item.ref, seen: res.seen, selos: selos, fonte: fonte });
+        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, coupons: res.cupons || selos.map(function (label) { var c = { label: label }, cod = PURO.codigoDoTexto(label); if (cod) c.code = cod; return c; }) });
+        linha({ ref: item.ref, seen: res.seen, selos: selos, fonte: fonte, codigos: rows[rows.length - 1].coupons.map(function (c) { return c.code || null; }) });
       } else if (res) {
         c.descartadas++;
         linha({ ref: item.ref, descartado: res.descarte || 'sem_preco' });
@@ -502,7 +522,7 @@
     S.proximoEm = new Date(Date.now() + ms).toISOString();
     timer = setTimeout(function () {
       S.proximoEm = null;
-      ciclo().catch(function (e) { erro('ciclo: ' + e.message); return pausarOuParar('servidor_instavel', 'exceção no ciclo'); });
+      ciclo().catch(function (e) { erro('ciclo: ' + e.message); return pausarOuParar('servidor_instavel', 'exceção no ciclo'); }).catch(function (e2) { erro('recuperação: ' + (e2 && e2.message)); agendar(15 * 60000); });
     }, ms);
   }
 

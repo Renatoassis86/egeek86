@@ -263,8 +263,14 @@ export interface CouponMsgData {
   maxDiscountCents?: number | null;
   /** A regra (% e teto, ou valor fixo) foi lida na lista de cupons? Se não, a mensagem avisa que a regra completa está na tela do cupom. */
   ruleKnown: boolean;
-  /** Como ativar, por rede ("Ative em Cupons no Mercado Livre antes de pagar."). */
+  /** Como usar, por rede, numa frase ("1. Abra o anúncio; 2. ...; 3. ..."). */
   activation: string;
+  /** Código digitável lido (tipo a): vira a linha "Código:" além do nome. */
+  code?: string | null;
+  /** Passo a passo curto da loja (cada item vira um passo numerado). */
+  howTo?: string[];
+  /** false = cupom SEM nome (de clicar e ativar): `name` é o rótulo do valor lido e a mensagem explica como usar. */
+  named?: boolean;
   /** Quando a página foi lida. */
   readAt: Date;
   /** Validade lida da loja (a página do anúncio normalmente não informa). */
@@ -744,13 +750,16 @@ export function formatCouponMessage(input: Extract<GroupMessageInput, { model: '
   const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
   const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
   const priceLine = `${f.b(fmtBRL(c.finalCents))} com o cupom ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
-  const topics: string[] = [
-    topic(f, 'Cupom', c.name),
-    topic(f, 'Desconto', `${fmtBRL(c.offCents)} (${Number.isInteger(c.pct) ? String(c.pct) : fmtPct1(c.pct)}%); o anúncio sem cupom está em ${fmtBRL(o.priceCents)}`),
-  ];
+  // NOME DO CUPOM sempre (ordem do dono, 2026-11-12). Com código digitável: linha extra "Código". Sem nome (clicar e ativar): rótulo do valor + passo a passo.
+  const topics: string[] = [];
+  if (!c.code || c.code !== c.name) topics.push(topic(f, 'Cupom', c.name));
+  if (c.code) topics.push(`• ${f.b('Código:')} ${channel === 'tg' ? `<code>${escapeTelegramHtml(c.code)}</code>` : escapeWhatsapp(c.code)}`);
+  topics.push(
+    topic(f, 'Desconto', `${fmtBRL(c.offCents)} (${Number.isInteger(c.pct) ? String(c.pct) : fmtPct1(c.pct)}%); o anúncio sem cupom está em ${fmtBRL(o.priceCents)}`)
+  );
   if (c.minOrderCents) topics.push(topic(f, 'Compra mínima', fmtBRL(c.minOrderCents)));
   if (c.maxDiscountCents) topics.push(topic(f, 'Desconto máximo', fmtBRL(c.maxDiscountCents)));
-  topics.push(topic(f, 'Como ativar', c.activation));
+  topics.push(topic(f, 'Como usar', c.howTo?.length ? c.howTo.map((x, i) => `${i + 1}. ${x}`).join('; ') + '.' : c.activation));
   if (c.expiresAt) topics.push(topic(f, 'Válido até', `${fmtStamp(c.expiresAt)}, segundo a loja`));
   const other = input.cheaperOther;
   if (other && other.cents > 0 && other.cents < c.finalCents) topics.push(topic(f, 'Outra oferta, sem cupom', `${fmtBRL(other.cents)} ${inNetwork(other.networkName)}`));
@@ -1206,6 +1215,10 @@ export interface CouponInfo {
   verifiedAt: string;
   /** Idade máxima de verifiedAt (min). Omitido = 120 (leitura da aba). Código de campanha do dono usa 1440 (24 h). */
   maxAgeMinutes?: number;
+  /** Cupom do anúncio: `code` é o NOME do cupom (prioridade do dono); aqui o código DIGITÁVEL, quando a página o mostrou. */
+  typedCode?: string | null;
+  /** Cupom sem nome (de clicar e ativar): `code` é o rótulo do valor lido e `conditions` traz o passo a passo. */
+  unnamed?: boolean;
 }
 
 /** Cupom visto há no máximo 2 h, ainda dentro da validade lida e com código. */
@@ -1233,9 +1246,18 @@ export function withCouponBlock(text: string, coupon: CouponInfo | null | undefi
   const esc = channel === 'tg' ? escapeTelegramHtml : escapeWhatsapp;
   const cond = coupon.conditions?.trim() ? `, ${esc(coupon.conditions.trim())}` : '';
   const until = coupon.expiresAt ? ` Válido até ${fmtStamp(new Date(coupon.expiresAt))} segundo a loja.` : '';
-  const code = channel === 'tg' ? `<code>${esc(coupon.code.trim())}</code>` : esc(coupon.code.trim());
+  // NOME DO CUPOM em destaque (ordem do dono, 2026-11-12). Cupom do anúncio: `code` é o nome (texto da loja) e `typedCode` o código digitável (monospace,
+  // para copiar). Cupom sem nome (clicar e ativar): `code` é o rótulo do valor lido e as condições trazem o passo a passo. Legado (código de campanha
+  // do dono, lista): `code` é o código digitável e continua em monospace.
+  const label = coupon.code.trim();
+  const typed = coupon.typedCode?.trim() || null;
+  const monoCode = (v: string) => (channel === 'tg' ? `<code>${esc(v)}</code>` : esc(v));
+  const legacyTyped = coupon.typedCode === undefined && coupon.unnamed === undefined;
+  const code = legacyTyped ? monoCode(label) : esc(label);
+  const codePart = typed && typed !== label ? ` (código: ${monoCode(typed)})` : '';
+  const codeShown = typed && typed === label ? monoCode(typed) : code;
   const mark = channel === 'tg' && countEmojis(text) < MAX_EMOJIS_PER_MESSAGE ? `${EMOJI_COUPON} ` : '';
-  const block = `${mark}Cupom: ${code}${cond}.${until} Visto em ${fmtStamp(new Date(coupon.verifiedAt))}.`;
+  const block = `${mark}Cupom: ${codeShown}${codePart}${cond}.${until} Visto em ${fmtStamp(new Date(coupon.verifiedAt))}.`;
   // Layout com parágrafos (linha em branco): o cupom vira um parágrafo próprio, em destaque logo abaixo do preço (antes dos tópicos).
   const sep = text.includes('\n\n') ? '\n\n' : '\n';
   const lines = text.split(sep);
@@ -1243,7 +1265,7 @@ export function withCouponBlock(text: string, coupon: CouponInfo | null | undefi
   if (sep === '\n\n') {
     const topicsAt = lines.findIndex((l) => l.startsWith('• '));
     if (topicsAt > 0) {
-      const head = channel === 'tg' ? `${mark}<b>CUPOM:</b> ${code}` : `*CUPOM:* ${code}`;
+      const head = channel === 'tg' ? `${mark}<b>CUPOM:</b> ${codeShown}${codePart}` : `*CUPOM:* ${codeShown}${codePart}`;
       const tail = `${cond ? esc(coupon.conditions.trim()) : ''}${until ? `${cond ? '. ' : ''}${until.trim()}` : ''}`;
       const hi = tail ? `${head}\n${tail}` : head;
       const out2 = [...lines.slice(0, topicsAt), hi, ...lines.slice(topicsAt)].join(sep);

@@ -70,7 +70,7 @@ export interface OfferCardInput {
    * Card SIMPLES (Achado e Cupom ativo; dono, 2026-11-12): mesmo padrão visual, mas SEM média, SEM histórico, SEM comparação
    * (nenhum insight). `withoutCouponCents` (só Cupom): preço do anúncio sem cupom, mostrado riscado e menor; o `priceCents` é o com cupom.
    */
-  simple?: { withoutCouponCents?: number | null };
+  simple?: { withoutCouponCents?: number | null; couponName?: string | null };
 }
 
 export type InsightKind = 'new_record' | 'drop' | 'below_avg' | 'near_record' | 'equal_record';
@@ -222,6 +222,7 @@ export function buildOfferAlt(input: OfferCardInput, insight: string | null): st
     `${truncateTitle(input.title, 120)}${input.platformLabel ? ` (${input.platformLabel})` : ''}`,
     `${formatMoney(input.priceCents)} ${storePhrase(input.store)}.`,
     insight ? `${insight}.` : '',
+    input.simple?.couponName ? `Cupom ${input.simple.couponName}.` : '',
     input.simple?.withoutCouponCents ? `Sem o cupom: ${formatMoney(input.simple.withoutCouponCents)}.` : '',
     stampLine(input.checkedAt) + '.',
   ];

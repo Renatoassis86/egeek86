@@ -3,6 +3,8 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { couponCors as cors, couponGuard as guard } from '@/server/coupons/ingest-guard';
 import { listarFilaRevalidacao, resolverUrlsLeitura } from '@/server/coupons/revalidation-queue';
+import { sanitizeCouponCode, sanitizeCouponName } from '@/lib/coupons/coupon-name';
+import { nomeColunasLigadas } from '@/server/coupons/nome-colunas';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -40,7 +42,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ items }, { headers: cors(request) });
 }
 
-interface CouponRow { campaign_id?: string; label?: string; status?: string }
+/** `name` (título da promoção como a página escreve) e `code` (código digitável) são OPCIONAIS: só o que a página mostrou; validados aqui (texto limpo, 80 / 20 caracteres). */
+interface CouponRow { campaign_id?: string; label?: string; status?: string; name?: unknown; code?: unknown }
 
 /** "R$ 315,46 com Cupom" -> 31546; null se não bate com o formato. */
 function centsFromLabel(label: string): number | null {
@@ -51,7 +54,7 @@ function centsFromLabel(label: string): number | null {
   return Number.isFinite(v) && v > 0 ? v : null;
 }
 
-/** { rows: [{ id, coupons: [{ campaign_id, label, status }] }] } — coupons vazio = lido e sem cupom. */
+/** { rows: [{ id, coupons: [{ campaign_id, label, status, name?, code? }] }] } — coupons vazio = lido e sem cupom. */
 export async function POST(request: NextRequest) {
   const denied = guard(request);
   if (denied) return denied;
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
     if (!offer[0]) continue;
     const price = Number(offer[0].price);
     const valid = (Array.isArray(r.coupons) ? r.coupons : [])
-      .map((c) => ({ campaign: /^\d{3,12}$/.test(String(c.campaign_id ?? '')) ? String(c.campaign_id) : null, label: String(c.label ?? '').slice(0, 120), status: String(c.status ?? '').slice(0, 40) }))
+      .map((c) => ({ campaign: /^\d{3,12}$/.test(String(c.campaign_id ?? '')) ? String(c.campaign_id) : null, label: String(c.label ?? '').slice(0, 120), status: String(c.status ?? '').slice(0, 40), name: sanitizeCouponName(c.name), code: sanitizeCouponCode(c.code) }))
       .map((c) => ({ ...c, cents: centsFromLabel(c.label) }))
       .filter((c) => c.cents != null && c.cents > 0 && c.cents < price && /cupom/i.test(c.label));
     if (!valid.length) {
@@ -81,9 +84,15 @@ export async function POST(request: NextRequest) {
       continue;
     }
     for (const c of valid) {
-      await db.execute(sql`
-        INSERT INTO offer_coupon_reads (offer_id, campaign_id, status, label, price_with_coupon_cents, price_seen_cents)
-        VALUES (${r.id}::uuid, ${c.campaign}, ${c.status || null}, ${c.label}, ${c.cents}::int, ${price}::int)`);
+      if (nomeColunasLigadas()) {
+        await db.execute(sql`
+          INSERT INTO offer_coupon_reads (offer_id, campaign_id, status, label, price_with_coupon_cents, price_seen_cents, coupon_name, coupon_code)
+          VALUES (${r.id}::uuid, ${c.campaign}, ${c.status || null}, ${c.label}, ${c.cents}::int, ${price}::int, ${c.name}, ${c.code})`);
+      } else {
+        await db.execute(sql`
+          INSERT INTO offer_coupon_reads (offer_id, campaign_id, status, label, price_with_coupon_cents, price_seen_cents)
+          VALUES (${r.id}::uuid, ${c.campaign}, ${c.status || null}, ${c.label}, ${c.cents}::int, ${price}::int)`);
+      }
       comCupom++;
     }
     lidas++;

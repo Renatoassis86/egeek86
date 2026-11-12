@@ -5,6 +5,7 @@
 //  - selo sem regra legível (ex.: "Cupom disponível") não vira preço: a leitura é descartada;
 //  - `shopee_campaigns` (campanhas de comissão) NUNCA entram aqui.
 import { finalPriceByRule, AGULHA, type AgulhaRule } from './agulha';
+import { sanitizeCouponCode, sanitizeCouponName } from './coupon-name';
 
 export type PageNetwork = 'amazon' | 'shopee';
 export const PAGE_NETWORKS: readonly PageNetwork[] = ['amazon', 'shopee'];
@@ -76,6 +77,9 @@ export interface PageCouponIn {
   label?: unknown;
   /** Preço com cupom em centavos, SÓ quando a página o mostra. */
   price_with_cents?: unknown;
+  /** Opcionais (só o que a página mostrou): título da promoção e código digitável. Validados aqui; nunca inventados. */
+  name?: unknown;
+  code?: unknown;
 }
 export interface PageRowIn {
   id?: unknown;
@@ -87,7 +91,7 @@ export interface PageRowIn {
 }
 
 export type PageRowResult =
-  | { ok: true; seen: number; coupons: { label: string; priceWithCents: number; status: string }[] }
+  | { ok: true; seen: number; coupons: { label: string; priceWithCents: number; status: string; name: string | null; code: string | null }[] }
   | { ok: false; reason: 'id_invalido' | 'pagina_de_outro_item' | 'sem_preco_lido' | 'preco_lido_incoerente' };
 
 /** `ref` esperado a partir do external_ref da oferta (amazon-<ASIN> / shopee-<itemId>). */
@@ -110,7 +114,7 @@ export function normalizePageRow(network: PageNetwork, row: PageRowIn, offer: { 
   const seen = row.price_seen_cents;
   if (!isInt(seen) || seen <= 0) return { ok: false, reason: 'sem_preco_lido' };
   if (Math.abs(seen - offer.priceCents) > offer.priceCents * 0.5) return { ok: false, reason: 'preco_lido_incoerente' };
-  const out: { label: string; priceWithCents: number; status: string }[] = [];
+  const out: { label: string; priceWithCents: number; status: string; name: string | null; code: string | null }[] = [];
   for (const c of (Array.isArray(row.coupons) ? row.coupons : []).slice(0, 5) as PageCouponIn[]) {
     const label = String(c?.label ?? '').replace(/\s+/g, ' ').trim().slice(0, 160);
     if (!label || !/cupom|voucher|cupon/i.test(label)) continue;
@@ -127,7 +131,7 @@ export function normalizePageRow(network: PageNetwork, row: PageRowIn, offer: { 
       }
     }
     if (priceWith == null || !(priceWith > 0) || priceWith >= seen) continue;
-    out.push({ label, priceWithCents: priceWith, status });
+    out.push({ label, priceWithCents: priceWith, status, name: sanitizeCouponName(c.name), code: sanitizeCouponCode(c.code) });
   }
   return { ok: true, seen, coupons: out };
 }

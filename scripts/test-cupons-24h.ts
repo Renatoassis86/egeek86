@@ -145,10 +145,10 @@ async function main() {
   check('bloqueio: login por rota; "faça login" do menu NÃO bloqueia quando o preço foi lido', P.detectarBloqueio({ pathname: '/ap/signin' }) === 'login' && P.detectarBloqueio({ texto: 'Olá, faça login', temPreco: true }) === null && P.detectarBloqueio({ texto: 'Fazer login para continuar', temPreco: false }) === 'login');
   check('sem bloqueio em página normal', P.detectarBloqueio({ pathname: '/dp/B0TESTE001', texto: 'Produto bom R$ 10', temPreco: true }) === null);
 
-  const seq = [1, 2, 3, 4].map((n) => P.politica('captcha', n));
-  check('recuo: captcha pausa 15, 30, 60, 120 min', seq.every((p: { acao: string }) => p.acao === 'pausar') && seq.map((p: { min: number }) => p.min).join() === '15,30,60,120', seq);
-  check('recuo: 5º captcha seguido PARA o loop', P.politica('captcha', 5).acao === 'parar' && P.politica('captcha', 5).motivo === 'captcha_seguidos');
-  check('login: 4ª ocorrência para; token/origem recusados param de imediato', P.politica('login', 3).acao === 'pausar' && P.politica('login', 4).acao === 'parar' && P.politica('token_recusado', 1).acao === 'parar' && P.politica('origem_recusada', 1).acao === 'parar');
+  const seq = [1, 2, 3, 4, 9].map((n) => P.politica('captcha', n));
+  check('recuo: captcha pausa 15, 30 e fica em 30 min (teto)', seq.every((p: { acao: string }) => p.acao === 'pausar') && seq.map((p: { min: number }) => p.min).join() === '15,30,30,30,30', seq);
+  const tipos = ['captcha', 'login', 'token_recusado', 'origem_recusada', 'popup_bloqueado', 'http_403', 'http_429', 'servidor_desligado', 'servidor_instavel', 'qualquer_outro'];
+  check('NENHUM LOOP PARA: nenhum tipo, em nenhuma ocorrência, devolve parar; teto de recuo 30 min', tipos.every((t) => [1, 2, 5, 50, 500].every((n) => { const p = P.politica(t, n); return p.acao === 'pausar' && p.min >= 1 && p.min <= 30; })));
   check('servidor desligado (503) recua e retoma', P.politica('servidor_desligado', 1).acao === 'pausar' && P.politica('servidor_desligado', 1).min === 10);
   check('pausa entre itens respeita o piso mínimo', P.pausaEntreItens([1000, 2000], 0, 4000) === 4000 && P.pausaEntreItens([6000, 11000], 1, 4000) === 11000 && P.pausaEntreItens([6000, 11000], 0, 4000) === 6000);
 

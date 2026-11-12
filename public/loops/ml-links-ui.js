@@ -63,7 +63,9 @@
    * 'ui_instavel' (interface do gerador sem resultado), 'token_recusado' (401) e 'origem_recusada' (403) param; login/captcha param.
    */
   PURO.politica = function (tipo, seguidos) {
-    if (tipo === 'token_recusado' || tipo === 'origem_recusada' || tipo === 'login' || tipo === 'captcha' || tipo === 'saiu_do_gerador') return { acao: 'parar', motivo: tipo, min: 0 };
+    // REGRA DO DONO (2026-11-12): nenhum loop para. Login/captcha/token/origem viram pausa longa e o loop tenta de novo sozinho.
+    if (tipo === 'login' || tipo === 'captcha' || tipo === 'saiu_do_gerador') return { acao: 'pausar', motivo: tipo, min: 10 };
+    if (tipo === 'token_recusado' || tipo === 'origem_recusada') return { acao: 'pausar', motivo: tipo, min: 15 };
     var lista = tipo === 'servidor_desligado' ? RECUO_DESLIGADO : tipo === 'ui_instavel' ? RECUO_UI : RECUO_REDE;
     var i = Math.max(1, seguidos | 0);
     return { acao: 'pausar', motivo: tipo, min: lista[Math.min(i, lista.length) - 1] };
@@ -326,7 +328,7 @@
       var it = novos[i], res;
       try { res = await gerar(it.url); } catch (e) { res = { ui: 'excecao:' + e.message }; }
       S.totais.lidos++;
-      if (res.bloqueio) { await enviar(); S.rodando = false; S.parou = { em: agora(), motivo: res.bloqueio }; return 'fim'; }
+      if (res.bloqueio) { await enviar(); delete tratados[it.id]; if (await problema(res.bloqueio, 'bloqueio no gerador')) return 'fim'; break; }
       if (res.link && PURO.linkValido(res.link)) {
         tratados[it.id] = 1; S.totais.ok++; semResultadoSeguidos = 0;
         buffer.rows.push({ id: it.id, link: res.link });
