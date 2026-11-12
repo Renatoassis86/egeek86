@@ -200,7 +200,7 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
       {input.regua ? (
         <>
           <div style={abs(0, 0, { width: OFFER_CARD_SIZE, height: 16, background: input.regua.cor })} />
-          <div style={abs(G.pad + OFFER_CARD_SIZE - 2 * G.pad - 560, 44, { width: 560, height: 70, background: input.regua.cor, color: input.regua.corTexto, alignItems: 'center', justifyContent: 'center' })}>
+          <div style={abs(G.pad + OFFER_CARD_SIZE - 2 * G.pad - 560, 40, { width: 560, height: 62, background: input.regua.cor, color: input.regua.corTexto, alignItems: 'center', justifyContent: 'center' })}>
             <div style={{ display: 'flex', marginRight: 14 }}>
               {Array.from({ length: input.regua.degrau }).map((_, i) => (
                 <div key={i} style={{ display: 'flex', width: 0, height: 0, marginRight: 4, borderLeft: '9px solid transparent', borderRight: '9px solid transparent', borderTop: `16px solid ${input.regua?.corTexto}` }} />
@@ -208,7 +208,7 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
             </div>
             <div style={{ display: 'flex', fontSize: 28, fontWeight: 700 }}>{input.regua.rotulo.toLocaleUpperCase('pt-BR')}</div>
           </div>
-          {input.regua.pctTexto ? <div style={abs(G.pad + OFFER_CARD_SIZE - 2 * G.pad - 560, 118, { width: 560, justifyContent: 'center', fontSize: 24, color: C.secondary })}>{input.regua.pctTexto}</div> : null}
+          {input.regua.pctTexto ? <div style={abs(G.pad + OFFER_CARD_SIZE - 2 * G.pad - 560, 106, { width: 560, height: 28, alignItems: 'center', justifyContent: 'center', fontSize: 23, lineHeight: '28px', color: C.secondary })}>{input.regua.pctTexto}</div> : null}
         </>
       ) : null}
       {logo ? (
