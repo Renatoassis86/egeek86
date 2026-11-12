@@ -25,6 +25,19 @@ function label(c: StoredCoupon): string {
   return cat ? `${base} em ${cat}` : base;
 }
 
+/** Promoção da Amazon (src/lib/coupons/amazon-promocoes.ts): nome = título da promoção; sem código, o desconto é aplicado pela Amazon. */
+export function amazonPromoText(c: Pick<StoredCoupon, 'conditionsRaw' | 'valueNum'> & { termos?: string | null }): { name: string; conditions: string } {
+  const nome = /^Promoção da Amazon:\s*([^;]+)/.exec(c.conditionsRaw)?.[1]?.trim() || `${c.valueNum ?? ''}% de desconto`;
+  const soApp = /só pelo app/i.test(c.conditionsRaw);
+  const vend = /vendidos pela Amazon/i.test(c.termos ?? '') ? ' Vale só para itens vendidos pela Amazon.com.br (não por vendedores parceiros): confira no anúncio.' : ' Confira no anúncio se o item é vendido pela Amazon.com.br.';
+  return {
+    name: nome,
+    conditions: (soApp
+      ? 'Promoção da Amazon válida só pelo app (abra o anúncio no app da Amazon); não tem código para digitar, o desconto é aplicado pela Amazon.'
+      : 'Promoção da Amazon; não tem código para digitar, o desconto é aplicado pela Amazon.') + vend,
+  };
+}
+
 function score(c: StoredCoupon): number {
   // Maior desconto em valor absoluto primeiro; percentual pesa mais que R$ pequeno.
   if (c.kind === 'percentual' && c.valueNum) return c.valueNum * 10;
@@ -41,13 +54,16 @@ export async function lookupVerifiedCoupon(offerId: string, trace?: MissTrace, n
     WHERE o.id = ${offerId}::uuid LIMIT 1`);
   const o = rows[0];
   if (!o) { trace?.('oferta_inexistente'); return null; }
-  if (o.net !== 'mercado-livre' && o.net !== 'shopee') { trace?.('rede_sem_leitura_autorizada'); return null; }
+  if (o.net !== 'mercado-livre' && o.net !== 'shopee' && o.net !== 'amazon') { trace?.('rede_sem_leitura_autorizada'); return null; }
+  // Amazon: as promoções lidas (amazon-promocoes) citam o ASIN; ele sai do external_ref 'amazon-<ASIN>'.
+  const asin = o.net === 'amazon' ? /^amazon-([A-Z0-9]{10})$/.exec(o.ext ?? '')?.[1] : undefined;
   const found = await findVerifiedCoupons({
     networkSlug: o.net,
     offerId,
     masterProductId: o.mid,
     // O id do ANÚNCIO (MLB do item) é o que as listas de cupom citam; external_ref é o id do catálogo (outro espaço de ids).
-    externalItemId: o.item ?? o.ext ?? undefined,
+    externalItemId: asin ?? o.item ?? o.ext ?? undefined,
+    scopeItemId: asin,
     sellerId: o.nick ?? o.ext_seller ?? undefined,
     priceCents: Number(o.price) || undefined,
     maxAgeMinutes: 120,
@@ -74,6 +90,10 @@ export async function lookupVerifiedCoupon(offerId: string, trace?: MissTrace, n
     if (!verdict.ok) { lastReason = verdict.reason; continue; }
     const min = best.minOrderCents ? ` Compra mínima R$ ${(best.minOrderCents / 100).toLocaleString('pt-BR')}.` : '';
     const cap = best.maxDiscountCents ? ` Limite de desconto R$ ${(best.maxDiscountCents / 100).toLocaleString('pt-BR')}.` : '';
+    if (o.net === 'amazon') {
+      const am = amazonPromoText(best);
+      return { code: am.name, conditions: am.conditions, expiresAt: best.validUntil, verifiedAt: best.verifiedAt, couponRef: best.id, annKind: 'loja' };
+    }
     const where = o.net === 'mercado-livre' ? 'ative em Cupons no Mercado Livre' : 'resgate em Cupons na Shopee';
     return {
       code: label(best),

@@ -23,14 +23,14 @@ export type Row = {
   min_order_cents: string | null; max_discount_cents: string | null; conditions_raw: string; audience: StoredCoupon['audience']; audience_text: string | null;
   eligible_on_read_account: boolean | null; scope_kind: StoredCoupon['scopeKind']; scope: CouponScopeRef; source_url: string;
   valid_from: string | null; valid_until: string | null; validity_source: StoredCoupon['validitySource']; state: StoredCoupon['state'];
-  first_seen_at: string; streak_started_at: string; last_seen_at: string; verified_at: string | null; last_page_price_cents: string | null;
+  first_seen_at: string; streak_started_at: string; last_seen_at: string; verified_at: string | null; last_page_price_cents: string | null; termos: string | null;
 };
 
 export const SELECT_COLS = sql`
   id::text AS id, network_slug, code, kind, value_num::text AS value_num, value_unit, min_order_cents::text AS min_order_cents,
   max_discount_cents::text AS max_discount_cents, conditions_raw, audience, audience_text, eligible_on_read_account, scope_kind, scope, source_url,
   ${ts('valid_from')}, ${ts('valid_until')}, validity_source, state, ${ts('first_seen_at')}, ${ts('streak_started_at')}, ${ts('last_seen_at')},
-  ${ts('verified_at')}, last_page_price_cents::text AS last_page_price_cents`;
+  ${ts('verified_at')}, last_page_price_cents::text AS last_page_price_cents, conditions->>'termos' AS termos`;
 
 const num = (v: string | null) => (v === null ? null : Number(v));
 
@@ -41,7 +41,7 @@ export function mapRow(r: Row): StoredCoupon {
     audience: r.audience, audienceText: r.audience_text, eligibleOnReadAccount: r.eligible_on_read_account,
     scopeKind: r.scope_kind, scope: r.scope ?? {}, sourceUrl: r.source_url, validFrom: r.valid_from, validUntil: r.valid_until,
     validitySource: r.validity_source, state: r.state, firstSeenAt: r.first_seen_at, streakStartedAt: r.streak_started_at,
-    lastSeenAt: r.last_seen_at, verifiedAt: r.verified_at, lastPagePriceCents: num(r.last_page_price_cents),
+    lastSeenAt: r.last_seen_at, verifiedAt: r.verified_at, lastPagePriceCents: num(r.last_page_price_cents), termos: r.termos ?? null,
   };
 }
 
@@ -56,6 +56,11 @@ export interface FindVerifiedCouponsInput extends ScopeTarget {
   limit?: number;
   /** Casamento extra de escopo (ex.: rótulo de categoria que declara o departamento da oferta). OU com matchesScope. */
   extraScopeMatch?: (c: StoredCoupon) => boolean;
+  /**
+   * Amazon (promoções por ASIN, escopo `produto`): o SQL já traz só cupons de loja inteira/categoria OU que citam este ASIN/oferta, para o `limit`
+   * não cortar o cupom do item quando há centenas de cupons por ASIN. Ausente = comportamento anterior (Mercado Livre e Shopee).
+   */
+  scopeItemId?: string;
 }
 
 /**
@@ -71,6 +76,10 @@ export async function findVerifiedCoupons(input: FindVerifiedCouponsInput): Prom
     rows = (await db.execute<Row>(sql`
       SELECT ${SELECT_COLS} FROM coupon_items
       WHERE network_slug = ${input.networkSlug} AND state = 'verificado' AND source_kind <> 'manual_dono' AND verified_at >= ${since}::timestamptz
+        ${input.scopeItemId
+          ? sql`AND (scope_kind IN ('loja_inteira', 'categoria') OR scope->'item_ids' @> ${JSON.stringify([input.scopeItemId])}::jsonb
+              ${input.offerId ? sql`OR scope->'offer_ids' @> ${JSON.stringify([input.offerId])}::jsonb` : sql``})`
+          : sql``}
       ORDER BY verified_at DESC LIMIT ${Math.min(Math.max(1, input.limit ?? 200), 500)}`)) as unknown as Row[];
   } catch (e) {
     if (isMissingCouponTable(e)) return [];

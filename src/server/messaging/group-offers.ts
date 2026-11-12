@@ -560,11 +560,17 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
       INNER JOIN master_products mp ON mp.id = l.mid
       INNER JOIN affiliate_networks nn ON nn.id = l.network_id
       INNER JOIN LATERAL (
-        SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
-        WHERE r.offer_id = l.id AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
-        ORDER BY r.read_at DESC LIMIT 1
-      ) lr ON lr.pw IS NOT NULL
-      WHERE nn.slug <> 'amazon'
+        -- Duas famílias de leitura (página do item x promoção da Amazon): a mais nova de CADA uma; vale se alguma das duas é positiva.
+        SELECT x.read_at, x.pw FROM (
+          (SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
+            WHERE r.offer_id = l.id AND r.source <> 'amazon-promocoes' AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
+            ORDER BY r.read_at DESC LIMIT 1)
+          UNION ALL
+          (SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
+            WHERE r.offer_id = l.id AND r.source = 'amazon-promocoes' AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
+            ORDER BY r.read_at DESC LIMIT 1)
+        ) x WHERE x.pw IS NOT NULL ORDER BY x.read_at DESC LIMIT 1
+      ) lr ON true
       ORDER BY lr.read_at DESC LIMIT 300
     )`);
       parts.push(sql`SELECT 'cupom'::text, mid::text, v::text, 0::int, name::text, NULL::text, oid::text, ord::int FROM cupq`);

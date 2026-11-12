@@ -30,10 +30,13 @@ export async function baixarCuponsParados(now: Date = new Date(), dryRun = false
         AND last_seen_at < ${nowIso}::timestamptz - make_interval(mins => ${AGULHA.LIST_ALIVE_MIN}::int)`)) as unknown as { n: string }[];
     return { vencidosPorPrazo: Number(a[0]?.n ?? 0), rebaixadosSemConferencia: Number(b[0]?.n ?? 0) };
   }
-  const venc = (await db.execute<{ id: string }>(sql`
+  const venc = (await db.execute<{ id: string; net: string; oid: string | null }>(sql`
     UPDATE coupon_items SET state = 'vencido', state_reason = 'prazo_lido_vencido', verified_at = NULL, updated_at = now()
     WHERE source_kind <> 'manual_dono' AND state IN ('nao_verificado', 'verificado') AND valid_until IS NOT NULL AND valid_until <= ${nowIso}::timestamptz
-    RETURNING id::text AS id`)) as unknown as { id: string }[];
+    RETURNING id::text AS id, network_slug AS net, scope->'offer_ids'->>0 AS oid`)) as unknown as { id: string; net: string; oid: string | null }[];
+  // Promoção da Amazon que venceu pelo prazo lido: a leitura "sem cupom" por oferta encerra o cupom divulgado (card 'Cupom encerrado') mesmo com o loop parado.
+  const amz = venc.filter((v) => v.net === 'amazon').map((v) => v.oid);
+  if (amz.length) await (await import('@/server/coupons/amazon-promocoes')).registrarSemCupom(amz).catch(() => 0);
   const reb = (await db.execute<{ id: string }>(sql`
     UPDATE coupon_items SET state = 'nao_verificado', state_reason = 'sem_conferencia_12h', verified_at = NULL, updated_at = now()
     WHERE source_kind <> 'manual_dono' AND state = 'verificado' AND last_seen_at < ${nowIso}::timestamptz - make_interval(mins => ${AGULHA.LIST_ALIVE_MIN}::int)

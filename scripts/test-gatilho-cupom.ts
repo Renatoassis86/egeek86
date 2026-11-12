@@ -135,7 +135,15 @@ noCup(prod({ offers: [offer({ offerId: 'cheap', priceCents: 280000 }), offer({ o
 noCup(prod({ offers: [offer({ offerId: 'cheap', priceCents: 280000 }), offer({ offerId: 'cup', priceCents: 300000, quarantined: true })] }), 'quarentena', 'oferta em quarentena');
 noCup(prod({ offers: [offer({ offerId: 'cheap', priceCents: 280000 }), offer({ offerId: 'cup', priceCents: 300000, confirmedAt: new Date(NOW.getTime() - 200 * MIN) })] }), 'preco_velho', 'preco da oferta velho (200 min)');
 noCup(prod({ offers: [offer({ offerId: 'cheap', priceCents: 280000 }), offer({ offerId: 'cup', priceCents: 300000, title: 'Smart TV Samsung 50 Open Box' })] }), 'condicao_nao_nova', 'Open Box');
-noCup(prod({ offers: [offer({ offerId: 'cheap', priceCents: 280000 }), offer({ offerId: 'cup', priceCents: 300000, networkSlug: 'amazon', networkName: 'Amazon' })] }), 'amazon_fora_do_gatilho_cupom', 'Amazon fica fora');
+{
+  // Amazon no gatilho CUPOM (2026-11-12): liga por padrao (promocoes lidas em amazon-promocoes); GROUP_CUPOM_AMAZON=off devolve ao estado anterior.
+  const pa = prod({ offers: [offer({ offerId: 'cheap', priceCents: 280000 }), offer({ offerId: 'cup', priceCents: 300000, networkSlug: 'amazon', networkName: 'Amazon', affiliateUrl: 'https://www.amazon.com.br/dp/B07Y8K3QSK' })] });
+  process.env.GROUP_CUPOM_AMAZON = 'off';
+  noCup(pa, 'amazon_fora_do_gatilho_cupom', 'Amazon com GROUP_CUPOM_AMAZON=off fica fora');
+  delete process.env.GROUP_CUPOM_AMAZON;
+  const ra = evaluateProductV2(pa, ctx);
+  ok(!!cup(ra), 'Amazon entra no gatilho CUPOM por padrao (oferta fresca)', blockedCup(ra));
+}
 noCup(prod({ catalogGate: 'review' }), 'porteiro_review', 'porteiro em review');
 noCup(prod({ vertical: 'moda' as never }), 'departamento_em_review_nao_liberado_no_go', 'departamento nao liberado');
 noCup(prod({ couponMisses: [{ offerId: 'cup-x', reason: 'cupom_exige_seguir_loja' }], coupons: [] }), 'agulha:cupom_exige_seguir_loja', 'cupom por seguir a loja (barra da agulha vira auditoria)');

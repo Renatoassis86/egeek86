@@ -190,11 +190,15 @@ export const dbGuardiaoStore: GuardiaoStore = {
     if (ann.kind === 'anuncio') {
       const offer = (await db.execute<{ status: string; price: string | null }>(sql`
         SELECT status, current_price_cents::text AS price FROM affiliate_offers WHERE id = ${ann.couponRef}::uuid LIMIT 1`)) as unknown as { status: string; price: string | null }[];
+      const pos = (await db.execute<{ read_at: string | Date; with_c: number; src: string | null }>(sql`
+        SELECT read_at, price_with_coupon_cents AS with_c, source AS src FROM offer_coupon_reads
+        WHERE offer_id = ${ann.couponRef}::uuid AND price_with_coupon_cents IS NOT NULL ORDER BY read_at DESC LIMIT 1`)) as unknown as { read_at: string | Date; with_c: number; src: string | null }[];
+      // Fonte do cupom divulgado: a promoção da Amazon (amazon-promocoes) só é negada pela própria leitura "sem cupom", e a página do item só pela dela
+      // (o item sem selo não encerra uma promoção que nunca aparece no selo; mesma regra do lookup).
+      const promo = pos[0]?.src === 'amazon-promocoes';
       const reads = (await db.execute<{ read_at: string | Date; with_c: number | null }>(sql`
-        SELECT read_at, price_with_coupon_cents AS with_c FROM offer_coupon_reads WHERE offer_id = ${ann.couponRef}::uuid ORDER BY read_at DESC LIMIT 1`)) as unknown as { read_at: string | Date; with_c: number | null }[];
-      const pos = (await db.execute<{ read_at: string | Date; with_c: number }>(sql`
         SELECT read_at, price_with_coupon_cents AS with_c FROM offer_coupon_reads
-        WHERE offer_id = ${ann.couponRef}::uuid AND price_with_coupon_cents IS NOT NULL ORDER BY read_at DESC LIMIT 1`)) as unknown as { read_at: string | Date; with_c: number }[];
+        WHERE offer_id = ${ann.couponRef}::uuid AND ((source = 'amazon-promocoes') = ${promo}) ORDER BY read_at DESC LIMIT 1`)) as unknown as { read_at: string | Date; with_c: number | null }[];
       return {
         kind: 'anuncio',
         offerActive: offer[0]?.status === 'active',

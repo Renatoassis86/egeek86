@@ -1,0 +1,202 @@
+// LEITOR PURO das PROMOÇÕES DA AMAZON (páginas /promotion/psp/<ID>), 2026-11-12. Sem banco, sem rede, sem server-only: testado em
+// scripts/test-amazon-promocoes.ts com fixtures reais em scripts/fixtures/amazon-cupons/.
+//
+// O que a Amazon mostra (descoberto lendo as páginas pela aba logada do dono, só leitura):
+//  - A página da promoção tem um TÍTULO que é a regra ("Só no App: 15% off em Suplementos", "20% de desconto em 1 item(ns)",
+//    "Exclusivo Prime: Compre 4 Livros e leve 10% off") e um banner "De <início> até <fim>" (nem sempre com hora).
+//  - Os "Termos da promoção" (abre ao clicar em "Ver os termos") trazem a hora do fim: "expirando às 23:59 do dia 30 de Novembro de 2026".
+//  - Os cards listam ASIN, título, preço atual e (às vezes) o preço anterior. O card NÃO mostra o preço com a promoção: o desconto é
+//    aplicado depois (no app / no carrinho). Logo o preço final é DERIVADO da regra escrita no título (status derivado), como já é o selo.
+//
+// Regras desta camada (nada é inventado):
+//  - VALIDADE só existe se lida (banner ou termos). Sem validade lida a promoção não vira cupom.
+//  - Data sem hora no banner e sem hora nos termos: vale só até 00:00 BRT do último dia (conservador, nunca divulga além do lido).
+//  - Exclusivo Prime, "seguir a loja" e compra de 2+ itens NÃO são para todos: viram `restrita` e NÃO geram cupom (a mensagem é para todos).
+//  - Só app: entra, com a condição escrita ("só no app da Amazon") na mensagem.
+import { sanitizeCouponName } from './coupon-name';
+
+export const AMAZON_PROMO_ORIGIN = 'https://www.amazon.com.br';
+export const AMAZON_PROMO_PATH = '/promotion/psp/';
+export const MAX_ITENS_POR_PAGINA = 300;
+/** Preço do card x preço da oferta no banco: acima disto o card é de outro item/variação e não liga. */
+export const PRECO_TOLERANCIA = 0.15;
+
+const MESES: Record<string, number> = {
+  janeiro: 1, fevereiro: 2, marco: 3, março: 3, abril: 4, maio: 5, junho: 6, julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12,
+};
+
+export interface PromoPayload {
+  /** ID da promoção na URL (/promotion/psp/<ID>). */
+  id: string;
+  /** Título da página (document.title sem o prefixo "Amazon.com.br:" e sem o sufixo "promoção"). */
+  titulo: string;
+  /** Texto do banner do topo ("[Exclusivo para membros Prime] <título> De ... até ..."). */
+  banner: string;
+  /** Texto dos "Termos da promoção" quando lido (pode ser vazio). */
+  termos?: string;
+}
+
+export interface PromoCardIn { a?: unknown; t?: unknown; p?: unknown; l?: unknown }
+export interface PromoCard { asin: string; titulo: string; priceCents: number; listCents: number | null }
+
+export type Restricao = 'prime' | 'quantidade' | 'seguir_loja' | null;
+
+export interface PromoRead {
+  id: string;
+  titulo: string;
+  percentual: number;
+  /** Departamento que o título declara ("Suplementos"); null se o título não diz. */
+  categoria: string | null;
+  soApp: boolean;
+  restricao: Restricao;
+  /** Itens exigidos pela promoção (1 = desconto por item). */
+  minItens: number | null;
+  validFrom: string | null;
+  validUntil: string;
+  validityRaw: string;
+  /** Frases dos termos que importam ao cliente (vendido pela Amazon; só produto físico). */
+  termosCurtos: string[];
+}
+
+export type PromoParse = { ok: true; promo: PromoRead } | { ok: false; reason: 'sem_titulo' | 'sem_percentual' | 'sem_validade_lida' | 'promocao_encerrada' | 'id_invalido' };
+
+const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const clean = (s: unknown) => String(s ?? '').replace(/\s+/g, ' ').trim();
+
+/** "30 de novembro de 2026" + "23:59" (BRT, UTC-3, sem horário de verão desde 2019) -> ISO UTC. */
+function brtToIso(d: number, mes: string, y: number, hh: number, mm: number): string | null {
+  const m = MESES[norm(mes)] ?? MESES[mes.toLowerCase()];
+  if (!m || d < 1 || d > 31 || hh > 23 || mm > 59) return null;
+  const t = Date.UTC(y, m - 1, d, hh + 3, mm, 0);
+  return Number.isFinite(t) ? new Date(t).toISOString() : null;
+}
+
+const DATA_RE = String.raw`(?:[a-zçã-]+-feira|s[aá]bado|domingo)?\s*(\d{1,2})\s+de\s+([a-zçã]+)\s+de\s+(\d{4})(?:\s+[àa]s\s+(\d{1,2}):(\d{2}))?`;
+
+export function parseValidade(banner: string, termos: string): { from: string | null; until: string | null; raw: string } {
+  const b = clean(banner);
+  const de = new RegExp(String.raw`\bDe\s+${DATA_RE}`, 'i').exec(b);
+  const ate = new RegExp(String.raw`\bat[eé]\s+${DATA_RE}`, 'i').exec(b);
+  let from: string | null = null;
+  if (de) from = brtToIso(+de[1], de[2], +de[3], de[4] ? +de[4] : 0, de[5] ? +de[5] : 0);
+  if (!ate) {
+    // Sem banner: só os termos ("expirando às 23:59 do dia 30 de Novembro de 2026").
+    const t = /expirando\s+[àa]s\s+(\d{1,2}):(\d{2})\s+do\s+dia\s+(\d{1,2})\s+de\s+([a-zçã]+)\s+de\s+(\d{4})/i.exec(clean(termos));
+    if (!t) return { from, until: null, raw: '' };
+    return { from, until: brtToIso(+t[3], t[4], +t[5], +t[1], +t[2]), raw: t[0] };
+  }
+  const raw = clean(ate[0]);
+  if (ate[4]) return { from, until: brtToIso(+ate[1], ate[2], +ate[3], +ate[4], +ate[5]), raw };
+  // Data sem hora: usa a hora dos termos se for do mesmo dia; senão, conservador (00:00 BRT do último dia).
+  const t = /expirando\s+[àa]s\s+(\d{1,2}):(\d{2})\s+do\s+dia\s+(\d{1,2})\s+de\s+([a-zçã]+)\s+de\s+(\d{4})/i.exec(clean(termos));
+  if (t && +t[3] === +ate[1] && norm(t[4]) === norm(ate[2]) && +t[5] === +ate[3]) {
+    return { from, until: brtToIso(+t[3], t[4], +t[5], +t[1], +t[2]), raw: `${raw}; ${clean(t[0])}` };
+  }
+  return { from, until: brtToIso(+ate[1], ate[2], +ate[3], 0, 0), raw: `${raw} (sem hora lida)` };
+}
+
+/** Lê a regra da promoção a partir do que a página escreve. Nunca assume: sem % no título ou sem validade lida = recusa com motivo. */
+export function parsePromoPage(p: PromoPayload, now: Date): PromoParse {
+  if (!/^[A-Z0-9]{8,20}$/.test(String(p?.id ?? ''))) return { ok: false, reason: 'id_invalido' };
+  const titulo = clean(p.titulo).slice(0, 160);
+  if (titulo.length < 6) return { ok: false, reason: 'sem_titulo' };
+  const banner = clean(p.banner);
+  const alvo = `${titulo} ${/exclusivo para membros prime/i.test(banner) ? 'Exclusivo Prime' : ''}`;
+  const pct = /(\d{1,2}(?:[.,]\d)?)\s*%/.exec(titulo);
+  const percentual = pct ? Number(pct[1].replace(',', '.')) : 0;
+  if (!(percentual > 0 && percentual <= 70)) return { ok: false, reason: 'sem_percentual' };
+  const v = parseValidade(banner, p.termos ?? '');
+  if (!v.until) return { ok: false, reason: 'sem_validade_lida' };
+  if (Date.parse(v.until) <= now.getTime()) return { ok: false, reason: 'promocao_encerrada' };
+
+  const n = norm(alvo + ' ' + banner.slice(0, 120));
+  const soApp = /\b(so no app|app only|no aplicativo|exclusivo no app)\b/.test(n);
+  let minItens: number | null = null;
+  const q1 = /\b(?:compre|leve)\s+(\d+)\b(?!\s*%)/.exec(n);
+  const q2 = /\bem\s+(\d+)\s+(?:item|itens|item\(ns\)|produtos?|bebidas?|livros?|unidades?|pecas?|artigos?)\b/.exec(n);
+  if (q1) minItens = +q1[1];
+  else if (q2) minItens = +q2[1];
+  let restricao: Restricao = null;
+  if (/\bseguir\b/.test(n)) restricao = 'seguir_loja';
+  else if (/\bprime\b/.test(n)) restricao = 'prime';
+  else if (minItens != null && minItens >= 2) restricao = 'quantidade';
+
+  const cat = /\boff\s+em\s+(?!\d)(.{2,40}?)\s*$/i.exec(titulo) ?? /\bdesconto\s+em\s+(?!\d)(.{2,40}?)\s*$/i.exec(titulo);
+  const termosCurtos: string[] = [];
+  const tn = norm(p.termos ?? '');
+  if (/apenas para produtos vendidos pela amazon/.test(tn)) termosCurtos.push('vale só para itens vendidos pela Amazon.com.br (não por vendedores parceiros)');
+  if (/somente podera ser utilizado para compra de produtos fisicos|nao e valida para conteudo digital/.test(tn)) termosCurtos.push('só produtos físicos (não vale para conteúdo digital)');
+
+  return {
+    ok: true,
+    promo: { id: p.id, titulo, percentual, categoria: cat ? clean(cat[1]) : null, soApp, restricao, minItens, validFrom: v.from, validUntil: v.until, validityRaw: v.raw.slice(0, 200), termosCurtos },
+  };
+}
+
+/** "431,06" / "R$ 1.234,56" -> centavos; null se não for valor. */
+export function brlCents(raw: unknown): number | null {
+  const m = /(\d{1,3}(?:\.\d{3})*|\d+),(\d{2})\b/.exec(clean(raw));
+  if (!m) return null;
+  const v = parseInt(m[1].replace(/\./g, ''), 10) * 100 + parseInt(m[2], 10);
+  return Number.isFinite(v) && v > 0 ? v : null;
+}
+
+/** Cards da página -> itens válidos (ASIN de 10 caracteres, preço lido, sem repetição). */
+export function parsePromoCards(cards: unknown): PromoCard[] {
+  const out: PromoCard[] = [];
+  const seen = new Set<string>();
+  for (const c of (Array.isArray(cards) ? cards : []).slice(0, MAX_ITENS_POR_PAGINA) as PromoCardIn[]) {
+    const asin = String(c?.a ?? '').toUpperCase();
+    if (!/^[A-Z0-9]{10}$/.test(asin) || seen.has(asin)) continue;
+    const price = brlCents(c.p);
+    if (!price) continue;
+    const list = brlCents(c.l);
+    seen.add(asin);
+    out.push({ asin, titulo: clean(c.t).slice(0, 200), priceCents: price, listCents: list && list > price ? list : null });
+  }
+  return out;
+}
+
+/** O preço do card confere com o da oferta no banco (mesma variação)? */
+export function precoCasa(cardCents: number, offerCents: number): boolean {
+  return offerCents > 0 && Math.abs(cardCents - offerCents) <= offerCents * PRECO_TOLERANCIA;
+}
+
+/** Preço final derivado da regra escrita no título (nunca exibido pela loja no card). */
+export function precoComPromocao(priceCents: number, percentual: number): number {
+  return priceCents - Math.round((priceCents * percentual) / 100);
+}
+
+export function fonteUrl(id: string): string {
+  return `${AMAZON_PROMO_ORIGIN}${AMAZON_PROMO_PATH}${id}`;
+}
+
+/** Nome que a mensagem mostra: o título da promoção (sem "% off" cru, que a barreira de termos proíbe). */
+export function nomeDaPromocao(titulo: string): string {
+  const t = clean(titulo).replace(/(\d)\s*%\s*off\b/gi, '$1% de desconto').replace(/\bapp only\b/gi, 'Só no app');
+  return sanitizeCouponName(t) ?? t.slice(0, 80);
+}
+
+/** Corpo de UM cupom (contrato /api/ingest/cupons) para UM ASIN ligado à oferta. Escopo `produto`: estável mesmo que os outros cards mudem. */
+export function cupomDoItem(promo: PromoRead, item: { asin: string; offerId: string }, fonte: string): Record<string, unknown> {
+  const nome = nomeDaPromocao(promo.titulo);
+  // condicoes_texto entra no hash de deduplicação: só texto ESTÁVEL (os termos, que às vezes não são lidos, vão em `condicoes.termos`, fora do hash).
+  const condicoes = [`Promoção da Amazon: ${nome}`, promo.soApp ? 'vale só pelo app da Amazon' : 'o desconto é aplicado pela própria Amazon'].join('; ');
+  return {
+    tipo: 'percentual',
+    valor: promo.percentual,
+    valor_unidade: 'percentual',
+    escopo: 'produto',
+    escopo_ref: { item_ids: [item.asin], offer_ids: [item.offerId] },
+    publico: 'todos',
+    texto_bruto: `${promo.titulo} | Amazon.com.br${promo.categoria ? ` | ${promo.categoria}` : ''}`.slice(0, 3900),
+    condicoes_texto: condicoes.slice(0, 1400),
+    condicoes: { promo_id: promo.id, ativacao: promo.soApp ? 'app' : 'automatica', so_app: promo.soApp, preco_derivado_da_regra: true, termos: promo.termosCurtos.join('; ').slice(0, 190) || null },
+    validade_inicio: promo.validFrom ?? undefined,
+    validade_fim: promo.validUntil,
+    validade_origem: 'texto_da_pagina',
+    validade_texto: promo.validityRaw,
+    fonte_tipo: 'portal_listagem',
+    fonte_url: fonte,
+  };
+}

@@ -148,7 +148,7 @@ async function main() {
 
   // ---------------- pontos de encaixe por rede ----------------
   check('ML ativo em tudo', COUPON_ADAPTERS['mercado-livre'].status === 'ativo' && COUPON_ADAPTERS['mercado-livre'].itemRead === 'ativo');
-  check('Shopee e Amazon: leitura por página ativa; shopee_campaigns nunca cupom; Amazon sem lista pública', COUPON_ADAPTERS.shopee.itemRead === 'ativo' && COUPON_ADAPTERS.amazon.itemRead === 'ativo' && COUPON_ADAPTERS.amazon.listRead === 'sem_fonte_de_comprador' && COUPON_ADAPTERS.amazon.ownerCode === 'ativo' && COUPON_ADAPTERS.shopee.falta.some((f) => /shopee_campaigns/.test(f)));
+  check('Shopee e Amazon: leitura por página ativa; shopee_campaigns nunca cupom; Amazon com lista de promoções (amazon-promocoes)', COUPON_ADAPTERS.shopee.itemRead === 'ativo' && COUPON_ADAPTERS.amazon.itemRead === 'ativo' && COUPON_ADAPTERS.amazon.listRead === 'ativo' && COUPON_ADAPTERS.amazon.ownerCode === 'ativo' && COUPON_ADAPTERS.shopee.falta.some((f) => /shopee_campaigns/.test(f)));
   check('cada rede documenta o que falta (seletores não validados em produção)', COUPON_ADAPTERS.shopee.falta.length > 0 && COUPON_ADAPTERS.amazon.falta.length > 0);
   check('rede desconhecida: adaptador nulo', adapterFor('magalu') === null);
 

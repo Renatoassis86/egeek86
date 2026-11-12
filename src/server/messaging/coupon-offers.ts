@@ -88,10 +88,16 @@ export async function offersWithPositiveRead(offerIds: string[], now: Date): Pro
       SELECT o.id FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       INNER JOIN LATERAL (
-        SELECT r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
-        WHERE r.offer_id = o.id AND r.read_at > ${since}::timestamptz ORDER BY r.read_at DESC LIMIT 1
-      ) lr ON lr.pw IS NOT NULL
-      WHERE o.id IN (${idList(offerIds)}) AND n.slug <> 'amazon'
+        -- Duas famílias de leitura (página do item x promoção da Amazon): a mais nova de CADA uma; vale se alguma das duas é positiva (a negativa de uma não apaga a outra).
+        SELECT x.pw FROM (
+          (SELECT r.price_with_coupon_cents AS pw, r.read_at FROM offer_coupon_reads r
+            WHERE r.offer_id = o.id AND r.source <> 'amazon-promocoes' AND r.read_at > ${since}::timestamptz ORDER BY r.read_at DESC LIMIT 1)
+          UNION ALL
+          (SELECT r.price_with_coupon_cents AS pw, r.read_at FROM offer_coupon_reads r
+            WHERE r.offer_id = o.id AND r.source = 'amazon-promocoes' AND r.read_at > ${since}::timestamptz ORDER BY r.read_at DESC LIMIT 1)
+        ) x WHERE x.pw IS NOT NULL ORDER BY x.read_at DESC LIMIT 1
+      ) lr ON true
+      WHERE o.id IN (${idList(offerIds)})
     `);
     return rows.map((r) => String(r.id));
   } catch {

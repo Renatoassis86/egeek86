@@ -105,4 +105,6 @@ export interface StoredCoupon {
   lastSeenAt: string;
   verifiedAt: string | null;
   lastPagePriceCents: number | null;
+  /** Termos curtos lidos na página da promoção (Amazon); ausente nas demais redes. */
+  termos?: string | null;
 }

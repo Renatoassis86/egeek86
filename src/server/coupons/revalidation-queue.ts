@@ -100,8 +100,8 @@ export async function listarFilaRevalidacao(n: number, rede: string = 'mercado-l
                   WHEN ${hintCond} THEN 4
                   WHEN c.was_sent THEN 5 ELSE 6 END AS prio
       FROM cand c
-      LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_read FROM offer_coupon_reads r WHERE r.offer_id = c.id) lr ON true
-      LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_pos FROM offer_coupon_reads r WHERE r.offer_id = c.id AND r.price_with_coupon_cents IS NOT NULL) lp ON true
+      LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_read FROM offer_coupon_reads r WHERE r.offer_id = c.id AND r.source <> 'amazon-promocoes') lr ON true
+      LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_pos FROM offer_coupon_reads r WHERE r.offer_id = c.id AND r.price_with_coupon_cents IS NOT NULL AND r.source <> 'amazon-promocoes') lp ON true
     )
     SELECT id::text AS id, ref, item, seller, price::text AS price, prio, aurl,
            CASE WHEN last_read IS NULL THEN NULL ELSE round(extract(epoch FROM now() - last_read) / 60)::text END AS age_min

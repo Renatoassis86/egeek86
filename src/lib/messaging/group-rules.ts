@@ -1199,6 +1199,11 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
  * mesmo juiz das mensagens de preco (link oficial, frescor, identidade, reputacao). Amazon fica fora (carimbo e regras proprias).
  * Nao compara com media e nao alega "menor preco": por isso a regua de 10% nao se aplica a esta classe.
  */
+/** Kill-switch do cupom da Amazon no gatilho CUPOM: GROUP_CUPOM_AMAZON=off. */
+export function cupomAmazonLigado(env: Record<string, string | undefined> = typeof process !== 'undefined' ? process.env : {}): boolean {
+  return (env.GROUP_CUPOM_AMAZON ?? '').toLowerCase() !== 'off';
+}
+
 export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates: Candidate[]; blocked: Blocked[] } {
   const candidates: Candidate[] = [];
   const blocked: Blocked[] = [];
@@ -1219,7 +1224,10 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
   }
   const nowMs = ctx.now.getTime();
   const formacao = emFaseDeFormacao(p.vertical, ctx.now);
-  const jopts: JudgeOptions = { allowAmazon: false, amazonMaxAgeMin: ctx.amazonMaxAgeMin, amazonPaused: ctx.amazonPaused };
+  // Amazon entra no gatilho CUPOM (dono, 2026-11-12: promoções lidas em amazon-promocoes). Mesmas travas de frescor/readmissão/laço parado do juízo da Amazon;
+  // GROUP_CUPOM_AMAZON=off a devolve ao estado anterior. A mediana de referência segue sem a Amazon.
+  const amazonCupom = cupomAmazonLigado();
+  const jopts: JudgeOptions = { allowAmazon: amazonCupom, amazonMaxAgeMin: ctx.amazonMaxAgeMin, amazonPaused: ctx.amazonPaused };
   const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon' && !o.avgExcluded).map((o) => o.priceCents));
   const oks: Array<{ cf: CouponOfferFact; o: OfferFact; v: OfferVerdict }> = [];
   for (const cf of facts) {
@@ -1228,7 +1236,7 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
       stop(['oferta_do_cupom_fora_das_ofertas_vivas'], cf.offerId);
       continue;
     }
-    if (netKind(o) === 'amazon') {
+    if (netKind(o) === 'amazon' && !amazonCupom) {
       stop(['amazon_fora_do_gatilho_cupom'], cf.offerId);
       continue;
     }

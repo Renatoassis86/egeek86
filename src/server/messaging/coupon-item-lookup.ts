@@ -6,7 +6,7 @@ import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import { AGULHA, evaluateAgulha, ITEM_READ_NETWORKS, type AgulhaRule, type MissTrace } from '@/lib/coupons/agulha';
 import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
-import { resolveCouponUse } from '@/lib/coupons/coupon-name';
+import { resolveCouponUse, stepsText } from '@/lib/coupons/coupon-name';
 
 /**
  * Cupom POR ANÚNCIO (dono, 2026-11-11): a aba logada lê a página do item e grava o "preço com cupom" (offer_coupon_reads). Vale 2 horas.
@@ -25,6 +25,7 @@ type ReadRow = {
   c_kind: string | null; c_value: string | null; c_min: string | null; c_cap: string | null; c_valid: string | Date | null; c_state: string | null;
   c_aud: string | null; c_elig: boolean | null; c_scope: string | null; c_cats: string | null; c_raw: string | null; c_title: string | null; c_where: string | null; c_ativ: string | null;
   p_name: string | null; p_code: string | null;
+  src: string | null; pc_valid: string | Date | null; pc_state: string | null; pc_title: string | null; pc_app: string | null; pc_termos: string | null;
 };
 
 /**
@@ -63,7 +64,8 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
            o.current_price_cents::text AS cur, o.status::text AS ostatus, nn.slug AS net, o.vertical,
            c.kind AS c_kind, c.value_num::text AS c_value, c.min_order_cents::text AS c_min, c.max_discount_cents::text AS c_cap, c.valid_until AS c_valid,
            c.state AS c_state, c.audience AS c_aud, c.eligible_on_read_account AS c_elig, c.scope_kind AS c_scope, c.scope->'categorias'->>0 AS c_cats, c.conditions_raw AS c_raw, c.title AS c_title, c.onde AS c_where, c.ativ AS c_ativ,
-           to_jsonb(r)->>'coupon_name' AS p_name, to_jsonb(r)->>'coupon_code' AS p_code
+           to_jsonb(r)->>'coupon_name' AS p_name, to_jsonb(r)->>'coupon_code' AS p_code,
+           r.source AS src, pc.valid_until AS pc_valid, pc.state AS pc_state, pc.title AS pc_title, pc.so_app AS pc_app, pc.termos AS pc_termos
     FROM offer_coupon_reads r
     JOIN affiliate_offers o ON o.id = r.offer_id
     JOIN affiliate_networks nn ON nn.id = o.network_id
@@ -74,6 +76,14 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
       WHERE ci.network_slug = 'mercado-livre' AND r.campaign_id IS NOT NULL AND ci.conditions->>'campanha_id' = r.campaign_id
       ORDER BY ci.last_seen_at DESC LIMIT 1
     ) c ON true
+    -- Promoção da Amazon (amazon-promocoes): validade, estado (2 leituras) e título vêm do cupom gravado em coupon_items (escopo produto da oferta).
+    LEFT JOIN LATERAL (
+      SELECT ci.valid_until, ci.state, split_part(ci.raw_text, ' | ', 1) AS title, ci.conditions->>'so_app' AS so_app, ci.conditions->>'termos' AS termos
+      FROM coupon_items ci
+      WHERE r.source = 'amazon-promocoes' AND ci.network_slug = 'amazon' AND ci.conditions->>'promo_id' = r.campaign_id
+        AND ci.scope->'offer_ids' @> to_jsonb(r.offer_id::text)
+      ORDER BY ci.last_seen_at DESC LIMIT 1
+    ) pc ON true
     WHERE r.offer_id = ${offerId}::uuid AND r.read_at > ${now.toISOString()}::timestamptz - make_interval(mins => ${AGULHA.ITEM_FRESH_MIN}::int)
     ORDER BY r.read_at DESC, r.price_with_coupon_cents ASC NULLS LAST LIMIT 30`)) as unknown as ReadRow[];
 
@@ -83,8 +93,12 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
   if (!(ITEM_READ_NETWORKS as readonly string[]).includes(first.net)) { trace?.('rede_sem_leitura_autorizada'); return null; }
 
   // Leitura mais nova SEM cupom: a página deixou de mostrar, então nenhuma leitura positiva anterior a ela vale mais.
-  const negAt = rows.filter((r) => r.pw == null).map((r) => new Date(r.read_at).getTime()).reduce((m, t) => Math.max(m, t), -Infinity);
-  const positives = rows.filter((r) => r.pw != null && new Date(r.read_at).getTime() > negAt);
+  // Promoção da Amazon (amazon-promocoes) e página do item são fontes DIFERENTES: o item sem selo de cupom não apaga a promoção (que não aparece no selo do item)
+  // e vice-versa; cada fonte só é negada pela própria leitura "sem cupom".
+  const isPromoRow = (r: ReadRow) => r.src === 'amazon-promocoes';
+  const negAtOf = (promo: boolean) => rows.filter((r) => r.pw == null && isPromoRow(r) === promo).map((r) => new Date(r.read_at).getTime()).reduce((m, t) => Math.max(m, t), -Infinity);
+  const negAt = { promo: negAtOf(true), item: negAtOf(false) };
+  const positives = rows.filter((r) => r.pw != null && new Date(r.read_at).getTime() > (isPromoRow(r) ? negAt.promo : negAt.item));
   if (!positives.length) { trace?.(rows.some((r) => r.pw != null) ? 'sumiu_na_releitura' : 'lida_sem_cupom'); return null; }
   // Mesma rodada de leitura (até 60 s da mais nova): vale o menor preço com cupom, como a página mostra.
   const newestPos = new Date(positives[0].read_at).getTime();
@@ -103,10 +117,18 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
           conditionsRaw: r.c_raw,
         }
       : null;
+    const isPromo = r.src === 'amazon-promocoes';
+    // Promoção da Amazon: só vale com o cupom da promoção VERIFICADO (2 leituras separadas por 30 min) e com a validade LIDA na página; sem isso, nada sai.
+    if (isPromo) {
+      if (r.pc_state !== 'verificado') { lastReason = 'estado_nao_verificado'; continue; }
+      if (!r.pc_valid) { lastReason = 'validade_nao_lida'; continue; }
+      if (!rule) { lastReason = 'tipo_sem_preco_final'; continue; }
+    }
+    const rulePromo: AgulhaRule | null = isPromo && rule ? { ...rule, validUntil: new Date(r.pc_valid as string | Date).toISOString() } : rule;
     const readIso = new Date(r.read_at).toISOString();
     const verdict = evaluateAgulha({
       source: 'item', now, offer: { network: r.net, vertical: r.vertical, priceCents: current }, verifiedAt: readIso,
-      priceWithCents: r.pw, priceSeenCents: r.ps, label: r.label, rule, categoriaVerticais: rule?.categorias?.flatMap((c) => verticaisDaCategoria(c)),
+      priceWithCents: r.pw, priceSeenCents: r.ps, label: r.label, rule: rulePromo, categoriaVerticais: rulePromo?.categorias?.flatMap((c) => verticaisDaCategoria(c)),
     });
     if (!verdict.ok) { lastReason = verdict.reason; continue; }
     const parts: string[] = [];
@@ -117,16 +139,22 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
     // depois ao código digitável. Sem nome nenhum (cupom de clicar e ativar): rótulo do valor lido + passo a passo da loja. Nunca "Cupom do anúncio".
     // A barreira de termos proíbe '% OFF': o texto da loja é reescrito ('25% de desconto') dentro de resolveCouponUse.
     const use = resolveCouponUse({
-      net: r.net, code: r.p_code, pageName: r.p_name, listTitle: r.c_title, listScope: r.c_where, ativacao: r.c_ativ, offCents: off, pct,
+      net: r.net, code: r.p_code, pageName: r.p_name, listTitle: isPromo ? r.pc_title : r.c_title, listScope: r.c_where, ativacao: r.c_ativ, offCents: off, pct,
       rule: rule ? { kind: rule.kind, valueNum: rule.valueNum } : null,
     });
     const name = use.name;
+    if (isPromo) {
+      // Promoção da Amazon não tem botão "Aplicar cupom" nem código: o desconto é aplicado pela Amazon (às vezes só no app). Sem inventar o fluxo do carrinho.
+      const vendida = /vendidos pela Amazon/i.test(r.pc_termos ?? '') ? 'vale só para itens vendidos pela Amazon.com.br' : 'confira no anúncio se o item é vendido pela Amazon.com.br';
+      use.howTo = [r.pc_app === 'true' ? 'Abra o anúncio no app da Amazon (a promoção vale só pelo app)' : 'Abra o anúncio', 'O desconto é aplicado pela própria Amazon; não tem código para digitar', `Confira o preço final antes de finalizar (${vendida})`];
+      use.activation = stepsText(use.howTo);
+    }
     const dlinha = `Desconto de ${fmt(off)} (${String(pct).replace('.', ',')}%): você paga ${fmt(Number(r.pw))}. `;
     if (rule?.minOrderCents) parts.push(`Compra mínima ${fmt(rule.minOrderCents)}`);
     if (rule?.maxDiscountCents) parts.push(`desconto máximo ${fmt(rule.maxDiscountCents)}`);
     const ruleText = `${dlinha}${parts.length ? `${parts.join(', ')}. ` : ''}`;
     // Regra não lida na lista: o preço é o que a página mostrou, e a mensagem diz isso sem inventar compra mínima ou teto.
-    const tail = verdict.ruleKnown ? 'Preço lido na página do anúncio' : 'Preço lido na página do anúncio; regra completa na tela do cupom';
+    const tail = isPromo ? 'Preço calculado pela regra da promoção (a página não mostra o preço final)' : verdict.ruleKnown ? 'Preço lido na página do anúncio' : 'Preço lido na página do anúncio; regra completa na tela do cupom';
     const ativar = use.activation;
     return {
       info: {
@@ -134,7 +162,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
         typedCode: use.code,
         unnamed: !use.named,
         conditions: `${ruleText}Como usar: ${ativar} ${tail}`,
-        expiresAt: rule?.validUntil ?? null,
+        expiresAt: rulePromo?.validUntil ?? null,
         verifiedAt: readIso,
         couponRef: offerId,
         annKind: 'anuncio',
@@ -142,7 +170,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
       detail: {
         net: r.net, offerPriceCents: current, finalCents: Number(r.pw), offCents: off, pct, name,
         minOrderCents: rule?.minOrderCents ?? null, maxDiscountCents: rule?.maxDiscountCents ?? null, ruleKnown: verdict.ruleKnown,
-        activation: ativar, named: use.named, code: use.code, howTo: use.howTo, readAt: readIso, priceSeenCents: r.ps, validUntil: rule?.validUntil ?? null,
+        activation: ativar, named: use.named, code: use.code, howTo: use.howTo, readAt: readIso, priceSeenCents: r.ps, validUntil: rulePromo?.validUntil ?? null,
       },
     };
   }
