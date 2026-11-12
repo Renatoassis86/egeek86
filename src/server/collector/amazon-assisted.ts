@@ -61,7 +61,8 @@ function baseCte(mode: QueueMode, vertical?: Vertical): SQL {
   const modeFilter = mode === 'refresh' ? sql`n_amz > 0` : mode === 'discover'
     ? sql`n_amz = 0 AND (scan_at IS NULL OR scan_at < now() - (${cooldown} * interval '1 hour'))`
     : sql`true`;
-  const orderBy = mode === 'refresh' ? sql`amz_checked ASC NULLS FIRST, id` : mode === 'discover' ? sql`scan_at ASC NULLS FIRST, n_other DESC, id` : sql`n_other DESC, id`;
+  // QUENTES primeiro na atualização: master com oferta da Amazon que gerou candidato de mensagem nas últimas 6 h (a regra de envio exige preço confirmado em até 40 min).
+  const orderBy = mode === 'refresh' ? sql`hot DESC, amz_checked ASC NULLS FIRST, id` : mode === 'discover' ? sql`scan_at ASC NULLS FIRST, n_other DESC, id` : sql`n_other DESC, id`;
   const only = vertical ? sql`AND m.vertical = ${vertical}` : sql``;
   return sql`
     WITH base AS (
@@ -70,7 +71,8 @@ function baseCte(mode: QueueMode, vertical?: Vertical): SQL {
              NULLIF(m.attributes->'amazonScan'->>'at', '')::timestamptz AS scan_at,
              count(*) FILTER (WHERE nn.slug <> 'amazon') AS n_other,
              count(*) FILTER (WHERE nn.slug = 'amazon') AS n_amz,
-             min(o.last_checked_at) FILTER (WHERE nn.slug = 'amazon') AS amz_checked
+             min(o.last_checked_at) FILTER (WHERE nn.slug = 'amazon') AS amz_checked,
+             bool_or(nn.slug = 'amazon' AND EXISTS (SELECT 1 FROM group_messages gm WHERE gm.offer_id = o.id AND gm.created_at > now() - interval '6 hours')) AS hot
       FROM master_products m
       LEFT JOIN brands b ON b.id = m.brand_id
       JOIN affiliate_offers o ON o.master_product_id = m.id AND o.status = 'active' AND o.quarantined_at IS NULL
