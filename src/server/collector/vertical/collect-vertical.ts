@@ -13,6 +13,8 @@ import { fetchVerticalCatalog, VerticalPagingError, type RawPage, type VerticalC
 import { groupDueOldestFirst, mayExpireStale, plusCallQuota, staleExpireHours, STALE_EXPIRE_MAX_PER_RUN } from '@/lib/catalog/vertical/queue';
 import { startCollectorRun, collectorRunsEnabled } from '../collector-runs';
 import { recordPriceSnapshot } from '../record-price-snapshot';
+import { soldQuantityWrites } from '@/lib/affiliate/sold-quantity';
+import { saveOfferSoldQuantity } from './sold-quantity-store';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from '../price-plausibility';
 import { getValidAccessToken } from '../sources/mercado-livre-auth';
 import { upsertSellerFromOffer } from '../sources/mercado-livre-seller';
@@ -266,6 +268,9 @@ async function applyVerticalGroup(
       out.created++;
     }
     touched.add(offerId);
+    // Vendas do anuncio (sold_quantity): grava SO se a API entregou o campo neste payload (sem chamada extra; sem campo = nenhum SQL).
+    const sold = soldQuantityWrites([r])[0];
+    if (sold) await saveOfferSoldQuantity(offerId, sold.soldQuantity);
     // Guarda de plausibilidade (0,35x a 3x a mediana das OUTRAS ofertas do master, com >= 2 referências): fora da faixa
     // vai para quarentena e NÃO vira snapshot; dentro da faixa libera a quarentena (só vertical <> games, sem curadoria manual).
     const refs = await getMasterReferencePrices(group.masterProductId, offerId);

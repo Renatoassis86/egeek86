@@ -20,6 +20,17 @@ export interface Listing {
   listPriceCents?: number | null;
   externalSellerId: string;
   externalItemId: string;
+  /** Vendas acumuladas do ANUNCIO (sold_quantity), SO se a API as entregou no payload; null/ausente = nao informado (nunca 0 por chute). */
+  soldQuantity?: number | null;
+}
+
+/**
+ * sold_quantity de um item de /products/{id}/items. Medicao 2026-11-08: o endpoint NAO costuma trazer o campo (37 itens, 0 com ele);
+ * se vier, so aceita inteiro finito >= 0. Qualquer outra coisa (ausente, string, negativo, NaN) = null: nunca inventa 0.
+ */
+export function extractSoldQuantity(raw: unknown): number | null {
+  if (typeof raw !== 'number' || !Number.isFinite(raw) || raw < 0) return null;
+  return Math.floor(raw);
 }
 
 export type Verdicts = ReadonlyMap<string, { excluded: boolean }>;
@@ -407,6 +418,7 @@ export function parseMeliCatalogPage(body: unknown, offset = 0): CatalogPage<Lis
         listPriceCents: r.original_price != null ? Math.round(Number(r.original_price) * 100) : null,
         externalSellerId: String(r.seller_id),
         externalItemId: String(r.item_id),
+        soldQuantity: extractSoldQuantity(r.sold_quantity),
       });
     }
   });

@@ -4,6 +4,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { avgExcludedFlagSql, inAverageSql } from '@/server/queries/public-offers';
+import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { loadOffers, loadPeriodDays } from '@/server/pricing/price-daily';
 import { addDays, computePeriodMetrics, ownSeriesMedian, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
 import { AMAZON_OWN_MIN_DAYS, AMAZON_OWN_WINDOW_DAYS, amazonCountsIn, amazonScope, getAmazonMode, type AmazonMode } from '@/lib/pricing/amazon-mode';
@@ -231,6 +232,7 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
         AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz
         AND o.vertical IN (${txtList(o.verticals)}) AND m.vertical IN (${txtList(o.verticals)})
         AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')}
+        AND ${masterNoEscopoSql('m')}
     ),
     ev AS (
       SELECT DISTINCT e.master_product_id AS mid FROM price_min_events e

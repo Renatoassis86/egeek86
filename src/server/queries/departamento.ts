@@ -3,6 +3,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { verticalSql } from '@/lib/catalog/verticais';
+import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { createCachedQuery } from '@/lib/cache/server-cache';
 import { classificarTipo, contarTipos, type TipoContagem } from '@/lib/catalog/tipos-produto';
 import {
@@ -44,7 +45,11 @@ export function masterAprovadoSql(alias: string): SQL {
 }
 
 /** CTEs: public_offers (helper existente) + clickable (ofertas clicáveis de masters aprovados) + seller_best (1 por vendedor). */
-export function departamentoClicaveisCtes(vertical: string): SQL {
+/**
+ * `opts.vitrine` (padrão false): exclui masters marcados fora do escopo de compra real (ata 2026-11-12). Vitrines, faixas, contagens e tipos
+ * usam true; detalhe e busca por texto usam false (o item fora de escopo continua pesquisável e com link direto).
+ */
+export function departamentoClicaveisCtes(vertical: string, opts: { vitrine?: boolean } = {}): SQL {
   assertDepartamento(vertical);
   const horas = sql.raw(String(Math.trunc(OFERTA_CLICAVEL_MAX_HORAS)));
   const redes = sql.join(REDES_DEPARTAMENTO.map((r) => sql`${r}`), sql`, `);
@@ -60,6 +65,7 @@ export function departamentoClicaveisCtes(vertical: string): SQL {
       WHERE ${verticalSql('o', vertical)}
         AND ${verticalSql('m', vertical)}
         AND ${masterAprovadoSql('m')}
+        AND ${opts.vitrine ? masterNoEscopoSql('m') : sql`TRUE`}
         AND o.affiliate_link_pending = false
         AND o.quarantined_at IS NULL
         AND o.status = 'active'
@@ -79,7 +85,7 @@ export function departamentoClicaveisCtes(vertical: string): SQL {
 export async function contarMastersVisiveis(vertical: string): Promise<number> {
   assertDepartamento(vertical);
   const rows = await db.execute<{ n: number }>(sql`
-    WITH ${departamentoClicaveisCtes(vertical)}
+    WITH ${departamentoClicaveisCtes(vertical, { vitrine: true })}
     SELECT COUNT(DISTINCT master_product_id)::int AS n FROM clickable
   `);
   return Number(rows[0]?.n ?? 0);
@@ -153,7 +159,7 @@ export interface IndiceTipos {
 async function calcularIndiceTipos(vertical: string): Promise<IndiceTipos> {
   assertDepartamento(vertical);
   const rows = await db.execute<{ id: string; name: string }>(sql`
-    WITH ${departamentoClicaveisCtes(vertical)}
+    WITH ${departamentoClicaveisCtes(vertical, { vitrine: true })}
     SELECT m.id, m.name
     FROM master_products m
     WHERE ${verticalSql('m', vertical)} AND m.id IN (SELECT master_product_id FROM seller_best)
@@ -163,7 +169,7 @@ async function calcularIndiceTipos(vertical: string): Promise<IndiceTipos> {
   return { porId, tipos: contarTipos(vertical, rows.map((r) => r.name)) };
 }
 
-const indiceTiposCache = createCachedQuery(calcularIndiceTipos, ['dept-indice-tipos-v1'], { revalidate: 120, maxStaleSeconds: 900 });
+const indiceTiposCache = createCachedQuery(calcularIndiceTipos, ['dept-indice-tipos-v2'], { revalidate: 120, maxStaleSeconds: 900 });
 export async function indiceTiposDepartamento(vertical: string): Promise<IndiceTipos> {
   return indiceTiposCache(vertical);
 }
@@ -188,8 +194,10 @@ export async function listarDepartamento(vertical: string, opts: { pagina?: numb
     : ordem === 'nome' ? sql`ORDER BY m.name ASC`
     : ordem === 'ofertas' ? sql`ORDER BY COUNT(*) DESC, MIN(sb.current_price_cents) DESC, m.name ASC`
     : sql`ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC`;
+  // Vitrine (sem busca por texto) ignora masters fora do escopo de compra; busca por texto continua achando tudo.
+  const vitrine = termos.length === 0;
   const rows = await db.execute<RowLista>(sql`
-    WITH ${departamentoClicaveisCtes(vertical)}
+    WITH ${departamentoClicaveisCtes(vertical, { vitrine })}
     SELECT m.id, m.slug, m.name, m.gtin, m.mpn, m.manufacturer,
            m.attributes -> 'vertical' -> 'catalogAttributes' AS cat,
            m.default_images ->> 0 AS imagem,
@@ -212,7 +220,7 @@ export async function listarDepartamento(vertical: string, opts: { pagina?: numb
   let total = rows.length ? Number(rows[0].total) : 0;
   if (!rows.length && pagina > 1) {
     const t = await db.execute<{ n: number }>(sql`
-      WITH ${departamentoClicaveisCtes(vertical)}
+      WITH ${departamentoClicaveisCtes(vertical, { vitrine })}
       SELECT COUNT(DISTINCT sb.master_product_id)::int AS n FROM seller_best sb INNER JOIN master_products m ON m.id = sb.master_product_id
       WHERE ${verticalSql('m', vertical)} ${busca}
     `);
@@ -290,7 +298,7 @@ export async function destaquesDepartamento(vertical: string, limite = 8): Promi
   assertDepartamento(vertical);
   const lim = Math.max(1, Math.min(12, Math.trunc(limite) || 8));
   const rows = await db.execute<RowLista>(sql`
-    WITH ${departamentoClicaveisCtes(vertical)}
+    WITH ${departamentoClicaveisCtes(vertical, { vitrine: true })}
     SELECT m.id, m.slug, m.name, m.gtin, m.mpn, m.manufacturer,
            m.attributes -> 'vertical' -> 'catalogAttributes' AS cat,
            m.default_images ->> 0 AS imagem,

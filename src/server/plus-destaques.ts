@@ -8,7 +8,7 @@ export const MIN_DESTAQUES_HOME = 4;
 
 const porDept = createCachedQuery(
   async (dept: DepartamentoSlug) => destaquesDepartamento(dept, 8),
-  ['home-plus-destaques-v1'],
+  ['home-plus-destaques-v2'],
   { revalidate: 120, maxStaleSeconds: 900 }
 );
 

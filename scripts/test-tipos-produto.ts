@@ -61,6 +61,25 @@ eq('impressao3d', 'Bico Nozzle 0.4mm', 'pecas');
 eq('livros', 'Pathfinder RPG Livro de Regras', 'rpg');
 eq('livros', 'Introdução à Programação com Python', 'programacao');
 eq('livros', 'Título sem assunto reconhecível', 'outros');
+// [FIXTURE] regexes frágeis corrigidos (ata 2026-11-12, R7)
+eq('esporte', 'Protetor Solar FPS 60 Esportivo', 'outros');
+eq('esporte', 'Protetor Bucal Esportivo Boxe', 'protecao');
+eq('esporte', 'Protetor de Canela Futebol', 'protecao');
+eq('esporte', 'Saco de Pancada Boxe 90cm', 'fitness');
+eq('esporte', 'Saco de Dormir Termico', 'outros');
+eq('esporte', 'Mala de Academia Esportiva 40L', 'bolsas-mochilas');
+eq('esporte', 'Mala de Viagem Rigida 20kg', 'outros');
+eq('eletrodomesticos', 'Ferro de Passar a Vapor 1200w', 'ferro-passar');
+eq('eletrodomesticos', 'Ferro de Solda 60w', 'outros');
+eq('eletroeletronicos', 'Capa para Kindle 11 geracao', 'cabos-acessorios');
+eq('eletroeletronicos', 'Kindle 11 geracao com capa', 'tablet-leitor');
+eq('eletroeletronicos', 'Smart TV 50 4K com suporte de parede', 'smart-tv');
+eq('eletroeletronicos', 'Soundbar Premium com capa de protecao', 'soundbar');
+eq('eletroeletronicos', 'Suporte de Parede para TV 32 a 65', 'cabos-acessorios');
+eq('impressao3d', 'Mesa de Escritorio Gamer', 'outros');
+eq('impressao3d', 'Mesa Aquecida Magnetica Ender 3', 'pecas');
+eq('impressao3d', 'Fita de Enfeite Decorativa', 'outros');
+eq('impressao3d', 'Fita Kapton 20mm', 'pecas');
 // Departamento sem lista => outros
 eq('games', 'Smart TV', 'outros');
 

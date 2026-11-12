@@ -37,7 +37,7 @@ export function normalizarTitulo(s: string): string {
 const r = (src: string) => new RegExp(src);
 
 const ELETRONICOS: TipoDef[] = [
-  { slug: 'cabos-acessorios', rotulo: 'Cabos e acessórios', re: r(' (cabo|cabos|hub|adaptador|suporte|controle remoto|pelicula|capa) ') },
+  { slug: 'cabos-acessorios', rotulo: 'Cabos e acessórios', re: r(' (cabo|cabos|hub|adaptador|controle remoto|pelicula|capa (para|de|protetora|case|anti)|suporte (para|de|articulado|fixo|universal|veicular|gamer)) ') },
   { slug: 'carregadores', rotulo: 'Carregadores e baterias', re: r(' (carregador|fonte carregador|power bank|powerbank|mobile power|bateria externa|pilha|pilhas) ') },
   { slug: 'soundbar', rotulo: 'Soundbar', re: r(' (soundbar|sound bar|home theater) ') },
   { slug: 'projetor', rotulo: 'Projetor', re: r(' (projetor|projector) ') },
@@ -63,7 +63,7 @@ const CASA: TipoDef[] = [
   { slug: 'ventilador', rotulo: 'Ventiladores', re: r(' (ventilador|circulador|ventiladores) ') },
   { slug: 'purificador', rotulo: 'Purificadores de ar', re: r(' (purificador|ozonizador|ionizador|umidificador) ') },
   { slug: 'batedeira-liquidificador', rotulo: 'Batedeiras e liquidificadores', re: r(' (batedeira|liquidificador|mixer|processador de alimentos|espremedor) ') },
-  { slug: 'ferro-passar', rotulo: 'Ferros de passar', re: r(' (ferro|ferros) ') },
+  { slug: 'ferro-passar', rotulo: 'Ferros de passar', re: r(' (ferro|ferros) (de passar|de engomar|a vapor|com vapor|vapor|eletrico|seco|para passar|de roupa|de roupas)| ferro passar ') },
   { slug: 'cafeteira', rotulo: 'Cafeteiras e panelas elétricas', re: r(' (cafeteira|chaleira|sanduicheira|grill|panela eletrica|panela de arroz|arrozeira) ') },
 ];
 
@@ -90,9 +90,9 @@ const ESPORTE: TipoDef[] = [
   { slug: 'bola', rotulo: 'Bolas', re: r(' (bola|bolas) ') },
   { slug: 'tenis-calcado', rotulo: 'Tênis e calçados', re: r(' (tenis|chuteira|sapatilha|sandalia|chinelo) ') },
   { slug: 'halter-peso', rotulo: 'Halteres e pesos', re: r(' (halter|halteres|kettlebell|anilha|tornozeleira|barra|supino|caneleira de peso) ') },
-  { slug: 'fitness', rotulo: 'Fitness e funcional', re: r(' (corda de pular|corda pular|corda|faixa elastica|elastico|tapete yoga|yoga|colchonete|pilates|abdominal|crossfit) ') },
-  { slug: 'protecao', rotulo: 'Luvas e proteção', re: r(' (luva|luvas|caneleira|caneleiras|joelheira|munhequeira|protetor) ') },
-  { slug: 'bolsas-mochilas', rotulo: 'Mochilas e bolsas', re: r(' (mochila|bolsa|mala|sacola|saco) ') },
+  { slug: 'fitness', rotulo: 'Fitness e funcional', re: r(' (saco de pancada|saco de boxe|corda de pular|corda pular|corda|faixa elastica|elastico|tapete yoga|yoga|colchonete|pilates|abdominal|crossfit) ') },
+  { slug: 'protecao', rotulo: 'Luvas e proteção', re: r(' (luva|luvas|caneleira|caneleiras|joelheira|munhequeira) | protetor (bucal|de canela|de joelho|de cotovelo|de tornozelo|de ombro|de punho|de cabeca|tibial|genital) ') },
+  { slug: 'bolsas-mochilas', rotulo: 'Mochilas e bolsas', re: r(' (mochila|bolsa|mala (de )?(academia|esportiva|treino|ginastica)|sacola) ') },
   { slug: 'garrafas', rotulo: 'Garrafas e squeezes', re: r(' (garrafa|squeeze|coqueteleira|copo termico) ') },
   { slug: 'bones', rotulo: 'Bonés e acessórios', re: r(' (bone|bones|viseira|touca|pochete) ') },
   { slug: 'meias-roupas', rotulo: 'Meias e roupas', re: r(' (meia|meias|camisa|camiseta|short|bermuda|legging) ') },
@@ -101,7 +101,7 @@ const ESPORTE: TipoDef[] = [
 const IMPRESSAO3D: TipoDef[] = [
   { slug: 'filamentos', rotulo: 'Filamentos', re: r(' (filamento|filamentos) ') },
   { slug: 'resinas', rotulo: 'Resinas', re: r(' (resina|resinas) ') },
-  { slug: 'pecas', rotulo: 'Peças e acessórios', re: r(' (bico|nozzle|hotend|extrusora|mesa|ptfe|correia|ventoleira|placa de impressao|spatula|espatula|lamina|fita) ') },
+  { slug: 'pecas', rotulo: 'Peças e acessórios', re: r(' (bico|nozzle|hotend|extrusora|mesa (aquecida|de impressao|magnetica|flexivel|pei|de vidro|de construcao)|placa pei|ptfe|correia|ventoleira|placa de impressao|spatula|espatula|lamina|fita (kapton|pei|termica|isolante)) ') },
   { slug: 'impressoras', rotulo: 'Impressoras 3D', re: r(' (impressora|impressoras|printer) ') },
 ];
 

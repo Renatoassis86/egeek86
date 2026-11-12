@@ -28,9 +28,13 @@
     "test:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/test-vertical-isolation.ts",
     "baseline:gamer": "tsx --conditions=react-server --env-file=.env.local scripts/congelar-linha-base-gamer.ts",
     "test:departamentos": "tsx --conditions=react-server --env-file=.env.local scripts/test-departamentos.ts",
+    "test:aprovacao-relaxada": "tsx scripts/test-aprovacao-relaxada.ts",
     "test:vertical-identity": "tsx scripts/test-vertical-identity.ts",
     "test:plus-reconfirmacao": "tsx scripts/test-plus-reconfirmacao.ts",
+    "test:cobertura-tipos": "tsx scripts/test-cobertura-tipos.ts",
+    "simular:semeadura-plus": "tsx scripts/simular-semeadura-plus.ts",
     "test:tipos": "tsx scripts/test-tipos-produto.ts",
+    "test:escopo": "tsx scripts/test-escopo-compra.ts",
     "test:catalogo": "tsx scripts/test-catalogo-inventario.ts",
     "test:shopee-esporte": "tsx scripts/test-shopee-esporte.ts",
     "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts"
