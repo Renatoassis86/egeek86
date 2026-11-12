@@ -111,6 +111,15 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
       SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical ORDER BY g.created_at) AS rn_fair
       FROM group_messages g
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
+        -- Pre-filtro SEGURO (subconjunto do que o plano ja barra): produto ja enviado dentro da janela do proprio gatilho (Achado 24 h, cupom 1 h, demais 1 h
+        -- exceto G1/OK1, que tem excecao de novo minimo). Linhas barradas so ocupavam as vagas da janela e escondiam as enviaveis.
+        AND NOT (g.master_product_id IS NOT NULL AND EXISTS (
+          SELECT 1 FROM group_messages s
+          WHERE s.master_product_id = g.master_product_id AND s.channel = 'tg' AND s.status IN ('enviada', 'enviando')
+            AND ((g.trigger = 'AC' AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(hours => ${RULES.ACHADO_PRODUCT_GAP_HOURS}::int))
+              OR (g.trigger = 'CUPOM' AND s.trigger = 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.CUPOM_PRODUCT_GAP_MIN}::int))
+              OR (g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int)))
+        ))
     ) q
     ORDER BY q.rn_fair, q.created_at LIMIT ${limit}::int
   `);
