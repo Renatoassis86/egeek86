@@ -14,7 +14,7 @@
     },
     {
       "path": "/api/cron/refresh-snapshots?part=stats",
-      "schedule": "*/30 * * * *"
+      "schedule": "*/15 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=showcase",
@@ -22,7 +22,7 @@
     },
     {
       "path": "/api/cron/refresh-snapshots?part=daily",
-      "schedule": "9-59/30 * * * *"
+      "schedule": "9-59/15 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=inventory",
@@ -34,31 +34,31 @@
     },
     {
       "path": "/api/cron/collect-vertical?v=tecnologia",
-      "schedule": "1-59/15 * * * *
+      "schedule": "1-59/10 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=eletroeletronicos",
-      "schedule": "6-59/15 * * * *
+      "schedule": "2-59/10 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=livros",
-      "schedule": "11-59/15 * * * *
+      "schedule": "1-59/10 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=eletrodomesticos",
-      "schedule": "3-59/15 * * * *
+      "schedule": "3-59/10 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=esporte",
-      "schedule": "8-59/15 * * * *
+      "schedule": "2-59/10 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=impressao3d",
-      "schedule": "13-59/15 * * * *
+      "schedule": "4-59/10 * * * *"
     },
     {
       "path": "/api/cron/semear-vertical?apply=1",
-      "schedule": "7-57/20 * * * *"
+      "schedule": "7-57/10 * * * *"
     },
     {
       "path": "/api/cron/fila-classificacao",
