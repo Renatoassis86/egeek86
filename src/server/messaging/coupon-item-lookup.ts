@@ -78,15 +78,16 @@ export async function lookupItemCoupon(offerId: string, trace?: MissTrace, now: 
     if (!verdict.ok) { lastReason = verdict.reason; continue; }
     const parts: string[] = [];
     // Nome do cupom: o título que a loja deu à campanha (lista de cupons). Sem título lido, o nome é o selo da regra; sem regra, "Cupom do anúncio".
-    const title = (r.c_title ?? '').trim();
+    // A barreira de termos proíbe '% OFF' e 'de R$ X por R$ Y' no texto: o título da loja é reescrito sem eles.
+    const title = (r.c_title ?? '').replace(/(\d+(?:[.,]\d+)?)\s*%\s*OFF/gi, '$1% de desconto').trim();
     let name = title;
-    if (!name && rule?.kind === 'percentual' && rule.valueNum) name = `${rule.valueNum}% OFF`;
+    if (!name && rule?.kind === 'percentual' && rule.valueNum) name = `${rule.valueNum}% de desconto`;
     if (!name && rule?.kind === 'valor_fixo' && rule.valueNum) name = `R$ ${rule.valueNum} OFF`;
     if (!name) name = 'Cupom do anúncio';
     // Quanto ele dá: diferença real entre o preço da oferta e o preço com cupom lido na página.
     const off = current - Number(r.pw);
     const pct = current > 0 ? Math.round((off / current) * 1000) / 10 : 0;
-    const dlinha = `Desconto de ${fmt(off)} (${String(pct).replace('.', ',')}%): de ${fmt(current)} por ${fmt(Number(r.pw))}. `;
+    const dlinha = `Desconto de ${fmt(off)} (${String(pct).replace('.', ',')}%): você paga ${fmt(Number(r.pw))}. `;
     if (rule?.minOrderCents) parts.push(`Compra mínima ${fmt(rule.minOrderCents)}`);
     if (rule?.maxDiscountCents) parts.push(`desconto máximo ${fmt(rule.maxDiscountCents)}`);
     const ruleText = `${dlinha}${parts.length ? `${parts.join(', ')}. ` : ''}`;
