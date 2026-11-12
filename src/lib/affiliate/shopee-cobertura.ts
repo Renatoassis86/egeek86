@@ -108,11 +108,36 @@ export function avancarCursor(c: CursorFonte | undefined, r: { temProxima: boole
   return { page: atual.page + 1, voltas: atual.voltas, atualizadoEm: agora.toISOString() };
 }
 
-/** Fonte com 2+ erros 10000 seguidos descansa 6 h (a API devolve System Error para certos productCatId; medido em 2026-11-12) e depois e tentada de novo. */
+/**
+ * Descanso ADAPTATIVO por fonte (2026-11-12, incidente das 23:22 UTC: todas as fontes ficaram 6 h paradas). O 10000 e intermitente e por fonte,
+ * entao o descanso comeca curto e so cresce com falhas repetidas: 2 falhas = 45 min, 3 = 90 min, 4 = 3 h, 5+ = 6 h. Sucesso zera (avancarCursor
+ * devolve o cursor sem `falhas`).
+ */
 export const FALHAS_PARA_DESCANSO = 2;
-export const DESCANSO_FONTE_MS = 6 * 3_600_000;
-export const emDescanso = (c: CursorFonte | undefined, agora = new Date()): boolean =>
-  (c?.falhas ?? 0) >= FALHAS_PARA_DESCANSO && !!c?.atualizadoEm && agora.getTime() - Date.parse(c.atualizadoEm) < DESCANSO_FONTE_MS;
+export const DESCANSO_BASE_MS = 45 * 60_000;
+export const DESCANSO_MAX_MS = 6 * 3_600_000;
+export const descansoMs = (falhas: number): number =>
+  falhas < FALHAS_PARA_DESCANSO ? 0 : Math.min(DESCANSO_MAX_MS, DESCANSO_BASE_MS * 2 ** (falhas - FALHAS_PARA_DESCANSO));
+/** Instante (ms) em que o descanso da fonte termina; null se ela nao esta marcada para descansar. */
+export const fimDoDescanso = (c: CursorFonte | undefined): number | null =>
+  (c?.falhas ?? 0) >= FALHAS_PARA_DESCANSO && c?.atualizadoEm && Number.isFinite(Date.parse(c.atualizadoEm)) ? Date.parse(c.atualizadoEm) + descansoMs(c.falhas ?? 0) : null;
+export const emDescanso = (c: CursorFonte | undefined, agora = new Date()): boolean => {
+  const fim = fimDoDescanso(c);
+  return fim != null && agora.getTime() < fim;
+};
+
+/**
+ * Quando TODAS descansam, devolve a que volta primeiro (empate: menos falhas) para UMA tentativa por execucao: a ingestao nunca fica 100% parada
+ * e a sondagem custa 1 chamada por execucao (a cota de 8000/h nao e tocada). Falhou de novo = descanso dobra e a vez passa para a proxima.
+ */
+export function fonteMaisProximaDeVoltar(fontes: FonteListagem[], cursor: CursorMapa): FonteListagem | null {
+  if (fontes.length === 0) return null;
+  const chave = (f: FonteListagem) => [fimDoDescanso(cursor[f.chave]) ?? 0, cursor[f.chave]?.falhas ?? 0, f.chave] as const;
+  return [...fontes].sort((a, b) => {
+    const x = chave(a), y = chave(b);
+    return x[0] - y[0] || x[1] - y[1] || x[2].localeCompare(y[2]);
+  })[0];
+}
 
 /** Fonte da vez: a de menor (voltas, página mais antiga), fora as que estão em descanso por erro. Espalha o trabalho entre as fontes em vez de esgotar uma por vez. */
 export function proximaFonte(fontes: FonteListagem[], cursor: CursorMapa, agora = new Date()): FonteListagem | null {

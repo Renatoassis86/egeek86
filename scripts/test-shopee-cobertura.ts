@@ -5,7 +5,7 @@
  */
 import {
   avancarCursor, casarItem, coberturaLigada, criarIndice, fontesDe, lerConfigCobertura, PAGINAS_MAX_POR_FONTE, paradaPorErro, parseParametrosCobertura,
-  emDescanso, proximaFonte, resumirCategorias, type CursorMapa,
+  descansoMs, emDescanso, fonteMaisProximaDeVoltar, proximaFonte, resumirCategorias, type CursorMapa,
 } from '../src/lib/affiliate/shopee-cobertura';
 import type { MasterIdentity } from '../src/lib/affiliate/amazon-identity';
 
@@ -64,8 +64,20 @@ check('cursor: teto de paginas recomeca', avancarCursor({ page: PAGINAS_MAX_POR_
   const cur: CursorMapa = { [fontes[0].chave]: { page: 1, voltas: 0, falhas: 2, atualizadoEm: '2026-11-12T18:00:00Z' } };
   check('fonte com 2 falhas recentes descansa', emDescanso(cur[fontes[0].chave], agora) && proximaFonte(fontes, cur, agora)!.chave !== fontes[0].chave);
   check('1 falha nao descansa', !emDescanso({ page: 1, voltas: 0, falhas: 1, atualizadoEm: '2026-11-12T18:00:00Z' }, agora));
-  check('descanso acaba em 6 h', !emDescanso(cur[fontes[0].chave], new Date('2026-11-13T00:01:00Z')));
+  check('descanso de 2 falhas acaba em 45 min', emDescanso(cur[fontes[0].chave], new Date('2026-11-12T18:44:00Z')) && !emDescanso(cur[fontes[0].chave], new Date('2026-11-12T18:46:00Z')));
+  check('descanso adaptativo: 45/90/180/360 min e teto de 6 h', [2, 3, 4, 5, 9].map(descansoMs).join() === [45, 90, 180, 360, 360].map((m) => m * 60000).join() && descansoMs(1) === 0);
   check('todas em descanso => null', proximaFonte([fontes[0]], cur, agora) === null);
+  {
+    const c2: CursorMapa = {
+      [fontes[0].chave]: { page: 1, voltas: 0, falhas: 3, atualizadoEm: '2026-11-12T18:00:00Z' }, // volta 19:30
+      [fontes[1].chave]: { page: 1, voltas: 0, falhas: 2, atualizadoEm: '2026-11-12T18:20:00Z' }, // volta 19:05
+      [fontes[2].chave]: { page: 1, voltas: 0, falhas: 5, atualizadoEm: '2026-11-12T18:10:00Z' },
+      [fontes[3].chave]: { page: 1, voltas: 0, falhas: 2, atualizadoEm: '2026-11-12T18:20:00Z' },
+    };
+    check('todas em descanso: sonda a que volta primeiro (empate: menos falhas, depois chave)', proximaFonte(fontes, c2, agora) === null && fonteMaisProximaDeVoltar(fontes, c2)!.chave === [fontes[1].chave, fontes[3].chave].sort()[0]);
+    check('fonteMaisProximaDeVoltar sem fontes => null', fonteMaisProximaDeVoltar([], {}) === null);
+    check('sucesso zera falhas', avancarCursor({ page: 1, voltas: 0, falhas: 4, atualizadoEm: '2026-11-12T18:00:00Z' }, { temProxima: true, vazia: false }).falhas === undefined);
+  }
 }
 
 // --- parada por erro: PRIMEIRO 10030 para ---

@@ -24,7 +24,7 @@ import { slugify } from '@/lib/slugify';
 import { masterFromRow } from '@/server/collector/amazon-assisted';
 import { filtroAnuncio, LINK_OFICIAL, sinalVendas } from '@/lib/affiliate/shopee-identity';
 import {
-  avancarCursor, casarItem, COBERTURA_LIMITES, criarIndice, destinoDoCasamento, fontesDe, lerConfigCobertura, paradaPorErro, proximaFonte, resumirCategorias,
+  avancarCursor, casarItem, COBERTURA_LIMITES, criarIndice, destinoDoCasamento, fonteMaisProximaDeVoltar, fontesDe, lerConfigCobertura, paradaPorErro, proximaFonte, resumirCategorias,
   type CursorMapa, type IndiceMasters, type LojaCobertura, type MotivoParada, type ResumoCategoria,
 } from '@/lib/affiliate/shopee-cobertura';
 import { decidirMasterNovo, ehLojaPlus, type DecisaoMasterNovo, type IndiceDedup, type MarcasConhecidas, type PropostaMaster } from '@/lib/affiliate/shopee-master-novo';
@@ -336,8 +336,15 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
     let paginasLidas = 0;
     let duvidasEnfileiradas = 0;
     let falhasListagem = 0;
+    let sondou = false;
     laco: while (paginasLidas < o.paginas) {
-      const fonte = proximaFonte(fontes, cursor);
+      let fonte = proximaFonte(fontes, cursor);
+      if (!fonte && !sondou) {
+        // Todas em descanso: 1 tentativa por execucao na fonte que volta primeiro (nunca 100% parado; custo = 1 chamada).
+        sondou = true;
+        fonte = fonteMaisProximaDeVoltar(fontes, cursor);
+        if (fonte) res.avisos.push(`todas_em_descanso_sondando:${fonte.chave}`);
+      }
       if (!fonte) { if (paginasLidas === 0) res.avisos.push('todas_as_fontes_em_descanso_por_10000'); break; }
       const cur = cursor[fonte.chave] ?? { page: 1, voltas: 0 };
       let r;
@@ -348,7 +355,7 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
         });
       } catch (e) {
         const parada = (e as { parada?: MotivoParada }).parada;
-        // 10000 (System Error) e intermitente/por fonte (medido 2026-11-12): a fonte vai para o fim da fila (cursor) e a execucao segue; ate MAX_FONTES_COM_10000 por execucao; fonte com 2+ falhas descansa 6 h (proximaFonte).
+        // 10000 (System Error) e intermitente/por fonte (medido 2026-11-12): a fonte vai para o fim da fila (cursor) e a execucao segue; ate MAX_FONTES_COM_10000 por execucao; fonte com 2+ falhas descansa 45 min, dobrando ate 6 h (descansoMs); sucesso zera.
         if (!parada && res.erroApi?.code === 10000 && ++falhasListagem <= MAX_FONTES_COM_10000) {
           cursor[fonte.chave] = { ...cur, atualizadoEm: new Date().toISOString(), falhas: (cur.falhas ?? 0) + 1 };
           res.avisos.push(`fonte_com_10000:${fonte.chave}`);
