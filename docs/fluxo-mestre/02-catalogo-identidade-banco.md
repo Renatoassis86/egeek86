@@ -218,3 +218,13 @@ Masters por departamento: games 6.609 (jogo 4.104, acessório 2.027, console 478
 3. Regra de reputação baixa está só em links, mensagens e I3D; 512 ofertas de vendedor vermelho/laranja contam em médias de masters aprovados. É o achado de maior impacto de negócio.
 4. Banco: 60 conexões, `idle_in_transaction_session_timeout` e `lock_timeout` desligados, snapshots sem retenção (3,4 M linhas, 639 MB). Migrations 0045 e 0048 confirmadas como NÃO aplicadas (0044, 0046, 0047, 0049 estão aplicadas); 0019+ fora do journal do drizzle.
 5. Nenhuma alteração de código, dado, loop, aba ou cron foi feita; todas as consultas foram SELECT em sessão read-only (script temporário fora do repositório).
+
+---
+
+## Adendo de 2026-11-12 (noite), conferido contra o código
+
+- **Central de Aprovação** `/admin/aprovacao` (N60, R-43): cartões por motivo e loja, lote só dos óbvios com prévia, desfazer e histórico. Mídia, modelo, armazenamento e preço continuam respostas do dono. O script `scripts/aprovacao-liberar-tudo.ts` usa o mesmo caminho (`decidir`); dry-run por padrão, `--apply` só com ordem do dono, backup NDJSON e reversão por `scripts/aprovacao-backup.ts`.
+- **Aprovação contínua** (N61, R-45b): `/api/cron/aprovacao-auto` (`12-52/10`, lote 60) libera sozinho só cartões obviamente seguros da Amazon; `APROVACAO_AUTO=off` desliga.
+- **Produto único é bem-vindo** (R-45a): nenhum mínimo de ofertas ou vendedores barra cadastro, aprovação ou vitrine; o veredito de queda segue exigindo 5 ofertas.
+- **Migrations**: 0048 (variação Shopee) e 0050 (`group_messages.short_code`) aplicadas. 0045 segue NÃO verificada.
+- A medição de rascunhos desta manhã (154 da Amazon) foi superada pela da fila #34: 961 rascunhos da Amazon (528 de masters em revisão, 264 sem item, 119+49+17 com item).

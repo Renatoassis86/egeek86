@@ -56,16 +56,6 @@ const navLinks: NavItem[] = [
     ],
   },
   {
-    href: '/inteligencia-gamer',
-    label: 'Observatório Gamer',
-    children: [
-      { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos e Opinião' },
-      { href: '/inteligencia-gamer?categoria=teoricas', label: 'Dossiês de Mercado' },
-      { href: '/inteligencia-gamer?categoria=empiricas', label: 'Radar de Preços e Dados' },
-      { href: '/inteligencia-gamer?categoria=descritivas', label: 'Panorama e Tendências' },
-    ],
-  },
-  {
     href: '/noticias',
     label: 'Notícias',
   },

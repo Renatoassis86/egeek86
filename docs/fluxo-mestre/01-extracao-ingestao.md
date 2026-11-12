@@ -293,3 +293,11 @@ Severidade: ALTA = dado errado ou perda contínua agora; MÉDIA = risco concreto
 - A extração tem **3 famílias**: servidor por API oficial (ML e Shopee), abas assistidas (Amazon, links, cupons) e derivação interna. O dado bruto chega em `affiliate_offers`, `affiliate_price_snapshots`, `offer_coupon_reads`, `identity_review_items` e `master_products`.
 - O que sustenta o preço fresco é `collect-prices` (games), `collect-vertical` (Plus), `collect-shopee` e o laço Amazon; todos têm orçamento de tempo, e três deles trabalham em atraso medido.
 - Antes de qualquer mudança de cadência, resolver P3 (disparos duplicados) e P4 (contagem de cota), porque os números de consumo hoje não são confiáveis.
+
+---
+
+## Adendo de 2026-11-12 (noite), conferido contra o código
+
+- **Cobertura Shopee agendada** (905e499): `/api/cron/cobertura-shopee?apply=1&pages=3&maxCalls=45&maxDuvidas=15&maxMasters=12` nos minutos 22 e 52 (nó N62 do `FLUXO_MESTRE.md`). Master novo de chave forte nasce aprovado; chave fraca vai à fila; pausa de 45 min após 10030. Migration 0048 aplicada. A frase deste capítulo que dava a cobertura como "sem agendador" vale só para `ampliar-amostra-shopee`, `discover-shopee-esporte`, `import-shopee-conversions` e `loja-teste`.
+- **Amazon**: modo `vitrine` (opt-in, `modos:['refresh','discover','vitrine']`, teto `AMAZON_VITRINE_CAP`) e a exceção do retrô NOVO (Hyperkin, Analogue, Retro-Bit, 8BitDo) estão no código. O **loop de promoções** (`public/loops/amazon-promocoes.js`, rota `/api/ingest/amazon-promocoes`) existe só como arquivos não commitados em 2026-11-12 (agente finalizando): não está no ar (FM-52).
+- **Contagem de crons**: o `vercel.json` tem 21 entradas, não 19 (entraram `cobertura-shopee` e `aprovacao-auto`).

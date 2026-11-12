@@ -330,3 +330,11 @@ Notas: (a) cada flag é lida como `=== 'off'` ou `!== '0'`, ou seja, **valores d
 2. Confirmar que `COLLECTOR_RUNS=1` e `COLLECTOR_ALERTS=1` com destino de alerta estão ligados em produção, e ligar o que faltar (P2).
 3. Autorizar a limpeza de transações presas em cron de servidor (P1) e o CI mínimo (P4).
 4. Remover o `?key=` da autenticação do cron após migrar o job legado (P8).
+
+---
+
+## Adendo de 2026-11-12 (noite), conferido contra o código
+
+- `vercel.json` passou de 19 para **21 entradas**: `cobertura-shopee` (`22,52`) e `aprovacao-auto` (`12-52/10`, lote 60). Os minutos 22 e 52 têm agora `cobertura-shopee` e `aprovacao-auto` juntos (FM-50). A proposta de reescalonamento do §1.4 continua não aplicada; esta atualização não tocou o arquivo.
+- **Incidentes do dia** (detalhe na seção 7 do `FLUXO_MESTRE.md`): envio parado de ~11:00 a ~13:40 UTC por detecção acima do orçamento (d63cf1f, e500e95); starvation da fila de envio (423f42b, 94a64b5), que originou a R-46; `vercel.json` inválido em 7e177ac, corrigido em 815534e.
+- **SLOs novos** (seção 12): enviadas por hora (60 ou mais), régua em produção (0 termo banido, 0 mensagem fora das lojas liberadas, degrau 1 até 1/3), `aprovacao-auto` e `cobertura-shopee` (erro < 2%, 10030 = 0 por 7 dias).

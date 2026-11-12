@@ -1,4 +1,4 @@
-// Gera FLUXO_VISUAL.html (10 paginas A4 paisagem, SVG inline, sem rede) a partir dos dados de
+// Gera FLUXO_VISUAL.html (11 paginas A4 paisagem, SVG inline, sem rede) a partir dos dados de
 // docs/03-metodologia/FLUXO_MESTRE.md e docs/fluxo-mestre/01..06. Nenhum numero e inventado:
 // o que nao esta nos documentos aparece como "sem dado" ou "NAO VERIFICADO".
 // Uso: node docs/fluxo-mestre/visual/gerar-fluxo-visual.mjs
@@ -119,7 +119,7 @@ const ICON = {
 // ---------- moldura de pagina ----------
 const pages = [];
 function page(n, titulo, sub, body, fonte) {
-  pages.push(`<section class="page"><div class="hd"><div class="kicker">FLUXO MESTRE · VISUAL</div><h1>${esc(titulo)}</h1><div class="sub">${esc(sub)}</div><div class="num">${n} / 10</div></div><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" font-family="${FONT}">${body}</svg><div class="ft">${esc(fonte)}</div></section>`);
+  pages.push(`<section class="page"><div class="hd"><div class="kicker">FLUXO MESTRE · VISUAL</div><h1>${esc(titulo)}</h1><div class="sub">${esc(sub)}</div><div class="num">${n} / 11</div></div><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg" font-family="${FONT}">${body}</svg><div class="ft">${esc(fonte)}</div></section>`);
 }
 const M = 24; // margem lateral do svg
 
@@ -242,7 +242,7 @@ const M = 24; // margem lateral do svg
   s += arrow([[M + 530, ly - 5], [M + 560, ly - 5]], { stroke: C.dim, dash: '3 3', head: 5 }) + T(M + 568, ly, 'decisão, alarme ou correção', { fs: 11, fill: C.t2 });
   s += R(M + 740, ly - 11, 14, 12, { fill: C.el, stroke: L.pre, dash: '4 2', sw: 1.4 }) + T(M + 760, ly, 'tracejado = legado em retirada', { fs: 11, fill: C.t2 });
   page(1, 'Do preço na loja à mensagem no canal', 'Seis raias, um banco no meio. A pilha de reversão guarda tudo o que se grava em massa.', s,
-    'Fonte: FLUXO_MESTRE.md seções 1, 2 e 3. Cadências do vercel.json (19 jobs). Tamanhos de fila MEDIDOS em 2026-11-12, ~11:50 UTC; envelhecem.');
+    'Fonte: FLUXO_MESTRE.md seções 1, 2 e 3. Cadências do vercel.json (19 jobs quando este mapa foi desenhado; hoje 21: entraram cobertura-shopee e aprovacao-auto, página 11). Tamanhos de fila MEDIDOS em 2026-11-12, ~11:50 UTC; envelhecem.');
 }
 
 // =====================================================================
@@ -329,7 +329,7 @@ const M = 24; // margem lateral do svg
   });
   s += T(M, 656, 'Rotas fora do vercel.json (cobertura-shopee, ampliar-amostra-shopee, discover-shopee-esporte, import-shopee-conversions, loja-teste): sem agendador conhecido, NÃO VERIFICADO.', { fs: 11, fill: C.t2 });
   page(2, 'Três famílias de coleta', 'A mesma regra para todas: só dado lido, hora do servidor, nada preenchido.', s,
-    'Fonte: FLUXO_MESTRE.md seção 2 (N01 a N22), cap. 1 (medições de itens/h) e cap. 6 §1.1 (vercel.json, 19 entradas). Disparos/h calculados da expressão cron.');
+    'Fonte: FLUXO_MESTRE.md seção 2 (N01 a N22), cap. 1 (medições de itens/h) e cap. 6 §1.1 (vercel.json, 19 entradas no desenho; hoje 21, ver página 11). Disparos/h calculados da expressão cron.');
 }
 
 // =====================================================================
@@ -526,7 +526,7 @@ const M = 24; // margem lateral do svg
   });
   s += T(M, 678, 'faixa clara atrás de cada marca = duração máxima do job (maxDuration). Vermelho 4+, laranja 3, dourado 2 jobs. Cada */5 de collect-prices e collect-shopee é esperado; a colisão é com os outros.', { fs: 11, fill: C.t2 });
   page(5, 'Os 60 minutos dos crons', 'Cada quadrado é um disparo. Onde o histograma sobe, os jobs se atropelam.', s,
-    'Fonte: cap. 6 §1.1 a §1.3 (vercel.json, 19 entradas). Proposta de reescalonamento (FM-04) aguarda o dono; não aplicada. Disparos extras de collect-prices (24/h medido) NÃO VERIFICADOS (FM-05).');
+    'Fonte: cap. 6 §1.1 a §1.3 (vercel.json, 19 entradas no desenho; hoje 21, com cobertura-shopee nos minutos 22 e 52 e aprovacao-auto em 12-52/10, ver página 11). Proposta de reescalonamento (FM-04) aguarda o dono; não aplicada. Disparos extras de collect-prices (24/h medido) NÃO VERIFICADOS (FM-05).');
 }
 
 // =====================================================================
@@ -898,9 +898,60 @@ const M = 24; // margem lateral do svg
     s += R(x + 8, y + th - 20, 10, 10, { fill: sc });
     s += T(x + 24, y + th - 11, sl, { fs: 11, fill: sc === C.dim ? C.t2 : sc, bold: true });
   });
-  s += T(M, 676, '35 regras imperativas. Em conflito entre capítulos, a regra numerada prevalece. 9 estão violadas hoje e 1 parcialmente; cada violação tem tarefa na fila (página 9).', { fs: 11, fill: C.t2 });
+  s += T(M, 676, '35 regras imperativas. Em conflito entre capítulos, a regra numerada prevalece. 9 estão violadas hoje e 1 parcialmente; cada violação tem tarefa na fila (página 9). R-43 a R-45 (aprovação, régua, produto único) estão na página 11.', { fs: 11, fill: C.t2 });
   page(10, 'As regras que não se negociam', 'Legenda e as regras R-01 a R-42 em uma página. Ícone dourado = em vigor; borda vermelha = violada hoje.', s,
     'Fonte: FLUXO_MESTRE.md seção 6 e marcas de confiança. Violadas: R-01, R-14, R-17, R-17b, R-24, R-25, R-36, R-40, R-37; parcial: R-03.');
+}
+
+
+// =====================================================================
+// PAGINA 11 - novidades de 2026-11-12
+// =====================================================================
+{
+  let s = '';
+  const cards = [
+    ['APROVAÇÃO', L.cat, 'Central e aprovação contínua (R-43, R-45b)', [
+      'N60 /admin/aprovacao: cartão, lote só dos óbvios com prévia, desfazer e histórico das últimas 50.',
+      'N61 /api/cron/aprovacao-auto: minutos 12 a 52 de 10 em 10, lote 60, só Amazon; APROVACAO_AUTO=off desliga.',
+      'scripts/aprovacao-liberar-tudo.ts: dry-run por padrão; --apply só com ordem do dono; backup NDJSON e reversão.',
+      'Mídia, modelo, armazenamento e preço ficam com o dono.']],
+    ['MENSAGENS', L.msg, 'Régua de destaque (R-44)', [
+      'src/lib/messaging/regua.ts: 5 degraus (3, 6, 12, 20 e 30%) com veredito em texto e marcas ▼.',
+      'Corte de 3% nas lojas de GROUP_REGUA_LOJAS (ampliado às 7 lojas, informado pelo operador; valor na Vercel NÃO VERIFICADO); fora da lista vale 10%.',
+      'Degrau 1 até 1/3 da hora, só se há degrau 2 a 5 esperando. Achado até 6/h por grupo (GROUP_AC_POR_HORA).',
+      'Fila justa por gatilho e loja (incidente do dia, abaixo).']],
+    ['CANAIS', L.msg, 'Link curto e canal Destaques', [
+      'N63 /g/<5 base62>: 302 para /go/<slug>?s=wa&m=<chave>; código aleatório; 404 sem corpo; migration 0050 aplicada.',
+      'Canal Destaques: degraus 4 e 5, segundo envio isolado; liga com TELEGRAM_DESTAQUES_CHAT_ID.',
+      'PENDENTE DO DONO: criar o canal e adicionar o bot. Sem a variável, o envio fica desligado.']],
+    ['INGESTÃO', L.ext, 'Shopee máxima e produto único (R-45)', [
+      'N62 cobertura-shopee: minutos 22 e 52, pages=3, maxCalls=45, maxMasters=12; pausa de 45 min após 10030.',
+      'Master novo de chave forte nasce aprovado mesmo com 1 oferta; chave fraca vai à fila.',
+      'Migration 0048 aplicada (SHOPEE_VARIANTE_COLUNAS=1). Nenhum mínimo de ofertas barra cadastro; o veredito de queda segue exigindo 5.',
+      'Medir 10030 por 7 dias antes de subir maxCalls.']],
+    ['AMAZON', L.ext, 'Vitrine, retrô novo e promoções', [
+      'Vitrine (opt-in, modos com vitrine, teto AMAZON_VITRINE_CAP, 60 buscas por ciclo); exceção do retrô NOVO: Hyperkin, Analogue, Retro-Bit, 8BitDo.',
+      'Promoções e cupons Amazon: loop amazon-promocoes.js lê /promotion/psp/<ID> e posta em /api/ingest/amazon-promocoes.',
+      'Estado verificado no repositório: arquivos ainda NÃO commitados (agente finalizando); não está no ar.']],
+    ['INCIDENTES', C.rd, 'Dia 12/11: o que quebrou e o que mudou', [
+      'Envio parado de ~11:00 a ~13:40 UTC: detecção estourava o orçamento de 38 s e o laço de envio não rodava (d63cf1f, e500e95).',
+      '2ª rodada: starvation da fila (300 mais antigas eram Achado barradas); janela justa por gatilho (423f42b, 94a64b5).',
+      'vercel.json inválido em 7e177ac, corrigido em 815534e: configuração só por JSON.parse e JSON.stringify.']],
+  ];
+  cards.forEach(([tg, col, titulo, itens], i) => {
+    const c = i % 3, r = Math.floor(i / 3), x = M + c * 362, y = r * 316, w = 350, h = 304;
+    s += R(x, y, w, h, { fill: C.sf, stroke: tg === 'INCIDENTES' ? C.rd : C.ln });
+    s += R(x, y, 4, h, { fill: col });
+    s += T(x + 14, y + 20, tg, { fs: 11, bold: true, fill: col, ls: 1 });
+    const t = P(x + 14, y + 28, titulo, w - 28, { fs: 13, bold: true }); s += t.svg;
+    let cy = y + 34 + t.h;
+    itens.forEach((it) => { const p = P(x + 14, cy, it, w - 28, { fs: 11, fill: C.t2 }); s += p.svg; cy += p.h + 6; });
+    if (cy > y + h - 2) warns.push('pagina 11 estoura: ' + titulo);
+  });
+  s += T(M, 650, 'Fonte de cada item: FLUXO_MESTRE.md seção 2 (N60 a N63), seção 6 (R-43 a R-45), seção 7 (incidentes) e atas de 2026-11-12. Nada aqui é estimativa.', { fs: 11, fill: C.t2 });
+  s += T(M, 668, 'Pendentes do dono (seção 9): 9 de 14 decisões ainda abertas; ver FILA #37.', { fs: 11, fill: C.gold, bold: true });
+  page(11, 'O que mudou em 12/11', 'Aprovação, régua, canais, ingestão máxima, Amazon e incidentes do dia, conferidos contra o código.', s,
+    'Fonte: FLUXO_MESTRE.md v1.1 (2026-11-12), docs/fila-de-execucao.md #33 a #37 e as atas de 2026-11-12. NÃO VERIFICADO: estado em produção das variáveis GROUP_REGUA_*, APROVACAO_AUTO e TELEGRAM_DESTAQUES_CHAT_ID (não lidas na Vercel).');
 }
 
 // ---------- saida ----------

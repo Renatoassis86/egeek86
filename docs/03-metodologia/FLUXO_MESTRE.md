@@ -2,10 +2,11 @@
 
 **Lei de convivência dos processos.** Este documento liga, num único fluxo, tudo o que o projeto faz: do dado bruto da página da loja até o front e as mensagens automáticas. Ele é a regra imperativa de como os processos convivem (memória do projeto: `fluxo-mestre-regra-imperativa`). Quem muda um nó, uma fila, uma cadência ou uma regra muda este documento no mesmo commit.
 
-- **Versão:** 1.0, 2026-11-12. Consolida os seis capítulos de `docs/fluxo-mestre/` (01 extração, 02 catálogo e banco, 03 preço, 04 mensagens e cupons, 05 front e admin, 06 orquestração e governança).
+- **Versão:** 1.1, 2026-11-12 (atualização da noite; a 1.0 é da manhã). Consolida os seis capítulos de `docs/fluxo-mestre/` (01 extração, 02 catálogo e banco, 03 preço, 04 mensagens e cupons, 05 front e admin, 06 orquestração e governança).
 - **Para quem:** o dono (visão geral, seção 1; decisões pendentes, seção 9) e os agentes (todas as seções; o que fazer em cada disputa, seções 4 a 7).
 - **Fila viva de execução:** `docs/fila-de-execucao.md`. As pontas soltas deste documento (seção 10) apontam para os números dessa fila.
 - **Ata da consolidação:** `docs/conselho/atas/2026-11-12-fluxo-mestre.md` (pareceres independentes de 8 membros já incorporados; divergências registradas na ata e na seção 9).
+- **Ata da atualização 1.1:** `docs/conselho/atas/2026-11-12-atualizacao-guia-mestre.md`. Entrou na 1.1, conferido contra o código: Central de Aprovação (N60) e aprovação contínua (N61); cobertura Shopee (N62); link curto `/g/<código>` (N63) e canal Destaques (N64); loop de promoções da Amazon (N65, em construção); regras R-44 a R-46; incidentes do dia (seção 7); fila #34 a #37; execução da autorização do dono sobre a seção 9 (seção 9.1).
 
 ## Como ler as marcas de confiança
 | Marca | Significado |
@@ -34,7 +35,7 @@ flowchart TD
   end
 
   subgraph EXTR[2 Extracao]
-    CRON[Crons Vercel: collect-prices, collect-shopee, collect-vertical x6, semear, discover, fila-api-oficial, fila-classificacao]
+    CRON[Crons Vercel, 21 entradas: collect-prices, collect-shopee, cobertura-shopee, collect-vertical x6, semear, discover, fila-api-oficial, fila-classificacao]
     LOOPS[Lacos nas abas: Amazon, links ML, cupom ML, cupom Amazon e Shopee]
     ING[Rotas ingest com token e origem fixa]
   end
@@ -43,6 +44,7 @@ flowchart TD
     GATE[Porteiro e dedup: gate.ts, findExistingMasterProduct]
     IDENT[Identidade e escopo: draft, foraDeEscopo, quarentena, avg_excluded]
     FILAID[Fila de classificacao e aprovacao: dono]
+    CENTRAL[Central /admin/aprovacao e aprovacao-auto: cartoes, lote, desfazer]
   end
 
   subgraph BANCO[4 Banco Postgres Micro, 60 conexoes]
@@ -63,7 +65,9 @@ flowchart TD
     AGULHA[Agulha de cupom]
     GM[group-messages 1 min: detecta, limita, reconfere, envia]
     GUARD[Guardiao de cupons]
-    TG[Telegram: 1 canal por loja]
+    REGUA[Regua R-44: 5 degraus, corte 3 por cento, fila por degrau]
+    TG[Telegram: 1 canal por loja e canal Destaques]
+    SHORT[Link curto /g/codigo para WhatsApp]
     WA[WhatsApp assistido]
   end
 
@@ -91,6 +95,8 @@ flowchart TD
   GATE --> MP
   IDENT -. duvida .-> FILAID
   FILAID -. decisao do dono .-> IDENT
+  FILAID --> CENTRAL
+  CENTRAL -. libera draft e master em revisao .-> IDENT
   CRON --> SNAP
   ING --> SNAP
   ING --> OCR
@@ -103,8 +109,8 @@ flowchart TD
   DAILY --> GM
   AGULHA --> GM
   OFF --> GM
-  GM --> TG
-  GM --> WA
+  GM --> REGUA --> TG
+  REGUA --> WA --> SHORT
   GM --> GUARD --> TG
   DAILY --> PUB
   LEG --> PUB
@@ -125,7 +131,7 @@ Leitura do diagrama: as setas cheias são dado; as pontilhadas são decisão, al
 
 ## 2. Tabela mestre de nós
 
-Tipos: **E** extração, **C** catálogo/identidade, **P** preço, **M** mensagem/cupom, **F** front/admin, **G** governança, **R** recurso compartilhado. Cadências vêm do `vercel.json` (19 entradas, CÓDIGO) ou, para os laços de aba, das medições do capítulo 1. "Fila" refere-se ao catálogo da seção 3.
+Tipos: **E** extração, **C** catálogo/identidade, **P** preço, **M** mensagem/cupom, **F** front/admin, **G** governança, **R** recurso compartilhado. Cadências vêm do `vercel.json` (21 entradas, CÓDIGO, conferido em 2026-11-12 à noite; eram 19 de manhã, entraram `cobertura-shopee` e `aprovacao-auto`) ou, para os laços de aba, das medições do capítulo 1. "Fila" refere-se ao catálogo da seção 3.
 
 | Id | Nome | Tipo | Dono (agente) | Entrada | Saída | Cadência | Fila | Regra principal |
 |---|---|---|---|---|---|---|---|---|
@@ -149,9 +155,10 @@ Tipos: **E** extração, **C** catálogo/identidade, **P** preço, **M** mensage
 | N18 | Gancho `shadowAfterSnapshot` | P | cientista-precos | snapshot novo | `price_daily_offer` (hoje), `price_min_events` | a cada cotação | n/a | melhor esforço; falha é reparada pelo ciclo de 30 min; só com `PRICE_DAILY_SHADOW=1` |
 | N19 | `refresh-snapshots?part=daily` | P | cientista-precos | `price_daily_offer`, ofertas | `price_daily_state` (média, mediana, mínimo, `members`) | `9-59/30` (minutos 9 e 39) | Q18 | média só com 3 ofertas frescas e plausíveis; dia fechado não se reescreve (FM-03, FM-23) |
 | N20 | `refresh-snapshots?part=stats` (legado) | P | cientista-precos | snapshots | `product_price_stats` (só games, por cotação) | `*/30` | Q19 | **base legada em retirada** (FM-01); não é a média oficial |
+| Q20 | Cobertura Shopee por categoria | `cobertura-shopee` | cursor circular por categoria | ~90 chamadas/h (45 por execução, 2 execuções); teto da rota 800/h | página lida e gravada; o cursor só avança em página completa | 10030 pausa 45 min |
 | N21 | `refresh-snapshots?part=showcase` | P | engenheiro-backend | estatísticas prontas | `showcase_snapshot` | `4-59/15` | Q19 | se mais de 30 min sem refresh, a página cai em cálculo ao vivo |
 | N22 | `refresh-snapshots?part=inventory` | F | engenheiro-backend | banco | `catalog_inventory_snapshots` | `41 * * * *` | n/a | 1 linha por loja por dia |
-| N23 | `group-messages` (detecção, plano, reconferência, envio) | M | engenheiro-backend | média única, ofertas frescas, agulha | `group_messages`, Telegram | `* * * * *` (60 s; envio até 38 s) | Q06, Q07 | régua de 10%, frescor 30/40 min, reconferência ao vivo, barreira de texto (R-20 a R-29) |
+| N23 | `group-messages` (detecção, plano, reconferência, envio) | M | engenheiro-backend | média única, ofertas frescas, agulha | `group_messages`, Telegram | `* * * * *` (60 s; envio até 38 s) | Q06, Q07 | régua (10% por padrão; 3% nas lojas de `GROUP_REGUA_LOJAS`, R-44), frescor 30/40 min, reconferência ao vivo, barreira de texto (R-20 a R-29), fila justa (R-46) |
 | N24 | Agulha de cupom (`evaluateAgulha`) | M | agente-cupons | `offer_coupon_reads`, `coupon_items` | cupom válido ou motivo da barragem | dentro do N23 | Q09 | seguir loja, público restrito, preço final menor, validade futura (R-30) |
 | N25 | Guardião / `agente-cupons` | M | agente-cupons | `coupon_announcements`, leituras | aviso "CUPOM ENCERRADO", baixa | dentro do N23 (12 s) e registro próprio | Q09 | só roda se a execução do N23 ainda está abaixo de 35 s |
 | N26 | Telegram (bot, 1 canal por loja) | M | integrador-apis | linha `enviando` | mensagem + botão + cartão | por volta do N23 | Q06 | sem grupo da loja = `expirada`, nunca cai no grupo de games |
@@ -161,11 +168,16 @@ Tipos: **E** extração, **C** catálogo/identidade, **P** preço, **M** mensage
 | N30 | `collector-health` | G | engenheiro-infra-sre | `collector_runs` | alerta Telegram se `COLLECTOR_ALERTS=1` | `*/30` | n/a | alarme sem destinatário comprovado não conta (FM-02) |
 | N31 | Vigia de 5 min | G | operador (geek-lead) | batimentos, `pg_stat_activity` | reinjeção de laço, kill de transação > 120 s | 5 min (na sessão do operador, FM-07) | n/a | aba fechada = abrir de novo; nenhum laço para (R-37) |
 | N32 | Banco Postgres (Supabase Micro) | R | dba-postgres | tudo | tudo | contínuo | n/a | 60 conexões; transação curta; `idle_in_transaction_session_timeout=0` hoje (FM-07) |
-| N33 | `/admin/fluxo` (fluxo ao vivo) | F | engenheiro-frontend + arquiteto-next | `collector_runs`, filas, esta fila | tela admin | 30 s | n/a | especificado no cap. 5 §4.2; não implementado (fila #4) |
+| N33 | `/admin/fluxo` (fluxo ao vivo) | F | engenheiro-frontend + arquiteto-next | `collector_runs`, filas, esta fila | tela admin | 30 s | n/a | implementado em 2026-11-12 (`/admin/fluxo` + `GET /api/admin/fluxo`, fila #4); falta alinhar os nomes dos nós com este documento |
 | N34 | `notify-price-drops` | M | engenheiro-backend | banco | notificações | `0 11 * * *` | n/a | empilha no minuto 0 (colisão C5, baixa) |
 | N60 | `/admin/aprovacao` (central de aprovação do dono) | F/G | engenheiro-backend + engenheiro-frontend | `identity_review_items` pendentes + rascunhos Amazon sem item (`affiliate_offers.status='draft'`) | `identity_decisions` (aprovar, recusar, pular, desfazer), `affiliate_offers.status` (`draft` para `active`), `master_products.attributes.catalogGate`/`aprovacaoHumana` | sob demanda (dono clica) | S01 e Q12 (fila de classificação) | R-43: draft só sai por aprovação humana; lote só dos óbvios, com prévia; 1 transação curta por decisão |
+| N61 | `aprovacao-auto` (aprovação contínua) | C | engenheiro-backend | cartões da Amazon (produto novo, rascunho, cobertura, fronteira) | `affiliate_offers.status` `draft` para `active`, masters aprovados, `identity_decisions`, `collector_runs` job `aprovacao-auto` | `12-52/10` (minutos 12, 22, 32, 42, 52), lote 60 (`?lote=`, 1 a 100), `maxDuration` 200 s | Q12 | R-43 e R-45b; `guardaAuto` + guardas de `decidir()`; `APROVACAO_AUTO=off` desliga; reverte por `desfazer` |
+| N62 | `cobertura-shopee` | E | engenheiro-coleta + integrador-apis | API Shopee por categoria (`pages=3 maxCalls=45 maxDuvidas=15 maxMasters=12`) | ofertas, masters novos (chave forte nasce `approved`, `approvedBy auto:shopee-cobertura`), dúvidas na fila | `22,52` | Q20 | R-45c; pausa de 45 min após 10030 (`cobertura_shopee_pausa_ate`); cursor não avança em página interrompida; colide com o N61 nos minutos 22 e 52 (FM-50) |
+| N63 | Link curto `/g/<código>` | F | engenheiro-backend | `group_messages.short_code` (migration 0050) | 302 para `/go/<slug>?s=wa&m=<messageKey>` | por requisição | n/a | R-44f: código aleatório, 404 sem corpo e sem cache, destino só do banco |
+| N64 | Canal Destaques | M | integrador-apis | candidatas de degrau 4 e 5 | segundo `sendMessage` isolado em `TELEGRAM_DESTAQUES_CHAT_ID`, resultado em `candidate.destaques` | dentro do N23 | Q06 | R-44e; desligado sem a variável; **criar o canal e pôr o bot é pendência do dono** |
+| N65 | Laço de promoções da Amazon (`amazon-promocoes.js`) | E | agente-cupons | páginas `/promotion/psp/<ID>` lidas na aba logada (iframe oculto de mesma origem) | `POST /api/ingest/amazon-promocoes` -> `coupon_items` (escopo `produto`), `asins_novos` em `collector_runs.meta`, batimento `cupons-heartbeat?rede=amazon` | contínuo; `cicloMin` 20 (padrão do script) | Q09 | R-02, R-30, R-37; sem validade lida nada é gravado; Prime, quantidade e seguir a loja não geram cupom. **Estado verificado no repositório em 2026-11-12: arquivos ainda não commitados (agente finalizando); NÃO está no ar** |
 
-Rotas agendáveis **fora** do `vercel.json` (`cobertura-shopee`, `ampliar-amostra-shopee`, `discover-shopee-esporte`, `import-shopee-conversions`, `loja-teste`): sem agendador conhecido e sem dono; decisão do dono pendente (FM-31). Enquanto isso valem como manuais.
+Rotas agendáveis **fora** do `vercel.json` (`ampliar-amostra-shopee`, `discover-shopee-esporte`, `import-shopee-conversions`, `loja-teste`): sem agendador conhecido e sem dono; decisão do dono pendente (FM-31, seção 9 item 10). Enquanto isso valem como manuais. A `cobertura-shopee` saiu dessa lista em 905e499 (N62).
 
 ---
 
@@ -182,7 +194,7 @@ Rotas agendáveis **fora** do `vercel.json` (`cobertura-shopee`, `ampliar-amostr
 | Q03 | Devidas `collect-vertical` por loja | `queue.ts` | mais antiga; camada vitrine antes da revisão (60 a 120 min) | livros 2.388 (a mais velha 7,5 h), esporte 1.044, impressão 3D 1.081, eletroeletrônicos 614, eletrodomésticos 497, tecnologia 175 | preço confirmado; 12 h sem reconfirmar = `expired` | 1º 429 para a execução |
 | Q04 | Semeadura (cursor por segmento) | `seed-slice.ts` | ordem de `seedOrder()` | 504 de 12.000 chamadas/dia | fatia termina por 120 chamadas, 48 s ou 429 | recuo 15/30/60/120 min |
 | Q05 | Descoberta (cursor de termos) | `discover-products.ts` | cursor circular | último ciclo: 800 achados, 0 criados | teto 10 masters novos | 1 retry, depois para |
-| Q06 | Mensagens a enviar (`proposta_auto`, `aprovada`) | `persistProposals` | classe: alerta > resumo > cupom > insight > radar > plataforma; desempate: Achado depois de comparação real, tipo menos enviado, maior movimento, % abaixo da média | 416 em `proposta_auto` (Achado 313) | enviada, ou expira (6 h; aprovada 12 h) | 3ª falha = `erro`; 401/403 = automação vai a `off` |
+| Q06 | Mensagens a enviar (`proposta_auto`, `aprovada`) | `persistProposals` | classe: alerta > resumo > cupom > insight > radar > plataforma; dentro da classe, degrau da régua mais alto primeiro e degrau 1 limitado a 1/3 da hora só quando há degrau 2 a 5 esperando (R-44d); janela de leitura justa por gatilho e departamento (R-46); desempate: Achado depois de comparação real, tipo menos enviado, maior movimento, % abaixo da média | 416 em `proposta_auto` (Achado 313) | enviada, ou expira (6 h; aprovada 12 h) | 3ª falha = `erro`; 401/403 = automação vai a `off` |
 | Q07 | Reconferência pós-envio | `runRechecks` | `recheck_due_at` | até 20 por ciclo | registra, nunca apaga | n/a |
 | Q08 | Links meli.la | `listarFilaLinks` | Plus antes de games; oferta mais barata do produto; ticket alto (piso R$ 1.500); falha recente fora | 17.068 ofertas ML ativas sem meli.la (games 8.486, Plus 8.582) | link meli.la gravado, ou falha registrada | 3 falhas de interface não viram falha; servidor 429/5xx recua 1/2/5/10/20 min |
 | Q09 | Revalidação de cupom (ML, Amazon, Shopee) | `listarFilaRevalidacao` | 0 divulgado, 1 mensagem pronta, 2 cupom em 24 h, 3 na fila, 4 cupom de categoria, 5 enviado em 3 h, 6 resto; leitura mais velha primeiro | janela de 60 por rede | lida (meta 45 min nas prioridades 0 a 3) | recua até 30 min e repete o item |
@@ -201,7 +213,7 @@ Rotas agendáveis **fora** do `vercel.json` (`cobertura-shopee`, `ampliar-amostr
 
 | Id | Pilha | Conteúdo | Quem desempilha | Regra de saída | Tamanho de referência |
 |---|---|---|---|---|---|
-| S01 | Rascunhos de oferta (`draft`) | Amazon 154 (na fila Q12), Shopee 18 e ML 10 **sem item na fila** (parados desde julho/agosto) | dono (sim/não); admin | "sim" ativa; sem decisão nada acontece (FM-25) | 182 |
+| S01 | Rascunhos de oferta (`draft`) | Medição da manhã: Amazon 154 (na fila Q12), Shopee 18 e ML 10 **sem item na fila**. Medição da fila #34 (tarde): 961 rascunhos da Amazon (528 de masters em revisão, 264 sem item, 119+49+17 com item) | dono pela `/admin/aprovacao` (N60) ou aprovação contínua (N61, só Amazon) | "sim" ativa; sem decisão nada acontece (FM-25) | 182 (manhã); 961 só Amazon (tarde); os números envelhecem |
 | S02 | Retidas e propostas de mensagem | 48 retidas (> 45% da média ou fora de 0,35x a 3x), 77 `proposta` | dono (clique em `/admin/mensagens`) | aprovada ou expira em 24 h/6 h (FM-42) | 125 |
 | S03 | Quarentena e `avg_excluded` | 488 ofertas em quarentena, 20 fora da média | script/fila (desfazer) | reversível por script com backup | 508 |
 | S04 | Ofertas `expired` | 8.650, 1.672 há mais de 90 dias | coleta reativa se o vendedor volta; arquivar exige política (FM-24) | `archived` com backup (proposto) | 8.650 |
@@ -306,7 +318,7 @@ Regra geral: **mensagens primeiro; cupom perecível depois; refresh do que já s
 
 ---
 
-## 6. Regras imperativas (R-01 a R-44)
+## 6. Regras imperativas (R-01 a R-46)
 
 Numeradas, sem contradição entre si. Quando dois capítulos divergiam, a regra abaixo é a que prevalece; a origem das divergências está na seção 8. "Estado" diz se o código já cumpre (CÓDIGO), se há violação medida (VIOLADA) ou se depende de decisão.
 
@@ -373,8 +385,9 @@ Numeradas, sem contradição entre si. Quando dois capítulos divergiam, a regra
 | R-41 | **Mudança de cadência, cota, flag de produção ou `vercel.json`**: porte médio no mínimo, ata, script com `JSON.parse`/`JSON.stringify`, validação antes do push, `vercel ls` Ready depois. Carga nova entra com orçamento e medida antes e depois. | CÓDIGO (processo) |
 | R-42 | **Concluído só com verificação**: `qa-verificador` e `checklist-publicacao`; critério de pronto verificável na fila de execução; cada agente commita só os próprios arquivos. Todo novo capítulo, nó ou fila altera este documento no mesmo commit. | processo |
 | R-43 | **A oferta `draft` só sai pela `/admin/aprovacao` (humana) ou pela aprovação contínua automática da R-45** (cartão, lote de óbvios com prévia, desfazer). A ação reutiliza `applyInTx`/`undoInTx` (decisão em `identity_decisions` com o estado anterior); rascunho da Amazon sem item de fila ganha o item (`enfileirarDuvidaAmazon`) e recebe 'sim' na mesma transação; master em revisão é aprovado junto, com o gate anterior em `attributes.aprovacaoHumana`; guardas antes de liberar: só novo, sem 2 gerações, com preço, sem quarentena, sem duplicata (`findExistingMasterProduct`). Nada é aprovado em nome do dono. | CÓDIGO (2026-11-12) |
-| R-44 | **Régua de destaque por tamanho da queda (dono, 2026-11-12; ata `2026-11-12-regua-mensagens`).** Módulo único `src/lib/messaging/regua.ts` (Telegram, WhatsApp, cartão e front). (a) **Corte** 3% abaixo da média única, por loja, só onde `GROUP_REGUA_PCT_MIN` > 0 e a loja está em `GROUP_REGUA_LOJAS` (início: `eletrodomesticos`, `esporte`; as demais lojas seguem 10% até o dono liberar); o produto da loja liberada que tem média única oferta-dia sai da fase de formação, o que não tem continua nela. (b) **Degraus** pelo percentual exibido (1 casa): 1 de 3 a <6 azul "Bom preço" ▼; 2 de 6 a <12 verde "Boa compra" ▼▼; 3 de 12 a <20 amarelo "Ótima compra" ▼▼▼ (negrito e maiúsculas); 4 de 20 a 30 laranja "Compre agora" com 🔥 ▼▼▼▼; 5 acima de 30 vermelho "Confira antes de comprar" com ⚠️ e aviso para confirmar o anúncio ▼▼▼▼▼. A cor nunca fica sozinha: percentual (quando permitido), veredito em texto e marcas ▼. (c) **Veredito** só de indicador real: queda sobre a média, mínima do histórico (`price_daily_state`/série) e número de ofertas. "Compre agora" exige degrau 4, >= 5 ofertas, >= 14 dias de histórico (`GROUP_REGUA_MIN_DIAS`) e preço na mínima ou até 3% acima; senão vira "Ótima compra". Sem histórico (mínima nula) = aviso "Confira antes de comprar" em texto, sem trocar a cor nem o rótulo do degrau (QA: cor e rótulo não se contradizem). Menos de 5 ofertas = sem percentual, sem "abaixo da média", nunca "amostra pequena". A janela escrita é `min(90, dias medidos)`. "Espere" só no site, nunca no grupo. (d) **Fila**: o degrau mais alto sai primeiro dentro da classe; o degrau 1 ocupa no máximo 1/3 das mensagens da hora por grupo (`GROUP_REGUA_D1_SHARE_PCT`, padrão 33,33; a primeira da hora sempre passa; o excedente adia) **SÓ quando há oferta dos degraus 2 a 5 elegível esperando no mesmo grupo; sem ela o degrau 1 sai sem teto (ordem do dono, 2026-11-12). Achado (AC) até `GROUP_AC_POR_HORA` por hora e grupo (padrão 6; a cota diária acompanha o teto horário), repetição de 24 h e espaçamento por chat mantidos; texto "Novo no monitoramento", sem comparação nem veredito.** (e) **Canal Destaques**: degraus 4 e 5 também vão ao chat `TELEGRAM_DESTAQUES_CHAT_ID` (desligado se ausente), segundo envio isolado depois do envio da loja, resultado em `candidate.destaques`. (f) **Link curto do WhatsApp**: `https://www.egeek86.com/g/<5 base62>` resolve em 302 para o MESMO `/go/<slug>?s=wa&m=<messageKey>`; código aleatório (nunca derivado do messageKey), coluna `group_messages.short_code` (migration 0050) única parcial, 404 sem corpo e sem cache, destino só do banco. (g) Amazon não muda (40 min de frescor, texto próprio). Reverter = zerar/apagar `GROUP_REGUA_PCT_MIN` (ou esvaziar `GROUP_REGUA_LOJAS`) e redeploy. | CÓDIGO (2026-11-12) |
+| R-44 | **Régua de destaque por tamanho da queda (dono, 2026-11-12; ata `2026-11-12-regua-mensagens`).** Módulo único `src/lib/messaging/regua.ts` (Telegram, WhatsApp, cartão e front). (a) **Corte** 3% abaixo da média única, por loja, só onde `GROUP_REGUA_PCT_MIN` > 0 e a loja está em `GROUP_REGUA_LOJAS` (início: `eletrodomesticos`, `esporte`; depois ampliado às 7 lojas por ordem do dono no mesmo dia, informação do operador; o valor atual na Vercel NÃO foi lido e consta na seção 11; loja fora da lista segue 10%); o produto da loja liberada que tem média única oferta-dia sai da fase de formação, o que não tem continua nela. (b) **Degraus** pelo percentual exibido (1 casa): 1 de 3 a <6 azul "Bom preço" ▼; 2 de 6 a <12 verde "Boa compra" ▼▼; 3 de 12 a <20 amarelo "Ótima compra" ▼▼▼ (negrito e maiúsculas); 4 de 20 a 30 laranja "Compre agora" com 🔥 ▼▼▼▼; 5 acima de 30 vermelho "Confira antes de comprar" com ⚠️ e aviso para confirmar o anúncio ▼▼▼▼▼. A cor nunca fica sozinha: percentual (quando permitido), veredito em texto e marcas ▼. (c) **Veredito** só de indicador real: queda sobre a média, mínima do histórico (`price_daily_state`/série) e número de ofertas. "Compre agora" exige degrau 4, >= 5 ofertas, >= 14 dias de histórico (`GROUP_REGUA_MIN_DIAS`) e preço na mínima ou até 3% acima; senão vira "Ótima compra". Sem histórico (mínima nula) = aviso "Confira antes de comprar" em texto, sem trocar a cor nem o rótulo do degrau (QA: cor e rótulo não se contradizem). Menos de 5 ofertas = sem percentual, sem "abaixo da média", nunca "amostra pequena". A janela escrita é `min(90, dias medidos)`. "Espere" só no site, nunca no grupo. (d) **Fila**: o degrau mais alto sai primeiro dentro da classe; o degrau 1 ocupa no máximo 1/3 das mensagens da hora por grupo (`GROUP_REGUA_D1_SHARE_PCT`, padrão 33,33; a primeira da hora sempre passa; o excedente adia) **SÓ quando há oferta dos degraus 2 a 5 elegível esperando no mesmo grupo; sem ela o degrau 1 sai sem teto (ordem do dono, 2026-11-12). Achado (AC) até `GROUP_AC_POR_HORA` por hora e grupo (padrão 6; a cota diária acompanha o teto horário), repetição de 24 h e espaçamento por chat mantidos; texto "Novo no monitoramento", sem comparação nem veredito.** (e) **Canal Destaques**: degraus 4 e 5 também vão ao chat `TELEGRAM_DESTAQUES_CHAT_ID` (desligado se ausente), segundo envio isolado depois do envio da loja, resultado em `candidate.destaques`. (f) **Link curto do WhatsApp**: `https://www.egeek86.com/g/<5 base62>` resolve em 302 para o MESMO `/go/<slug>?s=wa&m=<messageKey>`; código aleatório (nunca derivado do messageKey), coluna `group_messages.short_code` (migration 0050) única parcial, 404 sem corpo e sem cache, destino só do banco. (g) Amazon não muda (40 min de frescor, texto próprio). Reverter = zerar/apagar `GROUP_REGUA_PCT_MIN` (ou esvaziar `GROUP_REGUA_LOJAS`) e redeploy. | CÓDIGO (2026-11-12) |
 | R-45 | **Produto único é bem-vindo; aprovação contínua; descoberta Shopee (dono, 2026-11-12; ata `2026-11-12-ingestao-maxima`).** (a) Nenhum mínimo de ofertas ou vendedores por produto barra cadastro, aprovação ou vitrine (R3 do escopo de compra aposentada; sobram piso de preço R2 e anomalia R5); o veredito de queda segue exigindo 5 ofertas (R-19). (b) `/api/cron/aprovacao-auto` (`12-52/10`, lote 60, uma transação curta por cartão via `decidir()`) libera sozinho SÓ rascunho/produto novo/cobertura/fronteira da Amazon, depois de `guardaAuto` (preço lido, jogo com plataforma, retrô só Hyperkin/Analogue/Retro-Bit/8BitDo, preço dentro de 0,35x a 3x com 3+ referências) e das guardas de `decidir()`; mídia, modelo, armazenamento e preço são respostas do dono; desligar com `APROVACAO_AUTO=off`; reverter por `desfazer` no histórico (decisionIds em `collector_runs.meta`). (c) `/api/cron/cobertura-shopee?apply=1` (`22,52`, `pages=3 maxCalls=45 maxDuvidas=15 maxMasters=12`) traz produto novo da Shopee por categoria; master novo de chave forte e porteiro aprovável nasce APROVADO mesmo com 1 oferta (`approvedBy auto:shopee-cobertura`), chave fraca vai à fila; pausa de 45 min após 10030 (`cobertura_shopee_pausa_ate`); `collect-shopee` passa a monitorar o preço. Migration 0048 aplicada (`SHOPEE_VARIANTE_COLUNAS=1`). | CÓDIGO (2026-11-12) |
+| R-46 | **A detecção nunca impede o envio; a fila de envio é justa (incidente de 2026-11-12, fila #33).** (a) A detecção tem orçamento próprio de 22 s; falha ou estouro não aborta o ciclo, que segue em modo degradado e envia da fila já gravada (`collector_runs.meta.degraded`); o laço de envio tem janela mínima de 14 s depois da detecção (teto 46 s) e a cronometragem por fase vai em `meta.timing`. (b) `listPendingForSend` lê a janela de 300 por rodízio de gatilho e departamento e pré-filtra em SQL o que o plano com certeza barra (produto já enviado na janela do próprio gatilho); nenhum gatilho enche a janela sozinho. (c) O pick faz UMA varredura `live` (CTE materializada) para o pool principal, o Achado e o Cupom, com cache de 75 s e reaproveitamento da última leitura boa por até 10 min. (d) Persistência de propostas em lote (2 leituras, não ~900 INSERT em série) e dias do período numa consulta (`loadPeriodDaysMany`). Carga nova na detecção entra com orçamento e medida (R-41). | CÓDIGO (d63cf1f, e500e95, 423f42b, 94a64b5); índice parcial em `affiliate_offers(last_price_confirmed_at)` NÃO criado, aguarda o dono |
 
 ---
 
@@ -382,19 +395,24 @@ Numeradas, sem contradição entre si. Quando dois capítulos divergiam, a regra
 
 | Mecanismo | O que faz | Falha e recuperação | Reversão |
 |---|---|---|---|
-| Vercel Cron (19 entradas) | dispara os jobs da seção 2 | próximo ciclo repete; execução cortada por timeout deixa linha `running` órfã (FM-20) | reverter `vercel.json` por git; só muda com deploy |
+| Vercel Cron (21 entradas) | dispara os jobs da seção 2 | próximo ciclo repete; execução cortada por timeout deixa linha `running` órfã (FM-20) | reverter `vercel.json` por git; só muda com deploy |
 | `collector_runs` | registro de cada execução (duração, selecionadas, checadas, 429, motivo de parada, devidas, idade da mais velha) | só grava com `COLLECTOR_RUNS=1` (valor em produção NÃO VERIFICADO) | desligar flag |
 | `collector-health` | avalia saúde e alerta | alerta só com `COLLECTOR_ALERTS=1` + destino; sem isso é dry-run | n/a |
 | Laços de aba | recuo, retomada, batimento | recarregar a aba mata o laço; o vigia reinjeta (até 5 min de lacuna) | `stop()` do operador ou versão anterior de `/loops/*.js` |
 | Vigia de 5 min | reinjeta laço, reabre aba, encerra transação presa > 120 s | roda na sessão do operador (FM-07); servidor só avisa | n/a |
 | Idempotência | `identity_review_items` único por (oferta, eixo); `ml-links` só atualiza oferta ativa sem meli.la; `ON CONFLICT (dedup_key, channel) DO NOTHING` nas mensagens; lock advisory por produto nos eventos | reenvio seguro | n/a |
 | Recuperação de semeadura | estado e cursor em `system_config`; cache de 404 por 7 dias | retoma de onde parou | n/a |
-| Kill switches | `GROUP_ACHADO=off`, `GROUP_CUPOM=off`, `FILA_AUTO_OBVIO=off`, `AVG_EXCLUDED_DISABLED=1` (muda dado público; só com o dono), `PLUS_APROVACAO_RELAXADA=0`, `AMAZON_ID_FLEX=off`, `PLUS_ESCOPO_VITRINE=0`, `PLUS_CADENCIA_CAMADAS=0`, `VERTICAL_<LOJA>_ENABLED`, `AMAZON_VITRINE_CAP` | valor digitado errado deixa o recurso ligado (falha para o lado ativo); mudar variável exige redeploy (NÃO VERIFICADO se as rotas releem) | voltar o valor anterior e conferir selo e média |
+| Kill switches | `GROUP_ACHADO=off`, `GROUP_CUPOM=off`, `FILA_AUTO_OBVIO=off`, `AVG_EXCLUDED_DISABLED=1` (muda dado público; só com o dono), `PLUS_APROVACAO_RELAXADA=0`, `AMAZON_ID_FLEX=off`, `PLUS_ESCOPO_VITRINE=0`, `PLUS_CADENCIA_CAMADAS=0`, `VERTICAL_<LOJA>_ENABLED`, `AMAZON_VITRINE_CAP`, `APROVACAO_AUTO=off` (aprovação contínua), `GROUP_REGUA_PCT_MIN` zerado ou `GROUP_REGUA_LOJAS` vazio (volta ao corte de 10%), `GROUP_AC_POR_HORA`, `GROUP_REGUA_D1_SHARE_PCT`, `TELEGRAM_DESTAQUES_CHAT_ID` ausente (Destaques desligado), `SHOPEE_VARIANTE_COLUNAS` | valor digitado errado deixa o recurso ligado (falha para o lado ativo); mudar variável exige redeploy (NÃO VERIFICADO se as rotas releem) | voltar o valor anterior e conferir selo e média |
 | Reversão de código | `git revert`, push em `main`, `vercel ls` Ready, site 200 | validar `vercel.json` antes do push | n/a |
 | Reversão de dado | `docs/backups/*.ndjson` + `--rollback` por script | só com backup anterior | pilha S05 |
 | Reversão de migration | `.rollback.sql` ao lado de cada migration | só com backup e decisão registrada | n/a |
 
 Incidentes que originaram regras: duplicatas de master (2026-07-29, 176 casos), imagem repetida (2026-07-29), `vercel.json` inválido (7e177ac, corrigido em 815534e), sobrecarga do banco com coletas Plus a cada 10 min (cbdca7c, aliviado em 7e177ac e f27a8a0), transações presas e laços parados (recorrentes). Lição comum: carga nova entra por ata com orçamento; configuração se edita por script com validação.
+
+**Incidentes de 2026-11-12 (conferidos nas atas, na fila #33 e nos commits):**
+1. **Envio parado de ~11:00 a ~13:40 UTC** (de 75 a 120 mensagens por hora para ~0). Causa medida: a detecção passou dos 38 s do orçamento do ciclo e o laço de envio nunca rodava; jobs de 41 a 43 s e 'Failed query' por SOCKET_TIMEOUT de 30 s do pool `live` sob contenção. Correção: d63cf1f e e500e95 (persistência em lote, dias em uma consulta, janela mínima de envio, cronometragem por fase). Os horários exatos vêm do relato do operador; a fila #33 registra "~11h UTC".
+2. **Starvation da fila (2ª rodada, 423f42b e 94a64b5)**: com ~1.359 propostas e `sentCount=0`, a leitura das 300 mais antigas por `created_at` só trazia Achado (AC) barrada pelo teto de 2/h e pelo "produto já enviado em 24 h", e as G2/CUPOM/P* mais novas ficavam fora da janela. Virou a regra R-46.
+3. **`vercel.json` inválido em 7e177ac**, corrigido em 815534e: toda mudança do arquivo é por `JSON.parse` e `JSON.stringify`, com validação antes do push e `vercel ls` Ready depois (R-41). Esta atualização NÃO tocou o arquivo.
 
 ---
 
@@ -415,6 +433,9 @@ Incidentes que originaram regras: duplicatas de master (2026-07-29, 176 casos), 
 | D-11 | **Mudanças locais não commitadas** (`gate.ts` e outros, cap. 2 G-16) | **resolvida**: o commit fe5d67f levou a exceção do retrô novo; `git status` limpo para `src/` e `scripts/` em 2026-11-12 | conferido ao gravar este documento |
 | D-12 | **Disparos reais de `collect-prices`**: 12 por hora no `vercel.json`, 24 medidos (cap. 1) | **medido (24) é o fato; a origem é NÃO VERIFICADA** | FM-05 |
 | D-13 | **Vigia**: cap. 1 diz "reinjeção manual pelo operador"; cap. 6 diz vigia de 5 min | **vigia de 5 min na sessão do operador (R-37)**; manual é o procedimento quando a sessão está fechada | consistente com a memória do dono |
+| D-14 | **Corte da régua**: R-23, N23 e o cap. 4 falam em 10%; R-44 fala em 3% por loja | **R-44 nas lojas de `GROUP_REGUA_LOJAS`; 10% nas demais** | decisão do dono em 2026-11-12 (ata `regua-mensagens`) |
+| D-15 | **Contagem de crons**: o cap. 6 §1.1 e a versão 1.0 diziam 19; o `vercel.json` tem 21 | **`vercel.json` (21)** | `cobertura-shopee` (22,52) e `aprovacao-auto` (12-52/10) entraram em 905e499; os capítulos têm adendo |
+| D-16 | **Migrations 0048 e 0050**: D-06 e FM-32 diziam 0048 não aplicada | **aplicadas** (0048 com retrato em `docs/backups/migration-0048-esquema-antes-*.json`; 0050 com `docs/backups/short-code-apply-2026-11-12T17-07-20-731Z.json`); 0045 segue NÃO verificada | atas `ingestao-maxima` e `regua-mensagens` |
 
 ---
 
@@ -437,6 +458,29 @@ Uma pergunta por vez, na ordem de impacto. Recomendação do geek-lead entre par
 13. **Metodologia** (FM-48): o estatístico propõe exigir 5 ofertas também para veredito e rotular o carry-forward; mudar a escada R-19 altera o que o público vê como verdade.
 14. **Resumo diário acima de cupom e insight** (gamer-veterano discorda da ordem de classe): manter alerta > resumo > cupom ou rebaixar o resumo?
 
+### 9.1 Execução da autorização do dono (2026-11-12, "aprovo o que tiver ainda de aprovar")
+
+O dono mandou adotar a opção recomendada de cada decisão, **só se reversível, sem parar laços nem mudar cadência ou cota de forma arriscada**. Resultado, conferido no código e no `vercel.json` (que NÃO foi alterado):
+
+| # | Decisão | Opção recomendada | Estado | Motivo e reversão |
+|---|---|---|---|---|
+| 1 | Reputação baixa na média | estender à média, com flag e backfill | **PENDENTE** | muda o dado público e exige backfill; não é só reversível por flag; dono decide com o dry-run de `eligibleOfferSql` (fila #21) |
+| 2 | `/inteligencia-gamer` | tirar do menu agora | **EXECUTADA em parte** | item "Observatório Gamer" removido do menu desktop (`app-header.tsx`) e do menu móvel (`mobile-nav-drawer.tsx`); reverter = `git revert`. **Resta** o botão "Acessar Portal Inteligência" na home e a rota no ar (FM-51, fila #23); `/black-friday` sem mudança |
+| 3 | Reescalonar minutos 0/30 e disparador duplicado | aprovar a proposta do cap. 6 §1.4 depois de inventariar o disparador | **PENDENTE** | muda cadência de produção; primeiro o inventário do disparador extra (fila #17) |
+| 4 | Travas do banco | `idle_in_transaction_session_timeout` 60 s e depois 30 s, só depois de #17 | **PENDENTE** | `ALTER ROLE` em produção; depende de #17 e de medida |
+| 5 | Backlog de coleta | aceitar 60 min na Shopee, reduzir o conjunto ativo ou pedir cota | **PENDENTE** | decisão de negócio e de cota |
+| 6 | Botão "Afiliado" em `/entrar` | renomear para "Divulgador" | **JÁ FEITA** (8238927) | a interface mostra "Divulgador (gerar links e acompanhar cliques)"; o valor interno `afiliado` fica; FM-22 resolvida |
+| 7 | Fila do dono | definir meta de esvaziamento | **PENDENTE** | a meta é do dono. Ferramentas prontas: `/admin/aprovacao` (N60), aprovação contínua da Amazon (N61) e `scripts/aprovacao-liberar-tudo.ts` (dry-run por padrão; `--apply` só com ordem do dono dada por ele mesmo; não foi rodado por esta tarefa) |
+| 8 | Retidas e propostas que expiram | quem clica e quando; rejeitar em lote as acima de 45% | **PENDENTE** | rejeitar em lote é decisão de negócio |
+| 9 | Cupom repetido, cartão e Achado | intervalo de 3 a 6 h; política do cartão; descartar Achado acima de 3 h | **PENDENTE** | muda a cadência das mensagens; o Achado já mudou por ordem do dono (até 6/h, "Novo no monitoramento", R-44d) |
+| 10 | Shopee fora de games | agendar `cobertura`/`ampliar`/`discover-esporte`; agendar `import-shopee-conversions` já | **EM PARTE: cobertura agendada** (905e499, `22,52`). **PENDENTES**: `ampliar-amostra-shopee`, `discover-shopee-esporte` e `import-shopee-conversions` | a rota de conversões diz no próprio código que só se agenda depois de validar credenciais e a migration 0021, o que ninguém verificou; a cobertura ainda está sob medida de 10030 por 7 dias (fila #36); cron novo exige ata e `JSON.parse` (R-41) |
+| 11 | Ordem da fila de links até 27/11 | (sem recomendação do geek-lead; o estrategista propõe inverter, hipótese sem dado de comissão) | **MANTIDA** (Plus antes de games) | nada muda; sem dado de comissão não se inverte |
+| 12 | Black Friday x pedidos P0 do dono | congelar escopo até 27/11 e empurrar CI completo, retenção e higiene; o núcleo do pre-push fica adiantado | **ADOTADA** | #3 (PDF) e #4 (`/admin/fluxo`) já estão prontos; CI completo (#24), retenção (#29) e higiene (#31) seguem depois de 30/11, com o núcleo do pre-push adiantado |
+| 13 | Metodologia (FM-48) | exigir 5 ofertas também para veredito e rotular o carry-forward | **PENDENTE** | muda o que o público vê como verdade; reprocesso exige ata (R-20) |
+| 14 | Resumo diário x cupom e insight | manter alerta > resumo > cupom | **MANTIDA** | sem mudança de código |
+
+Saldo: 5 adotadas ou já feitas (2 em parte, 6, 11, 12, 14), 9 pendentes do dono (1, 3, 4, 5, 7, 8, 9, 10 e 13; o 10 tem a cobertura já agendada). Tarefa derivada: fila #37.
+
 ---
 
 ## 10. Registro de pontas soltas
@@ -455,10 +499,10 @@ Consolidado dos seis capítulos e deduplicado (a mesma falha citada em vários c
 | FM-07 | Sem trava de servidor para transação presa: `idle_in_transaction_session_timeout=0`, `lock_timeout=0`; vigia e limpeza só na sessão do operador | c2-G-04, c6-P1 | dba-postgres + engenheiro-infra-sre | `ALTER ROLE ... SET` 30 s e 10 s (aprovação do dono, reversível); limpeza em cron do servidor | #16 | aberta (precisa do dono) |
 | FM-08 | Reputação baixa não barrada na média nem na coleta: 612 ofertas ativas de vendedor vermelho/laranja, 512 contam em master aprovado | c2-G-01 | guardiao-catalogo + cientista-precos | decisão do dono; se for à média, predicado em `eligibleOfferSql` com flag e backfill no padrão da 0044 | #21 | aguardando o dono |
 | FM-09 | Plataforma `unknown` residual: 599 jogos, 35 consoles, 716 acessórios; 1.131 jogos com formato `unknown` | c2-G-02 | guardiao-catalogo | reexecutar derivação por título em dry-run; o que não derivar vai à fila `modelo`/`midia` | #22 | aberta |
-| FM-10 | `/inteligencia-gamer` publica estudos escritos à mão, com autores e datas, sem fonte (viola R-01) | c5-P1 | editor-noticias + dono | tirar do menu ou trocar por artigos reais | #23 | aguardando o dono |
+| FM-10 | `/inteligencia-gamer` publica estudos escritos à mão, com autores e datas, sem fonte (viola R-01) | c5-P1 | editor-noticias + dono | tirar do menu ou trocar por artigos reais | #23 | parcial (2026-11-12): item removido do menu; botão da home e rota continuam; aguardando o dono |
 | FM-11 | Laço de cupom da Shopee parado desde 02:17 UTC (0 leituras `shopee-pagina`); fila Shopee sem consumo; Amazon 177 leituras, 0 cupom (seletores NÃO VERIFICADOS) | c1-P1, c4-7.7, c4-7.10 | agente-cupons + operador | reinjetar `cupons-24h.js` (começar `enviar:false`); vigia reinjeta após 60 min sem batimento; validar seletores da Amazon em simulação | #7 | aberta |
 | FM-12 | Backlog crônico de coleta (Shopee esgota o orçamento em 283/287 execuções; livros 7,5 h de atraso) e `collect-prices` sem freio no 1º 429 | c1-P2, c1-P14 | engenheiro-coleta + dono | medir e decidir (seção 9, item 5); freio de 429 no coletor gamer depois de FM-05 | #20 | aberta |
-| FM-13 | Mensagens: `enviando` preso vira `erro` sem `message_id` (10 em 24 h); 25 execuções com erro de consulta; 14 execuções acima de 55 s (limite 60 s); 359 expirações "já não vale" sem motivo separado | c4-7.1, c4-7.2, c4-7.3 | engenheiro-backend | `AbortSignal` e orçamento menor; repetir consulta de pool uma vez; quatro códigos de motivo; alerta de 3 erros em 15 min | #19 | aberta |
+| FM-13 | Mensagens: `enviando` preso vira `erro` sem `message_id` (10 em 24 h); 25 execuções com erro de consulta; 14 execuções acima de 55 s (limite 60 s); 359 expirações "já não vale" sem motivo separado | c4-7.1, c4-7.2, c4-7.3 | engenheiro-backend | `AbortSignal` e orçamento menor; repetir consulta de pool uma vez; quatro códigos de motivo; alerta de 3 erros em 15 min | #19 | parcial: incidente do envio corrigido (fila #33, R-46); `AbortSignal`, motivos separados e alerta continuam abertos |
 | FM-15 | Sem CI, sem hook pre-push, sem suíte de regras inegociáveis (um só `*.test.ts`); nada barra `vercel.json` inválido; numeração de migrations sem trava (lacuna 0039) | c6-P4, c6-P5, c6-P6 | engenheiro-infra-sre + engenheiro-software-principal | pre-push (JSON.parse + typecheck + numeração) e workflow de CI; testes de dedup, oferta-dia, agulha, auth de cron | #24 | aberta |
 | FM-35 | Cobertura de links meli.la é o gargalo da receita e do envio (~37 h para zerar, sem contar novos; R-27 só deixa o ML sair com meli.la); 16.020 ofertas ML ativas sem `external_item_id`. Reclassificada de Média para Alta por parecer do estrategista | c1-P18 | engenheiro-coleta | manter prioridade Plus (ver seção 9, item 11); gravar `external_item_id` na coleta; meta: 100% das ofertas de games com gatilho com meli.la até 26/11 | #8 | em andamento |
 
@@ -470,22 +514,26 @@ Consolidado dos seis capítulos e deduplicado (a mesma falha citada em vários c
 | FM-14 | Escada de degradação e níveis N1/N2 sem mecanismo executável (não há flag por cron; variável nova exige redeploy, NÃO VERIFICADO se as rotas releem; gatilho de 429 depende de contador que subestima, FM-19) | parecer do SRE | engenheiro-infra-sre | documentar o mecanismo real de cada passo; criar o que faltar (flag por job, `limit` por parâmetro) | #13 | aberta |
 | FM-48 | Metodologia estatística: escada R-19 com ordem de rigor invertida (veredito exige 3 ofertas, texto com % exige 5); faixa 0,35x a 3x frágil com N=3 e larga (65% de queda ainda é plausível); `percentile_disc` em dia par escolhe o valor inferior; carry-forward de 48 h conta como oferta-dia e infla N; efeito composição em janela de 30 dias (Amazon entrando em 485 produtos); janela de 30 dias da Black Friday de ~27 dias | parecer do estatístico e do especialista-precos | estatistico-senior + cientista-precos | parecer metodológico com proposta (mediana de ofertas observadas na faixa, carry-forward rotulado e fora da contagem, bloqueio de selo com `composition_flag`, linha de base congelada); decisão do dono; reprocesso com ata (R-20, FM-23) | #32 | aguardando o dono |
 | FM-49 | Não há lista versionada de "em linha" por plataforma e por acessório (Xbox One/360 fora de linha decidido, mas caso a caso depende do código) | parecer do gamer-veterano | guardiao-catalogo + gamer-veterano | lista versionada em `docs/` ligada ao porteiro e a `pausar-fora-de-linha.ts` | #22 | aberta |
-| FM-16 | Proibições do dono sem trava: "amostra" (223 mensagens), "(Brasília)" (220), "Cupom do anúncio" (79) | c4-7.8 | engenheiro-backend | acrescentar a `BANNED` e a teste | #25 | aberta |
+| FM-50 | Colisão de cron nos minutos 22 e 52: `cobertura-shopee` (`22,52`) e `aprovacao-auto` (`12-52/10`) disparam juntos, mais `group-messages` (todo minuto) e `collect-prices`/`collect-shopee` nos múltiplos de 5 | `vercel.json` em 905e499 | engenheiro-infra-sre | mover um dos dois por script `JSON.parse` com ata (R-41), depois de medir `collector_runs` dos dois jobs; relacionada a FM-04 | #37 | aberta (precisa de ata) |
+| FM-51 | `/inteligencia-gamer` segue no ar e a home mantém o botão "Acessar Portal Inteligência" e a seção "Observatório Gamer", apesar de o menu ter sido limpo | decisão 2 da seção 9 | engenheiro-frontend + dono | retirar a seção da home e a rota, ou trocar por artigos reais com fonte (cuidar de R-35: a imagem da seção) | #23 | aguardando o dono |
+| FM-52 | Loop de promoções da Amazon (N65) com arquivos não commitados (`public/loops/amazon-promocoes.js`, `scripts/chrome/amazon-promocoes.js`, `scripts/test-amazon-promocoes.ts`, `src/app/api/ingest/amazon-promocoes/`, `src/lib/coupons/amazon-promocoes.ts`, `src/server/coupons/amazon-promocoes.ts`) e `src/server/messaging/coupon-lookup.ts` alterado e não commitado | verificação de 2026-11-12 | agente-cupons | o agente finaliza, testa em simulação (`enviar:false`) e commita; o vigia injeta só depois; atualizar N65 | #7 | em andamento |
+| FM-53 | Valor atual na Vercel de `GROUP_REGUA_PCT_MIN`, `GROUP_REGUA_LOJAS`, `GROUP_AC_POR_HORA`, `APROVACAO_AUTO` e `TELEGRAM_DESTAQUES_CHAT_ID` não lido por esta atualização; o escopo "7 lojas" vem do operador | R-44, R-45 | engenheiro-infra-sre | ler os valores na Vercel e gravá-los na seção 11 e no `.env.example` | #13 | aberta |
+| FM-16 | Proibições do dono sem trava: "amostra" (223 mensagens), "(Brasília)" (220), "Cupom do anúncio" (79) | c4-7.8 | engenheiro-backend | acrescentar a `BANNED` e a teste | #25 | parcial: "amostra pequena", "metodologia" e "(Brasília)" já barram desde a régua; falta "Cupom do anúncio" |
 | FM-17 | Cartão não é obrigatório no código (Achado 10%, Cupom 22%); falha de render cai em texto sem motivo | c4-7.9 | engenheiro-backend | registrar motivo em `photoSkipped`; medir por gatilho; política de adiar | #25 | aberta |
 | FM-18 | Frescor da Amazon abaixo da exigência: 43% das 682 ofertas ativas confirmadas em 40 min; 112 com mais de 3 h; ciclo de ~50 min contra meta de 40 | c1-P15, c3-P12, c4-gargalo | operador + engenheiro-coleta | mais peso ao refresh quente; segunda aba; "confirmado há X" no front | #26 | aberta |
 | FM-19 | Contagem de cota ML subestima o consumo (só `collect-vertical:%` e `semear-vertical:%`); `resolverUrlsLeitura` sem teto; nenhum job grava chamadas por endpoint | c1-P4, c6-P13 | integrador-apis | `apiCalls` em todos os jobs, freio somado, painel | #27 | aberta |
 | FM-20 | 24 execuções `running` órfãs (função cortada por timeout); sem guarda de sobreposição por job | c1-P5, c6-P7 | engenheiro-coleta | fechar `running` > `maxDuration` como `error`; advisory lock por job; `budgetMs` uniforme a 80% | #27 | aberta |
 | FM-21 | 6 páginas admin protegidas só pelo layout (`catalogo`, `cupons/novo`, `noticias/novo`, `noticias/[id]`, `ofertas/novo`, `ofertas/[id]`) | c5-P5 | seguranca-db + engenheiro-frontend | `await requireAdmin()` no topo | #28 | aberta |
-| FM-22 | `/entrar` oferece "Afiliado" ao visitante | c5-P9 | engenheiro-frontend + dono | renomear para "Divulgador" mantendo o valor interno | #28 | aguardando o dono |
+| FM-22 | `/entrar` oferece "Afiliado" ao visitante | c5-P9 | engenheiro-frontend + dono | renomear para "Divulgador" mantendo o valor interno | #28 | **resolvida** (8238927: botão "Divulgador"; conferido em 2026-11-12) |
 | FM-23 | Dias fechados não acompanham mudança de regra (identidade, porteiro, Open Box, entrada da Amazon) | c3-P4 | cientista-precos | coluna `rule_version`; reprocesso por versão com ata | #29 | aberta |
 | FM-24 | Sem retenção: `affiliate_price_snapshots` (3,4 M linhas, 639 MB), `collector_runs` (~11,6 mil em 4 dias), `offer_coupon_reads` (12,9 mil); `expired` acumulam (8.650) | c2-G-06, c2-G-08, c1-P12 | dba-postgres + cientista-precos | agregar em `price_daily_offer` e arquivar além de 90 dias; arquivar `expired` > 90 dias com backup | #29 | aberta |
-| FM-25 | Fila de identidade sem escoadouro (999 pendentes, 0 decisões humanas); 132 masters Plus e 504 de games em revisão; 28 rascunhos sem saída | c1-P8, c1-P17, c2-G-03, c2-G-14 | guardiao-catalogo + dono | enfileirar rascunhos órfãos (`legado_rascunho`); priorizar por impacto; meta de esvaziamento | #11, #30 | aguardando o dono |
+| FM-25 | Fila de identidade sem escoadouro (999 pendentes, 0 decisões humanas); 132 masters Plus e 504 de games em revisão; 28 rascunhos sem saída | c1-P8, c1-P17, c2-G-03, c2-G-14 | guardiao-catalogo + dono | enfileirar rascunhos órfãos (`legado_rascunho`); priorizar por impacto; meta de esvaziamento | #11, #30 | parcial: Central de Aprovação (N60) e aprovação contínua da Amazon (N61) existem; meta de esvaziamento aguarda o dono |
 | FM-26 | Falha ao gravar dúvida da Amazon derruba o lote (2 lotes com erro em `identity_review_items`) | c1-P7 | engenheiro-coleta + dba-postgres | try/catch por linha; reproduzir com "Câmera Sony ZV-E10" | #27 | aberta |
 | FM-27 | Atraso de rótulo e janela: snapshots Amazon com `source='scrape'` confundem autorizado com proibido | c1-P11 | dba-postgres | gravar `assistida` e migrar histórico com backup (checar CHECK) | #31 | aberta |
 | FM-28 | Frescor encadeado no front: lista pode estar 30 a 50 min atrás do banco; sem `revalidateTag`; cron de snapshot parado derruba a página em cálculo ao vivo (até 40 s) | c5-P4, c5-P6 | engenheiro-performance-web | mostrar "verificado até HH:MM"; alerta de idade do snapshot em `collector-health` | #27 | aberta |
-| FM-29 | Sem tela administrativa de execuções e filas | c5-P7 | engenheiro-frontend + arquiteto-next | `/admin/fluxo` | #4 | aberta |
+| FM-29 | Sem tela administrativa de execuções e filas | c5-P7 | engenheiro-frontend + arquiteto-next | `/admin/fluxo` | #4 | **resolvida** (2026-11-12: `/admin/fluxo` no ar, fila #4); falta alinhar nomes de nós |
 | FM-30 | Regra "laços nunca param" não vale para tudo: `ml-links-ui.js` para em login/captcha; `cupons-leitura-loop.js` legado pede token por `prompt`; `amazon-assistida.js` (verificar se há alteração não commitada) | c1-P9 | engenheiro-coleta | alinhar à pausa com recuo; marcar o legado como obsoleto; garantir `public/loops/` igual ao fonte | #27 | aberta |
-| FM-31 | Shopee fora de games não existe; cinco rotas sem agendador, sem dono; `cobertura` e `ampliar` falham por 10030/10000 | c1-P10, c6-P10 | dono + integrador-apis | agendar com cota comum ou aposentar | #9 | aguardando o dono |
+| FM-31 | Shopee fora de games não existe; cinco rotas sem agendador, sem dono; `cobertura` e `ampliar` falham por 10030/10000 | c1-P10, c6-P10 | dono + integrador-apis | agendar com cota comum ou aposentar | #9 | parcial: `cobertura-shopee` agendada (905e499); `ampliar`, `discover-esporte` e conversões aguardam o dono |
 | FM-36 | Quatro números para "links pendentes" (D-07) | c2-G-05, c4 | integrador-apis | painel com L1, L2 e L3 | #31 | aberta |
 | FM-37 | Coleta continua em ofertas de master `rejected` (1.167) e `review` (909): gasta cota sem render | c2-G-09 | engenheiro-coleta | excluir `rejected` da seleção; manter `review` | #20 | aberta |
 | FM-39 | Duplicatas de master medidas: "nintendo switch" (`product_type=game`, 2) e "mochila academia camping" (2) | c2-G-12 | guardiao-catalogo | `dry-run-dup-report.ts` e `merge-duplicate-masters.ts` em dry-run | #22 | aberta |
@@ -501,7 +549,7 @@ Consolidado dos seis capítulos e deduplicado (a mesma falha citada em vários c
 
 | Id | Ponta solta | Origem | Dono | Fila |
 |---|---|---|---|---|
-| FM-32 | Migrations 0045 (`sold_quantity`) e 0048 (variação Shopee) não aplicadas; 0019 a 0049 fora do journal do drizzle | c2-G-10, c2-G-11 | dba-postgres | #9, #31 |
+| FM-32 | Migrations 0045 (`sold_quantity`) e 0048 (variação Shopee) **0048 aplicada** (2026-11-12) e 0050 aplicada; 0045 NÃO verificada; 0019 a 0050 fora do journal do drizzle | c2-G-10, c2-G-11 | dba-postgres | #9, #31 |
 | FM-33 | Documentação e comentários defasados (cabeçalhos "NÃO está no vercel.json", `divida-coleta-sem-api-oficial.md`, `CUPOM_NA_AGULHA.md` "a cada 5 min", `FLUXO_DE_ENVIO_TELEGRAM.md` cita 0032/0046, `pg-cron-setup.md` descreve plano e não estado) | c1-P13, c3-P11, c4-7.16, c4-7.18, c6-P12 | engenheiro-coleta | #31 |
 | FM-34 | `group_offer_watch` vazio; divulgação sem aviso de encerramento (0 avisos); WhatsApp grava duas linhas por candidata; hora sem envio às 21h e platô de 30/h NÃO VERIFICADOS | c4-7.13 a 7.17 | engenheiro-backend | #31 |
 | FM-38 | Eventos sem `prev_min_cents` (23%); gancho engole falha; tabelas pouco lidas (`identity_links`, `coupon_consults`); `affiliate_offers.vertical` x `master_products.vertical` sem constraint; games sem marca do porteiro persistida (4.259) | c3-P9, c3-P10, c2-G-07, c2-G-13, c2-G-15 | dba-postgres | #31 |
@@ -516,6 +564,10 @@ Nenhum item abaixo deve ser citado como fato. Cada um vira verificação dentro 
 | Item | Onde nasceu | Quem verifica | Fila |
 |---|---|---|---|
 | Valores na Vercel de `PRICE_METRICS_V2`, `PRODUCT_CARD_V1`, `PRICE_AMAZON_MODE` (app), `COLLECTOR_RUNS`, `COLLECTOR_ALERTS`, destino de alerta, `SEMEADURA_LOJAS`, `PLUS_ML_HOURLY_CALL_CAP`/`DAILY` | c1, c3, c5, c6 | engenheiro-infra-sre | #13 |
+| Valores na Vercel de `GROUP_REGUA_PCT_MIN`, `GROUP_REGUA_LOJAS` (se são mesmo as 7 lojas), `GROUP_AC_POR_HORA`, `APROVACAO_AUTO`, `TELEGRAM_DESTAQUES_CHAT_ID` (canal Destaques criado?) | R-44, R-45 | engenheiro-infra-sre | #13 |
+| Horário exato do envio parado em 2026-11-12 (11:00 a 13:40 UTC vem do relato do operador; a fila #33 diz "~11h UTC") | seção 7 | engenheiro-backend | #33 |
+| Migration 0045 (`sold_quantity`) aplicada ou não | FM-32 | dba-postgres | #31 |
+| Se o loop `amazon-promocoes.js` roda na aba e produz leituras (o código ainda não foi commitado) | N65 | agente-cupons | #7 |
 | Origem do segundo disparador de `collect-prices`/`discover`/`refresh` (pg_net, agendador local ou outro) | c1-P3, c6 | engenheiro-infra-sre | #17 |
 | Paridade numérica entre `product_price_stats` e `price_daily_state` | c3, c5 | cientista-precos | #14 |
 | Comportamento real da `/black-friday` em produção | c3 | qa-verificador | #14 |
@@ -555,6 +607,11 @@ Nenhum item abaixo deve ser citado como fato. Cada um vira verificação dentro 
 | Idade dos snapshots (`stats`, `showcase`, `daily`, `inventory`) | `MAX(computed_at)` | showcase <= 45 min, stats <= 60 min, daily <= 45 min |
 | Linhas `closed=false` com data passada | `price_daily_state` | 0 depois do ciclo da meia-noite |
 | Linhas `running` com mais de `maxDuration` | `collector_runs` | 0 |
+| Enviadas por hora (Telegram) | `group_messages` | 60 ou mais (meta do incidente, fila #33); abaixo de 30 por 2 h seguidas com fila cheia = N2 |
+| Mensagens fora das lojas liberadas pela régua, ou com termo banido | `group_messages`, `scripts/medir-regua-producao.ts` | 0 |
+| Degrau 1 por hora e grupo | `candidate->'regua'->>'degrau'` | no máximo 1/3, quando há degrau 2 a 5 esperando |
+| `aprovacao-auto` e `cobertura-shopee`: duração, liberadas, erros, 10030 | `collector_runs.meta` | erro < 2%; 10030 = 0 por 7 dias antes de subir `maxCalls` |
+| Fila de cartões da Amazon sem acúmulo | `/admin/aprovacao` (painel por motivo e loja) | tendência de queda |
 
 ### 12.2 SLOs
 | SLO | Alvo | Janela |
@@ -565,8 +622,10 @@ Nenhum item abaixo deve ser citado como fato. Cada um vira verificação dentro 
 | Mensagem com gatilho perdida por atraso | 0 | 24 h |
 | Frescor Amazon no envio | preço confirmado em até 40 min | por envio |
 | Disponibilidade do site | NÃO VERIFICADO (sem sonda externa, FM-44) | 30 dias |
+| Envio por hora depois do incidente | 60 ou mais enviadas/h, job < 45 s, sem 'Failed query' do `live` por 1 h (critério da fila #33) | 1 h móvel |
+| Régua em produção (R-44) | 0 termo banido, 0 mensagem fora das lojas liberadas, erro < 2%, degrau 1 <= 1/3 | 15 min e 24 h após cada ampliação |
 
-Painel dessas métricas: `/admin/fluxo` (fila #4), com cada nó em verde (dentro da cadência), âmbar (até 2x) ou vermelho (mais de 2x ou erro); nó sem fonte fica cinza com o motivo, nunca verde por omissão.
+Painel dessas métricas: `/admin/fluxo` (fila #4, no ar desde 2026-11-12), com cada nó em verde (dentro da cadência), âmbar (até 2x) ou vermelho (mais de 2x ou erro); nó sem fonte fica cinza com o motivo, nunca verde por omissão.
 
 ---
 

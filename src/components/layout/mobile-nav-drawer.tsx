@@ -22,9 +22,6 @@ import {
   LogIn,
   X,
   Sparkles,
-  BookOpen,
-  FileText,
-  TrendingUp,
   Heart,
   HelpCircle,
   Shield,
@@ -56,14 +53,6 @@ const hypeZoneModules = [
   { href: '/hype-zone', label: 'Hype Zone e Drops', icon: Flame, highlight: true },
   { href: '/leiloes', label: 'Leilões Geek (Hammer)', icon: Gavel, highlight: true },
   { href: '/conta/vendedor/novo-drop', label: 'Cadastrar novo drop', icon: Sparkles, highlight: true },
-];
-
-const observatorioModules = [
-  { href: '/inteligencia-gamer', label: 'Observatório Gamer (Hub)', icon: Sparkles },
-  { href: '/inteligencia-gamer?categoria=artigos', label: 'Artigos e Opinião', icon: BookOpen },
-  { href: '/inteligencia-gamer?categoria=teoricas', label: 'Dossiês de Mercado', icon: FileText },
-  { href: '/inteligencia-gamer?categoria=empiricas', label: 'Radar de Preços e Dados', icon: TrendingUp },
-  { href: '/inteligencia-gamer?categoria=descritivas', label: 'Panorama e Tendências', icon: Sparkles },
 ];
 
 const newsModules = [
@@ -199,7 +188,6 @@ export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onC
             {MARKETPLACE_PUBLIC && (
               <NavGroup items={hypeZoneModules} onClose={onClose} pathname={pathname} subheading="Hype Zone e Drops" />
             )}
-            <NavGroup items={observatorioModules} onClose={onClose} pathname={pathname} subheading="Observatório Gamer" />
             <NavGroup
               items={[
                 { href: '/plus', label: 'Espaço Geek Plus', icon: Sparkles },
