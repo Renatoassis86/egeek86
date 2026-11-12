@@ -112,6 +112,8 @@ export interface DetectionResult {
   history: SentRecord[];
   historySource: 'group_messages' | 'nenhum (tabela ausente)' | 'parametro';
   warnings: string[];
+  /** Tempo de cada fase da detecção (ms), para diagnóstico em collector_runs. */
+  timingMs?: { pick: number; facts: number };
 }
 
 const idList = (ids: string[]) => sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `);
@@ -765,11 +767,15 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const cupomStats: CupomStats = { enabled: cupom, poolProducts: 0, generated: 0, sendable: 0, byStore: {}, barred: {} };
   // Memo do ciclo: o pool valida as ofertas com leitura positiva; loadFacts reaproveita (mesmo `now`). So na deteccao do ciclo, nunca na reconferencia de um envio.
   const cupomMemo: CouponValidation | undefined = cupom && !opts.productIds?.length ? { facts: new Map(), misses: new Map() } : undefined;
+  const tPick0 = Date.now();
   const ids = opts.productIds?.length
     ? opts.productIds
     : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 800, achado, cupom, cupomStats, cupomMemo });
+  const tPick = Date.now() - tPick0;
+  const tFacts0 = Date.now();
   const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode, cupom, cupomMemo });
 
+  const tFacts = Date.now() - tFacts0;
   const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode, achado };
   const candidates: Candidate[] = [];
   const blocked: Blocked[] = [];
@@ -836,5 +842,6 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
     history,
     historySource,
     warnings,
+    timingMs: { pick: tPick, facts: tFacts },
   };
 }

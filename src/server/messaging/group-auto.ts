@@ -168,7 +168,9 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     const members = await runMemberCount(now, automation.maxMemberDropPct, deps.fetchImpl);
     summary.members = { ...members.brake, counted: members.counted, ...(members.error ? { error: members.error } : {}) };
 
+    const tDetect0 = Date.now();
     const detection = await detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag() });
+    const tDetect = Date.now() - tDetect0;
     summary.counts = detection.counts;
     // Gatilho CUPOM: quantas mensagens de cupom foram geradas neste ciclo (e por loja), e por que ofertas com leitura foram barradas na agulha.
     summary.cupom = detection.cupom;
@@ -176,7 +178,9 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     summary.amazon = { paused: detection.config.amazonPaused, lastRunAt: detection.config.amazonLastRunAt };
 
     const shadowWinner = state === 'shadow' ? await pickShadowWinner(detection, now) : null;
+    const tPersist0 = Date.now();
     summary.persisted = await persistProposals(detection, { state, shadowWinner });
+    summary.timing = { preDetectMs: tDetect0 - started.getTime(), detectMs: tDetect, ...detection.timingMs, persistMs: Date.now() - tPersist0 };
     if (state === 'shadow') summary.shadow = { winner: shadowWinner, deferred: detection.plan.deferred.length, state: detection.plan.state };
 
     // ---- envio ----
@@ -242,7 +246,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
 
     if (v2) summary.rechecks = await runRechecks(now);
     await logRun(started, 'ok', {
-      state, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
+      state, timing: summary.timing, sendMs: (summary.sendRun as { ms?: number } | undefined)?.ms, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
       cupomGeradas: detection.cupom.generated, cupomEnviaveis: detection.cupom.sendable, cupomNoPool: detection.cupom.poolProducts, cupomPorLoja: detection.cupom.byStore,
       cupomBarradas: detection.cupom.barred, cupomEnviadas: (summary.sendRun as { cupomSent?: number } | undefined)?.cupomSent ?? 0,
     });
