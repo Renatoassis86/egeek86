@@ -28,7 +28,8 @@ check('config: JSON quebrado cai para vazio e avisa', (() => { const r = lerConf
 // --- interruptor e parametros ---
 check('desligada por padrao', !coberturaLigada(undefined) && !coberturaLigada('0') && !coberturaLigada('true') && coberturaLigada('1'));
 const d = P({});
-check('padroes: dry-run, 4 paginas, 120 chamadas, 40 duvidas', d.ok && !d.params.apply && d.params.paginas === 4 && d.params.maxCalls === 120 && d.params.maxDuvidas === 40, d);
+check('padroes: dry-run, 4 paginas, 120 chamadas, 40 duvidas, 30 masters novos', d.ok && !d.params.apply && d.params.paginas === 4 && d.params.maxCalls === 120 && d.params.maxDuvidas === 40 && d.params.maxMastersNovos === 30, d);
+check('maxMasters: limite 120 e 0 permitido (so anexar, sem criar)', (P({ maxMasters: '999' }) as any).params.maxMastersNovos === 120 && (P({ maxMasters: '0' }) as any).params.maxMastersNovos === 0 && (P({ maxMasters: 'x' }) as any).erro === 'maxMasters_invalido');
 check('apply so com 1; dry=1 vence', (P({ apply: '1' }) as any).params.apply === true && (P({ apply: '1', dry: '1' }) as any).params.apply === false && (P({ apply: 'true' }) as any).params.apply === false);
 check('limites: pages<=10, maxCalls<=350, maxDuvidas<=150', (() => { const r = P({ pages: '99', maxCalls: '9999', maxDuvidas: '999' }) as any; return r.params.paginas === 10 && r.params.maxCalls === 350 && r.params.maxDuvidas === 150; })());
 check('loja invalida', (P({ loja: 'celulares' }) as any).erro === 'loja_invalida:celulares');

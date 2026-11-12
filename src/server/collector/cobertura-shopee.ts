@@ -3,12 +3,17 @@
  * Só API OFICIAL de afiliados (productOfferV2 por productCatId / shopId, sortType 2 = mais vendidos). Sem scraping, sem endpoint interno.
  * Roda dentro da Vercel (as chaves só existem lá), pela rota /api/cron/cobertura-shopee, DESLIGADA por padrão (SHOPEE_COBERTURA_ATIVA=1).
  *
- * Por anúncio listado: filtros do anúncio (link oficial, foto, vendas, nota, preço sem spread ambíguo) -> já cadastrado? (pula)
- *   -> Games: dedup do banco (título+plataforma, findExistingMasterProduct) contra masters existentes; NUNCA cria master aqui
- *   -> demais lojas: casamento com os masters APROVADOS da loja (shopee-identity.ts: modelo/ISBN/campos; a mesma regra da ampliação)
- *   -> aceito (identidade forte): consulta por itemId, plausibilidade de preço e cria a oferta ATIVA
- *   -> dúvida: oferta em RASCUNHO + pergunta na fila de classificação (identity_review_items); nunca direto para a média
- *   -> rejeitado/sem master: só conta.
+ * CORREÇÃO DE DIRETRIZ DO DONO (2026-11-12): "em nenhuma loja recusar item por variação de preço; pegar TODOS os itens para o banco de pesquisa e
+ * monitoramento. A regra dos 10% abaixo da média é só para LANÇAR MENSAGENS." Então: variação de preço NÃO descarta (entra com o menor preço, marcada);
+ * poucas vendas NÃO descarta (sinal de relevância); item sem master equivalente CRIA o master (review, dedup, porteiro/escopo, dúvida -> fila).
+ *
+ * Por anúncio listado: filtros do anúncio (link oficial, foto, nota; vendas só como sinal) -> já cadastrado? (pula)
+ *   -> Games: dedup do banco (título+plataforma, findExistingMasterProduct); sem master equivalente CRIA (porteiro gamer entryGateAttributes)
+ *   -> demais lojas: casamento com os masters APROVADOS da loja (shopee-identity.ts: modelo/ISBN/campos; a mesma regra da ampliação);
+ *      sem candidato ou "é outro produto" -> decidirMasterNovo (shopee-master-novo.ts): dedup contra TODOS os masters, porteiro/escopo, criação em review
+ *   -> aceito (identidade forte): consulta por itemId e cria a oferta ATIVA; preço fora da faixa 0,35x-3x da mediana: entra QUARENTENADA (fora de média e vitrine)
+ *   -> dúvida (identidade, chave fraca, master em revisão, ambíguo): oferta em RASCUNHO + pergunta na fila de classificação; nunca direto para a média
+ *   -> condição/acessório/digital/fora de linha: só conta (identidade, não preço).
  * Orçamento por execução (páginas, chamadas, tempo, dúvidas, teto horário), PRIMEIRO 10030 PARA, cursor por fonte em system_config.
  * Sem `apply` nada é gravado (dry-run), nem o cursor. Registro de reversão em collector_runs.meta (job 'cobertura-shopee').
  */
@@ -17,11 +22,15 @@ import { randomUUID } from 'node:crypto';
 import type postgres from 'postgres';
 import { slugify } from '@/lib/slugify';
 import { masterFromRow } from '@/server/collector/amazon-assisted';
-import { filtroAnuncio, LINK_OFICIAL } from '@/lib/affiliate/shopee-identity';
+import { filtroAnuncio, LINK_OFICIAL, sinalVendas } from '@/lib/affiliate/shopee-identity';
 import {
-  avancarCursor, casarItem, COBERTURA_LIMITES, criarIndice, fontesDe, lerConfigCobertura, paradaPorErro, proximaFonte, resumirCategorias,
+  avancarCursor, casarItem, COBERTURA_LIMITES, criarIndice, destinoDoCasamento, fontesDe, lerConfigCobertura, paradaPorErro, proximaFonte, resumirCategorias,
   type CursorMapa, type IndiceMasters, type LojaCobertura, type MotivoParada, type ResumoCategoria,
 } from '@/lib/affiliate/shopee-cobertura';
+import { decidirMasterNovo, ehLojaPlus, type DecisaoMasterNovo, type IndiceDedup, type MarcasConhecidas, type PropostaMaster } from '@/lib/affiliate/shopee-master-novo';
+import type { ShopeeOfferNode } from '@/server/collector/sources/shopee';
+import { gravarVariacaoOferta } from '@/server/collector/shopee-variacao-store';
+import { carregarIndiceDedup, carregarMarcasConhecidas, criarMasterGame, criarMasterPlus } from '@/server/collector/shopee-master-novo-store';
 import { carregarItensShopee, carregarMasters, precosReferencia, type Sql } from '@/server/collector/ampliar-amostra-shopee';
 import { enfileirarDuvidaShopee } from '@/server/collector/shopee-fila';
 
@@ -30,7 +39,8 @@ export const CURSOR_KEY_COBERTURA = 'cobertura_shopee_cursor';
 /** Sem shopId/shopName/priceDiscountRate na listagem: a busca por palavra devolve System Error 10000 com eles (medido em 2026-11-11); a loja vem do lookup por itemId. */
 const LIST_FIELDS = 'itemId productName priceMin priceMax sales ratingStar imageUrl productLink offerLink';
 const LIST_FIELDS_COM_CAT = `${LIST_FIELDS} productCatIds`;
-const MIN_VENDAS = 3;
+/** Dono (2026-11-12): vendas NÃO barram a entrada (0 = sem piso); `sinalVendas` registra a relevância. */
+const MIN_VENDAS = 0;
 const MIN_NOTA = 4;
 const MAX_POR_MASTER = 3;
 
@@ -42,6 +52,8 @@ export interface OpcoesCobertura {
   paginas: number;
   maxCalls: number;
   maxDuvidas: number;
+  /** Teto de masters NOVOS por execução (freio de volume; também vale no dry-run). */
+  maxMastersNovos?: number;
   fonte: string | null;
   deadlineMs: number;
   hourlyCap?: number;
@@ -58,8 +70,18 @@ export interface StatsLoja {
   duvidas: number;
   criadas: number;
   duvidasEnfileiradas: number;
+  /** Itens lidos com faixa AMPLA de preço entre variações (antes eram descartados; agora entram com o menor preço). */
+  variacaoAmpla: number;
+  /** Itens com poucas vendas (sinal de relevância; não descarta). */
+  poucasVendasSinal: number;
+  /** Masters novos criados (apply) ou planejados (dry-run). */
+  mastersNovos: number;
+  /** Ofertas que ENTRARIAM/entraram no banco (ativas + dúvidas + masters novos), base da simulação por 100 itens lidos. */
+  entram: number;
+  /** Ofertas com preço fora da faixa de plausibilidade: entram quarentenadas (fora de média e vitrine). */
+  quarentenadas: number;
 }
-const novoStats = (): StatsLoja => ({ lidos: 0, jaCadastrados: 0, descartes: {}, aceitos: 0, duvidas: 0, criadas: 0, duvidasEnfileiradas: 0 });
+const novoStats = (): StatsLoja => ({ lidos: 0, jaCadastrados: 0, descartes: {}, aceitos: 0, duvidas: 0, criadas: 0, duvidasEnfileiradas: 0, variacaoAmpla: 0, poucasVendasSinal: 0, mastersNovos: 0, entram: 0, quarentenadas: 0 });
 
 export interface ResultadoCobertura {
   modo: 'dry-run' | 'apply';
@@ -73,6 +95,12 @@ export interface ResultadoCobertura {
   duvidas: Array<Record<string, unknown>>;
   offersCreated: string[];
   draftOffers: string[];
+  /** Masters criados nesta execução (reversão: só apaga os que ficaram sem oferta). */
+  mastersCreated: string[];
+  /** Ofertas quarentenadas por preço fora da faixa. */
+  quarentenadas: string[];
+  /** Marca de variação de preço por oferta (auditoria; as colunas só existem depois da migration 0047). */
+  variantes: Array<Record<string, unknown>>;
   cursor: CursorMapa;
   avisos: string[];
 }
@@ -114,7 +142,7 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
   const res: ResultadoCobertura = {
     modo: o.apply ? 'apply' : 'dry-run', runId: null, parou: null, erroApi: null,
     chamadas: { usadas: 0, teto, ultimaHora, erros: 0 }, fontes: [], porLoja: {}, amostras: [], duvidas: [],
-    offersCreated: [], draftOffers: [], cursor: {}, avisos: [],
+    offersCreated: [], draftOffers: [], mastersCreated: [], quarentenadas: [], variantes: [], cursor: {}, avisos: [],
   };
   const stats = (loja: string) => (res.porLoja[loja] ??= novoStats());
   const descarta = (loja: string, k: string) => {
@@ -161,6 +189,18 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
     log(`loja ${loja}: ${lista.length} masters aprovados no indice`);
   }
 
+  // Dedup para master novo: TODOS os masters da vertical (aprovados e em revisão). Marcas reais da tabela brands.
+  const dedups = new Map<string, IndiceDedup>();
+  let marcas: MarcasConhecidas = new Set();
+  for (const loja of new Set(fontes.map((f) => f.loja))) {
+    if (loja === 'games') continue;
+    dedups.set(loja, await carregarIndiceDedup(sql, loja));
+  }
+  if (dedups.size > 0) marcas = await carregarMarcasConhecidas(sql);
+  const tetoMastersNovos = o.maxMastersNovos ?? COBERTURA_LIMITES.mastersNovosPadrao;
+  let mastersNovosNaRodada = 0;
+  let planejadoSeq = 0;
+
   const pacer = createShopeePacer();
   let errosSeguidos = 0;
   let runId: string | null = null;
@@ -173,6 +213,7 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
   };
   const metaAtual = (extra?: Record<string, unknown>) => ({
     apply: o.apply, calls: res.chamadas.usadas, parou: res.parou, erroApi: res.erroApi, offersCreated: res.offersCreated, draftOffers: res.draftOffers,
+    mastersCreated: res.mastersCreated, quarentenadas: res.quarentenadas, variantes: res.variantes,
     fontes: res.fontes, ...extra,
   });
   const fecharRun = async (erro?: Error) => {
@@ -214,6 +255,61 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
     }
   }
 
+
+  // ---- resolução do destino de um item ----
+  type Resolucao =
+    | { tipo: 'descartar'; motivo: string }
+    | { tipo: 'existente'; masterId: string; masterNome: string; oferta: 'ativa' | 'duvida'; motivo: string; score: number }
+    | { tipo: 'novo'; oferta: 'ativa' | 'duvida'; motivo: string; nome: string; score: number; plus?: PropostaMaster; sugestao?: 'approved' | 'review'; jogo?: JogoNovo };
+  type ResolucaoMaster = Exclude<Resolucao, { tipo: 'descartar' }>;
+
+  const resolver = async (loja: LojaCobertura, node: ShopeeOfferNode): Promise<Resolucao> => {
+    if (loja === 'games') {
+      const m = await casarJogo(sql, node.productName, node.priceCents);
+      if ('motivo' in m) return { tipo: 'descartar', motivo: m.motivo };
+      if ('masterId' in m) {
+        return { tipo: 'existente', masterId: m.masterId, masterNome: '', oferta: m.aprovado ? 'ativa' : 'duvida', motivo: m.aprovado ? 'dedup_titulo_plataforma' : 'master_games_em_revisao', score: 1 };
+      }
+      return { tipo: 'novo', oferta: m.novo.aprovado ? 'ativa' : 'duvida', motivo: m.novo.aprovado ? 'master_novo:games_porteiro_aprovou' : 'master_novo:games_porteiro_revisao', nome: m.novo.titulo, score: 1, jogo: m.novo };
+    }
+    const d = casarItem(indices.get(loja)!, { itemId: node.itemId, title: node.productName, priceCents: node.priceCents }, loja);
+    const dest = destinoDoCasamento(d);
+    if (dest.destino === 'descartar') return { tipo: 'descartar', motivo: dest.motivo };
+    if (d.destino === 'aceito') return { tipo: 'existente', masterId: d.masterId, masterNome: masterNome.get(d.masterId) ?? '', oferta: 'ativa', motivo: d.verdict.motivo, score: d.verdict.score };
+    if (d.destino === 'duvida') return { tipo: 'existente', masterId: d.masterId, masterNome: masterNome.get(d.masterId) ?? '', oferta: 'duvida', motivo: d.motivo, score: d.verdict.score };
+    // Sem master equivalente (ou "é outro produto"): o produto passa a ser CRIADO, depois da dedup e do porteiro/escopo.
+    if (!ehLojaPlus(loja)) return { tipo: 'descartar', motivo: 'loja_sem_criacao_de_produto' };
+    const dec: DecisaoMasterNovo = decidirMasterNovo(loja, { titulo: node.productName, priceCents: node.priceCents, hasImage: !!node.imageUrl }, marcas, dedups.get(loja)!);
+    if (dec.acao === 'descartar') return { tipo: 'descartar', motivo: `novo:${dec.motivo}` };
+    if (dec.acao === 'anexar') return { tipo: 'existente', masterId: dec.masterId, masterNome: dec.masterNome, oferta: dec.oferta, motivo: dec.motivo, score: 0.8 };
+    return { tipo: 'novo', oferta: dec.oferta, motivo: dec.motivo, nome: dec.proposta.nome, score: 0.6, plus: dec.proposta, sugestao: dec.sugestaoPorteiro };
+  };
+
+  /** Apply: devolve o id do master (cria o novo, sempre em revisão, e o registra na dedup e no registro de reversão). */
+  const garantirMaster = async (rs: ResolucaoMaster, node: ShopeeOfferNode, loja: LojaCobertura): Promise<string> => {
+    if (rs.tipo === 'existente') return rs.masterId;
+    let id: string;
+    if (rs.plus) {
+      id = await criarMasterPlus(sql, rs.plus, { imageUrl: node.imageUrl, itemId: node.itemId, sugestao: rs.sugestao ?? 'review', motivo: rs.motivo, runId });
+      dedups.get(loja)?.adicionar(rs.plus, id);
+    } else {
+      id = await criarMasterGame({ ...rs.jogo!, itemId: node.itemId, imageUrl: node.imageUrl, runId });
+    }
+    res.mastersCreated.push(id);
+    masterNome.set(id, rs.nome);
+    mastersNovosNaRodada++;
+    stats(loja).mastersNovos++;
+    await flush(); // registro de reversão do master antes da oferta
+    return id;
+  };
+
+  /** Marca de variação de preço: sempre no registro da execução; nas colunas da oferta só com a migration 0047 aplicada e SHOPEE_VARIANTE_COLUNAS=1. */
+  const registrarVariacao = async (offerId: string, n: ShopeeOfferNode, loja: string) => {
+    if (n.variantSpread == null) return;
+    if (res.variantes.length < 500) res.variantes.push({ offerId, itemId: n.itemId, loja, spread: n.variantSpread, min: n.variantMinCents, max: n.variantMaxCents, ampla: n.variantAmbigua });
+    await gravarVariacaoOferta(offerId, n);
+  };
+
   try {
     runId = await abrirRun();
     res.runId = runId;
@@ -246,66 +342,90 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
         const parsed = parseShopeeNode(raw);
         if ('rejected' in parsed) { descarta(fonte.loja, `preco:${parsed.rejected}`); continue; }
         let node = parsed.node;
+        if (node.variantAmbigua) st.variacaoAmpla++; // NÃO descarta (dono, 2026-11-12): entra com o menor preço, marcado
         const ref = `shopee-${node.itemId}`;
         if (existentes.has(ref)) { st.jaCadastrados++; continue; }
         const falha = filtroAnuncio({ sales: node.sales, imageUrl: node.imageUrl, offerLink: node.offerLink, ratingStar: raw?.ratingStar }, { minVendas: MIN_VENDAS, minNota: MIN_NOTA });
         if (falha) { descarta(fonte.loja, `anuncio:${falha}`); continue; }
+        if (sinalVendas(node.sales) === 'poucas_vendas') st.poucasVendasSinal++;
 
-        // ---- casamento ----
-        let masterId: string | null = null;
-        let veredito: { tipo: 'aceito' | 'duvida'; motivo: string; score: number } | null = null;
-        if (fonte.loja === 'games') {
-          const m = await casarJogo(sql, node.productName, node.priceCents);
-          if ('motivo' in m) { descarta('games', m.motivo); continue; }
-          masterId = m.masterId;
-          veredito = { tipo: 'aceito', motivo: 'dedup_titulo_plataforma', score: 1 };
-        } else {
-          const idx = indices.get(fonte.loja)!;
-          const d = casarItem(idx, { itemId: node.itemId, title: node.productName, priceCents: node.priceCents }, fonte.loja);
-          if (d.destino === 'sem_candidato') { descarta(fonte.loja, 'sem_master_candidato'); continue; }
-          if (d.destino === 'rejeitado') {
-            descarta(fonte.loja, d.motivo);
-            amostra({ loja: fonte.loja, item: node.productName.slice(0, 100), motivo: d.motivo });
-            continue;
-          }
-          masterId = d.masterId;
-          veredito = { tipo: d.destino === 'aceito' ? 'aceito' : 'duvida', motivo: d.destino === 'aceito' ? d.verdict.motivo : d.motivo, score: d.verdict.score };
-        }
-
-        // ---- preço plausível contra o próprio master ----
-        const refs = await precosReferencia(sql, masterId);
-        if (isImplausiblyLow(node.priceCents, refs) || isImplausiblyHigh(node.priceCents, refs)) {
-          descarta(fonte.loja, isImplausiblyLow(node.priceCents, refs) ? 'preco:baixo_demais_vs_master' : 'preco:alto_demais_vs_master');
+        // ---- casamento: master existente, master NOVO ou descarte por condição ----
+        const rs = await resolver(fonte.loja, node);
+        if (rs.tipo === 'descartar') {
+          descarta(fonte.loja, rs.motivo);
+          if (fonte.loja !== 'games') amostra({ loja: fonte.loja, item: node.productName.slice(0, 100), motivo: rs.motivo });
           continue;
         }
+        const novo = rs.tipo === 'novo';
+        if (novo && mastersNovosNaRodada >= tetoMastersNovos) { descarta(fonte.loja, 'novo:limite_de_masters_da_rodada'); continue; }
 
-        if (veredito.tipo === 'duvida') {
+        // ---- preço fora da faixa 0,35x-3x da mediana do produto: ENTRA quarentenado (fora de média e vitrine); só vale para master existente ----
+        let foraDaFaixa = false;
+        if (rs.tipo === 'existente') {
+          const refs = await precosReferencia(sql, rs.masterId);
+          foraDaFaixa = isImplausiblyLow(node.priceCents, refs) || isImplausiblyHigh(node.priceCents, refs);
+        }
+        const planejarNovo = () => {
+          mastersNovosNaRodada++;
+          st.mastersNovos++;
+          if (rs.tipo === 'novo' && rs.plus) dedups.get(fonte.loja)?.adicionar(rs.plus, `planejado:${++planejadoSeq}`);
+        };
+        const aposCriar = async (offerId: string) => {
+          if (foraDaFaixa) {
+            await sql`update affiliate_offers set quarantined_at = now(), updated_at = now() where id = ${offerId}::uuid`;
+            res.quarentenadas.push(offerId);
+            st.quarentenadas++;
+          }
+          await registrarVariacao(offerId, node, fonte.loja);
+        };
+
+        if (rs.oferta === 'duvida') {
           st.duvidas++;
-          if (res.duvidas.length < 100) res.duvidas.push({ loja: fonte.loja, masterId, master: masterNome.get(masterId) ?? null, itemId: node.itemId, titulo: node.productName, preco: money(node.priceCents), motivo: veredito.motivo });
-          if (o.apply && duvidasEnfileiradas < o.maxDuvidas) {
+          if (res.duvidas.length < 100) res.duvidas.push({ loja: fonte.loja, masterId: rs.tipo === 'existente' ? rs.masterId : null, master: rs.tipo === 'existente' ? (masterNome.get(rs.masterId) || rs.masterNome || null) : rs.nome, masterNovo: novo, itemId: node.itemId, titulo: node.productName, preco: money(node.priceCents), variacao: node.variantSpread, motivo: rs.motivo });
+          if (!o.apply) {
+            st.entram++;
+            if (novo) planejarNovo();
+            if (foraDaFaixa) st.quarentenadas++;
+            continue;
+          }
+          if (duvidasEnfileiradas >= o.maxDuvidas) { descarta(fonte.loja, 'duvida:acima_do_limite_da_rodada'); continue; }
+          try {
+            const masterId = await garantirMaster(rs, node, fonte.loja);
+            const nomeM = masterNome.get(masterId) ?? (rs.tipo === 'novo' ? rs.nome : rs.masterNome);
             const q = await enfileirarDuvidaShopee(sql, {
-              networkId: net.id, masterId, masterNome: masterNome.get(masterId) ?? '', vertical: fonte.loja, itemId: node.itemId, titulo: node.productName,
+              networkId: net.id, masterId, masterNome: nomeM, vertical: fonte.loja, itemId: node.itemId, titulo: node.productName,
               priceCents: node.priceCents, listPriceCents: node.listPriceCents, imageUrl: node.imageUrl, shopName: node.shopName, offerLink: node.offerLink!,
-              motivo: veredito.motivo, score: veredito.score, fonte: fonte.chave,
+              motivo: rs.motivo, score: rs.score, fonte: fonte.chave, masterNovo: novo,
+              variacao: node.variantSpread ? { variantMinCents: node.variantMinCents!, variantMaxCents: node.variantMaxCents!, variantSpread: node.variantSpread } : null,
             });
             if (q) {
               existentes.set(ref, masterId);
               res.draftOffers.push(q.offerId);
               duvidasEnfileiradas++;
               st.duvidasEnfileiradas++;
+              st.entram++;
+              await aposCriar(q.offerId);
               await flush();
             }
-          } else if (o.apply) descarta(fonte.loja, 'duvida:acima_do_limite_da_rodada');
+          } catch (e) {
+            descarta(fonte.loja, 'gravacao:erro');
+            log(`ERRO ao enfileirar ${node.itemId}: ${(e as Error).message.slice(0, 120)}`);
+          }
           continue;
         }
 
         // ---- aceito: confirma por itemId (disponibilidade, preço e loja) e cria a oferta ativa ----
         st.aceitos++;
-        const ativas = await sql<{ n: number }[]>`select count(*)::int as n from affiliate_offers o join affiliate_networks n on n.id = o.network_id
-          where o.master_product_id = ${masterId}::uuid and n.slug = 'shopee' and o.status = 'active' and o.quarantined_at is null`;
-        if ((ativas[0]?.n ?? 0) >= MAX_POR_MASTER) { descarta(fonte.loja, 'master_ja_tem_o_maximo_de_ofertas_shopee'); continue; }
+        if (rs.tipo === 'existente') {
+          const ativas = await sql<{ n: number }[]>`select count(*)::int as n from affiliate_offers o join affiliate_networks n on n.id = o.network_id
+            where o.master_product_id = ${rs.masterId}::uuid and n.slug = 'shopee' and o.status = 'active' and o.quarantined_at is null`;
+          if ((ativas[0]?.n ?? 0) >= MAX_POR_MASTER) { descarta(fonte.loja, 'master_ja_tem_o_maximo_de_ofertas_shopee'); continue; }
+        }
         if (!o.apply) {
-          amostra({ loja: fonte.loja, par: node.productName.slice(0, 90), master: (masterNome.get(masterId) ?? masterId).slice(0, 70), preco: money(node.priceCents), motivo: veredito.motivo });
+          st.entram++;
+          if (novo) planejarNovo();
+          if (foraDaFaixa) st.quarentenadas++;
+          amostra({ loja: fonte.loja, par: node.productName.slice(0, 90), master: (rs.tipo === 'existente' ? masterNome.get(rs.masterId) ?? rs.masterId : `NOVO: ${rs.nome}`).slice(0, 70), preco: money(node.priceCents), variacao: node.variantSpread, foraDaFaixa: foraDaFaixa || undefined, motivo: rs.motivo });
           continue;
         }
         try {
@@ -313,8 +433,9 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
           const m = l.nodes.find((n) => String(n?.itemId) === node.itemId);
           const p2 = m ? parseShopeeNode(m) : null;
           if (!p2 || 'rejected' in p2) { descarta(fonte.loja, 'lookup:indisponivel'); continue; }
-          node = { ...node, priceCents: p2.node.priceCents, listPriceCents: p2.node.listPriceCents, shopId: p2.node.shopId, shopName: p2.node.shopName, offerLink: node.offerLink && LINK_OFICIAL.test(node.offerLink) ? node.offerLink : p2.node.offerLink };
+          node = { ...p2.node, productName: node.productName, imageUrl: node.imageUrl ?? p2.node.imageUrl, offerLink: node.offerLink && LINK_OFICIAL.test(node.offerLink) ? node.offerLink : p2.node.offerLink };
           if (!node.offerLink || !LINK_OFICIAL.test(node.offerLink)) { descarta(fonte.loja, 'anuncio:sem_offerlink_oficial'); continue; }
+          const masterId = await garantirMaster(rs, node, fonte.loja);
           const slug = slugify(`${node.productName.slice(0, 100)}-shopee-${randomUUID().slice(0, 6)}`);
           const [of] = await sql<{ id: string }[]>`
             insert into affiliate_offers (master_product_id, network_id, title, slug, affiliate_url, affiliate_link_pending, image_url, store_name,
@@ -329,7 +450,9 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
           await flush(); // registro de reversão primeiro, depois a cotação
           await recordPriceSnapshot({ offerId: of.id, priceCents: node.priceCents, listPriceCents: node.listPriceCents, source: 'api' });
           try { await sql`update affiliate_offers set last_price_confirmed_at = now() where id = ${of.id}::uuid`; } catch { /* coluna opcional */ }
+          await aposCriar(of.id);
           st.criadas++;
+          st.entram++;
         } catch (e) {
           if ((e as { parada?: MotivoParada }).parada) { res.parou = (e as { parada: MotivoParada }).parada; break laco; }
           descarta(fonte.loja, 'gravacao:erro');
@@ -347,9 +470,20 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
   return res;
 }
 
-type ResultadoJogo = { masterId: string } | { motivo: string };
+interface JogoNovo {
+  titulo: string;
+  productType: string;
+  classified: Record<string, unknown>;
+  gateAttributes: Record<string, unknown>;
+  aprovado: boolean;
+}
+type ResultadoJogo = { masterId: string; aprovado: boolean } | { novo: JogoNovo } | { motivo: string };
 
-/** Games: mesma regra da descoberta gamer (título+plataforma normalizados, `findExistingMasterProduct`); nunca cria master. */
+/**
+ * Games: mesma regra da descoberta gamer (título+plataforma normalizados, `findExistingMasterProduct`). Master existente aprovado => oferta ativa;
+ * em revisão => dúvida (fila); rejeitado pelo dono => fora. Sem master equivalente => master NOVO (dono, 2026-11-12), com o porteiro gamer
+ * (`entryGateAttributes`): aprovado nasce aprovado; revisão nasce em revisão (oferta em rascunho + fila); rejeitado não nasce.
+ */
 async function casarJogo(sql: Sql, titulo: string, priceCents: number): Promise<ResultadoJogo> {
   const { isNonProductAccessory, isUsedCondition } = await import('@/server/collector/discover-products');
   const { resolveProductTypeFromTitle } = await import('@/lib/affiliate/product-type-classifier');
@@ -357,6 +491,7 @@ async function casarJogo(sql: Sql, titulo: string, priceCents: number): Promise<
   const { classifyFromAttributes } = await import('@/server/collector/sources/mercado-livre-classify');
   const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
   const { rejectionOf } = await import('@/lib/catalog/vertical/identity');
+  const { entryGateAttributes } = await import('@/lib/catalog/gate');
   if (isNonProductAccessory(titulo) || isUsedCondition(titulo)) return { motivo: 'condicao_ou_acessorio' };
   if (rejectionOf({ id: 'x', name: titulo })) return { motivo: 'fora_de_linha_ou_condicao' };
   const productType = await resolveProductTypeFromTitle(titulo, priceCents);
@@ -367,22 +502,30 @@ async function casarJogo(sql: Sql, titulo: string, priceCents: number): Promise<
   if (plataforma === 'unknown' && productType !== 'accessory') return { motivo: 'sem_plataforma' };
   const formato = productType === 'game' ? resolveGameFormat(titulo, cls.gameFormat) : cls.gameFormat;
   const existente = await findExistingMasterProduct(titulo, plataforma, { productType, gameFormat: productType === 'game' ? formato : null });
-  if (!existente) return { motivo: 'sem_master_games' };
-  const [g] = await sql<{ v: string | null; manual: string | null }[]>`
-    select attributes->'catalogGate'->>'verdict' as v, attributes->'catalogGate'->>'manual' as manual from master_products where id = ${existente.id}::uuid`;
-  if ((g?.v && g.v !== 'approved') || g?.manual === 'rejected') return { motivo: 'master_games_nao_aprovado' };
-  return { masterId: String(existente.id) };
+  if (existente) {
+    const [g] = await sql<{ v: string | null; manual: string | null }[]>`
+      select attributes->'catalogGate'->>'verdict' as v, attributes->'catalogGate'->>'manual' as manual from master_products where id = ${existente.id}::uuid`;
+    if (g?.v === 'rejected' || g?.manual === 'rejected') return { motivo: 'master_games_rejeitado' };
+    const aprovado = g?.manual === 'approved' || !g?.v || g.v === 'approved';
+    return { masterId: String(existente.id), aprovado };
+  }
+  // Sem master equivalente: cria, se o porteiro gamer não rejeita.
+  const gateAttributes = entryGateAttributes(titulo, productType);
+  const verdict = (gateAttributes as { catalogGate?: { verdict?: string } }).catalogGate?.verdict ?? 'approved';
+  if (verdict === 'rejected') return { motivo: 'games_porteiro_rejeitou' };
+  return { novo: { titulo, productType, classified: { ...cls, gamePlatformGen: plataforma, gameFormat: formato }, gateAttributes, aprovado: verdict === 'approved' } };
 }
 
 /** Rollback de uma execução: apaga SÓ ofertas criadas (ativas e rascunhos de dúvida), suas cotações e perguntas pendentes. Nunca toca masters. */
 export async function desfazerCobertura(sql: Sql, runId: string, apply: boolean) {
   const [run] = await sql<{ meta: unknown }[]>`select meta from collector_runs where id = ${runId}::bigint and job = ${JOB_COBERTURA}`;
   if (!run) return { ok: false as const, erro: 'run_nao_encontrado' };
-  const meta = (typeof run.meta === 'string' ? JSON.parse(run.meta) : run.meta) as { offersCreated?: string[]; draftOffers?: string[]; rolledBackAt?: string } | null;
+  const meta = (typeof run.meta === 'string' ? JSON.parse(run.meta) : run.meta) as { offersCreated?: string[]; draftOffers?: string[]; mastersCreated?: string[]; rolledBackAt?: string } | null;
   if (meta?.rolledBackAt) return { ok: false as const, erro: 'run_ja_desfeito', rolledBackAt: meta.rolledBackAt };
   const ids = [...(meta?.offersCreated ?? []), ...(meta?.draftOffers ?? [])];
-  if (ids.length === 0) return { ok: true as const, apply, runId, solicitadas: 0, apagadas: 0 };
-  const found = await sql<{ id: string }[]>`
+  const masters = meta?.mastersCreated ?? [];
+  if (ids.length === 0 && masters.length === 0) return { ok: true as const, apply, runId, solicitadas: 0, apagadas: 0 };
+  const found = ids.length === 0 ? [] : await sql<{ id: string }[]>`
     select o.id::text as id from affiliate_offers o join affiliate_networks n on n.id = o.network_id
     where o.id in ${sql(ids)} and n.slug = 'shopee' and o.external_ref like 'shopee-%'`;
   const alvo = found.map((r) => r.id);
@@ -392,10 +535,26 @@ export async function desfazerCobertura(sql: Sql, runId: string, apply: boolean)
       await tx`delete from affiliate_price_snapshots where offer_id in ${tx(alvo)}`;
       await tx`delete from affiliate_offers where id in ${tx(alvo)}`;
     });
-    const novo = JSON.stringify({ ...meta, rolledBackAt: new Date().toISOString(), rolledBack: alvo.length });
+  }
+  // Masters criados por ESTA execução: só apaga os que ficaram sem nenhuma oferta e ainda carregam a marca desta execução (nunca toca master antigo).
+  let mastersApagados = 0;
+  const mastersAlvo = masters.length
+    ? (
+        await sql<{ id: string }[]>`
+        select m.id::text as id from master_products m
+        where m.id in ${sql(masters)} and m.attributes -> 'shopeeCriacao' ->> 'runId' = ${runId}
+          and not exists (select 1 from affiliate_offers o where o.master_product_id = m.id and not (o.id::text = any(${alvo}::text[])))`
+      ).map((r) => r.id)
+    : [];
+  if (apply && mastersAlvo.length > 0) {
+    await sql`delete from master_products where id in ${sql(mastersAlvo)}`;
+    mastersApagados = mastersAlvo.length;
+  }
+  if (apply) {
+    const novo = JSON.stringify({ ...meta, rolledBackAt: new Date().toISOString(), rolledBack: alvo.length, mastersRolledBack: mastersApagados });
     await sql`update collector_runs set meta = ${novo}::text::jsonb where id = ${runId}::bigint`;
   }
-  return { ok: true as const, apply, runId, solicitadas: ids.length, encontradas: alvo.length, apagadas: apply ? alvo.length : 0 };
+  return { ok: true as const, apply, runId, solicitadas: ids.length, encontradas: alvo.length, apagadas: apply ? alvo.length : 0, mastersEncontrados: mastersAlvo.length, mastersApagados };
 }
 
 /**

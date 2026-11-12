@@ -106,6 +106,10 @@ async function main() {
   respond(200, { data: { productOfferV2: { nodes: [{ itemId: 99 }, { itemId: 7 }], pageInfo: { hasNextPage: false } } } });
   const lk = await shopee.lookupShopeeItem('7');
   check('lookup so aceita o no com itemId pedido (no sem preco => unavailable)', lk.status === 'unavailable');
+  // Dono (2026-11-12): item com variacao ampla de preco esta DISPONIVEL (lookup ok, preco = menor); expiracao/reativacao o tratam como qualquer outro.
+  respond(200, { data: { productOfferV2: { nodes: [{ itemId: 8, productName: 'Item com variacoes', priceMin: '10.00', priceMax: '90.00' }], pageInfo: { hasNextPage: false } } } });
+  const lkv = await shopee.lookupShopeeItem('8');
+  check('lookup: variacao ampla => ok com o menor preco (disponivel)', lkv.status === 'ok' && lkv.node.priceCents === 1000 && lkv.node.variantAmbigua === true && lkv.node.listPriceCents === null, lkv);
   // --- listagem por categoria / loja (descoberta pela API oficial)
   respond(200, { data: { productOfferV2: { nodes: [{ itemId: 1 }], pageInfo: { hasNextPage: true } } } });
   await shopee.queryProductOffers({ productCatId: '100012', sortType: 2, page: 2, limit: 50, fields: 'itemId productName productCatIds' });
@@ -134,12 +138,20 @@ async function main() {
   check('"-5" => null', shopee.parseShopeePriceToCents('-5') === null);
   const ok = shopee.parseShopeeNode({ itemId: 5, shopId: 9, shopName: 'Loja', productName: 'Jogo X', priceMin: '100.00', priceMax: '105.00', imageUrl: 'https://img', productLink: 'https://shopee.com.br/p', offerLink: 'https://s.shopee.com.br/o' });
   check('no valido (spread 5%) usa priceMin e guarda priceMax como lista', 'node' in ok && ok.node.priceCents === 10000 && ok.node.listPriceCents === 10500);
+  check('faixa estreita: variacao marcada mas NAO ampla', 'node' in ok && ok.node.variantAmbigua === false && ok.node.variantMinCents === 10000 && ok.node.variantMaxCents === 10500 && ok.node.variantSpread === 1.05);
+  // Dono (2026-11-12): variacao de preco NAO recusa item; entra com o MENOR preco, marcada, sem inventar valor.
   const amb = shopee.parseShopeeNode({ itemId: 5, productName: 'X', priceMin: '10.00', priceMax: '50.00' });
-  check('variacao 10 a 50 => ambiguous_price (nao grava)', 'rejected' in amb && amb.rejected === 'ambiguous_price');
+  check('variacao 10 a 50 => ENTRA com priceMin (nao e mais rejeitada)', 'node' in amb && amb.node.priceCents === 1000);
+  check('variacao ampla: marca min/max/spread e variantAmbigua', 'node' in amb && amb.node.variantMinCents === 1000 && amb.node.variantMaxCents === 5000 && amb.node.variantSpread === 5 && amb.node.variantAmbigua === true);
+  check('variacao ampla: o maior preco NUNCA vira preco de lista (sem desconto fabricado)', 'node' in amb && amb.node.listPriceCents === null);
+  const limite = shopee.parseShopeeNode({ itemId: 5, productName: 'X', priceMin: '100.00', priceMax: '110.00' });
+  check('spread exatamente 1,10 nao e ampla; 1,11 e', 'node' in limite && limite.node.variantAmbigua === false && (shopee.parseShopeeNode({ itemId: 5, productName: 'X', priceMin: '100.00', priceMax: '111.00' }) as any).node.variantAmbigua === true);
   check('sem nome => no_name', (shopee.parseShopeeNode({ itemId: 1, priceMin: '5' }) as any).rejected === 'no_name');
   check('sem preco => no_price', (shopee.parseShopeeNode({ itemId: 1, productName: 'A', priceMin: null }) as any).rejected === 'no_price');
   const solo = shopee.parseShopeeNode({ itemId: 1, productName: 'A', priceMin: '20.00' });
   check('so priceMin => preco unico sem listPrice', 'node' in solo && solo.node.priceCents === 2000 && solo.node.listPriceCents === null);
+  check('preco unico: sem marca de variacao', 'node' in solo && solo.node.variantSpread === null && solo.node.variantMinCents === null && solo.node.variantAmbigua === false);
+  check('priceMax menor que priceMin nao vira variacao', (() => { const r = shopee.parseShopeeNode({ itemId: 1, productName: 'A', priceMin: '20.00', priceMax: '10.00' }); return 'node' in r && r.node.variantSpread === null && r.node.priceCents === 2000; })());
 
   // --- external_ref e URL publica
   check('external_ref shopee-123', shopee.shopeeItemIdFromRef('shopee-123') === '123');

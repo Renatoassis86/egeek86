@@ -8,8 +8,10 @@
  *   (toda checagem com preço zera o contador), então `last_checked_at` é o instante da falta anterior: não precisa de coluna nova.
  * - Duas faltas na mesma hora cheia contam UMA. Oferta ativa com falta pendente é reconsultada só depois de 1 h (SHOPEE_MISS_RECHECK_MS),
  *   o que garante horas diferentes e, no mínimo, 2 h entre a 1ª e a 3ª falta.
- * - Preço ambíguo (variações com preços muito diferentes) NÃO é falta: o anúncio existe, só não dá para fixar um preço. Não expira, mas
- *   também não confirma preço (a regra de 24 h sem confirmação já o tira da média).
+ * - VARIAÇÃO DE PREÇO (dono, 2026-11-12: "em nenhuma loja recusar item por variação"): o item com faixa de preço entre variações (priceMax/
+ *   priceMin amplo) está DISPONÍVEL. A coleta usa o menor preço (priceMin, "a partir de"), confirma preço, zera faltas e REATIVA a
+ *   oferta expirada como qualquer outra. `ambiguous_price` não é mais produzido pelo parser; o motivo continua aceito aqui (nunca conta
+ *   como falta) só por compatibilidade com registros e chamadores antigos.
  * - Oferta já expirada nunca "expira de novo"; é reconsultada 1x por dia e reativada se a API devolver preço válido.
  */
 export const SHOPEE_MAX_MISSES = 3;
@@ -18,6 +20,11 @@ export const SHOPEE_EXPIRED_RECHECK_MS = 24 * 60 * 60 * 1000;
 export const SHOPEE_ACTIVE_RECHECK_MS = 30 * 60 * 1000;
 /** Fatia fixa por rodada para reconsultar ofertas expiradas (vencem a cada 24 h; ~15 por tick de 5 min cobrem ~4.300/dia). */
 export const SHOPEE_EXPIRED_SLICE_PER_RUN = 15;
+
+/** A resposta da API para o item (com ou sem variação ampla de preço) conta como DISPONÍVEL quando traz um preço mínimo válido. */
+export function itemDisponivel(r: { status: 'ok' | 'unavailable'; variantAmbigua?: boolean }): boolean {
+  return r.status === 'ok';
+}
 
 export type ShopeeMissReason = 'not_returned' | 'no_price' | 'no_name' | 'ambiguous_price' | 'implausible_price';
 

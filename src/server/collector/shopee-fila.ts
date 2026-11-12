@@ -24,6 +24,10 @@ export interface DuvidaShopee {
   motivo: string;
   score: number;
   fonte: string;
+  /** true = o master acabou de ser CRIADO a partir deste item (correção de diretriz de 2026-11-12): a pergunta é "cadastrar este produto?". */
+  masterNovo?: boolean;
+  /** Marca de variação de preço (faixa entre variações) para o revisor ver; nunca valor inventado. */
+  variacao?: { variantMinCents: number; variantMaxCents: number; variantSpread: number } | null;
 }
 
 /**
@@ -45,11 +49,16 @@ export async function enfileirarDuvidaShopee(sql: Sql, d: DuvidaShopee): Promise
   if (!o) return null;
   await recordPriceSnapshot({ offerId: o.id, priceCents: d.priceCents, listPriceCents: d.listPriceCents ?? null, source: 'api' });
   const options: QueueOption[] = [
-    { value: 'sim', label: 'É o mesmo produto', hint: 'Entra na média deste produto', kind: 'escolha' },
+    d.masterNovo
+      ? { value: 'sim', label: 'Cadastrar este produto', hint: 'A oferta fica ativa; o produto segue em revisão até a aprovação do catálogo', kind: 'escolha' }
+      : { value: 'sim', label: 'É o mesmo produto', hint: 'Entra na média deste produto', kind: 'escolha' },
     NAO_E_ESTE,
     NAO_SEI,
   ];
-  const understood = { origem: ORIGEM_DUVIDA_SHOPEE, master: d.masterNome.slice(0, 160), itemShopee: d.itemId, fonte: d.fonte, score: Number(d.score.toFixed(2)) };
+  const understood = {
+    origem: ORIGEM_DUVIDA_SHOPEE, master: d.masterNome.slice(0, 160), itemShopee: d.itemId, fonte: d.fonte, score: Number(d.score.toFixed(2)),
+    ...(d.masterNovo ? { masterNovo: true } : {}), ...(d.variacao ? { variacaoDePreco: d.variacao } : {}),
+  };
   const [it] = await sql<{ id: string }[]>`
     insert into identity_review_items (offer_id, master_id, vertical, axis, source, reason, understood, options, title, title_norm)
     values (${o.id}::uuid, ${d.masterId}::uuid, ${d.vertical}, 'identidade', 'confianca', ${`Shopee: ${d.motivo}`}, ${JSON.stringify(understood)}::text::jsonb,

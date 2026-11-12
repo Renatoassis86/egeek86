@@ -7,7 +7,7 @@
  *
  * Fluxo por master APROVADO (catalogGate approved/manual approved): consulta productOfferV2 por palavra-chave (marca+modelo; livros:
  * ISBN e depois titulo+autor) SEM shopId/shopName/priceDiscountRate (a busca devolve System Error 10000 com eles) -> filtros do anuncio
- * (offerLink oficial, foto, vendas, nota, preco sem spread ambiguo) -> identidade FORTE (shopee-identity.ts) -> plausibilidade de
+ * (offerLink oficial, foto, vendas, nota, preco: variacao nao descarta, entra com o menor) -> identidade FORTE (shopee-identity.ts) -> plausibilidade de
  * preco contra o proprio master -> consulta por itemId (confirma disponibilidade/preco e le a loja) -> oferta com affiliate_url =
  * offerLink oficial. Em duvida NAO cria. API instavel (erro repetido / so respostas vazias): PARA e documenta.
  * `--aceitar-cobertura` NAO e exposto: aceitarCobertura e sempre false.
@@ -206,7 +206,8 @@ export async function ampliarAmostraShopee(sql: Sql, opts: AmpliarOpts): Promise
   const log = opts.log ?? (() => {});
   const APPLY = opts.apply;
   const MAX_POR_MASTER = Math.max(1, opts.maxPorMaster ?? 3);
-  const MIN_VENDAS = Math.max(0, opts.minVendas ?? 3);
+  // Dono (2026-11-12): poucas vendas NÃO barra a entrada (0 = sem piso); passar minVendas explícito reativa o piso.
+  const MIN_VENDAS = Math.max(0, opts.minVendas ?? 0);
   const MIN_NOTA = Math.max(0, Math.min(5, opts.minNota ?? 4));
   const HOURLY_CAP = Math.min(8000, Math.max(1, opts.hourlyCap ?? TETO_HORARIO_PADRAO));
   const COM_LOOKUP = opts.comLookup ?? true;
@@ -485,12 +486,12 @@ export async function ampliarAmostraShopee(sql: Sql, opts: AmpliarOpts): Promise
             st.descartes['mesma_loja_no_master'] = (st.descartes['mesma_loja_no_master'] ?? 0) + 1;
             continue;
           }
-          if (isImplausiblyLow(node.priceCents, refs) || isImplausiblyHigh(node.priceCents, refs)) {
-            const baixo = isImplausiblyLow(node.priceCents, refs);
-            const k = baixo ? 'preco:baixo_demais_vs_master' : 'preco:alto_demais_vs_master';
+          // Faixa de plausibilidade (0,35x a 3x a mediana): fora dela o item ENTRA no banco QUARENTENADO (fora de média e vitrine), não é descartado.
+          const foraDaFaixa = isImplausiblyLow(node.priceCents, refs) || isImplausiblyHigh(node.priceCents, refs);
+          if (foraDaFaixa) {
+            const k = isImplausiblyLow(node.priceCents, refs) ? 'preco:baixo_demais_vs_master_quarentenado' : 'preco:alto_demais_vs_master_quarentenado';
             st.descartes[k] = (st.descartes[k] ?? 0) + 1;
             amostra(k, { vertical: vert, master: row.name.slice(0, 80), item: node.productName.slice(0, 110), preco: money(node.priceCents), refs: refs.length });
-            continue;
           }
           st.paresAceitos++;
           if (lojaKey) lojasUsadas.add(lojaKey);
@@ -543,6 +544,7 @@ export async function ampliarAmostraShopee(sql: Sql, opts: AmpliarOpts): Promise
             } catch {
               // coluna de confirmacao opcional em ambientes antigos
             }
+            if (foraDaFaixa) await sql`update affiliate_offers set quarantined_at = now(), updated_at = now() where id = ${o.id}::uuid`;
             st.ofertasCriadas++;
             gravadosNoMaster++;
             log(`    CRIADA oferta=${o.id} snapshot=${wrote}`);

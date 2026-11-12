@@ -15,7 +15,7 @@
  *   --hourly-cap N        teto de chamadas por hora DESTE script (padrao 3000, contado em collector_runs; compartilhado com a rota);
  *                         o limite oficial e 8000/h somados a todos os coletores, entao o script usa menos de 40% dele.
  *   --max-por-master N    ofertas Shopee novas por master por execucao (padrao 3; um item por loja quando a loja e conhecida).
- *   --min-vendas N        vendas minimas do anuncio (padrao 3); --min-nota X nota minima quando a API devolve (padrao 4.0).
+ *   --min-vendas N        vendas minimas do anuncio (padrao 0 = sem piso; dono 2026-11-12: vendas sao sinal, nao descarte); --min-nota X nota minima quando a API devolve (padrao 4.0).
  *   (--aceitar-cobertura foi removido: cobertura sem codigo de modelo nunca e aceita.)
  *   --sem-lookup          nao consulta o item por itemId antes de gravar (sem ele: confirma preco e le loja/shopId).
  *   --so-consultas        NAO chama a API (nem exige credenciais): lista masters elegiveis, consultas e quantos tem codigo de modelo.
@@ -27,7 +27,7 @@
  *
  * Fluxo por master APROVADO (catalogGate approved/manual approved): consulta productOfferV2 por palavra-chave (marca+modelo; livros:
  * ISBN e depois titulo+autor) SEM shopId/shopName/priceDiscountRate (a busca devolve System Error 10000 com eles) -> filtros do anuncio
- * (offerLink oficial, foto, vendas, nota, preco sem spread ambiguo SHOPEE_MAX_VARIANT_SPREAD) -> identidade FORTE (shopee-identity.ts:
+ * (offerLink oficial, foto, vendas, nota, preco: variacao nao descarta, entra com o menor) -> identidade FORTE (shopee-identity.ts:
  * juiz compartilhado com a Amazon + lexico de rejeicao + porteiro nao-original) -> plausibilidade de preco contra o proprio master ->
  * consulta por itemId (confirma disponibilidade/preco e le a loja) -> oferta com affiliate_url = offerLink oficial da Shopee.
  * Em duvida NAO cria (vai para descartes.json). API instavel (erro repetido / so respostas vazias): PARA e documenta.
@@ -108,7 +108,7 @@ async function main() {
       maxCalls: Math.max(1, Number(opt('--max-calls') ?? 300)),
       hourlyCap: Math.min(8000, Math.max(1, Number(opt('--hourly-cap') ?? TETO_HORARIO_PADRAO))),
       maxPorMaster: Math.max(1, Number(opt('--max-por-master') ?? 3)),
-      minVendas: Math.max(0, Number(opt('--min-vendas') ?? 3)),
+      minVendas: Math.max(0, Number(opt('--min-vendas') ?? 0)),
       minNota: Math.max(0, Math.min(5, Number(opt('--min-nota') ?? 4))),
       comLookup: !flag('--sem-lookup'),
       soMaster: opt('--master'),

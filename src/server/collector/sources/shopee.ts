@@ -15,10 +15,12 @@ import { fetchShopeeGraphQL, isShopeeAffiliateConfigured } from './shopee-auth';
  *   item com preço válido. Item que não aparece (fora do programa de
  *   afiliados, removido ou sem estoque) volta com nodes vazio: tratado como
  *   INDISPONÍVEL, nunca como erro.
- * - priceMin/priceMax são o intervalo entre variações. Só aceitamos o preço
- *   quando o intervalo é estreito (ver SHOPEE_MAX_VARIANT_SPREAD): usar o
- *   menor preço de uma variação diferente foi a origem provável dos R$ 11,00
- *   da auditoria (N2).
+ * - priceMin/priceMax são o intervalo entre variações. DIRETRIZ DO DONO (2026-11-12): "em nenhuma loja recusar item por variação de
+ *   preço; trazer TODOS os itens para o banco de pesquisa e monitoramento". Então o item com variação ENTRA com o MENOR preço (priceMin,
+ *   o preço "a partir de"), marcado com a variação (variantSpread/variantMin/variantMax), sem inventar valor. O que protege a média é
+ *   a faixa de plausibilidade (0,35x a 3x a mediana do produto), não a variação. Mensagem ao cliente nunca afirma preço fixo de
+ *   variação específica ("a partir de" é o texto honesto); as regras de mensagem não mudam aqui. A origem dos R$ 11,00 da auditoria
+ *   (N2) era o priceMin de variação diferente: por isso o preço de variação ampla NUNCA vira "preço de lista" (listPriceCents = null).
  */
 
 export const SHOPEE_PRODUCT_OFFER_FIELDS = `
@@ -36,7 +38,7 @@ export const SHOPEE_PRODUCT_OFFER_FIELDS = `
   priceDiscountRate
 `;
 
-/** priceMax/priceMin acima disso = variações de preço muito diferentes: preço ambíguo, não grava. */
+/** priceMax/priceMin acima disso = variações de preço muito diferentes: o item entra com o menor preço, MARCADO como variação ampla (não descarta mais). */
 export const SHOPEE_MAX_VARIANT_SPREAD = 1.1;
 
 export interface ShopeeOfferNode {
@@ -50,9 +52,17 @@ export interface ShopeeOfferNode {
   imageUrl: string | null;
   productLink: string | null;
   offerLink: string | null;
+  /** Menor e maior preço entre as variações (centavos) quando a API devolveu faixa (max > min); null = preço único. */
+  variantMinCents: number | null;
+  variantMaxCents: number | null;
+  /** priceMax / priceMin (>= 1); null = preço único. */
+  variantSpread: number | null;
+  /** true quando priceMax/priceMin > SHOPEE_MAX_VARIANT_SPREAD: o preço do item é "a partir de" (menor variação). */
+  variantAmbigua: boolean;
 }
 
-export type ShopeeNodeRejection = 'no_price' | 'ambiguous_price' | 'no_name';
+/** `ambiguous_price` deixou de existir como rejeição (2026-11-12): variação ampla entra com o menor preço. */
+export type ShopeeNodeRejection = 'no_price' | 'no_name';
 
 /** "129.90" -> 12990. Rejeita vazio, não numérico, zero e negativo. */
 export function parseShopeePriceToCents(raw: unknown): number | null {
@@ -67,7 +77,8 @@ export function parseShopeeNode(n: any): { node: ShopeeOfferNode } | { rejected:
   const min = parseShopeePriceToCents(n.priceMin);
   const max = parseShopeePriceToCents(n.priceMax) ?? min;
   if (min == null || max == null) return { rejected: 'no_price' };
-  if (max > min * SHOPEE_MAX_VARIANT_SPREAD) return { rejected: 'ambiguous_price' };
+  const faixa = max > min;
+  const ambigua = max > min * SHOPEE_MAX_VARIANT_SPREAD;
   const sales = Number(n.sales);
   return {
     node: {
@@ -76,7 +87,13 @@ export function parseShopeeNode(n: any): { node: ShopeeOfferNode } | { rejected:
       shopName: n.shopName ? String(n.shopName) : null,
       productName: String(n.productName),
       priceCents: min,
-      listPriceCents: max > min ? max : null,
+      // Faixa estreita: o maior preço segue como "preço de lista" (comportamento anterior). Faixa ampla: o maior preço é de OUTRA variação,
+      // nunca um preço "de" para o menor; vira null para não fabricar desconto nem "de R$ X por R$ Y".
+      listPriceCents: faixa && !ambigua ? max : null,
+      variantMinCents: faixa ? min : null,
+      variantMaxCents: faixa ? max : null,
+      variantSpread: faixa ? Number((max / min).toFixed(4)) : null,
+      variantAmbigua: ambigua,
       sales: Number.isFinite(sales) ? sales : null,
       imageUrl: n.imageUrl || null,
       productLink: n.productLink || null,

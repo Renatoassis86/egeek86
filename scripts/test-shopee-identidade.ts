@@ -3,7 +3,7 @@
  * Uso: npx tsx scripts/test-shopee-identidade.ts   (sai com codigo 1 se algo falhar)
  * Os titulos abaixo sao ENTRADAS de teste da funcao pura (padrao de anuncio de marketplace); nao sao dados da plataforma.
  */
-import { buildShopeeQueries, filtroAnuncio, judgeShopee, prepareGeneric, type ShopeeCand } from '../src/lib/affiliate/shopee-identity';
+import { buildShopeeQueries, filtroAnuncio, judgeShopee, prepareGeneric, rejeicaoDeTitulo, sinalVendas, type ShopeeCand } from '../src/lib/affiliate/shopee-identity';
 import type { MasterIdentity } from '../src/lib/affiliate/amazon-identity';
 
 let fails = 0, total = 0;
@@ -70,6 +70,14 @@ check('anuncio offerLink de outro dominio', filtroAnuncio({ ...ok, offerLink: 'h
 check('anuncio poucas vendas', filtroAnuncio({ ...ok, sales: 0 }, { minVendas: 3, minNota: 4 }) === 'poucas_vendas');
 check('anuncio nota baixa', filtroAnuncio({ ...ok, ratingStar: '3.2' }, { minVendas: 3, minNota: 4 }) === 'nota_baixa');
 check('anuncio sem nota nao reprova', filtroAnuncio({ ...ok, ratingStar: undefined }, { minVendas: 3, minNota: 4 }) === null);
+
+// --- Dono 2026-11-12: vendas NAO barram a entrada (sinal de relevancia); condicao/acessorio continuam (identidade) ---
+check('minVendas 0: anuncio com zero vendas ENTRA', filtroAnuncio({ ...ok, sales: 0 }, { minVendas: 0, minNota: 4 }) === null);
+check('minVendas 0: sales null tambem entra', filtroAnuncio({ ...ok, sales: null }, { minVendas: 0, minNota: 4 }) === null);
+check('minVendas 0: sem foto/offerLink/nota baixa continuam barrando', filtroAnuncio({ ...ok, imageUrl: null }, { minVendas: 0, minNota: 4 }) === 'sem_foto' && filtroAnuncio({ ...ok, ratingStar: '2' }, { minVendas: 0, minNota: 4 }) === 'nota_baixa');
+check('sinalVendas: relevante x poucas_vendas', sinalVendas(10) === 'relevante' && sinalVendas(1) === 'poucas_vendas' && sinalVendas(null) === 'poucas_vendas');
+check('rejeicaoDeTitulo: usado, recondicionado, acessorio, digital, retro barram', ['Smart TV Samsung 50 usada', 'Notebook Dell recondicionado', 'Suporte de parede para TV 50', 'Ebook Habitos Atomicos PDF'].every((t) => rejeicaoDeTitulo(t) !== null));
+check('rejeicaoDeTitulo: titulo novo e em linha passa', rejeicaoDeTitulo('Smart TV Samsung 50 Crystal UHD 4K UN50DU7700 Bivolt') === null);
 
 // --- Consultas ---
 check('query tv inclui marca e modelo', /samsung/i.test(buildShopeeQueries(tv)[0]) && /UN50DU7700/i.test(buildShopeeQueries(tv)[0]), buildShopeeQueries(tv));

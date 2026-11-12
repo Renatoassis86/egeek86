@@ -129,6 +129,9 @@ export const COBERTURA_LIMITES = {
   orcamentoMsMax: 250_000,
   duvidasPadrao: 40,
   duvidasMax: 150,
+  /** Masters NOVOS (criados a partir de itens Shopee sem equivalente) por execução. Freio de volume: a criação é sempre limitada. */
+  mastersNovosPadrao: 30,
+  mastersNovosMax: 120,
   tetoHorarioPadrao: 800,
 } as const;
 
@@ -139,6 +142,7 @@ export interface ParametrosCobertura {
   paginas: number;
   maxCalls: number;
   maxDuvidas: number;
+  maxMastersNovos: number;
   /** Fonte única (teste dirigido): `cat:<id>` ou `shop:<id>`. */
   fonte: string | null;
 }
@@ -158,12 +162,14 @@ export function parseParametrosCobertura(get: (k: string) => string | null): { o
   const paginas = inteiro(get('pages'), COBERTURA_LIMITES.paginasPadrao, 1, COBERTURA_LIMITES.paginasMax);
   const maxCalls = inteiro(get('maxCalls'), COBERTURA_LIMITES.chamadasPadrao, 1, COBERTURA_LIMITES.chamadasMax);
   const maxDuvidas = inteiro(get('maxDuvidas'), COBERTURA_LIMITES.duvidasPadrao, 0, COBERTURA_LIMITES.duvidasMax);
+  const maxMastersNovos = inteiro(get('maxMasters'), COBERTURA_LIMITES.mastersNovosPadrao, 0, COBERTURA_LIMITES.mastersNovosMax);
   if (paginas == null) return { ok: false, erro: 'pages_invalido' };
   if (maxCalls == null) return { ok: false, erro: 'maxCalls_invalido' };
   if (maxDuvidas == null) return { ok: false, erro: 'maxDuvidas_invalido' };
+  if (maxMastersNovos == null) return { ok: false, erro: 'maxMasters_invalido' };
   const fonte = (get('fonte') ?? '').trim() || null;
   if (fonte && !/^(cat|shop):\d{1,19}$/.test(fonte)) return { ok: false, erro: 'fonte_invalida' };
-  return { ok: true, params: { apply: get('apply') === '1' && get('dry') !== '1', probe: get('probe') === 'cat', lojas, paginas, maxCalls, maxDuvidas, fonte } };
+  return { ok: true, params: { apply: get('apply') === '1' && get('dry') !== '1', probe: get('probe') === 'cat', lojas, paginas, maxCalls, maxDuvidas, maxMastersNovos, fonte } };
 }
 
 /** Interruptor da cobertura (desligado por padrão): só roda com SHOPEE_COBERTURA_ATIVA=1. Gravar exige também apply=1 na chamada. */
@@ -285,6 +291,33 @@ export function casarItem(idx: IndiceMasters, item: { itemId: string; title: str
     return { destino: 'duvida', masterId: melhor.e.id, verdict: melhor.v, motivo: melhor.v.motivo };
   }
   return { destino: 'rejeitado', motivo: ultimoRejeito.split(':').slice(0, 2).join(':') };
+}
+
+// ---------------------------------------------------------------------------
+// Destino de um item depois do casamento (correção de diretriz do dono, 2026-11-12)
+// ---------------------------------------------------------------------------
+
+/**
+ * Motivos de rejeição do juiz (`contador:razão`) que são CONDIÇÃO/COMPOSIÇÃO (usado, recondicionado, Open Box, importado, fora de linha, retrô,
+ * réplica, acessório, pacote, digital, item inválido): identidade, não preço. Continuam barrando. Os demais (`sem_match:*`: outro modelo,
+ * outra capacidade, outro gênero...) dizem "é OUTRO produto": não há master equivalente e o produto passa a ser CRIADO.
+ */
+export function rejeicaoEhCondicao(motivo: string): boolean {
+  return /^(fora_de_linha_ou_retro|rejeitado_condicao|rejeitado_composicao|invalido)(:|$)/.test(motivo);
+}
+
+export type DestinoFinal =
+  | { destino: 'anexar'; masterId: string }
+  | { destino: 'duvida'; masterId: string; motivo: string }
+  | { destino: 'novo_master' }
+  | { destino: 'descartar'; motivo: string };
+
+/** Traduz o veredito do casamento no destino. Sem candidato ou "outro produto" => novo master; dúvida => fila; condição => descarta. */
+export function destinoDoCasamento(d: DestinoItem): DestinoFinal {
+  if (d.destino === 'aceito') return { destino: 'anexar', masterId: d.masterId };
+  if (d.destino === 'duvida') return { destino: 'duvida', masterId: d.masterId, motivo: d.motivo };
+  if (d.destino === 'sem_candidato') return { destino: 'novo_master' };
+  return rejeicaoEhCondicao(d.motivo) ? { destino: 'descartar', motivo: d.motivo } : { destino: 'novo_master' };
 }
 
 // ---------------------------------------------------------------------------

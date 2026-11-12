@@ -13,6 +13,7 @@ import { collectorRunsEnabled, startCollectorRun } from './collector-runs';
 import { classifyShopeeKind } from '@/lib/collector-runs/classify-error';
 import { GAMES, type Vertical } from '@/lib/catalog/verticais';
 import { decideMiss, podeReativar, SHOPEE_EXPIRED_SLICE_PER_RUN, type ShopeeMissReason } from '@/lib/affiliate/shopee-expiry';
+import { gravarVariacaoOferta } from './shopee-variacao-store';
 
 /**
  * Expiração (dono, 2026-11-12): 3 respostas válidas sem preço em HORAS DIFERENTES (ver shopee-expiry.ts). Ativa com falta pendente é
@@ -87,6 +88,8 @@ export interface CollectShopeeSummary {
   /** Preços válidos recebidos (snapshot gravado só se o preço mudou, ver recordPriceSnapshot). */
   priced: number;
   reactivated: number;
+  /** Ofertas checadas com faixa AMPLA de preço entre variações (contadas como disponíveis, preço = menor). */
+  variantes: number;
   unavailable: number;
   expiredNow: number;
   rejectedImplausible: number;
@@ -105,6 +108,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
     checked: 0,
     priced: 0,
     reactivated: 0,
+    variantes: 0,
     unavailable: 0,
     expiredNow: 0,
     rejectedImplausible: 0,
@@ -269,6 +273,9 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
         }
       }
       await db.update(affiliateOffers).set(patch).where(eq(affiliateOffers.id, offer.id));
+      // Variação de preço (dono, 2026-11-12): item com faixa entre variações é DISPONÍVEL; o preço monitorado é o menor (priceMin) e a marca acompanha.
+      if (node.variantAmbigua) summary.variantes++;
+      await gravarVariacaoOferta(offer.id, node);
     } catch (err) {
       // Falha de consulta NÃO é "item indisponível": não carimba, não expira.
       const e = err as Error;
@@ -291,6 +298,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
       unavailable: summary.unavailable,
       expiredNow: summary.expiredNow,
       reactivated: summary.reactivated,
+      variantes: summary.variantes,
       rejectedImplausible: summary.rejectedImplausible,
       linksGenerated: summary.linksGenerated,
       rateLimitRetries: summary.rateLimitRetries,

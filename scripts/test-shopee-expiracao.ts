@@ -2,7 +2,7 @@
  * Testes da regra de expiracao/reativacao das ofertas Shopee (funcoes puras, sem banco/rede).
  * Uso: npx tsx scripts/test-shopee-expiracao.ts
  */
-import { decideMiss, hourBucket, podeReativar, SHOPEE_MAX_MISSES, SHOPEE_MISS_RECHECK_MS, type MissInput } from '../src/lib/affiliate/shopee-expiry';
+import { decideMiss, hourBucket, itemDisponivel, podeReativar, SHOPEE_MAX_MISSES, SHOPEE_MISS_RECHECK_MS, type MissInput } from '../src/lib/affiliate/shopee-expiry';
 
 let fails = 0, total = 0;
 function check(name: string, cond: boolean, extra?: unknown) { total++; if (!cond) { fails++; console.log(`FALHA: ${name}${extra !== undefined ? ' => ' + JSON.stringify(extra) : ''}`); } }
@@ -45,6 +45,12 @@ check('sem preco (no_price) conta como falta', decideMiss(base({ reason: 'no_pri
 check('oferta ja expirada nao expira de novo nem muda contador', (() => { const d = decideMiss(base({ status: 'expired', missCount: 3 })); return !d.expire && !d.counted && d.missCount === 3; })());
 check('rascunho tambem segue a regra das 3 faltas', decideMiss(base({ status: 'draft', missCount: 2, lastCheckedAt: at('2026-11-12T08:00:00Z') })).expire);
 check('contador zerado (preco valido anterior) conta a falta mesmo com checagem recente', decideMiss(base({ missCount: 0, lastCheckedAt: at('2026-11-12T10:01:00Z') })).counted);
+
+// Variacao de preco (dono, 2026-11-12): item com faixa ampla esta DISPONIVEL (nunca e falta) e reativa como qualquer outro.
+check('lookup ok com variacao ampla conta como disponivel', itemDisponivel({ status: 'ok', variantAmbigua: true }) && itemDisponivel({ status: 'ok' }));
+check('lookup unavailable nao e disponivel', !itemDisponivel({ status: 'unavailable' }));
+check('expirada que volta com variacao ampla reativa (sem pergunta pendente nem bloqueio)', podeReativar({ status: 'expired', temPerguntaPendente: false, bloqueadaPeloDono: false }));
+check('ambiguous_price legado continua sem contar falta (compatibilidade)', !decideMiss(base({ missCount: 1, lastCheckedAt: at('2026-11-12T08:00:00Z'), reason: 'ambiguous_price' })).counted);
 
 // Reativacao
 check('expirada com preco valido reativa', podeReativar({ status: 'expired', temPerguntaPendente: false, bloqueadaPeloDono: false }));

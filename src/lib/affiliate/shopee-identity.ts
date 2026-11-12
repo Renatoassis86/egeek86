@@ -114,20 +114,52 @@ export function judgeShopee(ctx: GenericCtx, cand: ShopeeCand, opts: JulgarOpts 
 }
 
 export interface ShopeeNodeFiltros {
+  /** Piso de vendas. 0 (padrão da cobertura, dono 2026-11-12) = não filtra: vendas viraram SINAL de relevância (ver sinalVendas), não descarte. */
   minVendas: number;
   minNota: number;
 }
 
-/** Filtros de qualidade do ANÚNCIO (não de identidade): vendas, nota, foto e link oficial. Devolve o motivo do descarte ou null. */
+/**
+ * Filtros de qualidade do ANÚNCIO (não de identidade nem de preço): link oficial, foto, vendas (só se minVendas > 0) e nota. Devolve o motivo do
+ * descarte ou null. Dono (2026-11-12): "poucas_vendas" NÃO é mais filtro de entrada na cobertura; use `sinalVendas` para registrar a relevância.
+ */
 export function filtroAnuncio(
   n: { sales: number | null; imageUrl: string | null; offerLink: string | null; ratingStar?: unknown },
   f: ShopeeNodeFiltros
 ): string | null {
   if (!n.offerLink || !LINK_OFICIAL.test(n.offerLink)) return 'sem_offerlink_oficial';
   if (!n.imageUrl) return 'sem_foto';
-  if ((n.sales ?? 0) < f.minVendas) return 'poucas_vendas';
+  if (f.minVendas > 0 && (n.sales ?? 0) < f.minVendas) return 'poucas_vendas';
   const nota = Number(n.ratingStar);
   if (Number.isFinite(nota) && nota > 0 && nota < f.minNota) return 'nota_baixa';
+  return null;
+}
+
+/** Piso histórico de vendas, agora só como SINAL de relevância (o item entra no banco mesmo abaixo dele). */
+export const VENDAS_RELEVANCIA_MIN = 3;
+export const sinalVendas = (sales: number | null): 'relevante' | 'poucas_vendas' => ((sales ?? 0) >= VENDAS_RELEVANCIA_MIN ? 'relevante' : 'poucas_vendas');
+
+/**
+ * Condição/composição do título (usado, recondicionado, Open Box, importado, fora de linha, retrô, réplica, acessório, peça, digital): é
+ * IDENTIDADE, não preço, e continua barrando a entrada. Sem master de comparação (a criação de master novo não tem um). Devolve o motivo curto
+ * `classe:razão` ou null. Mesmas regras de judgeShopee (passos 1 a 3), centralizadas aqui para a criação de produto.
+ */
+export function rejeicaoDeTitulo(titulo: string): string | null {
+  const title = String(titulo ?? '').slice(0, 300);
+  const cNorm = norm(title);
+  if (!cNorm) return 'invalido:sem_titulo';
+  const lex = rejectionOf({ id: 'x', name: title });
+  if (lex) return `${lex.reason === 'fora_de_linha' ? 'fora_de_linha_ou_retro' : 'rejeitado_condicao'}:${lex.reason}:${lex.matched}`;
+  try {
+    const g = evaluateCatalogGate({ name: title, productType: 'accessory' });
+    if (g.verdict === 'rejected' && g.category === 'not_original') return `rejeitado_condicao:nao_original:${g.reason}`;
+  } catch {
+    // porteiro indisponível para este título: segue só com o léxico
+  }
+  const acc = ACESSORIO_RE.exec(cNorm);
+  if (acc) return `rejeitado_composicao:acessorio:${acc[0]}`;
+  const dig = DIGITAL_RE.exec(cNorm);
+  if (dig) return `rejeitado_composicao:digital:${dig[0]}`;
   return null;
 }
 
