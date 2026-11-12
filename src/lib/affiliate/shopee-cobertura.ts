@@ -93,6 +93,8 @@ export interface CursorFonte {
   /** Quantas voltas completas na fonte (a lista de vendas é recomeçada do topo quando acaba). */
   voltas: number;
   atualizadoEm?: string;
+  /** Erros 10000 (System Error) nesta fonte; a fonte vai para o fim da fila e a execucao segue com as outras. */
+  falhas?: number;
 }
 export type CursorMapa = Record<string, CursorFonte>;
 

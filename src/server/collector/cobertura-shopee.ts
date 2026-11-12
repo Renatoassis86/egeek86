@@ -333,6 +333,7 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
 
     let paginasLidas = 0;
     let duvidasEnfileiradas = 0;
+    let falhasListagem = 0;
     laco: while (paginasLidas < o.paginas) {
       const fonte = proximaFonte(fontes, cursor);
       if (!fonte) break;
@@ -344,8 +345,16 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
           sortType: 2, page: cur.page, limit: 50, fields: LIST_FIELDS,
         });
       } catch (e) {
-        res.parou = (e as { parada?: MotivoParada }).parada ?? 'erros_seguidos';
-        if (!(e as { parada?: MotivoParada }).parada) res.avisos.push(`erro_nao_classificado:${(e as Error).message.slice(0, 120)}`);
+        const parada = (e as { parada?: MotivoParada }).parada;
+        // 10000 (System Error) e intermitente/por fonte (medido 2026-11-12): a fonte vai para o fim da fila (cursor) e a execucao segue; 3 por execucao encerram.
+        if (!parada && res.erroApi?.code === 10000 && ++falhasListagem <= 3) {
+          cursor[fonte.chave] = { ...cur, atualizadoEm: new Date().toISOString(), falhas: (cur.falhas ?? 0) + 1 };
+          res.avisos.push(`fonte_com_10000:${fonte.chave}`);
+          errosSeguidos = 0;
+          continue laco;
+        }
+        res.parou = parada ?? 'erros_seguidos';
+        if (!parada) res.avisos.push(`erro_nao_classificado:${(e as Error).message.slice(0, 120)}`);
         break laco;
       }
       paginasLidas++;
