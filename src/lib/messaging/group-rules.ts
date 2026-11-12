@@ -570,6 +570,8 @@ export interface Candidate {
   /** Gatilho CUPOM: identidade do cupom divulgado e o registro para o Agente de Cupons acompanhar o fim dele. */
   couponRef?: string;
   couponInfo?: CouponInfo & CouponRefMeta;
+  /** Gatilho CUPOM: preço COM o cupom lido na página do anúncio (centavos); `priceCents` segue sendo o do anúncio sem cupom. Alimenta o card simples. */
+  couponFinalCents?: number;
 }
 
 export interface RadarItemMeta {
@@ -1198,6 +1200,7 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
   candidates.push({
     ...cand,
     couponRef: cf.couponRef,
+    couponFinalCents: cf.finalCents,
     couponInfo: { code: cf.name, conditions: cf.conditions, expiresAt: cf.expiresAt ? cf.expiresAt.toISOString() : null, verifiedAt: cf.readAt.toISOString(), couponRef: cf.couponRef, annKind: 'anuncio' },
   });
   return { candidates, blocked };
@@ -2099,7 +2102,8 @@ export function windowAdjust(c: Pick<Candidate, 'trigger' | 'cls'>, at: Date): D
 /** O cartão de histórico cabe? No máximo 4 por dia e o mesmo produto 1 vez a cada 7 dias. */
 export function cardAllowed(masterProductId: string, history: SentRecord[], now: Date): boolean {
   const today = spDayStr(now);
-  const cards = history.filter((h) => h.card && !h.itemOnly);
+  // Só cartões de HISTÓRICO (P1/G5) entram na cota: os cards de oferta (centenas por dia) a esgotavam e o P1 nunca recebia card (12 h: 5 de 5 P1 sem card).
+  const cards = history.filter((h) => h.card && !h.itemOnly && (h.trigger === 'P1' || h.trigger === 'G5'));
   if (cards.filter((h) => spDayStr(h.sentAt) === today).length >= RULES.CARD_DAILY_CAP) return false;
   return !cards.some((h) => h.masterProductId === masterProductId && now.getTime() - h.sentAt.getTime() < RULES.CARD_REPEAT_DAYS * 86_400_000);
 }

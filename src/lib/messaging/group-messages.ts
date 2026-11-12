@@ -516,8 +516,9 @@ function storySentences(input: OfferMessageInput, amz: boolean): string[] {
   const price = o.priceCents;
   const net = o.networkName;
   const avg = !amz ? input.avg : null;
+  // Amostra pequena: metodologia só interna; a mensagem não cita média nem amostra (dono, 2026-11-12).
   const avgSentence = avg && amostraPequena(avg)
-    ? `A média simples das ${avg.offers} ofertas ativas hoje é ${fmtBRL(avg.cents)} (amostra pequena, sem comparação em percentual).`
+    ? null
     : avg
     ? price < avg.cents
       ? `A média das ${avg.offers} ofertas ativas é ${fmtBRL(avg.cents)}; este preço fica ${fmtBRL(avg.cents - price)} (${pct1(((avg.cents - price) / avg.cents) * 100)}%) abaixo dela.`
@@ -529,14 +530,14 @@ function storySentences(input: OfferMessageInput, amz: boolean): string[] {
     const since = input.sinceDay ? fmtDay(dayToDate(input.sinceDay)) : null;
     const below = ((input.avg.cents - price) / input.avg.cents) * 100;
     const s1 = amostraPequena(input.avg)
-      ? `${theNetwork(net)} está com ${fmtBRL(price)}. A média simples das ${input.avg.offers} ofertas ativas hoje é ${fmtBRL(input.avg.cents)} (amostra pequena, sem comparação em percentual).`
+      ? `${theNetwork(net)} está com ${fmtBRL(price)}.`
       : below > 0.05
         ? `${theNetwork(net)} está com ${fmtBRL(price)}, ${pct1(below)}% abaixo da média de ${fmtBRL(input.avg.cents)} das ${input.avg.offers} ofertas ativas.`
         : `${theNetwork(net)} está com ${fmtBRL(price)}, no nível da média de ${fmtBRL(input.avg.cents)} das ${input.avg.offers} ofertas ativas.`;
     // Série pequena é permitida (dono, 2026-11-11), mas o texto SEMPRE diz a série e não afirma tendência com menos de 3 dias.
     const serie = `Série de ${input.seriesDays === 1 ? '1 dia' : `${input.seriesDays} dias`}${since ? `, desde ${since}` : ''}`;
     const s2 = input.refCents != null ? `${serie}; o menor valor medido nela é ${fmtBRL(input.refCents)}.` : `${serie}.`;
-    const s3 = input.seriesDays < 3 ? 'Com tão poucos dias de série ainda não dá para falar de tendência; é só a leitura de hoje.' : `A média usa ${input.seriesDays} dias de série medida; é uma leitura do dado de hoje.`;
+    const s3 = amostraPequena(input.avg) ? null : input.seriesDays < 3 ? 'Com tão poucos dias de série ainda não dá para falar de tendência; é só a leitura de hoje.' : `A média usa ${input.seriesDays} dias de série medida; é uma leitura do dado de hoje.`;
     return [s1, s2, s3].filter((x): x is string => !!x).slice(0, 3);
   }
   const m = input.move;
@@ -587,7 +588,7 @@ function variationParts(input: OfferMessageInput, amz: boolean): string[] {
     else if (price === m.refCents) out.push('igual ao menor registrado');
     else out.push(`${pct1(((price - m.refCents) / m.refCents) * 100)}% acima do menor registrado (${fmtBRL(m.refCents)})`);
   } else {
-    if (amostraPequena(input.avg)) out.push(`média simples de ${input.avg.offers} ofertas: ${fmtBRL(input.avg.cents)}`);
+    if (amostraPequena(input.avg)) { /* amostra pequena: nada sobre média */ }
     else if (input.avg.cents > price) out.push(`${fmtBRL(input.avg.cents - price)} abaixo da média (${fmtBRL(input.avg.cents)})`);
     else out.push(`no nível da média (${fmtBRL(input.avg.cents)})`);
     const ref = input.refCents;
@@ -642,8 +643,7 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
           : topic(f, label, `${pct1((-gap / refAvg.cents) * 100)}% acima; ${word} ${fmtBRL(refAvg.cents)}`)
     );
   }
-  // Amostra pequena (fase de formação): mostra o valor da média simples e o tamanho da amostra, SEM percentual e sem dizer "abaixo".
-  else if (!amz && refAvgAll && amostraPequena(refAvgAll)) topics.push(topic(f, 'Média simples', `${fmtBRL(refAvgAll.cents)} (${refAvgAll.offers} ofertas ativas; amostra pequena)`));
+  // Amostra pequena (fase de formação): a mensagem NÃO menciona média nem amostra (dono, 2026-11-12); a metodologia fica só interna.
   if (input.model === 'movimento' && (input.move.kind === 'OK2' || input.move.kind === 'T1') && input.move.prevCents != null && input.move.prevCents > price) {
     topics.push(topic(f, 'Variação', `${pct1(((input.move.prevCents - price) / input.move.prevCents) * 100)}% a menos que ontem (${fmtBRL(input.move.prevCents)})`));
   }
@@ -657,9 +657,10 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   if (verdict && amz) verdict = verdict.replace('média das lojas', refAvg?.scope === 'amazon' ? 'média na Amazon' : 'média do mercado');
   if (verdict) mon.push(topic(f, 'Leitura', verdict));
   if (input.model === 'movimento' && input.move.kind === 'OK1') mon.push(topic(f, 'Menor registrado', `novo menor preço (o anterior era ${fmtBRL(input.move.refCents)})`));
-  else if (ref != null) {
+  // "Igual a este" não informa nada ao cliente (dono, 2026-11-12): só aparece quando o menor registrado difere do preço.
+  else if (ref != null && price !== ref) {
     mon.push(
-      topic(f, 'Menor registrado', price < ref ? `${fmtBRL(ref)} (este preço é ${pct1(((ref - price) / ref) * 100)}% menor)` : price === ref ? `${fmtBRL(ref)} (igual a este)` : `${fmtBRL(ref)} (este preço é ${pct1(((price - ref) / ref) * 100)}% maior)`)
+      topic(f, 'Menor registrado', price < ref ? `${fmtBRL(ref)} (este preço é ${pct1(((ref - price) / ref) * 100)}% menor)` : `${fmtBRL(ref)} (este preço é ${pct1(((price - ref) / ref) * 100)}% maior)`)
     );
   }
   if (input.model === 'movimento' && input.move.kind !== 'OK1') mon.unshift(topic(f, 'Movimento', leituraLine(input, amz)));
@@ -708,12 +709,11 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
   const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
   const n = Math.max(1, Math.round(input.offersCount));
+  // Tamanho da amostra é metodologia interna (dono, 2026-11-12): só alega "menor preço entre as N" quando N é robusto (>= MIN_AVG_OFFERS_CLAIM); senão, sem texto de leitura.
   const reading =
-    n === 1
-      ? 'Achado: única oferta ativa que acompanhamos no Mercado Livre e na Shopee agora.'
-      : input.isLowest
-        ? `Achado: menor preço entre as ${n} ofertas ativas que acompanhamos no Mercado Livre e na Shopee agora.`
-        : `Achado: preço atual confirmado, entre ${n} ofertas ativas que acompanhamos no Mercado Livre e na Shopee agora.`;
+    n >= MIN_AVG_OFFERS_CLAIM && input.isLowest
+      ? `Achado: menor preço entre as ${n} ofertas ativas que acompanhamos no Mercado Livre e na Shopee agora.`
+      : null;
   const topics: string[] = [];
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
@@ -722,7 +722,7 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
   const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
-  return [head, priceLine, f.t(reading), topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+  return [head, priceLine, reading ? f.t(reading) : null, topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
 /**
@@ -786,7 +786,8 @@ export function blackFridayIndicator(
   if (ctx.firstCents != null && ctx.firstCents > 0 && ctx.firstDay) {
     const d = ((ctx.firstCents - ctx.price) / ctx.firstCents) * 100;
     const day = fmtDay(dayToDate(ctx.firstDay));
-    parts.push(Math.abs(d) < 0.05 ? `igual ao preço de ${day}` : d > 0 ? `${pct1(d)}% abaixo do preço de ${day} (${fmtBRL(ctx.firstCents)})` : `${pct1(-d)}% acima do preço de ${day} (${fmtBRL(ctx.firstCents)})`);
+    // "Igual ao preço de dd/mm" não informa nada (dono, 2026-11-12): só entra quando há diferença real.
+    if (Math.abs(d) >= 0.05) parts.push(d > 0 ? `${pct1(d)}% abaixo do preço de ${day} (${fmtBRL(ctx.firstCents)})` : `${pct1(-d)}% acima do preço de ${day} (${fmtBRL(ctx.firstCents)})`);
   }
   if (!parts.length) return `${base}; acompanhamos este produto${sinceDay ? ` desde ${fmtDay(dayToDate(sinceDay))}` : ''} para conferir se o desconto é real`;
   return `${base}. Hoje: ${parts.join(' e ')}`;
@@ -814,7 +815,7 @@ function leituraLine(input: OfferMessageInput, amz: boolean): string {
   const price = input.offer.priceCents;
   const scope = amz ? ' da Amazon' : '';
   if (input.model === 'media') {
-    if (amostraPequena(input.avg)) return `Média simples das ${input.avg.offers} ofertas ativas hoje: ${fmtBRL(input.avg.cents)} (amostra pequena).`;
+    if (amostraPequena(input.avg)) return `Preço conferido hoje: ${fmtBRL(price)}.`;
     return input.avg.cents > price ? `Preço abaixo da média das ${input.avg.offers} ofertas ativas.` : `Preço no nível da média das ${input.avg.offers} ofertas ativas.`;
   }
   const m = input.move;
@@ -960,8 +961,12 @@ function withTag(body: string, tag: string): string {
   return tag ? `${body} ${tag}` : body;
 }
 
-function prefix(i: Common, f: Fmt): string {
-  return i.vertical === 'games' ? '' : `${f.t(`[${departmentLabel(i.vertical)}]`)} `;
+/**
+ * Sem prefixo de departamento (dono, 2026-11-12): cada área tem o seu grupo ("Casa", "Livros"...), então "[Eletrodomésticos]" antes do
+ * nome é redundante e destoava do rótulo do grupo.
+ */
+function prefix(_i: Common, _f: Fmt): string {
+  return '';
 }
 
 function avgLine(f: Fmt, price: number, avg: MsgAvg | null | undefined): string | null {
@@ -993,7 +998,7 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       lines.push(
         `${pre}${f.b(input.name)}`,
         amostraPequena(input.avg)
-          ? `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}. Média simples de ${input.avg.offers} ofertas: ${fmtBRL(input.avg.cents)}.`
+          ? `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}.`
           : `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}, ${pctBelow(o.priceCents, input.avg.cents)}% abaixo da média de ${fmtBRL(input.avg.cents)} (${input.avg.offers} ofertas).`,
         conferidoLine(o.confirmedAt),
         withTag(channel === 'tg' ? f.link(buildGoLink(o.slug, 'tg', input.messageKey), 'Ver a oferta') : buildGoLink(o.slug, 'wa', input.messageKey), input.adTag)
@@ -1108,7 +1113,7 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       guardNetwork(input.offer);
       const o = input.offer;
       lines.push(
-        `${f.t(`[${input.departmentLabel}]`)} ${f.b(input.name)}`,
+        f.b(input.name),
         `Menor preço hoje entre as ofertas que acompanhamos: ${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${
           input.others ? ` (outras de ${fmtBRL(input.others.minCents)} a ${fmtBRL(input.others.maxCents)})` : ''
         }.`,

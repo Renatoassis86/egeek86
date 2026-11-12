@@ -61,7 +61,7 @@ eq('formacao: G2 por media simples sai (sem elegibilidade, sem 14 dias)', !!c1 &
 eq('formacao: media simples = 10000', c1?.avgCents, 10000);
 eq('formacao: texto nunca afirma % com amostra < 5', /% abaixo da média/.test(c1?.texts.telegram ?? ''), false);
 eq('formacao: texto nunca diz afiliado', /afiliad/i.test((c1?.texts.telegram ?? '') + (c1?.texts.whatsapp ?? '')), false);
-eq('formacao: texto mostra a media simples e a amostra pequena', /Média simples:<\/b> R\$ 100,00 \(3 ofertas ativas; amostra pequena\)/.test(c1?.texts.telegram ?? ''), true);
+eq('formacao: texto NAO menciona media nem amostra (metodologia so interna)', /m[eé]dia|amostra|ofertas ativas/i.test(c1?.texts.telegram ?? ''), false);
 eq('formacao: texto nunca diz abaixo da media', /abaixo da média/i.test(c1?.texts.telegram ?? ''), false);
 
 // 2 lojas (dois vendedores, 3 ofertas) passa; 1 loja so, nao

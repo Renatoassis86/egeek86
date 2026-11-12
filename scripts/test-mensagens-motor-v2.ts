@@ -387,9 +387,10 @@ lp = applyLimits([mkc('i', 'insight', { trigger: 'G5' }), mkc('a', 'alerta')], [
 eq(lp.next?.masterProductId, 'a', 'alerta antes de insight');
 // cartão
 ok(cardAllowed('p', [], NOW), 'cartão: sem histórico pode');
-ok(!cardAllowed('p', [rec('p', 24 * 60 * 3, { card: true })], NOW), 'cartão do mesmo produto em 3 dias não repete (7 dias)');
-ok(cardAllowed('p', [rec('p', 24 * 60 * 8, { card: true })], NOW), 'cartão do mesmo produto após 8 dias pode');
-ok(!cardAllowed('p', Array.from({ length: 4 }, (_, i) => rec(`c${i}`, 30 + i * 10, { card: true })), NOW), 'cartão: teto de 4 por dia');
+ok(!cardAllowed('p', [rec('p', 24 * 60 * 3, { card: true, trigger: 'P1' })], NOW), 'cartão do mesmo produto em 3 dias não repete (7 dias)');
+ok(cardAllowed('p', [rec('p', 24 * 60 * 8, { card: true, trigger: 'P1' })], NOW), 'cartão do mesmo produto após 8 dias pode');
+ok(!cardAllowed('p', Array.from({ length: 4 }, (_, i) => rec(`c${i}`, 30 + i * 10, { card: true, trigger: 'P1' })), NOW), 'cartão: teto de 4 por dia');
+ok(cardAllowed('p', Array.from({ length: 6 }, (_, i) => rec(`o${i}`, 30 + i * 10, { card: true, trigger: 'G2' })), NOW), 'cartão de oferta (G2) não consome a cota do cartão de histórico');
 
 // ---------------------------------------------------------------------------
 // 7) Cupom verificado (ponto de ligação couponLookup)

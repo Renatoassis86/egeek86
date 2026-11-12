@@ -16,7 +16,7 @@ import {
 } from '@/lib/messaging/group-rules';
 import { getStoreByVertical, chatForStore } from '@/server/stores';
 import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
-import { sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
+import { captionVisibleLength, sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
 import { setAutomationState } from '@/server/messaging/group-automation-store';
 import { detectGroupCandidates, groupMessagesOnda2Ready, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
 import { runLivePhase, type LiveCheckLog, type LiveDeps } from '@/lib/messaging/live-recheck';
@@ -295,9 +295,10 @@ export type CouponSentFn = (info: CouponInfo & CouponRefMeta, ctx: { networkSlug
 
 /**
  * Escolha do cartão (injetável; a rota do cron liga): 'oferta' = card de oferta (capa + preço + insight) para alerta/insight de
- * preço; 'historico' = cartão de histórico para P1 e G5. null = a mensagem sai só em texto.
+ * preço; 'historico' = cartão de histórico para P1 e G5; 'simples' = card do Achado e do Cupom ativo (foto, nome, preço, loja, vendedor e
+ * carimbo, SEM média, SEM histórico, SEM comparação). null = a mensagem sai só em texto.
  */
-export type CardForFn = (a: { candidate: Candidate; kind: 'oferta' | 'historico'; offerId: string; masterProductId: string }) => Promise<Buffer | null>;
+export type CardForFn = (a: { candidate: Candidate; kind: 'oferta' | 'historico' | 'simples'; offerId: string; masterProductId: string }) => Promise<Buffer | null>;
 
 export interface SendDeps {
   cardFor?: CardForFn;
@@ -506,10 +507,11 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     }
 
     let photo: Buffer | null = null;
-    const cardKind: 'oferta' | 'historico' = match.trigger === 'P1' || match.trigger === 'G5' ? 'historico' : 'oferta';
-    const cardCls = match.cls === 'alerta' || match.cls === 'insight' || match.cls === 'radar' || match.cls === 'plataforma';
-    if (deps.cardFor && cardCls && match.trigger !== 'RADAR' && match.trigger !== 'G4' && match.trigger !== 'AC') {
-      if (cardKind === 'oferta' || cardAllowed(match.masterProductId, hist.records, now)) {
+    const simpleCard = match.trigger === 'AC' || match.trigger === 'CUPOM';
+    const cardKind: 'oferta' | 'historico' | 'simples' = simpleCard ? 'simples' : match.trigger === 'P1' || match.trigger === 'G5' ? 'historico' : 'oferta';
+    const cardCls = match.cls === 'alerta' || match.cls === 'insight' || match.cls === 'radar' || match.cls === 'plataforma' || simpleCard;
+    if (deps.cardFor && cardCls && match.trigger !== 'RADAR' && match.trigger !== 'G4') {
+      if (cardKind !== 'historico' || cardAllowed(match.masterProductId, hist.records, now)) {
         try {
           photo = await timeout(deps.cardFor({ candidate: match, kind: cardKind, offerId: match.offerIds[0], masterProductId: match.masterProductId }), 8000);
         } catch {
@@ -525,9 +527,10 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     }
 
     // Legenda de foto cabe em 1024 caracteres: se passar, o bloco "Monitoramento" (detalhe) sai, e o card continua indo.
-    if (photo && text.length > 1024) {
+    // O Telegram conta a legenda depois de interpretar o HTML (tags não contam): usa o tamanho visível, não o cru.
+    if (photo && captionVisibleLength(text) > 1024) {
       const slim = text.replace(/<blockquote><b>Monitoramento<\/b>[\s\S]*?<\/blockquote>\n\n/, '');
-      if (slim.length <= 1024) text = slim;
+      if (captionVisibleLength(slim) <= 1024) text = slim;
     }
     // Um grupo por área (dono, 2026-11-11): games no grupo principal; cada outra área no seu, sem misturar. Sem grupo da área, não envia.
     const storeRow = await getStoreByVertical(match.vertical).catch(() => null);

@@ -42,6 +42,14 @@ const mk = (priceCents: number, over: Partial<OfferCardInput> = {}, st: Partial<
   imageUrl: null, today: '2026-11-11', stats: { ...baseStats, ...st }, ...over,
 });
 
+function pureSimples() {
+  const base = mk(28000); // preço que seria "novo menor registrado" no card completo
+  check('simples: card completo teria insight', chooseInsight(base) != null);
+  check('simples: sem insight (sem média, sem histórico, sem comparação)', chooseInsight({ ...base, simple: {} }) === null);
+  const alt = buildOfferAlt({ ...base, simple: { withoutCouponCents: 31000 } }, null);
+  check('simples: alt traz o preço sem cupom e nenhuma média', /Sem o cupom: R\$ 310,00/.test(alt) && !/m[eé]dia|menor pre/i.test(alt), alt);
+}
+
 function pure() {
   check('moeda milhar', formatMoney(123456) === 'R$ 1.234,56' && formatMoney(18700) === 'R$ 187,00' && formatMoney(5) === 'R$ 0,05');
   check('reais arredondado', formatReaisRounded(18734) === 'R$ 187' && formatReaisRounded(123456) === 'R$ 1.235', [formatReaisRounded(18734), formatReaisRounded(123456)]);
@@ -161,6 +169,7 @@ async function withDb(outDir: string) {
 
 async function main() {
   pure();
+  pureSimples();
   const outDir = process.argv[2] ?? 'C:\\Users\\Usuario\\AppData\\Local\\Temp\\claude\\ca796e41c2dd1ba9\\2d5f1fda-9c18-4791-bdfb-30851cbacab9\\scratchpad\\cards-oferta';
   if (process.env.DATABASE_URL) await withDb(outDir);
   else console.log('DATABASE_URL ausente: parte 2 (banco) ignorada');

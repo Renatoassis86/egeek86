@@ -45,8 +45,17 @@ export async function GET(request: NextRequest) {
   const summary = await runGroupMessagesCycle({
     renderCard: async (masterProductId: string) => (await renderHistoryCard(masterProductId))?.png ?? null,
     // Escolha do cartão: histórico (P1 e G5) ou card de oferta (capa + preço + insight) para alerta/insight de preço.
-    cardFor: async ({ kind, offerId, masterProductId }) => {
+    cardFor: async ({ kind, offerId, masterProductId, candidate }) => {
       if (kind === 'historico') return (await renderHistoryCard(masterProductId))?.png ?? null;
+      // Achado e Cupom ativo: card simples (sem média, sem histórico, sem comparação).
+      if (kind === 'simples') {
+        const simple = await loadOfferCardInput(offerId, {
+          simple: true,
+          couponFinalCents: candidate.trigger === 'CUPOM' ? candidate.couponFinalCents ?? null : null,
+          couponReadAt: candidate.trigger === 'CUPOM' && candidate.couponInfo?.verifiedAt ? new Date(candidate.couponInfo.verifiedAt) : null,
+        });
+        return simple ? ((await renderOfferCard(simple))?.png ?? null) : null;
+      }
       const input = await loadOfferCardInput(offerId);
       return input ? ((await renderOfferCard(input))?.png ?? null) : null;
     },

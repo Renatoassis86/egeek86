@@ -46,7 +46,10 @@ const REGIME_START = PRICE_DAILY_REGIME_START;
 const COVER_TIMEOUT_MS = 5000;
 const COVER_MAX_BYTES = 6 * 1024 * 1024;
 
-export async function loadOfferCardInput(offerId: string, opts?: { now?: Date }): Promise<OfferCardInput | null> {
+export async function loadOfferCardInput(
+  offerId: string,
+  opts?: { now?: Date; simple?: boolean; couponFinalCents?: number | null; couponReadAt?: Date | null }
+): Promise<OfferCardInput | null> {
   if (!UUID.test(offerId)) return null;
   const now = opts?.now ?? new Date();
   const rows = await db.execute<Row>(sql`
@@ -71,18 +74,20 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
   const masterId = String(r.master_product_id);
   const today = spDay(now);
 
-  // Último preço conhecido da PRÓPRIA oferta antes de hoje.
-  const pv = await db.execute<Row>(sql`
+  // Último preço conhecido da PRÓPRIA oferta antes de hoje (card simples não consulta histórico).
+  const pv = opts?.simple
+    ? []
+    : await db.execute<Row>(sql`
     SELECT day::text AS day, last_cents FROM price_daily_offer
     WHERE offer_id = ${offerId}::uuid AND day < ${today}::date AND last_cents > 0 ORDER BY day DESC LIMIT 1
   `);
   const prev = pv[0] ? { cents: Number(pv[0].last_cents), day: String(pv[0].day) } : null;
 
-  const stats: OfferCardStats = { recordCents: null, seriesFirstDay: null, measuredDays: 0, avgCents: null, distinctOffers: 0, prev };
+  const stats: OfferCardStats = { recordCents: null, seriesFirstDay: null, measuredDays: 0, avgCents: null, distinctOffers: 0, prev: opts?.simple ? null : prev };
   // PRICE_AMAZON_MODE=on (games): a Amazon também compara com a média única (que a inclui). off/shadow: só o histórico dela mesma.
   const amazonOn = isAmazon && amazonCountsIn(getAmazonMode(), String(r.vertical));
   let amazonAvg: OfferCardInput['amazonAvg'] = null;
-  if (!isAmazon || amazonOn) {
+  if (!opts?.simple && (!isAmazon || amazonOn)) {
     const windowFrom = addDays(today, -(CARD_MAX_DAYS - 1));
     const firstDay = windowFrom > REGIME_START ? windowFrom : REGIME_START;
     const offers = await loadCardOffers(masterId, addDays(firstDay, -OFFER_ACTIVE_DAYS));
@@ -115,15 +120,18 @@ export async function loadOfferCardInput(offerId: string, opts?: { now?: Date })
   const rawImg = typeof r.image_url === 'string' && /^https:\/\//i.test(r.image_url.trim()) ? r.image_url.trim() : null;
   const okRe = hostOk[String(r.net_slug)];
   const img = rawImg && (!okRe || okRe.test(rawImg)) ? rawImg : null;
+  // Cupom: o preço do card é o COM cupom (lido na página do anúncio) e o do anúncio sem cupom vai riscado; só vale se o com-cupom é menor.
+  const withCoupon = opts?.simple && opts.couponFinalCents && opts.couponFinalCents > 0 && opts.couponFinalCents < priceCents ? opts.couponFinalCents : null;
   return {
+    simple: opts?.simple ? { withoutCouponCents: withCoupon ? priceCents : null } : undefined,
     title,
     platformLabel: platformLabel(rp.platform, rp.legacyLabel),
     store: String(r.net_name),
     sellerName: sellerLabel(r.seller_name as string | null, String(r.net_name)),
     isAmazon,
     amazonAvg,
-    priceCents,
-    checkedAt,
+    priceCents: withCoupon ?? priceCents,
+    checkedAt: withCoupon && opts?.couponReadAt ? opts.couponReadAt : checkedAt,
     imageUrl: img,
     today,
     stats,
@@ -172,6 +180,7 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
   const price = formatMoney(input.priceCents);
   const storeText = storePhrase(input.store);
   const sellerText = input.sellerName ? `Vendido por ${input.sellerName}` : null;
+  const wc = input.simple?.withoutCouponCents ?? null;
   const fs = priceFontSize(price, sellerText && sellerText.length > storeText.length ? sellerText : storeText);
   const panel = G.panel;
   const box = coverBox();
@@ -207,10 +216,19 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
       <div style={abs(G.pad, G.priceTop, { width: G.contentW, height: G.priceBoxH, alignItems: 'flex-end' })}>
         <div style={{ display: 'flex', fontSize: fs.price, lineHeight: 1, color: C.text, letterSpacing: -2 }}>{price}</div>
         <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 22, marginBottom: Math.round(fs.price * 0.1) }}>
+          {wc ? <div style={{ display: 'flex', fontSize: Math.round(fs.store * 0.9), color: C.gold, marginBottom: 6 }}>com o cupom</div> : null}
           <div style={{ display: 'flex', fontSize: fs.store, color: C.secondary }}>{storeText}</div>
           {sellerText ? <div style={{ display: 'flex', fontSize: Math.round(fs.store * 0.9), color: C.gold, marginTop: 6 }}>{sellerText}</div> : null}
         </div>
       </div>
+
+      {wc ? (
+        <div style={abs(G.pad, G.insightTop, { alignItems: 'center', fontSize: G.insightFont - 4, color: C.secondary })}>
+          <div style={{ display: 'flex', width: 8, height: G.insightFont - 4, background: C.grid, marginRight: 18 }} />
+          <div style={{ display: 'flex', textDecoration: 'line-through' }}>{formatMoney(wc)}</div>
+          <div style={{ display: 'flex', marginLeft: 14 }}>sem o cupom</div>
+        </div>
+      ) : null}
 
       {insight ? (
         <div style={abs(G.pad, G.insightTop, { alignItems: 'center', fontSize: G.insightFont, color: C.gold })}>

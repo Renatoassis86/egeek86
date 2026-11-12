@@ -61,6 +61,19 @@ export function stripTelegramHtml(html: string): string {
     .replace(/&amp;/g, '&');
 }
 
+/**
+ * Tamanho da legenda como o Telegram conta: o limite de 1024 vale para o texto DEPOIS de interpretar o HTML (tags não contam).
+ * Contar o HTML cru derrubava o card de mensagens de 1026 a 1088 caracteres crus (17 do G2 em 12 h, 2026-11-12).
+ */
+export function captionVisibleLength(html: string): number {
+  return html
+    .replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&').length;
+}
+
 function scrub(s: string, token: string): string {
   return s.split(token).join('***').replace(/bot\d+:[A-Za-z0-9_-]+/g, 'bot***');
 }
@@ -88,7 +101,7 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
   const maxWait = input.maxRetryAfterSec ?? 30;
   let photo: Uint8Array | null = input.photo && input.photo.byteLength > 0 ? input.photo : null;
   let photoSkipped: string | undefined;
-  if (photo && input.text.length > TELEGRAM_CAPTION_MAX) {
+  if (photo && captionVisibleLength(input.text) > TELEGRAM_CAPTION_MAX) {
     photo = null;
     photoSkipped = `legenda_maior_que_${TELEGRAM_CAPTION_MAX}`;
   }

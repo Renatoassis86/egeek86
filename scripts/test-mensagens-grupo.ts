@@ -191,7 +191,7 @@ const m6: GroupMessageInput = {
   others: { minCents: 106896, maxCents: 157798 }, avg: null,
 };
 const r6 = buildGroupMessages(m6);
-ok(r6.whatsapp.startsWith('[Tecnologia] *SSD Kingston NV3 1 TB (M.2 NVMe)*'), 'M6 rótulo do departamento', r6.whatsapp);
+ok(r6.whatsapp.startsWith('*SSD Kingston NV3 1 TB (M.2 NVMe)*'), 'M6 sem prefixo de departamento (o grupo da área já diz)', r6.whatsapp);
 ok(r6.whatsapp.includes('(outras de R$ 1.068,96 a R$ 1.577,98)'), 'M6 faixa');
 ok(!r6.whatsapp.includes('abaixo da média'), 'M6 sem média: linha some');
 
@@ -380,7 +380,7 @@ ok(!ev.candidates.some((c) => c.trigger === 'G5'), 'G5 exige >= 20 ofertas');
 ev = evaluateProduct(product({ vertical: 'futuro', productType: 'tecnologia', platformLabel: null, minEvent: null }), ctx);
 const g6 = ev.candidates.find((c) => c.trigger === 'G6');
 ok(!!g6 && !g6.sendable && String(g6.notSendableReason).includes('departamento_em_review'), 'G6 marcado como não enviável', ev);
-ok(!!g6 && g6.texts.whatsapp.startsWith('[futuro]'), 'G6 rótulo');
+ok(!!g6 && !g6.texts.whatsapp.startsWith('['), 'G6 sem prefixo de departamento');
 
 // G4 (resumo)
 const sumFacts = new Map<string, ProductFacts>();

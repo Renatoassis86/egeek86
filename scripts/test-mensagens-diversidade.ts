@@ -65,9 +65,9 @@ ok(!!c1 && c1.cls === 'insight' && c1.status === 'auto' && c1.sendable && !c1.he
 ok(!!c1 && c1.avgCents == null && c1.belowAvgPct == null && c1.dropPct == null, 'Achado: sem media, sem % e sem queda no candidato');
 for (const ch of ['telegram', 'whatsapp'] as const) {
   const t = c1?.texts[ch] ?? '';
-  ok(t.includes('Achado:') && t.includes('R$ 2.800,00') && /conferido/i.test(t), `Achado (${ch}): tem rotulo, preco e horario de conferencia`, t);
+  ok(t.includes('R$ 2.800,00') && /conferido/i.test(t), `Achado (${ch}): tem preco e horario de conferencia`, t);
   ok(!/%|abaixo|m[eé]dia|desconto|afiliad|imperd|promo/i.test(t.replace(/https?:\/\/\S+/g, '')), `Achado (${ch}): sem %, abaixo, media, desconto, afiliado, promocao`, t);
-  ok(/[uú]nica oferta/i.test(t) && !/menor pre[cç]o/i.test(t), `Achado (${ch}): 1 oferta diz "unica oferta" e nao alega "menor preco"`, t);
+  ok(!/[uú]nica oferta|ofertas? ativas?|amostra|acompanhamos|menor pre[cç]o/i.test(t), `Achado (${ch}): 1 oferta NAO cita amostra, "unica oferta" nem alega "menor preco" (metodologia so interna)`, t);
   ok(textProblems(t, ch === 'telegram' ? 'tg' : 'wa').length === 0, `Achado (${ch}): barreira de texto limpa`, textProblems(t, ch === 'telegram' ? 'tg' : 'wa'));
 }
 ok(!!c1 && c1.tipo === 'smart-tv', 'Achado: candidato leva o tipo (cota de diversidade)');
@@ -135,12 +135,12 @@ const cheapNoLink = offer({ offerId: 'a', priceCents: 280000, affiliateLinkPendi
 r = evaluateProductV2(plus({ offers: [cheapNoLink, offer({ offerId: 'b', priceCents: 288400 })] }), ctx); // 3,0% acima
 const fb = ac(r);
 ok(!!fb && fb.offerIds[0] === 'b', 'fallback: usa a 2a mais barata COM link quando esta a ate 3% da mais barata', r.blocked);
-ok(!!fb && !/menor pre[cç]o/i.test(fb.texts.telegram) && /2 ofertas ativas/.test(fb.texts.telegram), 'fallback: o texto NAO diz "menor preco" e diz quantas ofertas acompanha', fb?.texts.telegram);
+ok(!!fb && !/menor pre[cç]o|ofertas ativas|amostra/i.test(fb.texts.telegram), 'fallback: o texto NAO diz "menor preco" nem cita quantas ofertas acompanha', fb?.texts.telegram);
 r = evaluateProductV2(plus({ offers: [cheapNoLink, offer({ offerId: 'b', priceCents: 288401 })] }), ctx); // acima de 3%
 ok(!ac(r) && /mais_barata_sem_link_/.test(reasons(r)), 'fallback: 2a mais barata acima de 3% NAO e anunciada', reasons(r));
 r = evaluateProductV2(plus({ offers: [offer({ offerId: 'a', priceCents: 280000 }), offer({ offerId: 'b', priceCents: 300000 })] }), ctx);
 const lowest = ac(r);
-ok(!!lowest && lowest.offerIds[0] === 'a' && /menor pre[cç]o entre as 2 ofertas ativas que acompanhamos/i.test(lowest.texts.telegram), 'menor preco so com escopo ("entre as N ofertas") e quando a citada e a menor', lowest?.texts.telegram);
+ok(!!lowest && lowest.offerIds[0] === 'a' && !/menor pre[cç]o|ofertas ativas|amostra/i.test(lowest.texts.telegram), 'Achado com amostra pequena (2 ofertas) nao alega "menor preco" nem cita a amostra', lowest?.texts.telegram);
 ok(!!lowest && !/%|abaixo|m[eé]dia|desconto/i.test(lowest.texts.whatsapp.replace(/https?:\/\/\S+/g, '')), 'Achado com 2 ofertas tambem nao compara nem alega desconto');
 // G2 sendavel tem prioridade: nao gera AC para o mesmo produto
 r = evaluateProductV2(plus({ offers: [offer({ offerId: 'a', priceCents: 10000 }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })], tipoMedianCents: 11000 }), ctx);

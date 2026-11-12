@@ -66,6 +66,11 @@ export interface OfferCardInput {
   /** Hoje em America/Sao_Paulo (YYYY-MM-DD). */
   today: string;
   stats: OfferCardStats;
+  /**
+   * Card SIMPLES (Achado e Cupom ativo; dono, 2026-11-12): mesmo padrão visual, mas SEM média, SEM histórico, SEM comparação
+   * (nenhum insight). `withoutCouponCents` (só Cupom): preço do anúncio sem cupom, mostrado riscado e menor; o `priceCents` é o com cupom.
+   */
+  simple?: { withoutCouponCents?: number | null };
 }
 
 export type InsightKind = 'new_record' | 'drop' | 'below_avg' | 'near_record' | 'equal_record';
@@ -108,6 +113,7 @@ function pctInt(pct: number): string {
 export function chooseInsight(input: OfferCardInput): Insight | null {
   const p = input.priceCents;
   if (!(p > 0)) return null;
+  if (input.simple) return null; // card simples nunca compara
   const s = input.stats;
   const serieOk = !input.isAmazon && s.recordCents != null && s.recordCents > 0 && s.measuredDays >= OFFER_CARD_MIN_DAYS && s.seriesFirstDay != null;
 
@@ -216,6 +222,7 @@ export function buildOfferAlt(input: OfferCardInput, insight: string | null): st
     `${truncateTitle(input.title, 120)}${input.platformLabel ? ` (${input.platformLabel})` : ''}`,
     `${formatMoney(input.priceCents)} ${storePhrase(input.store)}.`,
     insight ? `${insight}.` : '',
+    input.simple?.withoutCouponCents ? `Sem o cupom: ${formatMoney(input.simple.withoutCouponCents)}.` : '',
     stampLine(input.checkedAt) + '.',
   ];
   return parts.filter(Boolean).join(' ');
