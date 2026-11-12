@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { MOTIVOS_SKIP, motivoValido } from '@/lib/ml-links/fila';
+import { listarFilaLinks, registrarFalhas } from '@/server/ml-links/fila';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -45,49 +47,47 @@ export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 204, headers: cors(request) });
 }
 
-/** Fila: ofertas ativas do ML (games, visíveis) cujo affiliate_url ainda NÃO é meli.la. A mais barata de cada produto vem primeiro. ?n=40 */
+/**
+ * Fila: ofertas ativas do ML cujo affiliate_url ainda NÃO é meli.la. Ordem (dono, 2026-11-12): lojas Plus antes de games; a oferta mais barata
+ * de cada produto primeiro; tipos de ticket alto primeiro (Smart TV, geladeira, notebook...). Ofertas com falha recente registrada
+ * (ml_link_falhas, migração 0047) ficam FORA até o prazo de reintento; URL só de catálogo (/p/MLB...) sem id de anúncio também fica fora.
+ * ?n=40 (máx. 100). ?resumo=1 inclui a contagem por prioridade da janela lida.
+ */
 export async function GET(request: NextRequest) {
   const denied = guard(request);
   if (denied) return denied;
-  const n = Math.min(Math.max(1, Number(new URL(request.url).searchParams.get('n') ?? 40) || 40), MAX_ROWS);
-  const rows = await db.execute<{ id: string; url: string }>(sql`
-    SELECT t.id, t.url FROM (
-      SELECT o.id::text AS id,
-             CASE WHEN o.external_item_id ~ '^MLB[0-9]+$' THEN 'https://produto.mercadolivre.com.br/MLB-' || substr(o.external_item_id, 4)
-                  ELSE split_part(split_part(o.affiliate_url, '?', 1), '#', 1) END AS url,
-             row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn, o.master_product_id, (m.vertical = 'games') AS is_games
-      FROM affiliate_offers o
-      JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
-      JOIN master_products m ON m.id = o.master_product_id
-      LEFT JOIN affiliate_sellers sl ON sl.id = o.seller_id
-      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical
-        AND COALESCE(sl.reputation_level, '') NOT IN ('1_red', '2_orange')
-        AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
-        AND o.current_price_cents > 0 AND o.affiliate_url NOT LIKE 'https://meli.la/%'
-        AND o.affiliate_url ~ '^https://(produto|www)\\.mercadolivre\\.com\\.br/'
-        AND (m.attributes->'catalogGate'->>'verdict') IS DISTINCT FROM 'review'
-    ) t ORDER BY t.is_games ASC, t.rn ASC, t.master_product_id LIMIT ${n}`); // lojas novas primeiro (dono, 2026-11-11: todas as lojas no ar hoje)
+  const params = new URL(request.url).searchParams;
+  const n = Math.min(Math.max(1, Number(params.get('n') ?? 40) || 40), MAX_ROWS);
+  const fila = await listarFilaLinks(n);
   const [tot] = await db.execute<{ n: number }>(sql`
     SELECT count(*)::int AS n FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre'
     JOIN master_products m ON m.id = o.master_product_id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = m.vertical
       AND (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved')
       AND o.affiliate_url NOT LIKE 'https://meli.la/%'`);
-  return NextResponse.json({ pendentes: tot?.n ?? 0, items: rows }, { headers: cors(request) });
+  return NextResponse.json({
+    pendentes: tot?.n ?? 0, sem_url_de_item: fila.semUrlDeItem, tabela_falhas: fila.tabelaFalhas, items: fila.items,
+    ...(params.get('resumo') === '1' ? { resumo: fila.resumo } : {}),
+  }, { headers: cors(request) });
 }
 
-/** { rows: [{ id, link }] } — link = https://meli.la/xxxx gerado para a URL daquela oferta. */
+/**
+ * { rows?: [{ id, link }], skips?: [{ id, motivo }] } — link = https://meli.la/xxxx gerado para a URL daquela oferta.
+ * skips: oferta que o gerador recusou/não resolveu (motivo: nao_elegivel | sem_resultado | erro_pagina); sai da fila até o reintento.
+ */
 export async function POST(request: NextRequest) {
   const denied = guard(request);
   if (denied) return denied;
   const headers = cors(request);
   const text = await request.text();
   if (text.length > 60_000) return NextResponse.json({ error: 'corpo_grande_demais' }, { status: 413, headers });
-  let body: { rows?: { id: string; link: string }[] };
+  let body: { rows?: { id: string; link: string }[]; skips?: { id: string; motivo: string }[] };
   try { body = JSON.parse(text); } catch { return NextResponse.json({ error: 'json_invalido' }, { status: 400, headers }); }
   const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, MAX_ROWS).filter((r) => r && /^[0-9a-f-]{36}$/i.test(String(r.id)) && LINK_RE.test(String(r.link)));
-  if (!rows.length) return NextResponse.json({ error: 'sem_linhas_validas' }, { status: 400, headers });
+  const skips = (Array.isArray(body.skips) ? body.skips : []).slice(0, MAX_ROWS).filter((s) => s && /^[0-9a-f-]{36}$/i.test(String(s.id)) && motivoValido(s.motivo));
+  if (!rows.length && !skips.length) return NextResponse.json({ error: 'sem_linhas_validas', motivos_aceitos: MOTIVOS_SKIP }, { status: 400, headers });
 
+  const skipsGravados = await registrarFalhas(skips);
   const started = Date.now();
   const changed: { id: string; old: string; link: string }[] = [];
   for (const r of rows) {
@@ -100,10 +100,15 @@ export async function POST(request: NextRequest) {
       RETURNING prev.affiliate_url AS old`);
     if (res[0]) changed.push({ id: r.id, old: res[0].old, link: r.link });
   }
-  try {
-    await db.execute(sql`
-      INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, selected, checked, offers_created, errors, meta)
-      VALUES ('ml-links-assistida', 'mercado-livre', ${new Date(started).toISOString()}::timestamptz, now(), ${Date.now() - started}, 'ok', ${rows.length}, ${rows.length}, 0, 0, ${JSON.stringify({ trocas: changed })}::jsonb)`);
-  } catch (e) { console.error('[ml-links] falha ao registrar collector_runs', e); }
-  return NextResponse.json({ ok: true, recebidos: rows.length, gravados: changed.length }, { headers });
+  if (rows.length) {
+    try {
+      await db.execute(sql`
+        INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, selected, checked, offers_created, errors, meta)
+        VALUES ('ml-links-assistida', 'mercado-livre', ${new Date(started).toISOString()}::timestamptz, now(), ${Date.now() - started}, 'ok', ${rows.length}, ${rows.length}, 0, 0, ${JSON.stringify({ trocas: changed })}::jsonb)`);
+    } catch (e) { console.error('[ml-links] falha ao registrar collector_runs', e); }
+  }
+  return NextResponse.json({
+    ok: true, recebidos: rows.length, gravados: changed.length,
+    skips_recebidos: skips.length, skips_gravados: skipsGravados ?? 0, tabela_falhas: skipsGravados !== null,
+  }, { headers });
 }
