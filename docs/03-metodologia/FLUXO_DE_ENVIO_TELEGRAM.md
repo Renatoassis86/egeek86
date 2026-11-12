@@ -54,7 +54,7 @@ Lê ofertas, vendedor, preço confirmado, série diária (`price_daily_offer`/`p
 | Frescor do preço | 180 min na detecção, 30 min no envio (Amazon 60/40) | preço confirmado, não gravado | |
 | Reconfirmação | o preço precisa ter sido visto em 2 coletas separadas por >= 15 min (`CONFIRM_GAP_MIN`), salvo reconferência ao vivo | evita o preço que acabou de aparecer | 2 produtos |
 | Identidade | `titleIdentityBlock`: região, edição, cross-gen, Open Box, usado | uma mídia, uma média; só produto novo | residual |
-| Reputação ML | `5_green` ou `4_light_green`; < 10 vendas ou sem reputação = exige aprovação humana; amarelo ou pior = bloqueia | risco de vendedor oportunista | 12 produtos (amarelo) |
+| Reputação ML | **desde 2026-11-12 (dono): só reputação BAIXA barra (`1_red`, `2_orange`)**; amarela, verde-clara, verde, poucas vendas e sem reputação lida entram, e a mensagem mostra a reputação lida (verde, verde-clara ou amarela). Antes: só `5_green`/`4_light_green`, < 10 vendas ou sem reputação = aprovação humana, amarelo = bloqueio | o cliente decide; só o vendedor de reputação baixa fica de fora | antes: 12 produtos (amarelo) |
 | Shopee | exige aprovação humana, salvo queda <= 20% com reconferência ao vivo | risco de ágio | |
 
 ## 5. Etapa D: juízo por produto (`evaluateProductV2`)
@@ -142,3 +142,9 @@ Por loja Plus e por dia: **produtos distintos**, **tipos distintos** (meta >= 5 
 - **P4 (risco):** Achado de produto de 1 vendedor depende da mediana do tipo; tipos com preço muito disperso (bicicleta, esteira) bloqueiam mais.
 - **P5 (técnico):** a detecção leva ~37 s a partir da máquina local; conferir o tempo real na Vercel antes de elevar mais o pool.
 - Fora desta rodada: tipo "Cadeiras" (cadeira gamer) não existe em `tipos-produto.ts` (gamer-veterano); foto/cartão para o Achado.
+
+## 12. Diretrizes do dono de 2026-11-12 (reputação, itens sem média, fila)
+
+- **Reputação do vendedor:** ver o portão "Reputação ML" na seção 4. A aprovação em bloco de Impressão 3D (`aprovacao-impressao3d.ts`) deixou de exigir nível verde e 50 vendas: só barra o master quando TODAS as ofertas na faixa são de reputação baixa (`1_red`/`2_orange`).
+- **Achado em GAMES sem média calculada:** o Achado vale para games quando o produto ainda NÃO tem média (menos de 3 ofertas fora da Amazon, ou sem estado diário de média nos últimos 3 dias; fato `semMedia` em `loadFacts`). Texto igual ao Achado das lojas Plus (preço, loja, vendedor, link; sem %, sem "abaixo", sem "média"). Faixa de sanidade: 0,25x a 4x a mediana do menor preço por master da MESMA plataforma (amostra >= 10 masters), mais histórico próprio e plausibilidade já existentes. Pool: até 40 games por rodízio de PLATAFORMA (`POOL.GAMES_ACHADO`). Com média calculada vale a regra de sempre (>= 10% abaixo). Amazon segue com regra própria. Cota do Achado por loja (max(3, 25%), 2 por hora) e dedup de 24 h inalterados. Depende da migration 0046 (kill-switch `GROUP_ACHADO=off`).
+- **Fila de classificação, casos óbvios:** `src/lib/identity-queue/obvio.ts` + `autoResolveObvious` (queue.ts). Critério objetivo (regra aprendida do dono; prova da API oficial; GTIN igual; marca+modelo+capacidade da API coerentes com o master; título do anúncio igual ao do master com preço entre 1/1,3x e 1,3x a mediana, sem dispersão bimodal e sem marca de condição/região/edição). Autor `auto_obvio` (`identity_decisions.decided_via`), nunca vira regra, motivo em `value_label`, desfazer no popup (item desfeito não é refeito). Roda no cron da fila e no botão "Atualizar fila"; kill-switch `FILA_AUTO_OBVIO=off`. Simulação: `scripts/simular-fila-obvios.ts` (somente SELECT).

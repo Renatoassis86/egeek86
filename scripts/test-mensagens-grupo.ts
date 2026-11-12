@@ -343,9 +343,13 @@ for (const [nm, ov] of [
   ev = evaluateProduct(product({ offers: [offer({ offerId: 'a', priceCents: 29199, ...ov }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })] }), ctx);
   ok(!ev.candidates.some((c) => c.trigger === 'G1' && c.offerIds[0] === 'a'), `G1 bloqueado: ${nm}`);
 }
-// ML sem reputação => revisão
+// ML sem reputação => entra (dono, 2026-11-12: só reputação baixa barra)
 ev = evaluateProduct(product({ offers: [offer({ offerId: 'a', priceCents: 29199, sellerReputation: null }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })] }), ctx);
-ok(ev.candidates.find((c) => c.trigger === 'G1')?.status === 'review', 'ML sem reputação vai para revisão');
+ok(ev.candidates.find((c) => c.trigger === 'G1')?.status !== 'review', 'ML sem reputação não vai mais para revisão');
+ev = evaluateProduct(product({ offers: [offer({ offerId: 'a', priceCents: 29199, sellerReputation: '3_yellow', sellerTotalSales: 4 }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })] }), ctx);
+ok(ev.candidates.some((c) => c.trigger === 'G1' && c.offerIds[0] === 'a' && c.status !== 'review'), 'vendedor amarelo entra (cliente decide)');
+ev = evaluateProduct(product({ offers: [offer({ offerId: 'a', priceCents: 29199, sellerReputation: '2_orange' }), offer({ offerId: 'b', priceCents: 45000 }), offer({ offerId: 'c', priceCents: 47000 })] }), ctx);
+ok(!ev.candidates.some((c) => c.trigger === 'G1' && c.offerIds[0] === 'a'), 'vendedor laranja bloqueado');
 // Porteiro / plataforma
 ev = evaluateProduct(product({ catalogGate: 'review' }), ctx);
 ok(ev.candidates.length === 0, 'porteiro review bloqueia');

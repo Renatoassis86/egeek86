@@ -76,8 +76,31 @@ r = evaluateProductV2(plus(), { ...ctx, achado: false });
 ok(!ac(r) && !acBlocked(r), 'Achado desligado (ctx.achado=false): nada de AC, nem bloqueio');
 r = evaluateProductV2(plus(), { now: NOW, maxAgeMin: 180, adTag: AD });
 ok(!ac(r), 'Achado ausente no contexto = desligado (comportamento de sempre)');
-r = evaluateProductV2(plus({ vertical: 'games', productType: 'game', platformLabel: 'Switch', format: 'physical', tipo: null }), ctx);
-ok(!ac(r), 'Achado nunca vale para games');
+const gm = (over: Partial<ProductFacts> = {}) => plus({
+  vertical: 'games', productType: 'game', platformLabel: 'Switch', masterName: 'Jogo Mario Kart 8 Deluxe Switch', format: 'physical', tipo: null, tipoMedianCents: null, tipoSample: 0,
+  offers: [offer({ offerId: 'a', priceCents: 28000, title: 'Jogo Mario Kart 8 Deluxe Switch' })], platMedianCents: 25000, platSample: 40, semMedia: true, ...over,
+});
+r = evaluateProductV2(gm(), ctx);
+const g1 = ac(r);
+ok(!!g1 && g1.status === 'auto' && g1.sendable && g1.avgCents == null && g1.belowAvgPct == null, 'Achado vale para games SEM media calculada (2026-11-12): preco, loja, sem comparacao', acBlocked(r)?.reasons);
+for (const ch of ['telegram', 'whatsapp'] as const) {
+  const t = g1?.texts[ch] ?? '';
+  ok(!/%|abaixo|m[eé]dia|desconto|afiliad|menor pre[cç]o/i.test(t.replace(/https?:\/\/\S+/g, '')), `Achado games (${ch}): sem comparacao nem alegacao`, t);
+}
+r = evaluateProductV2(gm({ semMedia: false }), ctx);
+ok(!ac(r) && !acBlocked(r), 'Achado games: com media calculada NAO vale (regra geral de 10% continua)');
+r = evaluateProductV2(gm({ semMedia: undefined }), ctx);
+ok(!ac(r), 'Achado games: sem o fato semMedia nao vale (conservador)');
+r = evaluateProductV2(gm({ offers: [offer({ offerId: 'a', priceCents: 6000, title: 'Jogo Mario Kart 8 Deluxe Switch' })] }), ctx);
+ok(!ac(r) && /preco_abaixo_de_025x_a_mediana_da_plataforma/.test((acBlocked(r)?.reasons ?? []).join('+')), 'Achado games: preco < 0,25x a mediana da plataforma bloqueia');
+r = evaluateProductV2(gm({ offers: [offer({ offerId: 'a', priceCents: 100001, title: 'Jogo Mario Kart 8 Deluxe Switch' })] }), ctx);
+ok(!ac(r), 'Achado games: preco > 4x a mediana da plataforma bloqueia');
+r = evaluateProductV2(gm({ platSample: 9 }), ctx);
+ok(!ac(r), 'Achado games: amostra da plataforma < 10 bloqueia');
+r = evaluateProductV2(gm({ platformLabel: null }), ctx);
+ok(!ac(r), 'Achado games: plataforma desconhecida continua barrada pelo escopo');
+r = evaluateProductV2(gm(), { ...ctx, achado: false });
+ok(!ac(r), 'Achado games: desligado com ctx.achado=false');
 
 // ---------------------------------------------------------------------------
 // 2) Achado: portoes
@@ -124,9 +147,11 @@ ok(!ac(r), 'Achado: Amazon fica fora');
 r = evaluateProductV2(plus({ catalogGate: 'review' }), ctx);
 ok(!ac(r), 'Achado: porteiro do catalogo em revisao bloqueia');
 r = evaluateProductV2(plus({ offers: [offer({ offerId: 'a', priceCents: 280000, sellerReputation: '3_yellow' })] }), ctx);
-ok(!ac(r), 'Achado: reputacao fraca do vendedor bloqueia');
+ok(!!ac(r), 'Achado: vendedor amarelo entra (so reputacao baixa barra)');
+r = evaluateProductV2(plus({ offers: [offer({ offerId: 'a', priceCents: 280000, sellerReputation: '2_orange' })] }), ctx);
+ok(!ac(r), 'Achado: reputacao baixa (laranja) bloqueia');
 r = evaluateProductV2(plus({ offers: [offer({ offerId: 'a', priceCents: 280000, sellerReputation: '5_green', sellerTotalSales: 3 })] }), ctx);
-ok(!!ac(r) && ac(r)!.status === 'review' && !ac(r)!.sendable === false, 'Achado: vendedor com poucas vendas vira revisao (nunca automatico)', ac(r)?.status);
+ok(!!ac(r) && ac(r)!.status !== 'review', 'Achado: vendedor com poucas vendas entra (cliente decide)', ac(r)?.status);
 
 // ---------------------------------------------------------------------------
 // 3) Achado: link pendente na mais barata (fallback ate 3%) e texto "menor preco"

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { formatBRL } from '@/lib/format';
 import { atualizarFilaClassificacao, desfazerDecisaoFila, responderItemFila } from '@/server/actions/fila-classificacao';
 import { evidenceLines } from '@/lib/identity-queue/api-evidence';
-import type { QueueCard } from '@/server/identity-queue/queue';
+import type { AutoResolvedRow, QueueCard } from '@/server/identity-queue/queue';
 
 const AXIS_LABEL: Record<string, string> = { modelo: 'Modelo', midia: 'Mídia', armazenamento: 'Armazenamento', identidade: 'Identidade', preco: 'Preço' };
 const UNDERSTOOD_LABEL: Record<string, string> = {
@@ -14,15 +14,18 @@ const UNDERSTOOD_LABEL: Record<string, string> = {
   nOfertas: 'Ofertas no produto', razaoMaxMin: 'Maior ÷ menor preço',
 };
 
-interface Props { initialCards: QueueCard[]; pendentes: number; regrasAprendidas: number }
+interface Props { initialCards: QueueCard[]; pendentes: number; regrasAprendidas: number; autoResolvidos?: number; autoRecentes?: AutoResolvedRow[] }
 interface Last { decisionId: string; card: QueueCard; label: string }
 
 /** Popup da FILA DE CLASSIFICAÇÃO: abre sozinho quando há itens pendentes. Atalhos: 1-9 escolhe a opção, Z desfaz, Esc fecha. Cantos retos. */
-export function FilaClassificacaoPopup({ initialCards, pendentes: pend0, regrasAprendidas: rules0 }: Props) {
+export function FilaClassificacaoPopup({ initialCards, pendentes: pend0, regrasAprendidas: rules0, autoResolvidos: auto0 = 0, autoRecentes: autoRows0 = [] }: Props) {
   const [cards, setCards] = React.useState(initialCards);
   const [open, setOpen] = React.useState(initialCards.length > 0);
   const [pendentes, setPendentes] = React.useState(pend0);
   const [regras, setRegras] = React.useState(rules0);
+  const [autoTotal, setAutoTotal] = React.useState(auto0);
+  const [autoRows, setAutoRows] = React.useState(autoRows0);
+  const [showAuto, setShowAuto] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [last, setLast] = React.useState<Last | null>(null);
   const [msg, setMsg] = React.useState<string | null>(null);
@@ -40,6 +43,8 @@ export function FilaClassificacaoPopup({ initialCards, pendentes: pend0, regrasA
       setCards((cs) => cs.filter((c) => c.id !== card.id));
       setPendentes(r.pendentes ?? 0);
       setRegras(r.regrasAprendidas ?? 0);
+      setAutoTotal(r.autoResolvidos ?? 0);
+      setAutoRows(r.autoRecentes ?? []);
       if (r.decisionId) setLast({ decisionId: r.decisionId, card, label: opt?.label ?? value });
     },
     [card, busy]
@@ -54,9 +59,23 @@ export function FilaClassificacaoPopup({ initialCards, pendentes: pend0, regrasA
     setCards((cs) => (r.item ? [r.item, ...cs.filter((c) => c.id !== r.item!.id)] : cs));
     setPendentes(r.pendentes ?? 0);
     setRegras(r.regrasAprendidas ?? 0);
+    setAutoTotal(r.autoResolvidos ?? 0);
+    setAutoRows(r.autoRecentes ?? []);
     setLast(null);
     setOpen(true);
   }, [last, busy]);
+
+  const undoAuto = React.useCallback(async (decisionId: string) => {
+    if (busy) return;
+    setBusy(true);
+    const r = await desfazerDecisaoFila(decisionId);
+    setBusy(false);
+    if (!r.ok) return setMsg(`Não foi possível desfazer (${r.error ?? 'erro'}).`);
+    setCards((cs) => (r.item ? [r.item, ...cs.filter((c) => c.id !== r.item!.id)] : cs));
+    setPendentes(r.pendentes ?? 0);
+    setAutoTotal(r.autoResolvidos ?? 0);
+    setAutoRows(r.autoRecentes ?? []);
+  }, [busy]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -87,6 +106,25 @@ export function FilaClassificacaoPopup({ initialCards, pendentes: pend0, regrasA
         <DialogContent className="max-w-2xl rounded-none">
           <DialogTitle>Fila de classificação ({pendentes} pendentes)</DialogTitle>
           <DialogDescription>O sistema já aprendeu {regras} {regras === 1 ? 'regra' : 'regras'}. Títulos iguais ou muito parecidos são resolvidos sozinhos.</DialogDescription>
+          {autoTotal > 0 ? (
+            <div className="grid gap-2 border border-[var(--color-border-subtle)] p-2 text-body-sm" data-testid="fila-auto-obvio">
+              <div className="flex items-center justify-between gap-2">
+                <span>{autoTotal} {autoTotal === 1 ? 'caso óbvio resolvido' : 'casos óbvios resolvidos'} automaticamente (critério objetivo; cada um pode ser desfeito).</span>
+                <Button type="button" variant="outline" className="rounded-none" onClick={() => setShowAuto((v) => !v)}>{showAuto ? 'Ocultar' : 'Ver e desfazer'}</Button>
+              </div>
+              {showAuto ? (
+                <ul className="grid max-h-56 gap-1 overflow-y-auto">
+                  {autoRows.map((a) => (
+                    <li key={a.decisionId} className="flex items-center justify-between gap-2 border-t border-[var(--color-border-subtle)] pt-1">
+                      <span className="min-w-0 break-words"><strong>{a.title}</strong><br /><span className="text-caption text-[var(--color-text-tertiary)]">{a.label}</span></span>
+                      <Button type="button" variant="outline" className="rounded-none" disabled={busy} onClick={() => void undoAuto(a.decisionId)}>Desfazer</Button>
+                    </li>
+                  ))}
+                  {autoTotal > autoRows.length ? <li className="text-caption text-[var(--color-text-tertiary)]">Mostrando os {autoRows.length} mais recentes de {autoTotal}.</li> : null}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
           {card ? (
             <div className="grid gap-4">
               <div className="flex gap-4 border border-[var(--color-border-default)] p-3">

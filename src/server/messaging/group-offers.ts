@@ -206,6 +206,33 @@ async function loadTipoStats(now: Date): Promise<Map<string, { median: number; n
   tipoStatsCache = { at: Date.now(), map };
   return map;
 }
+let platStatsCache: { at: number; map: Map<string, { median: number; n: number }> } | null = null;
+
+/** Games: mediana do menor preco por master da mesma plataforma (ofertas vivas, elegiveis, fora da Amazon), cache de 10 min. Base da faixa do Achado de games sem media. */
+async function loadPlatStats(now: Date): Promise<Map<string, { median: number; n: number }>> {
+  if (platStatsCache && Date.now() - platStatsCache.at < 600_000) return platStatsCache.map;
+  const since = new Date(now.getTime() - 24 * 3600_000).toISOString();
+  const rows = await db.execute<Row>(sql`
+    SELECT m.game_platform_gen AS plat, min(o.current_price_cents) AS mn
+    FROM master_products m
+    INNER JOIN affiliate_offers o ON o.master_product_id = m.id
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
+    WHERE m.vertical = 'games' AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0
+      AND o.last_price_confirmed_at >= ${since}::timestamptz AND n.slug <> 'amazon'
+      AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')} AND ${masterNoEscopoSql('m')}
+    GROUP BY m.id, m.game_platform_gen
+  `);
+  const by = new Map<string, number[]>();
+  for (const r of rows) (by.get(String(r.plat ?? 'unknown')) ?? by.set(String(r.plat ?? 'unknown'), []).get(String(r.plat ?? 'unknown'))!).push(Number(r.mn));
+  const map = new Map<string, { median: number; n: number }>();
+  for (const [k, xs] of by) {
+    const s = xs.slice().sort((a, b) => a - b);
+    const m = Math.floor(s.length / 2);
+    map.set(k, { median: s.length % 2 ? s[m] : Math.round((s[m - 1] + s[m]) / 2), n: s.length });
+  }
+  platStatsCache = { at: Date.now(), map };
+  return map;
+}
 const RELEASED_PLUS = ['tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d'];
 
 /** Último lote da coleta assistida da Amazon (collector_runs job 'amazon-assistida', status ok). */
@@ -386,17 +413,22 @@ export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin'
   let achadoRows: PoolRow[] = [];
   let sends: Record<string, number> = {};
   if (o.achado) {
-    const noGames = o.verticals.filter((v) => v !== 'games');
-    if (noGames.length) {
+    if (o.verticals.length) {
       const hasTable = await groupMessagesTableExists();
+      // Games entra so SEM media calculada (menos de MED_MIN_OFFERS ofertas vivas fora da Amazon e sem estado diario de media); o resto de games segue G2/OK1/etc.
       const ar = await db.execute<Row>(sql`
         WITH ${liveCte}
-        SELECT DISTINCT l.mid, l.v, mp.name FROM live l INNER JOIN master_products mp ON mp.id = l.mid
-        WHERE l.v <> 'games' ${hasTable ? sql`AND NOT EXISTS (
+        SELECT DISTINCT l.mid, l.v, mp.name, mp.game_platform_gen AS plat FROM live l INNER JOIN master_products mp ON mp.id = l.mid
+        INNER JOIN affiliate_networks ln ON ln.id = l.network_id
+        WHERE (l.v <> 'games' OR (
+            (SELECT count(*) FROM live l2 INNER JOIN affiliate_networks n2 ON n2.id = l2.network_id WHERE l2.mid = l.mid AND n2.slug <> 'amazon') < ${RULES.MED_MIN_OFFERS}::int
+            OR NOT EXISTS (SELECT 1 FROM price_daily_state s WHERE s.master_product_id = l.mid AND s.day >= ${addDays(today, -3)}::date AND s.avg_cents IS NOT NULL)
+          ))
+          AND ln.slug <> 'amazon' ${hasTable ? sql`AND NOT EXISTS (
           SELECT 1 FROM group_messages g WHERE g.master_product_id = l.mid AND g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - interval '24 hours'
         )` : sql``}
       `);
-      achadoRows = ar.map((r) => ({ mid: String(r.mid), v: String(r.v), r: 5, name: String(r.name) }));
+      achadoRows = ar.map((r) => ({ mid: String(r.mid), v: String(r.v), r: 5, name: String(r.name), ...(String(r.v) === 'games' ? { grupo: `plat:${String(r.plat ?? 'unknown')}` } : {}) }));
     }
   }
   sends = await loadTipoSends24h().catch(() => ({}));
@@ -628,6 +660,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
   `);
   const stateAvgBy = new Map(stateAvgRows.map((r) => [String(r.mid), Number(r.avg_cents)]));
   const out: ProductFacts[] = [];
+  const platStats = products.some((p) => String(p.vertical) === 'games') ? await loadPlatStats(o.now).catch(() => new Map<string, { median: number; n: number }>()) : new Map<string, { median: number; n: number }>();
   const tipoStats = products.some((p) => String(p.vertical) !== 'games') ? await loadTipoStats(o.now).catch(() => new Map<string, { median: number; n: number }>()) : new Map<string, { median: number; n: number }>();
   for (const p of products) {
     const id = String(p.id);
@@ -658,10 +691,17 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     const l = lastBy.get(id);
     const tipo = String(p.vertical) === 'games' ? null : classificarTipo(String(p.vertical), String(p.name));
     const ts = tipo ? tipoStats.get(tipoKey(String(p.vertical), tipo)) : undefined;
+    const isGames = String(p.vertical) === 'games';
+    const ps = isGames ? platStats.get(String(p.game_platform_gen ?? 'unknown')) : undefined;
+    // Games: "sem media calculada" = menos de MED_MIN_OFFERS ofertas fora da Amazon OU sem estado diario de media. So entao vale o Achado de games.
+    const semMedia = isGames ? mainPrices.length < RULES.MED_MIN_OFFERS || stateAvg == null : undefined;
     out.push({
       tipo,
       tipoMedianCents: ts?.median ?? null,
       tipoSample: ts?.n ?? 0,
+      semMedia,
+      platMedianCents: ps?.median ?? null,
+      platSample: ps?.n ?? 0,
       masterProductId: id,
       masterName: String(p.name),
       vertical: String(p.vertical),
@@ -712,7 +752,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const cupomMemo: CouponValidation | undefined = cupom && !opts.productIds?.length ? { facts: new Map(), misses: new Map() } : undefined;
   const ids = opts.productIds?.length
     ? opts.productIds
-    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 900, achado, cupom, cupomStats, cupomMemo });
+    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 800, achado, cupom, cupomStats, cupomMemo });
   const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode, cupom, cupomMemo });
 
   const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode, achado };

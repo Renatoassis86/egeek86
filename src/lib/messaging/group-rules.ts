@@ -64,9 +64,10 @@ export const RULES = {
   CONFIRM_GAP_MIN: 15,
   /** Revalidação no envio: tolerância de variação do preço. */
   SEND_PRICE_TOLERANCE_PCT: 2,
-  /** Vendedor ML. */
-  ML_MIN_SALES: 10,
-  ML_OK_REPUTATIONS: ['5_green', '4_light_green'],
+  /** Vendedor ML (dono, 2026-11-12: "só não coloque reputação baixa; as demais deixe o cliente decidir"). */
+  ML_MIN_SALES: 10, // legado: não barra mais; a mensagem mostra a reputação
+  /** Reputações BAIXAS: únicas que barram a oferta (vermelha e laranja). Amarela, verde-clara, verde e sem reputação entram. */
+  ML_LOW_REPUTATIONS: ['1_red', '2_orange'],
 
   // ---- Política v2 (ata 2026-11-10 §1, pacote aprovado pelo dono) ----
   /** Teto global por dia (Brasília). SEM silêncio noturno: a noite vira mensagem silenciosa. */
@@ -185,6 +186,10 @@ export const RULES = {
   ACHADO_TIPO_MIN_SAMPLE: 5,
   ACHADO_TIPO_RATIO_MIN: 0.5,
   ACHADO_TIPO_RATIO_MAX: 2.5,
+  /** Achado em GAMES sem media calculada (dono, 2026-11-12): a faixa e contra a mediana do menor preco por master da mesma PLATAFORMA (mais larga que a dos tipos Plus: jogos vao de R$ 30 a R$ 350). */
+  ACHADO_GAMES_PLAT_MIN_SAMPLE: 10,
+  ACHADO_GAMES_RATIO_MIN: 0.25,
+  ACHADO_GAMES_RATIO_MAX: 4,
   /** Historico proprio do produto (menor preco diario medido): com >= 3 dias, preco <= 1,10x a mediana dele e >= 0,5x. */
   ACHADO_OWN_MIN_DAYS: 3,
   ACHADO_OWN_MAX_RATIO: 1.1,
@@ -323,6 +328,11 @@ export interface ProductFacts {
   /** Mediana (centavos) do menor preco por master do mesmo departamento+tipo e quantos masters entraram. */
   tipoMedianCents?: number | null;
   tipoSample?: number;
+  /** Games: true quando o produto AINDA NAO tem media calculada (menos de MED_MIN_OFFERS ofertas ou sem estado diario). So entao o Achado vale para games. */
+  semMedia?: boolean;
+  /** Games: mediana do menor preco por master da mesma plataforma (ofertas vivas, fora da Amazon) e tamanho da amostra. */
+  platMedianCents?: number | null;
+  platSample?: number;
   /** Ofertas deste produto com cupom do anuncio que PASSOU na agulha neste instante (server: lookupItemCouponDetail). Ausente/vazio = sem cupom valido. */
   coupons?: CouponOfferFact[];
   /** Ofertas com leitura de cupom recente que a agulha barrou, com o motivo (auditoria; vira `blocked` do gatilho CUPOM). */
@@ -498,13 +508,10 @@ export function judgeOffer(o: OfferFact, p: Pick<ProductFacts, 'masterName'>, no
   const reasons: string[] = [];
   if (kind === 'shopee') reasons.push('shopee_so_com_aprovacao_humana');
   if (kind === 'ml') {
+    // Só reputação BAIXA barra (vermelha/laranja). Amarela, verdes, poucas vendas e sem reputação lida entram: o cliente decide,
+    // e a mensagem mostra a reputação quando ela é conhecida (sellerLine).
     const rep = o.sellerReputation;
-    if (!rep) {
-      // Sem reputação gravada, mas com link oficial (o ML só gera link para vendedor amarelo ou melhor): segue sem pedir aprovação (dono, 2026-11-11).
-      if (!o.officialLink) reasons.push('vendedor_sem_reputacao');
-    }
-    else if (!(RULES.ML_OK_REPUTATIONS as readonly string[]).includes(rep)) return block(`vendedor_reputacao_${rep}`);
-    else if ((o.sellerTotalSales ?? 0) < RULES.ML_MIN_SALES) reasons.push('vendedor_poucas_vendas');
+    if (rep && (RULES.ML_LOW_REPUTATIONS as readonly string[]).includes(rep)) return block(`vendedor_reputacao_${rep}`);
   }
   return reasons.length ? { kind: 'review', reasons } : { kind: 'ok', reasons: [] };
 }
@@ -1368,7 +1375,7 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
   // Preco atual CONFIRMADO de produto que nao gerou mensagem de preco (1 vendedor, sem media, sem movimento). NUNCA compara com media nem
   // alega desconto. Exige: oferta valida (link oficial, frescor, identidade, reputacao), preco dentro da faixa do TIPO (amostra >= 5 masters),
   // coerente com o historico proprio (quando ha >= 3 dias) e plausivel contra as ofertas. Loja que nao e games, ML/Shopee (Amazon fora).
-  if (ctx.achado && p.vertical !== 'games' && released && !candidates.slice(beforeMain).some((c) => c.sendable)) {
+  if (ctx.achado && (p.vertical !== 'games' || p.semMedia === true) && released && !candidates.slice(beforeMain).some((c) => c.sendable)) {
     const acStop = (reasons: string[]) => blocked.push({ masterProductId: p.masterProductId, name: nm, trigger: 'AC', reasons: ['achado', ...reasons] });
     const OK_BLOCK = (r: string) => r === 'link_pendente' || r.startsWith('vendedor_reputacao_') || r === 'preco_nao_reconfirmado_em_15min';
     // Ofertas VIVAS e reais (podem nao ter link): servem para dizer se a citada e a menor e para o teto de 3% acima da mais barata.
@@ -1386,7 +1393,15 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
       const why: string[] = [];
       if (aboveCheapest > RULES.ACHADO_FALLBACK_MAX_ABOVE_PCT) why.push(`mais_barata_sem_link_${Math.round(aboveCheapest)}pct_abaixo`);
       if (o.identidade === 'incerta') why.push('identidade_incerta');
-      if (!p.tipo || p.tipo === 'outros') why.push('tipo_nao_classificado');
+      if (p.vertical === 'games') {
+        // Games: sem tipo; a faixa e a da plataforma (jogo sem media: preco sentinela ou kit nao pode passar).
+        if (!p.platMedianCents || (p.platSample ?? 0) < RULES.ACHADO_GAMES_PLAT_MIN_SAMPLE) why.push(`amostra_da_plataforma_menor_que_${RULES.ACHADO_GAMES_PLAT_MIN_SAMPLE}`);
+        else {
+          const ratio = price / p.platMedianCents;
+          if (ratio < RULES.ACHADO_GAMES_RATIO_MIN) why.push('preco_abaixo_de_025x_a_mediana_da_plataforma');
+          else if (ratio > RULES.ACHADO_GAMES_RATIO_MAX) why.push('preco_acima_de_4x_a_mediana_da_plataforma');
+        }
+      } else if (!p.tipo || p.tipo === 'outros') why.push('tipo_nao_classificado');
       else if (!p.tipoMedianCents || (p.tipoSample ?? 0) < RULES.ACHADO_TIPO_MIN_SAMPLE) why.push(`amostra_do_tipo_menor_que_${RULES.ACHADO_TIPO_MIN_SAMPLE}`);
       else {
         const ratio = price / p.tipoMedianCents;

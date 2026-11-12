@@ -21,8 +21,8 @@ export const CRITERIA_I3D_LABEL = 'bloco:i3d-v1';
 /** Faixa de preço de uma oferta em relação à mediana das ofertas ativas (plano A4). */
 export const FAIXA_MEDIANA_MIN = 0.35;
 export const FAIXA_MEDIANA_MAX = 3;
-export const REPUTACOES_ACEITAS = ['5_green', '4_light_green'] as const;
-export const VENDAS_MIN = 50;
+/** Dono, 2026-11-12: só reputação BAIXA barra; amarela e demais entram, sem piso de vendas. */
+export const REPUTACOES_BAIXAS = ['1_red', '2_orange'] as const;
 
 export type TipoImpressao3d = 'impressora' | 'filamento' | 'resina';
 
@@ -152,7 +152,7 @@ export function avaliarImpressao3d(c: CandidatoI3d): AvaliacaoI3d {
     const min = Math.min(...ativas.map((o) => o.priceCents));
     const max = Math.max(...ativas.map((o) => o.priceCents));
     if (ativas.length >= 2 && max / min > FAIXA_MEDIANA_MAX) motivos.push(`amplitude_acima_de_${FAIXA_MEDIANA_MAX}x`);
-    const comReputacao = naFaixa.filter((o) => o.sellerReputation && (REPUTACOES_ACEITAS as readonly string[]).includes(o.sellerReputation) && (o.sellerSales ?? 0) >= VENDAS_MIN);
+    const comReputacao = naFaixa.filter((o) => !o.sellerReputation || !(REPUTACOES_BAIXAS as readonly string[]).includes(o.sellerReputation));
     if (comReputacao.length < 1) motivos.push('sem_vendedor_com_reputacao_aceita');
   }
 

@@ -42,7 +42,7 @@ export default async function AdminDashboardPage() {
           Ofertas, cliques e cotações registradas, lidos direto do banco. Onde não há dado, a seção aparece vazia.
         </Text>
         <div className="mt-3">
-          <FilaClassificacaoPopup initialCards={fila.cards} pendentes={fila.pendentes} regrasAprendidas={fila.regrasAprendidas} />
+          <FilaClassificacaoPopup initialCards={fila.cards} pendentes={fila.pendentes} regrasAprendidas={fila.regrasAprendidas} autoResolvidos={fila.autoResolvidos} autoRecentes={fila.autoRecentes} />
         </div>
       </div>
 

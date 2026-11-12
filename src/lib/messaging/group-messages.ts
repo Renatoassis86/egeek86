@@ -859,14 +859,15 @@ function seloLines(o: MsgOffer, f: Fmt): string[] {
   return out;
 }
 
-/** Linha do vendedor, só Mercado Livre e só com reputação lida (verde). Nunca inventa nível. */
+/** Linha do vendedor, só Mercado Livre e só com reputação lida. Nunca inventa nível (sem reputação lida, sem linha). */
 export function sellerLine(o: MsgOffer): string | null {
   if (!/mercado-?livre/i.test(o.networkSlug) || !o.seller?.reputation) return null;
   const rep = o.seller.reputation;
-  if (rep !== '5_green' && rep !== '4_light_green') return null;
+  const nome = rep === '5_green' ? 'verde (nível máximo)' : rep === '4_light_green' ? 'verde-clara' : rep === '3_yellow' ? 'amarela (intermediária)' : null;
+  if (!nome) return null;
   const n = o.seller.totalSales ?? 0;
   const vendas = n >= 1000 ? `mais de ${Math.floor(n / 1000)} mil vendas` : n >= 100 ? `mais de ${Math.floor(n / 100) * 100} vendas` : null;
-  return `reputação ${rep === '5_green' ? 'verde (nível máximo)' : 'verde-clara'}${vendas ? `, ${vendas}` : ''}`;
+  return `reputação ${nome}${vendas ? `, ${vendas}` : ''}`;
 }
 
 /** Divulgação do site no fim da mensagem (dono, 2026-11-11). O link do grupo de WhatsApp de cada loja é acrescentado no envio (ver withWhatsappGroup). */

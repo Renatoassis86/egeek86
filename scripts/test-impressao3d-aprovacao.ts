@@ -64,9 +64,11 @@ check('sem foto => review', motivos(base({ hasImage: false })).includes('sem_fot
 check('duplicata => review', motivos(base({ duplicado: true })).includes('possivel_duplicata'));
 check('sem oferta => review', motivos(base({ ofertas: [] })).includes('sem_oferta_ativa_ml_ou_shopee'));
 check('oferta em quarentena nao conta', motivos(base({ ofertas: [of(300000, '5_green', 1000, 'x', true)] })).includes('sem_oferta_ativa_ml_ou_shopee'));
-check('vendedor sem reputacao => review', motivos(base({ ofertas: [of(300000, null, 0)] })).includes('sem_vendedor_com_reputacao_aceita'));
+check('vendedor sem reputacao informada passa (2026-11-12)', avaliarImpressao3d(base({ ofertas: [of(300000, null, 0)] })).aprovavel);
+check('vendedor so com reputacao baixa (1_red) nao passa', motivos(base({ ofertas: [of(300000, '1_red', 9999)] })).includes('sem_vendedor_com_reputacao_aceita'));
+check('vendedor 2_orange nao passa', motivos(base({ ofertas: [of(300000, '2_orange', 9999)] })).includes('sem_vendedor_com_reputacao_aceita'));
 check('vendedor 4_light_green com 50 vendas passa', avaliarImpressao3d(base({ ofertas: [of(300000, '4_light_green', 50)] })).aprovavel);
-check('vendedor 3_yellow nao passa', motivos(base({ ofertas: [of(300000, '3_yellow', 9999)] })).includes('sem_vendedor_com_reputacao_aceita'));
+check('vendedor 3_yellow passa (so reputacao baixa barra)', avaliarImpressao3d(base({ ofertas: [of(300000, '3_yellow', 10)] })).aprovavel);
 check('amplitude > 3x => review', motivos(base({ ofertas: [of(100000), of(400000)] })).includes('amplitude_acima_de_3x'));
 check('amplitude 1,4x passa', avaliarImpressao3d(base({ ofertas: [of(689900), of(949999)] })).aprovavel);
 check('ja aprovado nao reaprova', motivos(base({ gate: { verdict: 'approved', suggested: 'approved' } })).includes('ja_aprovado'));

@@ -7,6 +7,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { sql } from 'drizzle-orm';
+import { judgeObvio, type ObvioInput } from '../src/lib/identity-queue/obvio';
+import type { MlEvidence } from '../src/lib/identity-queue/api-evidence';
 import {
   axisLearnsByTitle, consoleCandidate, dispersionCandidates, dispersionOf, identifyConsole, titleNorm, titlesSimilar,
 } from '../src/lib/identity-queue/model';
@@ -53,6 +55,33 @@ function parteA() {
   check('preco >= R$ 1 milhao e implausivel', imp.implausible.length === 1 && imp.implausible[0].id === 'big');
   const cs = dispersionCandidates({ id: 'm', name: 'Produto', vertical: 'livros' }, [...offers, { id: 'big', price: 100_000_000, title: 'Produto gigante' }]);
   check('candidatos: identidade (dispersao) e preco, com vertical do master', cs.some((x) => x.axis === 'identidade' && x.vertical === 'livros') && cs.some((x) => x.axis === 'preco' && x.offerId === 'big'));
+
+  // ---- Casos OBVIOS (2026-11-12): criterio objetivo e conservador ----
+  const SIM = { value: 'sim', label: 'E este produto', kind: 'escolha' as const };
+  const NE = { value: 'nao_e_este', label: 'Nao e este produto', kind: 'nao_e_este' as const };
+  const NS = { value: 'nao_sei', label: 'Nao sei', kind: 'nao_sei' as const };
+  const ob = (over: Partial<ObvioInput> = {}): ObvioInput => ({
+    axis: 'identidade', source: 'dispersao', options: [SIM, NE, NS], understood: { medianaCents: 10000, precoCents: 11000, bimodal: false },
+    itemTitle: 'Filamento PLA Voolt3d 1kg 1.75mm Preto', masterName: 'Filamento PLA Voolt3d 1kg 1.75mm Preto', masterGtin: null, evidence: null, priceCents: 11000, ...over,
+  });
+  check('obvio: titulo igual ao master, preco na faixa => sim', judgeObvio(ob())?.criterio === 'titulo_igual_ao_master' && judgeObvio(ob())?.value === 'sim');
+  check('obvio: preco 1,31x a mediana NAO libera', judgeObvio(ob({ priceCents: 13100 })) == null);
+  check('obvio: preco 0,76x a mediana NAO libera', judgeObvio(ob({ priceCents: 7600 })) == null);
+  check('obvio: dispersao bimodal (grupo de preco separado) NAO libera', judgeObvio(ob({ understood: { medianaCents: 10000, bimodal: true } })) == null);
+  check('obvio: titulo diferente do master NAO libera', judgeObvio(ob({ itemTitle: 'Filamento PLA Voolt3d 1kg 2.85mm Preto' })) == null);
+  check('obvio: capacidade/numero diferente (825gb x 1tb) NAO libera', judgeObvio(ob({ itemTitle: 'Console PS5 825GB Digital', masterName: 'Console PS5 1TB Digital' })) == null);
+  check('obvio: usado/open box no titulo NAO libera', judgeObvio(ob({ itemTitle: 'Filamento PLA Voolt3d 1kg 1.75mm Preto Open Box', masterName: 'Filamento PLA Voolt3d 1kg 1.75mm Preto Open Box' })) == null);
+  check('obvio: regiao/edicao diferente no titulo NAO libera', judgeObvio(ob({ itemTitle: 'Jogo Hokko Life Switch Europeu', masterName: 'Jogo Hokko Life Switch Europeu' })) == null);
+  check('obvio: item de cobertura (origem amazon/plus) NAO libera', judgeObvio(ob({ understood: { origem: 'amazon_cobertura', medianaCents: 10000 } })) == null);
+  check('obvio: midia (digital x disco) nunca e automatica', judgeObvio(ob({ axis: 'midia', source: 'confianca', options: [{ value: 'digital', label: 'Digital', kind: 'escolha' }, NS, NE] })) == null);
+  check('obvio: sem mediana no item NAO libera (nada e inferido)', judgeObvio(ob({ understood: {}, priceCents: null })) == null);
+  const evNew = (attrs: Record<string, string>, over: Partial<MlEvidence> = {}): MlEvidence => ({ fonte: 'mercado_livre', via: 'items', itemId: 'MLB1', consultadoEm: '2026-11-12T00:00:00Z', httpStatus: 200, condition: 'new', variations: 0, attrs, ...over });
+  check('obvio: GTIN da API igual ao do master (condicao nova) => sim por gtin_igual', judgeObvio(ob({ itemTitle: 'Fone JBL Wave Beam 2 Preto', masterName: 'Fone Ouvido Sem Fio Jbl Wave Beam 2 Preto Cancelamento de Ruido', masterGtin: '6925281999999', evidence: evNew({ GTIN: '6925281999999' }), priceCents: 14000 }))?.criterio === 'gtin_igual');
+  check('obvio: GTIN diferente NAO libera por gtin', judgeObvio(ob({ itemTitle: 'Fone JBL Wave Beam 2', masterName: 'Fone Jbl Wave Beam 2 Preto', masterGtin: '6925281999999', evidence: evNew({ GTIN: '6925281000000' }), priceCents: 14000 })) == null);
+  check('obvio: marca+modelo da API presentes no nome do master => sim', judgeObvio(ob({ itemTitle: 'Caixa de Som Portatil', masterName: 'Caixa Som Jbl Go 5 Bluetooth Portatil', evidence: evNew({ BRAND: 'JBL', MODEL: 'Go 5' }), priceCents: 15000 }))?.criterio === 'marca_modelo_coerentes');
+  check('obvio: marca ok mas modelo fora do nome do master NAO libera', judgeObvio(ob({ itemTitle: 'Caixa de Som Portatil', masterName: 'Caixa Som Jbl Go 5 Bluetooth Portatil', evidence: evNew({ BRAND: 'JBL', MODEL: 'Flip 6' }), priceCents: 15000 })) == null);
+  check('obvio: evidencia de condicao usada NAO libera pelo caminho do sim', judgeObvio(ob({ itemTitle: 'Caixa de Som', masterName: 'Caixa Som Jbl Go 5', evidence: evNew({ BRAND: 'JBL', MODEL: 'Go 5' }, { condition: 'used' }), priceCents: 15000 }))?.value !== 'sim');
+  check('obvio: API diz USADO => "nao e este" (evidencia_api, reaproveita judgeEvidence)', (() => { const v = judgeObvio(ob({ itemTitle: 'Caixa de Som', masterName: 'Caixa Som', evidence: evNew({}, { condition: 'used' }) })); return v?.criterio === 'evidencia_api' && v.value === 'nao_e_este'; })());
 }
 
 class Rollback extends Error {}
@@ -194,6 +223,31 @@ async function parteB() {
         check('desfazer com outra oferta ainda no master criado NAO arquiva', !createdId || (await arch(createdId)) == null);
         await Q.undoInTx(tx, { decisionId: dec7.id, userId: null });
         check('desfazer a ultima oferta do master criado arquiva o master vazio', !createdId || (await arch(createdId)) === 'true', createdId);
+      }
+
+
+      // ---- Casos OBVIOS: aplica com autor 'auto_obvio', registra o motivo, aparece na lista e desfaz ----
+      {
+        const mO = await mk(`Console PlayStation 5 TESTE OBVIO ${rnd}`, `teste-fila-obvio-${rnd}`);
+        const tO = `Console PlayStation 5 TESTE OBVIO ${rnd}`;
+        const oO = await mkOffer(mO, tO, `teste-fila-obvio-o-${rnd}`, 450000);
+        await tx.execute(sql`INSERT INTO identity_review_items (offer_id, master_id, vertical, axis, source, reason, understood, options, title, title_norm)
+          VALUES (${oO}::uuid, ${mO}::uuid, 'games', 'identidade', 'dispersao', 'Preco destoa do produto (fora da cerca de preco do produto).',
+                  ${JSON.stringify({ medianaCents: 440000, precoCents: 450000, bimodal: false })}::jsonb,
+                  ${JSON.stringify([{ value: 'sim', label: 'E este produto', kind: 'escolha' }, { value: 'nao_e_este', label: 'Nao e este', kind: 'nao_e_este' }, { value: 'nao_sei', label: 'Nao sei', kind: 'nao_sei' }])}::jsonb,
+                  ${tO}, ${titleNorm(tO)})`);
+        const sel = await Q.selectObvious(tx);
+        const mine = sel.picks.find((p) => p.title === tO);
+        check('obvio (banco): o item entra na selecao pelo criterio', mine?.criterio === 'titulo_igual_ao_master' && mine.value === 'sim', mine);
+        const ap = await Q.applyInTx(tx, { itemId: mine!.itemId, value: mine!.value, userId: null, via: 'auto_obvio', reason: `${mine!.criterio}: ${mine!.motivo}` });
+        const dr = await one(tx, sql`SELECT kind, decided_via, is_rule, decided_by IS NULL AS sem_autor, value_label FROM identity_decisions WHERE offer_id = ${oO}::uuid AND undone_at IS NULL`);
+        check('obvio (banco): decisao gravada como auto_regra/auto_obvio, nunca regra, com o motivo', ap.ok && dr?.kind === 'auto_regra' && dr.decided_via === 'auto_obvio' && dr.is_rule === false && dr.sem_autor === true && String(dr.value_label).startsWith('Auto (óbvio): titulo_igual_ao_master'), dr);
+        const lst = await Q.getAutoResolved(tx, 500);
+        check('obvio (banco): aparece na lista de resolvidos automaticamente', lst.recentes.some((x) => x.decisionId === ap.decisionId), lst.total);
+        check('obvio (banco): item resolvido sai da fila e nao e reselecionado', !(await Q.getPendingCards(tx, 100000)).some((c) => c.offerId === oO) && !(await Q.selectObvious(tx)).picks.some((p) => p.itemId === mine!.itemId));
+        await Q.undoInTx(tx, { decisionId: ap.decisionId!, userId: null });
+        check('obvio (banco): desfazer reabre o item e tira da lista', (await Q.getPendingCards(tx, 100000)).some((c) => c.offerId === oO) && !(await Q.getAutoResolved(tx, 500)).recentes.some((x) => x.decisionId === ap.decisionId));
+        check('obvio (banco): item desfeito pelo dono NAO e refeito pelo automatico', !(await Q.selectObvious(tx)).picks.some((p) => p.itemId === mine!.itemId));
       }
 
       // Coleta nao desfaz decisao do dono (nao e este / preco errado)

@@ -14,9 +14,15 @@ async function main() {
   const r = await detectGroupCandidates({ now, achado });
   const ms = Date.now() - t0;
   const history: SentRecord[] = [...r.history];
-  const cands = r.candidates.filter((c) => c.vertical !== 'games' && c.sendable && c.status === 'auto' && !c.held);
+  const cands = r.candidates.filter((c) => c.sendable && c.status === 'auto' && !c.held);
   const porTrig: Record<string, number> = {};
   for (const c of cands) porTrig[c.trigger] = (porTrig[c.trigger] ?? 0) + 1;
+  const gamesAc = r.candidates.filter((c) => c.vertical === 'games' && c.trigger === 'AC');
+  const gamesAcBloq: Record<string, number> = {};
+  for (const b of r.blocked.filter((x) => x.trigger === 'AC' && /./.test(x.reasons.join('')))) {
+    const k = (b.reasons[1] ?? '?').replace(/\d+/g, 'N');
+    gamesAcBloq[k] = (gamesAcBloq[k] ?? 0) + 1;
+  }
   const sent: Array<{ v: string; tipo: string; trigger: string; pid: string }> = [];
   let pool = cands;
   for (let i = 0; i < voltas && pool.length; i++) {
@@ -34,7 +40,7 @@ async function main() {
     e.msgs++; e.produtos.add(s.pid); e.tipos[s.tipo] = (e.tipos[s.tipo] ?? 0) + 1; if (s.trigger === 'AC') e.ac++;
   }
   console.log(JSON.stringify({
-    achado, detectMs: ms, produtosAvaliados: r.counts.productsEvaluated, candidatosPlusEnviaveis: cands.length, porGatilho: porTrig, voltasSimuladas: sent.length,
+    achado, detectMs: ms, gamesAchadoCandidatos: gamesAc.length, gamesAchadoEnviaveis: gamesAc.filter((c) => c.sendable && c.status === 'auto' && !c.held).length, achadoBloqueadosPorMotivo: gamesAcBloq, produtosAvaliados: r.counts.productsEvaluated, candidatosPlusEnviaveis: cands.length, porGatilho: porTrig, voltasSimuladas: sent.length,
     historicoReal24h: r.history.filter((h) => !h.itemOnly && now.getTime() - h.sentAt.getTime() < 86_400_000).length,
     porLoja: Object.fromEntries(Object.entries(por).map(([v, e]) => [v, { msgs: e.msgs, produtosDistintos: e.produtos.size, tiposDistintos: Object.keys(e.tipos).length, achados: e.ac, tipoLider: Object.entries(e.tipos).sort((a, b) => b[1] - a[1])[0], tipos: e.tipos }])),
   }, null, 1));

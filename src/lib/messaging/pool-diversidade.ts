@@ -13,6 +13,8 @@ export interface PoolRow {
   /** Razão de entrada (1 = evento/movimento, 2 = abaixo da média, 3 = redes, 4 = muitas ofertas). */
   r: number;
   name: string;
+  /** Substitui o tipo no rodizio (games: plataforma, porque games nao tem tipo). */
+  grupo?: string;
 }
 
 /** Cotas do pool (ata 2026-11-12). Games não muda (220). */
@@ -24,6 +26,8 @@ export const POOL = {
   PLUS_EVENTS_MAX: 30,
   /** Produtos extras por loja Plus para o gatilho ACHADO (1 vendedor / sem média). */
   PLUS_ACHADO: 30,
+  /** Produtos extras de GAMES sem media calculada (Achado), por rodizio de plataforma. */
+  GAMES_ACHADO: 40,
   /** Produtos com cupom valido na agulha, por loja (games e Plus). Entram ANTES dos demais, por rodizio de tipo; o excedente cai na fila normal. */
   CUPOM_POR_LOJA: 40,
 } as const;
@@ -48,8 +52,8 @@ export function rodizioPorTipo(rows: readonly PoolRow[], hourKey: string, sends:
   if (limit <= 0 || !rows.length) return [];
   const groups = new Map<string, PoolRow[]>();
   for (const row of rows) {
-    const tipo = classificarTipo(row.v, row.name);
-    if (opts.skipOutros && tipo === TIPO_OUTROS) continue;
+    const tipo = row.grupo ?? classificarTipo(row.v, row.name);
+    if (opts.skipOutros && tipo === TIPO_OUTROS && !row.grupo) continue;
     const k = tipoKey(row.v, tipo);
     (groups.get(k) ?? groups.set(k, []).get(k)!).push(row);
   }
@@ -112,7 +116,7 @@ export function selecionarPool(inp: PoolInput): string[] {
   if (inp.achadoOn) {
     const byA = new Map<string, PoolRow[]>();
     for (const r of inp.achado) if (!seen.has(r.mid)) (byA.get(r.v) ?? byA.set(r.v, []).get(r.v)!).push(r);
-    for (const rows of byA.values()) add(rodizioPorTipo(rows, inp.hourKey, inp.sends, POOL.PLUS_ACHADO, { skipOutros: true }));
+    for (const rows of byA.values()) add(rodizioPorTipo(rows, inp.hourKey, inp.sends, rows[0]?.v === 'games' ? POOL.GAMES_ACHADO : POOL.PLUS_ACHADO, { skipOutros: true }));
   }
   return out;
 }

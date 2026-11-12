@@ -5,16 +5,16 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth/require-admin';
 import {
-  applyInTx, countPending, countRulesLearned, drainRecalc, generateQueue, getCard, undoInTx, type Exec, type GenerateStats, type QueueCard,
+  applyInTx, autoResolveObvious, countPending, countRulesLearned, drainRecalc, generateQueue, getAutoResolved, getCard, undoInTx, type AutoResolvedRow, type Exec, type GenerateStats, type QueueCard,
 } from '@/server/identity-queue/queue';
 
 // Server Actions são endpoints públicos: cada uma repete o guard do admin (requireAdmin), como as demais ações de mutação.
 
-export interface RespostaFila { ok: boolean; error?: string; decisionId?: string; pendentes?: number; regrasAprendidas?: number; item?: QueueCard | null }
+export interface RespostaFila { ok: boolean; error?: string; decisionId?: string; pendentes?: number; regrasAprendidas?: number; autoResolvidos?: number; autoRecentes?: AutoResolvedRow[]; item?: QueueCard | null }
 
 async function totais() {
-  const [pendentes, regrasAprendidas] = await Promise.all([countPending(db), countRulesLearned(db)]);
-  return { pendentes, regrasAprendidas };
+  const [pendentes, regrasAprendidas, auto] = await Promise.all([countPending(db), countRulesLearned(db), getAutoResolved(db).catch(() => ({ total: 0, recentes: [] as AutoResolvedRow[] }))]);
+  return { pendentes, regrasAprendidas, autoResolvidos: auto.total, autoRecentes: auto.recentes };
 }
 
 async function recalcular() {
@@ -52,6 +52,8 @@ export async function atualizarFilaClassificacao(): Promise<{ ok: boolean; stats
   await requireAdmin();
   try {
     const stats = await db.transaction((tx) => generateQueue(tx as unknown as Exec));
+    // Casos óbvios (critério objetivo, reversível; kill-switch FILA_AUTO_OBVIO=off): o botão também varre a fila.
+    if (process.env.FILA_AUTO_OBVIO !== 'off') await autoResolveObvious(db, { apply: true, budgetMs: 20_000 }).catch((e) => console.error('[fila-classificacao] auto-obvio:', e instanceof Error ? e.message : e));
     await recalcular();
     revalidatePath('/admin');
     return { ok: true, stats, pendentes: await countPending(db) };

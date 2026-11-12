@@ -188,7 +188,7 @@ const hd = ev.candidates.find((c) => c.trigger === 'OK1');
 ok(!!hd && hd.held && hd.heldReasons.includes('desconto_acima_de_45pct_da_media'), '47,8% abaixo da média = retido', hd?.heldReasons);
 // vendedor, região, Shopee, filtros
 ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 9400, sellerReputation: null }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
-ok(ev.candidates.find((c) => c.trigger === 'OK1')?.reviewReasons.includes('vendedor_sem_reputacao') === true, 'vendedor sem reputação = aprovação');
+ok(ev.candidates.find((c) => c.trigger === 'OK1')?.reviewReasons.includes('vendedor_sem_reputacao') !== true, 'vendedor sem reputação não pede aprovação (2026-11-12)');
 ev = evaluateProductV2(product({ offers: [offer({ offerId: 'a', priceCents: 9400, networkSlug: 'shopee', networkName: 'Shopee' }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);
 ok(ev.candidates.find((c) => c.trigger === 'OK1')?.status === 'auto', 'onda 2: Shopee com queda <= 20% pode sair automática (exige reconferência ao vivo no envio)');
 ev = evaluateProductV2(product({ avg: null, offers: [offer({ offerId: 'a', priceCents: 7500, networkSlug: 'shopee', networkName: 'Shopee' }), offer({ offerId: 'b', priceCents: 11000 }), offer({ offerId: 'c', priceCents: 12000 })] }), ctx);

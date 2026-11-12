@@ -15,6 +15,7 @@ import {
   type QueueOption,
 } from '@/lib/identity-queue/model';
 import type { MlEvidence } from '@/lib/identity-queue/api-evidence';
+import { judgeObvio, OBVIO_VIA, type ObvioCriterio } from '@/lib/identity-queue/obvio';
 
 /**
  * Motor da FILA DE CLASSIFICACAO (dono, 2026-11-11). Todas as funcoes recebem um executor (`db` ou uma transacao), para o teste rodar dentro de
@@ -260,7 +261,7 @@ export async function ensureConsoleMaster(exec: Exec, create: { name: string; ke
 interface ItemRow { id: string; offer_id: string; master_id: string | null; vertical: string; axis: QueueAxis; title: string; title_norm: string; options: QueueOption[]; status: string; decision_id: string | null; understood: Record<string, unknown> | null }
 
 /** Aplica a resposta a um item da fila DENTRO de uma transacao do chamador. Idempotente: item ja resolvido devolve `already`. */
-export async function applyInTx(tx: Exec, p: { itemId: string; value: string; userId: string | null; ruleSourceId?: string | null; via?: 'api_oficial' }): Promise<ApplyResult> {
+export async function applyInTx(tx: Exec, p: { itemId: string; value: string; userId: string | null; ruleSourceId?: string | null; via?: 'api_oficial' | 'auto_obvio'; reason?: string }): Promise<ApplyResult> {
   const item = rows<ItemRow>(await tx.execute(sql`SELECT id::text AS id, offer_id::text AS offer_id, master_id::text AS master_id, vertical, axis, title, title_norm, options, status, decision_id::text AS decision_id, understood
     FROM identity_review_items WHERE id = ${p.itemId}::uuid FOR UPDATE`))[0];
   if (!item) return { ok: false, error: 'item_inexistente' };
@@ -329,7 +330,7 @@ export async function applyInTx(tx: Exec, p: { itemId: string; value: string; us
   const dec = rows<{ id: string }>(await tx.execute(sql`
     INSERT INTO identity_decisions (item_id, offer_id, vertical, axis, value, value_label, kind, title, title_norm, from_master_id, to_master_id, created_master_id,
       prev_status, prev_quarantined_at, decided_by, rule_source_id, is_rule, recalc_masters${p.via ? sql`, decided_via` : sql``})
-    VALUES (${item.id}::uuid, ${offer.id}::uuid, ${item.vertical}, ${item.axis}, ${opt.value}, ${opt.label}, ${kind}, ${item.title}, ${item.title_norm},
+    VALUES (${item.id}::uuid, ${offer.id}::uuid, ${item.vertical}, ${item.axis}, ${opt.value}, ${p.reason ? `Auto (óbvio): ${p.reason}`.slice(0, 300) : opt.label}, ${kind}, ${item.title}, ${item.title_norm},
       ${fromMaster}::uuid, ${toMaster}::uuid, ${createdMaster}::uuid, ${prevStatus}, ${prevQuarantine}::timestamptz, ${p.userId}::uuid, ${p.ruleSourceId ?? null}::uuid, ${isRule},
       ${sql.raw(`ARRAY[${recalcArr.map((i) => `'${i.replace(/[^0-9a-f-]/gi, '')}'`).join(',')}]::uuid[]`)}${p.via ? sql`, ${p.via}` : sql``})
     RETURNING id::text AS id`))[0];
@@ -421,7 +422,7 @@ export async function drainRecalc(dbx: typeof Db, limit = 20): Promise<{ decisoe
 const GENERATE_LOCK_KEY = 4286001142;
 
 /** Geracao automatica (cron): lock de sessao na transacao, limite de tempo e recalculo dos masters tocados. Idempotente. */
-export async function runQueueGeneration(dbx: typeof Db, opts: { budgetMs?: number } = {}): Promise<{ skipped?: 'em_andamento'; stats?: GenerateStats & { parcial?: boolean }; recalc?: { decisoes: number; masters: number }; pendentes?: number }> {
+export async function runQueueGeneration(dbx: typeof Db, opts: { budgetMs?: number } = {}): Promise<{ skipped?: 'em_andamento'; stats?: GenerateStats & { parcial?: boolean }; recalc?: { decisoes: number; masters: number }; autoObvio?: AutoObviousResult; pendentes?: number }> {
   const deadlineAt = Date.now() + (opts.budgetMs ?? 40_000);
   const out = await dbx.transaction(async (tx) => {
     const t = tx as unknown as Exec;
@@ -430,11 +431,96 @@ export async function runQueueGeneration(dbx: typeof Db, opts: { budgetMs?: numb
     return generateQueue(t, undefined, { deadlineAt });
   });
   if (!out) return { skipped: 'em_andamento' };
+  let autoObvio: AutoObviousResult | undefined;
+  if (process.env.FILA_AUTO_OBVIO !== 'off') {
+    try {
+      autoObvio = await autoResolveObvious(dbx, { apply: true, budgetMs: 15_000 });
+    } catch (e) {
+      console.error('[fila-classificacao] auto-obvio adiado:', e instanceof Error ? e.message : e);
+    }
+  }
   let recalc: { decisoes: number; masters: number } | undefined;
   try {
     recalc = await drainRecalc(dbx);
   } catch (e) {
     console.error('[fila-classificacao] recalculo adiado:', e instanceof Error ? e.message : e);
   }
-  return { stats: out, recalc, pendentes: await countPending(dbx) };
+  return { stats: out, autoObvio, recalc, pendentes: await countPending(dbx) };
+}
+
+// ------------------------------------------------------------------------------------------------
+// AUTO-RESOLUCAO dos itens OBVIOS (dono, 2026-11-12). Criterio puro em lib/identity-queue/obvio.ts. Reversivel (undoInTx) e auditavel.
+// ------------------------------------------------------------------------------------------------
+export interface ObviousPick { itemId: string; title: string; masterName: string | null; vertical: string; axis: QueueAxis; value: string; criterio: ObvioCriterio | 'regra_do_dono'; motivo: string; ruleSourceId?: string }
+
+/** Itens pendentes que o criterio libera (somente SELECT). Respeita desfazer: item que ja teve decisao 'auto_obvio' (mesmo desfeita) nunca e refeito. */
+export async function selectObvious(exec: Exec, limit = 5000): Promise<{ avaliados: number; picks: ObviousPick[] }> {
+  const hasCols = await hasEvidenceColumns(exec);
+  const r = rows<{ id: string; vertical: string; axis: QueueAxis; source: string; options: QueueOption[]; understood: Record<string, unknown>; title: string; title_norm: string; master_id: string | null; price: string | null; mname: string | null; gtin: string | null; ev: MlEvidence | null }>(
+    await exec.execute(sql`
+      SELECT i.id::text AS id, i.vertical, i.axis, i.source, i.options, i.understood, i.title, i.title_norm, i.master_id::text AS master_id,
+             o.current_price_cents::text AS price, m.name AS mname, m.gtin,
+             ${hasCols ? sql`i.api_evidence` : sql`NULL::jsonb`} AS ev
+      FROM identity_review_items i
+      JOIN affiliate_offers o ON o.id = i.offer_id AND o.status = 'active'
+      LEFT JOIN master_products m ON m.id = o.master_product_id
+      WHERE i.status = 'pending' AND (i.snoozed_until IS NULL OR i.snoozed_until < now())
+        ${hasCols ? sql`AND NOT EXISTS (SELECT 1 FROM identity_decisions d WHERE d.item_id = i.id AND d.decided_via = ${OBVIO_VIA})` : sql``}
+      ORDER BY i.created_at, i.id LIMIT ${limit}`)
+  );
+  const rules = await loadRules(exec);
+  const picks: ObviousPick[] = [];
+  for (const x of r) {
+    const titleNorm = x.title_norm;
+    const rule = findRule(rules, { vertical: x.vertical, axis: x.axis, title: x.title, titleNorm, masterId: x.master_id, options: x.options });
+    if (rule) {
+      picks.push({ itemId: x.id, title: x.title, masterName: x.mname, vertical: x.vertical, axis: x.axis, value: rule.value, criterio: 'regra_do_dono', motivo: `regra aprendida: "${rule.title.slice(0, 80)}"`, ruleSourceId: rule.id });
+      continue;
+    }
+    const v = judgeObvio({ axis: x.axis, source: x.source, options: x.options, understood: x.understood ?? {}, itemTitle: x.title, masterName: x.mname, masterGtin: x.gtin, evidence: x.ev, priceCents: x.price == null ? null : num(x.price) });
+    if (v) picks.push({ itemId: x.id, title: x.title, masterName: x.mname, vertical: x.vertical, axis: x.axis, value: v.value, criterio: v.criterio, motivo: v.motivo });
+  }
+  return { avaliados: r.length, picks };
+}
+
+export interface AutoObviousResult { avaliados: number; liberados: number; aplicados: number; erros: number; porCriterio: Record<string, number>; parcial?: boolean }
+
+/** Aplica o criterio (apply=true) ou so conta (apply=false). Cada item em sua transacao; para limpo no limite de tempo. Recalcula os masters tocados. */
+export async function autoResolveObvious(dbx: typeof Db, p: { apply: boolean; budgetMs?: number; max?: number }): Promise<AutoObviousResult> {
+  const deadline = Date.now() + (p.budgetMs ?? 30_000);
+  const { avaliados, picks } = await selectObvious(dbx as unknown as Exec);
+  const out: AutoObviousResult = { avaliados, liberados: picks.length, aplicados: 0, erros: 0, porCriterio: {} };
+  for (const k of picks) out.porCriterio[k.criterio] = (out.porCriterio[k.criterio] ?? 0) + 1;
+  if (!p.apply) return out;
+  for (const k of picks.slice(0, p.max ?? 500)) {
+    if (Date.now() > deadline) { out.parcial = true; break; }
+    try {
+      const res = await dbx.transaction((tx) =>
+        applyInTx(tx as unknown as Exec, k.ruleSourceId
+          ? { itemId: k.itemId, value: k.value, userId: null, ruleSourceId: k.ruleSourceId }
+          : { itemId: k.itemId, value: k.value, userId: null, via: OBVIO_VIA, reason: `${k.criterio}: ${k.motivo}` })
+      );
+      if (res.ok && !res.already) out.aplicados++;
+      else if (!res.ok) out.erros++;
+    } catch (e) {
+      out.erros++;
+      console.error('[fila-classificacao] auto-obvio falhou num item:', e instanceof Error ? e.message : e);
+    }
+  }
+  if (out.aplicados > 0) {
+    try { await drainRecalc(dbx); } catch (e) { console.error('[fila-classificacao] recalculo adiado:', e instanceof Error ? e.message : e); }
+  }
+  return out;
+}
+
+export interface AutoResolvedRow { decisionId: string; title: string; label: string; value: string; axis: string; decidedAt: string }
+
+/** Itens resolvidos pelo criterio automatico e ainda NAO desfeitos (para o popup mostrar e permitir desfazer). */
+export async function getAutoResolved(exec: Exec, limit = 15): Promise<{ total: number; recentes: AutoResolvedRow[] }> {
+  if (!(await hasEvidenceColumns(exec))) return { total: 0, recentes: [] };
+  const t = rows<{ n: number }>(await exec.execute(sql`SELECT count(*)::int AS n FROM identity_decisions WHERE decided_via = ${OBVIO_VIA} AND undone_at IS NULL`));
+  const r = rows<{ id: string; title: string; value_label: string | null; value: string; axis: string; at: string }>(await exec.execute(sql`
+    SELECT id::text AS id, title, value_label, value, axis, decided_at::text AS at FROM identity_decisions
+    WHERE decided_via = ${OBVIO_VIA} AND undone_at IS NULL ORDER BY decided_at DESC LIMIT ${limit}`));
+  return { total: num(t[0]?.n ?? 0), recentes: r.map((x) => ({ decisionId: x.id, title: x.title, label: x.value_label ?? x.value, value: x.value, axis: x.axis, decidedAt: x.at })) };
 }
