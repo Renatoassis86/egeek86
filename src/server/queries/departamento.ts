@@ -50,7 +50,7 @@ export function departamentoClicaveisCtes(vertical: string): SQL {
     ${publicOffersCtes(vertical)},
     clickable AS (
       SELECT o.id, o.master_product_id, o.current_price_cents, o.last_checked_at, o.slug AS offer_slug,
-             o.seller_id, n.slug AS network_slug, n.name AS network_name
+             o.seller_id, n.slug AS network_slug, n.name AS network_name, po.avg_excluded
       FROM affiliate_offers o
       INNER JOIN public_offers po ON po.id = o.id
       INNER JOIN affiliate_networks n ON n.id = o.network_id
@@ -159,9 +159,9 @@ export async function listarDepartamento(vertical: string, opts: { pagina?: numb
            m.default_images ->> 0 AS imagem,
            MIN(sb.current_price_cents) AS min_cents,
            COUNT(*) AS vendedores,
-           COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre') AS vendedores_ml,
-           CASE WHEN COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre') >= ${minV}
-                THEN percentile_cont(0.5) WITHIN GROUP (ORDER BY sb.current_price_cents) FILTER (WHERE sb.network_slug = 'mercado-livre') END AS mediana,
+           COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre' AND NOT sb.avg_excluded) AS vendedores_ml,
+           CASE WHEN COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre' AND NOT sb.avg_excluded) >= ${minV}
+                THEN percentile_cont(0.5) WITHIN GROUP (ORDER BY sb.current_price_cents) FILTER (WHERE sb.network_slug = 'mercado-livre' AND NOT sb.avg_excluded) END AS mediana,
            (array_agg(sb.last_checked_at ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS verificado_em,
            (array_agg(sb.network_name ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS loja_menor,
            COUNT(*) OVER () AS total
@@ -211,9 +211,9 @@ export async function detalheDepartamento(vertical: string, slug: string): Promi
            m.default_images ->> 0 AS imagem,
            MIN(sb.current_price_cents) AS min_cents,
            COUNT(*) AS vendedores,
-           COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre') AS vendedores_ml,
-           CASE WHEN COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre') >= ${sql.raw(String(MIN_VENDEDORES_MEDIANA))}
-                THEN percentile_cont(0.5) WITHIN GROUP (ORDER BY sb.current_price_cents) FILTER (WHERE sb.network_slug = 'mercado-livre') END AS mediana,
+           COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre' AND NOT sb.avg_excluded) AS vendedores_ml,
+           CASE WHEN COUNT(*) FILTER (WHERE sb.network_slug = 'mercado-livre' AND NOT sb.avg_excluded) >= ${sql.raw(String(MIN_VENDEDORES_MEDIANA))}
+                THEN percentile_cont(0.5) WITHIN GROUP (ORDER BY sb.current_price_cents) FILTER (WHERE sb.network_slug = 'mercado-livre' AND NOT sb.avg_excluded) END AS mediana,
            (array_agg(sb.last_checked_at ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS verificado_em,
            (array_agg(sb.network_name ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS loja_menor,
            1 AS total

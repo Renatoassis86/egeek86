@@ -51,7 +51,7 @@ function pct(sorted: number[], p: number): number {
 }
 const mean = (v: number[]) => (v.length ? v.reduce((a, b) => a + b, 0) / v.length : null);
 /** Media do jeito de producao: faixa plausivel (35% a 3x a mediana), media so com >= 3. Cada oferta vale 1 (preco atual = oferta-dia de hoje). */
-function meanBand(prices: number[]): { n: number; mean: number | null } {
+export function meanBand(prices: number[]): { n: number; mean: number | null } {
   const band = plausibleBand(prices);
   const kept = prices.filter((p) => inBand(p, band));
   return { n: kept.length, mean: kept.length >= 3 ? mean(kept) : null };
@@ -63,7 +63,7 @@ interface R3 {
   implausiveis: Array<{ id: string; price: number; motivo: string }>; foraDaCerca: Array<{ id: string; price: number; lado: 'acima' | 'abaixo' }>;
   mediaAtualRegra: number | null; nAtualRegra: number; mediaComCerca: number | null; nComCerca: number; mediaCercaSoSuperior: number | null; veredito: string;
 }
-function r3(offs: Array<{ id: string; price: number; skey: string }>): R3 {
+export function r3(offs: Array<{ id: string; price: number; skey: string }>): R3 {
   const implausiveis: R3['implausiveis'] = [];
   let rest = offs.filter((o) => { if (o.price >= MILLION_CENTS) { implausiveis.push({ id: o.id, price: o.price, motivo: '>= R$ 1.000.000' }); return false; } return true; });
   const med0 = medianCont(rest.map((o) => o.price)) ?? 0;
@@ -107,7 +107,7 @@ function r3(offs: Array<{ id: string; price: number; skey: string }>): R3 {
 // R1 PS5: chave do titulo. Overlay do piloto: 825 GB sem Slim/Pro = PS5 original (Fat) com confianca media; edicao + Pro mantem o eixo Pro.
 // ------------------------------------------------------------------------------------------------
 interface Ps5Ident { id: ConsoleIdentity; key: string | null; note: string[]; conf: 'alta' | 'media' | 'baixa'; naoProvado: string[] }
-function identPs5(title: string): Ps5Ident {
+export function identPs5(title: string): Ps5Ident {
   const t = foldTitle(title.replace(/\bp\.? ?s\.? ?5\b/gi, 'ps5'));
   // 825 GB sem Slim/Pro e SEM "digital" = PS5 original (Fat, disco). Com "digital" e ambiguo (Fat digital x Slim digital 825 GB do Brasil): fica 'nd' (incerta).
   const use825 = /\b825 ?gb\b/.test(t) && !/\b(slim|pro)\b/.test(t) && !/\b(digital|all digital|sem leitor|sem disco)\b/.test(t);
@@ -407,4 +407,5 @@ async function run(sql: Sql) {
   return { lines, plan };
 }
 
-main().catch((e) => { console.error('FALHA:', e instanceof Error ? (e.stack ?? e.message) : e); process.exit(1); });
+// Executa so quando chamado direto (o script de aplicacao importa identPs5/r3/meanBand sem disparar a simulacao).
+if (path.basename(process.argv[1] ?? '') === 'piloto-identidade-itens.ts') main().catch((e) => { console.error('FALHA:', e instanceof Error ? (e.stack ?? e.message) : e); process.exit(1); });

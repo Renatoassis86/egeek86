@@ -545,10 +545,10 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
     `),
     db.execute<{ avg_cents: string | null }>(sql`
       WITH ${publicOffersCtes(GAMES)},
-      raw_avg AS (SELECT AVG(current_price_cents) AS v FROM public_offers WHERE ${inCatalogPlain})
+      raw_avg AS (SELECT AVG(current_price_cents) AS v FROM public_offers WHERE NOT avg_excluded AND ${inCatalogPlain})
       SELECT AVG(po.current_price_cents)::bigint AS avg_cents
       FROM public_offers po, raw_avg
-      WHERE po.current_price_cents <= raw_avg.v * 2 AND ${inCatalogPo}
+      WHERE NOT po.avg_excluded AND po.current_price_cents <= raw_avg.v * 2 AND ${inCatalogPo}
     `),
     getPlatformLowestPriceCentsEver(),
     // "Abaixo da média" = preço público mais barato do produto abaixo da faixa
@@ -564,13 +564,13 @@ async function getPlatformStatsUncached(): Promise<PlatformStats> {
       -- Mesmas cotações plausíveis (piso, ADR 0001 revisada) da fonte única.
       ${priceQuotesCtes(sql`o.master_product_id IN (SELECT master_product_id FROM current_lowest)`, GAMES)},
       raw AS (
-        SELECT master_product_id, AVG(price_cents) AS raw_avg, COUNT(*) AS n,
+        SELECT master_product_id, AVG(price_cents) FILTER (WHERE NOT avg_excluded) AS raw_avg, COUNT(*) FILTER (WHERE NOT avg_excluded) AS n,
                MIN(collected_at) AS first_at, MAX(collected_at) AS last_at
         FROM q GROUP BY master_product_id
       ),
       hist AS (
         SELECT q.master_product_id,
-               AVG(q.price_cents) FILTER (WHERE q.price_cents <= raw.raw_avg * 2) AS avg_price,
+               AVG(q.price_cents) FILTER (WHERE NOT q.avg_excluded AND q.price_cents <= raw.raw_avg * 2) AS avg_price,
                raw.n, raw.first_at, raw.last_at
         FROM q INNER JOIN raw ON raw.master_product_id = q.master_product_id
         GROUP BY q.master_product_id, raw.n, raw.first_at, raw.last_at

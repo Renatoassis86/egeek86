@@ -14,6 +14,7 @@ import {
  * ============================================================================================
  * Elegibilidade da OFERTA (aplicada no SQL por `src/server/pricing/eligibility-sql.ts`, mesma regra do site):
  *   item novo + identidade visível (sem Open Box/usado/cross-gen), fora de quarentena (`quarantined_at`),
+ *   (oferta com `avg_excluded_at` segue visível: conta no mínimo/máximo, NÃO na média/mediana/n_offers/members),
  *   produto aprovado pelo porteiro do catálogo, preço > 0.
  *
  * Preço da oferta no dia (cada oferta vale 1, não importa quantas vezes foi coletada):
@@ -107,6 +108,11 @@ export interface OfferInput {
   sellerId?: string | null;
   /** Status 'active' agora. */
   active: boolean;
+  /**
+   * Oferta "fora da média" (affiliate_offers.avg_excluded_at, migration 0044): continua VISÍVEL (menor preço, máximo, lojas) mas NÃO
+   * entra em média, mediana, n_offers, members nem na régua de plausibilidade. Ausente/false = comportamento de sempre.
+   */
+  avgExcluded?: boolean;
   rows: OfferDayRow[];
 }
 
@@ -251,15 +257,16 @@ function resolveOffers(day: string, now: Date, offers: OfferInput[]): { fresh: R
 export function computeDayState(day: string, now: Date, offers: OfferInput[]): DayState {
   if (day < PRICE_DAILY_REGIME_START) throw new Error(`computeDayState: ${day} é anterior ao regime atual; use legacyDayState`);
   const { fresh, stale } = resolveOffers(day, now, offers);
-  const band = plausibleBand(fresh.map((f) => f.value));
+  // A régua de plausibilidade nasce SÓ das ofertas que contam na média; a oferta "fora da média" é conferida contra ela (para o mínimo).
+  const inAvg = fresh.filter((f) => !f.offer.avgExcluded);
+  const band = plausibleBand(inAvg.map((f) => f.value));
   const kept = fresh.filter((f) => inBand(f.value, band));
   const outliers = fresh.length - kept.length;
   const base = { day, freshOffers: fresh.length, staleOffers: stale, outlierOffers: outliers };
   if (!kept.length) {
     return { ...base, ...NO_TRANSITION, members: {}, minCents: null, minOfferId: null, avgCents: null, medianCents: null, maxCents: null, nOffers: 0, nStores: 0, nQuotes: 0, quality: 'gap' };
   }
-  const values = kept.map((k) => k.value);
-  // Mínimo e máximo BRUTOS do dia por oferta; se o bruto cai fora da faixa, vale o preço oferta-dia (já plausível).
+  // Mínimo e máximo BRUTOS do dia por oferta (inclui a "fora da média": é preço real e visível); se o bruto cai fora da faixa, vale o preço oferta-dia (já plausível).
   let min = Infinity;
   let minOffer: Resolved | null = null;
   let max = -Infinity;
@@ -274,20 +281,23 @@ export function computeDayState(day: string, now: Date, offers: OfferInput[]): D
     }
     if (hi > max) max = hi;
   }
+  // Média, mediana, n_offers, lojas, members e qualidade: SÓ ofertas que contam na média.
+  const avgSet = kept.filter((k) => !k.offer.avgExcluded);
+  const values = avgSet.map((k) => k.value);
   const sum = values.reduce((a, b) => a + b, 0);
   return {
     ...base,
     ...NO_TRANSITION,
-    members: Object.fromEntries(kept.map((k) => [k.offer.offerId, k.value])),
+    members: Object.fromEntries(avgSet.map((k) => [k.offer.offerId, k.value])),
     minCents: min,
     minOfferId: (minOffer as Resolved).offer.offerId,
-    avgCents: kept.length >= MIN_OFFERS_FOR_AVG ? sum / values.length : null,
+    avgCents: avgSet.length >= MIN_OFFERS_FOR_AVG ? sum / values.length : null,
     medianCents: medianCont(values),
     maxCents: max,
-    nOffers: kept.length,
-    nStores: new Set(kept.map((k) => k.offer.storeKey)).size,
+    nOffers: avgSet.length,
+    nStores: new Set(avgSet.map((k) => k.offer.storeKey)).size,
     nQuotes: kept.reduce((a, k) => a + (k.row?.nCollected ?? 0), 0),
-    quality: kept.length >= PLAUSIBILITY_MIN_OFFERS ? 'complete' : 'partial',
+    quality: avgSet.length >= PLAUSIBILITY_MIN_OFFERS ? 'complete' : 'partial',
   };
 }
 
@@ -365,6 +375,8 @@ export interface LiveOfferInput {
   quotedAt: Date | null;
   /** last_checked_at do cadastro. null = nunca checada. */
   checkedAt: Date | null;
+  /** Oferta "fora da média" (0044): visível no preço agora, fora de qualquer média/mediana. */
+  avgExcluded?: boolean;
   /** Teto de frescor desta oferta (padrão FRESH_MAX_AGE_MS; Amazon em modo `on`: 24 h, com quotedAt e checkedAt = last_price_confirmed_at). */
   maxAgeMs?: number;
 }

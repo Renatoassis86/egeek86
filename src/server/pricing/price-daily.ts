@@ -18,6 +18,7 @@ import {
   type ReconOffer,
 } from '@/lib/pricing/daily-state';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
+import { avgExcludedFlagSql } from '@/server/queries/public-offers';
 import { AMAZON_FRESH_MAX_AGE_MS, amazonScope, getAmazonMode, isAmazonSlug, type AmazonMode, type AmazonScope } from '@/lib/pricing/amazon-mode';
 import { amazonScopeSql } from '@/server/pricing/amazon-scope-sql';
 import type { AmazonShadowDiff } from '@/lib/pricing/amazon-shadow';
@@ -85,6 +86,7 @@ export async function loadOffers(exec: Exec, productIds: string[], fromDay: stri
   const scope = opts.amazon ?? amazonScope();
   const rows = await exec.execute<Row>(sql`
     SELECT o.master_product_id, o.id AS offer_id, o.status = 'active' AS active, o.network_id, o.seller_id,
+           ${avgExcludedFlagSql('o')} AS avg_excluded,
            n.slug AS net_slug, o.last_price_confirmed_at, o.consecutive_miss_count AS miss_count,
            COALESCE(o.seller_id::text, 'rede:' || o.network_id::text) AS store_key,
            d.day::text AS day, d.median_cents, d.last_cents, d.min_cents, d.max_cents, d.n_collected, d.last_observed_at
@@ -107,6 +109,7 @@ export async function loadOffers(exec: Exec, productIds: string[], fromDay: stri
         sellerId: (r.seller_id as string | null) ?? null,
         active: r.active === true && !(amazon && Number(r.miss_count ?? 0) > 0),
         isAmazon: amazon,
+        avgExcluded: r.avg_excluded === true,
         freshness: amazon && r.last_price_confirmed_at ? { confirmedAt: iso(r.last_price_confirmed_at), maxAgeMs: AMAZON_FRESH_MAX_AGE_MS } : null,
         rows: [],
       };

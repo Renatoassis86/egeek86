@@ -3,6 +3,7 @@ import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
+import { avgExcludedFlagSql, inAverageSql } from '@/server/queries/public-offers';
 import { loadOffers, loadPeriodDays } from '@/server/pricing/price-daily';
 import { addDays, computePeriodMetrics, ownSeriesMedian, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
 import { AMAZON_OWN_MIN_DAYS, AMAZON_OWN_WINDOW_DAYS, amazonCountsIn, amazonScope, getAmazonMode, type AmazonMode } from '@/lib/pricing/amazon-mode';
@@ -227,7 +228,7 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
       WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.affiliate_link_pending = false AND o.current_price_cents > 0
         AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz
         AND o.vertical IN (${txtList(o.verticals)}) AND m.vertical IN (${txtList(o.verticals)})
-        AND ${eligibleOfferSql('o')}
+        AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')}
     ),
     ev AS (
       SELECT DISTINCT e.master_product_id AS mid FROM price_min_events e
@@ -323,7 +324,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     db.execute<Row>(sql`
       SELECT o.id, o.master_product_id, o.slug, o.title, n.slug AS net_slug, n.name AS net_name, o.seller_id,
              s.reputation_level, s.total_sales, COALESCE(NULLIF(o.store_name, ''), s.nickname) AS store_label, o.current_price_cents, o.last_price_confirmed_at,
-             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.quarantined_at,
+             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.quarantined_at, ${avgExcludedFlagSql('o')} AS avg_excluded,
              -- ML só sai em mensagem com o link OFICIAL de afiliado (meli.la); sem ele a oferta fica de fora do envio (dono, 2026-11-11)
              (o.affiliate_link_pending OR (n.slug = 'mercado-livre' AND COALESCE(o.affiliate_url, '') NOT LIKE 'https://meli.la/%')) AS affiliate_link_pending,
              (COALESCE(o.affiliate_url, '') LIKE 'https://meli.la/%') AS official_link, o.affiliate_url,
@@ -417,6 +418,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       affiliateUrl: (r.affiliate_url as string | null) ?? null,
       storeName: (r.store_label as string | null) ?? null,
       quarantined: r.quarantined_at != null,
+      avgExcluded: r.avg_excluded === true,
       missCount: r.miss_count == null ? 0 : Number(r.miss_count),
       returnedAt: returnedBy.get(String(r.id)) ?? null,
       liveVerifiedAt: o.liveVerified?.has(String(r.id)) ? o.now : null,

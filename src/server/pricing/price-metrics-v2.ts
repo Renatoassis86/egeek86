@@ -46,7 +46,7 @@ import {
 import { loadOffers } from '@/server/pricing/price-daily';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { contarForaDaFaixa, ofertaFresca } from '@/lib/pricing/lojas-hoje';
-import { weakSellerSql } from '@/server/queries/public-offers';
+import { weakSellerSql, avgExcludedFlagSql } from '@/server/queries/public-offers';
 import { AMAZON_FRESH_MAX_AGE_MS, amazonScope, isAmazonSlug } from '@/lib/pricing/amazon-mode';
 import { amazonScopeSql } from '@/server/pricing/amazon-scope-sql';
 
@@ -215,7 +215,7 @@ export async function loadOfferMeta(productId: string): Promise<Map<string, Offe
 export async function loadLiveOffers(productId: string, now: Date): Promise<LiveOfferInput[]> {
   const since = new Date(now.getTime() - FRESH_MAX_AGE_MS).toISOString();
   const rows = await db.execute<Row>(sql`
-    SELECT o.id AS offer_id, o.network_id, o.seller_id, o.current_price_cents, o.last_checked_at,
+    SELECT o.id AS offer_id, o.network_id, o.seller_id, o.current_price_cents, o.last_checked_at, ${avgExcludedFlagSql('o')} AS avg_excluded,
            n.slug AS net_slug, o.last_price_confirmed_at, o.consecutive_miss_count AS miss_count,
            (SELECT MAX(ps.collected_at) FROM affiliate_price_snapshots ps WHERE ps.offer_id = o.id) AS quoted_at
     FROM affiliate_offers o
@@ -230,6 +230,7 @@ export async function loadLiveOffers(productId: string, now: Date): Promise<Live
       networkId: (r.network_id as string | null) ?? null,
       sellerId: (r.seller_id as string | null) ?? null,
       priceCents: Number(r.current_price_cents),
+      avgExcluded: r.avg_excluded === true,
     };
     if (isAmazonSlug(String(r.net_slug))) {
       if (Number(r.miss_count ?? 0) > 0 || !r.last_price_confirmed_at) continue;
@@ -362,8 +363,10 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
   // MESMA régua de frescor do preço agora (cotação E checagem <= 48 h): `loadLiveOffers` filtra só pela checagem, então aqui a oferta sem
   // cotação recente não conta como loja (nunca divergir de `computeLiveMinFromOffers` e da lista "Lojas de hoje").
   const freshLive = liveOffers.filter((o) => ofertaFresca(o, now));
-  const storeOffers = freshLive.map((o) => ({ storeKey: o.sellerId ?? o.networkId ?? o.offerId, priceCents: o.priceCents }));
+  const storeOffers = freshLive.map((o) => ({ storeKey: o.sellerId ?? o.networkId ?? o.offerId, priceCents: o.priceCents, avgExcluded: o.avgExcluded === true }));
   const storesNow = storesToday(storeOffers);
+  // Mediana das lojas = COMPARAÇÃO: oferta "fora da média" (0044) segue na lista e na contagem de lojas, mas não entra na mediana.
+  const storesCmp = storesToday(storeOffers.filter((o) => !o.avgExcluded));
   // Menor preço de vendedor de baixa reputação não é comparado em percentual com a mediana (só fatos, com a nota).
   // Redes das lojas contadas: ofertas frescas dentro da faixa de preços que `storesToday` manteve (as descartadas por outlier ficam fora da faixa).
   const storeMin = storesNow.storePrices.length ? storesNow.storePrices[0] : null;
@@ -376,7 +379,9 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
         .filter((n) => n !== '')
     ),
   ].sort();
-  const storesComparison = holderWeak ? null : compareToStoresMedian(current, storesNow.medianCents);
+  // Menor preço de oferta "fora da média": aparece como fato, mas não é comparado em percentual com a mediana.
+  const holderOutOfAvg = live ? liveOffers.find((o) => o.offerId === live.offerId)?.avgExcluded === true : false;
+  const storesComparison = holderWeak || holderOutOfAvg ? null : compareToStoresMedian(current, storesCmp.medianCents);
 
   // Série dos MÍNIMOS DIÁRIOS dos últimos 30 dias, sem hoje (o preço agora é comparado com o passado), e dias medidos (>= 3 lojas).
   const yesterday = addDays(today, -1);
@@ -438,7 +443,7 @@ async function loadPriceMetricsV2(masterProductId: string): Promise<PriceMetrics
           weakSeller: holderWeak,
         }
       : null,
-    stores: { count: storesNow.storeCount, medianCents: storesNow.medianCents, networks: storeNetworks },
+    stores: { count: storesNow.storeCount, medianCents: storesCmp.medianCents, networks: storeNetworks },
     storesComparison,
     decision: decisionSentence(storesComparison, storesNow.storeCount, { weakHolder: holderWeak }),
     lastEvent: lastEvent ? { at: lastEvent.at, cents: lastEvent.minCents, prevCents: lastEvent.prevMinCents, store: lastEvent.store, matchesNow: eventMatches } : null,

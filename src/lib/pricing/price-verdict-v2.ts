@@ -42,6 +42,8 @@ export interface StoreOffer {
   /** Vendedor quando existe, senão a rede (mesma chave de loja do estado do dia). */
   storeKey: string;
   priceCents: number;
+  /** Oferta "fora da média" (0044): quem filtra a comparação usa este campo; `storesToday` em si não o lê. */
+  avgExcluded?: boolean;
 }
 
 /** Mediana entre lojas só existe com 3 ou mais lojas DISTINTAS: com 2, a "mediana" é o ponto médio e um preço baixo vira "43% abaixo" por construção. */

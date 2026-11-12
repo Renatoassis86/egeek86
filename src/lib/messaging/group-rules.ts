@@ -228,6 +228,11 @@ export interface OfferFact {
    * 'incerta' em loja que não é games, durante a fase de formação: o item fica FORA da média simples e não é escolhido para mensagem.
    */
   identidade?: 'certa' | 'incerta';
+  /**
+   * Oferta "fora da média" (affiliate_offers.avg_excluded_at, migration 0044): continua visível no site, mas NÃO entra na média/mediana e
+   * NÃO é escolhida para mensagem (toda mensagem compara com a média). Ausente/false = comportamento de sempre.
+   */
+  avgExcluded?: boolean;
   /** Amazon: ausências seguidas na busca da coleta assistida (consecutive_miss_count). > 0 = fora dos gatilhos. */
   missCount?: number;
   /** Amazon: primeira observação depois de uma ausência (group_offer_watch). null = nunca sumiu / sem registro. */
@@ -396,6 +401,7 @@ export function judgeOffer(o: OfferFact, p: Pick<ProductFacts, 'masterName'>, no
   if (kind === 'other') return block('rede_fora_do_escopo');
   if (kind === 'amazon' && opts.amazonPaused) return block('amazon_laco_parado_mais_de_90min');
   if (o.quarantined) return block('quarentena');
+  if (o.avgExcluded) return block('fora_da_media');
   if (o.affiliateLinkPending) return block('link_pendente');
   if (!(o.priceCents > 0)) return block('preco_invalido');
   if (!o.confirmedAt) return block('sem_confirmacao_de_preco');
@@ -673,7 +679,7 @@ export function evaluateProduct(p: ProductFacts, ctx: EvalContext): { candidates
   const verdicts = p.offers.map((o) => ({ o, v: judgeOffer(o, p, ctx.now, ctx.maxAgeMin) }));
   const usable = verdicts.filter((x) => x.v.kind !== 'block').sort((a, b) => a.o.priceCents - b.o.priceCents);
   const stores = countStores(p.offers.filter((o) => judgeOffer(o, p, ctx.now, ctx.maxAgeMin).kind !== 'block'));
-  const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon').map((o) => o.priceCents));
+  const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon' && !o.avgExcluded).map((o) => o.priceCents));
   const model = (trigger: Trigger): GroupMessageInput['model'] =>
     trigger === 'G1' ? 'menor-preco' : trigger === 'G2' ? 'abaixo-media' : trigger === 'G3' ? 'comparativo' : trigger === 'G5' ? 'foto-preco' : 'departamento';
   void model;
@@ -1011,17 +1017,17 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
   const formacao = emFaseDeFormacao(p.vertical, ctx.now);
   // Identidade 'incerta' (fila de classificação): na formação o item sai de tudo (média simples, preço mais baixo, escolha da oferta) até ser resolvido.
   const verdicts = p.offers
-    .filter((o) => !(formacao && o.identidade === 'incerta'))
+    .filter((o) => !o.avgExcluded && !(formacao && o.identidade === 'incerta'))
     .map((o) => ({ o, v: judgeOffer(o, p, ctx.now, ctx.maxAgeMin, jopts) }));
   const stores = countStores(verdicts.filter((x) => x.v.kind !== 'block').map((x) => x.o));
   const minStores = minLojas(p.vertical, ctx.now, RULES.MIN_STORES);
-  const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon').map((o) => o.priceCents));
+  const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon' && !o.avgExcluded).map((o) => o.priceCents));
   // Média do V2. Games e depois da corte: a mesma do selo (oferta-dia), com o critério do dono (>= 3 ofertas e >= 1 dia de série medida).
   // Formação: MÉDIA SIMPLES das ofertas ativas (uma por oferta; sem série, sem 14 dias), sem Amazon, sem condição/região/edição
   // diferente no título (Open Box fora) e sem identidade incerta; mínimo de 3 ofertas dentro da faixa de plausibilidade.
   let avg: ProductFacts['avg'] = p.avg && p.avg.cents > 0 && p.avg.distinctOffers >= RULES.MED_MIN_OFFERS && p.avg.spanDays >= RULES.MED_MIN_SERIES_DAYS ? p.avg : null;
   if (formacao) {
-    const base = p.offers.filter((o) => netKind(o) !== 'amazon' && netKind(o) !== 'other' && !o.quarantined && o.priceCents > 0 && o.identidade !== 'incerta' && titleIdentityBlock(o.title, p.masterName) == null);
+    const base = p.offers.filter((o) => netKind(o) !== 'amazon' && netKind(o) !== 'other' && !o.quarantined && !o.avgExcluded && o.priceCents > 0 && o.identidade !== 'incerta' && titleIdentityBlock(o.title, p.masterName) == null);
     const ms = mediaSimples(base.map((o) => o.priceCents));
     avg = ms ? { cents: ms.cents, distinctOffers: ms.ofertas, offerDays: ms.ofertas, spanDays: 0, eligible: false } : null;
   }

@@ -3,7 +3,7 @@ import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { swrBatch, withTimeout } from '@/lib/cache/swr';
 import { verticalSql, GAMES, type Vertical } from '@/lib/catalog/verticais';
-import { publicOffersCtes, medianSql, weakSellerSql, catalogGateVisibleSql, offerIdentityVisibleSql } from '@/server/queries/public-offers';
+import { publicOffersCtes, medianSql, weakSellerSql, catalogGateVisibleSql, offerIdentityVisibleSql, avgExcludedFlagSql } from '@/server/queries/public-offers';
 import {
   AGGREGATE_CEILING_MEDIAN_MULTIPLE,
   LOW_BADGE_CORROBORATION_BAND_PERCENT,
@@ -70,7 +70,7 @@ export function priceQuotesCtes(scope: SQL, vertical: Vertical): SQL {
   return sql`
     q_all AS MATERIALIZED (
       SELECT o.master_product_id, o.id AS offer_id, s.price_cents, s.collected_at,
-             ${weakSellerSql('sel')} AS weak_seller
+             ${weakSellerSql('sel')} AS weak_seller, ${avgExcludedFlagSql('o')} AS avg_excluded
       FROM affiliate_offers o
       INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
       LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
@@ -81,15 +81,15 @@ export function priceQuotesCtes(scope: SQL, vertical: Vertical): SQL {
     ),
     pfloor AS (
       SELECT master_product_id,
-             COUNT(*)::int AS n_all,
+             COUNT(*) FILTER (WHERE NOT avg_excluded)::int AS n_all,
              MIN(price_cents) AS raw_min,
-             ${medianSql('price_cents')} AS median_cents,
-             CASE WHEN COUNT(*) >= ${minN}
-                  THEN ${medianSql('price_cents')} * ${pct} END AS floor_cents
+             ${medianSql('price_cents')} FILTER (WHERE NOT avg_excluded) AS median_cents,
+             CASE WHEN COUNT(*) FILTER (WHERE NOT avg_excluded) >= ${minN}
+                  THEN ${medianSql('price_cents')} FILTER (WHERE NOT avg_excluded) * ${pct} END AS floor_cents
       FROM q_all GROUP BY master_product_id
     ),
     q AS (
-      SELECT a.master_product_id, a.offer_id, a.price_cents, a.collected_at, a.weak_seller
+      SELECT a.master_product_id, a.offer_id, a.price_cents, a.collected_at, a.weak_seller, a.avg_excluded
       FROM q_all a INNER JOIN pfloor f ON f.master_product_id = a.master_product_id
       WHERE f.floor_cents IS NULL OR a.price_cents > f.floor_cents
     )
@@ -114,7 +114,7 @@ export function statsAggCtes(scope: SQL, vertical: Vertical): SQL {
     ${priceQuotesCtes(scope, vertical)},
     raw AS (
       SELECT master_product_id,
-             AVG(price_cents) AS raw_avg,
+             AVG(price_cents) FILTER (WHERE NOT avg_excluded) AS raw_avg,
              COUNT(*)::int AS quote_count,
              MAX(price_cents)::bigint AS max_raw_cents,
              MIN(collected_at) AS history_since,
@@ -126,11 +126,11 @@ export function statsAggCtes(scope: SQL, vertical: Vertical): SQL {
     ),
     agg AS (
       SELECT q.master_product_id,
-             COUNT(*) FILTER (WHERE ${clean})::int AS avg_quote_count,
-             AVG(q.price_cents) FILTER (WHERE ${clean})::numeric AS avg_cents,
-             MAX(q.price_cents) FILTER (WHERE ${clean})::bigint AS max_cents,
-             MIN(q.price_cents) FILTER (WHERE ${clean})::bigint AS clean_min_cents,
-             ${medianSql('q.price_cents')} FILTER (WHERE ${clean}) AS median_cents
+             COUNT(*) FILTER (WHERE ${clean} AND NOT q.avg_excluded)::int AS avg_quote_count,
+             AVG(q.price_cents) FILTER (WHERE ${clean} AND NOT q.avg_excluded)::numeric AS avg_cents,
+             MAX(q.price_cents) FILTER (WHERE ${clean} AND NOT q.avg_excluded)::bigint AS max_cents,
+             MIN(q.price_cents) FILTER (WHERE ${clean} AND NOT q.avg_excluded)::bigint AS clean_min_cents,
+             ${medianSql('q.price_cents')} FILTER (WHERE ${clean} AND NOT q.avg_excluded) AS median_cents
       FROM q
       INNER JOIN raw ON raw.master_product_id = q.master_product_id
       INNER JOIN pfloor pf ON pf.master_product_id = q.master_product_id

@@ -84,6 +84,29 @@ export function notQuarantinedSql(alias: string): SQL {
 }
 
 /**
+ * OFERTA "FORA DA MÉDIA" (migration 0044, dono 2026-11-11): `avg_excluded_at` preenchido mantém a oferta ATIVA e VISÍVEL
+ * (listas, menor preço, cartões, cotações), mas ela NÃO entra em média, mediana, selo, gráfico, estatística nem n_offers.
+ * `avgExcludedFlagSql` = a marca como boolean (para carregar a coluna e filtrar depois); `inAverageSql` = predicado de
+ * quem calcula média/mediana. ORDEM DE PUBLICAÇÃO: aplicar a 0044 ANTES do deploy (a coluna precisa existir; ver topo da 0044).
+ * `alias` = alias de affiliate_offers na consulta.
+ */
+export function avgExcludedFlagSql(alias: string): SQL {
+  if (avgExcludedDisabled()) return sql`FALSE`;
+  return sql`(${sql.raw(alias.replace(/[^a-z0-9_]/gi, ''))}.avg_excluded_at IS NOT NULL)`;
+}
+export function inAverageSql(alias: string): SQL {
+  if (avgExcludedDisabled()) return sql`TRUE`;
+  return sql`${sql.raw(alias.replace(/[^a-z0-9_]/gi, ''))}.avg_excluded_at IS NULL`;
+}
+/**
+ * VÁLVULA DE EMERGÊNCIA: `AVG_EXCLUDED_DISABLED=1` faz a leitura IGNORAR a marca (nenhuma consulta toca a coluna). Serve para
+ * rodar/rolar o código num banco que ainda não recebeu a 0044. Padrão (ausente) = marca honrada, coluna obrigatória.
+ */
+function avgExcludedDisabled(): boolean {
+  return process.env.AVG_EXCLUDED_DISABLED === '1';
+}
+
+/**
  * UMA definição de mediana para todo o site (ofertas públicas e cotações do
  * histórico): `percentile_cont(0.5)`. `col` é um fragmento de coluna.
  */
@@ -108,7 +131,7 @@ export function weakSellerSql(alias: string): SQL {
 }
 
 /**
- * Definições de CTE para usar em `WITH ${publicOffersCtes('games')} ...`. Expõe `public_offers(id, master_product_id, current_price_cents)`.
+ * Definições de CTE para usar em `WITH ${publicOffersCtes('games')} ...`. Expõe `public_offers(id, master_product_id, current_price_cents, avg_excluded)`; quem calcula média/mediana filtra `NOT avg_excluded`.
  * `vertical` é OBRIGATÓRIO (ADR 0008, allow-list): o predicado `vertical = '<v>'` fica DENTRO de `live_networks` e
  * `fresh_offers` (ponto único); `product_median` e `public_offers` derivam de `fresh_offers` e herdam o filtro.
  * `live_networks` também filtra: a "rede viva" de um departamento não pode ser provada por coleta de outro.
@@ -126,7 +149,7 @@ export function publicOffersCtes(vertical: Vertical): SQL {
         AND lo.last_price_change_at >= now() - interval '${days} days'
     ),
     fresh_offers AS (
-      SELECT fo.id, fo.master_product_id, fo.current_price_cents
+      SELECT fo.id, fo.master_product_id, fo.current_price_cents, ${avgExcludedFlagSql('fo')} AS avg_excluded
       FROM affiliate_offers fo
       WHERE ${verticalSql('fo', vertical)}
         AND ${catalogGateVisibleSql('fo.master_product_id')}
@@ -144,13 +167,15 @@ export function publicOffersCtes(vertical: Vertical): SQL {
              COUNT(*)::int AS offer_count,
              ${medianSql('fo.current_price_cents')} AS median_cents
       FROM fresh_offers fo
+      WHERE NOT fo.avg_excluded
       GROUP BY fo.master_product_id
     ),
     public_offers AS (
-      SELECT f.id, f.master_product_id, f.current_price_cents
+      SELECT f.id, f.master_product_id, f.current_price_cents, f.avg_excluded
       FROM fresh_offers f
-      INNER JOIN product_median m ON m.master_product_id = f.master_product_id
-      WHERE m.offer_count < ${minOffers}
+      LEFT JOIN product_median m ON m.master_product_id = f.master_product_id
+      WHERE m.master_product_id IS NULL
+         OR m.offer_count < ${minOffers}
          OR f.current_price_cents > m.median_cents * ${floor}
     )
   `;

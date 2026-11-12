@@ -1,7 +1,7 @@
 import 'server-only';
 import { sql, eq, and, asc, gt, inArray, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { offerIdentityVisibleSql, notQuarantinedSql } from '@/server/queries/public-offers';
+import { offerIdentityVisibleSql, notQuarantinedSql, avgExcludedFlagSql } from '@/server/queries/public-offers';
 import { catalogHiddenFilter } from '@/server/queries/catalog-dimensions';
 import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 import { affiliateOffers, affiliateNetworks, affiliateSellers, masterProducts } from '@/db/schema';
@@ -244,6 +244,7 @@ export async function getMasterProductPriceHistory(
     db.execute<AggRow>(sql`
       WITH r AS MATERIALIZED (
         SELECT s.offer_id, s.collected_at, s.price_cents::bigint AS price_cents,
+               ${avgExcludedFlagSql('o')} AS ax,
                (floor(extract(epoch FROM s.collected_at) / ${bucketSeconds}::numeric) * ${bucketSeconds}::numeric)::bigint AS bucket
         FROM affiliate_price_snapshots s
         INNER JOIN affiliate_offers o ON o.id = s.offer_id
@@ -254,17 +255,25 @@ export async function getMasterProductPriceHistory(
         SELECT COUNT(*)::bigint AS n, COALESCE(SUM(price_cents), 0)::numeric AS sum_c, MAX(price_cents) AS max_c
         FROM r
       ),
+      -- Base da MÉDIA: sem as ofertas marcadas "fora da média" (migration 0044); elas seguem em st/min/quote (visíveis).
+      sa AS (
+        SELECT COUNT(*)::bigint AS n, COALESCE(SUM(price_cents), 0)::numeric AS sum_c
+        FROM r WHERE NOT ax
+      ),
       -- Mesma regra de outlier de antes: descarta cotação > 2x a média bruta.
       c AS MATERIALIZED (
         SELECT r.offer_id, r.price_cents, r.bucket,
                LAG(r.price_cents) OVER (PARTITION BY r.offer_id ORDER BY r.collected_at) AS prev_cents
-        FROM r, st
-        WHERE st.sum_c <= 0 OR r.price_cents::numeric * st.n <= 2 * st.sum_c
+        FROM r, sa
+        WHERE NOT r.ax AND (sa.sum_c <= 0 OR r.price_cents::numeric * sa.n <= 2 * sa.sum_c)
       )
       SELECT 'stat' AS kind, NULL::bigint AS bucket, NULL::text AS offer_id,
              st.n::numeric AS n1, st.max_c::numeric AS n2, st.sum_c AS n3,
              NULL::text AS network_name, NULL::text AS network_color_hex, NULL::text AS seller_nickname
       FROM st
+      UNION ALL
+      SELECT 'astat', NULL, NULL, sa.n::numeric, sa.sum_c, NULL, NULL, NULL, NULL
+      FROM sa
       UNION ALL
       SELECT 'cstat', NULL, NULL, COUNT(*)::numeric, COALESCE(SUM(price_cents), 0)::numeric, NULL, NULL, NULL, NULL
       FROM c
@@ -341,6 +350,8 @@ export async function getMasterProductPriceHistory(
   let totalQuoteCount = 0;
   let rawMaxCents: number | null = null;
   let rawSumCents = 0;
+  let avgRawCount = 0; // média bruta SEM as ofertas fora da média (0044)
+  let avgRawSumCents = 0;
   let cleanCount = 0;
   let cleanSumCents = 0;
   const minEntries: { offerId: string; bucket: number; priceReais: number; firstSeen: number }[] = [];
@@ -354,6 +365,10 @@ export async function getMasterProductPriceHistory(
         totalQuoteCount = Number(row.n1);
         rawMaxCents = totalQuoteCount > 0 ? Number(row.n2) : null;
         rawSumCents = Number(row.n3);
+        break;
+      case 'astat':
+        avgRawCount = Number(row.n1);
+        avgRawSumCents = Number(row.n2);
         break;
       case 'cstat':
         cleanCount = Number(row.n1);
@@ -441,8 +456,8 @@ export async function getMasterProductPriceHistory(
   const globalMaxPriceCents = globalMaxRow[0]?.max_price ? Number(globalMaxRow[0].max_price) : null;
 
   // Média sem outliers (> 2x a média bruta); sem nenhuma cotação limpa, cai na bruta.
-  const avgSumCents = cleanCount > 0 ? cleanSumCents : rawSumCents;
-  const avgCount = cleanCount > 0 ? cleanCount : totalQuoteCount;
+  const avgSumCents = cleanCount > 0 ? cleanSumCents : avgRawSumCents;
+  const avgCount = cleanCount > 0 ? cleanCount : avgRawCount;
 
   const stats: PriceHistoryStats = {
     avgPriceCents: avgCount > 0 ? Math.round(avgSumCents / avgCount) : null,

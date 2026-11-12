@@ -388,7 +388,7 @@ async function fetchCandidates(q: ParsedQuery, o: FetchOptions): Promise<Candida
     pub_ref AS (
       SELECT po.master_product_id AS mid, COUNT(*)::int AS n,
              percentile_cont(0.5) WITHIN GROUP (ORDER BY po.current_price_cents) AS med
-      FROM public_offers po GROUP BY po.master_product_id
+      FROM public_offers po WHERE NOT po.avg_excluded GROUP BY po.master_product_id
     ),
     po AS (
       SELECT o.id, o.master_product_id AS mid, o.network_id, n.name AS network_name, o.slug,
