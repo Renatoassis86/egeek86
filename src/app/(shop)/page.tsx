@@ -58,6 +58,7 @@ import { GamerSurvey } from '@/components/home/gamer-survey';
 import { Package, Store, Layers, LineChart, TrendingDown as TrendingDownIcon } from 'lucide-react';
 import { StatTile } from '@/components/ui/stat-tile';
 import { SecaoPlusHome } from '@/components/plus/secao-plus-home';
+import { FaixasPlusHome } from '@/components/plus/faixas-plus-home';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,6 +102,9 @@ export default async function HomePage() {
       </Suspense>
       <Suspense fallback={null}>
         <SecaoPlusHome />
+      </Suspense>
+      <Suspense fallback={null}>
+        <FaixasPlusHome />
       </Suspense>
       <SurveySection surveyData={surveyData} />
       <IndicatorsSection metrics={metrics} />

@@ -244,3 +244,34 @@ export async function detalheDepartamento(vertical: string, slug: string): Promi
   const porLoja = todos.filter((v) => (vistos.has(v.rede) ? false : (vistos.add(v.rede), true)));
   return { master, porLoja, vendedoresLista: todos.slice(0, 10) };
 }
+
+/**
+ * Melhores achados de uma loja Plus para a home: menores preços do momento (1 linha por master), mesma base de
+ * `listarDepartamento` (porteiro aprovado, oferta clicável checada nas últimas horas), só com foto real do anúncio.
+ * Sem mediana, sem histórico, sem selo.
+ */
+export async function destaquesDepartamento(vertical: string, limite = 8): Promise<CartaoDepartamento[]> {
+  assertDepartamento(vertical);
+  const lim = Math.max(1, Math.min(12, Math.trunc(limite) || 8));
+  const rows = await db.execute<RowLista>(sql`
+    WITH ${departamentoClicaveisCtes(vertical)}
+    SELECT m.id, m.slug, m.name, m.gtin, m.mpn, m.manufacturer,
+           m.attributes -> 'vertical' -> 'catalogAttributes' AS cat,
+           m.default_images ->> 0 AS imagem,
+           MIN(sb.current_price_cents) AS min_cents,
+           COUNT(*) AS vendedores,
+           0 AS vendedores_ml,
+           NULL::numeric AS mediana,
+           (array_agg(sb.last_checked_at ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS verificado_em,
+           (array_agg(sb.network_name ORDER BY sb.current_price_cents ASC, sb.last_checked_at DESC))[1] AS loja_menor,
+           1 AS total
+    FROM seller_best sb
+    INNER JOIN master_products m ON m.id = sb.master_product_id
+    WHERE ${verticalSql('m', vertical)}
+      AND COALESCE(m.default_images ->> 0, '') ~* '^https?://'
+    GROUP BY m.id
+    ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC
+    LIMIT ${lim}
+  `);
+  return rows.map(mapCartao);
+}
