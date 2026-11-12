@@ -30,6 +30,8 @@ export const SEND_BUDGET_MS = 38_000;
 export const SEND_MIN_WINDOW_MS = 14_000;
 /** Teto absoluto do ciclo (maxDuration da rota = 60 s; um envio em andamento pode levar até ~12 s com reconferência e cartão). */
 export const CYCLE_HARD_CAP_MS = 46_000;
+/** Orçamento da detecção (P0 2026-11-12): passou disso, o ciclo NÃO aborta; envia a partir das propostas já gravadas (modo degradado). */
+export const DETECT_BUDGET_MS = 22_000;
 /** Teto de segurança de voltas por execução (não é teto diário: a próxima execução continua de onde parou). */
 export const MAX_SENDS_PER_RUN = 60;
 /** Linhas lidas da fila por execução (fila acumulada + novas). */
@@ -149,6 +151,24 @@ export async function pickShadowWinner(detection: DetectionResult, now: Date): P
   return null;
 }
 
+/** Detecção vazia para o modo degradado: só o histórico de envios (necessário ao espaçamento e aos limites) e a configuração mínima. */
+async function degradedDetection(now: Date): Promise<DetectionResult> {
+  const h = await loadSentHistory('tg', now).catch(() => ({ records: [], source: 'nenhum (tabela ausente)' as const }));
+  return {
+    generatedAt: now.toISOString(),
+    mode: 'dry',
+    config: { verticals: [], maxAgeMin: 0, eventWindowHours: 0, adTag: getAdTag(), amazonMaxAgeMin: 0, amazonPaused: false, amazonLastRunAt: null },
+    counts: { productsEvaluated: 0, candidates: 0, auto: 0, review: 0, notSendable: 0, blocked: 0 },
+    cupom: { enabled: false, poolProducts: 0, generated: 0, sendable: 0, byStore: {}, barred: {} },
+    candidates: [],
+    blocked: [],
+    plan: applyLimits([], h.records, now),
+    history: h.records,
+    historySource: h.source,
+    warnings: ['Modo degradado: a detecção falhou ou passou do orçamento; o ciclo enviou a partir da fila já gravada.'],
+  };
+}
+
 export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<CycleSummary> {
   const started = new Date();
   const now = deps.now ?? started;
@@ -169,17 +189,32 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     summary.members = { ...members.brake, counted: members.counted, ...(members.error ? { error: members.error } : {}) };
 
     const tDetect0 = Date.now();
-    const detection = await detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag() });
+    // Falha ou estouro da detecção (timeout do pool 'live', contenção do banco) não zera o ciclo: segue em modo degradado, sem gravar novas
+    // propostas, e o laço de envio trabalha a fila já aprovada/persistida (cada linha ainda passa pela reconferência ao vivo antes de sair).
+    let degraded: string | null = null;
+    let detection: DetectionResult;
+    try {
+      const run = detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag() });
+      run.catch(() => undefined); // evita rejeição não tratada se a corrida abaixo já terminou
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const limit = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error(`detecção passou de ${DETECT_BUDGET_MS / 1000} s`)), DETECT_BUDGET_MS); });
+      try { detection = await Promise.race([run, limit]); } finally { if (timer) clearTimeout(timer); }
+    } catch (e) {
+      degraded = e instanceof Error ? e.message.slice(0, 200) : 'erro na detecção';
+      console.error('[group-messages] detecção falhou; ciclo segue em modo degradado:', degraded);
+      detection = await degradedDetection(now);
+    }
     const tDetect = Date.now() - tDetect0;
+    if (degraded) summary.degraded = degraded;
     summary.counts = detection.counts;
     // Gatilho CUPOM: quantas mensagens de cupom foram geradas neste ciclo (e por loja), e por que ofertas com leitura foram barradas na agulha.
     summary.cupom = detection.cupom;
     summary.warnings = detection.warnings;
     summary.amazon = { paused: detection.config.amazonPaused, lastRunAt: detection.config.amazonLastRunAt };
 
-    const shadowWinner = state === 'shadow' ? await pickShadowWinner(detection, now) : null;
+    const shadowWinner = state === 'shadow' && !degraded ? await pickShadowWinner(detection, now) : null;
     const tPersist0 = Date.now();
-    summary.persisted = await persistProposals(detection, { state, shadowWinner });
+    summary.persisted = degraded ? { inserted: 0, skipped: 0, byStatus: {} } : await persistProposals(detection, { state, shadowWinner });
     summary.timing = { preDetectMs: tDetect0 - started.getTime(), detectMs: tDetect, ...detection.timingMs, persistMs: Date.now() - tPersist0 };
     if (state === 'shadow') summary.shadow = { winner: shadowWinner, deferred: detection.plan.deferred.length, state: detection.plan.state };
 
@@ -246,7 +281,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
 
     if (v2) summary.rechecks = await runRechecks(now);
     await logRun(started, 'ok', {
-      state, timing: summary.timing, sendMs: (summary.sendRun as { ms?: number } | undefined)?.ms, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
+      state, degraded, timing: summary.timing, sendMs: (summary.sendRun as { ms?: number } | undefined)?.ms, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
       cupomGeradas: detection.cupom.generated, cupomEnviaveis: detection.cupom.sendable, cupomNoPool: detection.cupom.poolProducts, cupomPorLoja: detection.cupom.byStore,
       cupomBarradas: detection.cupom.barred, cupomEnviadas: (summary.sendRun as { cupomSent?: number } | undefined)?.cupomSent ?? 0,
     });

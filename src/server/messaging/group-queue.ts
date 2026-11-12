@@ -102,10 +102,17 @@ export async function listQueue(limit = 120): Promise<QueueRow[]> {
 /** Linhas do Telegram prontas para o cron escolher (reivindicáveis: sem trava, com tentativas sobrando). */
 export async function listPendingForSend(statuses: GroupStatus[], limit = 40): Promise<QueueRow[]> {
   if (!statuses.length || !(await groupMessagesV2Ready())) return [];
+  // P0 2026-11-12 (sentCount=0 com ~1.359 propostas): antes era 'ORDER BY created_at LIMIT 300'. As 300 mais antigas eram todas do Achado
+  // (AC, teto de 2/h e produto ja enviado em 24 h), todas adiadas pelo plano, e as G2/CUPOM/P* mais novas ficavam FORA da janela lida:
+  // o ciclo nao tinha o que enviar. Agora a janela e justa: rodizio por (gatilho, departamento), as mais antigas de cada grupo primeiro,
+  // com 'rn' como primeira chave de ordem. Nao ha teto de envio: so a leitura deixa de ser monopolizada por um unico gatilho bloqueado.
   const rows = await db.execute<Row>(sql`
-    SELECT * FROM group_messages
-    WHERE channel = 'tg' AND status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND claimed_at IS NULL AND attempts < 3
-    ORDER BY created_at LIMIT ${limit}::int
+    SELECT * FROM (
+      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical ORDER BY g.created_at) AS rn_fair
+      FROM group_messages g
+      WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
+    ) q
+    ORDER BY q.rn_fair, q.created_at LIMIT ${limit}::int
   `);
   return rows.map(mapRow);
 }

@@ -1,6 +1,6 @@
 import 'server-only';
 import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
-import { sql } from 'drizzle-orm';
+import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { avgExcludedFlagSql, inAverageSql } from '@/server/queries/public-offers';
@@ -338,15 +338,123 @@ export async function loadTipoSends24h(): Promise<Record<string, number>> {
   return out;
 }
 
+/** Linha da leitura única do pick: 'main' (candidatos por razão), 'achado' (sem envio em 24 h) ou 'cupom' (oferta com leitura de cupom recente). */
+interface PickBaseRow {
+  k: 'main' | 'achado' | 'cupom';
+  mid: string;
+  v: string;
+  r: number;
+  name: string;
+  plat: string | null;
+  oid: string | null;
+  ord: number;
+}
+
+/**
+ * Cache de curta duração da leitura base do pick (P0 2026-11-12). A leitura é só a LISTA de produtos candidatos; frescor, reputação, só novo e
+ * em linha, diversidade e cotas são reavaliados depois (loadFacts/evaluateProductV2/applyLimits) com dado novo, então um resultado de até 75 s
+ * não relaxa nenhuma regra. Chave estável (sem a hora): a hora do rodízio fica na entrada. Em erro/timeout da leitura, a última boa (até
+ * 10 min) é reaproveitada em vez de abortar o ciclo. Chamadas simultâneas na mesma instância dividem a mesma leitura.
+ */
+const PICK_CACHE_TTL_MS = 75_000;
+const PICK_STALE_MAX_MS = 600_000;
+const PICK_WAIT_WITH_STALE_MS = 14_000;
+const pickCache = new Map<string, { at: number; hourKey: string; rows: PickBaseRow[]; inflight?: Promise<PickBaseRow[]>; inflightHour?: string }>();
+export const pickCacheStats = { hits: 0, misses: 0, stale: 0 };
+
 export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eventWindowHours' | 'amazonMaxAgeMin'>> & { verticals: string[]; now: Date; maxProducts: number; achado?: boolean; cupom?: boolean; cupomStats?: CupomStats; cupomMemo?: CouponValidation }): Promise<string[]> {
-  const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
-  const evSince = new Date(o.now.getTime() - o.eventWindowHours * 3600_000).toISOString();
-  const day = addDays(spDay(o.now), -3);
-  const today = spDay(o.now);
-  const big = RULES.G5_MIN_OFFERS;
   const hourKey = o.now.toISOString().slice(0, 13); // rodízio: muda a cada hora
-  const liveCte = sql`
-    live AS (
+  const achadoOn = !!o.achado && o.verticals.length > 0;
+  const hasTable = achadoOn ? await groupMessagesTableExists() : false;
+  const key = JSON.stringify([o.verticals, o.maxAgeMin, o.amazonMaxAgeMin, o.eventWindowHours, achadoOn, hasTable, !!o.cupom, RULES.G5_MIN_OFFERS]);
+  const cur = pickCache.get(key);
+  let base: PickBaseRow[];
+  if (cur && cur.hourKey === hourKey && Date.now() - cur.at < PICK_CACHE_TTL_MS) {
+    pickCacheStats.hits++;
+    base = cur.rows;
+  } else if (cur?.inflight && cur.inflightHour === hourKey) {
+    // Leitura já em andamento nesta instância: divide-a; com uma anterior boa em mãos, só espera PICK_WAIT_WITH_STALE_MS por ela.
+    const hasStale = cur.rows.length > 0 && Date.now() - cur.at < PICK_STALE_MAX_MS;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const limit = hasStale ? new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('lenta')), PICK_WAIT_WITH_STALE_MS); }) : null;
+    try {
+      base = await (limit ? Promise.race([cur.inflight, limit]) : cur.inflight);
+    } catch (e) {
+      if (!hasStale) throw e;
+      pickCacheStats.stale++;
+      base = cur.rows;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  } else {
+    pickCacheStats.misses++;
+    const p = loadPickBase({ ...o, hourKey, hasTable, achadoOn });
+    const entry = cur ?? { at: 0, hourKey, rows: [] as PickBaseRow[] };
+    entry.inflight = p;
+    entry.inflightHour = hourKey;
+    pickCache.set(key, entry);
+    // A leitura que termina (mesmo depois de a corrida abaixo desistir) renova o cache para os ciclos seguintes.
+    const refreshed = p.then((rows) => { entry.at = Date.now(); entry.hourKey = hourKey; entry.rows = rows; return rows; });
+    refreshed.catch(() => undefined);
+    // A marca de 'em andamento' só cai quando a leitura de fato termina (não quando a espera desiste), para não abrir leituras em paralelo.
+    p.then(() => undefined, () => undefined).then(() => { if (entry.inflight === p) { entry.inflight = undefined; entry.inflightHour = undefined; } });
+    try {
+      // Havendo uma leitura anterior boa, espera a nova só até PICK_WAIT_WITH_STALE_MS; passou disso, usa a anterior (a nova segue em segundo plano).
+      if (entry.rows.length) {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const limit = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error('leitura base do pick lenta')), PICK_WAIT_WITH_STALE_MS); });
+        try { base = await Promise.race([refreshed, limit]); } finally { if (timer) clearTimeout(timer); }
+      } else base = await refreshed;
+    } catch (e) {
+      if (entry.rows.length && Date.now() - entry.at < PICK_STALE_MAX_MS) {
+        pickCacheStats.stale++;
+        console.error('[pick] leitura base falhou; reaproveitando a última boa (', Math.round((Date.now() - entry.at) / 1000), 's):', e instanceof Error ? e.message.slice(0, 120) : e);
+        base = entry.rows;
+      } else throw e;
+    }
+  }
+  const byOrd = (x: PickBaseRow, y: PickBaseRow) => x.ord - y.ord;
+  const main: PoolRow[] = base.filter((r) => r.k === 'main').sort(byOrd).map((r) => ({ mid: r.mid, v: r.v, r: r.r, name: r.name }));
+  const achadoRows: PoolRow[] = base
+    .filter((r) => r.k === 'achado')
+    .map((r) => ({ mid: r.mid, v: r.v, r: 5, name: r.name, ...(r.v === 'games' ? { grupo: `plat:${r.plat ?? 'unknown'}` } : {}) }));
+  const sends: Record<string, number> = await loadTipoSends24h().catch(() => ({}));
+
+  // CUPOM: produtos com oferta cuja leitura MAIS RECENTE de cupom e positiva (<= 120 min) e que PASSA na agulha agora. Entram no pool antes
+  // dos demais (cota CUPOM_POR_LOJA por loja, rodizio de tipo). A agulha roda aqui so para decidir quem entra; o fato definitivo e relido em loadFacts.
+  const cupomRows: PoolRow[] = [];
+  if (o.cupom) {
+    try {
+      const cr = base.filter((r) => r.k === 'cupom').sort(byOrd);
+      const val = await validateCouponOffers(cr.map((r) => String(r.oid)), o.now, 10, o.cupomMemo);
+      const seenMid = new Set<string>();
+      for (const r of cr) {
+        if (!val.facts.has(String(r.oid)) || seenMid.has(r.mid)) continue;
+        seenMid.add(r.mid);
+        cupomRows.push({ mid: r.mid, v: r.v, r: 0, name: r.name });
+      }
+      if (o.cupomStats) {
+        o.cupomStats.poolProducts = cupomRows.length;
+        for (const reason of val.misses.values()) o.cupomStats.barred[reason] = (o.cupomStats.barred[reason] ?? 0) + 1;
+      }
+    } catch {
+      cupomRows.length = 0; // erro de consulta na validacao: o pool segue sem cupom
+    }
+  }
+  return selecionarPool({ main, achado: achadoRows, hourKey, sends, achadoOn: !!o.achado, cupom: cupomRows }).slice(0, o.maxProducts);
+}
+
+/** UMA leitura: a varredura 'live' (materializada) alimenta o pool principal, o Achado e o Cupom (antes eram 3 varreduras de 2 a 31 s cada). */
+async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey: string; hasTable: boolean; achadoOn: boolean }): Promise<PickBaseRow[]> {
+  const run = async (withCupom: boolean): Promise<PickBaseRow[]> => {
+    const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
+    const evSince = new Date(o.now.getTime() - o.eventWindowHours * 3600_000).toISOString();
+    const day = addDays(spDay(o.now), -3);
+    const today = spDay(o.now);
+    const big = RULES.G5_MIN_OFFERS;
+    const hourKey = o.hourKey;
+    const liveCte = sql`
+    live AS MATERIALIZED (
       SELECT o.id, o.master_product_id AS mid, m.vertical AS v, o.network_id, o.current_price_cents AS p
       FROM affiliate_offers o
       INNER JOIN master_products m ON m.id = o.master_product_id
@@ -356,10 +464,9 @@ export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin'
         AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')}
         AND ${masterNoEscopoSql('m')}
     )`;
-  // Candidatos com RAZÃO de entrada (queda, movimento, abaixo da média, 2 redes, muitas ofertas). A cota por loja agora é feita em JS
-  // (selecionarPool: rodízio por tipo); aqui só um teto generoso por loja para não trazer o catálogo inteiro.
-  const rows = await db.execute<Row>(sql`
-    WITH ${liveCte},
+    // Candidatos com RAZÃO de entrada (queda, movimento, abaixo da média, 2 redes, muitas ofertas). A cota por loja é feita em JS
+    // (selecionarPool: rodízio por tipo); aqui só um teto generoso por loja para não trazer o catálogo inteiro.
+    const mainCte = sql`
     ev AS (
       SELECT DISTINCT e.master_product_id AS mid FROM price_min_events e
       WHERE e.source = 'live' AND e.at >= ${evSince}::timestamptz AND e.prev_min_cents IS NOT NULL AND e.min_cents < e.prev_min_cents
@@ -385,91 +492,86 @@ export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin'
     nets AS (
       SELECT mid FROM (SELECT mid, network_id, min(p) AS mn FROM live GROUP BY mid, network_id) x
       GROUP BY mid HAVING count(*) >= 2 AND min(mn) <= max(mn) * ${1 - RULES.G3_MIN_DIFF_PCT / 100}::numeric
-    )
-    ,
+    ),
     -- Fase de formação (lojas fora de games): sem estado diário a média vem das ofertas vivas; menor preço abaixo da média simples já qualifica.
     liveavg AS (
       SELECT mid FROM live WHERE v <> 'games' GROUP BY mid HAVING count(*) >= 3 AND min(p) < avg(p) * 0.999
-    )
-    SELECT q.mid, q.v, q.r, mp.name FROM (
-      SELECT u.mid, u.r, lv.v, row_number() OVER (PARTITION BY lv.v ORDER BY u.r, md5(u.mid::text || ${hourKey}::text)) AS rn
-      FROM (
-        SELECT mid, min(r) AS r FROM (
-          SELECT mid, 1 AS r FROM ev WHERE mid IN (SELECT mid FROM live)
-          UNION ALL SELECT mid, 1 FROM mv
-          UNION ALL SELECT mid, 2 FROM below
-          UNION ALL SELECT mid, 2 FROM liveavg
-          UNION ALL SELECT mid, 3 FROM nets
-          UNION ALL SELECT mid, 4 FROM bigp
-        ) x GROUP BY mid
-      ) u
-      INNER JOIN (SELECT DISTINCT mid, v FROM live) lv ON lv.mid = u.mid
-    ) q
-    INNER JOIN master_products mp ON mp.id = q.mid
-    WHERE q.rn <= (CASE WHEN q.v = 'games' THEN ${POOL.GAMES}::int ELSE 400 END)
-    ORDER BY q.r, md5(q.mid::text || ${hourKey}::text)
-  `);
-  const main: PoolRow[] = rows.map((r) => ({ mid: String(r.mid), v: String(r.v), r: Number(r.r), name: String(r.name) }));
-
-  // Base do ACHADO: produtos vivos fora de games sem envio nas últimas 24 h (qualquer gatilho). O juízo (link, tipo, histórico) é do avaliador.
-  let achadoRows: PoolRow[] = [];
-  let sends: Record<string, number> = {};
-  if (o.achado) {
-    if (o.verticals.length) {
-      const hasTable = await groupMessagesTableExists();
+    ),
+    mainq AS (
+      SELECT q.mid, q.v, q.r, mp.name, row_number() OVER (ORDER BY q.r, md5(q.mid::text || ${hourKey}::text)) AS ord FROM (
+        SELECT u.mid, u.r, lv.v, row_number() OVER (PARTITION BY lv.v ORDER BY u.r, md5(u.mid::text || ${hourKey}::text)) AS rn
+        FROM (
+          SELECT mid, min(r) AS r FROM (
+            SELECT mid, 1 AS r FROM ev WHERE mid IN (SELECT mid FROM live)
+            UNION ALL SELECT mid, 1 FROM mv
+            UNION ALL SELECT mid, 2 FROM below
+            UNION ALL SELECT mid, 2 FROM liveavg
+            UNION ALL SELECT mid, 3 FROM nets
+            UNION ALL SELECT mid, 4 FROM bigp
+          ) x GROUP BY mid
+        ) u
+        INNER JOIN (SELECT DISTINCT mid, v FROM live) lv ON lv.mid = u.mid
+      ) q
+      INNER JOIN master_products mp ON mp.id = q.mid
+      WHERE q.rn <= (CASE WHEN q.v = 'games' THEN ${POOL.GAMES}::int ELSE 400 END)
+    )`;
+    const parts: SQL[] = [sql`SELECT 'main'::text AS k, mid::text AS mid, v::text AS v, r::int AS r, name::text AS name, NULL::text AS plat, NULL::text AS oid, ord::int AS ord FROM mainq`];
+    const ctes: SQL[] = [liveCte, mainCte];
+    if (o.achadoOn) {
+      // Base do ACHADO: produtos vivos fora de games sem envio nas últimas 24 h (qualquer gatilho). O juízo (link, tipo, histórico) é do avaliador.
       // Games entra so SEM media calculada (menos de MED_MIN_OFFERS ofertas vivas fora da Amazon e sem estado diario de media); o resto de games segue G2/OK1/etc.
-      const ar = await db.execute<Row>(sql`
-        WITH ${liveCte}
-        SELECT DISTINCT l.mid, l.v, mp.name, mp.game_platform_gen AS plat FROM live l INNER JOIN master_products mp ON mp.id = l.mid
-        INNER JOIN affiliate_networks ln ON ln.id = l.network_id
-        WHERE (l.v <> 'games' OR (
-            (SELECT count(*) FROM live l2 INNER JOIN affiliate_networks n2 ON n2.id = l2.network_id WHERE l2.mid = l.mid AND n2.slug <> 'amazon') < ${RULES.MED_MIN_OFFERS}::int
-            OR NOT EXISTS (SELECT 1 FROM price_daily_state s WHERE s.master_product_id = l.mid AND s.day >= ${addDays(today, -3)}::date AND s.avg_cents IS NOT NULL)
-          ))
-          AND ln.slug <> 'amazon' ${hasTable ? sql`AND NOT EXISTS (
-          SELECT 1 FROM group_messages g WHERE g.master_product_id = l.mid AND g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - interval '24 hours'
-        )` : sql``}
-      `);
-      achadoRows = ar.map((r) => ({ mid: String(r.mid), v: String(r.v), r: 5, name: String(r.name), ...(String(r.v) === 'games' ? { grupo: `plat:${String(r.plat ?? 'unknown')}` } : {}) }));
+      ctes.push(sql`
+    achq AS (
+      SELECT DISTINCT l.mid, l.v, mp.name, mp.game_platform_gen AS plat FROM live l INNER JOIN master_products mp ON mp.id = l.mid
+      INNER JOIN affiliate_networks ln ON ln.id = l.network_id
+      WHERE (l.v <> 'games' OR (
+          (SELECT count(*) FROM live l2 INNER JOIN affiliate_networks n2 ON n2.id = l2.network_id WHERE l2.mid = l.mid AND n2.slug <> 'amazon') < ${RULES.MED_MIN_OFFERS}::int
+          OR NOT EXISTS (SELECT 1 FROM price_daily_state s WHERE s.master_product_id = l.mid AND s.day >= ${addDays(today, -3)}::date AND s.avg_cents IS NOT NULL)
+        ))
+        AND ln.slug <> 'amazon' ${o.hasTable ? sql`AND NOT EXISTS (
+        SELECT 1 FROM group_messages g WHERE g.master_product_id = l.mid AND g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - interval '24 hours'
+      )` : sql``}
+    )`);
+      parts.push(sql`SELECT 'achado'::text, mid::text, v::text, 5::int, name::text, plat::text, NULL::text, 0::int FROM achq`);
     }
-  }
-  sends = await loadTipoSends24h().catch(() => ({}));
-
-  // CUPOM: produtos com oferta cuja leitura MAIS RECENTE de cupom e positiva (<= 120 min) e que PASSA na agulha agora. Entram no pool antes
-  // dos demais (cota CUPOM_POR_LOJA por loja, rodizio de tipo). A agulha roda aqui so para decidir quem entra; o fato definitivo e relido em loadFacts.
-  let cupomRows: PoolRow[] = [];
-  if (o.cupom) {
-    try {
-      const cr = await db.execute<Row>(sql`
-        WITH ${liveCte}
-        SELECT l.id AS oid, l.mid, l.v, mp.name
-        FROM live l
-        INNER JOIN master_products mp ON mp.id = l.mid
-        INNER JOIN affiliate_networks nn ON nn.id = l.network_id
-        INNER JOIN LATERAL (
-          SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
-          WHERE r.offer_id = l.id AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
-          ORDER BY r.read_at DESC LIMIT 1
-        ) lr ON lr.pw IS NOT NULL
-        WHERE nn.slug <> 'amazon'
-        ORDER BY lr.read_at DESC LIMIT 300
-      `);
-      const val = await validateCouponOffers(cr.map((r) => String(r.oid)), o.now, 10, o.cupomMemo);
-      const seenMid = new Set<string>();
-      for (const r of cr) {
-        if (!val.facts.has(String(r.oid)) || seenMid.has(String(r.mid))) continue;
-        seenMid.add(String(r.mid));
-        cupomRows.push({ mid: String(r.mid), v: String(r.v), r: 0, name: String(r.name) });
-      }
-      if (o.cupomStats) {
-        o.cupomStats.poolProducts = cupomRows.length;
-        for (const reason of val.misses.values()) o.cupomStats.barred[reason] = (o.cupomStats.barred[reason] ?? 0) + 1;
-      }
-    } catch {
-      cupomRows = []; // sem a tabela offer_coupon_reads (migration 0035) ou erro de consulta: o pool segue sem cupom
+    if (withCupom) {
+      ctes.push(sql`
+    cupq AS (
+      SELECT l.id AS oid, l.mid, l.v, mp.name, row_number() OVER (ORDER BY lr.read_at DESC) AS ord
+      FROM live l
+      INNER JOIN master_products mp ON mp.id = l.mid
+      INNER JOIN affiliate_networks nn ON nn.id = l.network_id
+      INNER JOIN LATERAL (
+        SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
+        WHERE r.offer_id = l.id AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
+        ORDER BY r.read_at DESC LIMIT 1
+      ) lr ON lr.pw IS NOT NULL
+      WHERE nn.slug <> 'amazon'
+      ORDER BY lr.read_at DESC LIMIT 300
+    )`);
+      parts.push(sql`SELECT 'cupom'::text, mid::text, v::text, 0::int, name::text, NULL::text, oid::text, ord::int FROM cupq`);
     }
+    const rows = await db.execute<Row>(sql`WITH ${sql.join(ctes, sql`, `)} ${sql.join(parts, sql` UNION ALL `)}`);
+    return rows.map((r) => ({
+      k: String(r.k) as PickBaseRow['k'],
+      mid: String(r.mid),
+      v: String(r.v),
+      r: Number(r.r),
+      name: String(r.name),
+      plat: r.plat == null ? null : String(r.plat),
+      oid: r.oid == null ? null : String(r.oid),
+      ord: Number(r.ord),
+    }));
+  };
+  if (!o.cupom) return run(false);
+  try {
+    return await run(true);
+  } catch (e) {
+    // Sem a tabela offer_coupon_reads (migration 0035): o pool segue sem cupom, como antes.
+    const txt = e instanceof Error ? `${e.message} ${String((e as { cause?: unknown }).cause ?? '')}` : '';
+    if (/offer_coupon_reads|does not exist/i.test(txt)) return run(false);
+    throw e;
   }
-  return selecionarPool({ main, achado: achadoRows, hourKey, sends, achadoOn: !!o.achado, cupom: cupomRows }).slice(0, o.maxProducts);
 }
 
 /**
