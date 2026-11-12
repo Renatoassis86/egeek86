@@ -15,7 +15,7 @@ export const TICKET_ALTO_CENTS = 30_000;
 export const MULTIPLO_ANOMALIA = 10;
 /** R5 so dispara tambem com preco absoluto acima disto (centavos, R$50.000): sem isso, produto caro legitimo de tipo barato (cafeteira superautomatica, cooktop) seria tratado como erro de dado. */
 export const ANOMALIA_PRECO_ABSOLUTO_MIN_CENTS = 5_000_000;
-/** Sinal de demanda (R3): ofertas ativas >= 3 OU vendedores distintos >= 2. */
+/** (Aposentado em 2026-11-12, ver escopoCompra) Sinal de demanda (R3): ofertas ativas >= 3 OU vendedores distintos >= 2. */
 export const DEMANDA_MIN_OFERTAS = 3;
 export const DEMANDA_MIN_VENDEDORES = 2;
 /** Vendas totais do vendedor (porte do vendedor, NÃO demanda do item) só substituem o sinal em fones/mouse/headset. */
@@ -100,14 +100,9 @@ export function escopoCompra(e: EntradaEscopo): ResultadoEscopo {
   // R2 + R4: piso por tipo, com exceção de demanda observada.
   const piso = pisoCents(e.departamento, e.tipo);
   if (piso !== null && preco < piso && !(e.nOfertas >= EXCECAO_PISO_OFERTAS && e.nVendedores >= EXCECAO_PISO_VENDEDORES)) return fora('abaixo_do_piso');
-  // R3: sinal de demanda, só abaixo de R$300 e fora dos tipos isentos.
-  if (!isentoDeDemanda(e.departamento, e.tipo)) {
-    const sinal =
-      e.nOfertas >= DEMANDA_MIN_OFERTAS ||
-      e.nVendedores >= DEMANDA_MIN_VENDEDORES ||
-      (TIPOS_VENDAS_AUXILIAR.has(chave) && (e.maxVendasVendedor ?? 0) >= VENDAS_VENDEDOR_AUXILIAR);
-    if (!sinal) return fora('sem_demanda');
-  }
+  // R3 (sinal de demanda: >= 3 ofertas OU >= 2 vendedores) FOI APOSENTADA em 2026-11-12 por ordem do dono: "produto unico NAO e motivo para nao traze-lo".
+  // Nenhum minimo de ofertas/vendedores barra o produto (cadastro, aprovacao ou vitrine). Constantes DEMANDA_* seguem exportadas so por compatibilidade.
+  void isentoDeDemanda; void TIPOS_VENDAS_AUXILIAR;
   return ok();
 }
 

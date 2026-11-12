@@ -31,17 +31,23 @@ export async function carregarIndiceDedup(sql: Sql, vertical: string): Promise<I
 export async function criarMasterPlus(
   sql: Sql,
   p: PropostaMaster,
-  o: { imageUrl: string | null; itemId: string; sugestao: 'approved' | 'review'; motivo: string; runId: string | null }
+  o: { imageUrl: string | null; itemId: string; sugestao: 'approved' | 'review'; motivo: string; runId: string | null; aprovarAuto?: boolean }
 ): Promise<string> {
   const now = new Date().toISOString();
-  const attributes = {
-    catalogGate: reviewGateFor(
+  const gateRevisao = reviewGateFor(
       {
         verdict: o.sugestao, category: o.sugestao === 'approved' ? 'ok' : 'unverified',
         reason: o.sugestao === 'approved' ? `evidencia_positiva:${p.keyKind}_shopee` : 'chave_fraca_titulo_shopee', matched: null, version: VERTICAL_GATE_VERSION, vertical: p.loja,
       } as Parameters<typeof reviewGateFor>[0],
       now
-    ),
+    );
+  // PRODUTO UNICO E BEM-VINDO (dono, 2026-11-12): chave forte + porteiro/escopo aprovaveis (decidirMasterNovo) = master ja nasce APROVADO, mesmo com uma so
+  // oferta. Reversivel: `previousVerdict`/`approvedBy` identificam o lote; a reversao do run (desfazerCobertura) apaga o master sem oferta. Chave fraca nunca chega aqui.
+  const catalogGate = o.aprovarAuto && o.sugestao === 'approved'
+    ? { ...gateRevisao, verdict: 'approved', category: 'ok', reason: 'aprovado_automatico:produto_unico_chave_forte', approvedBy: 'auto:shopee-cobertura', approvedAt: now, previousVerdict: 'review' }
+    : gateRevisao;
+  const attributes = {
+    catalogGate,
     vertical: {
       segment: p.segmento, identityKey: p.chave, keyKind: p.keyKind, domainId: null, parentId: null, gtins: p.gtin ? [p.gtin] : [], source: 'cobertura-shopee',
       titleDerived: true, seededAt: now, catalogAttributes: p.catalogAttributes,

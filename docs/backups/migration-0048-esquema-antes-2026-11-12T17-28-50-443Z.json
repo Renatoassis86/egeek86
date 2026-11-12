@@ -1,0 +1,152 @@
+{
+  "tabela": "affiliate_offers",
+  "linhas": 32462,
+  "colunas": [
+    {
+      "column_name": "id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "master_product_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "network_id",
+      "data_type": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "title",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "slug",
+      "data_type": "USER-DEFINED",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "affiliate_url",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "image_url",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "store_name",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "current_price_cents",
+      "data_type": "bigint",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "currency",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "status",
+      "data_type": "USER-DEFINED",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "highlight_note",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "published_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "created_by",
+      "data_type": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "external_ref",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "last_checked_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "seller_id",
+      "data_type": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "last_price_change_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "previous_price_cents",
+      "data_type": "bigint",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "affiliate_link_pending",
+      "data_type": "boolean",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "consecutive_miss_count",
+      "data_type": "integer",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "quarantined_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "last_price_confirmed_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "external_item_id",
+      "data_type": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "vertical",
+      "data_type": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "column_name": "avg_excluded_at",
+      "data_type": "timestamp with time zone",
+      "is_nullable": "YES"
+    },
+    {
+      "column_name": "avg_excluded_reason",
+      "data_type": "text",
+      "is_nullable": "YES"
+    }
+  ],
+  "rollback": "drizzle/migrations/0048_oferta_variacao_preco.rollback.sql"
+}

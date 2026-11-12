@@ -75,6 +75,14 @@
     {
       "path": "/api/cron/group-messages",
       "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/cron/cobertura-shopee?apply=1&pages=3&maxCalls=45&maxDuvidas=15&maxMasters=12",
+      "schedule": "22,52 * * * *"
+    },
+    {
+      "path": "/api/cron/aprovacao-auto?lote=60",
+      "schedule": "12-52/10 * * * *"
     }
   ]
 }

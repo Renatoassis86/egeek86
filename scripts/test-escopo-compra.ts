@@ -40,19 +40,19 @@ dentro('ssd R$150 sem piso', e('tecnologia', 'ssd-hd', 150, 3, 2));
 dentro('bola R$25 com 5 ofertas e 3 vendedores', e('esporte', 'bola', 25, 5, 3));
 fora('bola R$25 com 5 ofertas e 2 vendedores', e('esporte', 'bola', 25, 5, 2), 'abaixo_do_piso');
 // R3 demanda só abaixo de R$300
-fora('halter R$80, 1 oferta e 1 vendedor', e('esporte', 'halter-peso', 80, 1, 1), 'sem_demanda');
+dentro('halter R$80, 1 oferta e 1 vendedor (produto unico e bem-vindo)', e('esporte', 'halter-peso', 80, 1, 1));
 dentro('halter R$80, 3 ofertas', e('esporte', 'halter-peso', 80, 3, 1));
 dentro('halter R$80, 2 vendedores', e('esporte', 'halter-peso', 80, 2, 2));
-fora('ssd R$150, 1 oferta', e('tecnologia', 'ssd-hd', 150, 1, 1), 'sem_demanda');
+dentro('ssd R$150, 1 oferta (produto unico)', e('tecnologia', 'ssd-hd', 150, 1, 1));
 dentro('fone R$120 vendedor grande, 1 oferta (só fones/mouse/headset)', e('eletroeletronicos', 'fones', 120, 1, 1, { maxVendasVendedor: 1500 }));
-fora('ssd R$150 vendedor grande NÃO vale', e('tecnologia', 'ssd-hd', 150, 1, 1, { maxVendasVendedor: 9000 }), 'sem_demanda');
-fora('fone R$120 vendedor pequeno', e('eletroeletronicos', 'fones', 120, 1, 1, { maxVendasVendedor: 3 }), 'sem_demanda');
+dentro('ssd R$150 vendedor grande, 1 oferta', e('tecnologia', 'ssd-hd', 150, 1, 1, { maxVendasVendedor: 9000 }));
+dentro('fone R$120 vendedor pequeno, 1 oferta', e('eletroeletronicos', 'fones', 120, 1, 1, { maxVendasVendedor: 3 }));
 // ticket alto nunca barrado (1 oferta, 1 vendedor)
 for (const [d, t, p] of [['eletroeletronicos', 'smart-tv', 2670], ['eletrodomesticos', 'geladeira-freezer', 3356], ['tecnologia', 'notebook', 3500], ['impressao3d', 'impressoras', 1800], ['esporte', 'esteira-eliptico', 1832], ['eletroeletronicos', 'outros', 300], ['esporte', 'tenis-calcado', 450]] as const)
   dentro(`ticket alto ${t} R$${p}`, e(d, t, p, 1, 1));
 // Fronteira de R$300
 dentro('R$300 exato com 1 oferta', e('tecnologia', 'ssd-hd', 300, 1, 1));
-fora('R$299,99 com 1 oferta', e('tecnologia', 'ssd-hd', 299.99, 1, 1), 'sem_demanda');
+dentro('R$299,99 com 1 oferta', e('tecnologia', 'ssd-hd', 299.99, 1, 1));
 // R5 anomalia: >10x a mediana do tipo => fora + revisão (vale até para ticket alto)
 {
   const r = escopoCompra(e('eletrodomesticos', 'lavadora-secadora', 1_800_000, 2, 2, { medianaTipoCents: R(2500) }));

@@ -44,6 +44,12 @@ const MIN_VENDAS = 0;
 const MIN_NOTA = 4;
 const MAX_POR_MASTER = 3;
 
+/** Chave de desligamento da aprovacao automatica (APROVACAO_AUTO=off): masters novos voltam a nascer em revisao. */
+const aprovacaoAutoLigada = () => (process.env.APROVACAO_AUTO ?? '').trim().toLowerCase() !== 'off';
+
+export const CHAVE_PAUSA_COBERTURA = 'cobertura_shopee_pausa_ate';
+const PAUSA_APOS_RATE_LIMIT_MIN = 45;
+
 const money = (c: number | null) => (c == null ? 'n/d' : `R$ ${(c / 100).toFixed(2)}`);
 
 export interface OpcoesCobertura {
@@ -86,7 +92,7 @@ const novoStats = (): StatsLoja => ({ lidos: 0, jaCadastrados: 0, descartes: {},
 export interface ResultadoCobertura {
   modo: 'dry-run' | 'apply';
   runId: string | null;
-  parou: MotivoParada | 'erro_interno' | 'orcamento_horario_esgotado';
+  parou: MotivoParada | 'erro_interno' | 'orcamento_horario_esgotado' | 'pausa_apos_rate_limit';
   erroApi: { kind: string; code: number | null; message: string } | null;
   chamadas: { usadas: number; teto: number; ultimaHora: number; erros: number };
   fontes: Array<{ chave: string; loja: string; paginaLida: number | null; itens: number; temProxima: boolean }>;
@@ -165,6 +171,16 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
   if (teto <= 0) {
     res.parou = 'orcamento_horario_esgotado';
     return res;
+  }
+  // Depois de um 10030 a janela precisa passar: nao repete a chamada logo na sequencia (parecer do integrador-apis, 2026-11-12).
+  if (o.apply) {
+    const [pz] = await sql<{ value: unknown }[]>`select value from system_config where key = ${CHAVE_PAUSA_COBERTURA}`.catch(() => []);
+    const ate = Date.parse(String(typeof pz?.value === 'string' ? pz.value.replace(/"/g, '') : pz?.value ?? ''));
+    if (Number.isFinite(ate) && ate > Date.now()) {
+      res.parou = 'pausa_apos_rate_limit';
+      res.avisos.push(`pausa_ate:${new Date(ate).toISOString()}`);
+      return res;
+    }
   }
 
   const [net] = await sql<{ id: string }[]>`select id from affiliate_networks where slug = 'shopee' limit 1`;
@@ -290,7 +306,7 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
     if (rs.tipo === 'existente') return rs.masterId;
     let id: string;
     if (rs.plus) {
-      id = await criarMasterPlus(sql, rs.plus, { imageUrl: node.imageUrl, itemId: node.itemId, sugestao: rs.sugestao ?? 'review', motivo: rs.motivo, runId });
+      id = await criarMasterPlus(sql, rs.plus, { imageUrl: node.imageUrl, itemId: node.itemId, sugestao: rs.sugestao ?? 'review', motivo: rs.motivo, runId, aprovarAuto: rs.oferta === 'ativa' && aprovacaoAutoLigada() });
       dedups.get(loja)?.adicionar(rs.plus, id);
     } else {
       id = await criarMasterGame({ ...rs.jogo!, itemId: node.itemId, imageUrl: node.imageUrl, runId });
@@ -454,13 +470,18 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
           st.criadas++;
           st.entram++;
         } catch (e) {
-          if ((e as { parada?: MotivoParada }).parada) { res.parou = (e as { parada: MotivoParada }).parada; break laco; }
+          if ((e as { parada?: MotivoParada }).parada) { res.parou = (e as { parada: MotivoParada }).parada; cursor[fonte.chave] = cur; break laco; } // pagina inacabada: o cursor NAO avanca (nao perde os itens restantes)
           descarta(fonte.loja, 'gravacao:erro');
           log(`ERRO ao criar ${node.itemId}: ${(e as Error).message.slice(0, 120)}`);
         }
       }
     }
     if (o.apply) await gravarCursor(sql, cursor).catch((e) => res.avisos.push(`cursor_nao_gravado:${(e as Error).message.slice(0, 80)}`));
+    if (o.apply && res.parou === 'rate_limit') {
+      const ate = new Date(Date.now() + PAUSA_APOS_RATE_LIMIT_MIN * 60_000).toISOString();
+      await sql`insert into system_config (key, value, description) values (${CHAVE_PAUSA_COBERTURA}, ${JSON.stringify(ate)}::text::jsonb, 'Cobertura Shopee em pausa ate este instante (apos 10030).')
+                on conflict (key) do update set value = excluded.value, updated_at = now()`.catch(() => undefined);
+    }
   } catch (e) {
     res.parou = res.parou ?? 'erro_interno';
     await fecharRun(e as Error);
