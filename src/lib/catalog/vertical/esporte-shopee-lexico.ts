@@ -270,3 +270,24 @@ export const PISO_PRECO_CENTAVOS: Record<string, number> = {
  * (rota com ?probe=1 mostra o que a API devolve). Enquanto vazio, a descoberta é só por palavra-chave.
  */
 export const CATEGORIAS_MEDIDAS: Array<{ catId: string; segmento: string; nota: string }> = [];
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Chuteira, chinelo/slide e sandália (pedido do dono, 2026-11-12: "todos os tipos de calçado em Esporte"). Mesmo grupo 'tenis' do léxico
+// (a linha identifica o modelo; o segmento — tênis, chuteira ou sandalia-chinelo — vem do substantivo do título). Só linhas de produto
+// reais e conhecidas do fabricante; o que não está aqui cai em `sem_modelo` e aparece no dry-run para o guardião ampliar.
+// ---------------------------------------------------------------------------------------------------------------------
+if (!MARCAS.some((m) => m.key === 'havaianas')) MARCAS.push({ key: 'havaianas', display: 'Havaianas', aliases: ['havaianas'] });
+
+export const LINHAS_CALCADO_EXTRA: Record<string, string[]> = {
+  nike: ['mercurial+|mercurial vapor+|mercurial superfly+', 'phantom+|phantom gx+|phantom luna+', 'tiempo+|tiempo legend+', 'zoom vapor+', 'zoom superfly+', 'streetgato', 'lunar gato', 'premier+', 'victori one', 'benassi', 'offcourt+', 'calm slide|calm'],
+  adidas: ['predator+', 'x crazyfast+', 'x speedportal+', 'copa pure+|copa+', 'f50+', 'deportivo+', 'goletto+', 'kaiser+', 'adilette+', 'adissage', 'adilette comfort|comfort slide'],
+  puma: ['future+', 'ultra+', 'king+', 'leadcat+', 'popcat+', 'cool cat+', 'divecat+'],
+  mizuno: ['morelia+', 'rebula+', 'alpha+', 'monarcida+'],
+  umbro: ['score', 'velocita+', 'neo+', 'speed+', 'cypher', 'pro 5', 'toccare+', 'class'],
+  penalty: ['storm+', 'max 1000', 'digital+', 'matis+', 'rocket+', 'brasil 70', 'lider', 'atf+', 'campo'],
+  havaianas: ['top', 'brasil', 'slim', 'tradicional', 'you', 'urban', 'flash', 'hype'],
+};
+for (const [m, l] of Object.entries(LINHAS_CALCADO_EXTRA)) {
+  LINHAS[m] ??= {};
+  LINHAS[m].tenis = [...(LINHAS[m].tenis ?? []), ...l];
+}

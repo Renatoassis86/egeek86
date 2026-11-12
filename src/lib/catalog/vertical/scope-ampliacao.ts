@@ -15,6 +15,7 @@ const SPORT_BRANDS =
 export const LEX_AMPLIACAO: Record<string, SegmentLexiconData> = {
   // ---- esporte ----
   tenis: lex(['tenis', 'sapatenis', 'tenisinho'], ['palmilha', 'palmilhas', 'cadarco', 'cadarcos', 'limpador', 'kit de limpeza', 'impermeabilizante', 'protetor', 'protetores', 'forma', 'esticador', 'saco', 'bolsa', 'sapateira', 'desodorante', 'spray', 'escova', 'cola', 'solado', 'salto', 'biqueira', 'cabedal', 'caixa', 'shampoo', 'detergente', 'esponja', 'apagador']),
+  'sandalia-chinelo': lex(['chinelo', 'chinelos', 'sandalia', 'sandalias', 'slide', 'slides', 'papete', 'papetes', 'rasteira'], ['palmilha', 'solado', 'sapateira', 'suporte', 'organizador', 'cabide', 'saco', 'bolsa', 'limpador', 'tira avulsa', 'tiras', 'cordao', 'pantufa', 'pantufas', 'descartavel', 'hotel', 'spa', 'ortopedico', 'ortopedica']),
   chuteira: lex(['chuteira', 'chuteiras', 'society', 'futsal', 'tenis'], ['trava', 'travas', 'cadarco', 'palmilha', 'bolsa', 'sapateira', 'saco', 'protetor', 'limpador', 'kit', 'caneleira', 'meiao', 'meia', 'fita', 'capa', 'mochila', 'bomba', 'tornozeleira', 'sacola', 'porta']),
   'camisa-de-time': lex(['camisa', 'camiseta', 'jersey', 'uniforme', 'regata', 'agasalho', 'jaqueta', 'blusa', 'moletom'], ['patch', 'emblema', 'escudo', 'bordado', 'aplique', 'adesivo', 'cabide', 'moldura', 'quadro', 'display', 'expositor', 'capa', 'saco', 'estojo', 'short', 'shorts', 'calcao', 'meiao', 'meia', 'bermuda']),
   'meia-esportiva': lex(['meia', 'meias', 'meiao', 'meioes', 'sock', 'socks'], ['porta', 'cabide', 'organizador', 'suporte', 'saco', 'caixa', 'gancho', 'tape', 'fita', 'prendedor', 'elastico']),
@@ -73,6 +74,7 @@ const MERCH = 'bolsa|chaveiro|caneca|almofada|toalha|bandeira|copo|boneco|miniat
 
 export const NICHO_AMPLIACAO: Record<string, { require?: RegExp; forbid?: RegExp }> = {
   tenis: { forbid: /\b(chinelo|chinelos|sandalia|sandalias|bota|botas|coturno|salto|social|pantufa|pantufas|sapato|sapatilha|rasteira|mocassim|bebe|recem nascido)\b/ },
+  'sandalia-chinelo': { require: /\b(nike|adidas|puma|olympikus|fila|mizuno|umbro|kappa|under armour|new balance|reebok|skechers|rider|havaianas|asics|hoka|oakley|mormaii|penalty|topper|crocs)\b/, forbid: /\b(salto|plataforma feminina|anabela|infantil bebe|bebe|recem nascido|pantufa|pantufas|bota|botas|coturno|social|mocassim)\b/ },
   chuteira: { forbid: /\b(trava avulsa|travas|chinelo|sandalia|bola|meiao|caneleira)\b/ },
   'camisa-de-time': {
     require: /\b(camisa|camiseta|jersey|regata|agasalho|jaqueta|blusa|moletom)\b/,

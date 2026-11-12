@@ -35,7 +35,7 @@ flowchart TD
   end
 
   subgraph EXTR[2 Extracao]
-    CRON[Crons Vercel, 21 entradas: collect-prices, collect-shopee, cobertura-shopee, collect-vertical x6, semear, discover, fila-api-oficial, fila-classificacao]
+    CRON[Crons Vercel, 22 entradas: collect-prices, collect-shopee, cobertura-shopee, discover-shopee-esporte (27 * * * *, calçados, 2026-11-12), collect-vertical x6, semear, discover, fila-api-oficial, fila-classificacao]
     LOOPS[Lacos nas abas: Amazon, links ML, cupom ML, cupom Amazon e Shopee]
     ING[Rotas ingest com token e origem fixa]
   end
@@ -178,7 +178,7 @@ Tipos: **E** extração, **C** catálogo/identidade, **P** preço, **M** mensage
 | N64 | Canal Destaques | M | integrador-apis | candidatas de degrau 4 e 5 | segundo `sendMessage` isolado em `TELEGRAM_DESTAQUES_CHAT_ID`, resultado em `candidate.destaques` | dentro do N23 | Q06 | R-44e; desligado sem a variável; **criar o canal e pôr o bot é pendência do dono** |
 | N65 | Laço de promoções da Amazon (`amazon-promocoes.js`) | E | agente-cupons | páginas `/promotion/psp/<ID>` lidas na aba logada (iframe oculto de mesma origem) | `POST /api/ingest/amazon-promocoes` -> `coupon_items` (escopo `produto`), `asins_novos` em `collector_runs.meta`, batimento `cupons-heartbeat?rede=amazon` | contínuo; `cicloMin` 20 (padrão do script) | Q09 | R-02, R-30, R-37; sem validade lida nada é gravado; Prime, quantidade e seguir a loja não geram cupom. **Estado verificado no repositório em 2026-11-12: arquivos ainda não commitados (agente finalizando); NÃO está no ar** |
 
-Rotas agendáveis **fora** do `vercel.json` (`ampliar-amostra-shopee`, `discover-shopee-esporte`, `import-shopee-conversions`, `loja-teste`): sem agendador conhecido e sem dono; decisão do dono pendente (FM-31, seção 9 item 10). Enquanto isso valem como manuais. A `cobertura-shopee` saiu dessa lista em 905e499 (N62).
+Rotas agendáveis **fora** do `vercel.json` (`ampliar-amostra-shopee`, `import-shopee-conversions`, `loja-teste`; `discover-shopee-esporte` foi agendada em 2026-11-12 a `27 * * * *` para os calçados, ver FM-54): sem agendador conhecido e sem dono; decisão do dono pendente (FM-31, seção 9 item 10). Enquanto isso valem como manuais. A `cobertura-shopee` saiu dessa lista em 905e499 (N62).
 
 ---
 
@@ -375,6 +375,7 @@ Numeradas, sem contradição entre si. Quando dois capítulos divergiam, a regra
 |---|---|---|
 | R-35 | **Uma imagem, um lugar** em `public/images/` (`grep` pelo nome antes de reutilizar). | CÓDIGO (uso repetido só em metadado) |
 | R-36 | Sem a palavra "afiliado" na interface do cliente; aviso de comissão só com `CommissionNotice` aprovado. Lojas Plus aparecem como "Espaço Geek Plus", sem selo nem média até 27/11. Cantos retos. | VIOLADA em `/entrar` (FM-22) |
+| R-46 | **Cor de fundo por loja nos cartões de mensagem (dono, 2026-11-12; ata `2026-11-12-calcados-afiliacao-cores`).** Fundo escuro próprio por departamento em `src/lib/pricing/cor-loja.ts` (Games `#2B1760`, Impressão 3D `#0B3D40`, Tecnologia `#0F2B6B`, Livros `#4D1239`, Casa `#4D2D10`, Eletrônicos `#33363D`, Esporte `#104522`); contraste AA do texto creme medido em `scripts/test-cor-loja.ts`; a régua de calor continua em faixa e selo saturados no topo. Flag `CARD_COR_LOJA=0` volta ao fundo único `#0B0908`. Só o cartão de oferta (`offer-card.tsx`); gráfico de preço e front web ficam para depois. | CÓDIGO (flag) |
 | R-39 | Todo dado mostrado informa de quando é; falha de leitura é "indisponível", nunca `0`. | parcial |
 | R-40 | Toda página admin chama `await requireAdmin()` na própria página, não só no layout. | VIOLADA em 6 páginas (FM-21) |
 
@@ -520,6 +521,8 @@ Consolidado dos seis capítulos e deduplicado (a mesma falha citada em vários c
 | FM-51 | `/inteligencia-gamer` segue no ar e a home mantém o botão "Acessar Portal Inteligência" e a seção "Observatório Gamer", apesar de o menu ter sido limpo | decisão 2 da seção 9 | engenheiro-frontend + dono | retirar a seção da home e a rota, ou trocar por artigos reais com fonte (cuidar de R-35: a imagem da seção) | #23 | aguardando o dono |
 | FM-52 | Loop de promoções da Amazon (N65) com arquivos não commitados (`public/loops/amazon-promocoes.js`, `scripts/chrome/amazon-promocoes.js`, `scripts/test-amazon-promocoes.ts`, `src/app/api/ingest/amazon-promocoes/`, `src/lib/coupons/amazon-promocoes.ts`, `src/server/coupons/amazon-promocoes.ts`) e `src/server/messaging/coupon-lookup.ts` alterado e não commitado | verificação de 2026-11-12 | agente-cupons | o agente finaliza, testa em simulação (`enviar:false`) e commita; o vigia injeta só depois; atualizar N65 | #7 | em andamento |
 | FM-53 | Valor atual na Vercel de `GROUP_REGUA_PCT_MIN`, `GROUP_REGUA_LOJAS`, `GROUP_AC_POR_HORA`, `APROVACAO_AUTO` e `TELEGRAM_DESTAQUES_CHAT_ID` não lido por esta atualização; o escopo "7 lojas" vem do operador | R-44, R-45 | engenheiro-infra-sre | ler os valores na Vercel e gravá-los na seção 11 e no `.env.example` | #13 | aberta |
+| FM-54 | Calçados em Esporte (fila #39, 2026-11-12): antes 3 masters de chuteira no ML, 0 tênis, 0 Shopee, 1 Amazon. Segmento ML `sandalia-chinelo` (domínio `MLB-SANDALS_AND_CLOGS` medido) criado; Shopee aceita `chuteira` e `sandalia-chinelo` e a rota `discover-shopee-esporte` foi agendada (`27 * * * *`, `terms=6 pages=2 maxCalls=40 maxMasters=12 maxOffers=60 link=offer`, masters em `review`); tênis ML rende pouco porque o catálogo oficial devolve 404 sem vendedor (49 de 49 no dry-run); Amazon segue por coleta assistida | c1 | engenheiro-coleta + guardiao-catalogo | conferir em 24 h masters de calçado por rede (`scripts/medir-calcados.ts`) e a 1ª execução da Shopee em `collector_runs` | #39 | aberta |
+| FM-55 | Afiliação a lojas de calçado (fila #40): quase tudo na Awin (Adidas, Dafiti, Mizuno, Nike, Centauro, Puma, ASICS); feed/API não confirmado sem conta aprovada; cadastro, termos e chave do feed são do dono (passos em `docs/03-metodologia/AFILIACAO_CALCADOS.md`) | c1 | dono + integrador-apis | dono cria conta Awin PJ e pede adesão; depois o time constrói a ingestão do feed | #40 | aguardando o dono |
 | FM-16 | Proibições do dono sem trava: "amostra" (223 mensagens), "(Brasília)" (220), "Cupom do anúncio" (79) | c4-7.8 | engenheiro-backend | acrescentar a `BANNED` e a teste | #25 | parcial: "amostra pequena", "metodologia" e "(Brasília)" já barram desde a régua; falta "Cupom do anúncio" |
 | FM-17 | Cartão não é obrigatório no código (Achado 10%, Cupom 22%); falha de render cai em texto sem motivo | c4-7.9 | engenheiro-backend | registrar motivo em `photoSkipped`; medir por gatilho; política de adiar | #25 | aberta |
 | FM-18 | Frescor da Amazon abaixo da exigência: 43% das 682 ofertas ativas confirmadas em 40 min; 112 com mais de 3 h; ciclo de ~50 min contra meta de 40 | c1-P15, c3-P12, c4-gargalo | operador + engenheiro-coleta | mais peso ao refresh quente; segunda aba; "confirmado há X" no front | #26 | aberta |

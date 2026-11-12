@@ -109,8 +109,14 @@ nega('Tênis Nike e Adidas Masculino', 'multiplas_marcas');
 nega('Mochila Nike Brasilia Treino', 'sem_capacidade');
 
 // ---------------------------------------------------------------- exclusões: fora do recorte / acessório
-nega('Chuteira Nike Mercurial Society Masculina', 'chuteira_fora_do_recorte');
-nega('Chinelo Nike Victori One Slide Masculino', 'fora_do_recorte');
+// Calçados além do tênis (2026-11-12): chuteira, chinelo/slide e sandália entram; sem gênero/modelo continuam negados.
+for (const t of ['Chuteira Nike Mercurial Society Masculina', 'Chinelo Slide Nike Victori One Masculino', 'Chuteira Society Umbro Score Masculina']) {
+  const r = avaliarTituloEsporte(t);
+  check(`aceita calçado: ${t}`, r.ok, r.ok ? r.chave : { motivo: r.motivo, detalhe: r.detalhe });
+}
+nega('Chuteira Nike Mercurial Society', 'sem_genero');
+nega('Chuteira Society Masculina Campo Original', 'sem_marca');
+nega('Pantufa Nike Victori One Slide Masculino', 'fora_do_nicho'); // chinelo/slide agora entram (2026-11-12); pantufa segue fora
 nega('Palmilha Gel Para Tênis Nike Esportivo', 'acessorio_ou_peca');
 nega('Bota Nike Masculina Coturno', 'fora_do_recorte');
 nega('Tênis Nike Bota Cano Alto Masculino', 'fora_do_nicho');
@@ -189,7 +195,7 @@ check('segmentos novos exigem gênero na aprovação', ['regata', 'short', 'legg
 // ---------------------------------------------------------------- termos de busca
 const termos = termosEsporte();
 check('termos: lista grande, única e sem vazio', termos.length > 150 && new Set(termos).size === termos.length && termos.every((t) => t.trim() === t && t.length > 3), termos.length);
-check('termos: começam pelo amplo por marca', termos[0] === 'tenis nike masculino', termos[0]);
+check('termos: calçados (chuteira e chinelo) vêm primeiro, depois o amplo por marca', termos[0] === 'chuteira nike campo' && termos.includes('tenis nike masculino') && termos.some((t) => t.startsWith('chinelo ')), termos[0]);
 check('termos: incluem modelo específico e camisa de time', termos.includes('tenis nike revolution') && termos.includes('camisa flamengo oficial'));
 check('termos: nenhum com "+" literal da sintaxe do léxico', termos.every((t) => !t.includes('+') && !t.includes('|')));
 

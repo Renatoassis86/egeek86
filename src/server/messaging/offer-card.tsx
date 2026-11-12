@@ -28,6 +28,7 @@ import {
   type OfferCardInput,
   type OfferCardStats,
 } from '@/lib/pricing/offer-card-model';
+import { fundoDaLoja } from '@/lib/pricing/cor-loja';
 import { CARD_MAX_DAYS, platformLabel } from '@/lib/pricing/price-card-model';
 import { OFFER_ACTIVE_DAYS, PRICE_DAILY_REGIME_START, addDays, computeDayState, computePeriodMetrics, spDay, type PeriodDay } from '@/lib/pricing/daily-state';
 
@@ -129,6 +130,7 @@ export async function loadOfferCardInput(
     store: String(r.net_name),
     sellerName: sellerLabel(r.seller_name as string | null, String(r.net_name)),
     isAmazon,
+    vertical: String(r.vertical),
     amazonAvg,
     priceCents: withCoupon ?? priceCents,
     checkedAt: withCoupon && opts?.couponReadAt ? opts.couponReadAt : checkedAt,
@@ -194,7 +196,7 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
   const hasCover = cover != null;
   const panelH = hasCover ? panel.h : 580;
   return (
-    <div style={{ width: OFFER_CARD_SIZE, height: OFFER_CARD_SIZE, display: 'flex', position: 'relative', background: C.canvas, color: C.text }}>
+    <div style={{ width: OFFER_CARD_SIZE, height: OFFER_CARD_SIZE, display: 'flex', position: 'relative', background: fundoDaLoja(input.vertical), color: C.text }}>
       {input.regua ? (
         <>
           <div style={abs(0, 0, { width: OFFER_CARD_SIZE, height: 16, background: input.regua.cor })} />

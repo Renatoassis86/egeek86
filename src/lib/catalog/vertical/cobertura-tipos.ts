@@ -134,6 +134,7 @@ export const TIPOS_ESPERADOS: TipoEsperado[] = [
   // ---- Esporte ----
   t(S, 'Tênis (corrida, caminhada, treino, casual)', 'tenis'),
   t(S, 'Chuteira', 'chuteira'),
+  t(S, 'Chinelo, slide e sandália esportiva', 'sandalia-chinelo'),
   t(S, 'Camisa de time e esportiva', 'camisa-de-time'),
   t(S, 'Roupa de compressão', 'roupa-de-compressao'),
   t(S, 'Roupa de ciclismo', 'roupa-de-ciclismo'),

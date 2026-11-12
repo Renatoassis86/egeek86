@@ -56,6 +56,8 @@ export interface OfferCardInput {
   /** Loja/vendedor que dá ESTE preço (dono, 2026-11-11): destaque no card. null = não informado. */
   sellerName?: string | null;
   isAmazon: boolean;
+  /** Departamento (loja) do master: define o fundo do cartão (src/lib/pricing/cor-loja.ts). Ausente = fundo padrão. */
+  vertical?: string | null;
   /** Só Amazon com PRICE_AMAZON_MODE=on (games): a média das stats inclui a Amazon. 'market' = média do mercado; 'amazon' = produto só na Amazon (média na Amazon). */
   amazonAvg?: 'market' | 'amazon' | null;
   priceCents: number;

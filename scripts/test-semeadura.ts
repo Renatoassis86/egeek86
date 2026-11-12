@@ -342,7 +342,7 @@ async function main() {
 
 
   // ---------------- ampliacao 2026-11-11 (esporte, livros, casa, eletronicos) ----------------
-  check('ampliacao: 50 segmentos novos', NOVOS_SEGMENTOS.length === 50, NOVOS_SEGMENTOS.length);
+  check('ampliacao: 51 segmentos novos', NOVOS_SEGMENTOS.length === 51, NOVOS_SEGMENTOS.length);
   check('ampliacao: todo segmento novo tem searchDomain e exige marca', NOVOS_SEGMENTOS.every((s) => !!s.searchDomain && s.requireBrand === true));
   check('ampliacao: tenis tem 100+ termos', segmentByKey('tenis')!.terms.length >= 100, segmentByKey('tenis')!.terms.length);
   check('ampliacao: livros com 500+ termos (generos, editoras, autores)', segmentByKey('livros')!.terms.length >= 500, segmentByKey('livros')!.terms.length);

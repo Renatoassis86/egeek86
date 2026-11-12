@@ -73,7 +73,7 @@ export interface CandidatoMaster {
 
 /** Segmentos de calçado/vestuário: a identidade é marca+modelo+GÊNERO (tamanho e cor não separam master). */
 // Inclui os segmentos da descoberta Shopee de esporte (2026-11-11: regata, short, legging, agasalho, compressão), que exigem gênero.
-const SEGMENTOS_COM_GENERO = new Set(['tenis', 'chuteira', 'camisa-de-time', 'roupa-de-ciclismo', ...SEGMENTOS_ESPORTE_COM_GENERO]);
+const SEGMENTOS_COM_GENERO = new Set(['tenis', 'chuteira', 'sandalia-chinelo', 'camisa-de-time', 'roupa-de-ciclismo', ...SEGMENTOS_ESPORTE_COM_GENERO]);
 const GENERO_NO_NOME = /\b(masculin[oa]s?|feminin[oa]s?|infantil|juvenil|unissex|menin[oa]s?|homem|mulher|kids)\b/i;
 
 export interface Avaliacao {

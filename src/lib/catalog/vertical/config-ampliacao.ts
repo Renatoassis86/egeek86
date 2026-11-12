@@ -76,6 +76,13 @@ const TENIS_TERMS = [
   'tenis de corrida', 'tenis de caminhada confortavel', 'tenis para academia', 'tenis futsal', 'tenis skate', 'tenis casual esportivo', 'tenis plataforma branco', 'tenis chunky',
 ];
 
+// Chinelo, slide e sandália esportiva (pedido do dono 2026-11-12: todos os tipos de calçado). Domínio MLB-SANDALS_AND_CLOGS medido ao vivo em 12/11 (sonda: 35 de 50 em 'chinelo slide').
+const SANDALIA_TERMS = [
+  ...combineTerms('chinelo', ['slide', 'masculino', 'feminino', 'infantil'], ['nike', 'adidas', 'puma', 'olympikus', 'fila', 'mizuno', 'umbro', 'kappa', 'under armour', 'new balance', 'reebok', 'rider', 'havaianas']),
+  ...combineTerms('sandalia', ['esportiva', 'trilha', 'masculina', 'feminina'], ['nike', 'adidas', 'puma', 'olympikus', 'fila', 'mizuno', 'under armour', 'skechers']),
+  'chinelo nike victori one', 'chinelo adidas adilette', 'chinelo adidas adilette comfort', 'chinelo nike benassi', 'chinelo puma leadcat', 'chinelo olympikus slide', 'chinelo havaianas top', 'chinelo havaianas brasil', 'sandalia papete trilha', 'sandalia adidas adilette',
+];
+
 const CHUTEIRA_TERMS = [
   ...combineTerms('chuteira', ['campo', 'society', 'futsal', 'infantil', 'trava mista'], ['nike', 'adidas', 'puma', 'umbro', 'mizuno', 'penalty', 'topper', 'kappa', 'under armour', 'diadora', 'joma', 'new balance']),
   'chuteira nike phantom', 'chuteira nike mercurial', 'chuteira nike tiempo', 'chuteira adidas predator', 'chuteira adidas x crazyfast', 'chuteira adidas copa', 'chuteira puma future', 'chuteira puma ultra', 'chuteira puma king',
@@ -110,6 +117,7 @@ const ESPORTE: SegmentConfig[] = [
   // Tênis: UM segmento para todos os usos (corrida, caminhada, treino, futsal/society, skate, casual). Chave de família marca+(linha)+modelo+(versão)+gênero:
   // cor e tamanho NÃO separam (cada cor/tamanho é um catálogo do ML, todos entram no mesmo master). Sem GTIN no catálogo de tênis (0/10 medido).
   seg({ key: 'tenis', vertical: 'esporte', label: 'Tênis esportivo e casual', domain: 'MLB-SNEAKERS', terms: TENIS_TERMS, rank: 13, profile: FAMILY(['BRAND', 'MODEL', 'GENDER'], ['LINE', 'VERSION']), note: 'Domínio 50 de 50; marca, modelo e gênero em 50 de 50; GTIN ausente. Catálogos sem vendedor (404) são a regra: 8 de 8 em amostra de 11/11.' }),
+  seg({ key: 'sandalia-chinelo', vertical: 'esporte', label: 'Chinelo, slide e sandália esportiva', domain: 'MLB-SANDALS_AND_CLOGS', terms: SANDALIA_TERMS, rank: 78, profile: FAMILY(['BRAND', 'MODEL', 'GENDER'], ['LINE', 'VERSION']), note: 'Dominio medido em 12/11/2026; mistura moda feminina com esportivo: o nicho exige marca esportiva no titulo.' }),
   seg({ key: 'chuteira', vertical: 'esporte', label: 'Chuteira', domain: 'MLB-FOOTBALL_SHOES', terms: CHUTEIRA_TERMS, rank: 29, profile: FAMILY(['BRAND', 'MODEL', 'GENDER'], ['LINE', 'VERSION']) }),
   seg({ key: 'camisa-de-time', vertical: 'esporte', label: 'Camisa de time e esportiva', domain: 'MLB-FOOTBALL_KITS', terms: CAMISA_TERMS, rank: 30, profile: FAMILY(['BRAND', 'MODEL', 'GENDER'], ['LINE', 'VERSION']), note: 'Domínio MLB-FOOTBALL_KITS mistura camisa com lembrancinha (bolsa, caneca, almofada): o nicho exige "camisa/camiseta" no título e barra kit/conjunto/lembrança.' }),
   seg({ key: 'meia-esportiva', vertical: 'esporte', label: 'Meia esportiva', domain: 'MLB-FOOTBALL_SOCKS', terms: MEIA_TERMS, rank: 31, profile: FAMILY(['BRAND', 'MODEL'], ['LINE', 'VERSION', 'GENDER']) }),

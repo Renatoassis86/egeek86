@@ -479,7 +479,7 @@ export interface GenericCtx {
   i3d: { kind: 'impressora' | 'filamento' | 'resina'; key: string | null; material: string | null; diametro: string | null; massa: string | null; tipo: string | null } | null;
 }
 
-const GENDER_FAMILY_SEGMENTS = new Set(['tenis', 'chuteira', 'camisa-de-time', 'meia-esportiva', 'bone', 'mochila-esportiva', 'bolsa-de-treino', 'luva-de-goleiro', 'luva-de-academia', 'caneleira', 'roupa-de-ciclismo', 'roupa-de-compressao']);
+const GENDER_FAMILY_SEGMENTS = new Set(['tenis', 'chuteira', 'sandalia-chinelo', 'camisa-de-time', 'meia-esportiva', 'bone', 'mochila-esportiva', 'bolsa-de-treino', 'luva-de-goleiro', 'luva-de-academia', 'caneleira', 'roupa-de-ciclismo', 'roupa-de-compressao']);
 
 function masterIsbn(m: MasterIdentity): string | null {
   for (const v of [m.gtin, str(m.cat?.GTIN)]) {

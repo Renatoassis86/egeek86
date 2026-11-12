@@ -1,7 +1,7 @@
 // Sem 'server-only': funções puras (sem banco, sem rede), importáveis pela descoberta, por scripts tsx e por testes.
 import { foldText, normalizeTitleKey, rejectionOf } from './identity';
 import { accessoryIssue, comboIssue, nichoIssue } from './scope';
-import { LINHAS, MARCAS, PISO_PRECO_CENTAVOS, TIMES, type GrupoLinha, type MarcaDef } from './esporte-shopee-lexico';
+import { LINHAS, LINHAS_CALCADO_EXTRA, MARCAS, PISO_PRECO_CENTAVOS, TIMES, type GrupoLinha, type MarcaDef } from './esporte-shopee-lexico';
 
 /**
  * IDENTIDADE DE ESPORTE A PARTIR DO TÍTULO DA SHOPEE (decisão do dono, 2026-11-11).
@@ -84,6 +84,8 @@ const LINGERIE = 'calcinha|cueca|sutia|lingerie|pijama|modelador|modeladora|cint
 
 export const SEGMENTOS_ESPORTE: SegDef[] = [
   { key: 'tenis', label: 'Tênis', noun: /\b(tenis|sapatenis)\b/, grupo: 'tenis', generoObrigatorio: true },
+  { key: 'chuteira', label: 'Chuteira', noun: /\b(chuteira|chuteiras)\b/, forbid: /\b(trava avulsa|travas|meiao|caneleira|bola)\b/, grupo: 'tenis', generoObrigatorio: true },
+  { key: 'sandalia-chinelo', label: 'Chinelo, slide e sandália', noun: /\b(chinelo|chinelos|sandalia|sandalias|slide|slides)\b/, forbid: /\b(salto|bebe|recem nascido|pantufa|pantufas|bota|botas|social|mocassim)\b/, grupo: 'tenis', generoObrigatorio: true },
   { key: 'regata', label: 'Regata', noun: /\b(regata|regatas)\b/, forbid: new RegExp(`\\b(${LINGERIE})\\b`), grupo: 'roupa', generoObrigatorio: true },
   { key: 'short', label: 'Short', noun: /\b(short|shorts|bermuda|bermudas|calcao)\b/, forbid: new RegExp(`\\b(jeans|sarja|linho|praia|sunga|saia|vestido|ciclismo|ciclista|mtb|${LINGERIE})\\b`), grupo: 'roupa', generoObrigatorio: true },
   { key: 'legging', label: 'Legging', noun: /\b(legging|leggings|fuseau)\b/, forbid: new RegExp(`\\b(gestante|termica|flanelada|${LINGERIE})\\b`), grupo: 'roupa', generoObrigatorio: true },
@@ -324,7 +326,6 @@ export function avaliarTituloEsporte(titulo: string): EsporteAvaliacao {
   const marca = marcas[0];
 
   // 4. Tipo de peça dentro do recorte do dono.
-  if (/\b(chuteira|chuteiras)\b/.test(f)) return nao('chuteira_fora_do_recorte', 'fora_do_recorte');
   const seg = detectarSegmento(f);
   if (!seg) return nao('fora_do_recorte', 'fora_do_recorte');
 
@@ -517,6 +518,10 @@ export function termosEsporte(): string[] {
     const x = t.trim().replace(/\s+/g, ' ');
     if (x && !out.includes(x)) out.push(x);
   };
+  // 0. calçados além do tênis (2026-11-12): chuteira, chinelo/slide e sandália por marca (prioridade do dono)
+  for (const b of ['nike', 'adidas', 'puma', 'umbro', 'penalty', 'mizuno', 'topper', 'kappa']) for (const u of ['campo', 'society', 'futsal', 'infantil']) push(`chuteira ${b} ${u}`);
+  for (const b of ['nike', 'adidas', 'puma', 'olympikus', 'fila', 'umbro', 'kappa', 'havaianas']) for (const u of ['masculino', 'feminino', 'slide']) push(`chinelo ${b} ${u}`);
+  for (const [b, ls] of Object.entries(LINHAS_CALCADO_EXTRA)) for (const l of ls) push(`${b === 'havaianas' || /victori|benassi|offcourt|calm|adilette|adissage|comfort|leadcat|popcat|cool cat|divecat/.test(l) ? 'chinelo' : 'chuteira'} ${b} ${l.split('|')[0].replace(/\+$/, '')}`);
   // A. amplos por marca (maior rendimento por chamada)
   for (const b of PRIORIDADE_MARCAS) for (const u of USOS_TENIS) push(`tenis ${b} ${u}`);
   for (const b of MARCAS_VESTUARIO) for (const p of PECAS) push(`${p} ${b}`);
