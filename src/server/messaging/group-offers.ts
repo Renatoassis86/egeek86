@@ -15,6 +15,8 @@ import { isVertical } from '@/lib/catalog/verticais';
 import { getAdTag } from '@/lib/messaging/group-config';
 import { loadShopeeCampaignUrl } from '@/server/collector/shopee-campaigns';
 import { buildPlatformCandidates } from '@/lib/messaging/group-platform';
+import { cupomGatilhoLigado, offersWithPositiveRead, validateCouponOffers, type CouponValidation } from '@/server/messaging/coupon-offers';
+import { AGULHA } from '@/lib/coupons/agulha';
 import {
   RULES,
   amazonLoopPaused,
@@ -79,6 +81,21 @@ export interface DetectOptions {
   includePlatform?: boolean;
   /** Gatilho ACHADO (ata 2026-11-12). Padrão: ligado quando a migration 0032 está aplicada (CHECK de gatilho aceita 'AC') e GROUP_ACHADO != 'off'. */
   achado?: boolean;
+  /** Gatilho CUPOM (mensagem 'Cupom ativo' por oferta). Padrao: ligado, salvo GROUP_CUPOM=off. */
+  cupom?: boolean;
+}
+
+/** Contagem do gatilho CUPOM neste ciclo (painel e log). */
+export interface CupomStats {
+  enabled: boolean;
+  /** Produtos do pool com oferta que passou na agulha. */
+  poolProducts: number;
+  /** Mensagens de cupom geradas (candidatos CUPOM), enviaveis e por loja (departamento). */
+  generated: number;
+  sendable: number;
+  byStore: Record<string, number>;
+  /** Ofertas com leitura positiva recente que a agulha barrou (motivo -> quantidade). */
+  barred: Record<string, number>;
 }
 
 export interface DetectionResult {
@@ -86,6 +103,8 @@ export interface DetectionResult {
   mode: 'dry';
   config: { verticals: string[]; maxAgeMin: number; eventWindowHours: number; adTag: string; amazonMaxAgeMin: number; amazonPaused: boolean; amazonLastRunAt: string | null; amazonMode?: AmazonMode };
   counts: { productsEvaluated: number; candidates: number; auto: number; review: number; notSendable: number; blocked: number };
+  /** Gatilho CUPOM: quantas mensagens de cupom foram geradas (e por que ofertas com leitura foram barradas). */
+  cupom: CupomStats;
   candidates: Candidate[];
   blocked: Blocked[];
   plan: LimitPlan;
@@ -230,7 +249,8 @@ export async function loadSentHistory(
     SELECT master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
            candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state,
            vertical AS vert, candidate ->> 'platformLabel' AS platform_label, candidate ->> 'tipo' AS tipo_c, candidate ->> 'name' AS nome_c,
-           CASE WHEN trigger ~ '^P[1-5]$' THEN candidate ->> 'masterProductId' END AS plat_pid
+           CASE WHEN trigger ~ '^P[1-5]$' THEN candidate ->> 'masterProductId' END AS plat_pid,
+           CASE WHEN trigger = 'CUPOM' OR text_body LIKE '%CUPOM:%' OR text_body LIKE '%Cupom:%' THEN offer_id::text END AS cup_offer
     FROM group_messages
     WHERE channel = ${channel} AND status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)})
       AND COALESCE(sent_at, created_at) >= ${since}::timestamptz
@@ -258,6 +278,7 @@ export async function loadSentHistory(
       platformLabel: (r.platform_label as string | null) ?? null,
       tipo: tipoOfRow(r),
       platformProductId: (r.plat_pid as string | null) ?? null,
+      couponOfferId: (r.cup_offer as string | null) ?? null,
       trigger: (r.trigger as string | null) ?? null,
       cls,
       sound: r.is_sound === true,
@@ -288,7 +309,7 @@ export async function loadTipoSends24h(): Promise<Record<string, number>> {
   return out;
 }
 
-export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eventWindowHours' | 'amazonMaxAgeMin'>> & { verticals: string[]; now: Date; maxProducts: number; achado?: boolean }): Promise<string[]> {
+export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eventWindowHours' | 'amazonMaxAgeMin'>> & { verticals: string[]; now: Date; maxProducts: number; achado?: boolean; cupom?: boolean; cupomStats?: CupomStats; cupomMemo?: CouponValidation }): Promise<string[]> {
   const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
   const evSince = new Date(o.now.getTime() - o.eventWindowHours * 3600_000).toISOString();
   const day = addDays(spDay(o.now), -3);
@@ -379,7 +400,42 @@ export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin'
     }
   }
   sends = await loadTipoSends24h().catch(() => ({}));
-  return selecionarPool({ main, achado: achadoRows, hourKey, sends, achadoOn: !!o.achado }).slice(0, o.maxProducts);
+
+  // CUPOM: produtos com oferta cuja leitura MAIS RECENTE de cupom e positiva (<= 120 min) e que PASSA na agulha agora. Entram no pool antes
+  // dos demais (cota CUPOM_POR_LOJA por loja, rodizio de tipo). A agulha roda aqui so para decidir quem entra; o fato definitivo e relido em loadFacts.
+  let cupomRows: PoolRow[] = [];
+  if (o.cupom) {
+    try {
+      const cr = await db.execute<Row>(sql`
+        WITH ${liveCte}
+        SELECT l.id AS oid, l.mid, l.v, mp.name
+        FROM live l
+        INNER JOIN master_products mp ON mp.id = l.mid
+        INNER JOIN affiliate_networks nn ON nn.id = l.network_id
+        INNER JOIN LATERAL (
+          SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
+          WHERE r.offer_id = l.id AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
+          ORDER BY r.read_at DESC LIMIT 1
+        ) lr ON lr.pw IS NOT NULL
+        WHERE nn.slug <> 'amazon'
+        ORDER BY lr.read_at DESC LIMIT 300
+      `);
+      const val = await validateCouponOffers(cr.map((r) => String(r.oid)), o.now, 10, o.cupomMemo);
+      const seenMid = new Set<string>();
+      for (const r of cr) {
+        if (!val.facts.has(String(r.oid)) || seenMid.has(String(r.mid))) continue;
+        seenMid.add(String(r.mid));
+        cupomRows.push({ mid: String(r.mid), v: String(r.v), r: 0, name: String(r.name) });
+      }
+      if (o.cupomStats) {
+        o.cupomStats.poolProducts = cupomRows.length;
+        for (const reason of val.misses.values()) o.cupomStats.barred[reason] = (o.cupomStats.barred[reason] ?? 0) + 1;
+      }
+    } catch {
+      cupomRows = []; // sem a tabela offer_coupon_reads (migration 0035) ou erro de consulta: o pool segue sem cupom
+    }
+  }
+  return selecionarPool({ main, achado: achadoRows, hourKey, sends, achadoOn: !!o.achado, cupom: cupomRows }).slice(0, o.maxProducts);
 }
 
 /**
@@ -422,7 +478,7 @@ async function loadSeries(ids: string[], today: string, mode: AmazonMode): Promi
   return out;
 }
 
-async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazonMaxAgeMin: number; eventWindowHours: number; liveVerified?: Set<string>; amazonMode: AmazonMode }): Promise<ProductFacts[]> {
+async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazonMaxAgeMin: number; eventWindowHours: number; liveVerified?: Set<string>; amazonMode: AmazonMode; cupom?: boolean; cupomMemo?: CouponValidation }): Promise<ProductFacts[]> {
   if (!ids.length) return [];
   // O filtro SQL usa o maior dos dois limites (a Amazon pode ter limite maior que as demais redes no envio); o juízo por rede é do judgeOffer.
   const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
@@ -540,6 +596,25 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     };
     (offersBy.get(mid) ?? offersBy.set(mid, []).get(mid)!).push(f);
   }
+  // CUPOM: ofertas deste lote com leitura positiva recente, validadas AGORA na agulha (nunca de cache: o envio usa esta mesma funcao para reconferir).
+  const couponsBy = new Map<string, NonNullable<ProductFacts['coupons']>>();
+  const missesBy = new Map<string, NonNullable<ProductFacts['couponMisses']>>();
+  if (o.cupom && offers.length) {
+    const midOf = new Map(offers.map((r) => [String(r.id), String(r.master_product_id)]));
+    const withRead = await offersWithPositiveRead([...midOf.keys()], o.now);
+    if (withRead.length) {
+      const val = await validateCouponOffers(withRead, o.now, 10, o.cupomMemo);
+      for (const [oid, f] of val.facts) {
+        const mid = midOf.get(oid);
+        if (mid && withRead.includes(oid)) (couponsBy.get(mid) ?? couponsBy.set(mid, []).get(mid)!).push(f);
+      }
+      for (const [oid, reason] of val.misses) {
+        const mid = midOf.get(oid);
+        if (!withRead.includes(oid)) continue;
+        if (mid) (missesBy.get(mid) ?? missesBy.set(mid, []).get(mid)!).push({ offerId: oid, reason });
+      }
+    }
+  }
   const firstBy = new Map(firsts.map((r) => [String(r.master_product_id), r]));
   const lastBy = new Map(lasts.map((r) => [String(r.master_product_id), r]));
 
@@ -604,6 +679,8 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       series: seriesBy.get(id)?.main ?? [],
       amazonSeries: seriesBy.get(id)?.amazon ?? [],
       amazonOnly: amazonCountsIn(o.amazonMode, String(p.vertical)) ? (amazonOnlyBy.get(id) ?? false) : false,
+      coupons: couponsBy.get(id),
+      couponMisses: missesBy.get(id),
     });
   }
   return out;
@@ -628,10 +705,15 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   if (amazonPaused) warnings.push('Classe Amazon pausada: a coleta assistida está sem lote há mais de 90 min (ou nunca rodou).');
 
   const achado = opts.achado ?? (await groupMessagesAchadoReady().catch(() => false));
+  // CUPOM exige as colunas de classe/gatilho da 0030/0031 (o CHECK ja aceita 'CUPOM' e 'cupom'); sem v2 o gatilho fica desligado.
+  const cupom = (opts.cupom ?? cupomGatilhoLigado()) && (await groupMessagesV2Ready().catch(() => false));
+  const cupomStats: CupomStats = { enabled: cupom, poolProducts: 0, generated: 0, sendable: 0, byStore: {}, barred: {} };
+  // Memo do ciclo: o pool valida as ofertas com leitura positiva; loadFacts reaproveita (mesmo `now`). So na deteccao do ciclo, nunca na reconferencia de um envio.
+  const cupomMemo: CouponValidation | undefined = cupom && !opts.productIds?.length ? { facts: new Map(), misses: new Map() } : undefined;
   const ids = opts.productIds?.length
     ? opts.productIds
-    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 900, achado });
-  const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode });
+    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 900, achado, cupom, cupomStats, cupomMemo });
+  const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode, cupom, cupomMemo });
 
   const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode, achado };
   const candidates: Candidate[] = [];
@@ -678,6 +760,13 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
     generatedAt: now.toISOString(),
     mode: 'dry',
     config: { verticals, maxAgeMin, eventWindowHours, adTag, amazonMaxAgeMin, amazonPaused, amazonLastRunAt: amazonLastRun ? amazonLastRun.toISOString() : null, amazonMode },
+    cupom: (() => {
+      const cs = candidates.filter((c) => c.trigger === 'CUPOM');
+      cupomStats.generated = cs.length;
+      cupomStats.sendable = cs.filter((c) => c.sendable && c.status === 'auto' && !c.held).length;
+      for (const c of cs) cupomStats.byStore[c.vertical] = (cupomStats.byStore[c.vertical] ?? 0) + 1;
+      return cupomStats;
+    })(),
     counts: {
       productsEvaluated: facts.length,
       candidates: candidates.length,

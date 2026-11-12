@@ -39,7 +39,7 @@ const TRIGGER_LABEL: Record<string, string> = {
   T1: 'Caiu dois dias seguidos',
   T2: 'Perto do menor preço registrado',
   RADAR: 'Radar horário',
-  CUPOM: 'Cupom verificado',
+  CUPOM: 'Cupom ativo (por oferta)',
   P1: 'Plataforma: histórico do preço',
   P2: 'Plataforma: comparar lojas',
   P3: 'Plataforma: monitorar',
@@ -52,7 +52,7 @@ const CLASS_LABEL: Record<string, string> = {
   radar: 'B. Radar horário',
   insight: 'C. Insight',
   resumo: 'D. Resumo',
-  cupom: 'E. Cupom verificado',
+  cupom: 'E. Cupom ativo (prioridade alta)',
   plataforma: 'F. Plataforma',
 };
 
@@ -312,6 +312,7 @@ function AutomationCard({ overview, pending, run }: { overview: AutomationOvervi
               {o.members.stale && o.members.points > 0 ? ' · leitura antiga' : ''}
             </Text>
             <Text variant="body-sm">Amazon: {o.amazon.paused ? 'PAUSADA (coleta assistida sem lote há mais de 90 min)' : 'ativa'} · último lote {fmtTime(o.amazon.lastRunAt)}</Text>
+            <Text variant="body-sm">Cupom ativo (24 h): {o.cupom.generated24h} mensagens geradas · {o.cupom.sent24h} enviadas · {o.cupom.sent1h} na última hora</Text>
             <Text variant="body-sm">Reconferência de 30 min: {o.rechecked.total} feitas, {o.rechecked.diverged} com divergência acima de 2%</Text>
             <Text variant="body-sm">Últimas 24 h por status: {Object.entries(o.last24h).map(([k, v]) => `${k} ${v}`).join(' · ') || 'nenhuma decisão gravada'}</Text>
           </div>

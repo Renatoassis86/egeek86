@@ -4,7 +4,7 @@
 // a palavra "afiliado" nunca aparece; Amazon nunca (preço da Amazon fica fora de mensagem).
 
 export type GroupChannel = 'tg' | 'wa';
-export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar' | 'achado';
+export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar' | 'achado' | 'cupom';
 
 /** Gatilhos por movimento da série diária (ata 2026-11-10 §2). */
 export type MoveKind = 'OK1' | 'OK2' | 'T1' | 'T2';
@@ -250,6 +250,27 @@ export interface MsgOffer {
   /** Shopee: link da campanha oficial (categoria "Gaming & Consoles" ou a mais adequada, ainda no prazo). Só diz ONDE resgatar; nunca promete valor. */
   shopeeCampaignUrl?: string | null;
 }
+/** Dados do cupom lido na página do anúncio (tudo lido; nada calculado além da diferença entre os dois preços da página). */
+export interface CouponMsgData {
+  /** Nome do cupom (título da campanha na loja, ou a regra do selo). Já sem '% OFF'. */
+  name: string;
+  offCents: number;
+  /** Desconto em %, uma casa decimal. */
+  pct: number;
+  /** Preço com cupom lido na página. */
+  finalCents: number;
+  minOrderCents?: number | null;
+  maxDiscountCents?: number | null;
+  /** A regra (% e teto, ou valor fixo) foi lida na lista de cupons? Se não, a mensagem avisa que a regra completa está na tela do cupom. */
+  ruleKnown: boolean;
+  /** Como ativar, por rede ("Ative em Cupons no Mercado Livre antes de pagar."). */
+  activation: string;
+  /** Quando a página foi lida. */
+  readAt: Date;
+  /** Validade lida da loja (a página do anúncio normalmente não informa). */
+  expiresAt?: Date | null;
+}
+
 export interface MsgAvg {
   cents: number;
   /** Ofertas distintas que entram na média do período. */
@@ -355,6 +376,18 @@ export type GroupMessageInput = Common &
         offersCount: number;
         /** A oferta citada é a de menor preço entre as ativas e válidas? Só então o texto diz "menor preço". */
         isLowest: boolean;
+        title?: string;
+        meta?: string | null;
+      }
+    | {
+        /** CUPOM ATIVO (gatilho CUPOM, 2026-11-12): oferta com cupom que passou nas 4 conferências da agulha. Não compara com média nem alega "menor preço". */
+        model: 'cupom';
+        name: string;
+        /** Oferta DO CUPOM (pode não ser a mais barata do produto). offer.priceCents é o preço do anúncio SEM cupom. */
+        offer: MsgOffer;
+        coupon: CouponMsgData;
+        /** Outra oferta ativa do produto, sem cupom, mais barata que o preço final do cupom (transparência). */
+        cheaperOther?: { cents: number; networkName: string } | null;
         title?: string;
         meta?: string | null;
       }
@@ -692,6 +725,46 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   return [head, priceLine, f.t(reading), topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
+/**
+ * CUPOM ATIVO (gatilho CUPOM; dono, 2026-11-12: "o agente de cupons deve ter sempre um cupom ativo e testado na agulha"). Uma mensagem por
+ * oferta com cupom válido. O preço mostrado é o que a PÁGINA DO ANÚNCIO exibiu com o cupom, rotulado como tal; o preço do anúncio sem
+ * cupom aparece ao lado. Sem média, sem "menor preço", sem "% OFF" e sem "de R$ por R$". Mínimo e teto só quando a lista de cupons os trouxe.
+ */
+export function formatCouponMessage(input: Extract<GroupMessageInput, { model: 'cupom' }>, channel: GroupChannel): string {
+  const f = channel === 'tg' ? TG : WA;
+  guardNetwork(input.offer);
+  const o = input.offer;
+  const c = input.coupon;
+  const title = (input.title ?? input.name).trim();
+  const pre = prefix(input, f);
+  const italic = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
+  const mark = channel === 'tg' ? `${EMOJI_COUPON} ` : '';
+  const headLabel = channel === 'tg' ? `${mark}<b>CUPOM ATIVO</b>` : '*CUPOM ATIVO*';
+  const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
+  const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
+  const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
+  const priceLine = `${f.b(fmtBRL(c.finalCents))} com o cupom ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
+  const topics: string[] = [
+    topic(f, 'Cupom', c.name),
+    topic(f, 'Desconto', `${fmtBRL(c.offCents)} (${Number.isInteger(c.pct) ? String(c.pct) : fmtPct1(c.pct)}%); o anúncio sem cupom está em ${fmtBRL(o.priceCents)}`),
+  ];
+  if (c.minOrderCents) topics.push(topic(f, 'Compra mínima', fmtBRL(c.minOrderCents)));
+  if (c.maxDiscountCents) topics.push(topic(f, 'Desconto máximo', fmtBRL(c.maxDiscountCents)));
+  topics.push(topic(f, 'Como ativar', c.activation));
+  if (c.expiresAt) topics.push(topic(f, 'Válido até', `${fmtStamp(c.expiresAt)}, segundo a loja`));
+  const other = input.cheaperOther;
+  if (other && other.cents > 0 && other.cents < c.finalCents) topics.push(topic(f, 'Outra oferta, sem cupom', `${fmtBRL(other.cents)} ${inNetwork(other.networkName)}`));
+  const sellerText = sellerLine(o);
+  if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
+  for (const t of seloLines(o, f)) topics.push(t);
+  const buyUrl = o.affiliateUrl && /^https:\/\/[^\s<>"]+$/.test(o.affiliateUrl) ? o.affiliateUrl : null;
+  const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
+  const read = `Preço lido na página do anúncio em ${fmtStamp(c.readAt)}${c.ruleKnown ? '' : '; regra completa na tela do cupom'}.`;
+  const foot = italic(withTag(read, input.adTag));
+  const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
+  return [headLabel, head, priceLine, topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+}
+
 /** Indicador da Black Friday: só durante a campanha de novembro/2026; depois some e a mensagem volta ao padrão (dono, 2026-11-11). */
 export function blackFridayIndicator(
   ref: Date,
@@ -1009,6 +1082,8 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       return formatPlatformMessage(input, channel);
     case 'achado':
       return formatAchadoMessage(input, channel);
+    case 'cupom':
+      return formatCouponMessage(input, channel);
     case 'radar': {
       if (input.items.length < 3) throw new Error('radar exige pelo menos 3 itens');
       const items = input.items.slice(0, 6);

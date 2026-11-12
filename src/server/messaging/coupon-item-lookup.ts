@@ -25,7 +25,31 @@ type ReadRow = {
   c_aud: string | null; c_elig: boolean | null; c_scope: string | null; c_cats: string | null; c_raw: string | null; c_title: string | null;
 };
 
+/**
+ * Detalhe estruturado do cupom do anúncio que passou na agulha (alimenta a mensagem 'Cupom ativo'). Tudo é o que a página mostrou:
+ * o preço com cupom vem da leitura, o desconto é a diferença real; mínimo e teto só existem quando a lista de cupons os trouxe.
+ */
+export interface ItemCouponDetail {
+  net: string;
+  offerPriceCents: number;
+  finalCents: number;
+  offCents: number;
+  pct: number;
+  name: string;
+  minOrderCents: number | null;
+  maxDiscountCents: number | null;
+  ruleKnown: boolean;
+  activation: string;
+  readAt: string;
+  priceSeenCents: number | null;
+  validUntil: string | null;
+}
+
 export async function lookupItemCoupon(offerId: string, trace?: MissTrace, now: Date = new Date()): Promise<(CouponInfo & CouponRefMeta) | null> {
+  return (await lookupItemCouponDetail(offerId, trace, now))?.info ?? null;
+}
+
+export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace, now: Date = new Date()): Promise<{ info: CouponInfo & CouponRefMeta; detail: ItemCouponDetail } | null> {
   const rows = (await db.execute<ReadRow>(sql`
     SELECT r.price_with_coupon_cents AS pw, r.price_seen_cents AS ps, r.read_at, r.campaign_id AS campaign, r.label, r.status,
            o.current_price_cents::text AS cur, o.status::text AS ostatus, nn.slug AS net, o.vertical,
@@ -95,12 +119,19 @@ export async function lookupItemCoupon(offerId: string, trace?: MissTrace, now: 
     const tail = verdict.ruleKnown ? 'Preço lido na página do anúncio' : 'Preço lido na página do anúncio; regra completa na tela do cupom';
     const ativar = r.net === 'amazon' ? 'Marque o cupom na página do produto antes de pagar.' : r.net === 'shopee' ? 'Aplique o voucher no carrinho antes de pagar.' : 'Ative em Cupons no Mercado Livre antes de pagar.';
     return {
-      code: name,
-      conditions: `${ruleText}${ativar} ${tail}`,
-      expiresAt: rule?.validUntil ?? null,
-      verifiedAt: readIso,
-      couponRef: offerId,
-      annKind: 'anuncio',
+      info: {
+        code: name,
+        conditions: `${ruleText}${ativar} ${tail}`,
+        expiresAt: rule?.validUntil ?? null,
+        verifiedAt: readIso,
+        couponRef: offerId,
+        annKind: 'anuncio',
+      },
+      detail: {
+        net: r.net, offerPriceCents: current, finalCents: Number(r.pw), offCents: off, pct, name,
+        minOrderCents: rule?.minOrderCents ?? null, maxDiscountCents: rule?.maxDiscountCents ?? null, ruleKnown: verdict.ruleKnown,
+        activation: ativar, readAt: readIso, priceSeenCents: r.ps, validUntil: rule?.validUntil ?? null,
+      },
     };
   }
   trace?.(lastReason ?? 'reprovou_agulha');

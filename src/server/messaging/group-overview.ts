@@ -21,6 +21,8 @@ export interface AutomationOverview {
   soundToday: number;
   sentToday: number;
   rechecked: { total: number; diverged: number };
+  /** Gatilho CUPOM (24 h): mensagens de cupom geradas (gravadas na fila), enviadas e enviadas na ultima hora. */
+  cupom: { generated24h: number; sent24h: number; sent1h: number };
 }
 
 export async function loadAutomationOverview(now = new Date()): Promise<AutomationOverview> {
@@ -40,11 +42,12 @@ export async function loadAutomationOverview(now = new Date()): Promise<Automati
     soundToday: 0,
     sentToday: 0,
     rechecked: { total: 0, diverged: 0 },
+    cupom: { generated24h: 0, sent24h: 0, sent1h: 0 },
   };
   if (!v2) return base;
   try {
     const since = new Date(now.getTime() - 24 * 3600_000).toISOString();
-    const [byStatus, sound, pts, rc] = await Promise.all([
+    const [byStatus, sound, pts, rc, cp] = await Promise.all([
       db.execute<Row>(sql`SELECT status, count(*)::int AS n FROM group_messages WHERE channel = 'tg' AND created_at >= ${since}::timestamptz GROUP BY status`),
       db.execute<Row>(sql`
         SELECT count(*) FILTER (WHERE is_sound)::int AS snd, count(*)::int AS tot FROM group_messages
@@ -53,6 +56,10 @@ export async function loadAutomationOverview(now = new Date()): Promise<Automati
       db.execute<Row>(sql`
         SELECT count(*)::int AS total, count(*) FILTER (WHERE recheck_divergence_pct > 2)::int AS diverged FROM group_messages
         WHERE channel = 'tg' AND status = 'enviada' AND recheck_at IS NOT NULL AND sent_at >= ${since}::timestamptz`),
+      db.execute<Row>(sql`
+        SELECT count(*)::int AS gen, count(*) FILTER (WHERE status = 'enviada')::int AS sent,
+               count(*) FILTER (WHERE status = 'enviada' AND sent_at >= ${new Date(now.getTime() - 3600_000).toISOString()}::timestamptz)::int AS sent1h
+        FROM group_messages WHERE channel = 'tg' AND trigger = 'CUPOM' AND created_at >= ${since}::timestamptz`),
     ]);
     for (const r of byStatus) base.last24h[String(r.status)] = Number(r.n);
     base.soundToday = Number(sound[0]?.snd ?? 0);
@@ -63,6 +70,7 @@ export async function loadAutomationOverview(now = new Date()): Promise<Automati
       automation.maxMemberDropPct
     );
     base.rechecked = { total: Number(rc[0]?.total ?? 0), diverged: Number(rc[0]?.diverged ?? 0) };
+    base.cupom = { generated24h: Number(cp[0]?.gen ?? 0), sent24h: Number(cp[0]?.sent ?? 0), sent1h: Number(cp[0]?.sent1h ?? 0) };
   } catch {
     // painel de leitura: nunca derruba a página
   }

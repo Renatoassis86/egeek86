@@ -17,6 +17,9 @@ import {
 } from '@/lib/messaging/group-messages';
 import { AMAZON_OWN_MIN_DAYS, amazonCountsIn, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { emFaseDeFormacao, mediaSimples, minLojas } from '@/lib/messaging/fase-formacao';
+import { AGULHA } from '@/lib/coupons/agulha';
+import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
+import type { CouponInfo } from '@/lib/messaging/group-messages';
 
 // ---------------------------------------------------------------------------
 // Limiares (medidos e decididos na ata)
@@ -189,6 +192,15 @@ export const RULES = {
   /** Cota de diversidade: nenhum TIPO passa desta parcela das mensagens da loja nas ultimas 24 h (so vale com alternativa de outro tipo e depois de TIPO_SHARE_MIN_SENT envios). */
   TIPO_MAX_SHARE_PCT: 30,
   TIPO_SHARE_MIN_SENT: 6,
+  // ---- CUPOM ATIVO (gatilho CUPOM por oferta; dono, 2026-11-12) ----
+  /** Mesmo produto: a mensagem de cupom so volta depois disto (conta so entre mensagens de cupom; nao bloqueia a de preco e vice-versa). */
+  CUPOM_PRODUCT_GAP_MIN: 60,
+  /** Mesmo cupom (mesma leitura do anuncio) divulgado em QUALQUER mensagem (preco com bloco de cupom ou mensagem de cupom): so volta depois disto. */
+  CUPOM_COUPON_GAP_MIN: 60,
+  /** Cota por loja: no maximo isto de mensagens de cupom por hora e, em 24 h, ate esta parcela das mensagens da loja (so vale com alternativa e depois de CUPOM_SHARE_MIN_SENT envios). */
+  CUPOM_MAX_PER_HOUR_STORE: 6,
+  CUPOM_MAX_SHARE_PCT: 40,
+  CUPOM_SHARE_MIN_SENT: 6,
   BLACK_FRIDAY_DAY: '2026-11-27',
   TRACKING_SINCE_DAY: '2026-10-31',
 } as const;
@@ -311,6 +323,32 @@ export interface ProductFacts {
   /** Mediana (centavos) do menor preco por master do mesmo departamento+tipo e quantos masters entraram. */
   tipoMedianCents?: number | null;
   tipoSample?: number;
+  /** Ofertas deste produto com cupom do anuncio que PASSOU na agulha neste instante (server: lookupItemCouponDetail). Ausente/vazio = sem cupom valido. */
+  coupons?: CouponOfferFact[];
+  /** Ofertas com leitura de cupom recente que a agulha barrou, com o motivo (auditoria; vira `blocked` do gatilho CUPOM). */
+  couponMisses?: Array<{ offerId: string; reason: string }>;
+}
+
+/** Cupom do anuncio aprovado pela agulha (4 conferencias) para UMA oferta. Tudo lido na pagina do anuncio. */
+export interface CouponOfferFact {
+  offerId: string;
+  /** Identidade da divulgacao (anuncio: id da oferta). */
+  couponRef: string;
+  name: string;
+  /** Preco do anuncio SEM cupom no momento da checagem. */
+  offerPriceCents: number;
+  /** Preco COM cupom lido na pagina. */
+  finalCents: number;
+  offCents: number;
+  pct: number;
+  minOrderCents: number | null;
+  maxDiscountCents: number | null;
+  ruleKnown: boolean;
+  /** Texto completo do cupom (CouponInfo.conditions) para o registro da divulgacao. */
+  conditions: string;
+  activation: string;
+  readAt: Date;
+  expiresAt: Date | null;
 }
 
 export interface AmazonRef {
@@ -529,6 +567,9 @@ export interface Candidate {
   dedupKey: string;
   texts: { telegram: string; whatsapp: string };
   textProblems: string[];
+  /** Gatilho CUPOM: identidade do cupom divulgado e o registro para o Agente de Cupons acompanhar o fim dele. */
+  couponRef?: string;
+  couponInfo?: CouponInfo & CouponRefMeta;
 }
 
 export interface RadarItemMeta {
@@ -1006,7 +1047,7 @@ export function riskAssess(
 }
 
 /** Só produto NOVO e EM LINHA (dono, 2026-11-11): plataformas retrô e as que saíram de linha (Xbox One, Xbox 360, PS3 e anteriores, Wii, DS/3DS...) nunca vão para mensagem. */
-const OUT_OF_LINE_PLATFORM = /(?:xbox one(?: [sx])?|xbox 360|ps ?[123]|playstation ?[123]|psp|ps vita|wii(?: u)?|3ds|2ds|nintendo ds|gamecube|n64|nintendo 64|snes|game ?boy|mega ?drive|dreamcast)/i;
+const OUT_OF_LINE_PLATFORM = /\b(?:xbox one(?: [sx])?|xbox 360|ps ?[123]|playstation ?[123]|psp|ps vita|wii(?: u)?|3ds|2ds|nintendo ds|gamecube|n64|nintendo 64|snes|game ?boy|mega ?drive|dreamcast)\b/i;
 export function isOutOfLine(p: Pick<ProductFacts, 'vertical' | 'platformLabel'>): boolean {
   return p.vertical === 'games' && OUT_OF_LINE_PLATFORM.test(p.platformLabel ?? '');
 }
@@ -1048,6 +1089,121 @@ function moveReason(m: MoveDetail, price: number): string {
  * Classe: OK1 e OK2 >= 8% = alerta; OK2 entre 5% e 8%, T1 e T2 = radar. Amazon só em alerta.
  */
 export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidates: Candidate[]; blocked: Blocked[] } {
+  const r = evaluateProductV2Prices(p, ctx);
+  // Gatilho CUPOM: independente dos de preco (a mensagem de preco continua usando a oferta mais barata).
+  if (p.coupons?.length || p.couponMisses?.length) {
+    const c = evaluateCoupon(p, ctx);
+    r.candidates.push(...c.candidates);
+    r.blocked.push(...c.blocked);
+  }
+  return r;
+}
+
+/**
+ * CUPOM ATIVO por oferta (dono, 2026-11-12). Entre as ofertas do produto com cupom aprovado na agulha escolhe a de MAIOR desconto em
+ * reais (empate: menor preco final) e gera UMA mensagem 'Cupom ativo' com o preco final DAQUELA oferta. Revalida aqui (pura) o que a
+ * agulha ja conferiu: leitura <= 120 min, validade, preco do anuncio igual ao da leitura, com cupom < sem cupom; e passa a oferta pelo
+ * mesmo juiz das mensagens de preco (link oficial, frescor, identidade, reputacao). Amazon fica fora (carimbo e regras proprias).
+ * Nao compara com media e nao alega "menor preco": por isso a regua de 10% nao se aplica a esta classe.
+ */
+export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates: Candidate[]; blocked: Blocked[] } {
+  const candidates: Candidate[] = [];
+  const blocked: Blocked[] = [];
+  const nm = nameOf(p);
+  const stop = (reasons: string[], offerId?: string) =>
+    blocked.push({ masterProductId: p.masterProductId, name: nm, trigger: 'CUPOM', reasons: ['cupom', ...(offerId ? [`oferta:${offerId.slice(0, 8)}`] : []), ...reasons] });
+  for (const m of p.couponMisses ?? []) stop([`agulha:${m.reason}`], m.offerId);
+  const facts = p.coupons ?? [];
+  if (!facts.length) return { candidates, blocked };
+  const sb = scopeBlock(p);
+  if (sb) {
+    stop([sb]);
+    return { candidates, blocked };
+  }
+  if (!RELEASED_VERTICALS.includes(p.vertical)) {
+    stop(['departamento_em_review_nao_liberado_no_go']);
+    return { candidates, blocked };
+  }
+  const nowMs = ctx.now.getTime();
+  const formacao = emFaseDeFormacao(p.vertical, ctx.now);
+  const jopts: JudgeOptions = { allowAmazon: false, amazonMaxAgeMin: ctx.amazonMaxAgeMin, amazonPaused: ctx.amazonPaused };
+  const median = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon' && !o.avgExcluded).map((o) => o.priceCents));
+  const oks: Array<{ cf: CouponOfferFact; o: OfferFact; v: OfferVerdict }> = [];
+  for (const cf of facts) {
+    const o = p.offers.find((x) => x.offerId === cf.offerId);
+    if (!o) {
+      stop(['oferta_do_cupom_fora_das_ofertas_vivas'], cf.offerId);
+      continue;
+    }
+    if (netKind(o) === 'amazon') {
+      stop(['amazon_fora_do_gatilho_cupom'], cf.offerId);
+      continue;
+    }
+    if (formacao && o.identidade === 'incerta') {
+      stop(['identidade_incerta'], cf.offerId);
+      continue;
+    }
+    const v = judgeOffer(o, p, ctx.now, ctx.maxAgeMin, jopts);
+    if (v.kind === 'block') {
+      stop(v.reasons, cf.offerId);
+      continue;
+    }
+    const ageMin = (nowMs - cf.readAt.getTime()) / 60_000;
+    if (ageMin < -5) stop(['cupom_leitura_no_futuro'], cf.offerId);
+    else if (ageMin > AGULHA.ITEM_FRESH_MIN) stop([`cupom_leitura_antiga_${Math.round(ageMin)}min`], cf.offerId);
+    else if (cf.expiresAt && cf.expiresAt.getTime() - nowMs < AGULHA.EXPIRY_MARGIN_MIN * 60_000) stop(['cupom_validade_proxima_do_fim'], cf.offerId);
+    else if (Math.abs(o.priceCents - cf.offerPriceCents) > AGULHA.PRICE_TOLERANCE_CENTS) stop(['preco_do_anuncio_mudou_apos_a_leitura'], cf.offerId);
+    else if (!(cf.finalCents > 0 && cf.finalCents < o.priceCents)) stop(['preco_com_cupom_nao_menor_que_sem_cupom'], cf.offerId);
+    else if (cf.pct > AGULHA.MAX_PLAUSIBLE_DISCOUNT_PCT) stop(['desconto_implausivel'], cf.offerId);
+    else oks.push({ cf, o, v });
+  }
+  if (!oks.length) return { candidates, blocked };
+  oks.sort((a, b) => b.cf.offCents - a.cf.offCents || a.cf.finalCents - b.cf.finalCents || a.cf.offerId.localeCompare(b.cf.offerId));
+  const { cf, o, v } = oks[0];
+  const held: string[] = [];
+  const review = [...v.reasons];
+  if (median && cf.finalCents < median * RULES.REVIEW_BELOW_MEDIAN_RATIO) held.push('preco_com_cupom_abaixo_de_035x_a_mediana_das_ofertas');
+  else if (cf.pct > RULES.REVIEW_ABOVE_BELOW_AVG_PCT) review.push(`cupom_acima_de_${RULES.REVIEW_ABOVE_BELOW_AVG_PCT}pct`);
+  // Transparencia: outra oferta VALIDA do produto, sem cupom, que fica abaixo do preco final do cupom.
+  const cheaper = p.offers
+    .filter((x) => x.offerId !== o.offerId && netKind(x) !== 'amazon' && !x.avgExcluded && x.priceCents < cf.finalCents && judgeOffer(x, p, ctx.now, ctx.maxAgeMin, jopts).kind !== 'block')
+    .sort((a, b) => a.priceCents - b.priceCents)[0];
+  const parts = displayParts(p);
+  const messageKey = makeMessageKey('CUPOM', `${p.masterProductId}:CUPOM:${o.offerId}:${windowKey(ctx.now)}`, ctx.now);
+  const input: GroupMessageInput = {
+    vertical: p.vertical,
+    adTag: ctx.adTag,
+    messageKey,
+    model: 'cupom',
+    name: nm,
+    title: parts.title,
+    meta: parts.meta,
+    offer: toMsgOffer(o),
+    coupon: { name: cf.name, offCents: cf.offCents, pct: cf.pct, finalCents: cf.finalCents, minOrderCents: cf.minOrderCents, maxDiscountCents: cf.maxDiscountCents, ruleKnown: cf.ruleKnown, activation: cf.activation, readAt: cf.readAt, expiresAt: cf.expiresAt },
+    cheaperOther: cheaper ? { cents: cheaper.priceCents, networkName: cheaper.networkName } : null,
+  };
+  const cand = finish(p, 'CUPOM', input, {
+    offerIds: [o.offerId],
+    primary: o,
+    reason: `Cupom ativo '${cf.name}' lido na página do anúncio: ${fmtBRL(cf.finalCents)} com o cupom (${fmtBRL(cf.offCents)} de desconto sobre ${fmtBRL(o.priceCents)}).`,
+    avgCents: null,
+    belowPct: null,
+    dropPct: null,
+    reviewReasons: review,
+    held,
+    cls: 'cupom',
+    moveScore: cf.pct,
+    dedupSuffix: windowKey(ctx.now) + 'cup',
+  }, ctx);
+  candidates.push({
+    ...cand,
+    couponRef: cf.couponRef,
+    couponInfo: { code: cf.name, conditions: cf.conditions, expiresAt: cf.expiresAt ? cf.expiresAt.toISOString() : null, verifiedAt: cf.readAt.toISOString(), couponRef: cf.couponRef, annKind: 'anuncio' },
+  });
+  return { candidates, blocked };
+}
+
+function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidates: Candidate[]; blocked: Blocked[] } {
   const legacy = evaluateProduct(p, ctx);
   const candidates = legacy.candidates.filter((c) => c.trigger !== 'G1' && c.trigger !== 'G2').map(legacyRisk);
   const blocked = legacy.blocked.filter((b) => b.trigger !== 'G1' && (b.trigger !== 'G2' || SCOPE_BLOCK_RE.test(b.reasons[0] ?? '')));
@@ -1394,6 +1550,8 @@ export interface SentRecord {
   platformLabel?: string | null;
   /** Tipo do produto (cota de diversidade). */
   tipo?: string | null;
+  /** Oferta cujo cupom foi divulgado nesta mensagem (mensagem de cupom OU mensagem de preco com bloco de cupom). */
+  couponOfferId?: string | null;
 }
 
 /** Noite (22h às 8h, Brasília): não há silêncio; a mensagem sai SEM notificação sonora. */
@@ -1435,19 +1593,44 @@ export function productDedupBlock(
   now: Date
 ): string | null {
   if (!c.masterProductId) return null;
-  const gapMs = c.trigger === 'AC' ? RULES.ACHADO_PRODUCT_GAP_HOURS * 3600_000 : RULES.PRODUCT_GAP_MIN * 60_000;
+  const isCupom = c.trigger === 'CUPOM';
+  const gapMs = isCupom ? RULES.CUPOM_PRODUCT_GAP_MIN * 60_000 : c.trigger === 'AC' ? RULES.ACHADO_PRODUCT_GAP_HOURS * 3600_000 : RULES.PRODUCT_GAP_MIN * 60_000;
+  // Mensagem de cupom e mensagem de preco do mesmo produto sao independentes: cada uma so conta o proprio tipo (cupom x nao-cupom).
   const prior = history
-    .filter((h) => h.masterProductId === c.masterProductId && now.getTime() - h.sentAt.getTime() < gapMs)
+    .filter((h) => h.masterProductId === c.masterProductId && (h.trigger === 'CUPOM') === isCupom && now.getTime() - h.sentAt.getTime() < gapMs)
     .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
   if (!prior) return null;
   const minSince = (now.getTime() - prior.sentAt.getTime()) / 60_000;
+  if (isCupom) return `cupom_produto_ja_enviado_ha_${Math.floor(minSince)}min`;
   if ((c.trigger === 'G1' || c.trigger === 'OK1') && c.priceCents < prior.priceCents && minSince >= RULES.NEW_MIN_REPEAT_MIN) return null;
   return c.trigger === 'AC' ? `achado_produto_ja_enviado_ha_${Math.floor(minSince / 60)}h` : `produto_ja_enviado_ha_${Math.floor(minSince)}min`;
 }
 
+/** Mesmo cupom (mesma oferta/leitura) ja divulgado ha menos de 1 h, em mensagem de cupom OU de preco com bloco de cupom. null = pode. */
+export function cupomDedupBlock(c: Pick<Candidate, 'trigger' | 'offerIds' | 'couponRef'>, history: SentRecord[], now: Date): string | null {
+  if (c.trigger !== 'CUPOM') return null;
+  const ref = c.couponRef ?? c.offerIds[0];
+  const gapMs = RULES.CUPOM_COUPON_GAP_MIN * 60_000;
+  const hit = history.filter((h) => !h.itemOnly && h.couponOfferId && h.couponOfferId === ref && now.getTime() - h.sentAt.getTime() < gapMs).sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
+  return hit ? `cupom_ja_divulgado_ha_${Math.floor((now.getTime() - hit.sentAt.getTime()) / 60_000)}min` : null;
+}
+
+/** Cota de cupom por loja: no maximo CUPOM_MAX_PER_HOUR_STORE mensagens de cupom por hora na loja. null = pode. */
+export function cupomQuotaBlock(vertical: string, history: SentRecord[], now: Date): string | null {
+  const n = history.filter((h) => !h.itemOnly && h.trigger === 'CUPOM' && (h.vertical ?? '') === (vertical ?? '') && now.getTime() - h.sentAt.getTime() < 3600_000 && h.sentAt.getTime() <= now.getTime() + 5_000).length;
+  return n >= RULES.CUPOM_MAX_PER_HOUR_STORE ? `cupom_maximo_${RULES.CUPOM_MAX_PER_HOUR_STORE}_por_hora_na_loja` : null;
+}
+
+/** Parcela das mensagens da loja (24 h) que sao de cupom, e o total. */
+export function cupomShare(vertical: string, history: SentRecord[], now: Date): { count: number; total: number; pct: number } {
+  const recs = storeLast24h(history, vertical, now);
+  const n = recs.filter((h) => h.trigger === 'CUPOM').length;
+  return { count: n, total: recs.length, pct: recs.length ? (n / recs.length) * 100 : 0 };
+}
+
 const TRIGGER_RANK: Record<Trigger, number> = { G1: 0, OK1: 0, G2: 1, OK2: 1, T1: 2, T2: 3, G3: 4, G4: 5, G5: 6, G6: 7, RADAR: 8, CUPOM: 9, P1: 10, P2: 11, P3: 12, P4: 13, P5: 14, AC: 15 };
-/** Prioridade (dono, 2026-11-11): alerta > insight > radar; resumo logo depois do alerta; cupom por último. */
-const CLASS_RANK: Record<MessageClass, number> = { alerta: 0, resumo: 1, insight: 2, radar: 3, plataforma: 4, cupom: 5 };
+/** Prioridade: alerta > resumo > CUPOM > insight (achado incluso) > radar > plataforma. Dono, 2026-11-12: cupom ativo e prioridade ALTA, acima de insight/achado. */
+const CLASS_RANK: Record<MessageClass, number> = { alerta: 0, resumo: 1, cupom: 2, insight: 3, radar: 4, plataforma: 5 };
 
 // ---------------------------------------------------------------------------
 // Espaçamento entre mensagens (onda 2)
@@ -1585,7 +1768,7 @@ export function diversityKey(x: DiversitySource): string {
   return `${netKind({ networkSlug: slug, networkName: slug })}|${x.vertical ?? ''}|${x.platformLabel ?? ''}`;
 }
 
-/** Classe (alerta > resumo > insight > radar > cupom); dentro dela o maior movimento; depois o gatilho. */
+/** Classe (alerta > resumo > cupom > insight > radar > plataforma); dentro dela o maior movimento; depois o gatilho. */
 export function compareCandidates(a: Candidate, b: Candidate): number {
   return (
     CLASS_RANK[a.cls] - CLASS_RANK[b.cls] ||
@@ -1748,6 +1931,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && !opts.ignoreSpacing) why = chatSpacingBlock(c.vertical, all, now);
     if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
+    if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);
     if (why) deferred.push({ messageKey: c.messageKey, reason: why });
@@ -1761,8 +1945,18 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     const s = tipoShare(c.vertical, c.tipo, real, now);
     return s.total >= RULES.TIPO_SHARE_MIN_SENT && s.pct >= RULES.TIPO_MAX_SHARE_PCT;
   };
+  // Cota de cupom por loja: cupom nao passa de CUPOM_MAX_SHARE_PCT das mensagens da loja em 24 h, mas so se houver alternativa (nao-cupom) na fila.
+  const cupomOver = (c: Candidate): boolean => {
+    if (c.trigger !== 'CUPOM') return false;
+    const s = cupomShare(c.vertical, real, now);
+    return s.total >= RULES.CUPOM_SHARE_MIN_SENT && s.pct >= RULES.CUPOM_MAX_SHARE_PCT;
+  };
   const ok: Candidate[] = [];
   for (const c of ok0) {
+    if (cupomOver(c) && ok0.some((x) => x.vertical === c.vertical && x.trigger !== 'CUPOM' && x.cls !== 'plataforma')) {
+      deferred.push({ messageKey: c.messageKey, reason: `cupom_acima_de_${RULES.CUPOM_MAX_SHARE_PCT}pct_do_dia_na_loja` });
+      continue;
+    }
     if (tipoOver(c) && ok0.some((x) => x.vertical === c.vertical && !!x.tipo && x.tipo !== c.tipo && !tipoOver(x))) {
       deferred.push({ messageKey: c.messageKey, reason: `tipo_${c.tipo}_acima_de_${RULES.TIPO_MAX_SHARE_PCT}pct_do_dia_na_loja` });
     } else ok.push(c);

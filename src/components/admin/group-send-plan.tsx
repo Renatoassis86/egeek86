@@ -12,7 +12,7 @@ const TRIGGER_LABEL: Record<string, string> = {
   T1: 'Caiu dois dias seguidos',
   T2: 'Perto do menor preço',
   RADAR: 'Radar',
-  CUPOM: 'Cupom verificado',
+  CUPOM: 'Cupom ativo (por oferta)',
   P1: 'Plataforma: histórico',
   P2: 'Plataforma: comparar lojas',
   P3: 'Plataforma: monitorar',

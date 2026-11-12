@@ -24,6 +24,8 @@ export const POOL = {
   PLUS_EVENTS_MAX: 30,
   /** Produtos extras por loja Plus para o gatilho ACHADO (1 vendedor / sem média). */
   PLUS_ACHADO: 30,
+  /** Produtos com cupom valido na agulha, por loja (games e Plus). Entram ANTES dos demais, por rodizio de tipo; o excedente cai na fila normal. */
+  CUPOM_POR_LOJA: 40,
 } as const;
 
 /** FNV-1a 32 bits: ordem estável por hora, sem Math.random. */
@@ -78,6 +80,8 @@ export interface PoolInput {
   sends: Readonly<Record<string, number>>;
   /** Liga o grupo ACHADO. */
   achadoOn: boolean;
+  /** Produtos que tem oferta com cupom VALIDO na agulha agora (ja validado por quem chama). Cota CUPOM_POR_LOJA por loja, rodizio de tipo. */
+  cupom?: readonly PoolRow[];
 }
 
 /** Seleção final, sem duplicata: games por razão e hash; lojas Plus por eventos + rodízio de tipo; ACHADO por rodízio de tipo. */
@@ -87,6 +91,10 @@ export function selecionarPool(inp: PoolInput): string[] {
   const add = (rows: readonly PoolRow[]) => {
     for (const r of rows) if (!seen.has(r.mid)) (seen.add(r.mid), out.push(r.mid));
   };
+  // Cupom primeiro: o agente de cupons deve sempre ter um cupom testado na fila. Cota por loja, rodizio de tipo (a diversidade vale tambem aqui).
+  const cupomByV = new Map<string, PoolRow[]>();
+  for (const r of inp.cupom ?? []) (cupomByV.get(r.v) ?? cupomByV.set(r.v, []).get(r.v)!).push(r);
+  for (const rows of cupomByV.values()) add(rodizioPorTipo(rows, inp.hourKey, inp.sends, POOL.CUPOM_POR_LOJA));
   const byV = new Map<string, PoolRow[]>();
   for (const r of inp.main) (byV.get(r.v) ?? byV.set(r.v, []).get(r.v)!).push(r);
 

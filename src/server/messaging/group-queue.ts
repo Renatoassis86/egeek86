@@ -174,6 +174,8 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
     }
     const waStatus = disp.disposition === 'held' && v2 ? 'retida' : 'proposta';
     const productId = c.trigger === 'G4' || c.trigger === 'RADAR' || isPlatform ? null : c.masterProductId;
+    // Cupom e preco do mesmo produto nao se bloqueiam na fila: a proposta aberta so conta se for do mesmo tipo (cupom x nao-cupom).
+    const isCupom = c.trigger === 'CUPOM';
     for (const ch of ['tg', 'wa'] as const) {
       const text = ch === 'tg' ? c.texts.telegram : c.texts.whatsapp;
       const status = ch === 'tg' ? tgStatus : waStatus;
@@ -187,7 +189,7 @@ export async function persistProposals(result: DetectionResult, opts: PersistOpt
                ${status}, ${c.cls}, ${ch === 'tg' ? simState : null}, ${opts.state}
         WHERE NOT EXISTS (
           SELECT 1 FROM group_messages g
-          WHERE g.channel = ${ch} AND g.master_product_id = ${productId}::uuid
+          WHERE g.channel = ${ch} AND g.master_product_id = ${productId}::uuid AND (g.trigger = 'CUPOM') = ${isCupom}
             AND g.status IN ('proposta', 'aprovada', 'proposta_auto', 'retida', 'enviando') AND g.created_at >= now() - interval '6 hours'
         )
         ON CONFLICT (dedup_key, channel) DO NOTHING
@@ -343,6 +345,7 @@ export async function revalidateCandidate(
 ): Promise<Revalidation> {
   const { now } = opts;
   const isRadar = orig.trigger === 'RADAR';
+  const isCupom = orig.trigger === 'CUPOM';
 
   // ---- 1) reconferência ao vivo ----
   const originals = isRadar
@@ -350,7 +353,7 @@ export async function revalidateCandidate(
     : orig.offerIds.map((id, idx) => ({ offerId: id, detectedPriceCents: idx === 0 && orig.trigger !== 'G4' ? (detectedPriceCents ?? orig.priceCents) : null }));
   const caps = new Map<string, number>();
   if (isRadar) for (const i of orig.items ?? []) caps.set(i.masterProductId, i.priceCents);
-  else if (orig.trigger !== 'G4') caps.set(orig.masterProductId, detectedPriceCents ?? orig.priceCents);
+  else if (orig.trigger !== 'G4' && !isCupom) caps.set(orig.masterProductId, detectedPriceCents ?? orig.priceCents); // cupom nao alega "menor preco": sem conferir concorrentes
   let phase: Awaited<ReturnType<typeof runLivePhase>>;
   try {
     const targets = await loadLiveTargets(originals, caps, now);
@@ -391,8 +394,13 @@ export async function revalidateCandidate(
   const match = live.candidates.find((c) =>
     orig.trigger === 'G4'
       ? c.trigger === 'G4' && orig.offerIds.every((o) => c.offerIds.includes(o))
-      : c.masterProductId === orig.masterProductId && c.trigger === orig.trigger && isAmz(c) === isAmz(orig)
+      : c.masterProductId === orig.masterProductId && c.trigger === orig.trigger && isAmz(c) === isAmz(orig) && (!isCupom || c.offerIds[0] === orig.offerIds[0])
   );
+  // CUPOM: a releitura roda a agulha de novo AGORA (loadFacts). Se o cupom sumiu na releitura, venceu, mudou de preco ou a oferta saiu, nao envia.
+  if (isCupom && (!match || !match.sendable)) {
+    const why = live.blocked.filter((b) => b.trigger === 'CUPOM' && b.masterProductId === orig.masterProductId).flatMap((b) => b.reasons.filter((r) => r !== 'cupom')).slice(0, 3).join('; ');
+    return { ok: false, reason: `revalidação do cupom: já não passa na agulha${why ? ` (${why})` : ' (sumiu na releitura ou a leitura passou de 120 min)'}`, live: phase.logs };
+  }
   if (!match || !match.sendable) {
     const moved = phase.changed ? ' (o preço ao vivo mudou em relação ao gravado)' : '';
     return { ok: false, reason: `revalidação: já não vale (preço velho, sumiu ou mudou)${moved}`, live: phase.logs };
@@ -478,6 +486,11 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
 
     let coupon = false;
     let couponInfo: (CouponInfo & CouponRefMeta) | null = null;
+    // Mensagem de CUPOM: o cupom JA e o corpo da mensagem (conferido na releitura acima); so registra a divulgacao para o guardiao acompanhar o fim dele.
+    if (match.trigger === 'CUPOM' && match.couponInfo) {
+      coupon = true;
+      couponInfo = match.couponInfo;
+    }
     if (deps.couponLookup && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR') {
       try {
         const info = await timeout(deps.couponLookup(match.offerIds[0]), 4000);

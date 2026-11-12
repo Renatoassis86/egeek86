@@ -86,7 +86,7 @@ Ordem das checagens por candidato (`auto`, enviável, não retido), todas em `gr
 | **Dedup do produto** | G2/demais: 1 h (`PRODUCT_GAP_MIN`); novo mínimo (OK1) com preço menor repete em 30 min; **AC: 24 h** | anti-saturação |
 | Cota do Achado por loja (novo) | max(3, 25%) das mensagens da loja em 24 h; 2 por hora | o Achado nunca vira a maioria |
 | **Cota de tipo (novo)** | nenhum tipo passa de 30% das mensagens da loja em 24 h, **só se houver alternativa de outro tipo** e depois de 6 envios na loja; alerta de queda real não é freado | variedade sem parar o canal |
-| Fila | 1 envio por volta; ordem: classe (alerta > resumo > insight > radar > plataforma > cupom); dentro de insight/radar, o **Achado só depois de insight com comparação real (novo)**, depois o **tipo menos enviado hoje na loja (novo)**, depois maior movimento; desempate por loja/plataforma da última enviada | |
+| Fila | 1 envio por volta; ordem: classe (alerta > resumo > **cupom (novo, prioridade alta)** > insight > radar > plataforma); dentro de insight/radar, o **Achado só depois de insight com comparação real (novo)**, depois o **tipo menos enviado hoje na loja (novo)**, depois maior movimento; desempate por loja/plataforma da última enviada | |
 | Som | só alerta e resumo, de dia, até 20 por dia (`SOUND_CAP`); o resto silencioso | |
 
 ## 7. Etapa F: envio e reconferência
@@ -101,6 +101,7 @@ Ordem das checagens por candidato (`auto`, enviável, não retido), todas em `gr
 4. **Cota de tipo 30% e rodízio no plano** (`applyLimits`), suave.
 5. **Histórico com tipo** (`loadSentHistory`: `candidate.tipo`, ou derivado do nome nas linhas antigas) e `candidate.tipo` gravado nos novos candidatos.
 6. **Migration 0032** (`drizzle/migrations/0046_group_messages_achado.sql`, NÃO aplicada): amplia o CHECK de gatilho para aceitar `AC`. Enquanto não for aplicada, `groupMessagesAchadoReady()` devolve falso e o Achado fica desligado (nada muda em produção). Kill-switch: `GROUP_ACHADO=off`.
+- **Acrescentado depois (mesmo dia): gatilho CUPOM "Cupom ativo" por oferta (2026-11-12, pedido do dono: "sempre um cupom ativo e testado na agulha")**: ver `CUPOM_NA_AGULHA.md`, seção "Gatilho CUPOM". Classe `cupom` passa a ter prioridade ALTA (alerta > resumo > cupom > insight/achado > radar > plataforma). Pool: produtos com oferta cuja leitura mais recente de cupom é positiva e passa na agulha entram primeiro (até 40 por loja, rodízio de tipo). Kill-switch `GROUP_CUPOM=off`. Não exige migration (o CHECK da 0031 já aceita `CUPOM`/`cupom`).
 7. **Não mudou** (vetos do conselho): `MED_MIN_OFFERS` (3), mínimo de 2 lojas na formação, régua de 10% depois da corte, 5 ofertas para afirmar %, dedup de 1 h do G2, espaçamento por chat, tetos, frescor de 30 min no envio, reconferência ao vivo.
 
 ## 9. Funil medido (2026-11-12, antes e depois)

@@ -166,6 +166,8 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
 
     const detection = await detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag() });
     summary.counts = detection.counts;
+    // Gatilho CUPOM: quantas mensagens de cupom foram geradas neste ciclo (e por loja), e por que ofertas com leitura foram barradas na agulha.
+    summary.cupom = detection.cupom;
     summary.warnings = detection.warnings;
     summary.amazon = { paused: detection.config.amazonPaused, lastRunAt: detection.config.amazonLastRunAt };
 
@@ -184,6 +186,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
         let outcome: SendOutcome | { outcome: string; reason?: string } = { outcome: 'nada na fila para enviar' };
         let history = detection.history;
         const sentBy: Record<string, number> = {};
+        let cupomSent = 0;
         let expiredCount = 0;
         let guard = 0;
         // Esvazia a fila acumulada dentro do orçamento de tempo (sem teto diário; o freio é o espaçamento por chat e o 429).
@@ -209,13 +212,14 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
           pending = pending.filter((x) => x.id !== row.id);
           if (r.outcome === 'sent') {
             sentCount++;
+            if (row.candidate.trigger === 'CUPOM') cupomSent++;
             sentBy[row.candidate.vertical] = (sentBy[row.candidate.vertical] ?? 0) + 1;
             history = (await loadSentHistory('tg', new Date())).records;
           } else if (r.outcome === 'expired') expiredCount++;
           else if (r.outcome === 'deferred') continue; // a linha foi devolvida à fila; tenta a próxima do plano
           else break; // blocked / failed (inclui 429 longo): para; a linha volta à fila para o próximo ciclo
         }
-        summary.sendRun = { sent: sentCount, expired: expiredCount, byStore: sentBy, remainingInQueue: pending.length, ms: Date.now() - started.getTime() };
+        summary.sendRun = { sent: sentCount, cupomSent, expired: expiredCount, byStore: sentBy, remainingInQueue: pending.length, ms: Date.now() - started.getTime() };
         summary.send = outcome;
       } else {
         const next = await db
@@ -231,7 +235,11 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     if (state === 'on' && !auto.ok) summary.autoPaused = auto.reason;
 
     if (v2) summary.rechecks = await runRechecks(now);
-    await logRun(started, 'ok', { state, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused });
+    await logRun(started, 'ok', {
+      state, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
+      cupomGeradas: detection.cupom.generated, cupomEnviaveis: detection.cupom.sendable, cupomNoPool: detection.cupom.poolProducts, cupomPorLoja: detection.cupom.byStore,
+      cupomBarradas: detection.cupom.barred, cupomEnviadas: (summary.sendRun as { cupomSent?: number } | undefined)?.cupomSent ?? 0,
+    });
     return summary;
   } catch (e) {
     const msg = e instanceof Error ? e.message.slice(0, 300) : 'erro';
