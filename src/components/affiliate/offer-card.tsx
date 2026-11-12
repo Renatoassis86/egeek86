@@ -153,6 +153,7 @@ export function OfferCard({
                   <Text variant="caption" color="secondary" className="inline-flex items-center gap-1">
                     <TrendingDown className="size-3" aria-hidden />
                     Menor já visto: {formatBRL(metrics.lowestPriceCents)}
+                    {metrics.highestPriceCents != null && metrics.highestPriceCents > metrics.lowestPriceCents ? ` · Maior já visto: ${formatBRL(metrics.highestPriceCents)}` : ''}
                   </Text>
                 )}
               </>

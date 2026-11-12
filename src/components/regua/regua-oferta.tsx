@@ -15,6 +15,7 @@ export function reguaDoFront(precoCents: number, metrics: OfferListingMetrics | 
     precoCents,
     mediaCents: metrics.avgPriceCents,
     minCents: metrics.lowestPriceCents > 0 ? metrics.lowestPriceCents : null,
+    maxCents: metrics.highestPriceCents,
     diasHistorico: metrics.historyDays,
     nOfertas: metrics.quoteCount,
   });
@@ -47,6 +48,7 @@ export function ReguaMarcadores({ regua }: { regua: ReguaFront }) {
     regua.mini != null ? { k: 'Menor já visto', v: regua.mini } : null,
     { k: 'Agora', v: regua.agora },
     regua.media != null ? { k: 'Média', v: regua.media } : null,
+    regua.maxi != null ? { k: 'Maior já visto', v: regua.maxi } : null,
   ].filter((p): p is { k: string; v: number } => p != null);
   if (pontos.length < 2) return null;
   const lo = Math.min(...pontos.map((p) => p.v));
@@ -54,7 +56,7 @@ export function ReguaMarcadores({ regua }: { regua: ReguaFront }) {
   const span = Math.max(1, hi - lo);
   const cor = regua.veredito ? DEGRAUS[regua.veredito.degrau].cor : 'currentColor';
   return (
-    <div className="flex flex-col gap-1.5" aria-label="Régua de preço: menor já visto, preço agora e média">
+    <div className="flex flex-col gap-1.5" aria-label="Régua de preço: menor já visto, preço agora, média e maior já visto">
       <div className="relative h-1.5 w-full bg-[var(--color-border-subtle)]">
         {pontos.map((p) => (
           <span

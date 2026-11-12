@@ -895,6 +895,8 @@ export interface OfferListingMetrics {
   currentPriceCents: number;
   /** Menor preço registrado do produto (todas as lojas, inclui encerradas). Legado: sem histórico elegível a UI NÃO deve exibir. */
   lowestPriceCents: number;
+  /** Maior preço registrado do produto (cotações plausíveis, sem outliers). Só com histórico elegível; null caso contrário (R-44). */
+  highestPriceCents: number | null;
   /** Selo "menor preço já registrado". JÁ exige elegibilidade (corrige o falso positivo de 1 cotação). */
   isLowestEver: boolean;
   /** "Preço de tabela" do snapshot mais recente (quando a fonte informou original_price/list price). Único valor legítimo para "de/por" (EG-13). */
@@ -1008,6 +1010,7 @@ function buildOfferListingMetrics(row: OfferListingRow, stats: MasterProductPric
     masterProductId: row.masterProductId,
     currentPriceCents: current,
     lowestPriceCents: low ? low.priceCents : current,
+    highestPriceCents: eligibility.eligible && stats?.maxCents && stats.maxCents > 0 ? stats.maxCents : null,
     isLowestEver,
     listPriceCents: row.listPriceCents,
     discountPercent,

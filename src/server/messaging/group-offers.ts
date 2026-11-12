@@ -1,6 +1,6 @@
 import 'server-only';
 import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
-import { reguaDaLoja } from '@/lib/messaging/regua';
+import { reguaConfig, reguaDaLoja } from '@/lib/messaging/regua';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
@@ -36,6 +36,7 @@ import {
   type ProductFacts,
   type SentRecord,
 } from '@/lib/messaging/group-rules';
+const moveOpts = () => ({ noMinimo: reguaConfig().elegivelMin, minDiasSerie: reguaConfig().elegivelMinDias, amplitudeMinPct: reguaConfig().elegivelMinAmplitudePct });
 
 /**
  * DETECTOR (modo dry) das mensagens para grupos. SOMENTE LEITURA: nunca escreve no banco, nunca envia.
@@ -610,7 +611,7 @@ async function loadSeries(ids: string[], today: string, mode: AmazonMode): Promi
   const scope = amazonScope(mode);
   const rows = await db.execute<Row>(sql`
     SELECT d.master_product_id AS mid, d.day::text AS day,
-           (n.slug || ' ' || n.name) ILIKE '%amazon%' AS amz, min(d.min_cents) AS mn
+           (n.slug || ' ' || n.name) ILIKE '%amazon%' AS amz, min(d.min_cents) AS mn, max(s.median_offer_day_cents) AS mx
     FROM price_daily_offer d
     INNER JOIN affiliate_offers o ON o.id = d.offer_id
     INNER JOIN affiliate_networks n ON n.id = o.network_id
@@ -624,16 +625,20 @@ async function loadSeries(ids: string[], today: string, mode: AmazonMode): Promi
   for (const r of rows) {
     const mid = String(r.mid);
     const e = out.get(mid) ?? out.set(mid, { main: [], amazon: [] }).get(mid)!;
-    const pt = { day: String(r.day).slice(0, 10), minCents: Number(r.mn) };
+    const mxN = r.mx == null ? 0 : Number(r.mx);
+    const pt: { day: string; minCents: number; maxCents?: number } = { day: String(r.day).slice(0, 10), minCents: Number(r.mn), ...(mxN > 0 ? { maxCents: mxN } : {}) };
     (r.amz === true ? e.amazon : e.main).push(pt);
     // PRICE_AMAZON_MODE=on (games): o menor preço do dia do produto também considera a Amazon (mesma base do estado diário); a série própria dela segue à parte.
     if (r.amz === true && scope === 'include') e.main.push(pt);
   }
   // Menor entre ML e Shopee por dia (as linhas já agrupam por rede, não por tipo): consolida o mínimo de cada dia.
   for (const e of out.values()) {
-    const m = new Map<string, number>();
-    for (const pt of e.main) m.set(pt.day, Math.min(m.get(pt.day) ?? Infinity, pt.minCents));
-    e.main = [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([day, minCents]) => ({ day, minCents }));
+    const m = new Map<string, { minCents: number; maxCents: number }>();
+    for (const pt of e.main) {
+      const cur = m.get(pt.day);
+      m.set(pt.day, { minCents: Math.min(cur?.minCents ?? Infinity, pt.minCents), maxCents: Math.max(cur?.maxCents ?? 0, pt.maxCents ?? 0) });
+    }
+    e.main = [...m.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([day, v]) => ({ day, minCents: v.minCents, ...(v.maxCents > 0 ? { maxCents: v.maxCents } : {}) }));
   }
   return out;
 }
@@ -798,7 +803,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     if (!offs.length || (emFaseDeFormacao(String(p.vertical), o.now) && !reguaDaLoja(String(p.vertical)))) return false;
     const mainPrices = offs.filter((x) => !/amazon/i.test(x.networkSlug)).map((x) => x.priceCents);
     const cheapestMain = mainPrices.length ? Math.min(...mainPrices) : 0;
-    const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today).length > 0;
+    const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today, moveOpts()).length > 0;
     const stateAvg = stateAvgBy.get(id);
     const maybeMed = offs.length >= 3 && cheapestMain > 0 && stateAvg != null && cheapestMain <= stateAvg && (seriesBy.get(id)?.main.length ?? 0) >= RULES.MED_MIN_SERIES_DAYS - 1;
     const needsAmzAvg = amazonCountsIn(o.amazonMode, String(p.vertical)) && offs.some((x) => /amazon/i.test(x.networkSlug));
@@ -816,7 +821,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     let avg: ProductFacts['avg'] = null;
     const mainPrices = offs.filter((x) => !/amazon/i.test(x.networkSlug)).map((x) => x.priceCents);
     const cheapestMain = mainPrices.length ? Math.min(...mainPrices) : 0;
-    const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today).length > 0;
+    const hasMove = offs.length >= 3 && cheapestMain > 0 && detectMovement(seriesBy.get(id)?.main ?? [], cheapestMain, today, moveOpts()).length > 0;
     // "Na média ou abaixo" (dono, 2026-11-11): também precisa da média quando o menor preço vivo está no nível da média do dia.
     const stateAvg = stateAvgBy.get(id);
     const maybeMed = offs.length >= 3 && cheapestMain > 0 && stateAvg != null && cheapestMain <= stateAvg && (seriesBy.get(id)?.main.length ?? 0) >= RULES.MED_MIN_SERIES_DAYS - 1;

@@ -258,6 +258,8 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
         </div>
       ) : null}
 
+      {input.regua?.faixaTexto ? <div style={abs(G.pad, G.footerTop - 34, { width: G.contentW, fontSize: 22, color: C.secondary })}>{input.regua.faixaTexto}</div> : null}
+
       <div style={abs(G.pad, G.footerTop, { width: G.contentW, height: 40, justifyContent: 'space-between', alignItems: 'center', fontSize: 22, color: C.secondary })}>
         <div style={{ display: 'flex' }}>egeek86.com</div>
         <div style={{ display: 'flex' }}>{stampLine(input.checkedAt)}</div>

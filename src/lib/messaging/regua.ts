@@ -28,6 +28,8 @@ export const REGUA = {
   D1_SHARE_PCT_PADRAO: 100 / 3,
   /** Degraus que vão também ao canal Destaques. */
   DESTAQUES_DEGRAU_MIN: 4,
+  /** Dias medidos mínimos para mostrar mínimo e máximo registrados nas mensagens (R-44; abaixo disso a linha é omitida). */
+  MINMAX_MIN_DIAS: 7,
 } as const;
 
 export interface ReguaConfig {
@@ -39,6 +41,16 @@ export interface ReguaConfig {
   d1SharePct: number;
   /** Dias mínimos de histórico para a mínima. */
   minDias: number;
+  /** R-44 (dono, 2026-11-12): elegível para mensagem também o preço no menor já registrado (união com o corte de %). GROUP_REGUA_ELEGIVEL_MIN=on. */
+  elegivelMin: boolean;
+  /** Dias de série mínimos (sem hoje) para valer "no menor registrado" (GROUP_REGUA_ELEGIVEL_MIN_DIAS; padrão 6 = MOVE_MIN_DAYS - 1). */
+  elegivelMinDias: number;
+  /** Amplitude mínima da série (maior menor-do-dia sobre o menor, em %) para valer "no menor registrado": série plana não informa nada (parecer do estatístico). GROUP_REGUA_ELEGIVEL_MIN_AMPL_PCT. */
+  elegivelMinAmplitudePct: number;
+  /** Dias medidos mínimos para a linha "Mínimo/Máximo" (GROUP_REGUA_MINMAX_DIAS). */
+  minMaxDias: number;
+  /** Linha "Mínimo/Máximo" nas mensagens; GROUP_REGUA_MINMAX=off a remove (reversão sem deploy de código). */
+  minMaxOn: boolean;
 }
 
 type Env = Record<string, string | undefined>;
@@ -54,7 +66,15 @@ export function reguaConfig(env: Env = process.env): ReguaConfig {
   );
   const share = Number(String(env.GROUP_REGUA_D1_SHARE_PCT ?? '').replace(',', '.'));
   const dias = Number(String(env.GROUP_REGUA_MIN_DIAS ?? ''));
+  const eDias = Number(String(env.GROUP_REGUA_ELEGIVEL_MIN_DIAS ?? ''));
+  const mmDias = Number(String(env.GROUP_REGUA_MINMAX_DIAS ?? ''));
+  const ampl = Number(String(env.GROUP_REGUA_ELEGIVEL_MIN_AMPL_PCT ?? '').replace(',', '.'));
   return {
+    elegivelMin: /^(on|1|true|sim)$/i.test(String(env.GROUP_REGUA_ELEGIVEL_MIN ?? '').trim()),
+    elegivelMinDias: Number.isInteger(eDias) && eDias >= 1 && eDias <= 90 ? eDias : 6,
+    elegivelMinAmplitudePct: Number.isFinite(ampl) && ampl >= 0 && ampl <= 100 && String(env.GROUP_REGUA_ELEGIVEL_MIN_AMPL_PCT ?? '').trim() !== '' ? ampl : 5,
+    minMaxOn: !/^(off|0|false|nao|não)$/i.test(String(env.GROUP_REGUA_MINMAX ?? '').trim()),
+    minMaxDias: Number.isInteger(mmDias) && mmDias >= 1 && mmDias <= 90 ? mmDias : REGUA.MINMAX_MIN_DIAS,
     pctMin: Number.isFinite(pct) && pct > 0 && pct < 100 ? pct : 0,
     lojas,
     d1SharePct: Number.isFinite(share) && share > 0 && share <= 100 ? share : REGUA.D1_SHARE_PCT_PADRAO,
@@ -137,6 +157,8 @@ export interface VereditoInput {
   diasHistorico: number;
   /** Mínimo de dias (reguaConfig.minDias). */
   minDias?: number;
+  /** R-44: elegível só por estar no menor preço registrado (sem queda de 3% sobre a média). Vira degrau 1, texto neutro, sem percentual. */
+  viaMinima?: boolean;
 }
 
 export interface Veredito {
@@ -173,7 +195,10 @@ const pct1 = (x: number) => x.toFixed(1).replace('.', ',');
  * "Espere" só existe no site (preço acima da média); aqui nunca.
  */
 export function calcularVeredito(i: VereditoInput): Veredito | null {
-  const bruto = degrauDaQueda(i.pct);
+  const daQueda = degrauDaQueda(i.pct);
+  // R-44: sem queda de 3% sobre a média mas no menor preço registrado = degrau 1 neutro (nunca promete desconto).
+  const viaMinima = daQueda == null && i.viaMinima === true;
+  const bruto: Degrau | null = daQueda ?? (viaMinima ? 1 : null);
   if (bruto == null) return null;
   const minDias = i.minDias ?? REGUA.MIN_DIAS_HISTORICO;
   const pct = arredondar1(i.pct);
@@ -184,7 +209,11 @@ export function calcularVeredito(i: VereditoInput): Veredito | null {
 
   let minLinha: string | null = null;
   let naMinima = false;
-  if (histOk && i.minCents != null) {
+  if (viaMinima && temMin && i.precoCents <= (i.minCents as number)) {
+    // Elegível por ser o menor preço já registrado: a janela escrita é a medida (nunca mais do que os dias reais).
+    minLinha = `Menor preço dos últimos ${janelaDias} dias`;
+    naMinima = true;
+  } else if (histOk && i.minCents != null) {
     const acima = ((i.precoCents - i.minCents) / i.minCents) * 100;
     if (i.precoCents <= i.minCents) {
       minLinha = `Menor preço dos últimos ${janelaDias} dias`;
@@ -206,7 +235,7 @@ export function calcularVeredito(i: VereditoInput): Veredito | null {
     degrauBruto: bruto,
     rotulo,
     pct,
-    mostrarPct: !poucas,
+    mostrarPct: !poucas && !viaMinima,
     cautela,
     minLinha,
     naMinima,
@@ -227,16 +256,73 @@ export interface ReguaInfo {
   nOfertas: number;
   /** Texto do botão do Telegram. */
   botao: string;
+  /** Mínimo e máximo registrados (R-44); ausente = histórico insuficiente. */
+  faixa?: FaixaPreco | null;
+  /** Elegível só pelo menor preço registrado (sem queda de 3% sobre a média). */
+  viaMinima?: boolean;
 }
 export const BOTAO_COMPRAR = 'Comprar agora';
 
-export function reguaInfoDe(v: Veredito): ReguaInfo {
-  return { degrau: v.degrau, degrauBruto: v.degrauBruto, rotulo: v.rotulo, pct: v.pct, mostrarPct: v.mostrarPct, minLinha: v.minLinha, nOfertas: v.nOfertas, botao: BOTAO_COMPRAR };
+export function reguaInfoDe(v: Veredito, faixa?: FaixaPreco | null, viaMinima?: boolean): ReguaInfo {
+  return { degrau: v.degrau, degrauBruto: v.degrauBruto, rotulo: v.rotulo, pct: v.pct, mostrarPct: v.mostrarPct, minLinha: v.minLinha, nOfertas: v.nOfertas, botao: BOTAO_COMPRAR, ...(faixa ? { faixa } : {}), ...(viaMinima ? { viaMinima: true } : {}) };
 }
 
 /** O candidato também vai ao canal Destaques? (degraus 4 e 5.) */
 export function vaiParaDestaques(degrau: number | null | undefined): boolean {
   return degrau != null && degrau >= REGUA.DESTAQUES_DEGRAU_MIN;
+}
+
+// ---------------------------------------------------------------------------
+// R-44: menor preço registrado (elegibilidade) e faixa mínimo/máximo (texto)
+// ---------------------------------------------------------------------------
+export interface PontoDia {
+  day: string;
+  minCents: number;
+  /** Maior cotação plausível do dia (price_daily_state.max_cents); ausente = só o menor do dia. */
+  maxCents?: number;
+}
+
+export interface FaixaPreco {
+  minCents: number;
+  maxCents: number;
+  /** Dias medidos na janela (nunca mais que 90). */
+  dias: number;
+}
+
+/**
+ * Mínimo e máximo REGISTRADOS do produto na janela (até 90 dias medidos), com o preço de agora incluído (é um preço real observado).
+ * null = histórico insuficiente (< minDias dias medidos) ou sem amplitude (mínimo = máximo): a linha é omitida, nunca preenchida.
+ */
+export function faixaPreco(serie: readonly PontoDia[] | null | undefined, precoCents: number, minDias: number = REGUA.MINMAX_MIN_DIAS, hoje?: string): FaixaPreco | null {
+  if (!serie || !(precoCents > 0)) return null;
+  const pts = serie.filter((x) => x.minCents > 0 && (hoje == null || x.day < hoje)).slice(-REGUA.JANELA_MINIMA_DIAS);
+  if (pts.length < Math.max(1, minDias)) return null;
+  const minCents = Math.min(precoCents, ...pts.map((x) => x.minCents));
+  const maxCents = Math.max(precoCents, ...pts.map((x) => Math.max(x.minCents, x.maxCents ?? 0)));
+  if (!(maxCents > minCents)) return null;
+  // Rótulo pelo intervalo de CALENDÁRIO (do primeiro dia medido até hoje, no máximo 90): com falhas de coleta, "N dias medidos" cobriria mais dias.
+  const dias = hoje ? Math.min(REGUA.JANELA_MINIMA_DIAS, Math.max(pts.length, Math.round((Date.parse(`${hoje}T12:00:00Z`) - Date.parse(`${pts[0].day}T12:00:00Z`)) / 86_400_000))) : pts.length;
+  return { minCents, maxCents, dias };
+}
+
+/** Texto único da faixa (Telegram, WhatsApp, cartão): rotulado com a janela real. */
+export function faixaTexto(f: FaixaPreco): string {
+  return `Mínimo ${fmtBRL(f.minCents)} · Máximo ${fmtBRL(f.maxCents)} (últimos ${f.dias} dias)`;
+}
+
+/**
+ * O preço está no menor já registrado (preço <= menor preço diário dos dias anteriores) com série suficiente? Só dado real.
+ * `serie` = dias anteriores a hoje; `hoje` ('YYYY-MM-DD') exclui o dia corrente. Pura: a chave (cfg.elegivelMin) é de quem chama.
+ */
+export function noMenorRegistrado(serie: readonly PontoDia[] | null | undefined, precoCents: number, minDiasSerie: number, hoje?: string, amplitudeMinPct = 0): { ok: boolean; minCents: number | null; dias: number } {
+  if (!serie || !(precoCents > 0)) return { ok: false, minCents: null, dias: 0 };
+  const pts = serie.filter((x) => x.minCents > 0 && (hoje == null || x.day < hoje)).slice(-REGUA.JANELA_MINIMA_DIAS);
+  if (pts.length < Math.max(1, minDiasSerie)) return { ok: false, minCents: null, dias: pts.length };
+  const minCents = Math.min(...pts.map((x) => x.minCents));
+  // Série PLANA (preço constante) tem "preço <= mínimo" verdadeiro todo dia e não informa nada: exige variação real do menor preço diário.
+  const topo = Math.max(...pts.map((x) => x.minCents));
+  const variou = amplitudeMinPct <= 0 || (topo / minCents - 1) * 100 >= amplitudeMinPct;
+  return { ok: variou && precoCents <= minCents, minCents, dias: pts.length };
 }
 
 // ---------------------------------------------------------------------------
@@ -259,6 +345,8 @@ export interface ReguaTextoInput {
   marca: string;
   /** Link do botão/WhatsApp (rastreado ou curto). Telegram não leva URL no texto. */
   link?: string | null;
+  /** Mínimo e máximo registrados (R-44); null/ausente = linha omitida. */
+  faixa?: FaixaPreco | null;
 }
 
 function cabecalho(v: Veredito, canal: 'tg' | 'wa'): string {
@@ -295,6 +383,7 @@ export function reguaTelegram(i: ReguaTextoInput): string {
     `<b>${fmtBRL(i.precoCents)}</b>`,
     linhaQueda(v, i.mediaCents) ? escapeTelegramHtml(linhaQueda(v, i.mediaCents) as string) : null,
     v.minLinha ? escapeTelegramHtml(v.minLinha) : null,
+    i.faixa ? escapeTelegramHtml(faixaTexto(i.faixa)) : null,
     v.aviso ? `<i>${escapeTelegramHtml(v.aviso)}</i>` : null,
     escapeTelegramHtml(lojaLinha),
     `<i>${escapeTelegramHtml(i.carimbo)}</i>\n<i>${escapeTelegramHtml(i.marca)}</i>`,
@@ -311,7 +400,7 @@ export function reguaWhatsapp(i: ReguaTextoInput): string {
   const l1 = `${cabecalho(v, 'wa')}${queda}`;
   const l2 = `*${titulo}*`;
   const l3 = `*${fmtBRL(i.precoCents)}* ${loja}${v.minLinha ? ` · ${escapeWhatsapp(v.minLinha)}` : ''}`;
-  const l4 = v.aviso ? escapeWhatsapp(v.aviso) : null;
+  const l4 = [i.faixa ? escapeWhatsapp(faixaTexto(i.faixa)) : null, v.aviso ? escapeWhatsapp(v.aviso) : null].filter(Boolean).join('\n') || null;
   const l5 = i.link ? `Comprar agora: ${i.link}` : null;
   const l6 = `_${escapeWhatsapp(i.carimbo)} · ${escapeWhatsapp(i.marca)}_`;
   return [l1, l2, l3, l4, l5, l6].filter((l): l is string => !!l && l.trim() !== '').join('\n');
@@ -324,6 +413,8 @@ export interface ReguaFrontInput {
   precoCents: number;
   mediaCents: number | null;
   minCents: number | null;
+  /** Maior preço registrado (R-44); null = não mostrar. */
+  maxCents?: number | null;
   diasHistorico: number;
   nOfertas: number;
 }
@@ -332,6 +423,8 @@ export interface ReguaFront {
   veredito: Veredito | null;
   /** Marcadores da régua (valores reais): só os que existem. */
   mini: number | null;
+  /** Maior já visto (R-44), só com amplitude real. */
+  maxi: number | null;
   agora: number;
   media: number | null;
   /** "Espere": só no site; preço acima da média. */
@@ -343,7 +436,9 @@ export interface ReguaFront {
 /** Veredito do front: os mesmos degraus, com "Espere" quando o preço está acima da média. Sem média = sem veredito (nada inventado). */
 export function reguaFront(i: ReguaFrontInput, minDias: number = REGUA.MIN_DIAS_HISTORICO): ReguaFront {
   const media = i.mediaCents != null && i.mediaCents > 0 ? i.mediaCents : null;
-  const base: ReguaFront = { veredito: null, mini: i.minCents != null && i.minCents > 0 ? i.minCents : null, agora: i.precoCents, media, espere: false, frase: '' };
+  const mini = i.minCents != null && i.minCents > 0 ? i.minCents : null;
+  const maxi = i.maxCents != null && i.maxCents > 0 && mini != null && i.maxCents > mini ? i.maxCents : null;
+  const base: ReguaFront = { veredito: null, mini, maxi, agora: i.precoCents, media, espere: false, frase: '' };
   if (media == null || !(i.precoCents > 0)) return base;
   const pct = ((media - i.precoCents) / media) * 100;
   if (pct < 0) return { ...base, espere: arredondar1(-pct) >= 3, frase: arredondar1(-pct) >= 3 ? 'Espere: preço acima da média' : '' };

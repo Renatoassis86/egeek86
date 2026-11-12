@@ -22,7 +22,7 @@ import {
 } from '@/lib/messaging/group-messages';
 import { AMAZON_OWN_MIN_DAYS, amazonCountsIn, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { emFaseDeFormacao, mediaSimples, minLojas } from '@/lib/messaging/fase-formacao';
-import { calcularVeredito, reguaConfig, reguaDaLoja, reguaInfoDe, reguaTelegram, reguaWhatsapp, type ReguaInfo } from '@/lib/messaging/regua';
+import { calcularVeredito, degrauDaQueda, faixaPreco, noMenorRegistrado, reguaConfig, reguaDaLoja, reguaInfoDe, reguaTelegram, reguaWhatsapp, type ReguaInfo } from '@/lib/messaging/regua';
 import { AGULHA } from '@/lib/coupons/agulha';
 import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import type { CouponInfo } from '@/lib/messaging/group-messages';
@@ -252,6 +252,8 @@ export interface DayPoint {
   /** 'YYYY-MM-DD' (Brasília). */
   day: string;
   minCents: number;
+  /** Maior cotação plausível do dia (price_daily_state.max_cents; R-44). Ausente = só o menor do dia. */
+  maxCents?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -710,7 +712,9 @@ function aplicarRegua(
   // Mínima registrada: menor preço diário medido nos últimos 90 dias ANTES de hoje (série ML/Shopee do estado diário), com os dias medidos.
   const serie = (p.series ?? []).filter((x) => x.minCents > 0).slice(-90);
   const minCents = serie.length ? Math.min(...serie.map((x) => x.minCents)) : null;
-  const v = calcularVeredito({ pct, nOfertas: input.avg.offers, precoCents: primary.priceCents, minCents, diasHistorico: serie.length, minDias: cfg.minDias });
+  // R-44: sem queda de 3% sobre a média, mas no menor preço já registrado (chave GROUP_REGUA_ELEGIVEL_MIN) = degrau 1 neutro.
+  const viaMinima = cfg.elegivelMin && noMenorRegistrado(p.series, primary.priceCents, cfg.elegivelMinDias, spDayStr(now), cfg.elegivelMinAmplitudePct).ok;
+  const v = calcularVeredito({ pct, nOfertas: input.avg.offers, precoCents: primary.priceCents, minCents, diasHistorico: serie.length, minDias: cfg.minDias, viaMinima });
   if (!v) return null;
   const msg = toMsgOffer(primary);
   const common = {
@@ -723,9 +727,10 @@ function aplicarRegua(
     plataforma: p.platformLabel,
     carimbo: withTag(stampLine(msg), input.adTag),
     marca: `Espaço Geek 86 · ${getSlogan()}`,
+    faixa: cfg.minMaxOn ? faixaPreco(p.series, primary.priceCents, cfg.minMaxDias, spDayStr(now)) : null,
   };
   const link = buildGoLink(primary.slug, 'wa', input.messageKey);
-  return { info: reguaInfoDe(v), telegram: reguaTelegram(common), whatsapp: reguaWhatsapp({ ...common, link }) };
+  return { info: reguaInfoDe(v, common.faixa, viaMinima && degrauDaQueda(pct) == null), telegram: reguaTelegram(common), whatsapp: reguaWhatsapp({ ...common, link }) };
 }
 
 export function finish(
@@ -770,8 +775,12 @@ export function finish(
   const priceClass = (base.cls ?? TRIGGER_CLASS[trigger]) as MessageClass;
   const belowAvgPct = base.avgCents != null && base.avgCents > 0 ? ((base.avgCents - base.primary.priceCents) / base.avgCents) * 100 : null;
   const minBelow = effectiveMinBelow(p, ctx.minBelowAvgPct, ctx.now);
+  // R-44 (dono, 2026-11-12): UNIÃO com o corte de %: o preço no menor já registrado (série real, n suficiente) também é elegível. Chave GROUP_REGUA_ELEGIVEL_MIN.
+  const rcfg = reguaConfig();
+  const serieDoPreco = netKind(base.primary) === 'amazon' ? p.amazonSeries : p.series;
+  const viaMinimo = rcfg.elegivelMin && noMenorRegistrado(serieDoPreco, base.primary.priceCents, rcfg.elegivelMinDias, spDayStr(ctx.now), rcfg.elegivelMinAmplitudePct).ok;
   const belowRule =
-    trigger !== 'AC' && minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
+    trigger !== 'AC' && !viaMinimo && minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
       ? `abaixo_da_media_menos_de_${minBelow}pct`
       : null;
   const notSendable =
@@ -1079,7 +1088,7 @@ export interface MovementHit extends MoveDetail {
  *  - T1: hoje < ontem < anteontem (dias consecutivos) e queda acumulada >= 3%; exige 4 dias;
  *  - T2: acima do menor registrado e até 4% acima dele (não bateu o piso); exige 7 dias.
  */
-export function detectMovement(history: DayPoint[], currentCents: number, today: string): MovementHit[] {
+export function detectMovement(history: DayPoint[], currentCents: number, today: string, opts: { noMinimo?: boolean; minDiasSerie?: number; amplitudeMinPct?: number } = {}): MovementHit[] {
   const pts = history.filter((h) => h.day < today && h.minCents > 0).sort((a, b) => a.day.localeCompare(b.day));
   if (!(currentCents > 0) || !pts.length) return [];
   const n = pts.length + 1;
@@ -1112,6 +1121,9 @@ export function detectMovement(history: DayPoint[], currentCents: number, today:
   }
   if (n >= RULES.MOVE_MIN_DAYS && currentCents > ref && currentCents * 100 <= ref * (100 + RULES.T2_NEAR_PCT)) {
     hits.push(mk('T2', { prevCents: null, dropPct: 0, nearPct: ((currentCents - ref) / ref) * 100 }));
+  } else if (opts.noMinimo && !hits.some((h) => h.kind === 'OK1') && pts.length >= (opts.minDiasSerie ?? RULES.MOVE_MIN_DAYS - 1) && currentCents <= ref && (opts.amplitudeMinPct == null || opts.amplitudeMinPct <= 0 || (Math.max(...pts.map((h) => h.minCents)) / ref - 1) * 100 >= opts.amplitudeMinPct)) {
+    // R-44 (dono, 2026-11-12): preço NO menor já registrado (queda < 5% sobre ele, que não vira OK1) também é gatilho. nearPct 0 = "no menor registrado".
+    hits.push(mk('T2', { prevCents: null, dropPct: 0, nearPct: 0 }));
   }
   if (!hits.length) return [];
   const kinds = hits.map((h) => h.kind);
@@ -1172,7 +1184,7 @@ function moveReason(m: MoveDetail, price: number): string {
     case 'T1':
       return `Caiu dois dias seguidos (${(m.path ?? []).map(fmtBRL).join(', ')}), ${pct(m.dropPct)}% acumulados.`;
     case 'T2':
-      return `A ${pct(m.nearPct ?? 0)}% acima do menor valor registrado (${fmtBRL(m.refCents)}), sem bater o piso.`;
+      return (m.nearPct ?? 0) <= 0 ? `No menor valor registrado (${fmtBRL(m.refCents)}; ${m.seriesDays} dias de série).` : `A ${pct(m.nearPct ?? 0)}% acima do menor valor registrado (${fmtBRL(m.refCents)}), sem bater o piso.`;
   }
 }
 
@@ -1341,7 +1353,7 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
     const pool = verdicts.filter((x) => (netKind(x.o) === 'amazon') === isAmz).sort((a, b) => a.o.priceCents - b.o.priceCents);
     if (!pool.length) continue;
     const cheapest = pool[0];
-    const hits = series?.length ? detectMovement(series, cheapest.o.priceCents, today) : [];
+    const hits = series?.length ? detectMovement(series, cheapest.o.priceCents, today, { noMinimo: reguaConfig().elegivelMin, minDiasSerie: reguaConfig().elegivelMinDias, amplitudeMinPct: reguaConfig().elegivelMinAmplitudePct }) : [];
     // Dono (2026-11-11): "preços na média ou abaixo da média" é gatilho; novo mínimo (OK1) e queda do dia (OK2) têm prioridade.
     // PRICE_AMAZON_MODE off/shadow: a Amazon não entra em "na média" (só se compara com o próprio histórico e segue só em alerta).
     // on (games): a média única inclui a Amazon, e "na média" deixa de excluí-la (ADR 0010).

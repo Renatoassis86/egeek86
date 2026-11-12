@@ -300,7 +300,11 @@ export interface PriceInd {
   firstDay: string | null;
   firstCents: number | null;
 }
-export function priceIndicators(series: Array<{ minCents: number; day?: string }> | null | undefined, priceCents: number): PriceInd | null {
+/** GROUP_REGUA_MINMAX=off devolve a linha de histórico ao formato anterior (faixa de menores preços diários). */
+function minMaxLigado(): boolean {
+  return !/^(off|0|false|nao|não)$/i.test(String(process.env.GROUP_REGUA_MINMAX ?? '').trim());
+}
+export function priceIndicators(series: Array<{ minCents: number; maxCents?: number; day?: string }> | null | undefined, priceCents: number): PriceInd | null {
   if (!series || series.length < 1) return null;
   const v = series.map((x) => x.minCents).filter((x) => x > 0);
   if (v.length < 1) return null;
@@ -309,7 +313,7 @@ export function priceIndicators(series: Array<{ minCents: number; day?: string }
     days: v.length,
     cheaperThanDays: v.filter((x) => x > priceCents).length,
     minCents: Math.min(...v),
-    maxCents: Math.max(...v),
+    maxCents: minMaxLigado() ? Math.max(...series.map((x) => Math.max(x.minCents, x.maxCents ?? 0)).filter((x) => x > 0)) : Math.max(...v),
     firstDay: first?.day ?? null,
     firstCents: first?.minCents ?? null,
   };
@@ -475,7 +479,9 @@ function moveSentence(m: MoveDetail, price: number, amazon: boolean): string {
       return `${subj} caiu dois dias seguidos: ${fmtBRL(p[0])}, ${fmtBRL(p[1])} e ${fmtBRL(p[2])} hoje. Série de ${m.seriesDays} dias, desde ${since}.`;
     }
     case 'T2':
-      return `Está a ${fmtPct1(m.nearPct ?? 0)}% do ${amazon ? 'menor preço da Amazon que registramos' : 'menor preço que registramos'} desde ${since} (${fmtBRL(m.refCents)}).`;
+      return (m.nearPct ?? 0) <= 0
+        ? `Está no ${amazon ? 'menor preço da Amazon que registramos' : 'menor preço que registramos'} desde ${since} (${fmtBRL(m.refCents)}).`
+        : `Está a ${fmtPct1(m.nearPct ?? 0)}% do ${amazon ? 'menor preço da Amazon que registramos' : 'menor preço que registramos'} desde ${since} (${fmtBRL(m.refCents)}).`;
   }
 }
 
@@ -495,7 +501,7 @@ function radarLabel(m: MoveDetail): string {
     case 'T1':
       return `Caiu dois dias seguidos (${fmtPct1(m.dropPct)}% acumulados).`;
     case 'T2':
-      return `A ${fmtPct1(m.nearPct ?? 0)}% do menor preço que registramos desde ${since}.`;
+      return (m.nearPct ?? 0) <= 0 ? `No menor preço que registramos desde ${since}.` : `A ${fmtPct1(m.nearPct ?? 0)}% do menor preço que registramos desde ${since}.`;
   }
 }
 
@@ -572,9 +578,9 @@ function storySentences(input: OfferMessageInput, amz: boolean): string[] {
     }
     case 'T2':
       return [
-        `Está a ${pct1(m.nearPct ?? 0)}% do menor preço registrado (${fmtBRL(m.refCents)}, desde ${since}).`,
+        (m.nearPct ?? 0) <= 0 ? `Está no menor preço registrado (${fmtBRL(m.refCents)}, desde ${since}).` : `Está a ${pct1(m.nearPct ?? 0)}% do menor preço registrado (${fmtBRL(m.refCents)}, desde ${since}).`,
         avgSentence,
-        `O piso da série de ${m.seriesDays} dias ainda não foi batido.`,
+        (m.nearPct ?? 0) <= 0 ? `Série de ${m.seriesDays} dias medidos, igual ao menor valor registrado.` : `O piso da série de ${m.seriesDays} dias ainda não foi batido.`,
       ].filter((x): x is string => !!x);
   }
 }
@@ -671,7 +677,7 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   }
   if (input.model === 'movimento' && input.move.kind !== 'OK1') mon.unshift(topic(f, 'Movimento', leituraLine(input, amz)));
   const ind = input.ind ?? null;
-  if (ind && ind.days >= 3) mon.push(topic(f, 'Histórico', `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
+  if (ind && ind.days >= 3) mon.push(topic(f, 'Histórico', minMaxLigado() ? `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; mínimo ${fmtBRL(ind.minCents)}, máximo ${fmtBRL(ind.maxCents)}` : `mais barato que em ${ind.cheaperThanDays} de ${ind.days} dias; faixa de ${fmtBRL(ind.minCents)} a ${fmtBRL(ind.maxCents)}`));
   const since = input.model === 'movimento' ? input.move.sinceDay : input.sinceDay ?? null;
   const bf = blackFridayIndicator(o.confirmedAt, since, { price, avgCents: !amz && input.avg && input.avg.offers >= MIN_AVG_OFFERS_CLAIM ? input.avg.cents : null, firstCents: ind?.firstCents ?? null, firstDay: ind?.firstDay ?? null });
   if (bf) mon.push(topic(f, 'Black Friday', bf));
@@ -839,7 +845,7 @@ function leituraLine(input: OfferMessageInput, amz: boolean): string {
       return `Caiu dois dias seguidos: ${fmtBRL(p[0])}, ${fmtBRL(p[1])} e ${fmtBRL(p[2])} hoje.`;
     }
     case 'T2':
-      return `A ${pct1(m.nearPct ?? 0)}% do menor preço registrado (${fmtBRL(m.refCents)}).`;
+      return (m.nearPct ?? 0) <= 0 ? `No menor preço registrado (${fmtBRL(m.refCents)}).` : `A ${pct1(m.nearPct ?? 0)}% do menor preço registrado (${fmtBRL(m.refCents)}).`;
   }
 }
 
