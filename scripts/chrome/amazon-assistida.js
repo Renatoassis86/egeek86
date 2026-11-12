@@ -217,7 +217,7 @@
     return 'servidor_instavel';
   };
 
-  var MODOS = { refresh: 1, discover: 1, queue: 1 };
+  var MODOS = { refresh: 1, discover: 1, queue: 1, vitrine: 1 }; // vitrine = opt-in (modos:['refresh','discover','vitrine'])
   var VERTICAIS = /^[a-z0-9_-]{2,30}$/;
   /** Valida a configuração injetada sem devolver o token em mensagem. */
   PURO.validarCfg = function (c, host) {

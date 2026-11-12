@@ -1,6 +1,7 @@
 // Sem 'server-only': função pura (sem banco, sem rede), importável por coletor, scripts tsx e testes.
 import { domainMatches, type SegmentConfig } from './config';
 import { scopeIssue } from './scope';
+import { isNewRetroStyleHardware } from '../gate';
 import { chaveImpressora3d, marcaComLexico, marcaCanonica, diametroDe, massaOuVolumeDe, materialDe, tipoResinaDe } from './i3d-fields';
 
 /**
@@ -170,6 +171,8 @@ export function rejectionOf(p: MlCatalogPayload): { reason: string; matched: str
   const refurb = foldText(attrValue(p, 'IS_REFURBISHED') ?? attrValue(p, 'REFURBISHED') ?? '');
   if (refurb === 'sim' || refurb === 'yes' || refurb === 'true') return { reason: 'recondicionado', matched: 'REFURBISHED=sim' };
   const name = foldText(p.name ?? '');
+  // Exceção do dono (2026-11-12): hardware de estilo retrô NOVO de fabricante que o vende hoje (Hyperkin, Analogue, Retro-Bit, 8BitDo). Condição já foi checada acima.
+  if (isNewRetroStyleHardware(name)) return null;
   for (const { label, re } of REJECT_LEXICON) {
     const m = re.exec(name);
     if (m) return { reason: label, matched: m[0] };

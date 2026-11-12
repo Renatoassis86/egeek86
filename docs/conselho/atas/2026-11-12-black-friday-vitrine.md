@@ -26,3 +26,16 @@ O dono vê milhares de produtos em promoção na Amazon (Black dos Sonhos), Shop
 
 ## Fora do escopo desta rodada
 Mudar a regra de frescor de 40 min (é decisão de risco do dono), qualquer criação de master a partir da Amazon sem passar pelo porteiro, scraping fora da aba logada.
+
+## Adendo (ordens do dono repassadas pelo coordenador, mesma data)
+**Plano 1 (continua):** atualização dos ASIN já conhecidos, agora com os QUENTES na frente (decisão 1). O modo vitrine também atualiza o preço de ASIN já conhecido que aparece nas buscas (ajuda o frescor de 40 min).
+
+**Plano 2 (PRINCIPAL), implementado como opt-in:** modo `vitrine` da coleta assistida.
+- Servidor: `GET /api/ingest/amazon-assistida?mode=vitrine` entrega ~60 buscas por ciclo (janela rotativa por hora, 202 consultas no total: jogos/consoles/acessórios por plataforma e editora + um conjunto genérico por tipo de cada loja Plus). `POST` com id de vitrine (prefixo 00000000-0000-4000-8000-) vai para `src/server/collector/amazon-vitrine.ts`; resumo em `collector_runs` job `amazon-vitrine` (inclui ids de masters e ofertas criados, para reversão).
+- Regras: só card com preço lido; patrocinado fora; ASIN conhecido só atualiza preço (com checagem de preço implausível); ASIN novo passa por dedup (games: `casarJogo` com formato físico por padrão + guarda anti-duplicata por chave simples do título, porque `findExistingMasterProduct` falhou em "NBA 2K27 - PlayStation 5" x "NBA 2K27 - PS5"; Plus: `decidirMasterNovo`); master existente aprovado => mesmo julgamento de identidade da busca por master; master novo nasce em REVISÃO e a oferta nasce RASCUNHO (fora de média/selo/vitrine) até o dono aprovar na fila. Nada de scraping fora da aba logada.
+- Para ligar: o vigia injeta o laço com `modos:['refresh','discover','vitrine']` (hoje o padrão segue refresh+discover; a mudança em `/loops/amazon-assistida.js` é só aceitar o modo). Primeiro com `enviar:false`.
+- Orçamento de banco: teto de 60 buscas/ciclo (`AMAZON_VITRINE_CAP`), prazo de 50 s por POST, índice de dedup em cache de 10 min por instância.
+
+**Exceção do retrô NOVO (dono, 2026-11-12):** `isNewRetroStyleHardware` (gate.ts): Hyperkin, Analogue, Retro-Bit e 8BitDo, sem 'usado/seminovo/recondicionado/open box/lote/peça/vintage', não caem nas regras de retrô/emulação (porteiro, léxico de identidade e julgamento da Amazon). Nintendo/Sony de época, console retrô genérico e tudo usado continuam fora. Testes em `scripts/test-amazon-vitrine.ts` (21/21). O SupaBoy (ASIN B0HFBFYBS2) não pôde ser cadastrado à mão porque não há preço lido (não se inventa): a consulta "hyperkin" da vitrine o pega com preço real assim que o modo for ligado; entra como rascunho via dedup.
+
+**Plano 2b (cupons/promoções) — NÃO implementado nesta rodada:** ler `/blackfriday/2/` e `/promotion/psp/<ID>`, extrair ASIN, preço, "De" e, só se lido, nome/condição do cupom (app/sem nome = passo a passo). Motivo: essas páginas são montadas no navegador e não há HTML real para escrever e testar o leitor sem abrir a aba logada; criar leitor às cegas arriscaria dado errado. Próximo passo: um loop novo (`amazon-promocoes.js`) injetado pelo vigia numa aba logada, com simulação, mapeando card -> loja pelos mesmos porteiros e ignorando beleza/alimentos/fralda.

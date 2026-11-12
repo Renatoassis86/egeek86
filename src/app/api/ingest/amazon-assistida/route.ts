@@ -3,6 +3,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { isVertical } from '@/lib/catalog/verticais';
+import { ingestAmazonVitrine, isVitrineId, vitrineQueue } from '@/server/collector/amazon-vitrine';
 import { amazonDiscoverQueue, amazonDiscoverTotal, amazonQueue, amazonQueueTotal, amazonRefreshQueue, amazonRefreshTotal, ingestAmazonRows, type AmzRow } from '@/server/collector/amazon-assisted';
 
 export const dynamic = 'force-dynamic';
@@ -60,6 +61,10 @@ export async function GET(request: NextRequest) {
     const [items, total] = await Promise.all([amazonRefreshQueue(offset, n, vertical), amazonRefreshTotal(vertical)]);
     return NextResponse.json({ total, items }, { headers: cors(request) });
   }
+  if (mode === 'vitrine') {
+    // Vitrine (plano 2): buscas características de cada loja, ids sintéticos (prefixo 0000…-4000-8000-), rotação por hora. Opt-in no laço (modos:['vitrine']).
+    return NextResponse.json(vitrineQueue(offset, n), { headers: cors(request) });
+  }
   if (mode === 'discover') {
     const [items, total] = await Promise.all([amazonDiscoverQueue(offset, n, vertical), amazonDiscoverTotal(vertical)]);
     return NextResponse.json({ total, items }, { headers: cors(request) });
@@ -83,7 +88,18 @@ export async function POST(request: NextRequest) {
   const started = Date.now();
   const tag = process.env.AMAZON_ASSOCIATE_TAG || 'manusmonteiro-20';
   try {
-    const { stats } = await ingestAmazonRows(rows, { tag, apply: true });
+    const vit = rows.filter((r) => isVitrineId(r.id));
+    const norm = rows.filter((r) => !isVitrineId(r.id));
+    if (vit.length) {
+      const { stats: vs } = await ingestAmazonVitrine(vit, { tag, apply: true });
+      try {
+        await db.execute(sql`
+          INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, selected, checked, price_confirmed, snapshots_written, errors, offers_created, meta)
+          VALUES ('amazon-vitrine', 'amazon', ${new Date(started).toISOString()}::timestamptz, now(), ${Date.now() - started}, ${vs.truncado || vs.erros ? 'partial' : 'ok'}, ${vit.length}, ${vs.cartoes}, ${vs.atualizados}, ${vs.atualizados + vs.rascunhos_novos}, ${vs.erros}, ${vs.criados.ofertas.length}, ${JSON.stringify({ stats: vs, round: body.round ?? null })}::jsonb)`);
+      } catch (e) { console.error('[amazon-vitrine] falha ao registrar collector_runs', e); }
+      if (!norm.length) return NextResponse.json({ ok: true, stats: { vitrine: vs } }, { headers });
+    }
+    const { stats } = await ingestAmazonRows(norm, { tag, apply: true });
     const ms = Date.now() - started;
     try {
       await db.execute(sql`

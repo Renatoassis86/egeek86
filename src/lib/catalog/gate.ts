@@ -166,10 +166,22 @@ export const RETRO_GAME_PLATFORM = /\b(?:ps ?[123]|psone|playstation ?[123]|psp|
 export const MODERN_CONSOLE = /\b(?:ps ?[45]|playstation ?[45]|xbox series|series [sx]|switch)\b/;
 
 /**
+ * EXCEÇÃO (dono, 2026-11-12): hardware de ESTILO retrô fabricado e vendido NOVO hoje por marca que o faz (Hyperkin, Analogue, Retro-Bit, 8BitDo)
+ * entra no monitoramento (caso: Hyperkin SupaBoy). Continua fora: usado, seminovo, recondicionado, open box, lote, fora de linha, mídia/console
+ * antigo de segunda mão e qualquer marca fora desta lista. Título já dobrado (minúsculas, sem acento).
+ */
+const NEW_RETRO_MAKER = /\b(?:hyperkin|analogue|retro ?-?bit|8 ?-?bitdo)\b/;
+const NOT_NEW_WORDS = /\b(?:usad[oa]s?|seminov[oa]s?|recondicionad[oa]s?|renewed|refurbished|open ?box|reembalad[oa]s?|lote|pecas?|sucata|defeito|vintage)\b/;
+export function isNewRetroStyleHardware(foldedTitle: string): boolean {
+  return NEW_RETRO_MAKER.test(foldedTitle) && !NOT_NEW_WORDS.test(foldedTitle);
+}
+
+/**
  * Plataforma retrô ou fora de linha citada no TEXTO (título de anúncio já em minúsculas, sem acento). Título que cita também
  * PS5/PS4/Series X|S/Switch segue moderno. Reutilizado pela coleta da Amazon (dono, 2026-11-11: só produto novo e em linha).
  */
 export function mentionsRetroPlatformOnly(foldedTitle: string): string | null {
+  if (isNewRetroStyleHardware(foldedTitle)) return null;
   const rg = RETRO_GAME_PLATFORM.exec(foldedTitle) ?? RETRO_CONSOLE.exec(foldedTitle);
   return rg && !MODERN_CONSOLE.test(foldedTitle) ? rg[0] : null;
 }
@@ -229,13 +241,13 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
   // Console retrô: fora do monitoramento de novos (drops e leilões). Reversível: override manual 'approved' passa acima.
   if (baseDim === 'console') {
     const retro = RETRO_CONSOLE.exec(t);
-    if (retro && !MODERN_CONSOLE.test(t)) return result('rejected', 'out_of_scope', 'console_retro_fora_do_escopo', retro[0], 'off_catalog', false);
+    if (retro && !MODERN_CONSOLE.test(t) && !isNewRetroStyleHardware(t)) return result('rejected', 'out_of_scope', 'console_retro_fora_do_escopo', retro[0], 'off_catalog', false);
   }
 
   // Jogo de plataforma retrô (PS1-PS3, PSP/Vita, Xbox 360 e anteriores, Wii, DS/3DS, GameCube...): fora do monitoramento (dono, 2026-11-04).
   if (baseDim === 'game') {
     const rg = RETRO_GAME_PLATFORM.exec(t);
-    if (rg && !MODERN_CONSOLE.test(t)) return result('rejected', 'out_of_scope', 'jogo_plataforma_retro_fora_do_escopo', rg[0], 'off_catalog', false);
+    if (rg && !MODERN_CONSOLE.test(t) && !isNewRetroStyleHardware(t)) return result('rejected', 'out_of_scope', 'jogo_plataforma_retro_fora_do_escopo', rg[0], 'off_catalog', false);
   }
 
   // Decisão 4 do dono (2026-11-03): headset legítimo sem plataforma no título (Redragon, Havit,
@@ -305,7 +317,7 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
 
   // Hardware de emulação de marca e clones Tectoy: julgamento do dono
   for (const h of haystacks) {
-    const emu = EMULATION_BRANDS.exec(h);
+    const emu = isNewRetroStyleHardware(h) ? null : EMULATION_BRANDS.exec(h);
     if (emu) return result('rejected', 'out_of_scope', 'hardware_emulacao_marca', emu[0], 'off_catalog', false);
     const em = TECTOY_CLONE.exec(h);
     if (em) return result('review', 'owner_decision', 'hardware_emulacao_ou_clone_tectoy', em[0], dimension, bundle);

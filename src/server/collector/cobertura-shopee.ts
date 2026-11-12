@@ -484,7 +484,8 @@ type ResultadoJogo = { masterId: string; aprovado: boolean } | { novo: JogoNovo 
  * em revisão => dúvida (fila); rejeitado pelo dono => fora. Sem master equivalente => master NOVO (dono, 2026-11-12), com o porteiro gamer
  * (`entryGateAttributes`): aprovado nasce aprovado; revisão nasce em revisão (oferta em rascunho + fila); rejeitado não nasce.
  */
-async function casarJogo(sql: Sql, titulo: string, priceCents: number): Promise<ResultadoJogo> {
+/** `formatoPadrao` (Amazon): título de jogo sem a palavra 'digital' vale mídia física (mesma suposição do julgamento da Amazon); sem isso a dedup não acha o master físico existente e criaria duplicata. */
+export async function casarJogo(sql: Sql, titulo: string, priceCents: number, opts: { formatoPadrao?: 'physical' } = {}): Promise<ResultadoJogo> {
   const { isNonProductAccessory, isUsedCondition } = await import('@/server/collector/discover-products');
   const { resolveProductTypeFromTitle } = await import('@/lib/affiliate/product-type-classifier');
   const { derivePlatformFromTitle, resolveGameFormat } = await import('@/lib/affiliate/game-classification');
@@ -500,7 +501,8 @@ async function casarJogo(sql: Sql, titulo: string, priceCents: number): Promise<
   let plataforma = cls.gamePlatformGen;
   if (plataforma === 'unknown') plataforma = derivePlatformFromTitle(titulo);
   if (plataforma === 'unknown' && productType !== 'accessory') return { motivo: 'sem_plataforma' };
-  const formato = productType === 'game' ? resolveGameFormat(titulo, cls.gameFormat) : cls.gameFormat;
+  let formato = productType === 'game' ? resolveGameFormat(titulo, cls.gameFormat) : cls.gameFormat;
+  if (productType === 'game' && opts.formatoPadrao && (formato as string) === 'unknown' && !/\bdigital\b/i.test(titulo)) formato = opts.formatoPadrao as typeof formato;
   const existente = await findExistingMasterProduct(titulo, plataforma, { productType, gameFormat: productType === 'game' ? formato : null });
   if (existente) {
     const [g] = await sql<{ v: string | null; manual: string | null }[]>`
