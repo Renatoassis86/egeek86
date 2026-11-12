@@ -8,13 +8,18 @@
  *
  * Opcoes:
  *   --segmento <chave[,chave]>  segmentos (config.ts); --vertical <nome> usa todos do departamento; sem nenhum: o 1o da ordem de semeadura.
- *   --max-calls N               teto de chamadas ao ML por execucao (padrao 40; busca, /items e /products/{id} contam).
+ *   --fila                      FILA POR TIPO (2026-11-12, pedido do dono: "todos os itens de cada area, sem limites"): sem --segmento/--vertical percorre TODOS os
+ *                               tipos das 6 lojas; cada tipo tem orcamento PROPRIO de chamadas (--por-tipo, ou callsPerRun do segmento), a ordem e por antiguidade
+ *                               (nunca semeado primeiro) e a profundidade de paginacao cresce a cada ciclo (cursor em backup/dados/semear-cursor.json,
+ *                               que SO avanca com --apply ou --avancar-cursor). Ver docs/03-metodologia/COBERTURA_DE_TIPOS_LOJAS_PLUS.md.
+ *   --por-tipo N                orcamento de chamadas de cada tipo na fila (padrao: callsPerRun do segmento, senao 150).
+ *   --max-calls N               teto de chamadas ao ML por execucao (padrao 600; na fila, padrao = o que resta no dia; busca, /items e /products/{id} contam).
  *                               Alem dele vale o ORCAMENTO DIARIO persistente (480/dia, backup/dados/semear-estado.json): toda chamada
  *                               e cobrada ANTES de sair, em dry-run ou apply; esgotado o dia, a execucao para com seguranca.
  *   --daily-cap N               teto diario (padrao 480; so reduzir, nunca passar do autorizado pelo dono).
- *   --max-create N              teto de masters a criar por segmento (padrao 20).
- *   --limit N                   resultados por pagina de /products/search (padrao 20, maximo 50 medido em 10/11).
- *   --pages N                   paginas por termo (offset += limit; padrao 2). Para o termo se a pagina nao rendeu.
+ *   --max-create N              teto de masters a criar por segmento (padrao: SEM TETO; so o porteiro, a identidade, a duplicata e as chamadas limitam).
+ *   --limit N                   resultados por pagina de /products/search (padrao 50 = maximo medido em 10/11).
+ *   --pages N                   paginas por termo (offset += limit; padrao 20; na fila 1 por passada). Para o termo se a pagina nao rendeu.
  *   --offset N                  offset da 1a pagina (padrao 0).
  *   --terms N / --terms-from K  usa N termos a partir do K-esimo (0-based) da lista do segmento (padrao todos / 0).
  *   --sem-dominio               nao filtra a busca por domain_id (padrao: filtra onde o segmento declara searchDomain).
@@ -51,6 +56,8 @@ import { isVertical } from '../src/lib/catalog/verticais';
 import { DAILY_CALL_CAP, dayKeySP, effectiveMaxCalls, isKnownNotFound, remainingOn, usedOn } from '../src/lib/catalog/vertical/seed-budget';
 import { formatSummary, summarizeReports } from '../src/lib/catalog/vertical/seed-utils';
 import { chargeOne, loadState, rememberNotFound, STATE_FILE } from './_semear-estado';
+import { advanceCursor, allocate, cursorFor, DEFAULT_CALLS_PER_TYPE_RUN, MAX_SEARCH_PAGES, nextWindow, SEARCH_PAGE_LIMIT } from '../src/lib/catalog/vertical/seed-schedule';
+import { loadCursors, saveCursors, CURSOR_FILE } from './_semear-cursor';
 
 const argv = process.argv.slice(2);
 const flag = (n: string) => argv.includes(n);
@@ -59,10 +66,13 @@ const opt = (n: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 const APPLY = flag('--apply');
-const MAX_CALLS = Number(opt('--max-calls') ?? 40);
-const MAX_CREATE = Number(opt('--max-create') ?? 20);
-const PAGE_LIMIT = Math.min(50, Math.max(1, Number(opt('--limit') ?? 20)));
-const PAGES = Math.max(1, Number(opt('--pages') ?? 2));
+const FILA = flag('--fila');
+const AVANCAR_CURSOR = APPLY || flag('--avancar-cursor');
+const POR_TIPO = opt('--por-tipo') ? Math.max(1, Number(opt('--por-tipo'))) : undefined;
+const MAX_CALLS = opt('--max-calls') ? Number(opt('--max-calls')) : FILA ? Number.POSITIVE_INFINITY : 600;
+const MAX_CREATE = opt('--max-create') ? Number(opt('--max-create')) : Number.POSITIVE_INFINITY;
+const PAGE_LIMIT = Math.min(SEARCH_PAGE_LIMIT, Math.max(1, Number(opt('--limit') ?? SEARCH_PAGE_LIMIT)));
+const PAGES = Math.max(1, Number(opt('--pages') ?? (FILA ? 1 : MAX_SEARCH_PAGES)));
 const OFFSET = Number(opt('--offset') ?? 0);
 const TERMS = opt('--terms') ? Number(opt('--terms')) : undefined;
 const TERMS_FROM = Number(opt('--terms-from') ?? 0);
@@ -121,6 +131,7 @@ function pickSegments(): SegmentConfig[] {
     if (!isVertical(vert) || vert === 'games') throw new Error(`vertical invalida: ${vert}`);
     return segmentsOf(vert as NonGamesVertical);
   }
+  if (FILA) return seedOrder(); // fila: todos os tipos das 6 lojas
   return [seedOrder()[0]];
 }
 
@@ -277,7 +288,7 @@ async function main() {
   }
   const today = dayKeySP(new Date());
   const state0 = loadState();
-  const effectiveCalls = effectiveMaxCalls(state0, today, MAX_CALLS, DAILY_CAP);
+  const effectiveCalls = effectiveMaxCalls(state0, today, Number.isFinite(MAX_CALLS) ? MAX_CALLS : DAILY_CAP, DAILY_CAP);
   log(`orcamento diario (${today}): usadas=${usedOn(state0, today)} restam=${remainingOn(state0, today, DAILY_CAP)} de ${DAILY_CAP}; cache de 404: ${Object.keys(state0.notFound).length} catalogos; estado=${STATE_FILE}`);
   if (flag('--estado')) return;
   if (effectiveCalls <= 0) throw new Error(`orcamento diario esgotado (${usedOn(state0, today)}/${DAILY_CAP}); nada executado, 0 chamadas`);
@@ -290,6 +301,10 @@ async function main() {
   const run = { runId: randomUUID(), startedAt: new Date().toISOString(), mode: (APPLY ? 'apply' : 'dry-run') as 'apply' | 'dry-run' };
   const segments = pickSegments();
   log(`segmentos: ${segments.map((s) => `${s.key}[${s.vertical}]`).join(', ')}`);
+  const cursors = FILA ? loadCursors() : null;
+  const allocations = FILA ? allocate(segments, cursors!, effectiveCalls).map((a) => (POR_TIPO ? { ...a, calls: Math.min(POR_TIPO, a.calls) } : a)) : null;
+  if (allocations) log(`FILA: ${allocations.length} tipos nesta execucao (de ${segments.length}); orcamento por tipo=${POR_TIPO ?? `callsPerRun (padrao ${DEFAULT_CALLS_PER_TYPE_RUN})`}; cursor=${CURSOR_FILE} (avanca: ${AVANCAR_CURSOR ? 'sim' : 'nao, dry-run'})`);
+  const jobs: Array<{ seg: SegmentConfig; calls?: number }> = allocations ? allocations.map((a) => ({ seg: a.segment, calls: a.calls })) : segments.map((s) => ({ seg: s }));
   if (APPLY && !flag('--termos-aprovados')) {
     throw new Error(`--apply exige --termos-aprovados: a whitelist de termos esta ${TERMS_STATUS.toUpperCase()} (proposta do engenheiro) ate o dono/guardiao curar.`);
   }
@@ -315,17 +330,24 @@ async function main() {
       const { startCollectorRun } = await import('../src/server/collector/collector-runs');
       runHandle = await startCollectorRun(`semear-vertical:${segments.map((s) => s.key).join('+')}`, 'mercado-livre');
     }
-    for (const seg of segments) {
-      log(`--- segmento ${seg.key} (${seg.vertical}) | termos: ${seg.terms.slice(0, TERMS ?? seg.terms.length).join(' | ')}`);
+    for (const job of jobs) {
+      const seg = job.seg;
+      const cur = cursors ? cursorFor(cursors, seg) : null;
+      const win = cur ? nextWindow(seg, cur, job.calls ?? DEFAULT_CALLS_PER_TYPE_RUN) : null;
+      log(`--- segmento ${seg.key} (${seg.vertical})${win ? ` | fila: profundidade=${win.depth} (offset ${win.offset}) ciclo=${cur!.cycles} orcamento=${job.calls} chamadas` : ''} | termos: ${(win ? win.terms : seg.terms.slice(0, TERMS ?? seg.terms.length)).join(' | ')}${seg.domainUnconfirmed ? ' | DOMINIO A CONFIRMAR (busca sem domain_id)' : ''}`);
       if (interrupted) break;
+      if (win && win.terms.length === 0) {
+        log('  nenhum termo vivo para esta profundidade; avancando o ciclo.');
+        if (AVANCAR_CURSOR) cursors!.segments[seg.key] = advanceCursor(seg, cur!, win, { termsTouched: [], termStops: {}, planned: 0, calls: 0 }, new Date());
+        continue;
+      }
       const rep = await planSeed(client, seg, lookup, {
         pageLimit: PAGE_LIMIT,
-        offset: OFFSET,
+        offset: win ? win.offset : OFFSET,
         pages: PAGES,
-        termsLimit: TERMS,
-        termsFrom: TERMS_FROM,
+        ...(win ? { terms: win.terms, segmentCalls: job.calls } : { termsLimit: TERMS, termsFrom: TERMS_FROM }),
         maxCreate: MAX_CREATE,
-        useSearchDomain: USE_DOMAIN,
+        useSearchDomain: USE_DOMAIN && !seg.domainUnconfirmed,
         isKnownNotFound: (id) => isKnownNotFound(notFoundState, id, new Date()),
         onNotFound: (id) => {
           rememberNotFound(id);
@@ -335,6 +357,10 @@ async function main() {
         log,
       });
       reports.push(rep);
+      if (win && cursors) {
+        cursors.segments[seg.key] = advanceCursor(seg, cur!, win, { termsTouched: rep.termsTouched, termStops: rep.termStops, planned: rep.plans.filter((p) => !p.mergeInto).length, calls: rep.callsSpent, rateLimited: rep.stoppedBecause === 'http_429' }, new Date());
+        if (AVANCAR_CURSOR) saveCursors(cursors);
+      }
       log(`segmento ${seg.key}: buscas=${rep.termsSearched} resultados=${rep.searchResults} chamadas=${rep.callsSpent} planejados=${rep.plans.length} revisao=${rep.reviews.length} parou=${rep.stoppedBecause ?? '-'}`);
       log(`  paradas por termo: ${JSON.stringify(rep.termStops)}`);
       if (rateLimitedOut || rep.stoppedBecause === 'http_429') {

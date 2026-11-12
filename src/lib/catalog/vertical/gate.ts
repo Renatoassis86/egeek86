@@ -50,10 +50,11 @@ export interface VerticalGate {
 
 /** Léxico de FORA-DO-ESCOPO por departamento (acessório/consumível/brinde que o domínio às vezes deixa passar). */
 const OUT_OF_SCOPE: Record<NonGamesVertical, RegExp> = {
-  tecnologia: /\b(capa|bolsa|mochila|pelicula|kit de limpeza|garantia estendida)\b/,
-  eletroeletronicos: /\b(controle remoto|suporte|rack|painel|capa|cabo|adaptador|pelicula|antena)\b/,
+  tecnologia: /\b(brinquedo|brinquedos|miniatura|capa|bolsa|mochila|pelicula|kit de limpeza|garantia estendida)\b/,
+  eletroeletronicos: /\b(brinquedo|brinquedos|miniatura|controle remoto|suporte|rack|painel|capa|cabo|adaptador|pelicula|antena)\b/,
   livros: /\b(caderno|agenda|planner|fichario|marca pagina|poster|camiseta|caneca|luminaria|papelaria)\b/,
-  eletrodomesticos: /\b(peca|pecas|reposicao|mangueira|capa|acessorio|acessorios)\b/,
+  // 2026-11-12: brinquedo/miniatura (ex.: "Brinquedo Infantil Geladeira Duplex Zuca Toys") nunca é eletrodoméstico.
+  eletrodomesticos: /\b(peca|pecas|reposicao|mangueira|capa|acessorio|acessorios|brinquedo|brinquedos|miniatura|toys?)\b/,
   esporte: /\b(balao|bexiga|chaveiro|bomba|miniatura|pelucia|brinquedo|inflavel|calcador)\b/,
   // Impressão 3D (onda 1: impressora, filamento, resina). Peças/bicos/mesas entram só na onda seguinte, com compatibilidade escrita.
   impressao3d: /\b(capa|bolsa|mochila|garantia estendida|miniatura pronta|action figure|estatueta|caneta 3d|scanner|escaner|digitalizador|kit de pecas|pecas de reposicao)\b/,

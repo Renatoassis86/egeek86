@@ -2,6 +2,7 @@
 import type { Vertical } from '@/lib/catalog/verticais';
 import { combineTerms, dedupeTerms } from './seed-utils';
 import { NOVOS_SEGMENTOS, REQUIRE_BRAND_KEYS, SEARCH_DOMAIN_EXTRAS, TERMOS_EXTRAS } from './config-ampliacao';
+import { NOVOS_SEGMENTOS_TIPOS, TERMOS_EXTRAS_TIPOS } from './config-tipos';
 
 /**
  * CONFIGURAÇÃO POR DEPARTAMENTO (vertical) E SEGMENTO. ADR 0008 itens 4 e 5; ata 2026-11-08, Fase 2.
@@ -64,6 +65,13 @@ export interface SegmentConfig {
   targetRefreshMin: number;
   /** Ordem de semeadura (1 = primeiro). */
   seedRank: number;
+  /**
+   * domain_id NAO medido ao vivo (ampliacao de tipos 2026-11-12): `domains` e uma regex de varredura e a busca roda sem `domain_id`.
+   * O 1o dry-run mostra os dominios reais em `dominio_fora_do_segmento`; corrigir a regex e declarar `searchDomain` apos conferir.
+   */
+  domainUnconfirmed?: boolean;
+  /** Orcamento PROPRIO de chamadas ao ML deste tipo por execucao da fila (seed-schedule.ts). Ausente => DEFAULT_CALLS_PER_TYPE_RUN. */
+  callsPerRun?: number;
   /** Nota da medição que justifica a ordem. */
   rationale: string;
 }
@@ -499,10 +507,12 @@ export const SEGMENTS: SegmentConfig[] = [
 ];
 
 // Ampliação 2026-11-11 (config-ampliacao.ts): segmentos novos, termos extras (anexados ao fim) e filtro de marca.
-SEGMENTS.push(...NOVOS_SEGMENTOS);
+SEGMENTS.push(...NOVOS_SEGMENTOS, ...NOVOS_SEGMENTOS_TIPOS);
 for (const s of SEGMENTS) {
   const extra = TERMOS_EXTRAS[s.key];
   if (extra?.length) s.terms = dedupeTerms([...s.terms, ...extra]);
+  const extra2 = TERMOS_EXTRAS_TIPOS[s.key];
+  if (extra2?.length) s.terms = dedupeTerms([...s.terms, ...extra2]);
   const dom = SEARCH_DOMAIN_EXTRAS[s.key];
   if (dom && !s.searchDomain) s.searchDomain = dom;
   if (REQUIRE_BRAND_KEYS.has(s.key)) s.requireBrand = true;

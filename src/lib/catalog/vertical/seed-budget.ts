@@ -16,7 +16,9 @@
 // Teto de seguranca contra laco descontrolado, NAO limite da plataforma (dono, 2026-11-11: usar o que a documentacao permite). O ML nao publica
 // cota diaria; o limite real e o HTTP 429, que ja para a execucao (ml-api: RateLimited). Era 480/dia (autoimposto em 2026-11-10).
 export const DAILY_CALL_CAP = 12000;
-export const NOT_FOUND_TTL_DAYS = 3;
+// 7 dias (era 3; 2026-11-12): 70% a 86% dos catálogos buscados respondem 404 "sem vendedor" (medido nos planos de 8 a 11/11) e a fila de
+// semeadura volta a cada tipo em ciclos de dias; com TTL de 3 dias cada ciclo repagava os mesmos 404. Vencido o prazo, tenta de novo.
+export const NOT_FOUND_TTL_DAYS = 7;
 
 export interface BudgetRun {
   runId: string;

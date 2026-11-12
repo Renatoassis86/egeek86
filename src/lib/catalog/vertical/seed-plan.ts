@@ -34,7 +34,14 @@ export interface SeedOptions {
   termsLimit?: number;
   /** Primeiro termo a usar (0-based): rodadas seguintes continuam a lista de onde a anterior parou. */
   termsFrom?: number;
-  /** Máximo de masters a PLANEJAR criar por segmento. */
+  /** Lista explícita de termos (a fila de semeadura pula termos esgotados); vence termsFrom/termsLimit. */
+  terms?: string[];
+  /** Orçamento PRÓPRIO de chamadas deste tipo nesta execução (seed-schedule.ts): ao atingir, o tipo para ('orcamento_do_tipo') e o próximo segue. */
+  segmentCalls?: number;
+  /**
+   * Máximo de masters a PLANEJAR criar por segmento. Padrão: SEM TETO (pedido do dono, 2026-11-12: "não tem limites"). Quem limita são o
+   * porteiro, a identidade, a duplicata e o orçamento de chamadas, não um número de masters.
+   */
   maxCreate?: number;
   log?: (msg: string) => void;
 }
@@ -84,6 +91,8 @@ export interface SeedReport {
   segment: string;
   vertical: string;
   termsSearched: number;
+  /** Termos (na ordem da lista) com ao menos uma página pedida: a semeadura avança em largura, então é um prefixo da lista. */
+  termsTouched: string[];
   searchResults: number;
   counts: Record<string, number>;
   plans: SeedPlanEntry[];
@@ -131,13 +140,14 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
   const log = opts.log ?? (() => {});
   const gate = gateFor(seg.vertical);
   const pageLimit = opts.pageLimit ?? 10;
-  const maxCreate = opts.maxCreate ?? 20;
+  const maxCreate = opts.maxCreate ?? Number.POSITIVE_INFINITY;
   const from = Math.max(0, opts.termsFrom ?? 0);
-  const terms = seg.terms.slice(from, from + (opts.termsLimit ?? seg.terms.length));
+  const terms = opts.terms ?? seg.terms.slice(from, from + (opts.termsLimit ?? seg.terms.length));
   const report: SeedReport = {
     segment: seg.key,
     vertical: seg.vertical,
     termsSearched: 0,
+    termsTouched: [],
     searchResults: 0,
     counts: {},
     plans: [],
@@ -151,6 +161,9 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
     termStops: {},
   };
   const startUsed = client.used();
+  const segmentCalls = opts.segmentCalls ?? Number.POSITIVE_INFINITY;
+  /** Falta orçamento próprio do tipo para as chamadas que o próximo candidato exige (items + detalhe = 2)? */
+  const typeBudgetLeft = (need: number) => segmentCalls - (client.used() - startUsed) >= need;
   const seenCatalogs = new Set<string>();
   const skip = (p: MlCatalogPayload, reason: string, detail: string | null = null) => {
     bump(report.counts, reason);
@@ -201,6 +214,10 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
         // 3) /items primeiro: 70% dos catálogos medidos não têm vendedor (404 "No winners found"); descarta sem retentar.
         if (client.remaining() < 2) {
           report.stoppedBecause = 'teto_de_chamadas';
+          return true;
+        }
+        if (!typeBudgetLeft(2)) {
+          report.stoppedBecause = 'orcamento_do_tipo';
           return true;
         }
         const it = await client.get(`/products/${searchPayload.id}/items?limit=100`);
@@ -325,6 +342,11 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
           break outer;
         }
         const offset = baseOffset + pageIdx * pageLimit;
+        if (!typeBudgetLeft(1)) {
+          report.stoppedBecause = 'orcamento_do_tipo';
+          break outer;
+        }
+        if (!report.termsTouched.includes(term)) report.termsTouched.push(term);
         const r = await client.get(searchPath(term, pageLimit, offset, opts.useSearchDomain ? seg.searchDomain : null));
         report.termsSearched++;
         report.pagesFetched++;
