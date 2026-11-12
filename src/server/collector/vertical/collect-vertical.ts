@@ -10,6 +10,7 @@ import { slugify } from '@/lib/slugify';
 import { isVertical } from '@/lib/catalog/verticais';
 import { isVerticalEnabled, killSwitchEnvName, refreshMinutesFor, type NonGamesVertical } from '@/lib/catalog/vertical/config';
 import { fetchVerticalCatalog, VerticalPagingError, type RawPage, type VerticalCatalogOutcome } from '@/lib/catalog/vertical/paging';
+import { groupDueOldestFirst, mayExpireStale, plusCallQuota, staleExpireHours, STALE_EXPIRE_MAX_PER_RUN } from '@/lib/catalog/vertical/queue';
 import { startCollectorRun, collectorRunsEnabled } from '../collector-runs';
 import { recordPriceSnapshot } from '../record-price-snapshot';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from '../price-plausibility';
@@ -54,6 +55,12 @@ export interface CollectVerticalSummary {
   partialCatalogs: number;
   failedCatalogs: number;
   deferredByBudget: number;
+  /** HTTP 429 recebido: a execução parou na hora, sem novas chamadas (freio de cota). */
+  rateLimited: boolean;
+  /** Ofertas ativas já checadas, mas sem preço reconfirmado há N h, expiradas pela varredura de cauda. */
+  expiredStale: number;
+  /** Qual limite decidiu o teto de chamadas desta execução ('execucao' | 'hora' | 'dia'). */
+  quotaLimitedBy: string | null;
   errors: { externalRef: string; message: string }[];
   stoppedBecause: string | null;
 }
@@ -64,6 +71,17 @@ const CATALOG_CONCURRENCY = 3;
 // 2026-11-11 (fase de formação das lojas que não são games): 150 -> 240 chamadas por execução; o orçamento de 240 s continua parando antes se preciso.
 const DEFAULT_MAX_CALLS = 240;
 const DEFAULT_BUDGET_MS = 240_000;
+// Freios de cota do conjunto Plus (somados em collector_runs; só valem com COLLECTOR_RUNS=1). Valores PADRÃO ASSUMIDOS:
+// a cota oficial do ML não está documentada no repositório; o dono/integrador confirma e ajusta por ambiente.
+const DEFAULT_PLUS_HOURLY_CAP = 8000;
+const DEFAULT_PLUS_DAILY_CAP = 150_000;
+
+function envInt(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw.trim() === '') return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback;
+}
 
 function emptySummary(vertical: string, extra: Partial<CollectVerticalSummary> = {}): CollectVerticalSummary {
   return {
@@ -81,6 +99,9 @@ function emptySummary(vertical: string, extra: Partial<CollectVerticalSummary> =
     partialCatalogs: 0,
     failedCatalogs: 0,
     deferredByBudget: 0,
+    rateLimited: false,
+    expiredStale: 0,
+    quotaLimitedBy: null,
     errors: [],
     stoppedBecause: null,
     ...extra,
@@ -297,6 +318,41 @@ async function applyVerticalGroup(
   return out;
 }
 
+/** Chamadas do conjunto Plus (todas as lojas) na última hora e em 24 h, somadas de collector_runs. null = não medido. */
+async function plusCallsUsed(): Promise<{ h1: number; h24: number } | null> {
+  if (!collectorRunsEnabled()) return null;
+  try {
+    const rows = (await db.execute(sql`
+      SELECT coalesce(sum((meta->>'apiCalls')::numeric) FILTER (WHERE started_at > now() - interval '1 hour'), 0)::int AS h1,
+             coalesce(sum((meta->>'apiCalls')::numeric), 0)::int AS h24
+      FROM collector_runs
+      WHERE job LIKE 'collect-vertical:%' AND started_at > now() - interval '24 hours'`)) as unknown as { h1: number; h24: number }[];
+    return rows[0] ? { h1: Number(rows[0].h1), h24: Number(rows[0].h24) } : null;
+  } catch (err) {
+    console.error('[collect-vertical] leitura da cota falhou (usa só o teto da execução):', sanitizeErrorForSummary((err as Error).message));
+    return null;
+  }
+}
+
+/**
+ * Varredura de cauda: oferta ATIVA (vendedor real) que foi checada recentemente mas cujo preço não é reconfirmado há N h
+ * (ex.: está numa página do catálogo que o ML não entrega) sai como 'expired' pelo mesmo status já usado pelo coletor.
+ * Nunca inventa preço. Oferta que nem foi checada (backlog nosso) NÃO expira: volta ao topo da fila.
+ */
+async function expireStaleOffers(vertical: NonGamesVertical, networkId: string, hours: number, refreshMin: number): Promise<number> {
+  const rows = (await db.execute(sql`
+    UPDATE affiliate_offers SET status = 'expired'::affiliate_offer_status, updated_at = now()
+    WHERE id IN (
+      SELECT id FROM affiliate_offers
+      WHERE vertical = ${vertical} AND network_id = ${networkId} AND status = 'active' AND seller_id IS NOT NULL
+        AND coalesce(last_price_confirmed_at, created_at) < now() - make_interval(hours => ${hours})
+        AND last_checked_at > now() - make_interval(mins => ${refreshMin * 3})
+      ORDER BY coalesce(last_price_confirmed_at, created_at) ASC
+      LIMIT ${STALE_EXPIRE_MAX_PER_RUN})
+    RETURNING id`)) as unknown as { id: string }[];
+  return rows.length;
+}
+
 export interface CollectVerticalOptions {
   /** Só seleciona e conta; nenhuma chamada à API nem escrita. */
   dryRun?: boolean;
@@ -314,10 +370,19 @@ export async function collectVertical(vertical: string, options: CollectVertical
 
   const refreshMin = refreshMinutesFor(v);
   const envCap = Number(process.env[`${killSwitchEnvName(v).replace('_ENABLED', '')}_MAX_CALLS`]);
-  const callCap = options.maxCalls ?? (Number.isFinite(envCap) && envCap > 0 ? envCap : DEFAULT_MAX_CALLS);
+  const runCap = options.maxCalls ?? (Number.isFinite(envCap) && envCap > 0 ? envCap : DEFAULT_MAX_CALLS);
+  const used = options.dryRun ? null : await plusCallsUsed();
+  const quota = plusCallQuota({
+    runCap,
+    usedLastHour: used?.h1 ?? null,
+    usedLast24h: used?.h24 ?? null,
+    hourlyCap: envInt('PLUS_ML_HOURLY_CALL_CAP', DEFAULT_PLUS_HOURLY_CAP),
+    dailyCap: envInt('PLUS_ML_DAILY_CALL_CAP', DEFAULT_PLUS_DAILY_CAP),
+  });
+  const callCap = quota.callCap;
   const budgetMs = options.budgetMs ?? DEFAULT_BUDGET_MS;
   const startedMs = Date.now();
-  const summary = emptySummary(v, { callCap, dryRun: options.dryRun === true });
+  const summary = emptySummary(v, { callCap, dryRun: options.dryRun === true, quotaLimitedBy: quota.limitedBy });
   const where = dueWhere(v, network.id, refreshMin);
 
   const [{ total, oldest }] = await db
@@ -330,20 +395,21 @@ export async function collectVertical(vertical: string, options: CollectVertical
   summary.dueTotal = total;
 
   const due = await db
-    .select({ id: affiliateOffers.id, externalRef: affiliateOffers.externalRef, masterProductId: affiliateOffers.masterProductId })
+    .select({
+      id: affiliateOffers.id,
+      externalRef: affiliateOffers.externalRef,
+      masterProductId: affiliateOffers.masterProductId,
+      lastCheckedAt: affiliateOffers.lastCheckedAt,
+    })
     .from(affiliateOffers)
     .where(where)
     .orderBy(sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`, asc(affiliateOffers.id))
-    .limit(callCap * 20);
+    .limit(Math.max(callCap, 1) * 20);
 
-  const groups = new Map<string, Group>();
-  for (const o of due) {
-    const key = `${o.masterProductId}:${o.externalRef}`;
-    const g = groups.get(key);
-    if (g) g.offerIds.push(o.id);
-    else groups.set(key, { networkId: network.id, externalRef: o.externalRef!, masterProductId: o.masterProductId, offerIds: [o.id] });
-  }
-  const list = Array.from(groups.values());
+  // Fila POR ANTIGUIDADE: o catálogo cuja oferta é a mais velha vai primeiro; nunca checado antes de todos.
+  const list: Group[] = groupDueOldestFirst(
+    due.map((o) => ({ id: o.id, externalRef: o.externalRef, masterProductId: o.masterProductId, checkedAtMs: o.lastCheckedAt ? o.lastCheckedAt.getTime() : null }))
+  ).map((g) => ({ networkId: network.id, externalRef: g.externalRef, masterProductId: g.masterProductId, offerIds: g.offerIds }));
   summary.selected = due.length;
   summary.catalogs = list.length;
   if (options.dryRun) return summary;
@@ -363,6 +429,10 @@ export async function collectVertical(vertical: string, options: CollectVertical
 
   try {
     await mapWithConcurrency(list, CATALOG_CONCURRENCY, async (group) => {
+      if (summary.rateLimited) {
+        summary.deferredByBudget++; // 429 já recebido: nenhuma chamada nova nesta execução
+        return;
+      }
       if (Date.now() - startedMs > budgetMs) {
         stopped = 'orcamento_de_tempo';
         summary.deferredByBudget++;
@@ -403,6 +473,12 @@ export async function collectVertical(vertical: string, options: CollectVertical
         run.counters.snapshotsWritten += applied.snapshots;
         await run.confirmPrices(applied.priced);
       } catch (err) {
+        if (err instanceof VerticalPagingError && err.kind === 'limite-429') {
+          summary.rateLimited = true;
+          stopped = 'http_429';
+          run.addError('HTTP 429 em /products/{id}/items', 'http_429');
+          return; // sem carimbo: o catálogo segue devido; as demais execuções esperam a próxima rodada
+        }
         if (err instanceof VerticalPagingError && err.kind === 'orcamento') {
           stopped = 'orcamento_de_chamadas';
           summary.deferredByBudget++;
@@ -414,6 +490,14 @@ export async function collectVertical(vertical: string, options: CollectVertical
         run.addError(message);
       }
     });
+    // Cauda: preço não reconfirmado há N h em oferta já checada => 'expired' (só em execução saudável e com a coluna de confirmação ativa).
+    if (mayExpireStale({ rateLimited: summary.rateLimited, pricesWritten: summary.pricesWritten, catalogs: summary.catalogs, failedCatalogs: summary.failedCatalogs, confirmationTracked: collectorRunsEnabled() })) {
+      try {
+        summary.expiredStale = await expireStaleOffers(v, network.id, staleExpireHours(), refreshMin);
+      } catch (err) {
+        console.error('[collect-vertical] varredura de cauda falhou (ignorada):', sanitizeErrorForSummary((err as Error).message));
+      }
+    }
   } finally {
     summary.stoppedBecause = stopped;
     await run.finish({
@@ -427,6 +511,9 @@ export async function collectVertical(vertical: string, options: CollectVertical
         partialCatalogs: summary.partialCatalogs,
         failedCatalogs: summary.failedCatalogs,
         deferredByBudget: summary.deferredByBudget,
+        rateLimited: summary.rateLimited,
+        expiredStale: summary.expiredStale,
+        quotaLimitedBy: quota.limitedBy,
         errorSamples: summary.errors.slice(0, 3).map((e) => e.message.slice(0, 160)),
       },
     });

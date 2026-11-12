@@ -29,6 +29,7 @@
     "baseline:gamer": "tsx --conditions=react-server --env-file=.env.local scripts/congelar-linha-base-gamer.ts",
     "test:departamentos": "tsx --conditions=react-server --env-file=.env.local scripts/test-departamentos.ts",
     "test:vertical-identity": "tsx scripts/test-vertical-identity.ts",
+    "test:plus-reconfirmacao": "tsx scripts/test-plus-reconfirmacao.ts",
     "test:catalogo": "tsx scripts/test-catalogo-inventario.ts",
     "test:shopee-esporte": "tsx scripts/test-shopee-esporte.ts",
     "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts"

@@ -398,10 +398,17 @@
       if (!d || pronto == null) return { descarte: w ? 'nao_renderizou' : 'popup_bloqueado' }; // sem popup e iframe vazio: precisa de gesto/permissão do dono
       var id = PURO.itemIdShopee(winAtual().location.href);
       if (String(id || '') !== String(item.ref)) return { descarte: 'item_diferente:' + id };
-      var precos = [].map.call(d.querySelectorAll('[class*="price" i]'), txt);
-      var seen = PURO.precoShopee(precos);
-      var rotulos = [].map.call(d.querySelectorAll('[class*="voucher" i], [class*="coupon" i]'), txt);
-      return { ok: true, asin: id, seen: seen, selos: PURO.selosShopee(rotulos), fonte: 'produto' };
+      // Página real (validada em 2026-11-12): "R$55,25com cupom >ou R$65,00" = preço com cupom e preço sem cupom no bloco de preço do produto.
+      var corpo = d.body.innerText.replace(/\s+/g, ' ');
+      var mc = /R\$\s*([\d.]+,\d{2})\s*com cupom[\s>]*(?:ou\s*R\$\s*([\d.]+,\d{2}))?/i.exec(corpo);
+      if (mc) {
+        var com = PURO.centsFrom('R$ ' + mc[1]);
+        var base = mc[2] ? PURO.centsFrom('R$ ' + mc[2]) : null;
+        if (!base || !com || com >= base) return { descarte: 'cupom_sem_preco_base' };
+        return { ok: true, asin: id, seen: base, selos: ['R$ ' + mc[1] + ' com cupom'], cupons: [{ label: 'R$ ' + mc[1] + ' com cupom', price_with_cents: com }], fonte: 'produto' };
+      }
+      // Sem o bloco 'com cupom' a página não prova o preço do produto (o texto traz preços de recomendados): não lê nada, nunca chuta preço.
+      return { descarte: 'sem_bloco_de_cupom_ou_pagina_sem_detalhe' };
     } finally {
       try { if (w) w.close(); } catch (e) { /* ok */ }
       popupAtual = null; fecharFrame(f);
@@ -453,7 +460,7 @@
         var selos = res.selos;
         var fonte = res.fonte;
         if (REDE === 'amazon' && !selos.length && S.cuponsAsins[item.ref]) { selos = [S.cuponsAsins[item.ref]]; fonte = 'lista-oficial'; }
-        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, coupons: selos.map(function (label) { return { label: label }; }) });
+        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, coupons: res.cupons || selos.map(function (label) { return { label: label }; }) });
         linha({ ref: item.ref, seen: res.seen, selos: selos, fonte: fonte });
       } else if (res) {
         c.descartadas++;

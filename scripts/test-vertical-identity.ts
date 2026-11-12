@@ -164,7 +164,7 @@ check('segmentsOf agrupa por departamento (originais + ampliacao 2026-11-11; imp
 check('kill-switch desligado por padrao', !isVerticalEnabled('livros', {}));
 check('kill-switch so liga com 1/true', isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '1' }) && isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'true' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '0' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: 'sim' }) && !isVerticalEnabled('livros', { VERTICAL_LIVROS_ENABLED: '' }));
 check('nome do kill-switch', killSwitchEnvName('eletroeletronicos') === 'VERTICAL_ELETROELETRONICOS_ENABLED');
-check('refresh: livros 60 min; tecnologia 30 min', refreshMinutesFor('livros', {}) === 60 && refreshMinutesFor('tecnologia', {}) === 30);
+check('refresh Plus (onda 1 = ritmo dos games): livros, esporte, casa 15 min; onda 2 (3D, tecnologia, eletro) 30 min', ['livros', 'esporte', 'eletrodomesticos'].every((v) => refreshMinutesFor(v as never, {}) === 15) && ['impressao3d', 'tecnologia', 'eletroeletronicos'].every((v) => refreshMinutesFor(v as never, {}) === 30));
 check('refresh: override respeitado e limitado pelo teto de 6 h dos termos do ML', refreshMinutesFor('livros', { VERTICAL_LIVROS_REFRESH_MIN: '10' }) === 10 && refreshMinutesFor('livros', { VERTICAL_LIVROS_REFRESH_MIN: '9999' }) === MAX_REFRESH_MIN);
 check('porteiro por vertical NAO importa o porteiro gamer (gate.ts)', ['gate.ts', 'identity.ts', 'config.ts', 'seed-plan.ts', 'paging.ts'].every((f) => !/@\/lib\/catalog\/gate['"]|from ['"]\.\.\/gate['"]/.test(fs.readFileSync(path.resolve('src/lib/catalog/vertical', f), 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, ''))));
 

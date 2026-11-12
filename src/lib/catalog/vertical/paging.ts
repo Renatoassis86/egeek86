@@ -10,6 +10,8 @@ import { MASTER_MAX_PAGES_PER_CATALOG, MASTER_PAGE_SIZE, parseMeliCatalogPage, s
  *   - os itens devolvidos são preços reais observados: são gravados;
  *   - NADA expira (não se pode afirmar que o item faltante sumiu: a API disse que não carregou);
  *   - o catálogo é carimbado (não fica eternamente devido) e contado como parcial no collector_runs.
+ * Página 2+ com HTTP 400/404 (2026-11-11): o ML não entrega mais páginas; também vira `partial` (sem retry, sem expirar).
+ * HTTP 429 lança `limite-429` (sem retry): o coletor para a execução.
  * Continuam sendo FALHA (fail closed, nada gravado): paging ausente com itens, paging inválido, offset diferente do
  * pedido, total mudando entre páginas, mais itens que o total, teto de páginas, página caída após 1 retry, orçamento.
  */
@@ -19,6 +21,8 @@ export type VerticalPagingErrorKind =
   | 'paging-inconsistente'
   | 'teto-paginas'
   | 'orcamento'
+  /** HTTP 429: a cota do ML acabou. Quem chama PARA a execução inteira (sem retry, sem nova chamada). */
+  | 'limite-429'
   | 'pagina-falhou';
 
 export class VerticalPagingError extends Error {
@@ -73,6 +77,9 @@ export async function fetchVerticalCatalog(ref: string, fetchPage: FetchRawPage,
     }
     let raw: RawPage | null = null;
     let lastError = '';
+    // Página 2+ que responde 400/404: o ML não entrega mais páginas deste catálogo (achado 2026-11-11). Repetir não adianta
+    // e derrubar o catálogo inteiro perdia os preços reais da 1ª página e o deixava eternamente devido no topo da fila.
+    let pageGone: number | null = null;
     for (let attempt = 0; attempt <= retries && !raw; attempt++) {
       if (opts.charge && !opts.charge()) {
         throw new VerticalPagingError('orcamento', ref, `orçamento esgotado na página ${pages + 1} (offset ${offset})`);
@@ -81,12 +88,21 @@ export async function fetchVerticalCatalog(ref: string, fetchPage: FetchRawPage,
       try {
         const r = await fetchPage(ref, offset, pageSize);
         if (r.status === 404 && offset === 0) return { kind: 'empty', calls };
+        if (r.status === 429) throw new VerticalPagingError('limite-429', ref, `HTTP 429 (offset ${offset})`);
         if (r.status === 200 || r.status === 206) raw = r;
         else lastError = `HTTP ${r.status}`;
-        if (r.status === 404) break; // 404 depois da 1ª página: repetir não adianta
+        if (!raw && (r.status === 404 || r.status === 400)) {
+          if (offset > 0) pageGone = r.status;
+          break; // erro de cliente: repetir não adianta (e gasta cota)
+        }
       } catch (err) {
+        if (err instanceof VerticalPagingError) throw err;
         lastError = sanitizeErrorForSummary(err instanceof Error ? err.message : String(err));
       }
+    }
+    if (!raw && pageGone !== null) {
+      lastStatus = pageGone;
+      break; // segue adiante com o que já foi lido: vira 'partial' (nada expira)
     }
     if (!raw) throw new VerticalPagingError('pagina-falhou', ref, `página ${pages + 1} (offset ${offset}) falhou: ${lastError}`);
     pages++;

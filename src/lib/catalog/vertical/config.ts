@@ -540,10 +540,27 @@ export function isVerticalEnabled(vertical: string, env: Record<string, string |
   return v === '1' || v === 'true';
 }
 
-/** Intervalo de recoleta de um departamento: a menor frequência-alvo dos segmentos, limitada pelos termos do ML. */
+/**
+ * CADÊNCIA PLUS (pedido do dono, 2026-11-11): lojas Plus no MESMO ritmo dos games (collect-prices reconfirma a cada 15 min).
+ * Teto do intervalo por departamento, em minutos. O intervalo efetivo é min(frequência-alvo dos segmentos, teto).
+ * Onda 1 (livros, esporte, casa): 15 min. Onda 2 (3D, tecnologia, eletroeletrônicos): 30 min até medir cota/429 na onda 1;
+ * depois basta trocar para 15 aqui (uma linha por departamento). Override por ambiente (VERTICAL_<V>_REFRESH_MIN) vence tudo.
+ */
+export const PLUS_REFRESH_CEILING_MIN: Record<NonGamesVertical, number> = {
+  livros: 15,
+  esporte: 15,
+  eletrodomesticos: 15,
+  impressao3d: 30,
+  tecnologia: 30,
+  eletroeletronicos: 30,
+};
+
+/** Intervalo de recoleta de um departamento: a menor frequência-alvo dos segmentos, limitada pelo teto Plus e pelos termos do ML. */
 export function refreshMinutesFor(vertical: NonGamesVertical, env: Record<string, string | undefined> = process.env): number {
   const override = Number(env[`VERTICAL_${vertical.toUpperCase()}_REFRESH_MIN`]);
   const base = segmentsOf(vertical).reduce((m, s) => Math.min(m, s.targetRefreshMin), Number.POSITIVE_INFINITY);
-  const wanted = Number.isFinite(override) && override > 0 ? override : Number.isFinite(base) ? base : 30;
+  const baseOrDefault = Number.isFinite(base) ? base : 30;
+  const ceiling = PLUS_REFRESH_CEILING_MIN[vertical];
+  const wanted = Number.isFinite(override) && override > 0 ? override : Math.min(baseOrDefault, ceiling ?? baseOrDefault);
   return Math.min(Math.max(1, Math.floor(wanted)), MAX_REFRESH_MIN);
 }
