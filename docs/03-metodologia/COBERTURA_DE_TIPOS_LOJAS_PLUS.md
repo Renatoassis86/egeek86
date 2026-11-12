@@ -93,7 +93,8 @@ Resumo (143 linhas de tipo esperado; 130 segmentos de semeadura): ausente para p
 | Bebedouro e purificador de água | `bebedouro-purificador-agua` | 0 | ausente | parcial |  |
 | Lavadora de alta pressão | `lavadora-alta-pressao` | 0 | ausente | parcial |  |
 | Máquina de costura | `maquina-de-costura` | 0 | ausente | parcial |  |
-| Chuveiro e aquecedor de água | - | - | ausente | ausente | decisao_dono: hidráulica/elétrica de obra: fora do recorte atual; incluir é decisão do dono |
+| Chuveiro e ducha elétrica | `chuveiro-eletrico` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12 |
+| Aquecedor de água (a gás, elétrico, solar) | `aquecedor-de-agua` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12 |
 
 ### Tecnologia
 
@@ -128,7 +129,8 @@ Resumo (143 linhas de tipo esperado; 130 segmentos de semeadura): ausente para p
 | Nobreak | `nobreak` | 0 | ausente | parcial |  |
 | Impressora (jato de tinta, laser, térmica) | `impressora` | 1 | parcial | coberto |  |
 | Scanner de documentos | `scanner-de-documentos` | 0 | ausente | parcial |  |
-| Mesa e rack gamer (móveis) | - | - | ausente | ausente | decisao_dono: móvel, não eletrônico: fora do recorte atual |
+| Mesa gamer | `mesa-gamer` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12 |
+| Rack gamer | `rack-gamer` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12 |
 
 ### Esporte
 
@@ -175,8 +177,10 @@ Resumo (143 linhas de tipo esperado; 130 segmentos de semeadura): ausente para p
 | Rolo de massagem | `foam-roller` | 0 | ausente | parcial |  |
 | Corda de pular | `corda-de-pular` | 0 | configurado, sem produto | coberto |  |
 | Garrafa e squeeze esportivo | `garrafa-esportiva` | 0 | configurado, sem produto | coberto |  |
-| Suplementos (whey, creatina...) | - | - | ausente | ausente | decisao_dono: alimento regulado, com validade e rótulo: a regra "só novo e em linha" e a identidade por lote não foram definidas para ele |
-| Camping, pesca e trilha | - | - | ausente | ausente | decisao_dono: fora do recorte "esporte" atual; incluir é decisão do dono |
+| Suplementos (whey, creatina...) | `suplemento` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12: só lacrado, novo e sem "vencimento próximo" (nicho) |
+| Camping | `camping` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12 |
+| Pesca (vara, molinete, carretilha) | `pesca` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12; isca, anzol e linha ficam fora |
+| Trilha e montanhismo | `trilha` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12 |
 | Roupa fitness do dia a dia (legging, short, camiseta dry-fit) | - | - | ausente | ausente | sem_catalogo_ml: medido em 11/11: a busca devolve uniformes, lembrancinhas e modeladores, não catálogo de produto |
 
 ### Livros
@@ -200,7 +204,7 @@ Resumo (143 linhas de tipo esperado; 130 segmentos de semeadura): ausente para p
 | Estação de lavar e curar resina | `lavadora-curadora-resina` | 0 | ausente | parcial |  |
 | Scanner 3D | - | - | ausente | ausente | porteiro: OUT_OF_SCOPE.impressao3d em gate.ts barra "scanner" sempre; liberar exige mudar o porteiro (outro agente) |
 | Caneta 3D | - | - | ausente | ausente | porteiro: OUT_OF_SCOPE.impressao3d em gate.ts barra "caneta 3d" sempre; liberar exige mudar o porteiro (outro agente) |
-| Ferramentas de pós-processamento (espátula, alicate, lixa) | - | - | ausente | ausente | decisao_dono: ticket baixo e sem identidade forte; incluir é decisão do dono |
+| Ferramentas de pós-processamento (espátula, alicate, lixa) | `ferramenta-impressao-3d` | 0 | ausente | parcial | aprovado pelo dono em 2026-11-12; a vitrine exige "3d"/uso no título |
 
 ## 3. O que mudou no código
 
@@ -270,3 +274,15 @@ Hoje (5.606/h a 15 min) já fica abaixo do freio assumido de 8.000/h. Com ~10 mi
 ## 8. Testes
 
 `npm run test:cobertura-tipos` (789 verificações: mapa completo, tipos novos, léxico, fila, cursor, sem teto de masters, orçamento do tipo, fórmulas), `test:vertical-identity` (244; a asserção de contagem de segmentos foi ampliada), `scripts/test-semeadura.ts` (737), `test:plus-reconfirmacao`, `scripts/test-collector-multicatalog.ts` (93) e `tsc --noEmit`.
+
+## 9. Decisões do dono de 2026-11-12: piloto de 24 h, cadência por camada, novos tipos
+
+### 9.1 Novos tipos (9 segmentos)
+`suplemento`, `camping`, `pesca`, `trilha` (Esporte); `chuveiro-eletrico`, `aquecedor-de-agua` (Casa); `mesa-gamer`, `rack-gamer` (Tecnologia); `ferramenta-impressao-3d` (Impressão 3D). Todos com `domainUnconfirmed` (o 1º dry-run mostra os domínios reais), léxico aparelho x acessório e recorte de nicho em `scope-tipos.ts`, e orçamento de 60 chamadas na 1ª rodada. As regras inegociáveis seguem: o master nasce em `review`, só produto NOVO e em linha (a API exige `condition=new`), sem duplicata (catálogo, GTIN, chave, título), só API oficial. Suplemento: o nicho barra "vencimento próximo", "validade curta", amostra e ração. O domínio de `aquecedor-de-agua` saiu do tipo `chaleira-eletrica`.
+
+### 9.2 Cadência por camada (coletor `collect-vertical`)
+Vitrine (master aprovado E dentro do escopo de compra, sem a marca `foraDeEscopo`) reconfirma no intervalo do departamento (15 a 30 min). Revisão (o resto) reconfirma a cada 90 min (ajustável de 60 a 120 em `VERTICAL_REVISAO_REFRESH_MIN`). A fila segue por antiguidade, vitrine antes da revisão. Desliga com `PLUS_CADENCIA_CAMADAS=0`. Com 10 mil catálogos e 20% na vitrine: 14.667 chamadas/h contra 44.000/h com o intervalo único. A varredura de cauda (12 h sem preço) usa o intervalo da camada.
+
+### 9.3 Semeadura no servidor (piloto Eletrônicos)
+Rota `/api/cron/semear-vertical` (Bearer `CRON_SECRET`; `vercel.json`: a cada 10 min). DESLIGADA por padrão: só roda com `SEMEADURA_LOJAS=eletroeletronicos`. Dry-run por padrão; grava com `?apply=1` (que o cron já usa) E `SEMEADURA_TERMOS_APROVADOS=1` (a whitelist de termos continua provisória em `TERMS_STATUS`). Uma fatia por execução (até 120 chamadas, 48 s de trabalho), cursor por tipo, uso do dia, recuo de 429 e cache de 404 em `system_config` (`semeadura_vertical_estado`, `semeadura_vertical_404`). Para no primeiro 429 e recua 15, 30, 60, 120 min. Teto diário de segurança 12.000 (`SEMEADURA_DAILY_CAP` só reduz). O consumo entra no freio `PLUS_ML_*` (collector_runs soma `collect-vertical:*` e `semear-vertical:*`).
+`npm run test:semeadura-servidor`.

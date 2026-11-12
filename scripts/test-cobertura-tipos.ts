@@ -54,7 +54,7 @@ async function main() {
 
   // Causas validas e ausencias que dependem de outro agente (porteiro) ou do dono
   check('scanner 3D e caneta 3D ausentes por causa do porteiro (nao por falta de semente)', TIPOS_ESPERADOS.filter((t) => /Scanner 3D|Caneta 3D/.test(t.tipo)).every((t) => t.causa === 'porteiro'));
-  check('suplementos dependem de decisao do dono', TIPOS_ESPERADOS.find((t) => /Suplementos/.test(t.tipo))?.causa === 'decisao_dono');
+  check('suplementos, camping, pesca, trilha, chuveiro, aquecedor de agua, mesa/rack gamer e ferramentas 3D entraram (aprovacao do dono, 2026-11-12)', ['suplemento', 'camping', 'pesca', 'trilha', 'chuveiro-eletrico', 'aquecedor-de-agua', 'mesa-gamer', 'rack-gamer', 'ferramenta-impressao-3d'].every((k) => TIPOS_ESPERADOS.some((t) => t.segmento === k) && !!segmentByKey(k)));
 
   // situacao calculada da configuracao
   const sTv = TIPOS_ESPERADOS.find((t) => t.segmento === 'smart-tv')!;
@@ -108,6 +108,17 @@ async function main() {
   check('secador-filamento: passa e porta-carretel nao', ok('secador-filamento', 'Secador De Filamento Sunlu Filadryer S2') && bad('secador-filamento', 'Suporte Para Carretel Filamento'));
   check('pendrive: aparelho passa e chaveiro nao', ok('pendrive', 'Pendrive Sandisk Ultra 128gb Usb 3.0') && bad('pendrive', 'Chaveiro Cordao Para Pendrive'));
   check('nobreak: aparelho passa e bateria avulsa nao', ok('nobreak', 'Nobreak Sms 1200va Bivolt') && bad('nobreak', 'Bateria Para Nobreak 12v 7ah'));
+
+  // Tipos aprovados pelo dono em 2026-11-12: aparelho/produto passa; peca, acessorio e fora do nicho vao para revisao
+  check('suplemento: whey lacrado passa; vencimento proximo, coqueteleira e racao nao', ok('suplemento', 'Whey Protein Concentrado 900g Max Titanium Baunilha') && bad('suplemento', 'Whey Protein 900g Vencimento Proximo Promocao') && bad('suplemento', 'Coqueteleira Shaker 600ml Para Whey') && bad('suplemento', 'Suplemento Para Cachorro Vitaminico Pet'));
+  check('camping: barraca passa; estaca/haste e barraca de praia nao', ok('camping', 'Barraca De Camping 4 Pessoas Nautika Iglu') && bad('camping', 'Estaca Para Barraca Camping Kit 10') && bad('camping', 'Barraca De Praia Infantil Dobravel'));
+  check('pesca: vara e molinete passam; isca, anzol e linha nao', ok('pesca', 'Vara De Pesca Telescopica 3m Molinete Marine Sports') && bad('pesca', 'Isca Artificial Pesca Kit 20') && bad('pesca', 'Linha De Pesca Multifilamento 300m'));
+  check('trilha: mochila cargueira passa; mochila escolar e capa de chuva nao', ok('trilha', 'Mochila Cargueira Trilha 50l Nautika') && bad('trilha', 'Mochila Escolar Infantil Rodinha') && bad('trilha', 'Capa De Chuva Para Mochila Trilha'));
+  check('chuveiro-eletrico: chuveiro passa; resistencia, ducha higienica e chuveiro a gas nao', ok('chuveiro-eletrico', 'Chuveiro Eletrico Lorenzetti Advanced 7500w 220v') && bad('chuveiro-eletrico', 'Resistencia Para Chuveiro Lorenzetti 7500w') && bad('chuveiro-eletrico', 'Ducha Higienica Com Registro') && bad('chuveiro-eletrico', 'Chuveiro A Gas Portatil'));
+  check('aquecedor-de-agua: aquecedor a gas passa; resistencia, aquecedor de ambiente e de aquario nao', ok('aquecedor-de-agua', 'Aquecedor De Agua A Gas Rinnai 15 Litros Gn') && bad('aquecedor-de-agua', 'Resistencia Para Aquecedor De Agua') && bad('aquecedor-de-agua', 'Aquecedor De Ambiente Eletrico Portatil') && bad('aquecedor-de-agua', 'Aquecedor De Aquario 100w'));
+  check('mesa-gamer: mesa gamer passa; pes avulsos, mesa de jantar e mesa digitalizadora nao', ok('mesa-gamer', 'Mesa Gamer Em L Com Led 140cm Pichau') && bad('mesa-gamer', 'Pes Para Mesa Gamer Kit 4') && bad('mesa-gamer', 'Mesa De Jantar Gamer Retro') && bad('mesa-gamer', 'Mesa Digitalizadora Gamer Wacom'));
+  check('rack-gamer: rack gamer para tv passa; rack 19 pol e suporte nao', ok('rack-gamer', 'Rack Gamer Para Tv Ate 65 Com Led Dt3') && bad('rack-gamer', 'Rack Servidor 19 Polegadas 12u') && bad('rack-gamer', 'Porta Para Rack Gamer Reposicao'));
+  check('ferramenta-impressao-3d: kit de impressao 3d passa; ferramenta de solda/unha e peca de impressora nao', ok('ferramenta-impressao-3d', 'Kit Ferramentas Pos Processamento Impressao 3d Espatula Alicate') && bad('ferramenta-impressao-3d', 'Alicate De Unha Manicure Profissional') && bad('ferramenta-impressao-3d', 'Bico Nozzle 0.4 Para Impressora 3d'));
 
   // ---------------- orcamento proprio por tipo e fila ----------------
   const state = emptyCursorState();

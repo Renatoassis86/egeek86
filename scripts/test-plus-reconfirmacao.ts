@@ -4,7 +4,8 @@
  * Uso: npx tsx scripts/test-plus-reconfirmacao.ts   (sai com código 1 se algo falhar)
  */
 import { fetchVerticalCatalog, VerticalPagingError, type FetchRawPage } from '../src/lib/catalog/vertical/paging';
-import { groupDueOldestFirst, mayExpireStale, plusCallQuota, staleExpireHours } from '../src/lib/catalog/vertical/queue';
+import { cadenciaCamadas, chamadasPorHoraCamadas, groupDueOldestFirst, intervaloDaCamada, mayExpireStale, ofertaDevida, plusCallQuota, plusCapsFromEnv, staleExpireHours } from '../src/lib/catalog/vertical/queue';
+import fs from 'node:fs';
 import { PLUS_REFRESH_CEILING_MIN, refreshMinutesFor } from '../src/lib/catalog/vertical/config';
 
 let fails = 0;
@@ -121,6 +122,49 @@ check('cauda: nunca sem preço gravado', !mayExpireStale({ ...ok, pricesWritten:
 check('cauda: nunca com mais da metade dos catálogos falhos', !mayExpireStale({ ...ok, failedCatalogs: 11 }));
 check('cauda: nunca sem a coluna de confirmação ativa (COLLECTOR_RUNS)', !mayExpireStale({ ...ok, confirmationTracked: false }));
 check('cauda: padrão 12 h; override mínimo 2 h', staleExpireHours({}) === 12 && staleExpireHours({ VERTICAL_STALE_EXPIRE_HOURS: '1' }) === 12 && staleExpireHours({ VERTICAL_STALE_EXPIRE_HOURS: '24' }) === 24);
+
+// ---------------- cadência por camada (aprovada pelo dono em 2026-11-12) ----------------
+{
+  const c = cadenciaCamadas(15, {});
+  check('camadas: vitrine 15 min e revisão 90 min por padrão, ativa', c.ativa && c.vitrineMin === 15 && c.revisaoMin === 90);
+  check('camadas: revisão presa a 60..120 min', cadenciaCamadas(15, { VERTICAL_REVISAO_REFRESH_MIN: '10' }).revisaoMin === 60 && cadenciaCamadas(15, { VERTICAL_REVISAO_REFRESH_MIN: '500' }).revisaoMin === 120 && cadenciaCamadas(15, { VERTICAL_REVISAO_REFRESH_MIN: '75' }).revisaoMin === 75);
+  check('camadas: revisão nunca mais rápida que a vitrine (departamento de 30 min)', cadenciaCamadas(30, {}).revisaoMin >= 60 && intervaloDaCamada(cadenciaCamadas(30, {}), 1) >= intervaloDaCamada(cadenciaCamadas(30, {}), 0));
+  check('camadas: PLUS_CADENCIA_CAMADAS=0 desliga (todos no intervalo da vitrine)', !cadenciaCamadas(15, { PLUS_CADENCIA_CAMADAS: '0' }).ativa && intervaloDaCamada(cadenciaCamadas(15, { PLUS_CADENCIA_CAMADAS: '0' }), 1) === 15);
+  const now = Date.parse('2026-11-12T12:00:00Z');
+  const min = (m: number) => now - m * 60_000 - 1000;
+  check('camada vitrine: devida aos 15 min, não antes', ofertaDevida(c, 0, min(16), now) && !ofertaDevida(c, 0, min(10), now));
+  check('camada revisão: NÃO devida aos 16 min nem aos 60, devida aos 91', !ofertaDevida(c, 1, min(16), now) && !ofertaDevida(c, 1, min(60), now) && ofertaDevida(c, 1, min(91), now));
+  check('camadas: nunca checada é devida nas duas', ofertaDevida(c, 0, null, now) && ofertaDevida(c, 1, null, now));
+  check('camadas desligadas: revisão volta a ser devida aos 16 min', ofertaDevida(cadenciaCamadas(15, { PLUS_CADENCIA_CAMADAS: '0' }), 1, min(16), now));
+
+  // Fila: vitrine antes da revisão; dentro de cada camada, a antiguidade manda (revisão mais velha NÃO passa na frente da vitrine).
+  const g = groupDueOldestFirst([
+    { id: 'r-velha', externalRef: 'MLBR1', masterProductId: 'mr1', checkedAtMs: 1000, tier: 1 },
+    { id: 'v-nova', externalRef: 'MLBV1', masterProductId: 'mv1', checkedAtMs: 9000, tier: 0 },
+    { id: 'v-velha', externalRef: 'MLBV2', masterProductId: 'mv2', checkedAtMs: 5000, tier: 0 },
+    { id: 'r-nunca', externalRef: 'MLBR2', masterProductId: 'mr2', checkedAtMs: null, tier: 1 },
+    { id: 'v-nunca', externalRef: 'MLBV3', masterProductId: 'mv3', checkedAtMs: null, tier: 0 },
+  ]);
+  check('fila: vitrine (nunca checada, velha, nova) e depois revisão (nunca, velha)', g.map((x) => x.externalRef).join() === 'MLBV3,MLBV2,MLBV1,MLBR2,MLBR1', g.map((x) => x.externalRef));
+  const mix = groupDueOldestFirst([
+    { id: 'a', externalRef: 'MLBM', masterProductId: 'm', checkedAtMs: 1, tier: 1 },
+    { id: 'b', externalRef: 'MLBM', masterProductId: 'm', checkedAtMs: 2, tier: 0 },
+  ]);
+  check('fila: catálogo com uma oferta na vitrine conta como vitrine', mix.length === 1 && mix[0].tier === 0);
+  check('fila sem tier mantém o comportamento antigo (tudo vitrine)', groups.every((x) => x.tier === 0));
+
+  // Carga: a cadência por camada derruba a reconfirmação (premissa do relatório: ~20% em vitrine).
+  const unico = chamadasPorHoraCamadas(2000, 8000, cadenciaCamadas(15, { PLUS_CADENCIA_CAMADAS: '0' }));
+  const camadas = chamadasPorHoraCamadas(2000, 8000, cadenciaCamadas(15, {}));
+  check('carga: 10 mil catálogos, 20% na vitrine: camadas ~ 1/3 do intervalo único (14.667 contra 44.000)', unico === 44000 && camadas === 14667 && camadas < unico * 0.34, { unico, camadas });
+  check('freios Plus: padrão 8.000/h e 150.000/dia; env vence; 0 = sem teto', plusCapsFromEnv({}).hourlyCap === 8000 && plusCapsFromEnv({}).dailyCap === 150000 && plusCapsFromEnv({ PLUS_ML_HOURLY_CALL_CAP: '3000' }).hourlyCap === 3000 && plusCapsFromEnv({ PLUS_ML_DAILY_CALL_CAP: '0' }).dailyCap === 0);
+
+  // Fiação: o coletor usa a camada (vitrine antes, intervalo por camada) e a cota soma a semeadura do servidor.
+  const cv = fs.readFileSync('src/server/collector/vertical/collect-vertical.ts', 'utf8');
+  check('coletor: dueWhere por camada (CASE vitrine) e ordem vitrine primeiro', cv.includes('intervaloSql(cadence)') && cv.includes('CASE WHEN ${vitrineSql()} THEN 0 ELSE 1 END'));
+  check('coletor: vitrine = master aprovado E dentro do escopo de compra (marca foraDeEscopo)', cv.includes("'catalogGate' ->> 'verdict'") && cv.includes("masterNoEscopoSql('m')"));
+  check('coletor: o freio Plus soma collect-vertical e semear-vertical', cv.includes("job LIKE 'collect-vertical:%' OR job LIKE 'semear-vertical:%'"));
+}
 
 if (fails > 0) {
   console.log(`\n${fails} falha(s)`);

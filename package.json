@@ -32,12 +32,14 @@
     "test:vertical-identity": "tsx scripts/test-vertical-identity.ts",
     "test:plus-reconfirmacao": "tsx scripts/test-plus-reconfirmacao.ts",
     "test:cobertura-tipos": "tsx scripts/test-cobertura-tipos.ts",
+    "test:semeadura-servidor": "tsx scripts/test-semeadura-servidor.ts",
     "simular:semeadura-plus": "tsx scripts/simular-semeadura-plus.ts",
     "test:tipos": "tsx scripts/test-tipos-produto.ts",
     "test:escopo": "tsx scripts/test-escopo-compra.ts",
     "test:catalogo": "tsx scripts/test-catalogo-inventario.ts",
     "test:shopee-esporte": "tsx scripts/test-shopee-esporte.ts",
-    "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts"
+    "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts",
+    "test:mensagens-diversidade": "tsx scripts/test-mensagens-diversidade.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

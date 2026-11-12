@@ -97,7 +97,8 @@ export const TIPOS_ESPERADOS: TipoEsperado[] = [
   t(C, 'Bebedouro e purificador de água', 'bebedouro-purificador-agua'),
   t(C, 'Lavadora de alta pressão', 'lavadora-alta-pressao'),
   t(C, 'Máquina de costura', 'maquina-de-costura'),
-  t(C, 'Chuveiro e aquecedor de água', null, 'decisao_dono', 'hidráulica/elétrica de obra: fora do recorte atual; incluir é decisão do dono'),
+  t(C, 'Chuveiro e ducha elétrica', 'chuveiro-eletrico', undefined, 'aprovado pelo dono em 2026-11-12'),
+  t(C, 'Aquecedor de água (a gás, elétrico, solar)', 'aquecedor-de-agua', undefined, 'aprovado pelo dono em 2026-11-12'),
   // ---- Tecnologia ----
   t(T, 'Notebook', 'notebook'),
   t(T, 'Computador desktop, mini PC e all-in-one', 'computador-desktop'),
@@ -128,7 +129,8 @@ export const TIPOS_ESPERADOS: TipoEsperado[] = [
   t(T, 'Nobreak', 'nobreak'),
   t(T, 'Impressora (jato de tinta, laser, térmica)', 'impressora'),
   t(T, 'Scanner de documentos', 'scanner-de-documentos'),
-  t(T, 'Mesa e rack gamer (móveis)', null, 'decisao_dono', 'móvel, não eletrônico: fora do recorte atual'),
+  t(T, 'Mesa gamer', 'mesa-gamer', undefined, 'aprovado pelo dono em 2026-11-12 (móvel gamer)'),
+  t(T, 'Rack gamer', 'rack-gamer', undefined, 'aprovado pelo dono em 2026-11-12 (móvel gamer)'),
   // ---- Esporte ----
   t(S, 'Tênis (corrida, caminhada, treino, casual)', 'tenis'),
   t(S, 'Chuteira', 'chuteira'),
@@ -171,8 +173,10 @@ export const TIPOS_ESPERADOS: TipoEsperado[] = [
   t(S, 'Rolo de massagem', 'foam-roller'),
   t(S, 'Corda de pular', 'corda-de-pular'),
   t(S, 'Garrafa e squeeze esportivo', 'garrafa-esportiva'),
-  t(S, 'Suplementos (whey, creatina...)', null, 'decisao_dono', 'alimento regulado, com validade e rótulo: a regra "só novo e em linha" e a identidade por lote não foram definidas para ele'),
-  t(S, 'Camping, pesca e trilha', null, 'decisao_dono', 'fora do recorte "esporte" atual; incluir é decisão do dono'),
+  t(S, 'Suplementos (whey, creatina...)', 'suplemento', undefined, 'aprovado pelo dono em 2026-11-12: só lacrado, novo e sem "vencimento próximo" (nicho)'),
+  t(S, 'Camping', 'camping', undefined, 'aprovado pelo dono em 2026-11-12'),
+  t(S, 'Pesca (vara, molinete, carretilha)', 'pesca', undefined, 'aprovado pelo dono em 2026-11-12; isca, anzol e linha ficam fora'),
+  t(S, 'Trilha e montanhismo', 'trilha', undefined, 'aprovado pelo dono em 2026-11-12'),
   t(S, 'Roupa fitness do dia a dia (legging, short, camiseta dry-fit)', null, 'sem_catalogo_ml', 'medido em 11/11: a busca devolve uniformes, lembrancinhas e modeladores, não catálogo de produto'),
   // ---- Livros ----
   t(L, 'Livros por gênero, editora e autor (ficção, não ficção, infantil, didático, religião, saúde, artes, esportes)', 'livros', undefined, '~650 termos em livros (gêneros, editoras, autores); a execução é que ficou curta (245 produtos)'),
@@ -188,7 +192,7 @@ export const TIPOS_ESPERADOS: TipoEsperado[] = [
   t(I, 'Estação de lavar e curar resina', 'lavadora-curadora-resina'),
   t(I, 'Scanner 3D', null, 'porteiro', 'OUT_OF_SCOPE.impressao3d em gate.ts barra "scanner" sempre; liberar exige mudar o porteiro (outro agente)'),
   t(I, 'Caneta 3D', null, 'porteiro', 'OUT_OF_SCOPE.impressao3d em gate.ts barra "caneta 3d" sempre; liberar exige mudar o porteiro (outro agente)'),
-  t(I, 'Ferramentas de pós-processamento (espátula, alicate, lixa)', null, 'decisao_dono', 'ticket baixo e sem identidade forte; incluir é decisão do dono'),
+  t(I, 'Ferramentas de pós-processamento (espátula, alicate, lixa)', 'ferramenta-impressao-3d', undefined, 'aprovado pelo dono em 2026-11-12; vitrine exige "3d"/uso no título'),
 ];
 
 export type Situacao = 'coberto' | 'parcial' | 'ausente';

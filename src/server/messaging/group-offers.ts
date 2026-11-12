@@ -9,6 +9,8 @@ import { loadOffers, loadPeriodDays } from '@/server/pricing/price-daily';
 import { addDays, computePeriodMetrics, ownSeriesMedian, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
 import { AMAZON_OWN_MIN_DAYS, AMAZON_OWN_WINDOW_DAYS, amazonCountsIn, amazonScope, getAmazonMode, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { readPlatform } from '@/lib/catalog/platform';
+import { classificarTipo } from '@/lib/catalog/tipos-produto';
+import { medianaPorTipo, selecionarPool, tipoKey, POOL, type PoolRow } from '@/lib/messaging/pool-diversidade';
 import { isVertical } from '@/lib/catalog/verticais';
 import { getAdTag } from '@/lib/messaging/group-config';
 import { loadShopeeCampaignUrl } from '@/server/collector/shopee-campaigns';
@@ -75,6 +77,8 @@ export interface DetectOptions {
   liveVerifiedOfferIds?: string[];
   /** Gera as mensagens de plataforma (P1 a P5). Padrão: sim, quando a migration 0031 está aplicada. */
   includePlatform?: boolean;
+  /** Gatilho ACHADO (ata 2026-11-12). Padrão: ligado quando a migration 0032 está aplicada (CHECK de gatilho aceita 'AC') e GROUP_ACHADO != 'off'. */
+  achado?: boolean;
 }
 
 export interface DetectionResult {
@@ -142,6 +146,49 @@ export async function groupMessagesOnda2Ready(): Promise<boolean> {
   return ok;
 }
 
+let achadoCache: { at: number; ok: boolean } | null = null;
+
+/** Migration 0032 aplicada (o CHECK group_messages_trigger_chk aceita 'AC')? Sem ela o ACHADO fica desligado (a gravação falharia). */
+export async function groupMessagesAchadoReady(): Promise<boolean> {
+  if (process.env.GROUP_ACHADO === 'off') return false;
+  if (achadoCache && Date.now() - achadoCache.at < 60_000) return achadoCache.ok;
+  let ok = false;
+  try {
+    const rows = await db.execute<Row>(sql`
+      SELECT pg_get_constraintdef(c.oid) AS def FROM pg_constraint c
+      WHERE c.conname = 'group_messages_trigger_chk' AND c.conrelid = to_regclass('public.group_messages')
+    `);
+    ok = String(rows[0]?.def ?? '').includes("'AC'");
+  } catch {
+    ok = false;
+  }
+  achadoCache = { at: Date.now(), ok };
+  return ok;
+}
+
+let tipoStatsCache: { at: number; map: Map<string, { median: number; n: number }> } | null = null;
+
+/** Mediana do menor preço por master do mesmo departamento+tipo (lojas Plus), cache de 10 min. Só dado real: ofertas vivas, elegíveis, fora da Amazon. */
+async function loadTipoStats(now: Date): Promise<Map<string, { median: number; n: number }>> {
+  if (tipoStatsCache && Date.now() - tipoStatsCache.at < 600_000) return tipoStatsCache.map;
+  const plus = RELEASED_PLUS;
+  const since = new Date(now.getTime() - 24 * 3600_000).toISOString();
+  const rows = await db.execute<Row>(sql`
+    SELECT m.vertical AS v, m.name AS name, min(o.current_price_cents) AS mn
+    FROM master_products m
+    INNER JOIN affiliate_offers o ON o.master_product_id = m.id
+    INNER JOIN affiliate_networks n ON n.id = o.network_id
+    WHERE m.vertical IN (${txtList(plus)}) AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0
+      AND o.last_price_confirmed_at >= ${since}::timestamptz AND n.slug <> 'amazon'
+      AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')} AND ${masterNoEscopoSql('m')}
+    GROUP BY m.id, m.name, m.vertical
+  `);
+  const map = medianaPorTipo(rows.map((r) => ({ v: String(r.v), name: String(r.name), minCents: Number(r.mn) })));
+  tipoStatsCache = { at: Date.now(), map };
+  return map;
+}
+const RELEASED_PLUS = ['tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d'];
+
 /** Último lote da coleta assistida da Amazon (collector_runs job 'amazon-assistida', status ok). */
 export async function loadAmazonLastRun(): Promise<Date | null> {
   const rows = await db.execute<Row>(sql`
@@ -158,6 +205,16 @@ export async function loadAmazonLastRun(): Promise<Date | null> {
  * Radar: um registro da mensagem (conta nos tetos) + um registro por item (só para o dedup por produto).
  * [] se a tabela ainda não existe.
  */
+/** Tipo gravado no candidato (novo) ou derivado do nome (linhas antigas); games não têm tipo. */
+function tipoOfRow(r: Row): string | null {
+  const vert = String(r.vert ?? '');
+  if (!vert || vert === 'games') return null;
+  const t = r.tipo_c as string | null | undefined;
+  if (t) return t;
+  const nome = r.nome_c as string | null | undefined;
+  return nome ? classificarTipo(vert, nome) : null;
+}
+
 export async function loadSentHistory(
   channel: 'tg' | 'wa',
   now: Date,
@@ -172,7 +229,7 @@ export async function loadSentHistory(
       ? sql`
     SELECT master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
            candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state,
-           vertical AS vert, candidate ->> 'platformLabel' AS platform_label,
+           vertical AS vert, candidate ->> 'platformLabel' AS platform_label, candidate ->> 'tipo' AS tipo_c, candidate ->> 'name' AS nome_c,
            CASE WHEN trigger ~ '^P[1-5]$' THEN candidate ->> 'masterProductId' END AS plat_pid
     FROM group_messages
     WHERE channel = ${channel} AND status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)})
@@ -199,6 +256,7 @@ export async function loadSentHistory(
       networkSlug: (r.network_slug as string | null) ?? null,
       vertical: (r.vert as string | null) ?? null,
       platformLabel: (r.platform_label as string | null) ?? null,
+      tipo: tipoOfRow(r),
       platformProductId: (r.plat_pid as string | null) ?? null,
       trigger: (r.trigger as string | null) ?? null,
       cls,
@@ -215,16 +273,30 @@ export async function loadSentHistory(
   return { records, source: 'group_messages' };
 }
 
-async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eventWindowHours' | 'amazonMaxAgeMin'>> & { verticals: string[]; now: Date; maxProducts: number }): Promise<string[]> {
+/** Envios das últimas 24 h por 'loja|tipo' (rodízio: tipos menos enviados abrem cada rodada do pool). Sem tabela = {}. */
+export async function loadTipoSends24h(): Promise<Record<string, number>> {
+  if (!(await groupMessagesTableExists())) return {};
+  const rows = await db.execute<Row>(sql`
+    SELECT m.vertical AS v, m.name AS name FROM group_messages g INNER JOIN master_products m ON m.id = g.master_product_id
+    WHERE g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - interval '24 hours' AND m.vertical <> 'games'
+  `);
+  const out: Record<string, number> = {};
+  for (const r of rows) {
+    const k = tipoKey(String(r.v), classificarTipo(String(r.v), String(r.name)));
+    out[k] = (out[k] ?? 0) + 1;
+  }
+  return out;
+}
+
+export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eventWindowHours' | 'amazonMaxAgeMin'>> & { verticals: string[]; now: Date; maxProducts: number; achado?: boolean }): Promise<string[]> {
   const confirmedSince = new Date(o.now.getTime() - Math.max(o.maxAgeMin, o.amazonMaxAgeMin) * 60_000).toISOString();
   const evSince = new Date(o.now.getTime() - o.eventWindowHours * 3600_000).toISOString();
   const day = addDays(spDay(o.now), -3);
   const today = spDay(o.now);
   const big = RULES.G5_MIN_OFFERS;
   const hourKey = o.now.toISOString().slice(0, 13); // rodízio: muda a cada hora
-  const GAMES_QUOTA = 220, PLUS_QUOTA = 60;
-  const rows = await db.execute<Row>(sql`
-    WITH live AS (
+  const liveCte = sql`
+    live AS (
       SELECT o.id, o.master_product_id AS mid, m.vertical AS v, o.network_id, o.current_price_cents AS p
       FROM affiliate_offers o
       INNER JOIN master_products m ON m.id = o.master_product_id
@@ -233,7 +305,11 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
         AND o.vertical IN (${txtList(o.verticals)}) AND m.vertical IN (${txtList(o.verticals)})
         AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')}
         AND ${masterNoEscopoSql('m')}
-    ),
+    )`;
+  // Candidatos com RAZÃO de entrada (queda, movimento, abaixo da média, 2 redes, muitas ofertas). A cota por loja agora é feita em JS
+  // (selecionarPool: rodízio por tipo); aqui só um teto generoso por loja para não trazer o catálogo inteiro.
+  const rows = await db.execute<Row>(sql`
+    WITH ${liveCte},
     ev AS (
       SELECT DISTINCT e.master_product_id AS mid FROM price_min_events e
       WHERE e.source = 'live' AND e.at >= ${evSince}::timestamptz AND e.prev_min_cents IS NOT NULL AND e.min_cents < e.prev_min_cents
@@ -265,7 +341,7 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
     liveavg AS (
       SELECT mid FROM live WHERE v <> 'games' GROUP BY mid HAVING count(*) >= 3 AND min(p) < avg(p) * 0.999
     )
-    SELECT q.mid FROM (
+    SELECT q.mid, q.v, q.r, mp.name FROM (
       SELECT u.mid, u.r, lv.v, row_number() OVER (PARTITION BY lv.v ORDER BY u.r, md5(u.mid::text || ${hourKey}::text)) AS rn
       FROM (
         SELECT mid, min(r) AS r FROM (
@@ -279,11 +355,31 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
       ) u
       INNER JOIN (SELECT DISTINCT mid, v FROM live) lv ON lv.mid = u.mid
     ) q
-    -- Cota por departamento: games não consome o lote inteiro e cada loja Plus roda por rodízio horário (antes: ORDER BY mid fixo = sempre os mesmos itens).
-    WHERE q.rn <= (CASE WHEN q.v = 'games' THEN ${GAMES_QUOTA}::int ELSE ${PLUS_QUOTA}::int END)
-    ORDER BY q.r, md5(q.mid::text || ${hourKey}::text) LIMIT ${o.maxProducts}::int
+    INNER JOIN master_products mp ON mp.id = q.mid
+    WHERE q.rn <= (CASE WHEN q.v = 'games' THEN ${POOL.GAMES}::int ELSE 400 END)
+    ORDER BY q.r, md5(q.mid::text || ${hourKey}::text)
   `);
-  return rows.map((r) => String(r.mid));
+  const main: PoolRow[] = rows.map((r) => ({ mid: String(r.mid), v: String(r.v), r: Number(r.r), name: String(r.name) }));
+
+  // Base do ACHADO: produtos vivos fora de games sem envio nas últimas 24 h (qualquer gatilho). O juízo (link, tipo, histórico) é do avaliador.
+  let achadoRows: PoolRow[] = [];
+  let sends: Record<string, number> = {};
+  if (o.achado) {
+    const noGames = o.verticals.filter((v) => v !== 'games');
+    if (noGames.length) {
+      const hasTable = await groupMessagesTableExists();
+      const ar = await db.execute<Row>(sql`
+        WITH ${liveCte}
+        SELECT DISTINCT l.mid, l.v, mp.name FROM live l INNER JOIN master_products mp ON mp.id = l.mid
+        WHERE l.v <> 'games' ${hasTable ? sql`AND NOT EXISTS (
+          SELECT 1 FROM group_messages g WHERE g.master_product_id = l.mid AND g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - interval '24 hours'
+        )` : sql``}
+      `);
+      achadoRows = ar.map((r) => ({ mid: String(r.mid), v: String(r.v), r: 5, name: String(r.name) }));
+    }
+  }
+  sends = await loadTipoSends24h().catch(() => ({}));
+  return selecionarPool({ main, achado: achadoRows, hourKey, sends, achadoOn: !!o.achado }).slice(0, o.maxProducts);
 }
 
 /**
@@ -457,6 +553,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
   `);
   const stateAvgBy = new Map(stateAvgRows.map((r) => [String(r.mid), Number(r.avg_cents)]));
   const out: ProductFacts[] = [];
+  const tipoStats = products.some((p) => String(p.vertical) !== 'games') ? await loadTipoStats(o.now).catch(() => new Map<string, { median: number; n: number }>()) : new Map<string, { median: number; n: number }>();
   for (const p of products) {
     const id = String(p.id);
     const offs = offersBy.get(id) ?? [];
@@ -484,7 +581,12 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     }
     const f = firstBy.get(id);
     const l = lastBy.get(id);
+    const tipo = String(p.vertical) === 'games' ? null : classificarTipo(String(p.vertical), String(p.name));
+    const ts = tipo ? tipoStats.get(tipoKey(String(p.vertical), tipo)) : undefined;
     out.push({
+      tipo,
+      tipoMedianCents: ts?.median ?? null,
+      tipoSample: ts?.n ?? 0,
       masterProductId: id,
       masterName: String(p.name),
       vertical: String(p.vertical),
@@ -525,12 +627,13 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const amazonPaused = amazonLoopPaused(amazonLastRun, now);
   if (amazonPaused) warnings.push('Classe Amazon pausada: a coleta assistida está sem lote há mais de 90 min (ou nunca rodou).');
 
+  const achado = opts.achado ?? (await groupMessagesAchadoReady().catch(() => false));
   const ids = opts.productIds?.length
     ? opts.productIds
-    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 600 });
+    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 900, achado });
   const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode });
 
-  const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode };
+  const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode, achado };
   const candidates: Candidate[] = [];
   const blocked: Blocked[] = [];
   for (const p of facts) {

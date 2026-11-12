@@ -57,6 +57,10 @@
       "schedule": "4-59/5 * * * *"
     },
     {
+      "path": "/api/cron/semear-vertical?apply=1",
+      "schedule": "7-57/10 * * * *"
+    },
+    {
       "path": "/api/cron/fila-classificacao",
       "schedule": "13,43 * * * *"
     },

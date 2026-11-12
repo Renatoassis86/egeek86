@@ -257,11 +257,11 @@ export async function ensureConsoleMaster(exec: Exec, create: { name: string; ke
   return { id: ins.id, created: true };
 }
 
-interface ItemRow { id: string; offer_id: string; master_id: string | null; vertical: string; axis: QueueAxis; title: string; title_norm: string; options: QueueOption[]; status: string; decision_id: string | null }
+interface ItemRow { id: string; offer_id: string; master_id: string | null; vertical: string; axis: QueueAxis; title: string; title_norm: string; options: QueueOption[]; status: string; decision_id: string | null; understood: Record<string, unknown> | null }
 
 /** Aplica a resposta a um item da fila DENTRO de uma transacao do chamador. Idempotente: item ja resolvido devolve `already`. */
 export async function applyInTx(tx: Exec, p: { itemId: string; value: string; userId: string | null; ruleSourceId?: string | null; via?: 'api_oficial' }): Promise<ApplyResult> {
-  const item = rows<ItemRow>(await tx.execute(sql`SELECT id::text AS id, offer_id::text AS offer_id, master_id::text AS master_id, vertical, axis, title, title_norm, options, status, decision_id::text AS decision_id
+  const item = rows<ItemRow>(await tx.execute(sql`SELECT id::text AS id, offer_id::text AS offer_id, master_id::text AS master_id, vertical, axis, title, title_norm, options, status, decision_id::text AS decision_id, understood
     FROM identity_review_items WHERE id = ${p.itemId}::uuid FOR UPDATE`))[0];
   if (!item) return { ok: false, error: 'item_inexistente' };
   if (item.status !== 'pending') return { ok: true, already: true, decisionId: item.decision_id ?? undefined };
@@ -294,7 +294,13 @@ export async function applyInTx(tx: Exec, p: { itemId: string; value: string; us
       recalc.add(fromMaster);
     }
   } else if (item.axis === 'identidade') {
-    // 'sim': confirma que a oferta pertence ao master; nada se move.
+    // 'sim': confirma que a oferta pertence ao master; nada se move. Exceção: oferta Shopee nascida de dúvida de cobertura
+    // (rascunho criado por shopee-fila.ts) é ATIVADA aqui; o status anterior fica na decisão, então desfazer a devolve a rascunho.
+    if (opt.value === 'sim' && offer.status === 'draft' && item.understood?.origem === 'shopee_cobertura') {
+      prevStatus = offer.status;
+      await tx.execute(sql`UPDATE affiliate_offers SET status = 'active', published_at = COALESCE(published_at, now()), updated_at = now() WHERE id = ${offer.id}::uuid AND status = 'draft'`);
+      recalc.add(fromMaster);
+    }
   } else {
     // Eixo de console: leva a oferta para o master da identidade escolhida.
     let target = opt.targetMasterId ?? null;
@@ -358,6 +364,10 @@ export async function undoInTx(tx: Exec, p: { decisionId: string; userId: string
   if (d.prev_status) {
     // 'expired' tambem: a coleta pode ter expirado a oferta-rascunho por falta; a decisao do dono vale ate ser desfeita.
     await tx.execute(sql`UPDATE affiliate_offers SET status = ${d.prev_status}::affiliate_offer_status, updated_at = now() WHERE id = ${d.offer_id}::uuid AND status IN ('draft', 'expired')`);
+  }
+  if (d.axis === 'identidade' && d.value === 'sim' && d.prev_status === 'draft') {
+    // Oferta Shopee de dúvida de cobertura que o "sim" ativou: desfazer a devolve a rascunho (fora da média).
+    await tx.execute(sql`UPDATE affiliate_offers SET status = 'draft', updated_at = now() WHERE id = ${d.offer_id}::uuid AND status = 'active' AND external_ref LIKE 'shopee-%'`);
   }
   if (d.axis === 'preco' && d.value === 'preco_errado') {
     // Devolve a quarentena ao estado anterior (NULL se a oferta nao estava em quarentena).

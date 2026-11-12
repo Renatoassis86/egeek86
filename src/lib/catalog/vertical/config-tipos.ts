@@ -169,6 +169,17 @@ const TECNOLOGIA: SegmentConfig[] = [
     key: 'placa-de-captura', vertical: 'tecnologia', label: 'Placa de captura', rank: 126, domains: [/CAPTURE_CARDS|VIDEO_CAPTURE|CAPTURE_DEVICES/],
     terms: combineTerms('placa de captura', ['hdmi', '4k', 'usb', 'streaming', 'pci express'], ['elgato', 'avermedia', 'razer', 'ugreen', 'blackmagic', 'hagibis', 'mirabox']),
   }),
+  // Móveis gamer (decisão do dono, 2026-11-12: entram mesa e rack gamer). Só produto NOVO e em linha; peça avulsa, tampo sem estrutura e móvel usado ficam fora (nicho + porteiro).
+  seg({
+    key: 'mesa-gamer', vertical: 'tecnologia', label: 'Mesa gamer', rank: 180, domains: [/GAMING_DESKS|COMPUTER_DESKS|^MLB-DESKS$|GAMER_DESKS/], excludeDomains: [/CHAIRS|DRAWING|DRAFTING/],
+    terms: combineTerms('mesa gamer', ['', 'com led', 'em l', 'ergonomica', 'com gaveta', 'com suporte monitor', 'escrivaninha gamer', 'ajustavel em altura', '120 cm', '140 cm'], ['pichau', 'dt3', 'thunderx3', 'dxracer', 'mad racer', 'fortrek', 'redragon', 'gamer pro', 'office gamer', 'cougar', 'gtx', 'bluecase', 'pctop', 'maxracer', 'tgt', 'multilaser']),
+    note: 'Móvel gamer aprovado pelo dono em 2026-11-12. Domínio a confirmar no 1º dry-run.',
+  }),
+  seg({
+    key: 'rack-gamer', vertical: 'tecnologia', label: 'Rack gamer (rack de TV e setup)', rank: 181, domains: [/GAMING_RACKS|TV_STANDS|TV_RACKS|MEDIA_CONSOLES|RACKS_FOR_TV|ENTERTAINMENT_CENTERS/], excludeDomains: [/SERVER|NETWORK/],
+    terms: combineTerms('rack gamer', ['', 'para tv', 'com led', 'para console', 'estante gamer', 'painel tv gamer', 'suporte para console'], ['pichau', 'dt3', 'thunderx3', 'fortrek', 'redragon', 'gamer pro', 'office gamer', 'tgt', 'multilaser', 'bluecase', 'pctop']),
+    note: 'Móvel gamer aprovado pelo dono em 2026-11-12. Rack de servidor/rede (19 pol.) fica fora pelo nicho.',
+  }),
   seg({
     key: 'scanner-de-documentos', vertical: 'tecnologia', label: 'Scanner de documentos', rank: 127, domains: [/SCANNERS/], excludeDomains: [/3D/],
     terms: combineTerms('scanner', ['de mesa', 'portatil', 'a4', 'adf', 'fotografico'], ['epson', 'canon', 'brother', 'hp', 'fujitsu', 'plustek', 'kodak', 'avision']),
@@ -192,6 +203,12 @@ const I3D: SegmentConfig[] = [
   seg({
     key: 'lavadora-curadora-resina', vertical: 'impressao3d', label: 'Estação de lavar e curar resina', rank: 132, domains: [/CURING|WASH_AND_CURE|RESIN_CURING|UV_CURING/],
     terms: [...combineTerms('', ['estacao lavar e curar resina', 'curadora uv resina', 'lavadora de resina'], ['anycubic', 'elegoo', 'creality', 'flashforge', 'phrozen', 'sunlu']), 'anycubic wash and cure', 'elegoo mercury', 'creality uw-02'],
+  }),
+  seg({
+    key: 'ferramenta-impressao-3d', vertical: 'impressao3d', label: 'Ferramentas de pós-processamento e bancada de impressão 3D', rank: 182,
+    domains: [/3D_PRINTING_TOOLS|3D_PRINTER_TOOLS|DEBURRING|SCRAPERS|PLIERS|SPATULAS|CUTTING_PLIERS|HAND_TOOLS|SANDPAPER|HOBBY_TOOLS|MODELING_TOOLS|CRAFT_KNIVES/],
+    terms: combineTerms('', ['kit ferramentas impressao 3d', 'espatula impressao 3d', 'removedor de rebarba', 'alicate de corte rente', 'lixa dagua kit', 'estilete de precisao', 'kit pos processamento 3d', 'raspador de mesa', 'pinca de precisao', 'alicate de bico'], ['creality', 'elegoo', 'anycubic', 'sunlu', 'bambu lab', 'tramontina', 'stanley', 'vonder', 'gedore', 'tekna', 'hobbycraft', 'xcelite', 'jakemy']),
+    note: 'Ferramentas aprovadas pelo dono em 2026-11-12. Exigem a palavra "3d" ou o uso (pós-processamento, rebarba, resina) no título para ir à vitrine; ferramenta genérica fica em revisão.',
   }),
 ];
 
@@ -218,7 +235,7 @@ const CASA: SegmentConfig[] = [
     terms: combineTerms('aquecedor', ['eletrico', 'a oleo', 'de ambiente', 'ceramico', 'halogeneo', 'portatil'], ['cadence', 'mondial', 'britania', 'arno', 'philco', 'ventisol', 'electrolux', 'lenoxx', 'wap', 'agratto']),
   }),
   seg({
-    key: 'chaleira-eletrica', vertical: 'eletrodomesticos', label: 'Chaleira elétrica', rank: 144, profile: GTIN_P(EL_VOLT), domains: [/ELECTRIC_KETTLES|WATER_KETTLES|ELECTRIC_WATER_HEATERS/],
+    key: 'chaleira-eletrica', vertical: 'eletrodomesticos', label: 'Chaleira elétrica', rank: 144, profile: GTIN_P(EL_VOLT), domains: [/ELECTRIC_KETTLES|WATER_KETTLES/],
     terms: combineTerms('chaleira eletrica', ['', 'inox', '1,7l', 'vidro', 'digital controle de temperatura'], MARCAS_CASA),
   }),
   seg({
@@ -244,6 +261,16 @@ const CASA: SegmentConfig[] = [
   seg({
     key: 'maquina-de-costura', vertical: 'eletrodomesticos', label: 'Máquina de costura', rank: 150, profile: GTIN_P(EL_VOLT), domains: [/SEWING_MACHINES/],
     terms: combineTerms('maquina de costura', ['', 'domestica', 'portatil', 'overloque', 'galoneira', 'industrial reta'], ['singer', 'brother', 'janome', 'elgin', 'silver star', 'lanmax', 'bernina', 'jack', 'consul', 'typical']),
+  }),
+  seg({
+    key: 'chuveiro-eletrico', vertical: 'eletrodomesticos', label: 'Chuveiro e ducha elétrica', rank: 183, profile: GTIN_P(EL_VOLT), domains: [/ELECTRIC_SHOWERS|SHOWER_HEADS|SHOWER_HEATERS|^MLB-SHOWERS$|ELECTRIC_SHOWER/],
+    terms: combineTerms('chuveiro eletrico', ['', '5500w', '7500w', '220v', '127v', 'ducha eletronica', 'multitemperaturas', 'com pressurizador', 'ducha higienica'], ['lorenzetti', 'hydra', 'fame', 'corona', 'enerbras', 'zagonel', 'bello', 'blukit', 'mor', 'sintex', 'tramontina', 'cardal', 'fortlev']),
+    note: 'Aprovado pelo dono em 2026-11-12. Resistência avulsa e acabamento de registro ficam fora (nicho).',
+  }),
+  seg({
+    key: 'aquecedor-de-agua', vertical: 'eletrodomesticos', label: 'Aquecedor de água (a gás, elétrico e solar)', rank: 184, profile: GTIN_P(EL_VOLT), domains: [/WATER_HEATERS|GAS_WATER_HEATERS|ELECTRIC_WATER_HEATERS|STORAGE_WATER_HEATERS|TANKLESS|BOILERS_FOR_WATER/],
+    terms: combineTerms('aquecedor de agua', ['', 'a gas', 'gn', 'glp', 'eletrico 50 litros', 'de passagem', 'eletrico', 'solar', 'boiler', 'digital'], ['rinnai', 'komeco', 'lorenzetti', 'bosch', 'orbis', 'cumulus', 'soprano', 'rheem', 'mondial', 'springer', 'electrolux', 'ariston']),
+    note: 'Aprovado pelo dono em 2026-11-12. Convive com o tipo "aquecedor" (ambiente): o nicho de lá já barra "aquecedor de água".',
   }),
 ];
 
@@ -308,6 +335,31 @@ const ESPORTE: SegmentConfig[] = [
   seg({
     key: 'tenis-de-mesa', vertical: 'esporte', label: 'Tênis de mesa (raquete, mesa, bolinha)', rank: 173, domains: [/TABLE_TENNIS|PING_PONG/],
     terms: combineTerms('', ['raquete de ping pong', 'mesa de ping pong', 'bolinha de ping pong', 'kit tenis de mesa', 'raquete tenis de mesa profissional'], ['butterfly', 'dhs', 'stiga', 'donic', 'yasaka', 'klopf', 'proaction', 'acte', 'nittaku', 'vollo']),
+  }),
+  // Suplementos (decisão do dono, 2026-11-12). Alimento: só embalagem lacrada, NOVA e dentro da validade (o catálogo exige condition=new; o nicho barra "vencimento próximo"/"validade curta").
+  seg({
+    key: 'suplemento', vertical: 'esporte', label: 'Suplementos (whey, creatina, pré-treino, aminoácidos)', rank: 185, domains: [/PROTEIN_SUPPLEMENTS|WHEY|CREATINE|AMINO_ACIDS|PRE_WORKOUT|SPORTS_SUPPLEMENTS|SPORT_NUTRITION|DIETARY_SUPPLEMENTS|SUPPLEMENTS/],
+    terms: combineTerms('', ['whey protein', 'creatina monohidratada', 'pre treino', 'bcaa', 'glutamina', 'hipercalorico', 'albumina', 'colageno', 'omega 3', 'cafeina', 'multivitaminico', 'barra de proteina', 'termogenico', 'isolado whey'], ['max titanium', 'growth supplements', 'integralmedica', 'probiotica', 'dux nutrition', 'optimum nutrition', 'black skull', 'darkness', 'essential nutrition', 'universal', 'dymatize', 'new millen', 'atlhetica', 'bodyaction', 'vitafor', 'soldiers nutrition']),
+    refresh: 60,
+    note: 'Aprovado pelo dono em 2026-11-12. Identidade: GTIN do catálogo (embalagem/peso/sabor separados quando o ML separa; sabor não junta). Sem lote ou validade no catálogo: a regra é lacrado, novo, sem "vencimento próximo".',
+  }),
+  seg({
+    key: 'camping', vertical: 'esporte', label: 'Camping (barraca, saco de dormir, fogareiro, colchonete)', rank: 186, domains: [/CAMPING|TENTS|SLEEPING_BAGS|CAMP_STOVES|SLEEPING_PADS|CAMPING_CHAIRS|HAMMOCKS|CAMP_COOKWARE/],
+    terms: combineTerms('', ['barraca de camping', 'saco de dormir', 'colchonete camping', 'fogareiro camping', 'cadeira de camping', 'lampiao camping', 'isolante termico camping', 'rede de descanso', 'mesa dobravel camping', 'caixa termica', 'cooler 50 litros'], ['nautika', 'mor', 'azteq', 'guepardo', 'ntk', 'echolife', 'bel fix', 'coleman', 'quechua', 'naturehike', 'invictus', 'curtlo', 'termolar', 'soprano']),
+    refresh: 60,
+    note: 'Aprovado pelo dono em 2026-11-12.',
+  }),
+  seg({
+    key: 'pesca', vertical: 'esporte', label: 'Pesca (vara, molinete, carretilha)', rank: 187, domains: [/FISHING_RODS|FISHING_REELS|FISHING|ANGLING/], excludeDomains: [/LURES|BAITS|HOOKS|LINES|ACCESSORIES/],
+    terms: combineTerms('', ['vara de pesca', 'molinete', 'carretilha', 'vara telescopica', 'vara de carretilha', 'kit pesca completo', 'vara pesca maritima', 'molinete 4000', 'carretilha perfil baixo'], ['marine sports', 'albatroz', 'shimano', 'daiwa', 'okuma', 'saint plus', 'maruri', 'pioneer', 'sumax', 'lumis', 'abu garcia', 'penn', 'nautika']),
+    refresh: 60,
+    note: 'Aprovado pelo dono em 2026-11-12. Só equipamento principal (vara, molinete, carretilha); isca, anzol e linha ficam fora (domínios excluídos e nicho).',
+  }),
+  seg({
+    key: 'trilha', vertical: 'esporte', label: 'Trilha e montanhismo (mochila cargueira, bastão, lanterna de cabeça)', rank: 188, domains: [/HIKING|TREKKING|BACKPACKS_FOR_HIKING|TRAIL|HEADLAMPS|TREKKING_POLES|MOUNTAINEERING|HYDRATION_PACKS/],
+    terms: combineTerms('', ['mochila de trilha', 'mochila cargueira', 'bastao de trekking', 'lanterna de cabeca', 'mochila de hidratacao', 'bota de trilha', 'corta vento trilha', 'capa de chuva mochila', 'bussola', 'filtro de agua portatil'], ['quechua', 'nautika', 'curtlo', 'ntk', 'azteq', 'guepardo', 'deuter', 'osprey', 'columbia', 'salomon', 'timberland', 'camelbak', 'naturehike', 'invictus']),
+    refresh: 60,
+    note: 'Aprovado pelo dono em 2026-11-12. Domínio a confirmar; "mochila esportiva" (academia) tem segmento próprio.',
   }),
 ];
 

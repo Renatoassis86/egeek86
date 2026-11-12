@@ -12,18 +12,23 @@ import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from '.
 import { collectorRunsEnabled, startCollectorRun } from './collector-runs';
 import { classifyShopeeKind } from '@/lib/collector-runs/classify-error';
 import { GAMES, type Vertical } from '@/lib/catalog/verticais';
+import { decideMiss, podeReativar, SHOPEE_EXPIRED_SLICE_PER_RUN, type ShopeeMissReason } from '@/lib/affiliate/shopee-expiry';
 
-/** Mesma regra do coletor genérico: 3 respostas válidas SEGUIDAS sem preço expiram a oferta ativa. */
-const MAX_CONSECUTIVE_MISSES = 3;
+/**
+ * Expiração (dono, 2026-11-12): 3 respostas válidas sem preço em HORAS DIFERENTES (ver shopee-expiry.ts). Ativa com falta pendente é
+ * reconsultada só após 1 h; ativa normal a cada 30 min; expirada 1x por dia (reativa se a API devolver preço válido), numa fatia fixa
+ * por rodada para não ser engolida pela fila das ativas.
+ */
 const ACTIVE_REFRESH = sql`interval '30 minutes'`;
-/** Ofertas já expiradas são re-testadas devagar: a maioria não volta, e cada teste gasta cota da API. */
+const MISS_REFRESH = sql`interval '1 hour'`;
+/** Ofertas já expiradas são re-testadas 1x por dia: a maioria não volta, e cada teste gasta cota da API. */
 const EXPIRED_REFRESH = sql`interval '24 hours'`;
 const CONCURRENCY = 2; // o ritmo real é dado pelo pacer (espaçamento entre chamadas), não pela concorrência
 /** Parar de coletar ao acumular N falhas seguidas (API fora, schema mudou): evita martelar a API. */
 const MAX_CONSECUTIVE_ERRORS = 10;
 
 /** Ofertas Shopee devidas (mesma condicao da selecao e da medicao de backlog da observabilidade). */
-function shopeeDueWhere(vertical: Vertical = GAMES) {
+function shopeeDueWhere(vertical: Vertical = GAMES, grupo: 'todas' | 'expiradas' | 'nao_expiradas' = 'todas') {
   return and(
     // Padrão: coletor Shopee GAMER (só oferta Games, ADR 0008). Outra vertical só quando pedida de forma explícita
     // (?v=esporte na rota: ofertas Shopee do esporte, criadas por discover-shopee-esporte.ts); cada chamada trata UMA vertical.
@@ -31,12 +36,15 @@ function shopeeDueWhere(vertical: Vertical = GAMES) {
     eq(affiliateNetworks.slug, 'shopee'),
     isNotNull(affiliateOffers.externalRef),
     like(affiliateOffers.externalRef, 'shopee-%'),
-    inArray(affiliateOffers.status, ['active', 'draft', 'expired']),
+    inArray(
+      affiliateOffers.status,
+      grupo === 'expiradas' ? ['expired'] : grupo === 'nao_expiradas' ? ['active', 'draft'] : ['active', 'draft', 'expired']
+    ),
     or(
       isNull(affiliateOffers.lastCheckedAt),
       lt(
         affiliateOffers.lastCheckedAt,
-        sql`now() - CASE WHEN ${affiliateOffers.status} = 'expired' THEN ${EXPIRED_REFRESH} ELSE ${ACTIVE_REFRESH} END`
+        sql`now() - CASE WHEN ${affiliateOffers.status} = 'expired' THEN ${EXPIRED_REFRESH} WHEN ${affiliateOffers.consecutiveMissCount} > 0 THEN ${MISS_REFRESH} ELSE ${ACTIVE_REFRESH} END`
       )
     )
   );
@@ -58,6 +66,16 @@ async function measureShopeeBacklog(vertical: Vertical = GAMES): Promise<{ total
   } catch (err) {
     console.error('[collector-runs] backlog shopee falhou (ignorado):', err instanceof Error ? err.message : err);
     return { total: null, oldestS: null };
+  }
+}
+
+/** Há pergunta pendente na fila de classificação para a oferta? Tabela ausente (ambiente antigo) = não há. */
+async function temPerguntaPendente(offerId: string): Promise<boolean> {
+  try {
+    const r = await db.execute(sql`SELECT 1 AS x FROM identity_review_items WHERE offer_id = ${offerId}::uuid AND status = 'pending' LIMIT 1`);
+    return ((r as unknown as { length?: number }).length ?? (r as unknown as { rows?: unknown[] }).rows?.length ?? 0) > 0;
+  } catch {
+    return false;
   }
 }
 
@@ -100,7 +118,8 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
   const deadline = Date.now() + (opts.budgetMs ?? 240_000);
   const maxOffers = opts.maxOffers ?? 600;
 
-  const due = await db
+  const selecionar = (grupo: 'expiradas' | 'nao_expiradas', limite: number) =>
+    db
     .select({
       id: affiliateOffers.id,
       externalRef: affiliateOffers.externalRef,
@@ -109,13 +128,21 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
       affiliateLinkPending: affiliateOffers.affiliateLinkPending,
       imageUrl: affiliateOffers.imageUrl,
       consecutiveMissCount: affiliateOffers.consecutiveMissCount,
+      lastCheckedAt: affiliateOffers.lastCheckedAt,
     })
     .from(affiliateOffers)
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-    .where(shopeeDueWhere(opts.vertical ?? GAMES))
-    // Ativas/rascunho primeiro; dentro de cada grupo, as nunca checadas / mais antigas.
-    .orderBy(sql`CASE WHEN ${affiliateOffers.status} = 'expired' THEN 1 ELSE 0 END`, sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`)
-    .limit(maxOffers);
+    .where(shopeeDueWhere(opts.vertical ?? GAMES, grupo))
+    // Dentro de cada grupo, as nunca checadas / mais antigas primeiro.
+    .orderBy(sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`)
+    .limit(limite);
+
+  // Fatia fixa para as expiradas (reativação); o que as ativas não usarem da cota também vai para elas.
+  const fatiaExpiradas = Math.min(SHOPEE_EXPIRED_SLICE_PER_RUN, maxOffers);
+  const ativas = await selecionar('nao_expiradas', maxOffers - fatiaExpiradas);
+  const expiradas = await selecionar('expiradas', maxOffers - ativas.length);
+  // A fatia das expiradas vai NA FRENTE: o orçamento de tempo (~200 consultas) acaba antes do fim da lista e ela nunca seria alcançada.
+  const due = [...expiradas.slice(0, fatiaExpiradas), ...ativas, ...expiradas.slice(fatiaExpiradas)];
 
   summary.selected = due.length;
   let consecutiveErrors = 0;
@@ -175,19 +202,19 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
       }
 
       if (!node || !validPrice) {
-        // Resposta VÁLIDA da API sem preço aproveitável: carimba a checagem
-        // (EG-03) e conta a falha; só expira quem estava ativo.
+        // Resposta VÁLIDA da API sem preço aproveitável: carimba a checagem (EG-03) e conta a falta (3 em horas diferentes expiram).
         summary.unavailable++;
         run.counters.misses++;
-        const nextMiss = offer.consecutiveMissCount + 1;
-        const expire = offer.status !== 'expired' && nextMiss >= MAX_CONSECUTIVE_MISSES;
-        if (expire) summary.expiredNow++;
+        const now = new Date();
+        const reason: ShopeeMissReason = lookup.status === 'unavailable' ? lookup.reason : 'implausible_price';
+        const d = decideMiss({ status: offer.status, missCount: offer.consecutiveMissCount, lastCheckedAt: offer.lastCheckedAt, now, reason });
+        if (d.expire) summary.expiredNow++;
         await db
           .update(affiliateOffers)
           .set({
-            lastCheckedAt: new Date(),
-            consecutiveMissCount: offer.status === 'expired' ? offer.consecutiveMissCount : nextMiss,
-            ...(expire ? { status: 'expired' as const, updatedAt: new Date() } : {}),
+            lastCheckedAt: now,
+            consecutiveMissCount: d.missCount,
+            ...(d.expire ? { status: 'expired' as const, updatedAt: now } : {}),
           })
           .where(eq(affiliateOffers.id, offer.id));
         return;
@@ -215,7 +242,15 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
       if (node.shopName) patch.storeName = node.shopName;
       if (!offer.imageUrl && node.imageUrl) patch.imageUrl = node.imageUrl;
       // Decisao do dono ("nao e este produto") vence: a oferta expirada nao volta a 'active' pela coleta.
-      if (offer.status === 'expired' && !(await loadOwnerBlocks(db, [offer.id])).draft.has(offer.id)) {
+      // Pergunta pendente na fila de classificação (oferta nascida de dúvida) também impede a volta à média.
+      if (
+        offer.status === 'expired' &&
+        podeReativar({
+          status: offer.status,
+          temPerguntaPendente: await temPerguntaPendente(offer.id),
+          bloqueadaPeloDono: (await loadOwnerBlocks(db, [offer.id])).draft.has(offer.id),
+        })
+      ) {
         patch.status = 'active';
         patch.publishedAt = new Date();
         summary.reactivated++;

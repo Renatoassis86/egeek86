@@ -495,7 +495,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     let photo: Buffer | null = null;
     const cardKind: 'oferta' | 'historico' = match.trigger === 'P1' || match.trigger === 'G5' ? 'historico' : 'oferta';
     const cardCls = match.cls === 'alerta' || match.cls === 'insight' || match.cls === 'radar' || match.cls === 'plataforma';
-    if (deps.cardFor && cardCls && match.trigger !== 'RADAR' && match.trigger !== 'G4') {
+    if (deps.cardFor && cardCls && match.trigger !== 'RADAR' && match.trigger !== 'G4' && match.trigger !== 'AC') {
       if (cardKind === 'oferta' || cardAllowed(match.masterProductId, hist.records, now)) {
         try {
           photo = await timeout(deps.cardFor({ candidate: match, kind: cardKind, offerId: match.offerIds[0], masterProductId: match.masterProductId }), 8000);
@@ -503,7 +503,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
           photo = null;
         }
       }
-    } else if (deps.renderCard && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR' && match.trigger !== 'G4' && cardAllowed(match.masterProductId, hist.records, now)) {
+    } else if (deps.renderCard && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR' && match.trigger !== 'G4' && match.trigger !== 'AC' && cardAllowed(match.masterProductId, hist.records, now)) {
       try {
         photo = await timeout(deps.renderCard(match.masterProductId), 8000);
       } catch {

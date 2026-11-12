@@ -106,6 +106,23 @@ async function main() {
   respond(200, { data: { productOfferV2: { nodes: [{ itemId: 99 }, { itemId: 7 }], pageInfo: { hasNextPage: false } } } });
   const lk = await shopee.lookupShopeeItem('7');
   check('lookup so aceita o no com itemId pedido (no sem preco => unavailable)', lk.status === 'unavailable');
+  // --- listagem por categoria / loja (descoberta pela API oficial)
+  respond(200, { data: { productOfferV2: { nodes: [{ itemId: 1 }], pageInfo: { hasNextPage: true } } } });
+  await shopee.queryProductOffers({ productCatId: '100012', sortType: 2, page: 2, limit: 50, fields: 'itemId productName productCatIds' });
+  let q = JSON.parse(String(captured!.init.body)).query as string;
+  check('categoria: productCatId e sortType entram na query como literais', /productCatId: 100012/.test(q) && /sortType: 2/.test(q), q);
+  check('categoria: sem keyword a variavel vai null e page repassada', JSON.parse(String(captured!.init.body)).variables.keyword === null && JSON.parse(String(captured!.init.body)).variables.page === 2);
+  check('categoria: campos pedidos substituem o padrao', /productCatIds/.test(q) && !/priceDiscountRate/.test(q));
+  await shopee.queryProductOffers({ shopId: '84499012', sortType: 2 });
+  q = JSON.parse(String(captured!.init.body)).query as string;
+  check('loja: shopId entra na query', /shopId: 84499012/.test(q) && !/productCatId/.test(q), q);
+  let threwCat = false;
+  try {
+    await shopee.queryProductOffers({ productCatId: '1; drop' });
+  } catch {
+    threwCat = true;
+  }
+  check('productCatId nao numerico rejeitado', threwCat);
   globalThis.fetch = realFetch;
 
   // --- parse de preco e no

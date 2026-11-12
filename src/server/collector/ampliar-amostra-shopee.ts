@@ -110,7 +110,7 @@ export interface AmpliarResultado {
   backup: string | null;
 }
 
-interface MasterRow {
+export interface MasterRow {
   id: string;
   name: string;
   vertical: string;
@@ -125,7 +125,7 @@ interface MasterRow {
   n_shopee: number;
 }
 
-async function carregarMasters(sql: Sql, vertical: string, soMaster?: string): Promise<MasterRow[]> {
+export async function carregarMasters(sql: Sql, vertical: string, soMaster?: string): Promise<MasterRow[]> {
   // Aprovado por INCLUSAO (mesmo predicado de masterAprovadoSql): verdict approved OU manual approved, e manual != rejected.
   // Ordem por id: estavel entre lotes (paginacao por offset); a contagem de ofertas muda quando se grava.
   return sql<MasterRow[]>`
@@ -147,14 +147,14 @@ async function carregarMasters(sql: Sql, vertical: string, soMaster?: string): P
 }
 
 /** external_ref shopee-<itemId> -> master (para nao reanexar item que ja esta em algum master). */
-async function carregarItensShopee(sql: Sql, networkId: string): Promise<Map<string, string>> {
+export async function carregarItensShopee(sql: Sql, networkId: string): Promise<Map<string, string>> {
   const rows = await sql<{ external_ref: string; master_product_id: string }[]>`
     select external_ref, master_product_id::text as master_product_id from affiliate_offers
     where network_id = ${networkId} and external_ref like 'shopee-%'`;
   return new Map(rows.map((r) => [r.external_ref, r.master_product_id]));
 }
 
-async function precosReferencia(sql: Sql, masterId: string): Promise<number[]> {
+export async function precosReferencia(sql: Sql, masterId: string): Promise<number[]> {
   const rows = await sql<{ p: string }[]>`
     select current_price_cents::text as p from affiliate_offers
     where master_product_id = ${masterId}::uuid and status = 'active' and current_price_cents > 0 and quarantined_at is null`;
@@ -276,9 +276,8 @@ export async function ampliarAmostraShopee(sql: Sql, opts: AmpliarOpts): Promise
         if (err instanceof ShopeeApiError) {
           if (err.kind === 'rate_limit') {
             pacer.onRateLimit();
-            if (i >= 1) throw err; // 10030 repetido: para (a janela de 1 h do limite precisa passar)
-            await sleep(8000);
-            continue;
+            throw err; // PRIMEIRO 10030 para (ordem do dono, 2026-11-12): a janela de 1 h do limite precisa passar; o offset segue de onde parou
+
           }
           if (err.kind === 'auth' || err.kind === 'access' || err.kind === 'params') throw err; // nao adianta repetir
         }

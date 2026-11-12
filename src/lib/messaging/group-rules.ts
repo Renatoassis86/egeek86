@@ -170,6 +170,25 @@ export const RULES = {
   PLATFORM_PAUSE_MIN: 30,
   /** P2: diferença mínima entre as lojas, em centavos (R$ 20). */
   P2_MIN_DIFF_CENTS: 2000,
+  // ---- ACHADO e DIVERSIDADE (ata 2026-11-12-diversidade-fluxo-plus; dono, 2026-11-12) ----
+  /** Achado: o mesmo produto so volta depois disto (o G2 continua em PRODUCT_GAP_MIN = 1 h). */
+  ACHADO_PRODUCT_GAP_HOURS: 24,
+  /** Achado por loja em 24 h: no minimo isto e, acima disso, ate 25% das mensagens da loja (achados <= nao-achados / 3). */
+  ACHADO_MIN_PER_DAY: 3,
+  ACHADO_MAX_PER_HOUR: 2,
+  /** Oferta citada (a mais barata com link valido) pode estar ate este % acima da mais barata real (que nao tem link); o texto nao diz "menor". */
+  ACHADO_FALLBACK_MAX_ABOVE_PCT: 3,
+  /** Faixa do preco contra a mediana do TIPO (menor preco por master do mesmo departamento+tipo); amostra minima de masters no tipo. */
+  ACHADO_TIPO_MIN_SAMPLE: 5,
+  ACHADO_TIPO_RATIO_MIN: 0.5,
+  ACHADO_TIPO_RATIO_MAX: 2.5,
+  /** Historico proprio do produto (menor preco diario medido): com >= 3 dias, preco <= 1,10x a mediana dele e >= 0,5x. */
+  ACHADO_OWN_MIN_DAYS: 3,
+  ACHADO_OWN_MAX_RATIO: 1.1,
+  ACHADO_OWN_MIN_RATIO: 0.5,
+  /** Cota de diversidade: nenhum TIPO passa desta parcela das mensagens da loja nas ultimas 24 h (so vale com alternativa de outro tipo e depois de TIPO_SHARE_MIN_SENT envios). */
+  TIPO_MAX_SHARE_PCT: 30,
+  TIPO_SHARE_MIN_SENT: 6,
   BLACK_FRIDAY_DAY: '2026-11-27',
   TRACKING_SINCE_DAY: '2026-10-31',
 } as const;
@@ -177,7 +196,7 @@ export const RULES = {
 /** Departamentos liberados no porteiro e no /go. Os demais geram G6 marcado como não enviável. */
 export const RELEASED_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d']; // todas as lojas (dono, 2026-11-11): cada uma envia ao seu canal
 
-export type Trigger = 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'OK1' | 'OK2' | 'T1' | 'T2' | 'RADAR' | 'CUPOM' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5';
+export type Trigger = 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'OK1' | 'OK2' | 'T1' | 'T2' | 'RADAR' | 'CUPOM' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'AC';
 
 /** Classes de mensagem (ata §1.1): A alerta imediato, B radar horário, C insight, D resumo, E cupom verificado. */
 export type MessageClass = 'alerta' | 'radar' | 'insight' | 'resumo' | 'cupom' | 'plataforma';
@@ -202,6 +221,7 @@ export const TRIGGER_CLASS: Record<Trigger, MessageClass> = {
   P3: 'plataforma',
   P4: 'plataforma',
   P5: 'plataforma',
+  AC: 'insight',
 };
 
 /** Ponto da série diária do menor preço do produto (dias ANTERIORES a hoje, ordem crescente). */
@@ -286,6 +306,11 @@ export interface ProductFacts {
   amazonSeries?: DayPoint[];
   /** PRICE_AMAZON_MODE=on: o produto não tem NENHUMA oferta ativa e elegível fora da Amazon (qualquer frescor). Só então vale a régua do próprio ASIN. */
   amazonOnly?: boolean;
+  /** Tipo do produto na loja (classificarTipo, derivado do titulo). Ausente em games. */
+  tipo?: string | null;
+  /** Mediana (centavos) do menor preco por master do mesmo departamento+tipo e quantos masters entraram. */
+  tipoMedianCents?: number | null;
+  tipoSample?: number;
 }
 
 export interface AmazonRef {
@@ -490,6 +515,8 @@ export interface Candidate {
   moveScore: number;
   /** Radar: os itens da mensagem (um por produto). */
   items?: RadarItemMeta[];
+  /** Tipo do produto na loja (cota de diversidade). */
+  tipo?: string | null;
   /** Detalhe do movimento (OK1, OK2, T1, T2). */
   move?: MoveDetail;
   offerSlug: string;
@@ -530,6 +557,8 @@ export interface EvalContext {
   amazonPaused?: boolean;
   /** PRICE_AMAZON_MODE desta avaliação (o chamador lê `getAmazonMode()`; este módulo é puro). Ausente = off: comportamento de sempre. */
   amazonMode?: AmazonMode;
+  /** Gatilho ACHADO ligado (migration 0032 aplicada). Ausente = desligado: comportamento de sempre. */
+  achado?: boolean;
 }
 
 /** Janela de 6 h (fuso de São Paulo) para o dedup por oferta/gatilho. */
@@ -609,7 +638,7 @@ export function finish(
   const belowAvgPct = base.avgCents != null && base.avgCents > 0 ? ((base.avgCents - base.primary.priceCents) / base.avgCents) * 100 : null;
   const minBelow = effectiveMinBelow(p, ctx.minBelowAvgPct, ctx.now);
   const belowRule =
-    minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
+    trigger !== 'AC' && minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
       ? `abaixo_da_media_menos_de_${minBelow}pct`
       : null;
   const notSendable =
@@ -632,6 +661,7 @@ export function finish(
     status: reviewReasons.length ? 'review' : 'auto',
     reviewReasons,
     platformLabel: p.platformLabel,
+    tipo: p.tipo ?? null,
     cls: base.cls ?? TRIGGER_CLASS[trigger],
     move: base.move,
     offerSlug: base.primary.slug,
@@ -1045,6 +1075,7 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
     avg = ms ? { cents: ms.cents, distinctOffers: ms.ofertas, offerDays: ms.ofertas, spanDays: 0, eligible: false } : null;
   }
   const released = RELEASED_VERTICALS.includes(p.vertical);
+  const beforeMain = candidates.length;
 
   for (const isAmz of [false, true]) {
     const series = isAmz ? p.amazonSeries : p.series;
@@ -1174,6 +1205,77 @@ export function evaluateProductV2(p: ProductFacts, ctx: EvalContext): { candidat
       }, ctx)
     );
   }
+  // ---------------- ACHADO (ata 2026-11-12-diversidade-fluxo-plus) ----------------
+  // Preco atual CONFIRMADO de produto que nao gerou mensagem de preco (1 vendedor, sem media, sem movimento). NUNCA compara com media nem
+  // alega desconto. Exige: oferta valida (link oficial, frescor, identidade, reputacao), preco dentro da faixa do TIPO (amostra >= 5 masters),
+  // coerente com o historico proprio (quando ha >= 3 dias) e plausivel contra as ofertas. Loja que nao e games, ML/Shopee (Amazon fora).
+  if (ctx.achado && p.vertical !== 'games' && released && !candidates.slice(beforeMain).some((c) => c.sendable)) {
+    const acStop = (reasons: string[]) => blocked.push({ masterProductId: p.masterProductId, name: nm, trigger: 'AC', reasons: ['achado', ...reasons] });
+    const OK_BLOCK = (r: string) => r === 'link_pendente' || r.startsWith('vendedor_reputacao_') || r === 'preco_nao_reconfirmado_em_15min';
+    // Ofertas VIVAS e reais (podem nao ter link): servem para dizer se a citada e a menor e para o teto de 3% acima da mais barata.
+    const comparable = verdicts
+      .filter((x) => (netKind(x.o) === 'ml' || netKind(x.o) === 'shopee') && (x.v.kind !== 'block' || x.v.reasons.every(OK_BLOCK)))
+      .sort((a, b) => a.o.priceCents - b.o.priceCents);
+    const holderAc = comparable.find((x) => x.v.kind !== 'block');
+    if (!holderAc) {
+      acStop([comparable.length ? 'nenhuma_oferta_valida_com_link' : 'sem_oferta_ml_ou_shopee_valida', ...(comparable[0]?.v.reasons ?? [])]);
+    } else {
+      const o = holderAc.o;
+      const price = o.priceCents;
+      const cheapest = comparable[0];
+      const aboveCheapest = ((price - cheapest.o.priceCents) / cheapest.o.priceCents) * 100;
+      const why: string[] = [];
+      if (aboveCheapest > RULES.ACHADO_FALLBACK_MAX_ABOVE_PCT) why.push(`mais_barata_sem_link_${Math.round(aboveCheapest)}pct_abaixo`);
+      if (o.identidade === 'incerta') why.push('identidade_incerta');
+      if (!p.tipo || p.tipo === 'outros') why.push('tipo_nao_classificado');
+      else if (!p.tipoMedianCents || (p.tipoSample ?? 0) < RULES.ACHADO_TIPO_MIN_SAMPLE) why.push(`amostra_do_tipo_menor_que_${RULES.ACHADO_TIPO_MIN_SAMPLE}`);
+      else {
+        const ratio = price / p.tipoMedianCents;
+        if (ratio < RULES.ACHADO_TIPO_RATIO_MIN) why.push('preco_abaixo_de_05x_a_mediana_do_tipo');
+        else if (ratio > RULES.ACHADO_TIPO_RATIO_MAX) why.push('preco_acima_de_25x_a_mediana_do_tipo');
+      }
+      const ownDays = (p.series ?? []).filter((x) => x.minCents > 0);
+      if (ownDays.length >= RULES.ACHADO_OWN_MIN_DAYS) {
+        const own = medianOf(ownDays.map((x) => x.minCents)) as number;
+        if (price > own * RULES.ACHADO_OWN_MAX_RATIO) why.push('acima_de_110pct_do_historico_proprio');
+        else if (price < own * RULES.ACHADO_OWN_MIN_RATIO) why.push('abaixo_de_05x_do_historico_proprio');
+      }
+      const risk = riskAssess(price, null, null, median);
+      why.push(...risk.review, ...risk.held);
+      if (why.length) acStop(why);
+      else {
+        const parts = displayParts(p);
+        const messageKey = makeMessageKey('AC', `${p.masterProductId}:AC:${o.offerId}:${windowKey(ctx.now)}`, ctx.now);
+        const isLowest = price <= cheapest.o.priceCents;
+        const input: GroupMessageInput = {
+          vertical: p.vertical,
+          adTag: ctx.adTag,
+          messageKey,
+          model: 'achado',
+          name: nm,
+          title: parts.title,
+          meta: parts.meta,
+          offer: toMsgOffer(o),
+          offersCount: comparable.length,
+          isLowest,
+        };
+        candidates.push(
+          finish(p, 'AC', input, {
+            offerIds: [o.offerId],
+            primary: o,
+            reason: `Achado: preço atual confirmado de ${fmtBRL(price)} (${comparable.length} oferta(s) ativa(s) acompanhada(s); sem média de referência).`,
+            avgCents: null,
+            belowPct: null,
+            dropPct: null,
+            reviewReasons: holderAc.v.reasons,
+            cls: 'insight',
+            moveScore: 0,
+            dedupSuffix: windowKey(ctx.now) + 'ac',
+          }, ctx)
+        );
+      }
+    }
+  }
   return { candidates, blocked };
 }
 
@@ -1290,6 +1392,8 @@ export interface SentRecord {
   /** Para a diversidade (desempate). */
   vertical?: string | null;
   platformLabel?: string | null;
+  /** Tipo do produto (cota de diversidade). */
+  tipo?: string | null;
 }
 
 /** Noite (22h às 8h, Brasília): não há silêncio; a mensagem sai SEM notificação sonora. */
@@ -1331,16 +1435,17 @@ export function productDedupBlock(
   now: Date
 ): string | null {
   if (!c.masterProductId) return null;
+  const gapMs = c.trigger === 'AC' ? RULES.ACHADO_PRODUCT_GAP_HOURS * 3600_000 : RULES.PRODUCT_GAP_MIN * 60_000;
   const prior = history
-    .filter((h) => h.masterProductId === c.masterProductId && now.getTime() - h.sentAt.getTime() < RULES.PRODUCT_GAP_MIN * 60_000)
+    .filter((h) => h.masterProductId === c.masterProductId && now.getTime() - h.sentAt.getTime() < gapMs)
     .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
   if (!prior) return null;
   const minSince = (now.getTime() - prior.sentAt.getTime()) / 60_000;
   if ((c.trigger === 'G1' || c.trigger === 'OK1') && c.priceCents < prior.priceCents && minSince >= RULES.NEW_MIN_REPEAT_MIN) return null;
-  return `produto_ja_enviado_ha_${Math.floor(minSince)}min`;
+  return c.trigger === 'AC' ? `achado_produto_ja_enviado_ha_${Math.floor(minSince / 60)}h` : `produto_ja_enviado_ha_${Math.floor(minSince)}min`;
 }
 
-const TRIGGER_RANK: Record<Trigger, number> = { G1: 0, OK1: 0, G2: 1, OK2: 1, T1: 2, T2: 3, G3: 4, G4: 5, G5: 6, G6: 7, RADAR: 8, CUPOM: 9, P1: 10, P2: 11, P3: 12, P4: 13, P5: 14 };
+const TRIGGER_RANK: Record<Trigger, number> = { G1: 0, OK1: 0, G2: 1, OK2: 1, T1: 2, T2: 3, G3: 4, G4: 5, G5: 6, G6: 7, RADAR: 8, CUPOM: 9, P1: 10, P2: 11, P3: 12, P4: 13, P5: 14, AC: 15 };
 /** Prioridade (dono, 2026-11-11): alerta > insight > radar; resumo logo depois do alerta; cupom por último. */
 const CLASS_RANK: Record<MessageClass, number> = { alerta: 0, resumo: 1, insight: 2, radar: 3, plataforma: 4, cupom: 5 };
 
@@ -1422,6 +1527,32 @@ export function spacingState(history: SentRecord[], now: Date, cfg: SpacingCfg =
     hourSent: recent.length,
     hourlyCap,
   };
+}
+
+/** Mensagens da loja (um chat por departamento) nas ultimas 24 h, sem plataforma e sem itens de radar. */
+function storeLast24h(history: SentRecord[], vertical: string, now: Date): SentRecord[] {
+  return history.filter((h) => !h.itemOnly && h.cls !== 'plataforma' && (h.vertical ?? '') === (vertical ?? '') && now.getTime() - h.sentAt.getTime() < 24 * 3600_000 && h.sentAt.getTime() <= now.getTime() + 5_000);
+}
+
+/**
+ * Cota do ACHADO por loja: no maximo 2 por hora e, em 24 h, max(3, 25% das mensagens da loja) (achados <= nao-achados / 3).
+ * null = pode enviar.
+ */
+export function achadoQuotaBlock(vertical: string, history: SentRecord[], now: Date): string | null {
+  const recs = storeLast24h(history, vertical, now);
+  const ac = recs.filter((h) => h.trigger === 'AC');
+  const others = recs.length - ac.length;
+  const allowed = Math.max(RULES.ACHADO_MIN_PER_DAY, Math.floor(others / 3));
+  if (ac.length >= allowed) return `achado_cota_diaria_da_loja_${ac.length}_de_${allowed}`;
+  if (ac.filter((h) => now.getTime() - h.sentAt.getTime() < 3600_000).length >= RULES.ACHADO_MAX_PER_HOUR) return `achado_maximo_${RULES.ACHADO_MAX_PER_HOUR}_por_hora`;
+  return null;
+}
+
+/** Quantas mensagens do TIPO a loja enviou nas ultimas 24 h e quantas no total (cota de diversidade). */
+export function tipoShare(vertical: string, tipo: string | null | undefined, history: SentRecord[], now: Date): { tipoCount: number; total: number; pct: number } {
+  const recs = storeLast24h(history, vertical, now);
+  const n = tipo ? recs.filter((h) => h.tipo === tipo).length : 0;
+  return { tipoCount: n, total: recs.length, pct: recs.length ? (n / recs.length) * 100 : 0 };
 }
 
 /** Algum item do radar composto enviado há menos de 90 min. Conta também os itens de radar (itemOnly). */
@@ -1595,7 +1726,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   const lastPlat = all.filter((h) => h.cls === 'plataforma').sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
   const nightAlerts = real.filter((h) => h.cls === 'alerta' && isNightHour(h.sentAt) && now.getTime() - h.sentAt.getTime() < 11 * 3600_000).length;
 
-  const ok: Candidate[] = [];
+  const ok0: Candidate[] = [];
   for (const c of pool) {
     const cls = c.cls;
     const composite = c.trigger === 'RADAR';
@@ -1618,12 +1749,39 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
+    if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);
     if (why) deferred.push({ messageKey: c.messageKey, reason: why });
-    else ok.push(c);
+    else ok0.push(c);
+  }
+
+  // Cota de diversidade por TIPO (ata 2026-11-12): nenhum tipo passa de TIPO_MAX_SHARE_PCT das mensagens da loja em 24 h, mas SO se houver
+  // alternativa de outro tipo na fila (cota suave: sem alternativa, o canal nao fica parado). Alerta (queda real) nao e freado.
+  const tipoOver = (c: Candidate): boolean => {
+    if (!c.tipo || !c.vertical || c.cls === 'alerta' || c.cls === 'plataforma') return false;
+    const s = tipoShare(c.vertical, c.tipo, real, now);
+    return s.total >= RULES.TIPO_SHARE_MIN_SENT && s.pct >= RULES.TIPO_MAX_SHARE_PCT;
+  };
+  const ok: Candidate[] = [];
+  for (const c of ok0) {
+    if (tipoOver(c) && ok0.some((x) => x.vertical === c.vertical && !!x.tipo && x.tipo !== c.tipo && !tipoOver(x))) {
+      deferred.push({ messageKey: c.messageKey, reason: `tipo_${c.tipo}_acima_de_${RULES.TIPO_MAX_SHARE_PCT}pct_do_dia_na_loja` });
+    } else ok.push(c);
   }
 
   const platOk = ok.filter((c) => c.cls === 'plataforma');
-  const priceOk = ok.filter((c) => c.cls !== 'plataforma').sort(compareCandidates);
+  // Rodizio de tipos: dentro da mesma classe (insight, radar), o tipo MENOS enviado hoje na loja vai primeiro; depois a ordem de sempre.
+  const tipoCountOf = (c: Candidate) => (c.tipo && c.vertical ? tipoShare(c.vertical, c.tipo, real, now).tipoCount : 0);
+  const rotates = (c: Candidate) => c.cls === 'insight' || c.cls === 'radar';
+  // Chave transitiva: classe; dentro de insight/radar, o ACHADO (sem comparacao) nunca passa na frente de um insight com comparacao real (G2, G3, T1...);
+  // depois, o tipo MENOS enviado hoje na loja; depois a ordem de sempre (games e alertas: tipo nulo/classe propria, ordem inalterada entre si).
+  const priceOk = ok
+    .filter((c) => c.cls !== 'plataforma')
+    .sort((a, b) =>
+      CLASS_RANK[a.cls] - CLASS_RANK[b.cls] ||
+      (rotates(a) ? Number(a.trigger === 'AC') : 0) - (rotates(b) ? Number(b.trigger === 'AC') : 0) ||
+      (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||
+      compareCandidates(a, b)
+    );
   const due = platformDue(history, now);
   let next: Candidate | null;
   if (due.due && platOk.length) {

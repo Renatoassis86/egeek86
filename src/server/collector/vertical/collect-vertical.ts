@@ -1,6 +1,6 @@
 import 'server-only';
 import { randomUUID } from 'node:crypto';
-import { and, asc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, lt, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { loadOwnerBlocks } from '@/server/identity-queue/owner-blocks';
 import { affiliateNetworks, affiliateOffers, masterProducts } from '@/db/schema';
@@ -10,7 +10,8 @@ import { slugify } from '@/lib/slugify';
 import { isVertical } from '@/lib/catalog/verticais';
 import { isVerticalEnabled, killSwitchEnvName, refreshMinutesFor, type NonGamesVertical } from '@/lib/catalog/vertical/config';
 import { fetchVerticalCatalog, VerticalPagingError, type RawPage, type VerticalCatalogOutcome } from '@/lib/catalog/vertical/paging';
-import { groupDueOldestFirst, mayExpireStale, plusCallQuota, staleExpireHours, STALE_EXPIRE_MAX_PER_RUN } from '@/lib/catalog/vertical/queue';
+import { cadenciaCamadas, groupDueOldestFirst, plusCapsFromEnv, mayExpireStale, plusCallQuota, staleExpireHours, STALE_EXPIRE_MAX_PER_RUN, type CadenciaCamadas } from '@/lib/catalog/vertical/queue';
+import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { startCollectorRun, collectorRunsEnabled } from '../collector-runs';
 import { recordPriceSnapshot } from '../record-price-snapshot';
 import { soldQuantityWrites } from '@/lib/affiliate/sold-quantity';
@@ -43,6 +44,11 @@ export interface CollectVerticalSummary {
   dryRun?: boolean;
   /** Ofertas devidas antes do teto de catálogos desta execução. */
   dueTotal: number;
+  /** Devidas na vitrine (master aprovado e no escopo) e na revisão (o resto); soma = dueTotal. */
+  dueVitrine: number;
+  dueRevisao: number;
+  /** Intervalos por camada em minutos; null = cadência por camada desligada (PLUS_CADENCIA_CAMADAS=0). */
+  cadence: { vitrineMin: number; revisaoMin: number } | null;
   /** Ofertas escolhidas (agrupadas em `catalogs`). */
   selected: number;
   catalogs: number;
@@ -73,22 +79,16 @@ const CATALOG_CONCURRENCY = 3;
 // 2026-11-11 (fase de formação das lojas que não são games): 150 -> 240 chamadas por execução; o orçamento de 240 s continua parando antes se preciso.
 const DEFAULT_MAX_CALLS = 240;
 const DEFAULT_BUDGET_MS = 240_000;
-// Freios de cota do conjunto Plus (somados em collector_runs; só valem com COLLECTOR_RUNS=1). Valores PADRÃO ASSUMIDOS:
-// a cota oficial do ML não está documentada no repositório; o dono/integrador confirma e ajusta por ambiente.
-const DEFAULT_PLUS_HOURLY_CAP = 8000;
-const DEFAULT_PLUS_DAILY_CAP = 150_000;
-
-function envInt(name: string, fallback: number): number {
-  const raw = process.env[name];
-  if (raw === undefined || raw.trim() === '') return fallback;
-  const n = Number(raw);
-  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : fallback;
-}
+// Freios de cota do conjunto Plus (somados em collector_runs; só valem com COLLECTOR_RUNS=1). Valores PADRÃO ASSUMIDOS (queue.ts,
+// plusCapsFromEnv): a cota oficial do ML não está documentada; o dono/integrador confirma e ajusta por ambiente.
 
 function emptySummary(vertical: string, extra: Partial<CollectVerticalSummary> = {}): CollectVerticalSummary {
   return {
     vertical,
     dueTotal: 0,
+    dueVitrine: 0,
+    dueRevisao: 0,
+    cadence: null,
     selected: 0,
     catalogs: 0,
     apiCalls: 0,
@@ -152,13 +152,30 @@ async function stampChecked(offerIds: string[]): Promise<void> {
   await db.update(affiliateOffers).set({ lastCheckedAt: new Date() }).where(inArray(affiliateOffers.id, offerIds));
 }
 
-function dueWhere(vertical: NonGamesVertical, networkId: string, refreshMin: number) {
+/**
+ * A oferta está na VITRINE? Master aprovado (catalogGate.verdict aprovado, ou aprovação manual; sem veredito = aprovado, como no sitemap)
+ * E dentro do escopo de compra (marca reversível `foraDeEscopo`). Subconsulta correlacionada, sem JOIN (a seleção segue em affiliate_offers).
+ */
+function vitrineSql(): SQL {
+  return sql`COALESCE((SELECT ((COALESCE(m.attributes -> 'catalogGate' ->> 'verdict', 'approved') = 'approved' OR m.attributes -> 'catalogGate' ->> 'manual' = 'approved') AND ${masterNoEscopoSql('m')})
+    FROM master_products m WHERE m.id = ${affiliateOffers.masterProductId}), false)`;
+}
+
+const minRaw = (n: number): SQL => sql.raw(String(Math.max(1, Math.floor(n))));
+
+/** Intervalo de reconfirmação da oferta (min) como SQL: vitrine no do departamento, revisão no de 60 a 120 min. Sem camadas, o do departamento. */
+function intervaloSql(c: CadenciaCamadas, mult = 1): SQL {
+  if (!c.ativa || c.revisaoMin <= c.vitrineMin) return minRaw(c.vitrineMin * mult);
+  return sql`(CASE WHEN ${vitrineSql()} THEN ${minRaw(c.vitrineMin * mult)} ELSE ${minRaw(c.revisaoMin * mult)} END)`;
+}
+
+function dueWhere(vertical: NonGamesVertical, networkId: string, cadence: CadenciaCamadas) {
   return and(
     eq(affiliateOffers.vertical, vertical),
     eq(affiliateOffers.networkId, networkId),
     inArray(affiliateOffers.status, ['active', 'draft']),
     isNotNull(affiliateOffers.externalRef),
-    or(isNull(affiliateOffers.lastCheckedAt), lt(affiliateOffers.lastCheckedAt, sql`now() - make_interval(mins => ${refreshMin})`))
+    or(isNull(affiliateOffers.lastCheckedAt), lt(affiliateOffers.lastCheckedAt, sql`now() - make_interval(mins => ${intervaloSql(cadence)})`))
   );
 }
 
@@ -323,15 +340,18 @@ async function applyVerticalGroup(
   return out;
 }
 
-/** Chamadas do conjunto Plus (todas as lojas) na última hora e em 24 h, somadas de collector_runs. null = não medido. */
-async function plusCallsUsed(): Promise<{ h1: number; h24: number } | null> {
+/**
+ * Chamadas do conjunto Plus (todas as lojas) na última hora e em 24 h, somadas de collector_runs. null = não medido.
+ * Soma a reconfirmação (collect-vertical:*) E a semeadura do servidor (semear-vertical:*): as duas gastam a mesma cota do ML.
+ */
+export async function plusCallsUsed(): Promise<{ h1: number; h24: number } | null> {
   if (!collectorRunsEnabled()) return null;
   try {
     const rows = (await db.execute(sql`
       SELECT coalesce(sum((meta->>'apiCalls')::numeric) FILTER (WHERE started_at > now() - interval '1 hour'), 0)::int AS h1,
              coalesce(sum((meta->>'apiCalls')::numeric), 0)::int AS h24
       FROM collector_runs
-      WHERE job LIKE 'collect-vertical:%' AND started_at > now() - interval '24 hours'`)) as unknown as { h1: number; h24: number }[];
+      WHERE (job LIKE 'collect-vertical:%' OR job LIKE 'semear-vertical:%') AND started_at > now() - interval '24 hours'`)) as unknown as { h1: number; h24: number }[];
     return rows[0] ? { h1: Number(rows[0].h1), h24: Number(rows[0].h24) } : null;
   } catch (err) {
     console.error('[collect-vertical] leitura da cota falhou (usa só o teto da execução):', sanitizeErrorForSummary((err as Error).message));
@@ -344,14 +364,14 @@ async function plusCallsUsed(): Promise<{ h1: number; h24: number } | null> {
  * (ex.: está numa página do catálogo que o ML não entrega) sai como 'expired' pelo mesmo status já usado pelo coletor.
  * Nunca inventa preço. Oferta que nem foi checada (backlog nosso) NÃO expira: volta ao topo da fila.
  */
-async function expireStaleOffers(vertical: NonGamesVertical, networkId: string, hours: number, refreshMin: number): Promise<number> {
+async function expireStaleOffers(vertical: NonGamesVertical, networkId: string, hours: number, cadence: CadenciaCamadas): Promise<number> {
   const rows = (await db.execute(sql`
     UPDATE affiliate_offers SET status = 'expired'::affiliate_offer_status, updated_at = now()
     WHERE id IN (
       SELECT id FROM affiliate_offers
       WHERE vertical = ${vertical} AND network_id = ${networkId} AND status = 'active' AND seller_id IS NOT NULL
         AND coalesce(last_price_confirmed_at, created_at) < now() - make_interval(hours => ${hours})
-        AND last_checked_at > now() - make_interval(mins => ${refreshMin * 3})
+        AND last_checked_at > now() - make_interval(mins => ${intervaloSql(cadence, 3)})
       ORDER BY coalesce(last_price_confirmed_at, created_at) ASC
       LIMIT ${STALE_EXPIRE_MAX_PER_RUN})
     RETURNING id`)) as unknown as { id: string }[];
@@ -374,6 +394,7 @@ export async function collectVertical(vertical: string, options: CollectVertical
   if (!network) return emptySummary(v, { skipped: 'no_network' });
 
   const refreshMin = refreshMinutesFor(v);
+  const cadence = cadenciaCamadas(refreshMin);
   const envCap = Number(process.env[`${killSwitchEnvName(v).replace('_ENABLED', '')}_MAX_CALLS`]);
   const runCap = options.maxCalls ?? (Number.isFinite(envCap) && envCap > 0 ? envCap : DEFAULT_MAX_CALLS);
   const used = options.dryRun ? null : await plusCallsUsed();
@@ -381,23 +402,26 @@ export async function collectVertical(vertical: string, options: CollectVertical
     runCap,
     usedLastHour: used?.h1 ?? null,
     usedLast24h: used?.h24 ?? null,
-    hourlyCap: envInt('PLUS_ML_HOURLY_CALL_CAP', DEFAULT_PLUS_HOURLY_CAP),
-    dailyCap: envInt('PLUS_ML_DAILY_CALL_CAP', DEFAULT_PLUS_DAILY_CAP),
+    ...plusCapsFromEnv(),
   });
   const callCap = quota.callCap;
   const budgetMs = options.budgetMs ?? DEFAULT_BUDGET_MS;
   const startedMs = Date.now();
   const summary = emptySummary(v, { callCap, dryRun: options.dryRun === true, quotaLimitedBy: quota.limitedBy });
-  const where = dueWhere(v, network.id, refreshMin);
+  const where = dueWhere(v, network.id, cadence);
 
-  const [{ total, oldest }] = await db
+  const [{ total, oldest, dueVitrine }] = await db
     .select({
       total: sql<number>`count(*)::int`,
+      dueVitrine: sql<number>`(count(*) FILTER (WHERE ${vitrineSql()}))::int`,
       oldest: sql<number | null>`max(extract(epoch from now() - coalesce(${affiliateOffers.lastCheckedAt}, ${affiliateOffers.createdAt})))::int`,
     })
     .from(affiliateOffers)
     .where(where);
   summary.dueTotal = total;
+  summary.dueVitrine = dueVitrine;
+  summary.dueRevisao = total - dueVitrine;
+  summary.cadence = cadence.ativa ? { vitrineMin: cadence.vitrineMin, revisaoMin: cadence.revisaoMin } : null;
 
   const due = await db
     .select({
@@ -405,15 +429,17 @@ export async function collectVertical(vertical: string, options: CollectVertical
       externalRef: affiliateOffers.externalRef,
       masterProductId: affiliateOffers.masterProductId,
       lastCheckedAt: affiliateOffers.lastCheckedAt,
+      tier: sql<number>`(CASE WHEN ${vitrineSql()} THEN 0 ELSE 1 END)::int`,
     })
     .from(affiliateOffers)
     .where(where)
-    .orderBy(sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`, asc(affiliateOffers.id))
+    // Vitrine antes da revisão; dentro de cada camada, a checagem mais antiga primeiro (nunca checada antes de todas).
+    .orderBy(sql`(CASE WHEN ${vitrineSql()} THEN 0 ELSE 1 END)`, sql`${affiliateOffers.lastCheckedAt} ASC NULLS FIRST`, asc(affiliateOffers.id))
     .limit(Math.max(callCap, 1) * 20);
 
   // Fila POR ANTIGUIDADE: o catálogo cuja oferta é a mais velha vai primeiro; nunca checado antes de todos.
   const list: Group[] = groupDueOldestFirst(
-    due.map((o) => ({ id: o.id, externalRef: o.externalRef, masterProductId: o.masterProductId, checkedAtMs: o.lastCheckedAt ? o.lastCheckedAt.getTime() : null }))
+    due.map((o) => ({ id: o.id, externalRef: o.externalRef, masterProductId: o.masterProductId, checkedAtMs: o.lastCheckedAt ? o.lastCheckedAt.getTime() : null, tier: o.tier === 1 ? 1 : 0 }))
   ).map((g) => ({ networkId: network.id, externalRef: g.externalRef, masterProductId: g.masterProductId, offerIds: g.offerIds }));
   summary.selected = due.length;
   summary.catalogs = list.length;
@@ -498,7 +524,7 @@ export async function collectVertical(vertical: string, options: CollectVertical
     // Cauda: preço não reconfirmado há N h em oferta já checada => 'expired' (só em execução saudável e com a coluna de confirmação ativa).
     if (mayExpireStale({ rateLimited: summary.rateLimited, pricesWritten: summary.pricesWritten, catalogs: summary.catalogs, failedCatalogs: summary.failedCatalogs, confirmationTracked: collectorRunsEnabled() })) {
       try {
-        summary.expiredStale = await expireStaleOffers(v, network.id, staleExpireHours(), refreshMin);
+        summary.expiredStale = await expireStaleOffers(v, network.id, staleExpireHours(), cadence);
       } catch (err) {
         console.error('[collect-vertical] varredura de cauda falhou (ignorada):', sanitizeErrorForSummary((err as Error).message));
       }
@@ -519,6 +545,8 @@ export async function collectVertical(vertical: string, options: CollectVertical
         rateLimited: summary.rateLimited,
         expiredStale: summary.expiredStale,
         quotaLimitedBy: quota.limitedBy,
+        dueVitrine: summary.dueVitrine,
+        dueRevisao: summary.dueRevisao,
         errorSamples: summary.errors.slice(0, 3).map((e) => e.message.slice(0, 160)),
       },
     });

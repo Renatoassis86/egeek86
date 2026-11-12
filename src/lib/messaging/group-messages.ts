@@ -4,7 +4,7 @@
 // a palavra "afiliado" nunca aparece; Amazon nunca (preço da Amazon fica fora de mensagem).
 
 export type GroupChannel = 'tg' | 'wa';
-export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar';
+export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar' | 'achado';
 
 /** Gatilhos por movimento da série diária (ata 2026-11-10 §2). */
 export type MoveKind = 'OK1' | 'OK2' | 'T1' | 'T2';
@@ -346,6 +346,18 @@ export type GroupMessageInput = Common &
         title?: string;
         meta?: string | null;
       }
+    | {
+        /** ACHADO (ata 2026-11-12): preço atual confirmado de produto sem média/comparação. NUNCA compara, NUNCA alega desconto. */
+        model: 'achado';
+        name: string;
+        offer: MsgOffer;
+        /** Ofertas ativas e válidas que o hub acompanha para este produto (inclui a citada). */
+        offersCount: number;
+        /** A oferta citada é a de menor preço entre as ativas e válidas? Só então o texto diz "menor preço". */
+        isLowest: boolean;
+        title?: string;
+        meta?: string | null;
+      }
     | { model: 'radar'; items: Array<{ name: string; offer: MsgOffer; move: MoveDetail }> }
     | {
         /** Mensagem de PLATAFORMA (P1 a P5): vende as funcionalidades do site com dado real do produto. */
@@ -643,6 +655,41 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const foot = italic(withTag(stampLine(o), input.adTag));
   const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
   return [recordHead, head, `${dropMarker}${priceLine}`, topics.join('\n'), recordNote, link, monBlock, amz ? null : promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+}
+
+
+/**
+ * ACHADO (ata 2026-11-12-diversidade-fluxo-plus). Só fato: preço atual confirmado, loja, horário e quantas ofertas o hub acompanha.
+ * Sem "%", sem "abaixo", sem "média", sem "desconto", sem riscado. "Menor preço" só com escopo (entre as N ofertas acompanhadas) e só
+ * quando a oferta citada é de fato a menor.
+ */
+export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: 'achado' }>, channel: GroupChannel): string {
+  const f = channel === 'tg' ? TG : WA;
+  guardNetwork(input.offer);
+  const o = input.offer;
+  const title = (input.title ?? input.name).trim();
+  const pre = prefix(input, f);
+  const italic = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
+  const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
+  const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
+  const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
+  const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
+  const n = Math.max(1, Math.round(input.offersCount));
+  const reading =
+    n === 1
+      ? 'Achado: única oferta ativa que acompanhamos no Mercado Livre e na Shopee agora.'
+      : input.isLowest
+        ? `Achado: menor preço entre as ${n} ofertas ativas que acompanhamos no Mercado Livre e na Shopee agora.`
+        : `Achado: preço atual confirmado, entre ${n} ofertas ativas que acompanhamos no Mercado Livre e na Shopee agora.`;
+  const topics: string[] = [];
+  const sellerText = sellerLine(o);
+  if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
+  for (const t of seloLines(o, f)) topics.push(t);
+  const buyUrl = o.affiliateUrl && /^https:\/\/[^\s<>"]+$/.test(o.affiliateUrl) ? o.affiliateUrl : null;
+  const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
+  const foot = italic(withTag(stampLine(o), input.adTag));
+  const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
+  return [head, priceLine, f.t(reading), topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
 /** Indicador da Black Friday: só durante a campanha de novembro/2026; depois some e a mensagem volta ao padrão (dono, 2026-11-11). */
@@ -960,6 +1007,8 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       return formatOfferMessage(input, channel);
     case 'plataforma':
       return formatPlatformMessage(input, channel);
+    case 'achado':
+      return formatAchadoMessage(input, channel);
     case 'radar': {
       if (input.items.length < 3) throw new Error('radar exige pelo menos 3 itens');
       const items = input.items.slice(0, 6);
