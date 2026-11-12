@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
+import { rejectUnlessCronAuthorized, rejectUnlessCronOrTestKeyDryRun } from '@/lib/auth/cron-auth';
 import { db } from '@/lib/db';
 import { COBERTURA_LIMITES, coberturaLigada, parseParametrosCobertura } from '@/lib/affiliate/shopee-cobertura';
 import { coberturaShopee, desfazerCobertura, medirCategoriasCobertura } from '@/server/collector/cobertura-shopee';
@@ -22,7 +22,7 @@ export const maxDuration = 300;
  * Para o PRIMEIRO 10030. Teto de 800 chamadas por hora deste job. NÃO está no vercel.json: agendar é decisão do dono.
  */
 export async function GET(request: NextRequest) {
-  const denied = rejectUnlessCronAuthorized(request);
+  const denied = rejectUnlessCronOrTestKeyDryRun(request);
   if (denied) return denied;
   if (!coberturaLigada(process.env.SHOPEE_COBERTURA_ATIVA)) return NextResponse.json({ desligado: true, como_ligar: 'definir SHOPEE_COBERTURA_ATIVA=1 na Vercel' });
 

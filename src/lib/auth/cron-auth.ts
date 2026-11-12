@@ -18,3 +18,17 @@ export function rejectUnlessCronAuthorized(request: NextRequest): NextResponse |
   if (request.nextUrl.searchParams.get('key') === secret) return null;
   return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 }
+
+/**
+ * Para rotas de coleta que o dono precisa AUDITAR em dry-run: além do CRON_SECRET, aceita a chave de teste (TESTE_LOJA_KEY,
+ * Bearer) SOMENTE quando a chamada não grava (sem apply=1 e sem rollback). Qualquer escrita continua exigindo o CRON_SECRET.
+ */
+export function rejectUnlessCronOrTestKeyDryRun(request: NextRequest): NextResponse | null {
+  const cron = rejectUnlessCronAuthorized(request);
+  if (!cron) return null;
+  const testKey = process.env.TESTE_LOJA_KEY;
+  const q = request.nextUrl.searchParams;
+  const grava = q.get('apply') === '1' || q.has('rollback');
+  if (testKey && testKey.length >= 16 && !grava && request.headers.get('authorization') === `Bearer ${testKey}`) return null;
+  return cron;
+}

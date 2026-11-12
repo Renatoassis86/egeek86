@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
+import { rejectUnlessCronAuthorized, rejectUnlessCronOrTestKeyDryRun } from '@/lib/auth/cron-auth';
 import { runSeedVertical } from '@/server/collector/vertical/seed-vertical';
 
 export const dynamic = 'force-dynamic';
@@ -18,7 +18,7 @@ export const maxDuration = 60;
  * Protegida por CRON_SECRET (Bearer). Para no primeiro 429 e recua 15, 30, 60, 120 min. Teto diário de segurança: 12.000 chamadas.
  */
 export async function GET(request: NextRequest) {
-  const denied = rejectUnlessCronAuthorized(request);
+  const denied = rejectUnlessCronOrTestKeyDryRun(request);
   if (denied) return denied;
 
   const q = request.nextUrl.searchParams;
