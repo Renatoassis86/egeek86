@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Tags, Network, Ticket, MessageSquareText, Newspaper, ShieldCheck, Users, ShoppingBag, ClipboardList, BrainCircuit, Library, Workflow, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, Tags, Network, Ticket, MessageSquareText, Newspaper, ShieldCheck, Users, ShoppingBag, ClipboardList, BrainCircuit, Library, Workflow, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 export interface AdminNavItem {
@@ -16,6 +16,7 @@ export const adminNavItems: AdminNavItem[] = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/data-science', label: 'NEXUS Data Science', icon: BrainCircuit },
   { href: '/admin/usuarios', label: 'Usuários', icon: Users },
+  { href: '/admin/aprovacao', label: 'Aprovação', icon: CheckCircle2 },
   { href: '/admin/fluxo', label: 'Fluxo ao vivo', icon: Workflow },
   { href: '/admin/catalogo', label: 'Catálogo por loja', icon: Library },
   { href: '/admin/ofertas', label: 'Ofertas', icon: Tags },

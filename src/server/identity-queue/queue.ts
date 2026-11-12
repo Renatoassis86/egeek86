@@ -376,7 +376,7 @@ export async function undoInTx(tx: Exec, p: { decisionId: string; userId: string
     await tx.execute(sql`UPDATE affiliate_offers SET quarantined_at = ${d.prev_quarantined_at}::timestamptz, updated_at = now() WHERE id = ${d.offer_id}::uuid`);
   }
   await tx.execute(sql`UPDATE identity_decisions SET undone_at = now(), undone_by = ${p.userId}::uuid, recalc_done_at = NULL,
-    recalc_masters = ARRAY(SELECT DISTINCT unnest(recalc_masters || ARRAY[from_master_id, to_master_id]) ) WHERE id = ${d.id}::uuid`);
+    recalc_masters = ARRAY(SELECT DISTINCT x FROM unnest(recalc_masters || ARRAY[from_master_id, to_master_id]) AS x WHERE x IS NOT NULL) WHERE id = ${d.id}::uuid`);
   if (d.item_id) {
     await tx.execute(sql`UPDATE identity_review_items SET status = 'pending', decision_id = NULL, resolved_at = NULL, snoozed_until = NULL WHERE id = ${d.item_id}::uuid`);
   }
@@ -409,7 +409,7 @@ export async function drainRecalc(dbx: typeof Db, limit = 20): Promise<{ decisoe
     SELECT id::text AS id, recalc_masters::text[] AS m FROM identity_decisions
     WHERE recalc_done_at IS NULL AND cardinality(recalc_masters) > 0 ORDER BY decided_at LIMIT ${limit}`));
   if (!pend.length) return { decisoes: 0, masters: 0 };
-  const masters = [...new Set(pend.flatMap((p) => (Array.isArray(p.m) ? p.m : String(p.m).replace(/[{}]/g, '').split(',').filter(Boolean))))];
+  const masters = [...new Set(pend.flatMap((p) => (Array.isArray(p.m) ? p.m : String(p.m).replace(/[{}]/g, '').split(',').filter(Boolean))).filter((x) => x && x !== 'NULL' && x !== 'null'))];
   await dbx.transaction(async (tx) => {
     await recalcMasters(tx as unknown as Exec, masters);
     const idl = sql.join(pend.map((p) => sql`${p.id}::uuid`), sql`, `);

@@ -163,6 +163,7 @@ Tipos: **E** extração, **C** catálogo/identidade, **P** preço, **M** mensage
 | N32 | Banco Postgres (Supabase Micro) | R | dba-postgres | tudo | tudo | contínuo | n/a | 60 conexões; transação curta; `idle_in_transaction_session_timeout=0` hoje (FM-07) |
 | N33 | `/admin/fluxo` (fluxo ao vivo) | F | engenheiro-frontend + arquiteto-next | `collector_runs`, filas, esta fila | tela admin | 30 s | n/a | especificado no cap. 5 §4.2; não implementado (fila #4) |
 | N34 | `notify-price-drops` | M | engenheiro-backend | banco | notificações | `0 11 * * *` | n/a | empilha no minuto 0 (colisão C5, baixa) |
+| N60 | `/admin/aprovacao` (central de aprovação do dono) | F/G | engenheiro-backend + engenheiro-frontend | `identity_review_items` pendentes + rascunhos Amazon sem item (`affiliate_offers.status='draft'`) | `identity_decisions` (aprovar, recusar, pular, desfazer), `affiliate_offers.status` (`draft` para `active`), `master_products.attributes.catalogGate`/`aprovacaoHumana` | sob demanda (dono clica) | S01 e Q12 (fila de classificação) | R-43: draft só sai por aprovação humana; lote só dos óbvios, com prévia; 1 transação curta por decisão |
 
 Rotas agendáveis **fora** do `vercel.json` (`cobertura-shopee`, `ampliar-amostra-shopee`, `discover-shopee-esporte`, `import-shopee-conversions`, `loja-teste`): sem agendador conhecido e sem dono; decisão do dono pendente (FM-31). Enquanto isso valem como manuais.
 
@@ -305,7 +306,7 @@ Regra geral: **mensagens primeiro; cupom perecível depois; refresh do que já s
 
 ---
 
-## 6. Regras imperativas (R-01 a R-42)
+## 6. Regras imperativas (R-01 a R-43)
 
 Numeradas, sem contradição entre si. Quando dois capítulos divergiam, a regra abaixo é a que prevalece; a origem das divergências está na seção 8. "Estado" diz se o código já cumpre (CÓDIGO), se há violação medida (VIOLADA) ou se depende de decisão.
 
@@ -371,6 +372,7 @@ Numeradas, sem contradição entre si. Quando dois capítulos divergiam, a regra
 | R-38 | **Banco**: escrever só mudança real, em lote, em transação curta; nunca manter transação aberta durante chamada externa; teto de linhas por execução; minutos fixos por cron; migrations com `SET LOCAL lock_timeout='5s'` e `statement_timeout='60s'`. | CÓDIGO; sem trava no servidor (FM-07) |
 | R-41 | **Mudança de cadência, cota, flag de produção ou `vercel.json`**: porte médio no mínimo, ata, script com `JSON.parse`/`JSON.stringify`, validação antes do push, `vercel ls` Ready depois. Carga nova entra com orçamento e medida antes e depois. | CÓDIGO (processo) |
 | R-42 | **Concluído só com verificação**: `qa-verificador` e `checklist-publicacao`; critério de pronto verificável na fila de execução; cada agente commita só os próprios arquivos. Todo novo capítulo, nó ou fila altera este documento no mesmo commit. | processo |
+| R-43 | **A oferta `draft` só sai por aprovação humana na `/admin/aprovacao`** (cartão, lote de óbvios com prévia, desfazer). A ação reutiliza `applyInTx`/`undoInTx` (decisão em `identity_decisions` com o estado anterior); rascunho da Amazon sem item de fila ganha o item (`enfileirarDuvidaAmazon`) e recebe 'sim' na mesma transação; master em revisão é aprovado junto, com o gate anterior em `attributes.aprovacaoHumana`; guardas antes de liberar: só novo, sem 2 gerações, com preço, sem quarentena, sem duplicata (`findExistingMasterProduct`). Nada é aprovado em nome do dono. | CÓDIGO (2026-11-12) |
 
 ---
 
