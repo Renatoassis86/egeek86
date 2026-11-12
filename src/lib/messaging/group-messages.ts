@@ -716,10 +716,10 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
   const n = Math.max(1, Math.round(input.offersCount));
   // Tamanho da amostra é metodologia interna (dono, 2026-11-12): só alega "menor preço entre as N" quando N é robusto (>= MIN_AVG_OFFERS_CLAIM); senão, sem texto de leitura.
-  const reading =
-    n >= MIN_AVG_OFFERS_CLAIM && input.isLowest
-      ? `Achado: menor preço entre as ${n} ofertas ativas que acompanhamos no Mercado Livre e na Shopee agora.`
-      : null;
+  // Dono (2026-11-12): Achado sem veredito de queda, sem comparação e sem prescrição de compra: só "Novo no monitoramento".
+  void n;
+  const reading: string | null = null;
+  const novo = channel === 'tg' ? '<b>Novo no monitoramento</b>' : '*Novo no monitoramento*';
   const topics: string[] = [];
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
@@ -728,7 +728,7 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
   const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
-  return [head, priceLine, reading ? f.t(reading) : null, topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+  return [novo, head, priceLine, reading ? f.t(reading) : null, topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
 /**

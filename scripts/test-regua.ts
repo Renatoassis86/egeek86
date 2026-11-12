@@ -5,8 +5,8 @@
  * (termos banidos, tamanhos, escape de HTML, cor nunca sozinha, <= 2 emojis), rollout por loja (desligado = comportamento antigo),
  * ordem da fila, terço do degrau 1 e link curto.
  */
-import { applyLimits, degrau1ShareBlock, effectiveMinBelow, evaluateProductV2, formacaoDoProduto, type Candidate, type OfferFact, type ProductFacts, type SentRecord } from '../src/lib/messaging/group-rules';
-import { countEmojis, textProblems, TELEGRAM_CAPTION_MAX_CHARS, TELEGRAM_MAX_CHARS } from '../src/lib/messaging/group-messages';
+import { achadoPorHora, applyLimits, degrau1ShareBlock, effectiveMinBelow, evaluateProductV2, formacaoDoProduto, type Candidate, type OfferFact, type ProductFacts, type SentRecord } from '../src/lib/messaging/group-rules';
+import { countEmojis, formatAchadoMessage, textProblems, TELEGRAM_CAPTION_MAX_CHARS, TELEGRAM_MAX_CHARS } from '../src/lib/messaging/group-messages';
 import { AVISO_DEGRAU_5, DEGRAUS, REGUA, arredondar1, calcularVeredito, contraste, degrauDaQueda, reguaConfig, reguaDaLoja, reguaFront, reguaTelegram, reguaWhatsapp, vaiParaDestaques, type Veredito } from '../src/lib/messaging/regua';
 import { captionVisibleLength } from '../src/lib/messaging/telegram-send';
 import { codigoCurtoValido, destinoDoCodigo, gerarCodigoCurto, linkCurto } from '../src/lib/messaging/short-code';
@@ -237,6 +237,18 @@ eq('destino = mesmo link rastreado /go (s=wa e m)', destinoDoCodigo('raquete-x',
 eq('destino recusa slug com / ? #', [destinoDoCodigo('a/b', 'g2-261112-abc123'), destinoDoCodigo('a?b', 'g2-261112-abc123'), destinoDoCodigo('', 'g2-261112-abc123')], [null, null, null]);
 eq('destino recusa messageKey invalido', destinoDoCodigo('ok', 'x'), null);
 eq('REGUA.LIMITES', [...REGUA.LIMITES], [3, 6, 12, 20, 30]);
+
+// ---- ordens de 2026-11-12 (tarde): degrau 1 sem teto quando nao ha oferta mais forte esperando; Achado 6/h ----
+const soD1Cheio = applyLimits([mkCand('d1b', 1)], [enviado(10, 1), enviado(20, 2), enviado(30, 3)], HOJE);
+eq('terco so vale com oferta mais forte esperando: so degrau 1 na fila sai mesmo acima de 1/3', soD1Cheio.next?.messageKey, 'g2-261112-d1b');
+const d1ComForte = applyLimits([mkCand('d1c', 1), mkCand('d2c', 2)], [enviado(10, 1), enviado(20, 2), enviado(30, 3)], HOJE);
+eq('com degrau 2 esperando, o degrau 1 acima de 1/3 espera e o 2 sai', [d1ComForte.next?.messageKey, d1ComForte.deferred.some((d) => d.messageKey === 'g2-261112-d1c' && d.reason.startsWith('regua_degrau1'))], ['g2-261112-d2c', true]);
+eq('Achado por hora: padrao 6', achadoPorHora({}), 6);
+eq('Achado por hora configuravel', achadoPorHora({ GROUP_AC_POR_HORA: '10' }), 10);
+eq('Achado por hora invalido = 6', achadoPorHora({ GROUP_AC_POR_HORA: 'x' }), 6);
+const acTxt = formatAchadoMessage({ model: 'achado', name: 'Panela X', offer: { slug: 'panela-x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 19900, confirmedAt: HOJE }, offersCount: 8, isLowest: true, vertical: 'eletrodomesticos', messageKey: 'ac-261112-abc123', adTag: '#publicidade' } as never, 'tg');
+yes('Achado: "Novo no monitoramento", sem comparacao, sem %', /Novo no monitoramento/.test(acTxt) && !/%|abaixo|média|menor preço/i.test(acTxt));
+eq('Achado: sem termo banido', textProblems(acTxt, 'tg'), []);
 
 console.log(`${ok}/${ok + bad} verificações ok (régua de destaque)`);
 process.exit(bad ? 1 : 0);

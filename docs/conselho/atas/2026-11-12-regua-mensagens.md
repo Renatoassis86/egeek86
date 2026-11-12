@@ -42,6 +42,11 @@ Plano executado, na ordem:
 - Fica de fora: liberar as demais lojas (só após 24 h e decisão do dono), baixar o histórico mínimo, trava de dispersão (k x MAD) do estatístico (proposta para a próxima rodada), rate limit/WAF do `/g` (a rota é pública, como o `/go`).
 - Decisão do responsável do projeto: aprovada no chat em 2026-11-12 (itens 1 a 6); pendentes dele: criar o canal Destaques e adicionar o bot, confirmar o terço do degrau 1, decidir sobre o histórico mínimo de 14 dias.
 
+## Emendas do dono (chat, 2026-11-12, tarde)
+1. Terço do degrau 1 só vale com oferta dos degraus 2 a 5 elegível esperando no grupo; sem ela, degrau 1 sem teto. Implementado em `applyLimits`.
+2. Cores confirmadas (calor, vermelho no topo).
+3. Produto sem média é oferta legítima: teto do Achado por hora e grupo vira `GROUP_AC_POR_HORA` (padrão 6, era 2) e a cota diária deixa de ser o limitante; Achado passa a dizer "Novo no monitoramento", sem comparação.
+
 ## Métrica de sucesso
 Nas 2 lojas, por 15 min e depois por 24 h: envios por degrau, 0 termo banido, 0 mensagem fora de Casa/esporte, duração do job < 45 s, erro < 2%, degrau 1 <= 1/3 da hora por grupo, 0 divergência entre média da mensagem e do banco. Reversão imediata se qualquer um falhar.
 

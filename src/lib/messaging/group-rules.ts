@@ -1826,13 +1826,21 @@ function storeLast24h(history: SentRecord[], vertical: string, now: Date): SentR
  * Cota do ACHADO por loja: no maximo 2 por hora e, em 24 h, max(3, 25% das mensagens da loja) (achados <= nao-achados / 3).
  * null = pode enviar.
  */
+/** Teto de Achados por hora e por grupo: GROUP_AC_POR_HORA (inteiro 1 a 60), padrão 6 (era 2). */
+export function achadoPorHora(env: Record<string, string | undefined> = process.env): number {
+  const n = Number(env.GROUP_AC_POR_HORA);
+  return Number.isInteger(n) && n >= 1 && n <= 60 ? n : 6;
+}
+
 export function achadoQuotaBlock(vertical: string, history: SentRecord[], now: Date): string | null {
   const recs = storeLast24h(history, vertical, now);
   const ac = recs.filter((h) => h.trigger === 'AC');
   const others = recs.length - ac.length;
-  const allowed = Math.max(RULES.ACHADO_MIN_PER_DAY, Math.floor(others / 3));
+  // Dono (2026-11-12): produto sem média é oferta legítima; o governo é o teto por hora (GROUP_AC_POR_HORA, padrão 6), então a cota diária acompanha o teto horário.
+  const porHora = achadoPorHora();
+  const allowed = Math.max(RULES.ACHADO_MIN_PER_DAY, Math.floor(others / 3), porHora * 24);
   if (ac.length >= allowed) return `achado_cota_diaria_da_loja_${ac.length}_de_${allowed}`;
-  if (ac.filter((h) => now.getTime() - h.sentAt.getTime() < 3600_000).length >= RULES.ACHADO_MAX_PER_HOUR) return `achado_maximo_${RULES.ACHADO_MAX_PER_HOUR}_por_hora`;
+  if (ac.filter((h) => now.getTime() - h.sentAt.getTime() < 3600_000).length >= porHora) return `achado_maximo_${porHora}_por_hora`;
   return null;
 }
 
@@ -2048,7 +2056,6 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && !opts.ignoreSpacing) why = chatSpacingBlock(c.vertical, all, now);
     if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
-    if (!why && c.regua?.degrau === 1) why = degrau1ShareBlock(c, all, now);
     if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);
@@ -2071,6 +2078,14 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   };
   const ok: Candidate[] = [];
   for (const c of ok0) {
+    // Régua de destaque (dono, 2026-11-12): o teto de 1/3 do degrau 1 só vale quando há oferta dos degraus 2 a 5 elegível esperando no mesmo grupo; sem ela o degrau 1 sai sem teto.
+    if (c.regua?.degrau === 1 && ok0.some((x) => x.vertical === c.vertical && (x.regua?.degrau ?? 0) >= 2)) {
+      const t = degrau1ShareBlock(c, all, now);
+      if (t) {
+        deferred.push({ messageKey: c.messageKey, reason: t });
+        continue;
+      }
+    }
     if (cupomOver(c) && ok0.some((x) => x.vertical === c.vertical && x.trigger !== 'CUPOM' && x.cls !== 'plataforma')) {
       deferred.push({ messageKey: c.messageKey, reason: `cupom_acima_de_${RULES.CUPOM_MAX_SHARE_PCT}pct_do_dia_na_loja` });
       continue;
