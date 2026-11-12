@@ -220,9 +220,11 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
   const day = addDays(spDay(o.now), -3);
   const today = spDay(o.now);
   const big = RULES.G5_MIN_OFFERS;
+  const hourKey = o.now.toISOString().slice(0, 13); // rodízio: muda a cada hora
+  const GAMES_QUOTA = 220, PLUS_QUOTA = 60;
   const rows = await db.execute<Row>(sql`
     WITH live AS (
-      SELECT o.id, o.master_product_id AS mid, o.network_id, o.current_price_cents AS p
+      SELECT o.id, o.master_product_id AS mid, m.vertical AS v, o.network_id, o.current_price_cents AS p
       FROM affiliate_offers o
       INNER JOIN master_products m ON m.id = o.master_product_id
       WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.affiliate_link_pending = false AND o.current_price_cents > 0
@@ -256,15 +258,28 @@ async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin' | 'eve
       SELECT mid FROM (SELECT mid, network_id, min(p) AS mn FROM live GROUP BY mid, network_id) x
       GROUP BY mid HAVING count(*) >= 2 AND min(mn) <= max(mn) * ${1 - RULES.G3_MIN_DIFF_PCT / 100}::numeric
     )
-    SELECT mid FROM (
-      SELECT mid, min(r) AS r FROM (
-        SELECT mid, 1 AS r FROM ev WHERE mid IN (SELECT mid FROM live)
-        UNION ALL SELECT mid, 1 FROM mv
-        UNION ALL SELECT mid, 2 FROM below
-        UNION ALL SELECT mid, 3 FROM nets
-        UNION ALL SELECT mid, 4 FROM bigp
-      ) u GROUP BY mid
-    ) ranked ORDER BY r, mid LIMIT ${o.maxProducts}::int
+    ,
+    -- Fase de formação (lojas fora de games): sem estado diário a média vem das ofertas vivas; menor preço abaixo da média simples já qualifica.
+    liveavg AS (
+      SELECT mid FROM live WHERE v <> 'games' GROUP BY mid HAVING count(*) >= 3 AND min(p) < avg(p) * 0.999
+    )
+    SELECT q.mid FROM (
+      SELECT u.mid, u.r, lv.v, row_number() OVER (PARTITION BY lv.v ORDER BY u.r, md5(u.mid::text || ${hourKey}::text)) AS rn
+      FROM (
+        SELECT mid, min(r) AS r FROM (
+          SELECT mid, 1 AS r FROM ev WHERE mid IN (SELECT mid FROM live)
+          UNION ALL SELECT mid, 1 FROM mv
+          UNION ALL SELECT mid, 2 FROM below
+          UNION ALL SELECT mid, 2 FROM liveavg
+          UNION ALL SELECT mid, 3 FROM nets
+          UNION ALL SELECT mid, 4 FROM bigp
+        ) x GROUP BY mid
+      ) u
+      INNER JOIN (SELECT DISTINCT mid, v FROM live) lv ON lv.mid = u.mid
+    ) q
+    -- Cota por departamento: games não consome o lote inteiro e cada loja Plus roda por rodízio horário (antes: ORDER BY mid fixo = sempre os mesmos itens).
+    WHERE q.rn <= (CASE WHEN q.v = 'games' THEN ${GAMES_QUOTA}::int ELSE ${PLUS_QUOTA}::int END)
+    ORDER BY q.r, md5(q.mid::text || ${hourKey}::text) LIMIT ${o.maxProducts}::int
   `);
   return rows.map((r) => String(r.mid));
 }
@@ -510,7 +525,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
 
   const ids = opts.productIds?.length
     ? opts.productIds
-    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 400 });
+    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 600 });
   const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode });
 
   const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode };
