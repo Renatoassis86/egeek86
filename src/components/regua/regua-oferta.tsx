@@ -29,14 +29,16 @@ export function ReguaEtiqueta({ regua, className = '' }: { regua: ReguaFront; cl
   if (!v) return null;
   const d = DEGRAUS[v.degrau];
   return (
+    // Layout que NUNCA corta nem sobrepõe texto (erro visto no cartão de 240 px): a etiqueta quebra em linhas, as marcas ▼ têm
+    // espaçamento normal (antes tracking negativo empilhava os triângulos sobre o número) e nenhum pedaço é truncado ou fica fora do cartão.
     <span
-      className={`inline-flex w-fit max-w-full items-center gap-1.5 px-2 py-1 text-[12px] font-black leading-none ${className}`}
+      className={`flex w-fit max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5 px-2 py-1 text-[12px] font-black leading-snug ${className}`}
       style={{ background: d.cor, color: d.corTexto }}
       data-degrau={v.degrau}
     >
-      <span aria-hidden className="tracking-[-0.1em]">{d.marcas}</span>
-      <span className="truncate">{d.destaque ? v.rotulo.toLocaleUpperCase('pt-BR') : v.rotulo}</span>
-      {v.mostrarPct ? <span className="shrink-0 font-semibold">· {pt1(v.pct)}% abaixo da média</span> : null}
+      <span aria-hidden className="shrink-0 whitespace-nowrap leading-none tracking-normal">{d.marcas}</span>
+      <span className="min-w-0 break-words">{d.destaque ? v.rotulo.toLocaleUpperCase('pt-BR') : v.rotulo}</span>
+      {v.mostrarPct ? <span className="whitespace-nowrap font-semibold">· {pt1(v.pct)}% abaixo da média</span> : null}
       <span className="sr-only">{`Degrau ${v.degrau} de 5 pela queda sobre a média das lojas.`}</span>
     </span>
   );
@@ -96,7 +98,7 @@ export function ReguaLegenda() {
         {faixas.map(([d, faixa]) => (
           <li key={d} className="flex flex-col gap-1">
             <span className="inline-flex w-fit items-center gap-1.5 px-2 py-1 text-[12px] font-black leading-none" style={{ background: DEGRAUS[d].cor, color: DEGRAUS[d].corTexto }}>
-              <span aria-hidden className="tracking-[-0.1em]">{DEGRAUS[d].marcas}</span>
+              <span aria-hidden className="whitespace-nowrap tracking-normal">{DEGRAUS[d].marcas}</span>
               {DEGRAUS[d].rotulo}
             </span>
             <span className="text-[12px] text-[var(--color-text-tertiary)]">{faixa} abaixo da média</span>
