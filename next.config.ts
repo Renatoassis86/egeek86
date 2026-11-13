@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
       { source: '/loops/:path*', headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }, { key: 'Cache-Control', value: 'no-store' }, { key: 'X-Robots-Tag', value: 'noindex' }] },
     ];
   },
+  // D5 (ata 2026-11-13): o endereco antigo responde 308 de verdade (permanentRedirect dentro da pagina vira meta refresh com status 200 quando ha streaming).
+  async redirects() {
+    return [{ source: '/inteligencia-gamer', destination: '/noticias', permanent: true }];
+  },
   // Compatibilidade: as imagens grandes foram reexportadas de .png para .webp no mesmo caminho logico. Referencias antigas
   // (capas gravadas no banco, scripts, links externos) a /images/x.png continuam funcionando quando o .png nao existe mais
   // (rewrite so vale se nao houver arquivo estatico com esse nome, ex.: og-cover.png).
