@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
-import { PlusDestaquesAbas, type AbaPlus } from '@/components/plus/plus-destaques-abas';
+import { PlusDestaquesLista, type FaixaPlus } from '@/components/plus/plus-destaques-lista';
 import { getLojasPlus } from '@/server/plus';
 import { getDestaquesPlus } from '@/server/plus-destaques';
 import { getCurrentProfile } from '@/lib/auth/require-admin';
@@ -10,16 +10,16 @@ import { getCurrentProfile } from '@/lib/auth/require-admin';
 const ITENS_POR_ABA = 5;
 
 /**
- * Seção "Espaço Geek Plus" da home, resumida: só destaques de preço, um carrossel com abas por departamento.
+ * Seção "Espaço Geek Plus" da home, resumida: só destaques de preço, uma faixa compacta por departamento, uma abaixo da outra.
  * Mesma fonte de /mercado/<dept> (destaquesPlusCached, com cache SWR; a home nunca espera o banco). Sem selo, sem média, sem grupos de mensagens.
- * Departamento fechado para quem vê, ou com menos de 4 produtos, não vira aba; sem nenhuma aba a seção some.
+ * Departamento fechado para quem vê, ou com menos de 4 produtos, não aparece; sem nenhuma faixa a seção some.
  */
 export async function SecaoPlusHome() {
   const perfil = await getCurrentProfile().catch(() => null);
   const lojas = (await getLojasPlus(perfil?.role)).filter((l) => l.aberta);
   if (lojas.length === 0) return null;
   const destaques = await getDestaquesPlus(lojas.map((l) => l.dept));
-  const abas: AbaPlus[] = lojas
+  const abas: FaixaPlus[] = lojas
     .filter((l) => (destaques[l.dept] ?? []).length > 0)
     .map((l) => ({
       dept: l.dept,
@@ -48,7 +48,7 @@ export async function SecaoPlusHome() {
             Ver todo o Plus <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
-        <PlusDestaquesAbas abas={abas} />
+        <PlusDestaquesLista faixas={abas} />
       </div>
     </section>
   );
