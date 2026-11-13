@@ -14,6 +14,17 @@ type Expect = 'hidden' | ProductType;
 type Case = { name: string; db: ProductType; expect: Expect; bundle?: boolean };
 
 const HIDDEN: Array<[string, ProductType]> = [
+  ['Suporte Vertical PS5 Slim Base Com Cooler', 'console'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Par de Grips Extensor Call of Duty®: Modern Warfare 3 III® ( Xbox Series X/S e Xbox One )', 'game'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Dock De Carregamento 8bitdo Para Xbox Edição Forza Horizon 6 Azul-celeste', 'game'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Carregador Dock Duplo Controle Dualsense PS5 Sony', 'accessory'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Capa Protetora Silicone Nintendo Switch OLED', 'accessory'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Cabo HDMI 2.1 Para Playstation 5 Xbox Series', 'accessory'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Alças para Joy-Con Nintendo Switch', 'game'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Alças Para Joy-con Nintendo Switch Colorido', 'game'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Bolsa Case Zelda Tears of the Kingdom para Nintendo Switch OLED', 'game'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Bateria Recarregável Controle Xbox Series 1400mAh', 'accessory'],  // item miúdo (dono, 2026-11-13): nunca na cartela
+  ['Kit Bateria + Cabo Carregador Controle PS5 DualSense', 'accessory'],  // item miúdo (dono, 2026-11-13): nunca na cartela
   ['Nintendo Switch Super Mario Bros. Wonder Japanese Game Card, Used & Tested', 'game'], // condicao em ingles
   ['Nintendo Switch Lite Desbloqueado Novo Com Jogos + Garantia', 'game'],
   ['Disco de desbloqueio para PS4 BDJ GoldHEN + LOJINHA E APLICATIVOS', 'console'],
@@ -121,7 +132,6 @@ const MOVED: Array<[string, ProductType, ProductType]> = [
   // QA 2026-11-03 (P2): armazenamento e suporte vertical
   ["Para Nintendo Switch/OLED Console Jogo Saco De Armazenamento Tema Zelda Shekah Slate Caso Difícil À Prova D'água Com 12 Slots De Cartão", 'game', 'accessory'],
   ['PS4 Slim (Playstation 4 Slim) vertical stand', 'console', 'accessory'],
-  ['Suporte Vertical PS5 Slim Base Com Cooler', 'console', 'accessory'],
   ['Console Xbox 360 Com 250 GB e Jogo Grand Theft Auto V', 'game', 'console'],
   ['Bundle Nintendo Switch 2 – Nintendo Switch Sports Resort', 'game', 'console'],
   ['Microsoft Xbox One S 500GB Forza Horizon 3 Bundle cor branco', 'game', 'console'],
@@ -130,8 +140,6 @@ const MOVED: Array<[string, ProductType, ProductType]> = [
   ['Controle Xbox Forza Horizon 6 - Xbox Series X/s, One E Pc Azul-turquesa', 'game', 'accessory'],
   ['Fones de ouvido sem fio Xbox Edição Limitada Forza Horizon 6', 'game', 'accessory'],
   ['Controle Sem Fio Xbox Series X/S Forza Horizon 5 Edição Limitada da Microsoft', 'game', 'accessory'],
-  ['Par de Grips Extensor Call of Duty®: Modern Warfare 3 III® ( Xbox Series X/S e Xbox One )', 'game', 'accessory'],
-  ['Dock De Carregamento 8bitdo Para Xbox Edição Forza Horizon 6 Azul-celeste', 'game', 'accessory'],
   ['Fone Headset Sem Fio Microsoft Xbox Edição Limitada Forza Horizon 6 ( Ep2-42285 )', 'game', 'accessory'],
   ['Controle Sem Fio Microsoft Xbox Forza Horizon 6 Edição Limitada ( EP2-42278 )', 'game', 'accessory'],
   ['[Nintendo Licensed Product] Hori Classic Controller for Nintendo Switch - Zelda', 'game', 'accessory'],
@@ -155,9 +163,6 @@ const MOVED: Array<[string, ProductType, ProductType]> = [
   ['Cartão de Memória MicroSD 128GB Nintendo Switch Sandisk', 'accessory', 'accessory'],
   ['HD Externo 2TB Seagate Game Drive Para Xbox Series X', 'accessory', 'accessory'],
   ['SSD NVMe 1TB WD Black SN850 Heatsink PS5', 'accessory', 'accessory'],
-  ['Carregador Dock Duplo Controle Dualsense PS5 Sony', 'accessory', 'accessory'],
-  ['Capa Protetora Silicone Nintendo Switch OLED', 'accessory', 'accessory'],
-  ['Cabo HDMI 2.1 Para Playstation 5 Xbox Series', 'accessory', 'accessory'],
   ['Volante Logitech G29 Driving Force PS5 PS4 PC', 'accessory', 'accessory'],
   ['Console Sony PlayStation 5 Slim 1TB Mídia Física', 'console', 'console'],
   ['Console Xbox Series S 512GB Branco Microsoft', 'console', 'console'],
@@ -179,10 +184,7 @@ const P2_MOVED: Array<[string, ProductType, ProductType]> = [
   ['Console Nintendo Switch Lite Edição Zelda Link', 'game', 'console'],
   ['Controle God of War PS4 Sony', 'game', 'accessory'],
   ['God Of War Ragnarok Controle Dualshock 4 Ps4 Edição Limitada', 'game', 'accessory'],
-  ['Alças para Joy-Con Nintendo Switch', 'game', 'accessory'],
-  ['Alças Para Joy-con Nintendo Switch Colorido', 'game', 'accessory'],
   ['Bolsa Zelda para Switch OLED', 'game', 'accessory'],
-  ['Bolsa Case Zelda Tears of the Kingdom para Nintendo Switch OLED', 'game', 'accessory'],
   // falsos positivos que NAO podem mudar
   ['Controle Xbox Series Sem Fio Funciona Com 2 Pilhas AA', 'accessory', 'accessory'],
   ['Controle Sem Fio DualSense PS5 Branco Sony', 'accessory', 'accessory'],
@@ -296,8 +298,6 @@ const P1A_KEPT: Array<[string, ProductType, ProductType]> = [
   ['Memory Card 16mb Para Playstation 2 - Ps2- Console Salvar', 'console', 'accessory'],
   ['Nintendo Switch 2 Pro Controlador A Lenda de Zelda', 'game', 'accessory'],
   // bateria/pilha de CONTROLE continua acessorio; console HAC-001 continua console
-  ['Bateria Recarregável Controle Xbox Series 1400mAh', 'accessory', 'accessory'],
-  ['Kit Bateria + Cabo Carregador Controle PS5 DualSense', 'accessory', 'accessory'],
   ['Console Nintendo Switch HAC-001 Neon 32GB', 'console', 'console'],
   ['Jogo Nintendo Wii : Sonic Unleashed', 'game', 'game'],
 ];

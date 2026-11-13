@@ -10,6 +10,7 @@
 // do anúncio de marcas como a Bambu Lab não os traz; o modelo identifica o aparelho. Decisão do dono se quiser endurecer.
 
 import { scopeIssue } from './vertical/scope';
+import { avaliarItemMiudo } from './item-miudo';
 import { diametroDe, massaOuVolumeDe, materialDe, tipoResinaDe } from './vertical/i3d-fields';
 
 export { diametroDe, massaOuVolumeDe, materialDe, tipoResinaDe };
@@ -134,6 +135,11 @@ export function avaliarImpressao3d(c: CandidatoI3d): AvaliacaoI3d {
     rejeitavel = true;
   }
   if (textos.some((t) => PALAVRA_PROIBIDA.test(fold(t)))) motivos.push('palavra_proibida');
+  // Item miúdo (dono, 2026-11-13): peça, bico, ferramenta, objeto impresso em 3D nunca ganham 'approved' automático (só filamento, resina e impressora).
+  if (avaliarItemMiudo(c.name, null, 'general', 'impressao3d').veredito !== 'nao') {
+    motivos.push('item_miudo');
+    rejeitavel = true;
+  }
   if (c.segment) {
     const issue = scopeIssue(c.segment, c.name) ?? textos.slice(1).map((t) => scopeIssue(c.segment!, t)).find(Boolean) ?? null;
     if (issue) motivos.push(`escopo:${issue.reason}`);

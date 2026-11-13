@@ -3,6 +3,7 @@
 // products.ts) quanto pelo script de treino standalone (rodado via tsx fora
 // do Next — 'server-only' derruba fora do contexto do build do Next).
 import { ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
+import { ehItemMiudo } from '@/lib/catalog/item-miudo';
 import type { ProductType } from '@/db/schema';
 
 /**
@@ -339,6 +340,13 @@ export function isBundleTitle(title: string): boolean {
 }
 
 export async function resolveProductTypeFromTitle(title: string, priceCents?: number | null): Promise<ProductType | null> {
+  const tipo = await resolveProductTypeBruto(title, priceCents);
+  // Item miúdo (dono, 2026-11-13): peça, cabo, grip, capa, base/suporte avulso, adesivo, objeto impresso em 3D e enfeite não ganham tipo: devolve null (= descartar na descoberta).
+  if (tipo && ehItemMiudo(title, priceCents, tipo, 'games')) return null;
+  return tipo;
+}
+
+async function resolveProductTypeBruto(title: string, priceCents?: number | null): Promise<ProductType | null> {
   // Regras determinísticas vencem o modelo (EG-04). Peça/embalagem não deve
   // entrar no catálogo na descoberta: devolve null (= descartar).
   const ruleHit = detectNonGameByRules(title);

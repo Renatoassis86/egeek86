@@ -2,6 +2,7 @@
 import { INLINE_BAND_PERCENT, MIN_HISTORY_DAYS_FOR_VERDICT, MIN_QUOTES_FOR_VERDICT, computeVerdict, sellerTier, type SellerSignals } from '@/lib/affiliate/price-verdict';
 import { offerTitleFlags } from '@/lib/affiliate/offer-identity';
 import { avaliarConsoleVideoGame, ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
+import { ehItemMiudo } from '@/lib/catalog/item-miudo';
 import { legacyPlatformLabel, readPlatform, titleIsLegacyPlatformOnly } from '@/lib/catalog/platform';
 import type { GamePlatformGen } from '@/db/schema';
 import type { FaixaTipo, MenorRegistrado, PlataformaVitrine, PosicaoMedia, VitrineChave, VitrineItem } from './tipos';
@@ -39,6 +40,7 @@ export type MotivoExclusao =
   | 'porteiro_oculto'
   | 'tipo_fora_da_cartela'
   | 'console_nao_e_aparelho'
+  | 'item_miudo'
   | 'plataforma_unknown'
   | 'plataforma_fora_de_linha'
   | 'retro_ou_legado'
@@ -217,6 +219,11 @@ export function avaliarCandidato(c: Candidato, ctx: ContextoAvaliacao, opts: Opc
     if (!ehConsoleDeVideoGame(c.nomeMaster || c.tituloOferta, c.precoCentavos) || (doOferta.veredito === 'nao' && doOferta.forte)) {
       return { ok: false, motivo: 'console_nao_e_aparelho' };
     }
+  }
+
+  // Item miúdo (dono, 2026-11-13): cinto de segurança das vitrines (o porteiro e a limpeza já tiram do catálogo). Vale para o nome do master e para o título da oferta.
+  if (ehItemMiudo(c.nomeMaster || c.tituloOferta, c.precoCentavos, tipoDb, 'games') || ehItemMiudo(c.tituloOferta, c.precoCentavos, tipoDb, 'games')) {
+    return { ok: false, motivo: 'item_miudo' };
   }
 
   const plat = plataformaDaVitrine(c.plataformaDb, `${c.tituloOferta} ${c.nomeMaster}`.trim(), tipo);

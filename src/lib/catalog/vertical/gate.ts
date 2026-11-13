@@ -3,6 +3,7 @@
 import { domainMatches, segmentByKey, type NonGamesVertical, type SegmentConfig } from './config';
 import { foldText, type IdentityResult } from './identity';
 import { scopeIssue } from './scope';
+import { avaliarItemMiudo } from '../item-miudo';
 
 /**
  * PORTEIRO POR DEPARTAMENTO (ADR 0008 item 4): `gateFor(vertical)`.
@@ -82,6 +83,13 @@ function evaluateFor(vertical: NonGamesVertical, input: VerticalGateInput): Vert
   }
   // 2. Decisão humana vence o automático (exceto o acima).
   if (input.manual) return mk(input.manual, 'ok', 'decisao_manual');
+
+  // 2b. Item miúdo (dono, 2026-11-13): peça, cabo, carregador avulso, adaptador, hub, suporte/base avulsos, objeto impresso em 3D...
+  // Exceção deliberada à regra "nunca rejeita por escopo": o dono não quer esse tipo de item no banco, nem em revisão.
+  {
+    const mi = avaliarItemMiudo(input.name, null, 'general', vertical);
+    if (mi.veredito === 'sim') return mk('rejected', 'out_of_scope', 'item_miudo:' + mi.motivo, mi.termo);
+  }
 
   // 3. Fora de domínio: review (nunca rejected).
   if (!domainMatches(seg, input.domainId)) return mk('review', 'out_of_scope', 'dominio_fora_do_segmento', input.domainId);

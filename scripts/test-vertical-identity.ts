@@ -144,7 +144,7 @@ gv = g.evaluate({ segment: 'livros', name: 'Livro sem ISBN', domainId: 'MLB-BOOK
 check('sem identidade forte => review (nao aprova)', gv.verdict === 'review', gv);
 gv = g.evaluate({ segment: 'livros', name: 'Notebook', domainId: 'MLB-NOTEBOOKS', identity: evaluateIdentity(P({ id: 'z', domain_id: 'MLB-NOTEBOOKS', attributes: [attr('GTIN', isbn)] }), livros) });
 check('OUTRA VERTICAL/dominio nunca e rejected: vira review', gv.verdict === 'review' && gv.category === 'out_of_scope', gv);
-gv = g.evaluate({ segment: 'livros', name: 'Caderno Universitario', domainId: 'MLB-BOOKS', identity: evaluateIdentity(P({ id: 'z', attributes: [attr('GTIN', isbn)] }), livros) });
+gv = g.evaluate({ segment: 'livros', name: 'Fichario Universitario', domainId: 'MLB-BOOKS', identity: evaluateIdentity(P({ id: 'z', attributes: [attr('GTIN', isbn)] }), livros) });
 check('lexico fora do escopo => review', gv.verdict === 'review' && gv.reason === 'lexico_fora_do_escopo', gv);
 gv = g.evaluate({ segment: 'placa-de-video', name: 'x', domainId: 'MLB-GRAPHICS_CARDS', identity: id });
 check('segmento de outro departamento => review, nunca rejected', gv.verdict === 'review', gv);

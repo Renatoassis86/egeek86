@@ -1,6 +1,7 @@
 // Sem 'server-only': função pura (regex + tabelas), importável por queries do
 // servidor, coletores, scripts tsx e testes.
 import { avaliarConsoleVideoGame } from '@/lib/catalog/console-videogame';
+import { avaliarItemMiudo } from '@/lib/catalog/item-miudo';
 import type { ProductType } from '@/db/schema';
 import { classifyCatalogItem, foldTitle, type CatalogDimension } from '@/lib/catalog/dimensions';
 import { titleIsLegacyPlatformOnly } from '@/lib/catalog/platform';
@@ -237,6 +238,13 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
   }
   if (input.manual === 'rejected') {
     return result('rejected', 'owner_decision', 'rejeitado_manualmente', null, baseDim, bundle);
+  }
+
+  // Item miúdo (dono, 2026-11-13): peça, cabo, grip, capa, base/suporte avulso, adesivo, objeto impresso em 3D e enfeite nunca entram.
+  // Só o 'sim' (prova no título) rejeita; a dúvida (acessório sem produto principal) é tratada na aprovação automática e na entrada da coleta.
+  {
+    const mi = avaliarItemMiudo(name, input.medianPriceCents ?? null, input.productType, 'games');
+    if (mi.veredito === 'sim') return result('rejected', 'out_of_scope', 'item_miudo:' + mi.motivo, mi.termo, 'part', false);
   }
 
   // Console retrô: fora do monitoramento de novos (drops e leilões). Reversível: override manual 'approved' passa acima.

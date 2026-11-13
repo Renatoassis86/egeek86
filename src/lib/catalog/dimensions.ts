@@ -1,6 +1,7 @@
 // Sem 'server-only': lógica pura (regex + tabelas), importável por queries do
 // servidor, scripts tsx e testes.
 import { avaliarConsoleVideoGame } from '@/lib/catalog/console-videogame';
+import { avaliarItemMiudo } from '@/lib/catalog/item-miudo';
 import type { ProductType } from '@/db/schema';
 import { isBundleTitle } from '@/lib/affiliate/product-type-classifier';
 import { deriveGameFormat, fixPlatformTypos } from '@/lib/affiliate/game-classification';
@@ -542,6 +543,11 @@ export function classifyCatalogItem(name: string, dbType: ProductType, gameForma
     // Regra única (dono, 2026-11-13): console é SÓ o aparelho. Peça, enfeite, acessório e retrô com tipo console saem da cartela.
     const nc = avaliarConsoleVideoGame(name);
     if (nc.veredito === 'nao' && nc.forte && nc.motivo !== 'retro_ou_fora_de_linha') return { ...hide('part', 'console_nao_e_aparelho:' + nc.motivo, nc.termo ?? nc.motivo), bundle };
+  }
+  // Item miúdo (dono, 2026-11-13): peça, cabo, grip, capa, base/suporte avulso, adesivo, objeto impresso em 3D e enfeite saem da cartela (jogo e acessório).
+  if (out.dimension === 'accessory' || out.dimension === 'game') {
+    const mi = avaliarItemMiudo(name, null, out.dimension === 'game' ? 'game' : 'accessory', 'games');
+    if (mi.veredito === 'sim') return { ...hide('part', 'item_miudo:' + mi.motivo, mi.termo ?? mi.motivo), bundle };
   }
   if (out.dimension === 'accessory') {
     // Acessório só vale com plataforma de console no título

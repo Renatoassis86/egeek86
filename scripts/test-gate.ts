@@ -32,7 +32,7 @@ const cases: C[] = [
   { name: 'Ioiô Street Fighter Ryu Capcom Flowpack', db: 'game', expect: 'rejected' },
   { name: 'Kit Manta Poliéster Casal + Balde de Pipoca God of War Playstation', db: 'game', expect: 'rejected' },
   // --- Print 2: porta cartao = duvida do dono -> review (nunca publico)
-  { name: 'Porta Cartão de memória Super Mario Bross Porta Cartão SD Porta Jogo Nintendo Switch Cartão', db: 'game', expect: 'review' },
+  { name: 'Porta Cartão de memória Super Mario Bross Porta Cartão SD Porta Jogo Nintendo Switch Cartão', db: 'game', expect: 'rejected' },
   // --- Print 1: PS2 fisico novo a R$19,90-22 -> review (sinal auxiliar de preco)
   { name: 'God of War II Standard Edition Formato físico para PS2', db: 'game', expect: 'rejected', fmt: 'physical', median: 2000 },
   { name: 'God of War Jogo PS2 Português Físico Ação Santa Monica', db: 'game', expect: 'rejected', median: 2200 },
@@ -90,7 +90,7 @@ const cases: C[] = [
   { name: 'Steam Deck OLED 512GB Console Portátil', db: 'console', expect: 'approved' },
   { name: 'Console Sony PlayStation 5 Slim 1TB Mídia Física', db: 'console', expect: 'approved' },
   { name: 'Controle Sem Fio DualSense PS5 Branco Sony', db: 'accessory', expect: 'approved' },
-  { name: 'Cabo HDMI Original PS5 Sony', db: 'accessory', expect: 'approved' },
+  { name: 'Cabo HDMI Original PS5 Sony', db: 'accessory', expect: 'rejected' },
   { name: 'Resident Evil 4 Remake PS5 Mídia Física Original Lacrado', db: 'game', expect: 'approved', median: 24900 },
   { name: 'Jogo Forza Horizon 5 Boné Exclusivo Midia Fisica Xbox One Xbox Series X', db: 'game', expect: 'approved' },
   { name: 'Nintendo Switch 2 + Mario Kart World Bundle', db: 'console', expect: 'approved' },
@@ -116,10 +116,10 @@ const cases: C[] = [
   { name: 'Mouse Gamer Logitech G203 Lightsync', db: 'accessory', expect: 'rejected' }, // periferico de PC: fora do escopo (nao e acessorio de console)
   { name: 'Controle Sem Fio 8BitDo Ultimate Bluetooth', db: 'accessory', expect: 'review' },
   { name: 'Controle Sem Fio Generico Sem Marca', db: 'accessory', expect: 'rejected' },
-  { name: 'Porta Cartucho PowerA Nintendo Switch 24 Jogos', db: 'accessory', expect: 'approved', dim: 'accessory' },
-  { name: 'Estojo Porta Jogos Hori para Nintendo Switch', db: 'accessory', expect: 'approved', dim: 'accessory' },
-  { name: 'Porta Cartucho 24 Jogos Nintendo Switch', db: 'accessory', expect: 'review' },
-  { name: 'Porta Cartucho PowerA 24 Jogos', db: 'accessory', expect: 'review' },
+  { name: 'Porta Cartucho PowerA Nintendo Switch 24 Jogos', db: 'accessory', expect: 'rejected' },
+  { name: 'Estojo Porta Jogos Hori para Nintendo Switch', db: 'accessory', expect: 'rejected' },
+  { name: 'Porta Cartucho 24 Jogos Nintendo Switch', db: 'accessory', expect: 'rejected' },
+  { name: 'Porta Cartucho PowerA 24 Jogos', db: 'accessory', expect: 'rejected' },
   { name: 'Amiibo Mario Super Smash Bros Nintendo', db: 'accessory', expect: 'rejected' },
   { name: 'Headset Gamer Generico Sem Marca', db: 'accessory', expect: 'rejected' },
   { name: 'Headset Gamer Replica 1:1 Sony', db: 'accessory', expect: 'rejected' },
@@ -153,7 +153,7 @@ const cases: C[] = [
   { name: 'Controle Super Nintendo Wii Classic Controller', db: 'accessory', expect: 'review' },
   { name: 'Memory Card 16mb Para Playstation 2 - Ps2- Console Salvar', db: 'accessory', expect: 'approved', manual: 'approved' },
   { name: 'Cartao de Memoria Nintendo Switch 128GB Sandisk', db: 'accessory', expect: 'approved' },
-  { name: 'Base Vertical Para Playstation 5 Ps5 Slim Digital/Com Leitor', db: 'accessory', expect: 'approved', dim: 'accessory' },
+  { name: 'Base Vertical Para Playstation 5 Ps5 Slim Digital/Com Leitor', db: 'accessory', expect: 'rejected' },
   // --- Titulo da oferta tambem conta
   { name: 'Super Mario Odyssey Nintendo Switch', db: 'game', expect: 'rejected', offers: ['Super Mario Odyssey Nintendo Switch Cópia Paralela'] },
 ];

@@ -188,7 +188,7 @@ const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(ch
   const emb = mk({ tipoDb: 'accessory', formatoDb: 'unknown', tituloOferta: 'Encarte Zelda Switch Original', nomeMaster: 'Encarte Zelda' });
   check('acessório com encarte fica fora da vitrine', !itensIds('acessorios', [...acess, emb]).has(emb.masterProductId));
   const cap = mk({ precoCentavos: 12000, tipoDb: 'accessory', formatoDb: 'unknown', tituloOferta: 'Capa Protetora Silicone Controle PS5', nomeMaster: 'Capa Controle PS5' });
-  check('capa protetora de controle entra', itensIds('acessorios', [...acess, cap]).has(cap.masterProductId));
+  check('capa protetora de controle é item miúdo: fora (dono, 2026-11-13)', !itensIds('acessorios', [...acess, cap]).has(cap.masterProductId));
 
   // Chaves e quantidades de vitrine.
   const chaves = todasAsChaves();

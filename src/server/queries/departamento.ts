@@ -5,6 +5,7 @@ import { publicOffersCtes } from '@/server/queries/public-offers';
 import { verticalSql } from '@/lib/catalog/verticais';
 import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { createCachedQuery } from '@/lib/cache/server-cache';
+import { ehItemMiudoOuDuvida } from '@/lib/catalog/item-miudo';
 import { classificarTipo, contarTipos, type TipoContagem } from '@/lib/catalog/tipos-produto';
 import {
   MIN_VENDEDORES_MEDIANA,
@@ -226,7 +227,9 @@ export async function listarDepartamento(vertical: string, opts: { pagina?: numb
     `);
     total = Number(t[0]?.n ?? 0);
   }
-  return { itens: rows.map(mapCartao), total, pagina, totalPaginas: Math.max(1, Math.ceil(total / POR_PAGINA)) };
+  // Cinto de segurança (dono, 2026-11-13): item miúdo (peça, cabo, suporte avulso, acessório menor) nunca aparece, mesmo que o porteiro tenha deixado passar.
+  const itens = rows.filter((r) => !ehItemMiudoOuDuvida(r.name, Number(r.min_cents), 'general', vertical)).map(mapCartao);
+  return { itens, total, pagina, totalPaginas: Math.max(1, Math.ceil(total / POR_PAGINA)) };
 }
 
 export interface VendedorDetalhe {
@@ -315,7 +318,8 @@ export async function destaquesDepartamento(vertical: string, limite = 8): Promi
       AND COALESCE(m.default_images ->> 0, '') ~* '^https?://'
     GROUP BY m.id
     ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC
-    LIMIT ${lim}
+    LIMIT ${lim + 8}
   `);
-  return rows.map(mapCartao);
+  // Cinto de segurança (dono, 2026-11-13): destaque ordenado por menor preço é onde o item miúdo apareceria primeiro; folga de 8 linhas cobre o filtro.
+  return rows.filter((r) => !ehItemMiudoOuDuvida(r.name, Number(r.min_cents), 'general', vertical)).slice(0, lim).map(mapCartao);
 }

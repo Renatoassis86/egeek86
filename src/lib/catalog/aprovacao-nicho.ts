@@ -1,6 +1,7 @@
 // Puro (sem banco): critérios de aprovação de masters de nicho (ata 2026-11-10, E.2). Usado por
 // scripts/aprovar-masters-nicho.ts (dry-run/apply) e testado em scripts/test-departamentos.ts.
 
+import { avaliarItemMiudo } from '@/lib/catalog/item-miudo';
 import { SEGMENTOS_ESPORTE_COM_GENERO } from './vertical/esporte-shopee';
 
 /**
@@ -125,6 +126,12 @@ export function avaliarCandidato(c: CandidatoMaster, opts: { relaxado?: boolean;
   if (c.gate?.suggested !== 'approved') motivos.push('sem_evidencia_positiva_do_porteiro');
   if (USADO.test(c.name) || c.titulosOfertas.some((t) => USADO.test(t))) motivos.push('nao_e_produto_novo');
   if (BRINQUEDO.test(c.name) || c.titulosOfertas.some((t) => BRINQUEDO.test(t))) motivos.push('brinquedo_ou_miniatura');
+  // Item miúdo (dono, 2026-11-13): peça, cabo, capa, suporte avulso, acessório menor (abaixo do piso da família) NUNCA ganha 'approved' automático.
+  {
+    const preco = c.precosClicaveis.length ? Math.min(...c.precosClicaveis) : null;
+    const mi = avaliarItemMiudo(c.name, preco, 'general', c.vertical);
+    if (mi.veredito !== 'nao') motivos.push(mi.veredito === 'sim' ? 'item_miudo' : 'item_miudo_duvida');
+  }
   if (c.precosClicaveis.length < 1) motivos.push('sem_oferta_clicavel');
   let amplitude: number | null = null;
   if (c.precosClicaveis.length >= 2) {

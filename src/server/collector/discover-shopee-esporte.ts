@@ -1,4 +1,5 @@
 import 'server-only';
+import { ehItemMiudoOuDuvida } from '@/lib/catalog/item-miudo';
 import { randomUUID } from 'node:crypto';
 import { eq, inArray, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -287,6 +288,12 @@ export async function discoverShopeeEsporte(opts: DiscoverEsporteOptions): Promi
         if (!av.ok) {
           bump(av.motivo);
           amostra(av.motivo, { titulo: node.productName, detalhe: av.detalhe, precoCentavos: node.priceCents });
+          continue;
+        }
+        // Item miúdo (dono, 2026-11-13): peça, suporte avulso e acessório menor abaixo do piso da família nem viram master/oferta.
+        if (ehItemMiudoOuDuvida(node.productName, node.priceCents, 'general', 'esporte')) {
+          bump('item_miudo');
+          amostra('item_miudo', { titulo: node.productName, precoCentavos: node.priceCents });
           continue;
         }
         const nota = Number(raw?.ratingStar);

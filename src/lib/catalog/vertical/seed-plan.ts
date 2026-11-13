@@ -1,5 +1,6 @@
 // Sem 'server-only': planejador de semeadura. Só LEITURA da API oficial do ML (via MlClient) e consultas de duplicata
 // injetadas (lookup). Não escreve em lugar nenhum: quem grava é scripts/semear-vertical.ts, e só com --apply.
+import { ehItemMiudo } from '../item-miudo';
 import { parseMeliCatalogPage } from '@/lib/affiliate/master-consolidation';
 import { domainMatches, type SegmentConfig } from './config';
 import { colorlessTitleKey, stripColors, stripSizes } from './scope';
@@ -177,6 +178,14 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
         if (report.plans.filter((p) => !p.mergeInto).length >= maxCreate) {
           report.stoppedBecause = 'teto_de_criacao';
           return true;
+        }
+
+        // 0) Item miúdo (dono, 2026-11-13): peça, cabo, carregador avulso, adaptador, suporte/base avulsos, objeto impresso em 3D nunca viram master.
+        // Barra antes de qualquer chamada de API e de qualquer escrita (poupa o Supabase Micro).
+        if (ehItemMiudo(searchPayload.name ?? '', null, 'general', seg.vertical)) {
+          bump(report.counts, 'descartado_item_miudo');
+          skip(searchPayload, 'item_miudo', null);
+          return false;
         }
 
         // 1) Identidade na resposta da busca (0 chamadas).
