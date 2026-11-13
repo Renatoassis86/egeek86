@@ -572,7 +572,13 @@ export async function statsSnapshotReady(): Promise<boolean> {
  * `getMasterProductPriceStatsBatchRaw`, byte a byte o que a tela calcularia). Produto ausente/velho,
  * tabela inexistente ou leitura lenta => fica fora do Map e o chamador calcula ao vivo.
  */
-export async function readPersistedStats(ids: string[]): Promise<Map<string, MasterProductPriceStats>> {
+/** Última leitura boa do pré-cálculo por produto (memória do processo): reserva quando o banco está lento. Dado real, com a idade original. */
+const lastGood = ((globalThis as unknown as { __egeekStatsLastGood?: Map<string, { v: MasterProductPriceStats; at: number }> }).__egeekStatsLastGood ??= new Map());
+const LAST_GOOD_MAX = 20_000;
+/** Teto de espera da PÁGINA pela leitura do pré-cálculo (consulta por PK de dezenas de linhas: deve levar ms). */
+const PERSISTED_READ_MS = 3_000;
+
+export async function readPersistedStats(ids: string[], opts: { reportFailure?: { failed: boolean } } = {}): Promise<Map<string, MasterProductPriceStats>> {
   const out = new Map<string, MasterProductPriceStats>();
   if (!ids.length) return out;
   try {
@@ -582,12 +588,30 @@ export async function readPersistedStats(ids: string[]): Promise<Map<string, Mas
         WHERE master_product_id IN (${idList(ids)})
           AND computed_at > now() - (${Math.round(STATS_PERSIST_MAX_AGE_MS / 1000)} * interval '1 second')
       `),
-      6_000,
+      PERSISTED_READ_MS,
       'product_price_stats'
     );
-    for (const r of rows) out.set(String(r.master_product_id), r.payload);
+    const now = Date.now();
+    for (const r of rows) {
+      const id = String(r.master_product_id);
+      out.set(id, r.payload);
+      lastGood.delete(id);
+      lastGood.set(id, { v: r.payload, at: now });
+    }
+    while (lastGood.size > LAST_GOOD_MAX) {
+      const oldest = lastGood.keys().next().value;
+      if (oldest === undefined) break;
+      lastGood.delete(oldest);
+    }
   } catch (err) {
-    console.error('[stats] leitura do pré-cálculo falhou (calcula ao vivo):', err instanceof Error ? err.message : err);
+    console.error('[stats] leitura do pré-cálculo falhou (usa a última leitura boa em memória; sem ela, omite selo):', err instanceof Error ? err.message : err);
+    if (opts.reportFailure) opts.reportFailure.failed = true;
+    // Última leitura boa (até a mesma idade máxima do pré-cálculo): dado real, nunca inventado.
+    const now = Date.now();
+    for (const id of ids) {
+      const g = lastGood.get(id);
+      if (g && now - g.at <= STATS_PERSIST_MAX_AGE_MS) out.set(id, g.v);
+    }
   }
   return out;
 }
@@ -602,9 +626,13 @@ export async function getMasterProductPriceStatsBatch(
 ): Promise<Map<string, MasterProductPriceStats>> {
   const ids = [...new Set(masterProductIds.filter(Boolean))].sort();
   if (!ids.length) return new Map();
-  const persisted = await readPersistedStats(ids);
+  const readState = { failed: false };
+  const persisted = await readPersistedStats(ids, { reportFailure: readState });
   const missing = ids.filter((id) => !persisted.has(id));
   if (!missing.length) return persisted;
+  // Página (partialOnTimeout) com o banco lento: NÃO dispara o cálculo ao vivo pesado (q_all, 3 s+ por lote) em cima de um banco
+  // que acabou de falhar a leitura simples; mostra só o que há (sem selo para o resto) e o cron/SWR preenchem depois.
+  if (readState.failed && opts.partialOnTimeout) return persisted;
   const rec = await swrBatch('mp-price-stats-v1', missing, fetchStatsChunk, { ttlMs: STATS_FRESH_MS, maxStaleMs: STATS_MAX_STALE_MS, chunkSize: 30, coldTimeoutMs: opts.coldTimeoutMs, direct: opts.direct, partialOnTimeout: opts.partialOnTimeout });
   for (const [id, v] of Object.entries(rec)) persisted.set(id, v);
   return persisted;

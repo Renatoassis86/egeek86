@@ -1,6 +1,8 @@
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { withTimeout } from '@/lib/cache/swr';
+import { readShowcaseAged, writeShowcase } from '@/server/queries/snapshot-store';
 import { isVertical, type Vertical } from '@/lib/catalog/verticais';
 import {
   GAMES_STORE_LIMITS,
@@ -37,6 +39,8 @@ export type LojaRow = {
   verticals: string[] | null;
 };
 
+const STORES_SNAPSHOT_KEY = 'stores-v1';
+let lastStoresWrite = 0;
 let cache: { at: number; value: StoreSection[] } | null = null;
 
 export function invalidateStoresCache(): void {
@@ -75,8 +79,12 @@ export async function getStores(opts: { fresh?: boolean; now?: number } = {}): P
   const t = opts.now ?? Date.now();
   if (!opts.fresh && cache && t - cache.at < STORES_CACHE_TTL_MS) return cache.value;
   let value: StoreSection[];
+  // Leitura de PÁGINA (não `fresh`): teto de 3 s; estourou/falhou => última leitura boa (memória, depois snapshot real
+  // de até 24 h) e só então a loja games padrão. Falha NÃO fica 30 s no cache (re-tenta em 5 s). Incidente 2026-11-13:
+  // a seção de canais da home esperava o SOCKET_TIMEOUT de 30 s do pool.
+  const page = !opts.fresh;
   try {
-    const rows = await db.execute<LojaRow>(sql`
+    const query = db.execute<LojaRow>(sql`
       SELECT s.id::text AS id, s.slug, s.name, s.stage, s.telegram_chat_id, s.telegram_chat_title, s.telegram_verified_at,
              s.telegram_bot_can_post, s.whatsapp_group_url, s.telegram_invite_url, s.limits, s.ad_tag, s.brand, s.archived_at,
              COALESCE(array_agg(v.vertical ORDER BY v.vertical) FILTER (WHERE v.vertical IS NOT NULL), '{}') AS verticals
@@ -86,10 +94,28 @@ export async function getStores(opts: { fresh?: boolean; now?: number } = {}): P
       GROUP BY s.id
       ORDER BY s.slug
     `);
+    const rows = page ? await withTimeout(query, 3_000, 'store_sections') : await query;
     value = Array.from(rows as unknown as LojaRow[]).map(mapLoja);
     if (!value.some((l) => l.slug === LOJA_GAMES)) value = [lojaGamesPadrao(), ...value];
+    if (page && t - lastStoresWrite > 5 * 60_000) {
+      lastStoresWrite = t;
+      void writeShowcase(STORES_SNAPSHOT_KEY, Array.from(rows as unknown as LojaRow[]));
+    }
   } catch {
-    value = [lojaGamesPadrao()];
+    let fallback: StoreSection[] | null = cache?.value ?? null;
+    if (!fallback && page) {
+      const hit = await readShowcaseAged<LojaRow[]>(STORES_SNAPSHOT_KEY, 24 * 3600_000);
+      if (hit && Array.isArray(hit.value)) {
+        let v = hit.value.map(mapLoja);
+        if (!v.some((l) => l.slug === LOJA_GAMES)) v = [lojaGamesPadrao(), ...v];
+        fallback = v;
+      }
+    }
+    value = fallback ?? [lojaGamesPadrao()];
+    if (page) {
+      cache = { at: t - STORES_CACHE_TTL_MS + 5_000, value };
+      return value;
+    }
   }
   cache = { at: t, value };
   return value;

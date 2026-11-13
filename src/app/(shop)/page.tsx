@@ -47,7 +47,7 @@ import { cn } from '@/lib/cn';
 // sozinho — sem isso, o build tenta pré-renderizar como estática e trava
 // buscando no banco no ambiente de build (visto ao vivo no primeiro deploy).
 import { getPublishedArticles } from '@/server/queries/news';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createPersistedQuery } from '@/lib/cache/server-cache';
 import { getPublicMetrics, PUBLIC_METRIC_LABELS, type PublicMetrics } from '@/server/queries/public-metrics';
 import { getSurveyAggregationForHome, type SurveyAggregation } from '@/server/queries/survey';
 import { gamerCards, geekCards } from '@/lib/categories-showcase';
@@ -67,10 +67,10 @@ export const dynamic = 'force-dynamic';
 // registrada (EG-16): sem fonte, não há como conferir a afirmação.
 // Cache SWR de 60 s (src/lib/cache/swr.ts): a home nunca espera o banco para as notícias.
 // Datas viajam como string ISO (JSON); o consumidor usa new Date(...).
-const publishedArticlesCached = createCachedQuery(
+const publishedArticlesCached = createPersistedQuery(
   async () => (await getPublishedArticles({ pageSize: 30 })).items,
   ['home-articles-v1'],
-  { revalidate: 60 }
+  { revalidate: 60, coldTimeoutSeconds: 5, persist: { maxAgeSeconds: 300, maxStaleSeconds: 24 * 3600 } }
 );
 const getHomeArticles = cache(async () => {
   try {
