@@ -346,7 +346,9 @@
         tratados[it.id] = 1;
         S.totais.sem_resultado++;
         linha({ id: it.id, ui: res.ui });
-        if (falhasItem[it.id] >= 3 && S.totais.ok > 0) {
+        // 3 falhas com a interface já provada viva (algum link gerado nesta sessão) OU 5 falhas do mesmo item mesmo numa sessão recém-reiniciada
+        // (senão um item teimoso na frente da fila nunca deixaria a sessão provar a interface).
+        if (falhasItem[it.id] >= 5 || (falhasItem[it.id] >= 3 && S.totais.ok > 0)) {
           // ITEM TEIMOSO (incidente 2026-11-13: PS5 Slim e outros): o gerador recusa esse item e ele voltava à fila no mesmo instante, em loop,
           // travando o resto. Como a interface já gerou links com sucesso nesta sessão, o problema é o ITEM: registra a falha no servidor
           // (ml_link_falhas, reintento em dias) e segue para o próximo, sem contar para a instabilidade da interface.
