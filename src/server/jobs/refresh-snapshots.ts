@@ -11,6 +11,11 @@ import { homeSearchCached } from '@/server/queries/home-search';
 import { rankedOfferListCached, rankFeaturedOfferIdsCached } from '@/server/queries/affiliate';
 import type { GamePlatformGen, ProductType } from '@/db/schema';
 import { GAMES, verticalSql } from '@/lib/catalog/verticais';
+import { mastersVisiveisCached } from '@/server/departamentos';
+import { destaquesPlusCached } from '@/server/plus-destaques';
+import { tiposPlusCached } from '@/server/plus-tipos';
+import { DEPARTAMENTOS } from '@/lib/catalog/departamentos';
+import { LOJAS_PLUS } from '@/lib/catalog/plus';
 
 /**
  * Recalcula o pré-cálculo persistido da vitrine (Fase 2; ata 2026-11-03-fase2-precalculo.md).
@@ -163,6 +168,12 @@ export function showcaseJobs(): Job[] {
       add(rankedOfferListCached, { sortBy, productType: t, ...g });
       add(rankFeaturedOfferIdsCached, { sortBy, productType: t, ...g }, 12);
     }
+  }
+  // 5) Layout e home que antes consultavam ao vivo: contagem por departamento (menu), faixas e atalhos das lojas Plus.
+  for (const d of DEPARTAMENTOS) add(mastersVisiveisCached, d.slug);
+  for (const l of LOJAS_PLUS) {
+    add(destaquesPlusCached, l.dept);
+    add(tiposPlusCached, l.dept);
   }
   // sem duplicatas (a mesma chave pode ter sido gerada por dois blocos)
   const seen = new Set<string>();

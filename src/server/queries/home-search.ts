@@ -97,7 +97,7 @@ async function compute(): Promise<HomeSearchData> {
   };
 }
 
-export const homeSearchCached = createPersistedQuery(async (): Promise<HomeSearchData> => compute(), ['home-search-v6'], { revalidate: 600, persist: { maxAgeSeconds: 3600 } });
+export const homeSearchCached = createPersistedQuery(async (): Promise<HomeSearchData> => compute(), ['home-search-v6'], { revalidate: 600, persist: { maxAgeSeconds: 3600, maxStaleSeconds: 24 * 3600 } });
 
 /** Chips de plataforma e termos mais cotados do hero (cache de 10 min). Nunca lança: sem banco, devolve vazio. */
 export async function getHomeSearchData(): Promise<HomeSearchData> {

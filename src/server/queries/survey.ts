@@ -1,6 +1,6 @@
 import 'server-only';
 import { db } from '@/lib/db';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createPersistedQuery } from '@/lib/cache/server-cache';
 import { surveyResponses } from '@/db/schema';
 import { SURVEY_QUESTIONS, type SurveyQuestionType } from '@/lib/survey/questions';
 
@@ -75,7 +75,12 @@ export async function getSurveyAggregation(): Promise<SurveyAggregation> {
   return computeSurveyAggregation();
 }
 
-const surveyCached = createCachedQuery(computeSurveyAggregation, ['survey-aggregation-v1'], { revalidate: 30 });
+// Persistida (snapshot real do último agregado): a home não espera a contagem de votos a frio. Fresco 60 s; vencido serve e recalcula por trás.
+const surveyCached = createPersistedQuery(computeSurveyAggregation, ['survey-aggregation-v1'], {
+  revalidate: 30,
+  coldTimeoutSeconds: 5,
+  persist: { maxAgeSeconds: 60, maxStaleSeconds: 24 * 3600 },
+});
 
 /** Agregado para a home: cache SWR de 30 s; nunca lança (sem banco, devolve vazio honesto, sem votos inventados). */
 export async function getSurveyAggregationForHome(): Promise<SurveyAggregation> {

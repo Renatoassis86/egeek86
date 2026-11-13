@@ -160,7 +160,7 @@ async function runCompute<T>(compute: () => Promise<T>, hardMs = HARD_TIMEOUT_MS
  * o P0 (stream que nunca fecha). Só o `waitUntil` da Vercel, que é da plataforma e não
  * segura a resposta; em processo Node longo a promessa solta basta.
  */
-function detach(p: Promise<unknown>): void {
+export function detach(p: Promise<unknown>): void {
   p.catch(() => {});
   if (!process.env.VERCEL) return;
   try {

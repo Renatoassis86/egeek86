@@ -59,6 +59,54 @@ export async function readShowcase<T>(key: string, maxAgeMs: number): Promise<Sh
   }
 }
 
+export interface ShowcaseHitAged<T> extends ShowcaseHit<T> {
+  ageMs: number;
+}
+
+/**
+ * Lê o ÚLTIMO bloco bom, de qualquer idade até `maxStaleMs` (a idade vai junto para quem decide se serve como está
+ * ou se recalcula por trás). null = não há (ausente, mais velho que o teto, erro ou leitura lenta).
+ */
+export async function readShowcaseAged<T>(key: string, maxStaleMs: number): Promise<ShowcaseHitAged<T> | null> {
+  try {
+    const rows = await withTimeout(
+      db.execute<{ payload: T; computed_at: string | Date; age: number }>(sql`
+        SELECT payload, computed_at, EXTRACT(EPOCH FROM (now() - computed_at))::float AS age FROM showcase_snapshot
+        WHERE key = ${snapshotKey(key)} AND computed_at > now() - (${Math.round(maxStaleMs / 1000)} * interval '1 second')
+      `),
+      READ_TIMEOUT_MS,
+      'showcase_snapshot'
+    );
+    const r = rows[0];
+    if (!r) return null;
+    return { value: r.payload, computedAt: new Date(r.computed_at).toISOString(), ageMs: Number(r.age) * 1000 };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Single-flight ENTRE instâncias: só UMA instância ganha o direito de recalcular a chave por `ttlSec` segundos
+ * (linha-trava `~lock:<chave>` em showcase_snapshot). Falha ao reivindicar => false (outra instância ou o cron cuida).
+ */
+export async function claimRefresh(key: string, ttlSec = 90): Promise<boolean> {
+  try {
+    const rows = await withTimeout(
+      db.execute<{ key: string }>(sql`
+        INSERT INTO showcase_snapshot (key, payload, computed_at) VALUES (${snapshotKey(`~lock:${key}`)}, 'null'::jsonb, now())
+        ON CONFLICT (key) DO UPDATE SET computed_at = now()
+        WHERE showcase_snapshot.computed_at < now() - (${ttlSec} * interval '1 second')
+        RETURNING key
+      `),
+      READ_TIMEOUT_MS,
+      'showcase_claim'
+    );
+    return rows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /** Grava (upsert) um bloco pronto. Nunca lança: falha de gravação não pode derrubar a página. */
 export async function writeShowcase(key: string, value: unknown): Promise<boolean> {
   try {

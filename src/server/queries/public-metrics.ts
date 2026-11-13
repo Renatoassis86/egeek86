@@ -52,7 +52,7 @@ export const getQuoteCount = createPersistedQuery(
     return Number(rows[0]?.quotes ?? 0);
   },
   ['public-quote-count-v1'],
-  { revalidate: 900, maxStaleSeconds: 24 * 3600, coldTimeoutSeconds: 40, persist: { maxAgeSeconds: 3600 } }
+  { revalidate: 900, maxStaleSeconds: 24 * 3600, coldTimeoutSeconds: 6, persist: { maxAgeSeconds: 3600, maxStaleSeconds: 24 * 3600 } }
 );
 
 /** Rótulos ÚNICOS dos contadores (todas as telas usam estes; ver docs/modelo-indicadores.md, seção 9). */
@@ -90,10 +90,10 @@ async function compute(): Promise<PublicMetrics> {
 }
 
 export const publicMetricsCached = createPersistedQuery(compute, ['public-metrics-v2'], {
-  persist: { maxAgeSeconds: 1800 },
+  persist: { maxAgeSeconds: 1800, maxStaleSeconds: 24 * 3600 },
   revalidate: 300,
   maxStaleSeconds: 24 * 3600,
-  coldTimeoutSeconds: 60,
+  coldTimeoutSeconds: 6,
   tags: ['price-table', 'affiliate-offers', 'price-snapshots'],
 });
 

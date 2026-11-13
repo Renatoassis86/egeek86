@@ -1,16 +1,17 @@
 import 'server-only';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createPersistedQuery } from '@/lib/cache/server-cache';
 import { destaquesDepartamento, type CartaoDepartamento } from '@/server/queries/departamento';
 import type { DepartamentoSlug } from '@/lib/catalog/departamentos';
 
 /** Mínimo de produtos para a faixa aparecer na home (menos que isso = faixa escondida). */
 export const MIN_DESTAQUES_HOME = 4;
 
-const porDept = createCachedQuery(
+export const destaquesPlusCached = createPersistedQuery(
   async (dept: DepartamentoSlug) => destaquesDepartamento(dept, 8),
   ['home-plus-destaques-v2'],
-  { revalidate: 120, maxStaleSeconds: 900 }
+  { revalidate: 120, maxStaleSeconds: 900, coldTimeoutSeconds: 5, persist: { maxAgeSeconds: 900, maxStaleSeconds: 3 * 3600 } }
 );
+const porDept = destaquesPlusCached;
 
 /** Destaques por departamento, em paralelo e com cache SWR (a home nunca espera o recálculo). Falha de uma loja = loja sem faixa. */
 export async function getDestaquesPlus(depts: DepartamentoSlug[]): Promise<Record<string, CartaoDepartamento[]>> {
