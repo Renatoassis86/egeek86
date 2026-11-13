@@ -11,6 +11,7 @@ import { getOfferListingMetrics, listRankedOffers, type OfferWithRelations } fro
 import type { ProductType } from '@/db/schema';
 import { DEGRAUS, type Degrau } from '@/lib/messaging/regua';
 import { ReguaLegenda, reguaDoFront } from '@/components/regua/regua-oferta';
+import { ContagemBlackFriday } from '@/components/black-friday/contagem-black-friday';
 
 export const dynamic = 'force-dynamic';
 
@@ -101,6 +102,7 @@ export default async function BlackFridayPage() {
         <header className="flex max-w-[64ch] flex-col gap-2 border-l-2 border-[var(--color-accent-primary)] pl-4">
           <Text variant="label" color="tertiary">Black Friday · Novembro</Text>
           <Text as="h1" variant="display-md" className="font-black tracking-tight">Quedas reais de preço</Text>
+          <ContagemBlackFriday />
           <Text variant="body-md" color="secondary">
             Só entra aqui o produto cujo preço de fato caiu contra a média de todas as lojas que monitoramos. Preço da última coleta, sem garantia de estoque. Onde a base de preços ainda é curta, mostramos apenas o menor preço do momento.
           </Text>

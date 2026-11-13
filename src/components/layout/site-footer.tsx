@@ -30,6 +30,7 @@ const footerSections = [
     title: 'Loja',
     links: [
       { href: '/ofertas', label: 'Ofertas' },
+      { href: '/black-friday', label: 'Black Friday' },
       { href: '/ranking', label: 'Ranking' },
       { href: '/plus', label: 'Espaço Geek Plus' },
       ...(MARKETPLACE_PUBLIC ? [{ href: '/hype-zone', label: 'Hype Zone' }] : []),

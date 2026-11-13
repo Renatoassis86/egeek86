@@ -46,6 +46,7 @@ const mainMarketModules = [
   { href: '/ofertas', label: 'Vitrine de Ofertas', icon: Tag },
   { href: '/tabela-de-precos', label: 'Tabela Geral de Preços', icon: BarChart3 },
   { href: '/monitoramento', label: 'Bolsa Gamer (Monitoramento)', icon: BarChart3 },
+  { href: '/black-friday', label: 'Black Friday: quedas reais', icon: Flame, highlight: true },
   { href: '/ranking', label: 'Ranking de Vendedores', icon: Trophy },
 ];
 

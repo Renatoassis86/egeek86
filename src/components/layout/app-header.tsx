@@ -59,6 +59,11 @@ const navLinks: NavItem[] = [
     href: '/noticias',
     label: 'Notícias',
   },
+  {
+    href: '/black-friday',
+    label: 'Black Friday',
+    highlight: true,
+  },
 ];
 
 function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
