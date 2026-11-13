@@ -1,134 +1,123 @@
-# Prompts de imagem do Espaço Geek Plus (Designer de Marca, 2026-11-13)
+# Prompts das fotos dos cartões do Espaço Geek Plus (versão com itens reais)
 
-Pedido do dono: os 6 cartões do Plus na home (hoje só ícone e texto) passam a ter foto contextualizada. Nenhuma imagem foi gerada nem ligada no código. Quem gera é o dono, no ChatGPT; quem salva e liga é o engenheiro-frontend, depois do grep "um arquivo, um uso".
+Versão de 2026-11-13, pedida pelo dono: objetos que existem de verdade e que o público geek reconhece (action figures, placa de vídeo, mangás, air fryer, TV, chuteira). Esta versão **substitui** a anterior (engrenagem, carretel, chaleira genérica), que foi recusada.
 
-Requisitos do dono: (1) contemporâneo, limpo, sem aspecto retrô (o Plus não é games); (2) sem descaracterizar o site: escuro premium, dourado/âmbar, cantos retos, "cofre da cultura geek", em família com `public/images/home/hero-watermark.webp` (a imagem de referência do estilo premium dark).
+Quem gera: o dono, no ChatGPT, um prompt por vez. Quem salva e liga no código: o engenheiro-frontend, depois do `git grep` de "um arquivo, um uso".
 
-Nomes de arquivo conferidos: `public/images/plus/` não existe e `git grep "images/plus"` só acha as reservas de `PROMPTS_IMAGENS.md` (`plus-hero.png` e `dept-<slug>.png`, IMG-06 e IMG-09). Os nomes abaixo (`plus-<departamento>.webp`) são diferentes de todos eles. Se o dono aprovar estas fotos, a IMG-09 daquele documento fica substituída por este arquivo (não gerar as duas).
+## Como usar
 
-## Medida do cartão (código atual)
+1. Cole **um prompt por vez** no ChatGPT, pedindo formato horizontal **3:2 (1536x1024)**.
+2. Gere **3 variações** de cada e escolha a mais escura e sóbria.
+3. Exporte em **WebP 1200x800**, qualidade 75 a 82, menos de 150 KB, no nome indicado em cada item.
+4. Os seis devem parecer uma família: mesma luz dourada vinda do alto à esquerda, mesmo preto de fundo, mesmo tamanho aparente do objeto.
 
-`SecaoPlusHome` (`src/components/plus/secao-plus-home.tsx`) renderiza `CartaoLojaPlus` (`src/components/plus/cartao-loja-plus.tsx`) numa grade 1 / 2 / 3 colunas (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`, `gap-4`), contêiner `max-w-7xl` com `px-8`.
-- Desktop (lg): cartão de cerca de 394 px de largura. De 640 a 1023 px: duas colunas, cerca de 300 a 480 px. Celular (390 px): uma coluna, cerca de 358 px.
-- O cartão não tem altura fixa (`h-full`, o conteúdo define). Hoje: ícone + contagem, título, chamada, tipos e botão "Ver produtos de ...".
-- Encaixe recomendado: foto no TOPO do cartão (largura total, `aspect-[3/2]`, `object-cover`), texto e botão ABAIXO, sem texto sobre a foto, exceto o selo de contagem ("104 produtos") pequeno no canto inferior esquerdo. Assim o contraste do texto não depende da imagem.
-- Proporção recomendada: **3:2**. Gerar em 1536x1024 (formato nativo do ChatGPT), exportar em 1200x800 (cobre o cartão de 394 px em tela 3x). NÃO precisa de versão mobile: a mesma foto 3:2 serve nas três larguras; o assunto fica nos 70% centrais da altura para aguentar um corte mais baixo.
-- Se o frontend preferir texto sobre a foto, a zona segura já está embutida em cada prompt: terço esquerdo e faixa inferior de 25% calmos e escuros.
+## Atenção: marcas e personagens
 
-## A. DNA visual comum (colar no começo de TODO prompt)
+- Estes prompts citam personagens (Homem-Aranha, Darth Vader, Grogu, Batman) e produtos (NVIDIA, Samsung, Sony, Nike, Adidas, Philips, JBL etc.) **só para você ver como ficaria**.
+- O ChatGPT pode recusar, trocar por algo parecido ou errar o desenho. Se acontecer, descarte e gere de novo, ou peça a troca do item.
+- **Uso comercial:** logotipo de marca e personagem protegido numa loja pode render reclamação dos donos dos direitos. A decisão final é sua. Se for publicar, apague os nomes entre parênteses e deixe só a descrição do produto.
+
+---
+
+## 1. Impressão 3D → `public/images/plus/plus-impressao-3d.webp`
 
 ```
-STYLE FAMILY: Contemporary premium dark product photography, modern editorial still life, clean and current (2025 look, not retro, not vintage, no pixel art, no 80s or 90s neon). Pure matte-black environment, background #0B0908 deepening to warm graphite #161311, a dark glossy or matte-stone surface with a faint reflection. One dominant warm key light in gold-amber (#D4AF37) from the upper left, plus a faint ember-orange (#E8721C) kicker from behind; cream-white (#F2E9D8) only as soft highlights on edges, never as a flat bright area. No other colors except the natural material colors of the object, kept muted and desaturated. Soft haze, shallow depth of field, crisp fine detail on the subject, very fine film grain, high contrast with deep blacks, restrained and expensive, like a vault displaying one prized object. Straight rectilinear framing, hard right-angle geometry, no rounded frames, no rounded vignette. One hero object plus at most two supporting objects. Horizontal 3:2 composition. LEFT third of the frame and the BOTTOM 25% stay calm dark negative space (safe zone for the card badge and text); keep the subject inside the central 70% of the image height, slightly right of center.
-NEGATIVE: text, letters, numbers, captions, watermark, logo, brand names, recognizable brands or product designs, trademarked shapes, recognizable faces, people, hands, fingers, stock-photo look, generic office or living-room staging, retro or vintage look, pixel art, arcade, neon cyberpunk, purple-blue gradient, rainbow RGB light, 3D cartoon, mascot, game characters, floating glowing icons, fake screenshots, readable screen content, clutter, bright white background, wide-angle distortion, rounded card frames.
+Generate a photorealistic image, horizontal 3:2 (1536x1024). Premium dark product photography, modern and current, real objects, shot like a professional catalog still life. Matte-black environment, background #0B0908 deepening to warm graphite #161311, dark stone surface with a faint reflection. One dominant warm gold-amber key light (#D4AF37) from the upper left plus a faint ember-orange (#E8721C) rim light from behind; cream highlights only on edges. Muted natural material colors only, high contrast, deep blacks, shallow depth of field, crisp detail, very fine film grain. Straight rectilinear framing, no rounded frames. LEFT third of the frame and BOTTOM 25% stay calm dark negative space; keep the subject in the central 70% of the height, slightly right of center.
+
+SUBJECT: Real 3D-printed geek collectibles, finished and hand-painted, on a dark stone base. In the foreground three 3D-printed action figures with visible fine layer lines on the unpainted parts and muted painted details: Spider-Man in a crouching pose, Darth Vader standing with his cape, and Grogu (Baby Yoda) sitting. Behind them, slightly blurred, a real enclosed desktop FDM 3D printer (generic black box with a glass door) with another figure mid-print on the bed, and two filament spools on the side. Gold-amber light skimming across the figures.
+
+AVOID: text, letters, numbers, people, hands, fingers, retro look, neon, RGB light, cartoon style, clutter, bright white background, rounded frames, a brand name on the printer.
 ```
 
-Paleta de referência (hex reais do projeto): canvas `#0B0908`, superfície `#161311`, elevado `#201C18`, creme `#F2E9D8`, dourado `#D4AF37`, âmbar `#E8721C`. Verde `#10B981` e vermelho `#EF4444` ficam FORA das fotos (codificam preço no site).
+## 2. Tecnologia → `public/images/plus/plus-tecnologia.webp`
 
-Sem pessoas e sem mãos de propósito: a IA deforma mãos, e a ausência dá a sensação de vitrine de cofre, coerente com o resto do site.
+```
+Generate a photorealistic image, horizontal 3:2 (1536x1024). Premium dark product photography, modern and current, real objects, shot like a professional catalog still life. Matte-black environment, background #0B0908 deepening to warm graphite #161311, dark glossy surface with a faint reflection. One dominant warm gold-amber key light (#D4AF37) from the upper left plus a faint ember-orange (#E8721C) rim light from behind; cream highlights only on edges. Muted natural material colors only, high contrast, deep blacks, shallow depth of field, crisp detail, very fine film grain. Straight rectilinear framing, no rounded frames. LEFT third of the frame and BOTTOM 25% stay calm dark negative space; keep the subject in the central 70% of the height, slightly right of center.
 
-## B. Os 6 prompts finais
+SUBJECT: Real PC hardware and peripherals. In the foreground a NVIDIA GeForce RTX 4090 Founders Edition style graphics card lying at a slight diagonal, next to a Samsung 990 Pro style M.2 NVMe SSD with its black heatsink and two Corsair Vengeance style DDR5 memory sticks. Behind them, slightly blurred, a Logitech G Pro style wireless gaming mouse and a compact mechanical keyboard with blank black keycaps. Gold-amber light sliding along the fan blades, the heatsink and the memory contacts.
 
-Para cada um: colar o bloco A e depois o prompt. Gerar 3 variações e escolher a mais sóbria e mais escura.
+AVOID: readable text on any part, RGB or rainbow lighting, purple-blue gradient, cyberpunk neon, retro look, people, hands, fingers, tangled cables, bright white background, rounded frames.
+```
 
-### 1. Impressão 3D
-- Arquivo: `public/images/plus/plus-impressao-3d.webp`
-- Cena: peça funcional contemporânea impressa em 3D (mecanismo articulado, grafite fosco, camadas finas visíveis), com um carretel de filamento escuro desfocado ao fundo.
-- Prompt: `A single articulated helical gear-and-lattice mechanical part, 3D printed in matte graphite filament with crisp fine layer lines visible on its surface, resting on a dark stone plate slightly right of center. A blurred dark filament spool far behind it in the upper right. Gold-amber key light skimming across the layer lines to reveal their texture, faint ember-orange rim from behind. Nothing else on the surface.`
-- Composição: peça a 45 graus, câmera na altura da superfície.
-- Zona segura: terço esquerdo e 25% inferior vazios (névoa leve).
-- Proporção/resolução: 3:2, gerar 1536x1024, exportar 1200x800.
-- Alt: `Peça mecânica articulada impressa em 3D, em grafite fosco, com as camadas finas iluminadas por luz dourada sobre fundo escuro.`
-- Prompt negativo: sem impressora desenhada com marca, sem figurinha de personagem, sem peça colorida, sem texto no carretel, sem mãos.
+## 3. Livros → `public/images/plus/plus-livros.webp`
 
-### 2. Tecnologia
-- Arquivo: `public/images/plus/plus-tecnologia.webp`
-- Cena: relógio inteligente genérico de tela apagada ao lado de uma placa de circuito aberta, só silhuetas escuras e cobre dourado.
-- Prompt: `A modern compact smart watch with a blank dark screen and a plain matte-black strap, unbranded, lying flat beside a bare dark circuit board whose copper traces catch the gold light, both on a dark glossy surface slightly right of center, seen from a low three-quarter angle. Gold-amber key light along the copper traces, ember-orange kicker from behind, deep blacks elsewhere.`
-- Composição: relógio à frente, placa em diagonal atrás, desfocada.
-- Zona segura: terço esquerdo e 25% inferior em preto limpo.
-- Proporção/resolução: 3:2, 1536x1024, exportar 1200x800.
-- Alt: `Relógio inteligente de tela apagada ao lado de uma placa de circuito com trilhas de cobre iluminadas em dourado, sobre fundo escuro.`
-- Prompt negativo: sem logotipo no relógio, sem tela acesa com interface, sem circuito verde ou colorido, sem hologramas, sem estética cyberpunk.
+```
+Generate a photorealistic image, horizontal 3:2 (1536x1024). Premium dark product photography, modern and current, real objects, shot like a professional catalog still life. Matte-black environment, background #0B0908 deepening to warm graphite #161311, dark stone surface with a faint reflection. One dominant warm gold-amber key light (#D4AF37) from the upper left plus a faint ember-orange (#E8721C) rim light from behind; cream highlights only on edges. Muted natural material colors only, high contrast, deep blacks, shallow depth of field, crisp detail, very fine film grain. Straight rectilinear framing, no rounded frames. LEFT third of the frame and BOTTOM 25% stay calm dark negative space; keep the subject in the central 70% of the height, slightly right of center.
 
-### 3. Livros
-- Arquivo: `public/images/plus/plus-livros.webp`
-- Cena: pilha curta de livros de capa dura modernos, lombadas lisas, e um livro aberto à frente com as páginas em leque, sem texto legível.
-- Prompt: `A short stack of three contemporary hardcover books with plain blank spines in matte charcoal, deep olive-black and muted cream linen, one more book lying open in front with its pages gently fanned and no readable text, on a dark stone surface slightly right of center. Gold-amber light grazing the page edges so they glow like thin gold lines, ember-orange kicker from behind, rest of the scene in deep shadow.`
-- Composição: câmera baixa, bordas das páginas em primeiro plano.
-- Zona segura: terço esquerdo e 25% inferior escuros.
-- Proporção/resolução: 3:2, 1536x1024, exportar 1200x800.
-- Alt: `Pilha de livros de capa dura com um livro aberto à frente, páginas iluminadas por luz dourada sobre fundo escuro.`
-- Prompt negativo: sem título ou letras nas lombadas e nas páginas, sem capas ilustradas, sem estante de biblioteca clássica, sem aspecto de livro antigo.
+SUBJECT: Real geek books. A row of five manga volumes standing upright (One Piece and Berserk style small-format paperbacks with illustrated covers), a short stack of large hardcovers beside them (Dungeons & Dragons Player's Handbook and a Lord of the Rings hardcover edition, dark covers with gold foil), and one big graphic novel lying open in front showing Batman style comic panels. Gold-amber light grazing the page edges so they glow like thin gold lines.
 
-### 4. Casa / Eletrodomésticos
-- Arquivo: `public/images/plus/plus-casa.webp`
-- Cena: chaleira elétrica de design atual, linhas retas em aço escovado preto, com uma xícara ao lado, em bancada de pedra escura.
-- Prompt: `A modern minimalist electric kettle in brushed black steel with a straight geometric body and no brand marking, with one plain matte ceramic cup beside it, on a dark stone countertop slightly right of center. Gold-amber key light sliding along the brushed metal, a thin line of steam rising softly into the dark, ember-orange kicker from behind. Clean architectural simplicity.`
-- Composição: leve ângulo de cima, pedra com reflexo suave.
-- Zona segura: terço esquerdo e 25% inferior vazios.
-- Proporção/resolução: 3:2, 1536x1024, exportar 1200x800.
-- Alt: `Chaleira elétrica moderna de aço escovado preto com uma xícara ao lado, sobre bancada de pedra escura e luz dourada.`
-- Prompt negativo: sem cozinha completa de catálogo, sem marca ou botão com texto, sem fruteira ou flores, sem decoração rústica.
+AVOID: readable or misspelled lettering (if text appears keep it small and unreadable), people, hands, fingers, antique or old-looking books, classic library shelves, retro look, neon, clutter, bright white background, rounded frames.
+```
 
-### 5. Eletrônicos
-- Arquivo: `public/images/plus/plus-eletronicos.webp`
-- Cena: caixa de som sem fio cilíndrica e um fone de ouvido de linhas atuais, ambos pretos e sem marca.
-- Prompt: `A modern cylindrical wireless speaker with a fine blank metal mesh grille, unbranded, and a pair of sleek matte-black over-ear headphones leaning against it, both on a dark glossy surface slightly right of center. Gold-amber key light tracing the mesh texture and the headband edge, faint ember-orange rim from behind, no other color.`
-- Composição: caixa de som em primeiro plano, fone apoiado atrás, câmera à altura do objeto.
-- Zona segura: terço esquerdo e 25% inferior em preto limpo.
-- Proporção/resolução: 3:2, 1536x1024, exportar 1200x800.
-- Alt: `Caixa de som sem fio cilíndrica com um fone de ouvido preto encostado, iluminados em dourado sobre fundo escuro.`
-- Prompt negativo: sem logotipo, sem tela de TV com imagem, sem cabos soltos bagunçados, sem luz RGB, sem fone gamer com microfone (o hero já tem um).
+## 4. Casa / Eletrodomésticos → `public/images/plus/plus-casa.webp`
 
-### 6. Esporte
-- Arquivo: `public/images/plus/plus-esporte.webp`
-- Cena: tênis de corrida atual de perfil, em preto e grafite, como peça de museu, com um halter compacto desfocado atrás.
-- Prompt: `A single modern performance running shoe in matte black and graphite knit with a clean sculpted midsole, unbranded and with no stripes or symbols, seen in side profile on a dark stone pedestal slightly right of center, with one compact matte-black dumbbell blurred behind it. Gold-amber key light along the sole and the knit texture, ember-orange kicker from behind. No gym, no outdoor scene.`
-- Composição: perfil puro, sola bem definida, halter desfocado ao fundo.
-- Zona segura: terço esquerdo e 25% inferior escuros.
-- Proporção/resolução: 3:2, 1536x1024, exportar 1200x800.
-- Alt: `Tênis de corrida moderno preto e grafite em perfil, com um halter ao fundo, sob luz dourada em fundo escuro.`
-- Prompt negativo: sem marca, listras ou símbolo no tênis, sem atleta, sem academia ou quadra, sem cores vivas, sem aspecto de calçado antigo.
+```
+Generate a photorealistic image, horizontal 3:2 (1536x1024). Premium dark product photography, modern and current, real objects, shot like a professional catalog still life. Matte-black environment, background #0B0908 deepening to warm graphite #161311, dark stone countertop with a faint reflection. One dominant warm gold-amber key light (#D4AF37) from the upper left plus a faint ember-orange (#E8721C) rim light from behind; cream highlights only on edges. Muted natural material colors only, high contrast, deep blacks, shallow depth of field, crisp detail, very fine film grain. Straight rectilinear framing, no rounded frames. LEFT third of the frame and BOTTOM 25% stay calm dark negative space; keep the subject in the central 70% of the height, slightly right of center.
 
-## C. Variações alternativas (mesma família; usar se a primeira não sair boa)
+SUBJECT: Real everyday home appliances, the kind people actually buy. A black digital air fryer (Philips Walita Airfryer style) with its basket drawer slightly open in the foreground, a round black robot vacuum cleaner (Roomba style) slightly blurred behind it, and a black capsule coffee machine (Nespresso style) far in the back, all on a dark stone counter. Gold-amber light sliding along the matte surfaces.
 
-Colar o bloco A e usar o prompt abaixo no lugar do principal. Arquivo, alt e negativo seguem os do departamento.
+AVOID: readable text or display on the appliances, people, hands, fingers, a full catalog kitchen, food, fruit, flowers, rustic decoration, retro look, neon, clutter, bright white background, rounded frames.
+```
 
-1. Impressão 3D: `A small architectural scale model of a geometric tower, 3D printed in matte dark resin with fine visible layer lines, standing on a dark stone slab slightly right of center, with a plain hex key lying beside it. Gold-amber light skimming the layers, ember-orange kicker from behind.`
-2. Tecnologia: `A slim unbranded wireless numeric keypad with blank keycaps and a small unbranded USB-C power adapter with a neatly coiled black cable, on a dark glossy surface slightly right of center. Gold-amber light along the key edges and the cable coil.` (Se saírem teclas legíveis, descartar.)
-3. Livros: `A single hardcover book standing upright with a plain blank dark cover and a thin gold ribbon bookmark hanging out, next to a small unlit reading lamp of modern straight design, on a dark surface slightly right of center. Gold-amber light on the page edges and the ribbon.`
-4. Casa: `A straight-edged matte-black stand blender with an empty clear jar, unbranded, on a dark stone counter slightly right of center, gold-amber light running down the glass edge, ember-orange kicker from behind.`
-5. Eletrônicos: `A modern slim soundbar in matte black with a fine blank grille lying horizontally on a dark glossy console, with a small plain remote control beside it, unbranded, slightly right of center. Gold-amber light along the grille edge.`
-6. Esporte: `A matte-black yoga mat rolled tight standing on its end next to a minimalist graphite water bottle with no label, on a dark stone floor slightly right of center. Gold-amber key light on the roll's edge and the bottle's metal, ember-orange kicker from behind.`
+## 5. Eletrônicos → `public/images/plus/plus-eletronicos.webp`
 
-## D. Depois de gerar (curto)
+```
+Generate a photorealistic image, horizontal 3:2 (1536x1024). Premium dark product photography, modern and current, real objects, shot like a professional catalog still life. Matte-black environment, background #0B0908 deepening to warm graphite #161311, dark glossy console surface with a faint reflection. One dominant warm gold-amber key light (#D4AF37) from the upper left plus a faint ember-orange (#E8721C) rim light from behind; cream highlights only on edges. Muted natural material colors only, high contrast, deep blacks, shallow depth of field, crisp detail, very fine film grain. Straight rectilinear framing, no rounded frames. LEFT third of the frame and BOTTOM 25% stay calm dark negative space; keep the subject in the central 70% of the height, slightly right of center.
 
-1. Exportar: WebP, 1200x800, qualidade 75 a 82, sem metadados. Peso alvo abaixo de 150 KB por foto no desktop (fundo escuro comprime bem; se passar, baixar a qualidade antes de reduzir o tamanho). Salvar exatamente no nome da tabela. Imagem nova = nome novo, nunca sobrescrever (cache imutável de 1 ano em `/images/*`).
-2. Conferir as 6 lado a lado em um só quadro: mesma temperatura de luz (dourado vindo do alto à esquerda), mesmo preto de fundo, mesma altura de horizonte, mesmo tamanho aparente do objeto, grão parecido. Se uma destoar, regerar só ela, com a variação.
-3. Conferir também ao lado de `public/images/home/hero-watermark.webp` e sobre o fundo `#161311` do cartão: deve parecer parte do mesmo site.
-4. Antes de ligar: `git grep -F "images/plus/<arquivo>" src` deve dar 0 usos. Texto alternativo: o da seção B (sem a palavra "afiliado").
+SUBJECT: Real home entertainment electronics. A large ultra-thin Samsung style OLED smart TV with slim bezels seen at a slight angle, its screen showing only a soft abstract warm gold glow (no image, no interface), a slim black soundbar below it on the dark console, a Sony WH-1000XM5 style pair of matte-black over-ear headphones leaning at the side, and a small JBL Flip style portable speaker in front. Gold-amber light tracing the TV edge, the soundbar grille and the headband.
 
-### Checklist de rejeição (qualquer item marcado = descartar e regerar; não "consertar" no editor)
+AVOID: readable screen content, game or movie scenes, gaming RGB, people, hands, fingers, tangled cables, retro look, neon, clutter, bright white background, rounded frames.
+```
 
-- [ ] Texto, letra, número ou logotipo em qualquer parte da imagem
-- [ ] Marca ou design de produto reconhecível (tênis com listras, fone ou relógio com forma de marca conhecida)
-- [ ] Aspecto retrô, vintage, pixel, neon antigo ou RGB colorido
-- [ ] Rosto ou pessoa; mãos ou dedos (mesmo bem feitos)
-- [ ] Objeto deformado, parafuso ou botão derretido, cabo impossível
-- [ ] Luz inconsistente com as outras (branca fria, sem dourado, vinda da direita)
-- [ ] Fundo cinza claro ou branco; verde ou vermelho de destaque; roxo
-- [ ] Objeto fora dos 70% centrais ou ocupando o terço esquerdo/rodapé (sem zona segura)
-- [ ] Cara de banco de imagem (cena arrumada de sala ou cozinha, plantinha)
+## 6. Esporte → `public/images/plus/plus-esporte.webp`
 
-## E. Tabela de controle
+```
+Generate a photorealistic image, horizontal 3:2 (1536x1024). Premium dark product photography, modern and current, real objects, shot like a professional catalog still life. Matte-black environment, background #0B0908 deepening to warm graphite #161311, dark stone surface with a faint reflection. One dominant warm gold-amber key light (#D4AF37) from the upper left plus a faint ember-orange (#E8721C) rim light from behind; cream highlights only on edges. Muted natural material colors only, high contrast, deep blacks, shallow depth of field, crisp detail, very fine film grain. Straight rectilinear framing, no rounded frames. LEFT third of the frame and BOTTOM 25% stay calm dark negative space; keep the subject in the central 70% of the height, slightly right of center.
 
-| Departamento | Arquivo | Proporção | Onde entra no código | Estado |
+SUBJECT: Real sports gear, the kind sold in Brazil. A matte-black Nike Mercurial style football boot (chuteira) with visible studs in the foreground in side profile, an Adidas style official match football with a classic black and white panel pattern resting behind it, and a black Nike Pegasus style running shoe slightly blurred at the side. Gold-amber light along the studs, the sole and the ball panels. No stadium, no gym, no outdoor scene.
+
+AVOID: readable text, athletes, people, hands, fingers, vivid colors, retro look, neon, clutter, bright white background, rounded frames.
+```
+
+---
+
+## Versão sem marcas nem personagens (alternativa segura para publicar)
+
+Se a versão acima for recusada pelo ChatGPT ou o dono preferir evitar direitos de terceiros, trocar só o bloco **SUBJECT** (mantendo o restante do prompt) por estes:
+
+- **Impressão 3D:** três miniaturas de RPG de mesa impressas em 3D e pintadas à mão, de design original (anão guerreiro com escudo redondo, mago de manto com cajado, dragão pequeno), com linhas de camada visíveis nas partes sem pintura; ao fundo, desfocada, uma impressora 3D FDM fechada, genérica, com uma peça em impressão e dois carretéis.
+- **Tecnologia:** placa de vídeo moderna de três ventoinhas (carcaça preta, sem logotipo), SSD M.2 com dissipador preto e dois pentes de memória DDR5 com dissipador liso; ao fundo, desfocados, um mouse sem fio e um teclado mecânico de teclas pretas em branco.
+- **Livros:** cinco volumes de mangá em formato pequeno com lombadas ilustradas e sem texto, pilha de livros grandes de capa dura escura com bordas douradas e sem título, e um livro de arte aberto à frente com paisagens pintadas abstratas.
+- **Casa:** air fryer digital preta com a gaveta entreaberta, aspirador robô redondo preto desfocado atrás e cafeteira de cápsulas preta ao fundo, tudo sem logotipo.
+- **Eletrônicos:** TV inteligente ultrafina de bordas finas com a tela mostrando só um brilho dourado suave, soundbar preta embaixo e um fone over-ear preto encostado ao lado, sem marca.
+- **Esporte:** chuteira preta com travas de perfil, bola de futebol clássica preto e branco sem logotipo ao fundo e um tênis de corrida preto desfocado ao lado, sem listras nem símbolos.
+
+---
+
+## Depois de gerar
+
+1. Salvar exatamente no nome indicado em cada item. Imagem nova = nome novo, nunca sobrescrever (cache imutável de 1 ano em `/images/*`).
+2. Conferir as 6 lado a lado e ao lado de `public/images/home/hero-watermark.webp`: mesma luz, mesmo preto, mesmo tamanho aparente do objeto.
+3. Antes de ligar no código: `git grep -F "images/plus/<arquivo>" src` deve dar 0 usos (uma imagem, um lugar).
+4. Texto alternativo (alt) sugerido, sem a palavra "afiliado": descrever o que aparece (ex.: "Miniaturas coloridas impressas em 3D diante de uma impressora, sob luz dourada em fundo escuro").
+
+### Rejeitar e gerar de novo se aparecer
+
+- Texto, letra ou número errado em qualquer parte
+- Logotipo deformado ou marca mal desenhada
+- Pessoa, mãos ou dedos
+- Aspecto retrô, neon, luz RGB ou fundo claro
+- Objeto deformado, cabo impossível ou botão derretido
+- Luz diferente das outras (sem dourado, vinda da direita)
+- Assunto fora dos 70% centrais ou ocupando o terço esquerdo e o rodapé
+
+## Controle
+
+| Departamento | Arquivo | Proporção | Onde entra | Estado |
 |---|---|---|---|---|
-| Impressão 3D | `public/images/plus/plus-impressao-3d.webp` | 3:2 (1200x800) | `CartaoLojaPlus` (`src/components/plus/cartao-loja-plus.tsx`), via `SecaoPlusHome` (`dept` `impressao3d`) | aguardando geração pelo dono |
-| Tecnologia | `public/images/plus/plus-tecnologia.webp` | 3:2 | idem (`dept` `tecnologia`) | aguardando geração pelo dono |
-| Livros | `public/images/plus/plus-livros.webp` | 3:2 | idem (`dept` `livros`) | aguardando geração pelo dono |
-| Casa / Eletrodomésticos | `public/images/plus/plus-casa.webp` | 3:2 | idem (`dept` `eletrodomesticos`) | aguardando geração pelo dono |
-| Eletrônicos | `public/images/plus/plus-eletronicos.webp` | 3:2 | idem (`dept` `eletroeletronicos`) | aguardando geração pelo dono |
-| Esporte | `public/images/plus/plus-esporte.webp` | 3:2 | idem (`dept` `esporte`) | aguardando geração pelo dono |
-
-Mudança de código (para o engenheiro-frontend, só depois das imagens): mapa `dept -> arquivo` ao lado de `ICONES`; `SceneImage` (`cover`, `aspect-[3/2]`, `sizes="(min-width:1024px) 394px, (min-width:640px) 50vw, 100vw"`) no topo do cartão; ícone mantido como fallback quando não houver foto. `CartaoLojaPlus` também é usado em `/plus` (`src/app/(shop)/plus/page.tsx`): a foto aparece nos dois lugares com o MESMO arquivo, que é um componente e não duas imagens; se o dono quiser fotos diferentes em `/plus`, é pedido novo. A nova home (`src/components/home/secoes-v2/faixa-plus.tsx`) tem cartões próprios de produto e fica fora deste pedido.
+| Impressão 3D | `public/images/plus/plus-impressao-3d.webp` | 3:2 (1200x800) | `CartaoLojaPlus` | aguardando geração pelo dono |
+| Tecnologia | `public/images/plus/plus-tecnologia.webp` | 3:2 | idem | aguardando geração pelo dono |
+| Livros | `public/images/plus/plus-livros.webp` | 3:2 | idem | aguardando geração pelo dono |
+| Casa / Eletrodomésticos | `public/images/plus/plus-casa.webp` | 3:2 | idem | aguardando geração pelo dono |
+| Eletrônicos | `public/images/plus/plus-eletronicos.webp` | 3:2 | idem | aguardando geração pelo dono |
+| Esporte | `public/images/plus/plus-esporte.webp` | 3:2 | idem | aguardando geração pelo dono |
