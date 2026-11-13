@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { couponCors, couponGuard } from '@/server/coupons/ingest-guard';
-import { ingestPromocaoAmazon } from '@/server/coupons/amazon-promocoes';
+import { confirmarItens, ingestPromocaoAmazon, pendentesDeConfirmacao } from '@/server/coupons/amazon-promocoes';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -29,6 +29,22 @@ export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, { status: 204, headers: couponCors(request) });
 }
 
+/** Passo 2 do laço: fila de ASINs com cupom de promoção ainda sem confirmação na página do item. GET /api/ingest/amazon-promocoes?pendentes=20 */
+export async function GET(request: NextRequest) {
+  const denied = couponGuard(request, 'amazon');
+  if (denied) return denied;
+  const headers = couponCors(request);
+  const n = Number(new URL(request.url).searchParams.get('pendentes') ?? 20);
+  try {
+    const itens = await pendentesDeConfirmacao(Number.isFinite(n) ? n : 20);
+    return NextResponse.json({ ok: true, itens }, { headers });
+  } catch (e) {
+    if (transitorio(e)) return NextResponse.json({ error: 'banco_instavel' }, { status: 503, headers: { ...headers, 'Retry-After': '30' } });
+    console.error('[amazon-promocoes] pendentes falhou', e instanceof Error ? e.message.slice(0, 200) : e);
+    return NextResponse.json({ error: 'erro_interno' }, { status: 500, headers });
+  }
+}
+
 export async function POST(request: NextRequest) {
   const denied = couponGuard(request, 'amazon');
   if (denied) return denied;
@@ -37,6 +53,17 @@ export async function POST(request: NextRequest) {
   if (text.length > 150_000) return NextResponse.json({ error: 'corpo_grande_demais' }, { status: 413, headers });
   let body: unknown;
   try { body = JSON.parse(text); } catch { return NextResponse.json({ error: 'json_invalido' }, { status: 400, headers }); }
+  // Passo 2: confirmação na página do próprio ASIN ({ lidos_em, confirmacoes: [{ asin, promo_id, psp[], blocos, preco, precoFinal? }] }).
+  if (body && typeof body === 'object' && Array.isArray((body as { confirmacoes?: unknown }).confirmacoes)) {
+    try {
+      const r = await confirmarItens(body);
+      return NextResponse.json(r, { status: r.ok ? 200 : 400, headers });
+    } catch (e) {
+      if (transitorio(e)) return NextResponse.json({ error: 'banco_instavel' }, { status: 503, headers: { ...headers, 'Retry-After': '30' } });
+      console.error('[amazon-promocoes] confirmacao falhou', e instanceof Error ? e.message.slice(0, 200) : e);
+      return NextResponse.json({ error: 'erro_interno' }, { status: 500, headers });
+    }
+  }
   try {
     let r;
     try {

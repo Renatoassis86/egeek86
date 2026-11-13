@@ -200,3 +200,89 @@ export function cupomDoItem(promo: PromoRead, item: { asin: string; offerId: str
     fonte_url: fonte,
   };
 }
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+// TRAVA DE DEPARTAMENTO (R-xx, 2026-11-13). Incidente: "Só no app: 20% off em Relógios" casou com Resident Evil 2 porque o leitor juntava os
+// ASINs de carrosséis de recomendados (rhf-shoveler, "inspirado no seu histórico") com os da lista da regra. A promoção departamental só vale
+// para produto do departamento escrito no título; a categoria do título precisa estar mapeada para verticais do catálogo. Em dúvida, não casa.
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+export type Vertical = 'games' | 'impressao3d' | 'tecnologia' | 'livros' | 'casa' | 'eletronicos' | 'esporte';
+
+/** Departamentos que a Amazon escreve no título -> verticais do catálogo que realmente pertencem a eles. Categoria fora da tabela = nunca casa. */
+const DEPARTAMENTOS: { re: RegExp; verticais: Vertical[] }[] = [
+  { re: /^(video ?games?|games?|consoles?( e jogos)?|jogos (de )?video ?games?|jogos eletronicos)$/, verticais: ['games'] },
+  { re: /^(esportes?|artigos esportivos|fitness|futebol|itens de pesca|ciclismo|camping|corrida|esportes e (aventura|lazer))$/, verticais: ['esporte'] },
+  { re: /^(livros?|livros e (revistas|ebooks?)|hq|mangas?|quadrinhos)$/, verticais: ['livros'] },
+  { re: /^(acessorios tech|tecnologia|informatica|computadores?|perifericos|celulares?|smartphones?|acessorios para (celular|informatica))$/, verticais: ['tecnologia'] },
+  { re: /^(eletronicos|eletronicos e celulares|audio|tv e video|fones?)$/, verticais: ['eletronicos'] },
+  { re: /^(casa|cozinha|casa e cozinha|eletroportateis|eletrodomesticos|utilidades domesticas|limpeza|ferramentas|construcao|moveis)$/, verticais: ['casa'] },
+  { re: /^(relogios?|smartwatch(es)?|wearables?)$/, verticais: ['tecnologia', 'eletronicos'] },
+  { re: /^(impressao 3d|filamentos?|impressoras 3d)$/, verticais: ['impressao3d'] },
+];
+
+/** Verticais compatíveis com a categoria do título da promoção; [] = categoria não mapeada ou ausente (nada casa). */
+export function verticaisDaCategoria(categoria: string | null | undefined): Vertical[] {
+  const c = norm(clean(categoria)).replace(/\s+/g, ' ');
+  if (!c) return [];
+  return DEPARTAMENTOS.find((d) => d.re.test(c))?.verticais ?? [];
+}
+
+/** O produto (vertical do catálogo) pertence ao departamento escrito na promoção? Sem vertical conhecida ou categoria não mapeada = não. */
+export function departamentoCompativel(categoria: string | null | undefined, vertical: string | null | undefined): boolean {
+  const v = String(vertical ?? '').toLowerCase();
+  return !!v && (verticaisDaCategoria(categoria) as string[]).includes(v);
+}
+
+/**
+ * A linha do carrossel pertence à LISTA DA REGRA da promoção? `ancestrais` = do card para cima ({ tag, id }). Só vale o card dentro de `#productInfoList`
+ * e fora de qualquer carrossel de recomendados (rhf-*, a-carousel, patrocinados). Prova (2026-11-13, A2N6WD5SKSR3G5): 69 cards na lista, 12 em 2 carrosséis rhf.
+ */
+export function cardEhDaLista(ancestrais: { tag?: string; id?: string; cls?: string }[]): boolean {
+  let lista = false;
+  for (const a of ancestrais) {
+    const id = String(a.id ?? '');
+    const tag = String(a.tag ?? '').toLowerCase();
+    const cls = String(a.cls ?? '');
+    if (/^rhf/i.test(tag) || /^rhf|^CardInstance|sp_detail|sponsored|carousel/i.test(id) || /a-carousel|rhf|sponsored/i.test(cls)) return false;
+    if (id === 'productInfoList') lista = true;
+  }
+  return lista;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+// VALIDAÇÃO POR PRODUTO NA FONTE (requisito do dono, 2026-11-13): o cupom só entra no produto depois que a PÁGINA DO PRÓPRIO ASIN confirma a
+// promoção: link para a mesma promoção (/promotion/psp/<mesmo ID>) ou selo/linha de promoção com o mesmo percentual, e preço final coerente.
+// ---------------------------------------------------------------------------------------------------------------------------------------------
+export interface ItemLido {
+  asin?: unknown;
+  /** IDs /promotion/psp/<ID> encontrados nos links da página do item. */
+  psp?: unknown;
+  /** Texto dos blocos de promoção/cupom da página do item (promotions, couponsInBuybox, promoPriceBlockMessage...). */
+  blocos?: unknown;
+  /** Preço atual do item ("431,06"). */
+  preco?: unknown;
+  /** Preço final exibido pela loja com a promoção, se exibido. */
+  precoFinal?: unknown;
+}
+
+export type Confirmacao =
+  | { ok: true; evidencia: 'link_da_promocao' | 'selo_com_percentual'; priceCents: number; finalCents: number; finalLido: boolean }
+  | { ok: false; motivo: 'asin_diferente' | 'sem_preco' | 'preco_nao_casa' | 'sem_confirmacao_na_pagina' | 'preco_final_incoerente' };
+
+/** Pura. Sem confirmação explícita na página do item = não vale (ausência nunca prova validade). */
+export function confirmarNoItem(item: ItemLido, esperado: { asin: string; promoId: string; percentual: number }, offerCents: number): Confirmacao {
+  if (String(item.asin ?? '').toUpperCase() !== esperado.asin.toUpperCase()) return { ok: false, motivo: 'asin_diferente' };
+  const price = brlCents(item.preco);
+  if (!price) return { ok: false, motivo: 'sem_preco' };
+  if (!precoCasa(price, offerCents)) return { ok: false, motivo: 'preco_nao_casa' };
+  const psp = (Array.isArray(item.psp) ? item.psp : []).map((x) => String(x));
+  const bloco = norm(clean(item.blocos));
+  const pctTxt = String(esperado.percentual).replace('.', '[.,]');
+  const seloMesmoPct = new RegExp(String.raw`(^|[^0-9])${pctTxt}\s*%\s*(off|de desconto|desconto)`).test(bloco);
+  const evidencia = psp.includes(esperado.promoId) ? 'link_da_promocao' : seloMesmoPct ? 'selo_com_percentual' : null;
+  if (!evidencia) return { ok: false, motivo: 'sem_confirmacao_na_pagina' };
+  const derivado = precoComPromocao(price, esperado.percentual);
+  const final = brlCents(item.precoFinal);
+  if (final != null && Math.abs(final - derivado) > Math.max(derivado * 0.03, 100)) return { ok: false, motivo: 'preco_final_incoerente' };
+  return { ok: true, evidencia, priceCents: price, finalCents: final ?? derivado, finalLido: final != null };
+}

@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { ingestCouponBatch, recordCouponRun, isMissingCouponTable, type IngestSummary } from '@/server/coupons/store';
 import { parseIsoStrict, validateBatch } from '@/server/coupons/normalize';
 import {
-  cupomDoItem, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, precoCasa, precoComPromocao, type PromoCard, type PromoPayload,
+  confirmarNoItem, cupomDoItem, departamentoCompativel, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, type PromoCard, type PromoPayload, precoCasa,
 } from '@/lib/coupons/amazon-promocoes';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
 
@@ -13,9 +13,10 @@ import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
  * Uma chamada = uma página /promotion/psp/<ID>. O servidor decide tudo (a aba só informa o que leu):
  *  1. lê a regra no título e a validade no banner/termos (src/lib/coupons/amazon-promocoes.ts); sem validade lida = nada é gravado;
  *  2. promoção Prime/quantidade/seguir loja não é para todos: não gera cupom e fecha o que existir dessa promoção;
- *  3. cada card cujo ASIN JÁ É oferta ativa da Amazon (preço do card coerente com o da oferta) vira um coupon_items de escopo `produto`
- *     (item_ids = ASIN, offer_ids = oferta), no mesmo contrato e na mesma máquina de estados dos demais cupons (verificado após 2 leituras
- *     separadas por 30 min; vale 120 min; vencido pelo prazo lido);
+ *  3. cada card DA LISTA DA REGRA (o leitor só envia #productInfoList, nunca carrosséis de recomendados) cujo ASIN JÁ É oferta ativa da Amazon, de
+ *     DEPARTAMENTO compatível com o título da promoção (R-xx: cupom departamental só casa produto do departamento) e com preço coerente, vira um
+ *     coupon_items de escopo `produto`. Ele nasce e FICA `nao_verificado` até a página do PRÓPRIO ASIN confirmar a promoção (confirmarItens):
+ *     só então vira `verificado` (vale 120 min, depois precisa de nova confirmação) e a leitura derivada alimenta o gatilho CUPOM;
  *  4. cupom da mesma promoção cuja regra mudou (título/percentual) é fechado como `promocao_alterada`;
  *  5. ASIN que ainda NÃO é oferta é devolvido em `asins_novos` e gravado no registro da corrida (collector_runs.meta) para a vitrine.
  */
@@ -29,6 +30,9 @@ export interface PromoIngestResult {
   itens_lidos: number;
   casados: number;
   preco_nao_casa: number;
+  /** Cards cujo produto não é do departamento da promoção (ex.: jogo numa promoção de Relógios): descartados. */
+  fora_do_departamento: number;
+  fora_do_departamento_amostra?: { asin: string; vertical: string | null }[];
   asins_novos: { asin: string; titulo: string; preco_cents: number }[];
   total_asins_novos: number;
   resumo: IngestSummary | null;
@@ -37,7 +41,7 @@ export interface PromoIngestResult {
   leituras_item?: number;
 }
 
-const vazio = (over: Partial<PromoIngestResult>): PromoIngestResult => ({ ok: false, promo_id: null, itens_lidos: 0, casados: 0, preco_nao_casa: 0, asins_novos: [], total_asins_novos: 0, resumo: null, fechados: 0, ...over });
+const vazio = (over: Partial<PromoIngestResult>): PromoIngestResult => ({ ok: false, promo_id: null, itens_lidos: 0, casados: 0, preco_nao_casa: 0, fora_do_departamento: 0, asins_novos: [], total_asins_novos: 0, resumo: null, fechados: 0, ...over });
 
 export const FONTE_LEITURA = 'amazon-promocoes';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -91,10 +95,10 @@ export async function ingestPromocaoAmazon(body: unknown, now: Date = new Date()
   if (!cards.length) return { ...result, motivo: 'sem_itens_lidos' };
 
   const refs = cards.map((c) => `amazon-${c.asin}`);
-  const offers = (await db.execute<{ id: string; ref: string; price: string }>(sql`
-    SELECT o.id::text AS id, o.external_ref AS ref, o.current_price_cents::text AS price
-    FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id
-    WHERE nn.slug = 'amazon' AND o.status = 'active' AND o.external_ref IN (${sql.join(refs.map((r) => sql`${r}`), sql`, `)})`)) as unknown as { id: string; ref: string; price: string }[];
+  const offers = (await db.execute<{ id: string; ref: string; price: string; vertical: string | null }>(sql`
+    SELECT o.id::text AS id, o.external_ref AS ref, o.current_price_cents::text AS price, COALESCE(o.vertical, mp.vertical) AS vertical
+    FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id LEFT JOIN master_products mp ON mp.id = o.master_product_id
+    WHERE nn.slug = 'amazon' AND o.status = 'active' AND o.external_ref IN (${sql.join(refs.map((r) => sql`${r}`), sql`, `)})`)) as unknown as { id: string; ref: string; price: string; vertical: string | null }[];
   const byRef = new Map(offers.map((o) => [o.ref, o]));
 
   const fonte = fonteUrl(p.id);
@@ -104,6 +108,11 @@ export async function ingestPromocaoAmazon(body: unknown, now: Date = new Date()
   for (const c of cards) {
     const o = byRef.get(`amazon-${c.asin}`);
     if (!o) { novos.push(c); continue; }
+    if (!departamentoCompativel(p.categoria, o.vertical)) {
+      result.fora_do_departamento++;
+      if ((result.fora_do_departamento_amostra ??= []).length < 5) result.fora_do_departamento_amostra.push({ asin: c.asin, vertical: o.vertical });
+      continue;
+    }
     if (!precoCasa(c.priceCents, Number(o.price))) { result.preco_nao_casa++; continue; }
     if (cupons.length < MAX_CUPONS_POR_CHAMADA) { cupons.push(cupomDoItem(p, { asin: c.asin, offerId: o.id }, fonte)); casadas.push({ card: c, offerId: o.id }); }
   }
@@ -121,31 +130,110 @@ export async function ingestPromocaoAmazon(body: unknown, now: Date = new Date()
       if (isMissingCouponTable(e)) return { ...result, ok: false, motivo: 'migration_0029_nao_aplicada' };
       throw e;
     }
-    // Gatilho CUPOM: as ofertas cujo cupom da promoção já está VERIFICADO (2 leituras separadas por 30 min) ganham a leitura por anúncio (preço derivado da regra
-    // lida; a validade vem do coupon_items na consulta). Preço visto = o do card (preço de agora na Amazon); a agulha confere com o preço da oferta.
-    const label = `Promoção Amazon: ${nomeDaPromocao(p.titulo)}`.slice(0, 120);
-    const regra = agulhaRuleFromLabel(label);
-    if (regra && regra.kind === 'percentual' && regra.valueNum === p.percentual && casadas.length) {
-      const ok = (await db.execute<{ oid: string }>(sql`
-        SELECT scope->'offer_ids'->>0 AS oid FROM coupon_items
-        WHERE network_slug = 'amazon' AND state = 'verificado' AND conditions->>'promo_id' = ${p.id}
-          AND scope->'offer_ids'->>0 IN (${sql.join(casadas.map((c) => sql`${c.offerId}`), sql`, `)})`)) as unknown as { oid: string }[];
-      const verificadas = new Set(ok.map((x) => x.oid));
-      const linhas = casadas.filter((c) => verificadas.has(c.offerId));
-      if (linhas.length) {
-        await db.execute(sql`
-          INSERT INTO offer_coupon_reads (offer_id, campaign_id, status, label, price_with_coupon_cents, price_seen_cents, source)
-          VALUES ${sql.join(linhas.map((c) => sql`(${c.offerId}::uuid, ${p.id}, 'derivado_do_rotulo', ${label}, ${precoComPromocao(c.card.priceCents, p.percentual)}::int, ${c.card.priceCents}::int, ${FONTE_LEITURA})`), sql`, `)}`);
-        result.leituras_item = linhas.length;
-      }
-    }
+    // A lista sozinha NUNCA verifica: só a página do próprio ASIN (confirmarItens). Rebaixa o que a máquina de estados verificou pelas 2 leituras e
+    // devolve o que tem confirmação fresca (o UPDATE do upsert apagou o verified_at).
+    await reconciliarConfirmacoes(p.id, casadas.map((c) => c.offerId));
     // A regra da promoção mudou (título/percentual): o que foi gravado com a regra antiga deixa de valer.
     const regraAtual = String(cupons[0].condicoes_texto);
     result.fechados = await fechar(p.id, 'promocao_alterada', regraAtual.trim()).catch(() => 0);
     await recordCouponRun('amazon', started, result.resumo, {
       fonte_url: fonte, lidos_em: readAt, promo_id: p.id, promo: p.titulo, itens_lidos: cards.length, casados: cupons.length,
-      preco_nao_casa: result.preco_nao_casa, asins_novos_total: novos.length, asins_novos: result.asins_novos.slice(0, 20), origem: 'amazon-promocoes',
+      preco_nao_casa: result.preco_nao_casa, fora_do_departamento: result.fora_do_departamento, asins_novos_total: novos.length, asins_novos: result.asins_novos.slice(0, 20), origem: 'amazon-promocoes',
     });
   }
   return result;
+}
+
+export const FONTE_CONFIRMACAO = 'amazon-item-confirmado';
+/** Confirmação na página do item vale por 2 h (mesma janela do frescor da agulha e de DEFAULT_MAX_AGE_MINUTES). */
+export const CONFIRMACAO_VALE_MIN = 120;
+
+/**
+ * Cupom de promoção só é `verificado` com confirmação FRESCA na página do item (offer_coupon_reads source amazon-item-confirmado, campaign_id = promoção).
+ * Sem ela: volta a `nao_verificado` (não entra em mensagem). Com ela: restaura `verificado` com verified_at = hora da confirmação.
+ */
+export async function reconciliarConfirmacoes(promoId: string, offerIds: string[]): Promise<void> {
+  const ids = [...new Set(offerIds.filter((x) => UUID.test(x)))];
+  if (!ids.length) return;
+  const lista = sql.join(ids.map((i) => sql`${i}`), sql`, `);
+  await db.execute(sql`
+    UPDATE coupon_items ci SET state = 'nao_verificado', state_reason = 'aguardando_confirmacao_no_item', verified_at = NULL, updated_at = now()
+    WHERE ci.network_slug = 'amazon' AND ci.source_kind <> 'manual_dono' AND ci.state = 'verificado' AND ci.conditions->>'promo_id' = ${promoId}
+      AND ci.scope->'offer_ids'->>0 IN (${lista})
+      AND NOT EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = (ci.scope->'offer_ids'->>0)::uuid AND r.campaign_id = ${promoId}
+        AND r.source = ${FONTE_CONFIRMACAO} AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - make_interval(mins => ${CONFIRMACAO_VALE_MIN}::int))`);
+  await db.execute(sql`
+    UPDATE coupon_items ci SET state = 'verificado', state_reason = 'confirmado_na_pagina_do_item', verified_by = 'amazon-item-confirmado', updated_at = now(),
+      verified_at = (SELECT max(r.read_at) FROM offer_coupon_reads r WHERE r.offer_id = (ci.scope->'offer_ids'->>0)::uuid AND r.campaign_id = ${promoId}
+        AND r.source = ${FONTE_CONFIRMACAO} AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - make_interval(mins => ${CONFIRMACAO_VALE_MIN}::int))
+    WHERE ci.network_slug = 'amazon' AND ci.source_kind <> 'manual_dono' AND ci.state = 'nao_verificado' AND ci.conditions->>'promo_id' = ${promoId}
+      AND (ci.valid_until IS NULL OR ci.valid_until > now()) AND (ci.valid_from IS NULL OR ci.valid_from <= now())
+      AND ci.scope->'offer_ids'->>0 IN (${lista})
+      AND EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = (ci.scope->'offer_ids'->>0)::uuid AND r.campaign_id = ${promoId}
+        AND r.source = ${FONTE_CONFIRMACAO} AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - make_interval(mins => ${CONFIRMACAO_VALE_MIN}::int))`);
+}
+
+export type PendenteConfirmacao = { asin: string; promo_id: string; percentual: number; offer_id: string; preco_cents: number; confirmado_em: string | null };
+
+/** Fila do passo 2 do laço: cupons de promoção abertos (prazo lido no futuro) sem confirmação nos últimos 60 min, os nunca confirmados primeiro. */
+export async function pendentesDeConfirmacao(limite = 20): Promise<PendenteConfirmacao[]> {
+  const lim = Math.min(Math.max(1, limite), 60);
+  return (await db.execute<PendenteConfirmacao>(sql`
+    SELECT ci.scope->'item_ids'->>0 AS asin, ci.conditions->>'promo_id' AS promo_id, ci.value_num::float AS percentual, ci.scope->'offer_ids'->>0 AS offer_id,
+      o.current_price_cents AS preco_cents,
+      (SELECT max(r.read_at)::text FROM offer_coupon_reads r WHERE r.offer_id = o.id AND r.campaign_id = ci.conditions->>'promo_id' AND r.source = ${FONTE_CONFIRMACAO}) AS confirmado_em
+    FROM coupon_items ci JOIN affiliate_offers o ON o.id = (ci.scope->'offer_ids'->>0)::uuid AND o.status = 'active'
+    WHERE ci.network_slug = 'amazon' AND ci.source_kind <> 'manual_dono' AND ci.state IN ('nao_verificado', 'verificado') AND ci.conditions->>'promo_id' IS NOT NULL
+      AND ci.valid_until > now() + interval '15 minutes' AND (ci.valid_from IS NULL OR ci.valid_from <= now())
+      AND NOT EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = o.id AND r.campaign_id = ci.conditions->>'promo_id' AND r.source = ${FONTE_CONFIRMACAO}
+        AND r.read_at > now() - interval '60 minutes')
+    ORDER BY 6 NULLS FIRST, ci.created_at LIMIT ${lim}`)) as unknown as PendenteConfirmacao[];
+}
+
+export interface ConfirmacaoResult { ok: boolean; recebidos: number; confirmados: number; recusados: { asin: string; motivo: string }[] }
+
+/**
+ * Passo 2: a aba leu a página de cada ASIN pendente. Confirma só com evidência na página (link da MESMA promoção ou selo com o mesmo percentual)
+ * e preço coerente; grava a leitura derivada (alimenta o gatilho CUPOM) e verifica o cupom. Sem evidência: nada vale e uma leitura
+ * "sem cupom" tira o item do gatilho.
+ */
+export async function confirmarItens(body: unknown, now: Date = new Date()): Promise<ConfirmacaoResult> {
+  const b = (body && typeof body === 'object' ? body : {}) as Record<string, unknown>;
+  const readAt = parseIsoStrict(b.lidos_em);
+  const lista = (Array.isArray(b.confirmacoes) ? b.confirmacoes : []).slice(0, 60) as (Record<string, unknown> & { asin?: unknown; promo_id?: unknown })[];
+  const out: ConfirmacaoResult = { ok: !!readAt, recebidos: lista.length, confirmados: 0, recusados: [] };
+  if (!readAt || !lista.length) return out;
+  if (Math.abs(now.getTime() - Date.parse(readAt)) > 15 * 60_000) return { ...out, ok: false, recusados: [{ asin: '*', motivo: 'lidos_em_fora_da_janela' }] };
+  type Row = { pct: number; offer: string; price: string; raw: string };
+  for (const it of lista) {
+    const asin = String(it.asin ?? '').toUpperCase();
+    const promoId = String(it.promo_id ?? '');
+    if (!/^[A-Z0-9]{10}$/.test(asin) || !/^[A-Z0-9]{8,20}$/.test(promoId)) { out.recusados.push({ asin, motivo: 'identificacao_invalida' }); continue; }
+    const rows = (await db.execute<Row>(sql`
+      SELECT ci.value_num::float AS pct, ci.scope->'offer_ids'->>0 AS offer, o.current_price_cents::text AS price, ci.raw_text AS raw
+      FROM coupon_items ci JOIN affiliate_offers o ON o.id = (ci.scope->'offer_ids'->>0)::uuid AND o.status = 'active'
+      WHERE ci.network_slug = 'amazon' AND ci.source_kind <> 'manual_dono' AND ci.state IN ('nao_verificado', 'verificado') AND ci.conditions->>'promo_id' = ${promoId}
+        AND ci.scope->'item_ids'->>0 = ${asin} AND ci.valid_until > ${now.toISOString()}::timestamptz LIMIT 1`)) as unknown as Row[];
+    const c = rows[0];
+    if (!c) { out.recusados.push({ asin, motivo: 'cupom_nao_aberto' }); continue; }
+    const conf = confirmarNoItem(it, { asin, promoId, percentual: Number(c.pct) }, Number(c.price));
+    if (!conf.ok) {
+      out.recusados.push({ asin, motivo: conf.motivo });
+      if (conf.motivo === 'sem_confirmacao_na_pagina' || conf.motivo === 'preco_final_incoerente') {
+        await registrarSemCupom([c.offer]).catch(() => 0);
+        await reconciliarConfirmacoes(promoId, [c.offer]).catch(() => undefined);
+      }
+      continue;
+    }
+    const titulo = String(c.raw).split('|')[0].trim();
+    const label = `Promoção Amazon: ${nomeDaPromocao(titulo)}`.slice(0, 120);
+    const regra = agulhaRuleFromLabel(label);
+    if (!regra || regra.kind !== 'percentual' || regra.valueNum !== Number(c.pct)) { out.recusados.push({ asin, motivo: 'rotulo_sem_regra_legivel' }); continue; }
+    await db.execute(sql`
+      INSERT INTO offer_coupon_reads (offer_id, campaign_id, status, label, price_with_coupon_cents, price_seen_cents, source, read_at)
+      VALUES (${c.offer}::uuid, ${promoId}, 'derivado_do_rotulo', ${label}, ${conf.finalCents}::int, ${conf.priceCents}::int, ${FONTE_CONFIRMACAO}, ${readAt}::timestamptz)`);
+    await reconciliarConfirmacoes(promoId, [c.offer]);
+    out.confirmados++;
+  }
+  return out;
 }

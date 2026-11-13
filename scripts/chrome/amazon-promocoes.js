@@ -7,7 +7,7 @@
  *   1. Aba logada em https://www.amazon.com.br (use a aba da Amazon que já roda os outros loops; este loop NÃO navega nem recarrega a aba:
  *      lê cada página num iframe oculto de mesma origem, como o cupons-24h.js).
  *   2. Injetar window.__PROMO_CFG = { api: 'https://www.egeek86.com', token: '...', enviar: true|false }
- *      (opcionais: pausaMs:[min,max] entre páginas, cicloMin (pausa entre varreduras, padrão 30), maxPaginas (padrão 60), extras:['A123...'] IDs de promoção).
+ *      (opcionais: pausaMs:[min,max] entre páginas, maxItens (confirmações por ciclo, padrão 20), cicloMin (pausa entre varreduras, padrão 30), maxPaginas (padrão 60), extras:['A123...'] IDs de promoção).
  *   3. Injetar este arquivo inteiro (ele apaga window.__PROMO_CFG, guarda o token só na closure e devolve na hora).
  *   4. Acompanhar: JSON.stringify(window.__promo.status())  (nunca contém o token).  Parar: window.__promo.stop().
  *   Com enviar:false o loop só lê e mostra em status().linhas e window.__promo.simulacao() (simulação). Reinjetar sobre um loop vivo o substitui. Recarregar a aba o mata.
@@ -15,11 +15,15 @@
  * NUNCA para sozinho (regra do dono, 2026-11-12): captcha/login/403/429/rede/token/exceção viram pausa com recuo (teto 30 min) e retomada automática
  * (nunca contorna); só window.__promo.stop() do operador para. Cada varredura e cada pausa mandam batimento a /api/ingest/cupons-heartbeat?rede=amazon
  * (versao 'promocoes-...'); o servidor avisa a equipe se a rede ficar mais de 60 min sem batimento ok.
+ * CORREÇÃO 2026-11-13 (incidente "Relógios x Resident Evil 2"): (1) o leitor só aceita cards da LISTA DA REGRA (#productInfoList), nunca dos carrosséis de
+ * recomendados da página (rhf-shoveler, "inspirado no seu histórico", patrocinados); (2) PASSO 2 por produto: depois da varredura, lê a página do PRÓPRIO ASIN de
+ * cada cupom pendente (GET /api/ingest/amazon-promocoes?pendentes=N) e envia só o que a página mostra (links /promotion/psp/<ID> e texto dos blocos de promoção
+ * do item); o servidor confirma ou não. Sem confirmação na página do item o cupom não vale e não vai para mensagem.
  * Descoberta das páginas: links /promotion/psp/<ID> em /blackfriday e /blackfriday/2/ (a vitrine "Cupons em destaque só no app").
  */
 (function () {
   'use strict';
-  var VERSAO = 'promocoes-1.0.0';
+  var VERSAO = 'promocoes-1.1.0';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-amazon-promocoes.ts
@@ -39,6 +43,20 @@
     if (/\bseguir\b|\bprime\b/.test(t)) return true;
     var q = /\b(?:compre|leve)\s+(\d+)\b(?!\s*%)/.exec(t) || /\bem\s+(\d+)\s+(?:item|itens|produtos?|bebidas?|livros?|unidades?|pecas?|artigos?)\b/.exec(t);
     return !!(q && +q[1] >= 2);
+  };
+
+  /**
+   * O card pertence à LISTA DA REGRA? `anc` = ancestrais do link ({ tag, id, cls }) do card para cima. Só vale dentro de #productInfoList e fora de carrossel de
+   * recomendados/patrocinado (rhf-*, a-carousel). Mesmo critério de cardEhDaLista em src/lib/coupons/amazon-promocoes.ts (testado nos dois).
+   */
+  PURO.cardEhDaLista = function (anc) {
+    var lista = false;
+    for (var i = 0; i < (anc || []).length; i++) {
+      var a = anc[i] || {}, id = String(a.id || ''), tag = String(a.tag || '').toLowerCase(), cls = String(a.cls || '');
+      if (/^rhf/i.test(tag) || /^rhf|^CardInstance|sp_detail|sponsored|carousel/i.test(id) || /a-carousel|rhf|sponsored/i.test(cls)) return false;
+      if (id === 'productInfoList') lista = true;
+    }
+    return lista;
   };
 
   /** "431,06" a partir de whole/fraction do preço da Amazon ("1.234" + "56"). */
@@ -88,7 +106,7 @@
     var extras = (Array.isArray(c.extras) ? c.extras : []).filter(function (x) { return /^[A-Z0-9]{8,20}$/.test(String(x)); });
     return {
       ok: true,
-      cfg: { api: api, enviar: c.enviar === true, pausaMs: faixa, cicloMs: Math.max(5, +c.cicloMin || 30) * 60000, maxPaginas: Math.min(120, Math.max(1, +c.maxPaginas || 60)), extras: extras },
+      cfg: { api: api, enviar: c.enviar === true, pausaMs: faixa, cicloMs: Math.max(5, +c.cicloMin || 30) * 60000, maxPaginas: Math.min(120, Math.max(1, +c.maxPaginas || 60)), maxItens: Math.min(60, Math.max(1, +c.maxItens || 20)), extras: extras },
       token: c.token,
     };
   };
@@ -162,13 +180,16 @@
   function fecharFrame(f) { try { if (f && f.parentNode) f.parentNode.removeChild(f); } catch (e) { /* ok */ } if (frameAtual === f) frameAtual = null; }
   function docDe(f) { try { return f.contentDocument && f.contentDocument.body ? f.contentDocument : null; } catch (e) { return null; } }
 
-  /** Cards da promoção: ASIN do link /dp/, título, preço atual (a-price-whole/fraction) e preço anterior ("De"). Ignora o carrinho e a barra de navegação. */
+  /** Cards da LISTA DA REGRA da promoção (#productInfoList): ASIN do link /dp/, título, preço atual (a-price-whole/fraction) e preço anterior ("De"). Ignora o carrinho e a barra de navegação. */
   function lerCards(doc) {
     var vistos = {}, cards = [];
     doc.querySelectorAll('a[href*="/dp/"]').forEach(function (a) {
       if (a.closest('.ewc-item,#nav-flyout-ewc,#nav-cart,#navbar')) return;
       var m = /\/dp\/([A-Z0-9]{10})/.exec(a.pathname);
       if (!m || vistos[m[1]]) return;
+      var anc = [];
+      for (var e = a; e && e !== doc.body; e = e.parentElement) anc.push({ tag: e.tagName, id: e.id, cls: typeof e.className === 'string' ? e.className : '' });
+      if (!PURO.cardEhDaLista(anc)) return; // recomendados/patrocinados/histórico NÃO são da regra da promoção
       var c = a;
       for (var i = 0; i < 10 && c; i++, c = c.parentElement) { if (c.querySelector('.a-price-whole') && c.innerText.length > 40) break; }
       if (!c) return;
@@ -233,6 +254,67 @@
       var itens = restrito ? [] : lerCards(doc).slice(0, 300);
       return { ok: true, promo: { id: id, titulo: cab.titulo, banner: cab.banner, termos: cab.termos }, itens: itens, restrito: restrito };
     } finally { fecharFrame(f); }
+  }
+
+  /** Página do PRÓPRIO ASIN (iframe oculto, só leitura): links de promoção e texto dos blocos de promoção/cupom do item, e o preço atual. */
+  var BLOCOS_PROMO = ['#promotions_feature_div', '#couponsInBuybox_feature_div', '#promoPriceBlockMessage_feature_div', '#promotionMessageInsideBuyBox_feature_div', '#promoMessagingDiscountValue_feature_div'];
+  async function lerItem(asin) {
+    var f = novoFrame('/dp/' + encodeURIComponent(asin));
+    try {
+      var t0 = Date.now(), doc = null, win = null;
+      while (Date.now() - t0 < 25000 && !parado) {
+        await sleep(1000);
+        doc = docDe(f);
+        if (!doc) continue;
+        win = f.contentWindow;
+        var loc = ''; try { loc = win.location.pathname; } catch (e) { /* ok */ }
+        var bl = PURO.detectarBloqueio({ pathname: loc, texto: doc.body ? doc.body.innerText : '', temCards: !!doc.querySelector('#productTitle') });
+        if (bl) return { bloqueio: bl };
+        if (doc.querySelector('#productTitle') && doc.querySelector('.a-price-whole')) break;
+      }
+      if (!doc || !doc.querySelector('#productTitle')) return { descarte: 'item_nao_renderizou' };
+      try { win.scrollBy(0, 900); } catch (e) { /* ok */ }
+      await sleep(2500); // blocos de promoção/cupom carregam depois do preço
+      var psp = [], blocos = '';
+      BLOCOS_PROMO.forEach(function (sel) {
+        doc.querySelectorAll(sel).forEach(function (el) {
+          blocos += ' ' + limpa(el.innerText);
+          PURO.idsDePromocao(el.innerHTML).forEach(function (x) { if (psp.indexOf(x) < 0) psp.push(x); });
+        });
+      });
+      var box = doc.querySelector('#corePriceDisplay_desktop_feature_div .a-price') || doc.querySelector('#corePrice_feature_div .a-price') || doc.querySelector('.a-price');
+      var w = box && box.querySelector('.a-price-whole'), fr = box && box.querySelector('.a-price-fraction');
+      return { ok: true, psp: psp, blocos: limpa(blocos).slice(0, 600), preco: PURO.precoDe(w && w.textContent, fr && fr.textContent) };
+    } finally { fecharFrame(f); }
+  }
+
+  /** PASSO 2: confirma, na página de cada ASIN, o cupom de promoção que a lista ligou. Devolve 'parar' se pausou (bloqueio/servidor). */
+  async function confirmarPendentes(c) {
+    if (!CFG.enviar) return 'ok';
+    var r, j;
+    try { r = await api('/api/ingest/amazon-promocoes?pendentes=' + CFG.maxItens); } catch (e) { await pausarOuParar('servidor_instavel', 'pendentes: ' + e.message); return 'parar'; }
+    if (!r.ok) { await pausarOuParar(tipoServidor(r.status), 'pendentes respondeu ' + r.status); return 'parar'; }
+    j = await r.json().catch(function () { return {}; });
+    var fila = (j && j.itens) || [], lote = [];
+    c.pendentes = fila.length; c.confirmados = 0; c.semConfirmacao = 0;
+    for (var i = 0; i < fila.length && !parado; i++) {
+      var it = fila[i], lido;
+      try { lido = await lerItem(it.asin); } catch (e) { c.erros++; erro('item ' + it.asin + ': ' + e.message); lido = null; }
+      if (lido && lido.bloqueio) { await pausarOuParar(lido.bloqueio, 'item ' + it.asin); return 'parar'; }
+      if (lido && lido.ok) lote.push({ asin: it.asin, promo_id: it.promo_id, psp: lido.psp, blocos: lido.blocos, preco: lido.preco });
+      if (lote.length >= 10 || (i === fila.length - 1 && lote.length)) {
+        try {
+          var rr = await api('/api/ingest/amazon-promocoes', { method: 'POST', body: JSON.stringify({ lidos_em: agora(), confirmacoes: lote }) });
+          if (!rr.ok) { await pausarOuParar(tipoServidor(rr.status), 'confirmação respondeu ' + rr.status); return 'parar'; }
+          var jj = await rr.json().catch(function () { return {}; });
+          c.confirmados += jj.confirmados || 0; c.semConfirmacao += (jj.recusados || []).length;
+          linha({ passo2: true, enviados: lote.length, confirmados: jj.confirmados || 0, recusados: (jj.recusados || []).slice(0, 4) });
+        } catch (e2) { await pausarOuParar('servidor_instavel', 'confirmação: ' + e2.message); return 'parar'; }
+        lote = [];
+      }
+      if (i < fila.length - 1) await sleep(PURO.pausaEntre(CFG.pausaMs, null, PISO_PAUSA_MS));
+    }
+    return 'ok';
   }
 
   async function descobrirIds() {
@@ -312,6 +394,8 @@
       if (i % 12 === 11) await batimento('ok', 'em_andamento'); // batimento durante a varredura longa
       if (i < lista.length - 1) await sleep(PURO.pausaEntre(CFG.pausaMs, null, PISO_PAUSA_MS));
     }
+    if (parado) return;
+    if (await confirmarPendentes(c) === 'parar') return; // passo 2: página do próprio ASIN
     if (parado) return;
     S.seguidos = {};
     S.totais.paginas += c.paginas; S.totais.itens += c.itens; S.totais.casados += c.casados; S.totais.novosAsins += c.novosAsins;

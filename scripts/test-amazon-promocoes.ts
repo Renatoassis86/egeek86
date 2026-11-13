@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import fs from 'node:fs';
 import {
-  brlCents, cupomDoItem, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, parseValidade, precoCasa, precoComPromocao, type PromoPayload,
+  brlCents, cardEhDaLista, confirmarNoItem, cupomDoItem, departamentoCompativel, verticaisDaCategoria, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, parseValidade, precoCasa, precoComPromocao, type PromoPayload,
 } from '../src/lib/coupons/amazon-promocoes';
 import { validateCoupon } from '../src/server/coupons/normalize';
 import { evaluateAgulha } from '../src/lib/coupons/agulha';
@@ -118,6 +118,34 @@ async function main() {
   check('loop: cfg válida e token curto/host errado recusados', L.validarCfg({ api: 'https://www.egeek86.com', token: 'k'.repeat(40), enviar: true }, 'www.amazon.com.br').ok && !L.validarCfg({ api: 'https://x.com', token: 'curto' }, 'www.amazon.com.br').ok && !L.validarCfg({ api: 'https://x.com', token: 'k'.repeat(40) }, 'shopee.com.br').ok);
   check('loop: cfg não devolve token em mensagem de erro', !JSON.stringify(L.validarCfg({ api: 'http://x', token: 'segredo'.repeat(10) }, 'www.amazon.com.br')).includes('segredo'));
   check('loop: cópia em scripts/chrome idêntica à de public/loops', fs.readFileSync(path.resolve(__dirname, 'chrome/amazon-promocoes.js'), 'utf8') === fs.readFileSync(path.resolve(__dirname, '../public/loops/amazon-promocoes.js'), 'utf8'));
+
+  // ---------------- incidente 2026-11-13: Relógios x Resident Evil 2 ----------------
+  // Cadeias de ancestrais REAIS lidas em /promotion/psp/A2N6WD5SKSR3G5 (69 cards na lista, 12 em 2 carrosséis rhf).
+  const ancLista = [{ tag: 'DIV', id: '' }, { tag: 'LI', cls: 'productGrid' }, { tag: 'UL', id: 'productInfoList', cls: 'a-unordered-list' }, { tag: 'DIV', id: 'productInfoList_gridItem' }, { tag: 'DIV', id: 'promotionShoppingPageGlobalContainer' }, { tag: 'DIV', id: 'a-page' }];
+  const ancRhf = [{ tag: 'DIV', id: 'CardInstance4d3H1iLjoCEehzzEI9m-2w', cls: 'a-carousel-card' }, { tag: 'RHF-SHOVELER', id: '' }, { tag: 'RHF-CONTAINER', id: 'rhf-container' }, { tag: 'DIV', id: 'a-page' }];
+  const ancRhfDentroDaLista = [...ancRhf, { tag: 'UL', id: 'productInfoList' }];
+  check('leitor: card da lista da regra (#productInfoList) entra', cardEhDaLista(ancLista) && L.cardEhDaLista(ancLista));
+  check('leitor: card do carrossel rhf (recomendados/histórico) NÃO entra', !cardEhDaLista(ancRhf) && !L.cardEhDaLista(ancRhf));
+  check('leitor: carrossel nunca entra, nem aninhado na lista; sem lista = nada entra', !cardEhDaLista(ancRhfDentroDaLista) && !L.cardEhDaLista(ancRhfDentroDaLista) && !cardEhDaLista([{ tag: 'DIV', id: 'a-page' }]) && !L.cardEhDaLista([]));
+  check('departamento: jogo (games) numa promoção de Relógios NÃO casa', !departamentoCompativel('Relógios', 'games'));
+  check('departamento: relógio inteligente (tecnologia) numa promoção de Relógios casa', departamentoCompativel('Relógios', 'tecnologia') && departamentoCompativel('relogios', 'eletronicos'));
+  check('departamento: jogo em Beleza/Suplementos/Pets/Moda/Cozinha/Esportes NÃO casa', ['Beleza Premium', 'Suplementos', 'Pets', 'Moda Feminina', 'Cozinha', 'Esportes', 'Artigos Esportivos', 'Fitness', 'Alimentos e Bebidas', 'Brinquedos e Jogos'].every((c) => !departamentoCompativel(c, 'games')));
+  check('departamento: bola de vôlei (esporte) em Artigos Esportivos casa; mesa digitalizadora (tecnologia) em Acessórios Tech casa', departamentoCompativel('Artigos Esportivos', 'esporte') && departamentoCompativel('Acessórios Tech', 'tecnologia'));
+  check('departamento: jogo em Games casa', departamentoCompativel('Games', 'games') && departamentoCompativel('Jogos de Video Games', 'games'));
+  check('departamento: em dúvida não casa (categoria nula, não mapeada, vertical vazia)', !departamentoCompativel(null, 'games') && !departamentoCompativel('Departamento Novo', 'games') && !departamentoCompativel('Games', null) && verticaisDaCategoria('Pets').length === 0);
+
+  const ESP = { asin: 'B099TBWMWC', promoId: 'A2N6WD5SKSR3G5', percentual: 20 };
+  const base = { asin: 'B099TBWMWC', psp: [] as string[], blocos: '', preco: '431,06' };
+  check('item: página sem link nem selo da promoção = NÃO confirma', (() => { const x = confirmarNoItem(base, ESP, 43106); return !x.ok && x.motivo === 'sem_confirmacao_na_pagina'; })());
+  check('item: link da MESMA promoção confirma; preço final derivado do desconto', (() => { const x = confirmarNoItem({ ...base, psp: ['A2N6WD5SKSR3G5'] }, ESP, 43106); return x.ok && x.evidencia === 'link_da_promocao' && x.finalCents === 34485 && !x.finalLido; })());
+  check('item: link de OUTRA promoção não confirma', !confirmarNoItem({ ...base, psp: ['A30F87IW26XFD9'] }, ESP, 43106).ok);
+  check('item: selo com o mesmo percentual confirma; percentual diferente não', confirmarNoItem({ ...base, blocos: 'Só no app: 20% off em Relógios' }, ESP, 43106).ok && !confirmarNoItem({ ...base, blocos: 'Economize 15% off' }, ESP, 43106).ok && !confirmarNoItem({ ...base, blocos: '120% de desconto' }, ESP, 43106).ok);
+  check('item: preço final exibido incoerente com o desconto é recusado; coerente é aceito', (() => {
+    const bad = confirmarNoItem({ ...base, psp: ['A2N6WD5SKSR3G5'], precoFinal: '400,00' }, ESP, 43106);
+    const ok = confirmarNoItem({ ...base, psp: ['A2N6WD5SKSR3G5'], precoFinal: '344,85' }, ESP, 43106);
+    return !bad.ok && bad.motivo === 'preco_final_incoerente' && ok.ok && ok.finalLido;
+  })());
+  check('item: ASIN diferente, sem preço e preço que não casa com a oferta são recusados', !confirmarNoItem({ ...base, asin: 'B0FC3219FN', psp: ['A2N6WD5SKSR3G5'] }, ESP, 43106).ok && !confirmarNoItem({ ...base, preco: '', psp: ['A2N6WD5SKSR3G5'] }, ESP, 43106).ok && !confirmarNoItem({ ...base, preco: '100,00', psp: ['A2N6WD5SKSR3G5'] }, ESP, 43106).ok);
 
   console.log(`\n${total - fails}/${total} ok`);
   process.exit(fails ? 1 : 0);
