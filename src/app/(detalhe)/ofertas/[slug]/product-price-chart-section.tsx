@@ -58,6 +58,7 @@ export async function ProductPriceChartSection({
       currentPriceCents={currentPriceCents}
       canonical={canonical}
       hideActions
+      hideSignal
       pollMs={0}
     />
   );

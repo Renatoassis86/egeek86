@@ -266,6 +266,7 @@ export function PriceHistoryChart({
   currentPriceCents,
   canonical,
   hideActions = false,
+  hideSignal = false,
   pollMs = POLL_INTERVAL_MS,
 }: {
   masterProductId: string;
@@ -276,6 +277,8 @@ export function PriceHistoryChart({
   canonical?: PriceChartCanonical;
   /** Esconde "Comprar" e "+ Carrinho" (página do produto já tem os próprios botões). */
   hideActions?: boolean;
+  /** Esconde o selo de juízo do gráfico (a página do produto já mostra o seu; dois selos contradiziam um ao outro). */
+  hideSignal?: boolean;
   /** Intervalo de atualização em ms; 0 desliga o polling. */
   pollMs?: number;
 }) {
@@ -294,18 +297,9 @@ export function PriceHistoryChart({
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const [fetchFailed, setFetchFailed] = useState(false);
 
-  // Garantia de alinhamento: o último ponto do menor preço do gráfico (hoje) é sincronizado com o menor preço ativo anunciado
-  const synchronizedHistory = useMemo(() => {
-    if (!currentPriceCents || !history.points.length) return history;
-    const targetValue = currentPriceCents / 100;
-    const newPoints = [...history.points];
-    newPoints[newPoints.length - 1] = { ...newPoints[newPoints.length - 1], value: targetValue };
-
-    return {
-      ...history,
-      points: newPoints,
-    };
-  }, [history, currentPriceCents]);
+  // Checklist #19: o último ponto NÃO é mais sobrescrito pelo preço atual (isso criava a diagonal final: a série de menor preço
+  // continuava reta e o último intervalo subia até o preço da oferta da página). A série é exatamente a que o servidor mediu.
+  const synchronizedHistory = history;
 
   pointOffersRef.current = history.pointOffers;
   quotesRef.current = history.quotes;
@@ -508,7 +502,7 @@ export function PriceHistoryChart({
             {canonical ? 'cotações no histórico do produto' : 'cotações de preços coletadas'}
           </Badge>
         </div>
-        {hasEnoughData && (
+        {hasEnoughData && !hideSignal && (
           <PriceSignalBadge
             signal={priceSignal}
             winningOfferId={

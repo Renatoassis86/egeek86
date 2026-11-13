@@ -20,7 +20,7 @@ const publishedArticlesCached = createPersistedQuery(
   ['home-articles-v1'],
   { revalidate: 60, coldTimeoutSeconds: 5, persist: { maxAgeSeconds: 300, maxStaleSeconds: 24 * 3600 } }
 );
-const getHomeArticles = cache(async () => {
+export const getHomeArticles = cache(async () => {
   try {
     const items = await publishedArticlesCached();
     return items.filter((a) => (a.sourceName ?? '').trim() !== '');
