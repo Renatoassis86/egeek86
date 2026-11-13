@@ -67,5 +67,10 @@ Causas do motor (não só do catálogo):
 ## 4. Verificação
 Ver a seção "Resultado em produção" abaixo (preencher após o deploy e a janela de 30 min).
 
-## Resultado em produção
-Preencher após o deploy.
+## Resultado em produção (deploy no ar por volta de 00:47 UTC; medido às 01:22 UTC, 35 min)
+- **Repetição:** 24 envios, 24 masters distintos, **0 repetições** (antes: 69% do volume era repetição; mediana de 61 min entre repetições). O último par repetido (Capcom CUPOM e G2, 6 s de diferença) é de 00:44, antes do deploy.
+- **Gatilhos:** G2 13, AC 11, CUPOM 0 (24 envios).
+- **Tipos:** amostra pequena demais para fatiar por tipo (24 envios); a medida de 24 h fica para a retrospectiva (rodar `scripts/medir-repeticao-diversidade.ts 24` em 2026-11-14 00:00 UTC e comparar com a linha de base desta ata).
+- **Volume:** 24 envios em 35 min contra cerca de 25 por 20 min antes, fora da hora cheia: queda de cerca de 45% neste trecho, esperada pela retirada das repetições, mas NÃO validada como aceitável. Decisão do dono: se quiser mais volume, `GROUP_MASTER_COOLDOWN_H=6` (variável de ambiente, sem código).
+- **Desempenho (alerta de 01:00 a 01:05):** não causado pelo R-47. Ciclos do `group-messages` já levavam 25 a 58 s desde 23:43 (antes do deploy); média 25,7 s e máximo 49 s desde 00:47; os ciclos de 00:53 a 00:57, já com o código novo, levaram 5 a 16 s. Causa: varredura `live` (pick de 10 a 17 s a cada ciclo sem cache) competindo com collect-prices, collect-shopee e collect-vertical, e cache zerado por outro deploy às 00:57. Site respondeu 200 em 30,8 s na home (mesma contenção). Item na fila #45.
+- **Pendência registrada:** ciclos que passam de 60 s se sobrepõem e podem decidir sobre o mesmo histórico (par de 6 s); se reaparecer repetição depois de 00:47, tratar com trava por master no envio (fila #45).
