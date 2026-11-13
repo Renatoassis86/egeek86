@@ -51,3 +51,7 @@ Total estimado: Fase A cerca de 134 h de trabalho de agentes (mais 16 h do gráf
 - D6 Notícias: duas editorias, feed oficial semiautomático depois de 27/11, fim do scraping. Recomendo sim.
 - D7 Visual: premium dark na landing (quadrinho só em páginas editoriais); gerar IMG-01 a IMG-06 e substitutas pelos prompts. Recomendo sim.
 - D8 Congelamento de 25 a 28/11 e adiamento do que está na seção "fora" da proposta. Recomendo sim.
+
+## Estado dos itens do agente frontend (Fase A, 2026-11-13)
+Estados: fila / em andamento / verificação (feito, aguarda o qa-verificador) / pronto.
+- #1 verificação: removidos `SectionFallback`, `DividerEmblem`, `PriceIntelligence`, `UniversesSection`; órfãos `delete-article-button`, `antibot-shield`, `news-ticker`, `price-charts-showcase`, `ui/index.ts` (`platform-showcase` mantido); 6 dependências Radix sem uso (checkbox, dropdown-menu, label, popover, tabs, tooltip). `tsc --noEmit` saída 0. `page.tsx` ainda > 700 linhas até o item #5. CSS `.news-ticker*` em `globals.css` ficou (arquivo da frente de performance).

@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { Suspense, cache } from 'react';
 import Link from 'next/link';
 import { getStores } from '@/server/stores';
@@ -6,12 +5,8 @@ import Image from 'next/image';
 import {
   ArrowRight,
   Sparkles,
-  Flame,
-  Clock,
   History,
   TrendingDown,
-  Tag,
-  BookOpen,
   Newspaper,
   FileText,
   TrendingUp,
@@ -22,7 +17,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { Glow } from '@/components/motion/glow';
-import { SceneImage, type SceneTone } from '@/components/motion/scene-image';
+import { SceneImage } from '@/components/motion/scene-image';
 import { TextImageMask } from '@/components/motion/text-image-mask';
 import { CornerBrackets } from '@/components/motion/corner-brackets';
 import { CircuitLines } from '@/components/motion/circuit-lines';
@@ -115,36 +110,6 @@ export default async function HomePage() {
       <Benefits />
       <NewsletterCTA />
     </>
-  );
-}
-
-// Cada seção com busca própria no banco (WeeklyPromosSection, SalesHighlights,
-// HomeNewsSection) fica isolada num Suspense — sem isso, componentes async
-// irmãos renderizam em SEQUÊNCIA (não em paralelo), somando o tempo de cada
-// um; com Suspense, o React consegue disparar a busca das três ao mesmo
-// tempo e ir liberando cada bloco assim que os dados chegam. Achado real
-// (2026-07-25): era essa soma sequencial, não o pool de conexão, que fazia
-// a Home travar 25s+ mesmo com o banco respondendo rápido (/api/health
-// respondia em ~1s no mesmo instante em que a Home travava).
-// Esqueleto de 3 cards (não um bloco cinza genérico) — cada seção streamada
-// por trás desse fallback (WeeklyPromos/SalesHighlights/HomeNews) renderiza
-// em grid de 3 colunas; um retângulo único no lugar deles lia como "espaço
-// vazio/quebrado" pro usuário durante o streaming SSR, em vez de "carregando".
-function SectionFallback() {
-  return (
-    <div className="w-full py-16 lg:py-20">
-      <div className="mx-auto max-w-7xl px-4 lg:px-8">
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-3 animate-pulse">
-              <div className="aspect-[16/9] w-full rounded-[var(--radius-lg)] bg-[var(--color-bg-inset)]" />
-              <div className="h-4 w-3/4 rounded bg-[var(--color-bg-inset)]" />
-              <div className="h-3 w-1/2 rounded bg-[var(--color-bg-inset)]" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -401,49 +366,6 @@ function StatementBand({ products, stores, quotes }: { products: number; stores:
   );
 }
 
-// ----- Divider emblem (letterform "E") --------------------------
-// Um dos usos pedidos explicitamente: imagem recortada dentro de uma
-// interpretação geométrica das iniciais/número da marca (E de "Espaço").
-// Pausa editorial entre Universos e a Hype Zone — os 4 glifos (E · G · 8 · 6,
-// iniciais + número da marca) juntos no mesmo painel, cada um com uma foto
-// diferente, formando o emblema "EG86" completo num só lugar da página (em
-// vez de espalhado letra por letra em headers de outras rotas).
-function DividerEmblem() {
-  const glyphs: { id: string; letter: string; src: string }[] = [
-    { id: 'eg86-e', letter: 'E', src: '/images/home/divider-emblem.png' },
-    { id: 'eg86-g', letter: 'G', src: '/images/emblem/g-gadgets.png' },
-    { id: 'eg86-8', letter: '8', src: '/images/emblem/8-drop-reveal.png' },
-    { id: 'eg86-6', letter: '6', src: '/images/emblem/6-collectibles.png' },
-  ];
-
-  return (
-    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16">
-      <Reveal>
-        <div className="flex flex-col items-center gap-8 rounded-[var(--radius-xl)] border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] px-6 py-10 lg:py-14">
-          <div className="flex items-center justify-center gap-0.5 sm:gap-1">
-            {glyphs.map(({ id, letter, src }) => (
-              <TextImageMask
-                key={id}
-                text={letter}
-                src={src}
-                className="text-[100px] sm:text-[160px] lg:text-[240px]"
-              />
-            ))}
-          </div>
-          <div className="max-w-[48ch] text-center">
-            <Text variant="label" color="tertiary">
-              Espaço Geek 86
-            </Text>
-            <Text as="p" variant="heading-md" className="mt-2">
-              Preços, curadoria e cultura geek no mesmo site.
-            </Text>
-          </div>
-        </div>
-      </Reveal>
-    </section>
-  );
-}
-
 // ----- Hero ---------------------------------------------------
 // Primeira tela = a função principal do site: BUSCAR PREÇOS. Sempre dark
 // (data-theme="dark"), foto real tratada com overlay em gradiente (contraste
@@ -483,159 +405,6 @@ function Hero({ data }: { data: HomeSearchData }) {
             platforms={platforms.map((p) => ({ platform: p.platform, label: PLATFORM_SHORT[p.platform] || p.label }))}
           />
         </div>
-      </div>
-    </section>
-  );
-}
-
-// ----- Inteligência de preço (o diferencial real) --------------
-// Client explicitamente pediu pra não perder isso — é o que nos
-// aproxima de CamelCamelCamel/IsThereAnyDeal, e hoje não aparecia
-// em lugar nenhum da home. Copy reaproveita a linguagem real já
-// usada em /ofertas e no OfferCard ("menor preço já visto",
-// "histórico e cupons") — nada inventado.
-const priceFeatures = [
-  {
-    Icon: History,
-    title: 'Histórico de preço real',
-    description:
-      'Cada oferta guarda o preço de ontem, do mês passado e o menor já visto, não só o de hoje.',
-  },
-  {
-    Icon: TrendingDown,
-    title: 'Selo de menor preço já visto',
-    description:
-      'Quando uma oferta bate recorde, a gente marca. Você não precisa comparar aba por aba.',
-  },
-  {
-    Icon: Tag,
-    title: 'Cupons organizados por oferta',
-    description:
-      'Cupons ativos ficam junto do produto, não espalhados em grupo de WhatsApp.',
-  },
-];
-
-function PriceIntelligence() {
-  return (
-    <section className="relative overflow-hidden border-y border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
-      <Glow color="cream" size="lg" intensity={0.14} className="-top-40 left-1/3" />
-
-      <div className="relative mx-auto max-w-7xl px-4 lg:px-8 py-20 lg:py-28">
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-16 lg:items-center">
-          <div className="lg:col-span-5">
-            <Reveal>
-              <Text variant="label" color="tertiary">
-                O diferencial
-              </Text>
-              <Text as="h2" variant="display-lg" className="mt-2 max-w-[14ch]">
-                Saiba se o preço está bom antes de comprar.
-              </Text>
-              <Text variant="body-lg" color="secondary" className="mt-4 max-w-[42ch]">
-                Acompanhamos os preços nos principais marketplaces, com histórico e cupons.
-              </Text>
-              <Button
-                asChild
-                variant="secondary"
-                size="lg"
-                className="mt-8"
-                rightIcon={<ArrowRight className="size-4" />}
-              >
-                <Link href="/ofertas">Ver ofertas monitoradas</Link>
-              </Button>
-            </Reveal>
-          </div>
-
-          <div className="lg:col-span-7">
-            <div className="divide-y divide-[var(--color-border-subtle)] border-t border-[var(--color-border-subtle)]">
-              {priceFeatures.map((f, i) => (
-                <Reveal key={f.title} delay={i * 0.06}>
-                  <div className="flex items-start gap-5 py-6">
-                    <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--color-border-strong)] text-[var(--color-accent-primary)]">
-                      <f.Icon className="size-4" aria-hidden />
-                    </div>
-                    <div>
-                      <Text variant="heading-sm">{f.title}</Text>
-                      <Text variant="body-sm" color="secondary" className="mt-1 max-w-[52ch]">
-                        {f.description}
-                      </Text>
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ----- Universes -------------------------------------------------
-// Sem emoji como marcador — mosaico assimétrico (primeiro item maior)
-// com SceneImage por tom variando gold/ember/ink, no espírito
-// Netflix/Steam de categoria com imagem, não ícone solto.
-const universes = [
-  { slug: 'naruto', label: 'Naruto', image: '/images/universos/naruto.png' },
-  { slug: 'one-piece', label: 'One Piece', image: '/images/universos/one-piece.png' },
-  { slug: 'marvel', label: 'Marvel', image: '/images/universos/marvel.png' },
-  { slug: 'star-wars', label: 'Star Wars', image: '/images/universos/star-wars.png' },
-  { slug: 'pokemon', label: 'Pokémon', image: '/images/universos/pokemon.png' },
-  { slug: 'dragon-ball', label: 'Dragon Ball', image: '/images/universos/dragon-ball.png' },
-];
-
-const universeTones: SceneTone[] = ['gold', 'ember', 'ink'];
-
-function UniversesSection() {
-  return (
-    <section className="w-full mx-auto max-w-7xl px-4 lg:px-8 py-20 lg:py-28">
-      <Reveal>
-        <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <Text variant="label" color="tertiary">
-              Navegue por
-            </Text>
-            <Text as="h2" variant="display-lg" className="mt-2 max-w-[16ch]">
-              Universos que a gente cataloga a fundo.
-            </Text>
-          </div>
-        </div>
-      </Reveal>
-
-      {/* Card em aspect-[3/2] — mesma proporção real das imagens geradas
-          (1536×1024), pra caber inteira sem cortar e sem sobrar borda vazia.
-          Grid uniforme (sem card "herói" maior) fica mais contido/editorial
-          que o mosaico assimétrico anterior. */}
-      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 lg:mx-0 lg:grid lg:grid-cols-3 lg:gap-4 lg:overflow-visible lg:px-0 lg:pb-0">
-        {universes.map((u, i) => (
-          <Reveal key={u.slug} delay={i * 0.05} className="w-[78vw] shrink-0 snap-start sm:w-72 lg:w-auto">
-            <Link
-              href={`/universos/${u.slug}`}
-              className="group block rounded-[var(--radius-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]"
-            >
-              <Card interactive className="relative aspect-[3/2] overflow-hidden">
-                <SceneImage
-                  src={u.image}
-                  alt={u.label}
-                  tone={universeTones[i % universeTones.length]}
-                  caption="Em curadoria"
-                  className="absolute inset-0"
-                />
-                <div
-                  aria-hidden
-                  className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/5 to-transparent"
-                />
-                <span className="absolute left-3 top-3 font-mono text-[11px] tracking-[0.08em] text-[var(--color-text-primary)]/55">
-                  0{i + 1}
-                </span>
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <Text as="h3" variant="heading-sm" className="text-[var(--color-text-primary)]">
-                    {u.label}
-                  </Text>
-                </div>
-              </Card>
-            </Link>
-          </Reveal>
-        ))}
       </div>
     </section>
   );
