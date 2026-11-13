@@ -140,6 +140,7 @@
   };
   var parado = false;
   var tratados = {}; // id -> 1 (nesta sessão)
+  var falhasItem = {}; // id -> nº de lotes em que ESSE item ficou sem resultado (item teimoso: ver o lote abaixo)
 
   function agora() { return new Date().toISOString(); }
   function erro(msg) { S.erros.push({ t: agora(), msg: String(msg).slice(0, 200) }); if (S.erros.length > 20) S.erros.shift(); }
@@ -341,11 +342,21 @@
         linha({ id: it.id, skip: res.skip });
       } else {
         // falha da interface/sem resultado: pode ser o item OU o gerador. Retém como sem_resultado; descarta se a interface estiver instável.
-        semResultadoSeguidos++;
+        falhasItem[it.id] = (falhasItem[it.id] || 0) + 1;
         tratados[it.id] = 1;
-        retidos.push({ id: it.id, motivo: 'sem_resultado' });
         S.totais.sem_resultado++;
         linha({ id: it.id, ui: res.ui });
+        if (falhasItem[it.id] >= 3 && S.totais.ok > 0) {
+          // ITEM TEIMOSO (incidente 2026-11-13: PS5 Slim e outros): o gerador recusa esse item e ele voltava à fila no mesmo instante, em loop,
+          // travando o resto. Como a interface já gerou links com sucesso nesta sessão, o problema é o ITEM: registra a falha no servidor
+          // (ml_link_falhas, reintento em dias) e segue para o próximo, sem contar para a instabilidade da interface.
+          buffer.skips.push({ id: it.id, motivo: 'sem_resultado' });
+          linha({ id: it.id, item_teimoso: falhasItem[it.id] });
+          delete falhasItem[it.id];
+        } else {
+          semResultadoSeguidos++;
+          retidos.push({ id: it.id, motivo: 'sem_resultado' });
+        }
         if (semResultadoSeguidos >= 3) {
           S.totais.descartados_ui += retidos.length;
           retidos.forEach(function (r) { delete tratados[r.id]; }); // voltam à fila no futuro; nada é registrado como falha
