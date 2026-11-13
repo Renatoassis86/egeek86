@@ -154,10 +154,10 @@ export function OfferCard({
                   // quebrava em 3 linhas e o ícone ficava centralizado no meio, sobreposto ao texto (erro visto no cartão de 180 px).
                   <Text variant="caption" color="secondary" className="flex items-start gap-1">
                     <TrendingDown className="mt-0.5 size-3 shrink-0" aria-hidden />
-                    <span className="flex min-w-0 flex-wrap gap-x-1.5">
+                    <span className="flex min-w-0 flex-col">
                       <span className="whitespace-nowrap">Menor já visto: {formatBRL(metrics.lowestPriceCents)}</span>
                       {metrics.highestPriceCents != null && metrics.highestPriceCents > metrics.lowestPriceCents ? (
-                        <span className="whitespace-nowrap">· Maior já visto: {formatBRL(metrics.highestPriceCents)}</span>
+                        <span className="whitespace-nowrap">Maior já visto: {formatBRL(metrics.highestPriceCents)}</span>
                       ) : null}
                     </span>
                   </Text>
