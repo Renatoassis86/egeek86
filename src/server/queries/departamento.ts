@@ -293,6 +293,46 @@ export async function detalheDepartamento(vertical: string, slug: string): Promi
 }
 
 /**
+ * Diversidade nos destaques (dono, 2026-11-13: "só placa de vídeo, está um tédio"): em vez das N mais baratas (que repetem o mesmo tipo),
+ * pega a mais barata de CADA tipo, na ordem de interesse do departamento, e só depois repete tipos. Só reordena o que já passou pelos filtros.
+ */
+const ORDEM_INTERESSE: Record<string, readonly string[]> = {
+  tecnologia: ['notebook', 'computador-desktop', 'monitor', 'placa-de-video', 'ssd-hd', 'teclado', 'impressora', 'roteador', 'memoria-ram', 'headset', 'mouse'],
+  eletroeletronicos: ['celular', 'smart-tv', 'tablet-leitor', 'fones', 'caixa-de-som', 'soundbar', 'relogios', 'camera-acao', 'drone', 'projetor'],
+};
+
+export function diversificarPorTipo<T extends { name: string }>(vertical: string, itens: readonly T[], limite: number): T[] {
+  const porTipo = new Map<string, T[]>();
+  for (const i of itens) {
+    const t = classificarTipo(vertical, i.name);
+    const l = porTipo.get(t);
+    if (l) l.push(i);
+    else porTipo.set(t, [i]);
+  }
+  const prioridade = ORDEM_INTERESSE[vertical] ?? [];
+  const tipos = [...porTipo.keys()].sort((x, y) => {
+    const ix = prioridade.indexOf(x);
+    const iy = prioridade.indexOf(y);
+    if (ix !== iy) return (ix === -1 ? 999 : ix) - (iy === -1 ? 999 : iy);
+    return (porTipo.get(y)?.length ?? 0) - (porTipo.get(x)?.length ?? 0);
+  });
+  const saida: T[] = [];
+  for (let rodada = 0; saida.length < limite; rodada++) {
+    let alguma = false;
+    for (const t of tipos) {
+      const item = porTipo.get(t)?.[rodada];
+      if (item) {
+        saida.push(item);
+        alguma = true;
+        if (saida.length >= limite) break;
+      }
+    }
+    if (!alguma) break;
+  }
+  return saida;
+}
+
+/**
  * Melhores achados de uma loja Plus para a home: menores preços do momento (1 linha por master), mesma base de
  * `listarDepartamento` (porteiro aprovado, oferta clicável checada nas últimas horas), só com foto real do anúncio.
  * Sem mediana, sem histórico, sem selo.
@@ -318,8 +358,9 @@ export async function destaquesDepartamento(vertical: string, limite = 8): Promi
       AND COALESCE(m.default_images ->> 0, '') ~* '^https?://'
     GROUP BY m.id
     ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC
-    LIMIT ${lim + 8}
+    LIMIT 160
   `);
-  // Cinto de segurança (dono, 2026-11-13): destaque ordenado por menor preço é onde o item miúdo apareceria primeiro; folga de 8 linhas cobre o filtro.
-  return rows.filter((r) => !ehItemMiudoOuDuvida(r.name, Number(r.min_cents), 'general', vertical)).slice(0, lim).map(mapCartao);
+  // Cinto de segurança (dono, 2026-11-13): destaque ordenado por menor preço é onde o item miúdo apareceria primeiro.
+  const limpas = rows.filter((r) => !ehItemMiudoOuDuvida(r.name, Number(r.min_cents), 'general', vertical));
+  return diversificarPorTipo(vertical, limpas, lim).map(mapCartao);
 }
