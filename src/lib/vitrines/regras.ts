@@ -1,6 +1,7 @@
 // Sem 'server-only': regras PURAS das vitrines (checklist #7 e #8). Testadas por scripts/test-vitrine-regras.ts e test-vitrine-plataforma.ts.
 import { INLINE_BAND_PERCENT, MIN_HISTORY_DAYS_FOR_VERDICT, MIN_QUOTES_FOR_VERDICT, computeVerdict, sellerTier, type SellerSignals } from '@/lib/affiliate/price-verdict';
 import { offerTitleFlags } from '@/lib/affiliate/offer-identity';
+import { avaliarConsoleVideoGame, ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
 import { legacyPlatformLabel, readPlatform, titleIsLegacyPlatformOnly } from '@/lib/catalog/platform';
 import type { GamePlatformGen } from '@/db/schema';
 import type { FaixaTipo, MenorRegistrado, PlataformaVitrine, PosicaoMedia, VitrineChave, VitrineItem } from './tipos';
@@ -37,6 +38,7 @@ export const VITRINE_REGRAS = {
 export type MotivoExclusao =
   | 'porteiro_oculto'
   | 'tipo_fora_da_cartela'
+  | 'console_nao_e_aparelho'
   | 'plataforma_unknown'
   | 'plataforma_fora_de_linha'
   | 'retro_ou_legado'
@@ -208,6 +210,14 @@ export function avaliarCandidato(c: Candidato, ctx: ContextoAvaliacao, opts: Opc
   const tipo = TIPO_PUBLICO[tipoDb];
   if (!tipo) return { ok: false, motivo: 'tipo_fora_da_cartela' };
   if (!(c.precoCentavos > 0)) return { ok: false, motivo: 'sem_preco' };
+  // Console = SÓ video game (regra única, dono 2026-11-13): motor, base, frontal, adesivo, cartela, jogo e acessório nunca entram.
+  if (tipo === 'console') {
+    const doOferta = avaliarConsoleVideoGame(c.tituloOferta, c.precoCentavos);
+    // O nome do master precisa ser o aparelho; o título da oferta, ruidoso, só barra quando prova peça/acessório.
+    if (!ehConsoleDeVideoGame(c.nomeMaster || c.tituloOferta, c.precoCentavos) || (doOferta.veredito === 'nao' && doOferta.forte)) {
+      return { ok: false, motivo: 'console_nao_e_aparelho' };
+    }
+  }
 
   const plat = plataformaDaVitrine(c.plataformaDb, `${c.tituloOferta} ${c.nomeMaster}`.trim(), tipo);
   if (!plat.ok) return { ok: false, motivo: plat.motivo };

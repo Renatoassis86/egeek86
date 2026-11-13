@@ -1,0 +1,655 @@
+{
+ "em": "2026-11-13T13:08:45.027Z",
+ "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)",
+ "marca": "limpeza-console-2026-11-13",
+ "plano": "docs/backups/limpeza-console-plano-2026-11-13T13-08-03-184Z.json",
+ "backup": "docs\\backups\\aplicar-limpeza-console-2026-11-13T13-08-43-376Z.ndjson",
+ "gravados": [
+  {
+   "id": "588db877-bd1f-49b7-8a02-55ff9eea5bf4",
+   "titulo": "10 Cartelas Abraçadeira 5 Pçs 15,8mm 5/8 Multiuso Resistente",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "cartelas",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "2504dbf9-245a-4407-9323-ad431969dd21",
+   "titulo": "4 Grip Edição Zelda + Tela de Vidro Touch para Nintendo Switch",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "tela de vidro",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "a0dc800a-1892-4f75-84a8-0c066e4f8de4",
+   "titulo": "Acessórios para Sistema de Refrigeração / Cooler Externo a USB para PS5 / para PlayStation 5 Disc Digital",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:acessorio_antes_do_aparelho",
+    "matched": "refrigeracao",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "a834d21c-e2d6-4b2c-9d0a-2a7d81574d47",
+   "titulo": "Base Horizontal Para Playstation 5 Slim/Pro (PS5 Com e Sem Media)",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:acessorio_antes_do_aparelho",
+    "matched": "base",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "d61da8f9-36e2-416d-8447-73a84ee1d886",
+   "titulo": "Caixa De Switch Encaixável Transparente Para Nintendo 2/OLED",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "caixa de switch",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "364afd34-f03c-42aa-bb6d-b1eb51fc2d44",
+   "titulo": "Console Microsoft Xbox One S 2 TB Edição Limitada Gears of War 4 Crimson",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "e9947923-e19a-47d5-a2b4-0583370d8929",
+   "titulo": "Console Microsoft Xbox One S All Digital de 1 TB, Cor Branco",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "8ee34889-df1b-4c66-bc50-4a75212edd93",
+   "titulo": "Console Microsoft Xbox One X 1 TB Preto, para Jogos em 4K",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "19ec4ed0-5893-4da1-bd45-a86733534b35",
+   "titulo": "Console PlayStation PlayStation VR Mega Pack",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "playstation vr",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "6544c440-be4d-4f1f-ad5f-ec7762dbd1bc",
+   "titulo": "Console Playstation Playstation Vr Mega Pack, cor preta",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "playstation vr",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "d6c984a5-37cf-42ee-845a-6700fa8bca53",
+   "titulo": "Console Xbox One 500gb + Headset Com Fio + Controle Wireless",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "3d0603e5-8623-4fd5-a642-6167bdd930c7",
+   "titulo": "Console Xbox One 500gb Edição Palmeiras 102 Anos Microsoft",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "84e2085b-8bbd-4cb7-87ca-c9989b8b43c5",
+   "titulo": "Console Xbox One S 1 Tb Com 1 Controle Wireless 23400007",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "1c140be4-29e2-4b3f-b143-83e209a25892",
+   "titulo": "Console Xbox One S 1 TB Microsoft com Tom Clancy's The Division 2",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "e9c95764-7875-401b-9174-05e2d413d2c2",
+   "titulo": "Console Xbox One S 1tb 4k 2 Controles Branco Homologação: 78911701569",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "475fd033-f4c6-4d3f-b92d-3a503a96ed5c",
+   "titulo": "Console Xbox One S 1tb Com 1 Controle A14705 Homologação: 78911701569",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "90a99414-1c55-4189-85df-5be0e835813e",
+   "titulo": "Console Xbox One S 1tb Pacote Battlefield V Microsoft",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "dc06663e-3f0f-4259-8c42-f47789b6fe48",
+   "titulo": "Console Xbox One S 500 Gb + Minecraft - Xbox One - Edição em Pacote",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "14fb9ec6-078a-41b3-84a3-6accc3627fb8",
+   "titulo": "Console Xbox One S De 1 Tb branco",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "71841796-7360-413c-aa39-ccf16476a112",
+   "titulo": "Console Xbox One S de 500 GB",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "8f1dfe14-f8ad-4020-93b6-91767e0022ea",
+   "titulo": "Console Xbox One S Microsoft de 1 TB Com FIFA 17",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "b884d4dc-73ae-4fb5-ac3a-abc470dd63a6",
+   "titulo": "Console Xbox One S, 1tb + Nba 2k19 - Edição Bundle",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "ae33b210-d5a2-4dcc-886a-6ea184aba009",
+   "titulo": "Console Xbox One X 1tb + Battlefield V - Edição Especial Limitada Gold Rush",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "7e248111-1d7a-47e2-898d-fa9fb94fc3f7",
+   "titulo": "Console Xbox Xbox One S All Digital x219577303 2019",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "12c806b9-6827-4736-b7bb-128ebc6b8064",
+   "titulo": "Console Xbox Xbox One S Standard",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "be9f0a31-6741-44a3-b11c-fef0dabd2637",
+   "titulo": "Copinho Festa Playstation Ps5 Aniversário 200ml 8 Unidades",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "copinho",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "2307194d-ce64-4727-bd5a-6e0dde4d2f25",
+   "titulo": "GagaKing Pacote com 2 Volantes para Nintendo Switch 2 Joy Con (2025), Volantes de Corrida Destacáveis para NS2 Mario Kar",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "volantes",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "db363221-9d84-44bf-bd95-113331a3e5ca",
+   "titulo": "Hub USB De 6 Portas Com De Expansão De Luz RGB Para Console PlayStation 5 Slim/Pro",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:acessorio_antes_do_aparelho",
+    "matched": "hub",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "b6f6b9e8-efbc-4735-93b6-d342d2303660",
+   "titulo": "Jig RCM Loader Clip - Nintendo Switch - Modelo black preto",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "jig",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "7199bb77-8c01-4a6b-acaa-d096f626638f",
+   "titulo": "Leia o anúncio por gentileza Joy con Cinza Para Nintendo switch apenas 1 lado Novo com garantia e certificado Nintendo",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:acessorio_antes_do_aparelho",
+    "matched": "joy con",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "fe2cbc75-06da-411e-b78a-14a3c378fe9a",
+   "titulo": "Mica para Console Nintendo Transparente Switch",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "mica",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "9f000699-db9d-4f8c-8664-4dba8ca18273",
+   "titulo": "Microsoft Xbox One S 500GB Negro, Console Sobremesa c/ Controle Inalámbrico",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "a3b0ee7d-8bea-4372-a194-8018456759a6",
+   "titulo": "Motor 5,9v Para Playstation E Dvd Eixo 6mm Rf-300ca Promoção",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "motor",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "970b7136-0d06-466d-9104-39ad6e1997d4",
+   "titulo": "Motor Rf-300 Para Robótica Dvd Playstation 5.9V 6600Rpm",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "motor",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "0250125f-c391-454f-89f5-cd058d6f1e7f",
+   "titulo": "Pacote De Acessórios Esportivos Com Estação Organizadora Para Console Nintendo Switch/OLED E Joy-con (Não NS2)",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "pacote de acessorios",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "972e12d4-773c-4440-884c-c038449fed33",
+   "titulo": "PlayStation VR2 Branco Para Playstation 5 - CFI-ZVR1WX",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "vr2",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "e1a11e0e-c746-4216-8c41-2c71a10c13ab",
+   "titulo": "SanDisk 8.8 Vendasandisk Nintendo Switch 2 MicroSD Express Card Mario Edition 256 GB De Armazenamento (Garantia Vitalíci",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "sandisk",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "69943658-5ae0-4448-8998-b5f97d5668ef",
+   "titulo": "Splatoon 3 2 1 Frye Shiver Personagens Do Homem Grande Adereços De Roupa Cartão NfC Para Nintendo Switch & OLED/Lite",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:acessorio_antes_do_aparelho",
+    "matched": "cartao",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "68645714-d287-4468-a34e-2da304975512",
+   "titulo": "Tela Display Lcd Para Nintendo Switch V1",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "tela display",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "4f777bcd-d38c-49bb-a67e-fa359a9d30d8",
+   "titulo": "Transmissor Bluetooth 5.0 Ugreen Nintend. Switch PlayStation",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:peca_ou_enfeite",
+    "matched": "transmissor",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "d28c5f21-daec-4af8-9818-bf2b0fe63a30",
+   "titulo": "Unidade de leitor de disco para console digital Sony Playstation 5 Ps5",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:acessorio_antes_do_aparelho",
+    "matched": "unidade",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "ff421db3-fd12-46af-be12-b7585b7472b0",
+   "titulo": "Xbox One Fat 500gb Console preto Microsoft Wire Controle Preto",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "xbox one",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  },
+  {
+   "id": "d645b784-cdea-4c56-bafb-bbc48617adda",
+   "titulo": "Youcheng Bang Zelda Kingdom Tears switch Caixa de cartão adequada para Nintendo ns2 Caixa de armazenamento de cassete Ca",
+   "antes": null,
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:acessorio_ou_jogo_sem_aparelho",
+    "matched": "cartao",
+    "version": 1,
+    "at": "2026-11-13T13:08:45.027Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "agente-catalogo (aprovacao ampla do dono, 2026-11-13)"
+   }
+  }
+ ],
+ "falhas": []
+}

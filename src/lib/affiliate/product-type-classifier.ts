@@ -2,6 +2,7 @@
 // nenhum, e precisa ser importável tanto pelo runtime do Next (discover-
 // products.ts) quanto pelo script de treino standalone (rodado via tsx fora
 // do Next — 'server-only' derruba fora do contexto do build do Next).
+import { ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
 import type { ProductType } from '@/db/schema';
 
 /**
@@ -341,7 +342,12 @@ export async function resolveProductTypeFromTitle(title: string, priceCents?: nu
   // Regras determinísticas vencem o modelo (EG-04). Peça/embalagem não deve
   // entrar no catálogo na descoberta: devolve null (= descartar).
   const ruleHit = detectNonGameByRules(title);
-  if (ruleHit) return ruleHit.kind === 'part_or_packaging' ? null : ruleHit.productType;
+  if (ruleHit) {
+    if (ruleHit.kind === 'part_or_packaging') return null;
+    // Console = SÓ video game (regra única, dono 2026-11-13): sem aparelho no título, a peça/jogo não ganha tipo console.
+    if (ruleHit.productType === 'console' && !ehConsoleDeVideoGame(title, priceCents)) return null;
+    return ruleHit.productType;
+  }
 
   const model = await getProductTypeClassifierModel();
   const predictions = classify(title, model);
@@ -358,9 +364,11 @@ export async function resolveProductTypeFromTitle(title: string, priceCents?: nu
     // console (se o modelo já enxergava algum sinal disso) em vez de
     // descartar um produto real do catálogo.
     const consoleGuess = predictions.find((p) => p.label === 'console');
-    if (consoleGuess && consoleGuess.probability >= 0.1) return 'console';
+    if (consoleGuess && consoleGuess.probability >= 0.1) return ehConsoleDeVideoGame(title, priceCents) ? 'console' : null;
     return null;
   }
 
+  // O modelo de texto adivinhou 'console' (foi assim que motor, base e frontal viraram console): só passa se o título anuncia o aparelho.
+  if (top.label === 'console' && !ehConsoleDeVideoGame(title, priceCents)) return null;
   return top.label;
 }

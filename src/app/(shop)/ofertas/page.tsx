@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { Flame, TrendingDown, Zap, Gamepad2, Cpu, Headphones, Package } from 'lucide-react';
@@ -304,7 +305,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
   // Consoles por família (fabricante)
   const consoleShelves: Shelf[] = types.includes('console')
     ? MAKER_KEYS.map((mk): Shelf | null => {
-        const items = ordinaryPool.filter((o) => typeOf(o) === 'console' && makerOfGen(gen(o)) === mk);
+        const items = ordinaryPool.filter((o) => typeOf(o) === 'console' && ehConsoleDeVideoGame(o.masterProduct.name, o.currentPriceCents) && makerOfGen(gen(o)) === mk);
         if (items.length < MIN_SHELF) return null;
         return {
           id: `consoles-${mk}`,

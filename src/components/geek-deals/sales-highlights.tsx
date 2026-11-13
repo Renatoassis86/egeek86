@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { Text } from '@/components/ui/text';
 import { Reveal } from '@/components/motion/reveal';
 import { OfferCard } from '@/components/affiliate/offer-card';
+import { ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
 import { isHighlightEligibleSeller } from '@/lib/affiliate/price-verdict';
 import { listRankedOffers, getFeaturedOffers, getOfferListingMetrics, type RankedOffersFilter, type OfferWithRelations } from '@/server/queries/affiliate';
 
@@ -49,7 +50,11 @@ function deduplicateAndFilterOffers(
 }
 
 async function fetchRow(title: string, href: string, filter: RankedOffersFilter) {
-  const offers = await listRankedOffers({ ...filter, limit: 30, sortBy: filter.sortBy ?? 'price_asc' });
+  const bruto = await listRankedOffers({ ...filter, limit: filter.productType === 'console' ? 120 : 30, sortBy: filter.sortBy ?? 'price_asc' });
+  // Console = SÓ video game (regra única, dono 2026-11-13): peça, base, motor, frontal, adesivo, cartela e jogo nunca entram na linha Consoles.
+  const offers = filter.productType === 'console'
+    ? bruto.filter((o) => ehConsoleDeVideoGame(o.masterProduct.name, o.currentPriceCents)).slice(0, 30)
+    : bruto;
   return { title, href, rawOffers: offers };
 }
 

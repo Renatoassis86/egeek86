@@ -1,5 +1,6 @@
 // Sem 'server-only': função pura (regex + tabelas), importável por queries do
 // servidor, coletores, scripts tsx e testes.
+import { avaliarConsoleVideoGame } from '@/lib/catalog/console-videogame';
 import type { ProductType } from '@/db/schema';
 import { classifyCatalogItem, foldTitle, type CatalogDimension } from '@/lib/catalog/dimensions';
 import { titleIsLegacyPlatformOnly } from '@/lib/catalog/platform';
@@ -240,6 +241,9 @@ export function evaluateCatalogGate(input: GateInput): GateResult {
 
   // Console retrô: fora do monitoramento de novos (drops e leilões). Reversível: override manual 'approved' passa acima.
   if (baseDim === 'console') {
+    // Regra única de console (dono, 2026-11-13): Xbox One/360, PS1-3, emulador e equivalentes fora de linha não são console do site.
+    const fl = avaliarConsoleVideoGame(name);
+    if (fl.veredito === 'nao' && fl.forte && fl.motivo === 'retro_ou_fora_de_linha') return result('rejected', 'out_of_scope', 'console_fora_de_linha', fl.termo, 'off_catalog', false);
     const retro = RETRO_CONSOLE.exec(t);
     if (retro && !MODERN_CONSOLE.test(t) && !isNewRetroStyleHardware(t)) return result('rejected', 'out_of_scope', 'console_retro_fora_do_escopo', retro[0], 'off_catalog', false);
   }

@@ -63,6 +63,8 @@ const mk = (over: Partial<Candidato> = {}): Candidato => {
   };
 };
 const comStats = (over: Partial<NonNullable<Candidato['stats']>>): Candidato['stats'] => ({ avgCents: 20000, quoteCount: 10, historyDays: 30, lowConfidence: false, lowAllCents: 14800, lowAllAt: '2026-11-01T10:00:00Z', lowBadgeBlock: null, ...over });
+/** Console realista (regra única de console: preço compatível com o aparelho e título que o anuncia). */
+const PRECO_CONSOLE = { precoCentavos: 350000, stats: { avgCents: 450000, quoteCount: 10, historyDays: 30, lowConfidence: false, lowAllCents: 346000, lowAllAt: '2026-11-01T10:00:00Z', lowBadgeBlock: null } } as const;
 const quatro = (f: () => Candidato) => [f(), f(), f(), f()];
 const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(chave, xs, ctx).itens.map((i) => i.masterProductId));
 
@@ -108,9 +110,9 @@ const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(ch
   const hide = mk({});
   const ctxOculto: ContextoAvaliacao = { ...ctx, ocultos: new Set([hide.masterProductId]) };
   check('porteiro oculto exclui (contexto)', !selecionar('destaques', [...bons, hide], ctxOculto).itens.some((i) => i.masterProductId === hide.masterProductId));
-  const moved = mk({ tipoDb: 'game', tituloOferta: 'Console Teste PS5 Digital' });
+  const moved = mk({ tipoDb: 'game', tituloOferta: 'Console PlayStation 5 Digital', nomeMaster: 'Console PlayStation 5 Digital', ...PRECO_CONSOLE });
   const ctxMov: ContextoAvaliacao = { ...ctx, tipoEfetivo: new Map([[moved.masterProductId, 'console']]) };
-  check('tipo efetivo do porteiro manda sobre o gravado', selecionar('plataforma:ps5:consoles', [moved, ...quatro(() => mk({ tipoDb: 'console', formatoDb: 'unknown', tituloOferta: 'Console PS5 Slim 1TB' }))], ctxMov).itens.some((i) => i.masterProductId === moved.masterProductId));
+  check('tipo efetivo do porteiro manda sobre o gravado', selecionar('plataforma:ps5:consoles', [moved, ...quatro(() => mk({ tipoDb: 'console', formatoDb: 'unknown', tituloOferta: 'Console PS5 Slim 1TB', nomeMaster: 'Console PS5 Slim 1TB', ...PRECO_CONSOLE }))], ctxMov).itens.some((i) => i.masterProductId === moved.masterProductId));
 
   // Vitrine com menos de 4 itens some.
   check('vitrine com 3 itens some', selecionar('destaques', quatro(() => mk()).slice(0, 3), ctx).itens.length === 0);
@@ -127,7 +129,16 @@ const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(ch
   const muitos = Array.from({ length: 30 }, () => mk());
   check('destaques cortam em 12', selecionar('destaques', muitos, ctx).itens.length === VITRINE_REGRAS.DESTAQUES);
   check('faixa de jogos corta em 10', selecionar('plataforma:ps5:jogos', muitos, ctx).itens.length === VITRINE_REGRAS.JOGOS_POR_FAIXA);
-  const consoles = Array.from({ length: 12 }, () => mk({ tipoDb: 'console', formatoDb: 'unknown', tituloOferta: 'Console PlayStation 5 Slim', nomeMaster: 'Console PS5 Slim' }));
+  const consoles = Array.from({ length: 12 }, () => mk({ tipoDb: 'console', formatoDb: 'unknown', tituloOferta: 'Console PlayStation 5 Slim', nomeMaster: 'Console PS5 Slim', ...PRECO_CONSOLE }));
+  // Regra única de console (dono, 2026-11-13): peça, base, motor, frontal, adesivo, cartela e jogo NUNCA entram na faixa de consoles.
+  const ruins = ['Motor 5,9v para Playstation e DVD', 'Frontal PS5 Slim e Fat Spider-Man 3D', 'Base Horizontal para Playstation 5', 'Motor RF-300 para robótica', '10 Cartelas Abraçadeira 5 Pçs 15,8mm', 'Splatoon 3 adesivos personagens'];
+  for (const t of ruins) {
+    const ruim = mk({ tipoDb: 'console', formatoDb: 'unknown', tituloOferta: t, nomeMaster: t, ...PRECO_CONSOLE });
+    const sel = selecionar('plataforma:ps5:consoles', [ruim, ...consoles.slice(0, 4)], ctx);
+    check(`faixa de consoles exclui peça: ${t}`, !sel.itens.some((i) => i.masterProductId === ruim.masterProductId) && sel.itens.length === 4, { n: sel.itens.length, motivos: sel.motivos });
+  }
+  const barato = mk({ tipoDb: 'console', formatoDb: 'unknown', tituloOferta: 'Console PlayStation 5 Slim', nomeMaster: 'Console PS5 Slim', precoCentavos: 9000 });
+  check('faixa de consoles exclui "console" por R$ 90 (preço incompatível)', !selecionar('plataforma:ps5:consoles', [barato, ...consoles.slice(0, 4)], ctx).itens.some((i) => i.masterProductId === barato.masterProductId));
   check('faixa de consoles corta em 6', selecionar('plataforma:ps5:consoles', consoles, ctx).itens.length === VITRINE_REGRAS.CONSOLES_POR_FAIXA);
   check('consoles não entram na faixa de jogos', selecionar('plataforma:ps5:jogos', [...consoles, ...quatro(() => mk())], ctx).itens.every((i) => i.tipo === 'jogo'));
   const acess = Array.from({ length: 12 }, () => mk({ tipoDb: 'accessory', formatoDb: 'unknown', tituloOferta: 'Controle DualSense PS5 Branco', nomeMaster: 'Controle DualSense PS5' }));
