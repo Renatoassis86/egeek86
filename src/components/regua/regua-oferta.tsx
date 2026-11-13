@@ -43,9 +43,9 @@ export function ReguaEtiqueta({ regua, className = '' }: { regua: ReguaFront; cl
         <span className="min-w-0 break-words">{v.rotulo}</span>
       </span>
       {v.mostrarPct ? (
-        <span className="flex items-baseline gap-1.5">
-          <span className="tabular whitespace-nowrap text-xl font-bold leading-none" style={{ color: d.cor }}>−{pt1(v.pct)}%</span>
-          <span className="text-xs text-[var(--color-text-secondary)]">abaixo da média</span>
+        <span className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+          <span className="tabular shrink-0 whitespace-nowrap text-xl font-bold leading-none" style={{ color: d.cor }}>−{pt1(v.pct)}%</span>
+          <span className="whitespace-nowrap text-xs leading-tight text-[var(--color-text-secondary)]">abaixo da média</span>
         </span>
       ) : null}
       <span className="sr-only">{`Degrau ${v.degrau} de 5 pela queda sobre a média das lojas.`}</span>

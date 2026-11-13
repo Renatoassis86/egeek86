@@ -150,10 +150,16 @@ export function OfferCard({
                 {regua?.veredito && isFeature ? <ReguaMarcadores regua={regua} /> : null}
 
                 {metrics && metrics.eligibility.eligible && !showLowBadge && (
-                  <Text variant="caption" color="secondary" className="inline-flex items-center gap-1">
-                    <TrendingDown className="size-3" aria-hidden />
-                    Menor já visto: {formatBRL(metrics.lowestPriceCents)}
-                    {metrics.highestPriceCents != null && metrics.highestPriceCents > metrics.lowestPriceCents ? ` · Maior já visto: ${formatBRL(metrics.highestPriceCents)}` : ''}
+                  // Cada medida numa linha própria que nunca parte no meio do valor: antes o texto inteiro era um item só de um inline-flex,
+                  // quebrava em 3 linhas e o ícone ficava centralizado no meio, sobreposto ao texto (erro visto no cartão de 180 px).
+                  <Text variant="caption" color="secondary" className="flex items-start gap-1">
+                    <TrendingDown className="mt-0.5 size-3 shrink-0" aria-hidden />
+                    <span className="flex min-w-0 flex-wrap gap-x-1.5">
+                      <span className="whitespace-nowrap">Menor já visto: {formatBRL(metrics.lowestPriceCents)}</span>
+                      {metrics.highestPriceCents != null && metrics.highestPriceCents > metrics.lowestPriceCents ? (
+                        <span className="whitespace-nowrap">· Maior já visto: {formatBRL(metrics.highestPriceCents)}</span>
+                      ) : null}
+                    </span>
                   </Text>
                 )}
               </>
