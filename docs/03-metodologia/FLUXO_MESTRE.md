@@ -467,6 +467,8 @@ Uma pergunta por vez, na ordem de impacto. Recomendação do geek-lead entre par
 13. **Metodologia** (FM-48): o estatístico propõe exigir 5 ofertas também para veredito e rotular o carry-forward; mudar a escada R-19 altera o que o público vê como verdade.
 14. **Resumo diário acima de cupom e insight** (gamer-veterano discorda da ordem de classe): manter alerta > resumo > cupom ou rebaixar o resumo?
 
+15. **Nova landing e reorganização do front** (fila #47 a #49; ata `2026-11-13-reorganizacao-front`; ADR 0012 proposto): decisões D1 a D8 em `docs/redesenho-site/CHECKLIST_NOVA_VERSAO.md` (Amazon no gráfico, piso único de 5 ofertas e teto 50%, oferta-dia pública só após a sombra, 4 faixas de plataforma, redirect de `/inteligencia-gamer`, notícias em 2 editorias, visual premium dark com imagens pelos prompts, congelamento de 25 a 28/11). Até a decisão, nenhuma regra R-xx muda; ao aprovar, incluir em 6.6 as regras da vitrine (elegibilidade única, vitrine < 4 itens some, sem fallback "acima do normal").
+
 ### 9.1 Execução da autorização do dono (2026-11-12, "aprovo o que tiver ainda de aprovar")
 
 O dono mandou adotar a opção recomendada de cada decisão, **só se reversível, sem parar laços nem mudar cadência ou cota de forma arriscada**. Resultado, conferido no código e no `vercel.json` (que NÃO foi alterado):
