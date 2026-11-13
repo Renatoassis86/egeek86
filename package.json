@@ -39,7 +39,8 @@
     "test:catalogo": "tsx scripts/test-catalogo-inventario.ts",
     "test:shopee-esporte": "tsx scripts/test-shopee-esporte.ts",
     "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts",
-    "test:mensagens-diversidade": "tsx scripts/test-mensagens-diversidade.ts"
+    "test:mensagens-diversidade": "tsx scripts/test-mensagens-diversidade.ts",
+    "test:redesenho-home": "tsx scripts/test-redesenho-home.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

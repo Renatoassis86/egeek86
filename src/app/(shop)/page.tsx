@@ -1,4 +1,6 @@
 import { Suspense } from 'react';
+import { resolverVersaoHome } from '@/server/redesenho-home';
+import { HomeV2 } from '@/components/home-v2/home-v2';
 import { getPublicMetrics } from '@/server/queries/public-metrics';
 import { getSurveyAggregationForHome } from '@/server/queries/survey';
 import { getHomeSearchData } from '@/server/queries/home-search';
@@ -24,12 +26,17 @@ import { NewsletterCTA } from '@/components/home/secoes/newsletter';
 // pre-renderizar e trava buscando no banco.
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage() {
-  const [metrics, surveyData, searchData] = await Promise.all([
+// Flag REDESENHO_HOME (src/server/redesenho-home.ts): percentual 0 por padrao = esta home, intacta.
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ v?: string | string[] }> }) {
+  const { v } = await searchParams;
+  // A leitura da flag corre em paralelo com as da home atual (cache de 30 s, teto de 1,5 s): a pagina nao espera por ela.
+  const [versao, metrics, surveyData, searchData] = await Promise.all([
+    resolverVersaoHome(v),
     getPublicMetrics(),
     getSurveyAggregationForHome(),
     getHomeSearchData(),
   ]);
+  if (versao === 2) return <HomeV2 />;
 
   return (
     <>

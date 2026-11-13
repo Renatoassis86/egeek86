@@ -1,6 +1,7 @@
 // Next 16: convenção `proxy` (antiga `middleware`). Só renova cookie de sessão; autorização real fica nas actions/rotas/layout (requireAdmin).
 import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
+import { COOKIE_VISITANTE_HOME } from '@/lib/redesenho-home';
 
 export async function proxy(request: NextRequest) {
   // Barreira barata: /admin sem cookie de sessão do Supabase redireciona para /login antes de renderizar
@@ -9,10 +10,27 @@ export async function proxy(request: NextRequest) {
     const hasSession = request.cookies.getAll().some((c) => /^sb-.+-auth-token/.test(c.name));
     if (!hasSession) return NextResponse.redirect(new URL('/login', request.url));
   }
+  // Flag REDESENHO_HOME: identificador anonimo e estavel do visitante (so na home), usado no sorteio por percentual.
+  // Sem dado pessoal; vale 1 ano. Escrito tambem na requisicao para a primeira visita ja ter o grupo.
+  const precisaIdVisitante = request.nextUrl.pathname === '/' && !request.cookies.has(COOKIE_VISITANTE_HOME);
+  const novoId = precisaIdVisitante ? crypto.randomUUID() : null;
+  if (novoId) request.cookies.set(COOKIE_VISITANTE_HOME, novoId);
+  const comId = (res: NextResponse) => {
+    if (novoId) {
+      res.cookies.set(COOKIE_VISITANTE_HOME, novoId, {
+        maxAge: 31_536_000,
+        path: '/',
+        sameSite: 'lax',
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+      });
+    }
+    return res;
+  };
   try {
-    return await updateSession(request);
+    return comId(await updateSession(request));
   } catch (e) {
-    return NextResponse.next();
+    return comId(NextResponse.next({ request }));
   }
 }
 
