@@ -40,7 +40,11 @@
     "test:shopee-esporte": "tsx scripts/test-shopee-esporte.ts",
     "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts",
     "test:mensagens-diversidade": "tsx scripts/test-mensagens-diversidade.ts",
-    "test:redesenho-home": "tsx scripts/test-redesenho-home.ts"
+    "test:redesenho-home": "tsx scripts/test-redesenho-home.ts",
+    "test:vitrine-regras": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-vitrine-regras.ts",
+    "test:vitrine-plataforma": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-vitrine-plataforma.ts",
+    "test:front-regras": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-front-regras.ts",
+    "test:home-sem-orfaos": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-home-sem-orfaos.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

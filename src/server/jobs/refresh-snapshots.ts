@@ -16,6 +16,8 @@ import { destaquesPlusCached } from '@/server/plus-destaques';
 import { tiposPlusCached } from '@/server/plus-tipos';
 import { DEPARTAMENTOS } from '@/lib/catalog/departamentos';
 import { LOJAS_PLUS } from '@/lib/catalog/plus';
+import { todasAsChaves } from '@/lib/vitrines';
+import { atualizarTodasVitrines } from '@/server/vitrines';
 
 /**
  * Recalcula o pré-cálculo persistido da vitrine (Fase 2; ata 2026-11-03-fase2-precalculo.md).
@@ -246,4 +248,41 @@ export async function refreshShowcase(opts: { budgetMs: number; minAgeMs?: numbe
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
   return { total: jobs.length, due: due.length, refreshed, failed, elapsedMs: Date.now() - started, budgetExhausted, timings };
+}
+
+// ---------------------------------------------------------------------------------------------
+// Vitrines da nova home (checklist #7; R-49)
+// ---------------------------------------------------------------------------------------------
+
+export interface VitrinesRefreshSummary {
+  total: number;
+  ok: number;
+  falhas: string[];
+  elapsedMs: number;
+  budgetExhausted: boolean;
+}
+
+/**
+ * Grava o snapshot das 18 vitrines (`getVitrineCached.refresh` -> showcase_snapshot) para a primeira visita nunca esconder o bloco.
+ * Pouca carga por construção: UMA leitura em lote do pool (cache em memória de 2 min dentro da instância; ~5 a 6 s medido), em
+ * seguida só cálculo em memória e uma escrita por vitrine. Sequencial (concorrência 1), no pool 'bg', com orçamento de tempo:
+ * estourou, para e devolve o que fez (as restantes ficam para o ciclo seguinte; o snapshot anterior continua valendo por até 24 h).
+ * Falha de uma vitrine não impede as demais.
+ */
+export async function refreshVitrines(opts: { budgetMs: number }): Promise<VitrinesRefreshSummary> {
+  const started = Date.now();
+  const chaves = todasAsChaves();
+  let ok = 0;
+  const falhas: string[] = [];
+  let budgetExhausted = false;
+  for (const c of chaves) {
+    if (Date.now() - started > opts.budgetMs) {
+      budgetExhausted = true;
+      break;
+    }
+    const r = await runInBgPool(() => atualizarTodasVitrines([c]));
+    ok += r.ok;
+    falhas.push(...r.falhas);
+  }
+  return { total: chaves.length, ok, falhas, elapsedMs: Date.now() - started, budgetExhausted };
 }

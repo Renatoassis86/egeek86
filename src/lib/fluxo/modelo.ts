@@ -51,6 +51,7 @@ export const JOBS_ESPERADOS: JobEsperado[] = [
   { chave: 'refresh-snapshots:stats', rotulo: 'Estatistica de preco (V1)', cadenciaMin: 30, no: 'preco' },
   { chave: 'refresh-snapshots:daily', rotulo: 'Base oferta-dia (V2)', cadenciaMin: 30, no: 'preco', opcional: true },
   { chave: 'refresh-snapshots:showcase', rotulo: 'Vitrine (showcase)', cadenciaMin: 15, no: 'front' },
+  { chave: 'refresh-snapshots:vitrines', rotulo: 'Vitrines da nova home (snapshot)', cadenciaMin: 10, no: 'front', opcional: true },
   { chave: 'refresh-snapshots:inventory', rotulo: 'Inventario do catalogo', cadenciaMin: 60, no: 'front' },
   { chave: 'cupons-batimento', rotulo: 'Cupons: batimento do loop 24 h', cadenciaMin: 60, no: 'cupons' },
   { chave: 'cupons-assistida', rotulo: 'Cupons: leitura assistida', cadenciaMin: null, no: 'cupons' },

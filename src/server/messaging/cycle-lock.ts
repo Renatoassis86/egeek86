@@ -28,7 +28,8 @@ export interface CycleLock {
 const LOCK_KEY = 'group-messages:cycle';
 const ACQUIRE_TIMEOUT_MS = 8_000;
 
-export async function acquireCycleLock(): Promise<CycleLock> {
+/** `key` permite outras travas independentes (ex.: vitrines); sem ela vale a do group-messages. */
+export async function acquireCycleLock(key: string = LOCK_KEY): Promise<CycleLock> {
   let release: () => void = () => undefined;
   const held = new Promise<void>((resolve) => { release = resolve; });
   const outcome = new Promise<boolean>((resolve, reject) => {
@@ -37,7 +38,7 @@ export async function acquireCycleLock(): Promise<CycleLock> {
         .transaction(async (tx) => {
           await tx.execute(sql`SET LOCAL idle_in_transaction_session_timeout = '75s'`);
           await tx.execute(sql`SET LOCAL statement_timeout = '5s'`);
-          const rows = await tx.execute<{ ok: boolean }>(sql`SELECT pg_try_advisory_xact_lock(hashtext(${LOCK_KEY})) AS ok`);
+          const rows = await tx.execute<{ ok: boolean }>(sql`SELECT pg_try_advisory_xact_lock(hashtext(${key})) AS ok`);
           const got = Boolean((rows as unknown as Array<{ ok: boolean }>)[0]?.ok);
           resolve(got);
           if (got) await held; // mantém a transação (e a trava) aberta até release()

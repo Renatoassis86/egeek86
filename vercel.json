@@ -21,6 +21,10 @@
       "schedule": "4-59/15 * * * *"
     },
     {
+      "path": "/api/cron/refresh-snapshots?part=vitrines",
+      "schedule": "5-55/10 * * * *"
+    },
+    {
       "path": "/api/cron/refresh-snapshots?part=daily",
       "schedule": "9-59/30 * * * *"
     },
