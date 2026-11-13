@@ -539,12 +539,19 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
     if (o.achadoOn) {
       // Base do ACHADO: produtos vivos fora de games sem envio nas últimas 24 h (qualquer gatilho). O juízo (link, tipo, histórico) é do avaliador.
       // Games entra so SEM media calculada (menos de MED_MIN_OFFERS ofertas vivas fora da Amazon e sem estado diario de media); o resto de games segue G2/OK1/etc.
+      // 2026-11-13 (P0 desempenho): a contagem de ofertas fora da Amazon era uma subconsulta correlacionada sobre a CTE `live`
+      // (9 mil produtos x 16 mil linhas varridas = ~145 M linhas, ~10 s de CPU por leitura). Agora é UMA agregação (`livecnt`) ligada por join.
       ctes.push(sql`
+    livecnt AS MATERIALIZED (
+      SELECT l2.mid, count(*) FILTER (WHERE n2.slug <> 'amazon') AS n_nonamz
+      FROM live l2 INNER JOIN affiliate_networks n2 ON n2.id = l2.network_id GROUP BY l2.mid
+    ),
     achq AS (
       SELECT DISTINCT l.mid, l.v, mp.name, mp.game_platform_gen AS plat FROM live l INNER JOIN master_products mp ON mp.id = l.mid
       INNER JOIN affiliate_networks ln ON ln.id = l.network_id
+      LEFT JOIN livecnt lc ON lc.mid = l.mid
       WHERE (l.v <> 'games' OR (
-          (SELECT count(*) FROM live l2 INNER JOIN affiliate_networks n2 ON n2.id = l2.network_id WHERE l2.mid = l.mid AND n2.slug <> 'amazon') < ${RULES.MED_MIN_OFFERS}::int
+          COALESCE(lc.n_nonamz, 0) < ${RULES.MED_MIN_OFFERS}::int
           OR NOT EXISTS (SELECT 1 FROM price_daily_state s WHERE s.master_product_id = l.mid AND s.day >= ${addDays(today, -3)}::date AND s.avg_cents IS NOT NULL)
         ))
         AND ln.slug <> 'amazon' ${o.hasTable ? sql`AND NOT EXISTS (
@@ -576,7 +583,12 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
     )`);
       parts.push(sql`SELECT 'cupom'::text, mid::text, v::text, 0::int, name::text, NULL::text, oid::text, ord::int FROM cupq`);
     }
-    const rows = await db.execute<Row>(sql`WITH ${sql.join(ctes, sql`, `)} ${sql.join(parts, sql` UNION ALL `)}`);
+    // Teto de 25 s só desta transação (SET LOCAL): uma leitura que trava/atrasa nunca fica órfã por minutos segurando conexão e locks (P0 2026-11-13).
+    const rows = await db.transaction(async (tx) => {
+      await tx.execute(sql`SET LOCAL statement_timeout = '25s'`);
+      await tx.execute(sql`SET LOCAL lock_timeout = '5s'`);
+      return tx.execute<Row>(sql`WITH ${sql.join(ctes, sql`, `)} ${sql.join(parts, sql` UNION ALL `)}`);
+    });
     return rows.map((r) => ({
       k: String(r.k) as PickBaseRow['k'],
       mid: String(r.mid),

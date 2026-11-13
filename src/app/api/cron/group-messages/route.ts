@@ -9,6 +9,7 @@ import { cicloAgenteCupons } from '@/server/messaging/guardiao-cupons';
 import { refreshShopeeCampaigns } from '@/server/collector/shopee-campaigns';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { discoverStoreChats } from '@/server/stores-discover';
+import { acquireCycleLock } from '@/server/messaging/cycle-lock';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -30,9 +31,20 @@ export const maxDuration = 60;
  * Sem eles o ciclo funciona igual: texto puro, sem linha de cupom.
  */
 export async function GET(request: NextRequest) {
-  const startedAt = Date.now();
+  // Um ciclo por vez (P0 2026-11-13): ciclo que passa de 60 s não empilha o seguinte; a trava cai sozinha (ver cycle-lock.ts).
   const denied = rejectUnlessCronAuthorized(request);
   if (denied) return denied;
+  const lock = await acquireCycleLock();
+  if (!lock.acquired) return NextResponse.json({ ok: true, skipped: 'ciclo anterior ainda em andamento (trava)' });
+  try {
+    return await runCycle(request, lock.failedOpen);
+  } finally {
+    lock.release();
+  }
+}
+
+async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
+  const startedAt = Date.now();
 
   if (!isGroupMessagesEnabled()) return NextResponse.json({ ok: true, skipped: 'GROUP_MESSAGES_ENABLED desligado' });
 
@@ -74,5 +86,5 @@ export async function GET(request: NextRequest) {
   // Guardião de cupons (~5 min, tolerante a falha, orçamento próprio): fecha cupons divulgados que acabaram, avisa o grupo da loja
   // com um card silencioso e grava o relatório da equipe em collector_runs (job 'agente-cupons').
   const agente = Date.now() - startedAt < 35_000 ? await cicloAgenteCupons({ budgetMs: 12_000 }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
-  return NextResponse.json({ ...summary, agenteCupons: agente }, { status: summary.ok ? 200 : 500 });
+  return NextResponse.json({ ...summary, agenteCupons: agente, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
 }
