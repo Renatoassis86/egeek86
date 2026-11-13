@@ -1,4 +1,4 @@
-// Secao da home "Contatos e canais": o lugar unico dos links de Telegram, WhatsApp e contato direto (decisao do dono, 2026-11-13).
+// Secao "Contatos e canais": o lugar unico dos links de Telegram, WhatsApp e contato direto; aparece SO na pagina /contatos, nao na home (decisao do dono, 2026-11-13).
 // Para trocar um link ou telefone, edite SOMENTE as constantes abaixo. Os grupos por loja vem do cadastro das lojas (loja sem link nao aparece).
 import Link from 'next/link';
 import { ArrowRight, Mail, MessageCircle, Send } from 'lucide-react';

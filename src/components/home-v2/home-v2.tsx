@@ -10,7 +10,6 @@ import { MenorRegistrado } from '@/components/home/secoes-v2/menor-registrado';
 import { AcessoriosColecionaveis } from '@/components/home/secoes-v2/acessorios-colecionaveis';
 import { SecaoPlusHome } from '@/components/plus/secao-plus-home';
 import { NoticiasV2 } from '@/components/home/secoes-v2/noticias-v2';
-import { Contatos } from '@/components/home/secoes/contatos';
 import { NewsletterCTA } from '@/components/home/secoes/newsletter';
 
 /**
@@ -49,10 +48,7 @@ export async function HomeV2() {
         <NoticiasV2 />
       </Suspense>
 
-      {/* ENCAIXE FRONTEND-B, 9: Comunidade = Contatos e canais (Telegram, WhatsApp, e-mail) + cadastro da newsletter. */}
-      <Suspense fallback={null}>
-        <Contatos />
-      </Suspense>
+      {/* Contatos e canais (Telegram, WhatsApp) ficam so na pagina /contatos (dono, 2026-11-13); a home so tem o cadastro da conta. */}
       <NewsletterCTA />
     </>
   );

@@ -15,7 +15,6 @@ import { IndicatorsSection } from '@/components/home/secoes/indicadores';
 import { InteligenciaGamerTeaserSection } from '@/components/home/secoes/teaser-inteligencia';
 import { HomeNewsSection } from '@/components/home/secoes/noticias-home';
 import { Benefits } from '@/components/home/secoes/beneficios';
-import { Contatos } from '@/components/home/secoes/contatos';
 import { NewsletterCTA } from '@/components/home/secoes/newsletter';
 
 // HOME: so compoe as secoes (cada uma em src/components/home/secoes/*).
@@ -59,9 +58,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <HomeNewsSection />
       </Suspense>
       <Benefits />
-      <Suspense fallback={null}>
-        <Contatos />
-      </Suspense>
       <NewsletterCTA />
     </>
   );

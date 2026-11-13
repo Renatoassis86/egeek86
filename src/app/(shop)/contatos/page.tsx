@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { StatTile } from '@/components/ui/stat-tile';
 import { Glow } from '@/components/motion/glow';
+import { Contatos } from '@/components/home/secoes/contatos';
 import { Reveal } from '@/components/motion/reveal';
 import { MARKETPLACE_PUBLIC } from '@/lib/features';
 import { getPublicMetrics, PUBLIC_METRIC_LABELS } from '@/server/queries/public-metrics';
@@ -23,6 +24,7 @@ export default async function ContatosPage() {
   const metrics = await getPublicMetrics();
 
   return (
+    <>
     <section className="relative mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16 overflow-hidden">
       {/* Background Glows */}
       <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.12} />
@@ -183,5 +185,8 @@ export default async function ContatosPage() {
         </div>
       </div>
     </section>
+    {/* Telegram, WhatsApp e grupos por loja: lugar unico (dono, 2026-11-13). */}
+    <Contatos />
+    </>
   );
 }

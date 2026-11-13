@@ -24,7 +24,7 @@ export function NewsletterCTA() {
                 Avisamos quando o preço cair.
               </Text>
               <Text variant="body-lg" color="secondary" className="mt-4 max-w-[48ch]">
-                Os canais de Telegram e os grupos de WhatsApp de cada loja estão na seção Contatos e canais, logo acima. Com a conta você recebe só o menor preço monitorado, com a média das lojas e o histórico para decidir a compra.
+                Com a conta você recebe só o menor preço monitorado, com a média das lojas e o histórico para decidir a compra.
               </Text>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Button asChild size="xl" rightIcon={<ArrowRight className="size-4" />}>
