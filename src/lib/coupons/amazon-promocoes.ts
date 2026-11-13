@@ -206,7 +206,8 @@ export function cupomDoItem(promo: PromoRead, item: { asin: string; offerId: str
 // ASINs de carrosséis de recomendados (rhf-shoveler, "inspirado no seu histórico") com os da lista da regra. A promoção departamental só vale
 // para produto do departamento escrito no título; a categoria do título precisa estar mapeada para verticais do catálogo. Em dúvida, não casa.
 // ---------------------------------------------------------------------------------------------------------------------------------------------
-export type Vertical = 'games' | 'impressao3d' | 'tecnologia' | 'livros' | 'casa' | 'eletronicos' | 'esporte';
+/** Slugs reais de `affiliate_offers.vertical` / `master_products.vertical` (src/lib/catalog/departamentos.ts): 'eletrodomesticos' = Casa, 'eletroeletronicos' = Eletrônicos. */
+export type Vertical = 'games' | 'impressao3d' | 'tecnologia' | 'livros' | 'eletrodomesticos' | 'eletroeletronicos' | 'esporte';
 
 /** Departamentos que a Amazon escreve no título -> verticais do catálogo que realmente pertencem a eles. Categoria fora da tabela = nunca casa. */
 const DEPARTAMENTOS: { re: RegExp; verticais: Vertical[] }[] = [
@@ -214,9 +215,9 @@ const DEPARTAMENTOS: { re: RegExp; verticais: Vertical[] }[] = [
   { re: /^(esportes?|artigos esportivos|fitness|futebol|itens de pesca|ciclismo|camping|corrida|esportes e (aventura|lazer))$/, verticais: ['esporte'] },
   { re: /^(livros?|livros e (revistas|ebooks?)|hq|mangas?|quadrinhos)$/, verticais: ['livros'] },
   { re: /^(acessorios tech|tecnologia|informatica|computadores?|perifericos|celulares?|smartphones?|acessorios para (celular|informatica))$/, verticais: ['tecnologia'] },
-  { re: /^(eletronicos|eletronicos e celulares|audio|tv e video|fones?)$/, verticais: ['eletronicos'] },
-  { re: /^(casa|cozinha|casa e cozinha|eletroportateis|eletrodomesticos|utilidades domesticas|limpeza|ferramentas|construcao|moveis)$/, verticais: ['casa'] },
-  { re: /^(relogios?|smartwatch(es)?|wearables?)$/, verticais: ['tecnologia', 'eletronicos'] },
+  { re: /^(eletronicos|eletronicos e celulares|audio|tv e video|fones?)$/, verticais: ['eletroeletronicos'] },
+  { re: /^(casa|cozinha|casa e cozinha|eletroportateis|eletrodomesticos|utilidades domesticas)$/, verticais: ['eletrodomesticos'] },
+  { re: /^(relogios?|smartwatch(es)?|wearables?)$/, verticais: ['tecnologia', 'eletroeletronicos'] },
   { re: /^(impressao 3d|filamentos?|impressoras 3d)$/, verticais: ['impressao3d'] },
 ];
 

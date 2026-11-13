@@ -128,9 +128,10 @@ async function main() {
   check('leitor: card do carrossel rhf (recomendados/histórico) NÃO entra', !cardEhDaLista(ancRhf) && !L.cardEhDaLista(ancRhf));
   check('leitor: carrossel nunca entra, nem aninhado na lista; sem lista = nada entra', !cardEhDaLista(ancRhfDentroDaLista) && !L.cardEhDaLista(ancRhfDentroDaLista) && !cardEhDaLista([{ tag: 'DIV', id: 'a-page' }]) && !L.cardEhDaLista([]));
   check('departamento: jogo (games) numa promoção de Relógios NÃO casa', !departamentoCompativel('Relógios', 'games'));
-  check('departamento: relógio inteligente (tecnologia) numa promoção de Relógios casa', departamentoCompativel('Relógios', 'tecnologia') && departamentoCompativel('relogios', 'eletronicos'));
+  check('departamento: relógio inteligente (tecnologia) numa promoção de Relógios casa', departamentoCompativel('Relógios', 'tecnologia') && departamentoCompativel('relogios', 'eletroeletronicos'));
   check('departamento: jogo em Beleza/Suplementos/Pets/Moda/Cozinha/Esportes NÃO casa', ['Beleza Premium', 'Suplementos', 'Pets', 'Moda Feminina', 'Cozinha', 'Esportes', 'Artigos Esportivos', 'Fitness', 'Alimentos e Bebidas', 'Brinquedos e Jogos'].every((c) => !departamentoCompativel(c, 'games')));
   check('departamento: bola de vôlei (esporte) em Artigos Esportivos casa; mesa digitalizadora (tecnologia) em Acessórios Tech casa', departamentoCompativel('Artigos Esportivos', 'esporte') && departamentoCompativel('Acessórios Tech', 'tecnologia'));
+  check('departamento: eletroportáteis/cozinha casam com eletrodomesticos (Casa), não com games', departamentoCompativel('Eletroportáteis', 'eletrodomesticos') && departamentoCompativel('Cozinha', 'eletrodomesticos') && !departamentoCompativel('Cozinha', 'games') && departamentoCompativel('Eletrônicos', 'eletroeletronicos'));
   check('departamento: jogo em Games casa', departamentoCompativel('Games', 'games') && departamentoCompativel('Jogos de Video Games', 'games'));
   check('departamento: em dúvida não casa (categoria nula, não mapeada, vertical vazia)', !departamentoCompativel(null, 'games') && !departamentoCompativel('Departamento Novo', 'games') && !departamentoCompativel('Games', null) && verticaisDaCategoria('Pets').length === 0);
 
