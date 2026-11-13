@@ -8,7 +8,7 @@ import { VitrineEsqueleto } from '@/components/vitrines/vitrine-ofertas';
 import { ListaMudancasEsqueleto } from '@/components/vitrines/lista-mudancas';
 import { MenorRegistrado } from '@/components/home/secoes-v2/menor-registrado';
 import { AcessoriosColecionaveis } from '@/components/home/secoes-v2/acessorios-colecionaveis';
-import { FaixaPlus } from '@/components/home/secoes-v2/faixa-plus';
+import { SecaoPlusHome } from '@/components/plus/secao-plus-home';
 import { NoticiasV2 } from '@/components/home/secoes-v2/noticias-v2';
 import { Contatos } from '@/components/home/secoes/contatos';
 import { NewsletterCTA } from '@/components/home/secoes/newsletter';
@@ -43,7 +43,7 @@ export async function HomeV2() {
         <AcessoriosColecionaveis />
       </Suspense>
       <Suspense fallback={null}>
-        <FaixaPlus />
+        <SecaoPlusHome />
       </Suspense>
       <Suspense fallback={null}>
         <NoticiasV2 />
