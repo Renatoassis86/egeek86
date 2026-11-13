@@ -155,7 +155,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
     ? { game: 600, console: 200, accessory: 300 }
     : { game: 250, console: 120, accessory: 120 };
 
-  const [networks, coupons, publicMetrics] = await Promise.all([listNetworks(), getActiveCouponsForDisplay(), getPublicMetrics()]);
+  const [networks, coupons, publicMetrics] = await Promise.all([listNetworks().catch((e) => { console.error('[ofertas] listNetworks falhou, segue sem o filtro de rede', e); return [] as Awaited<ReturnType<typeof listNetworks>>; }), getActiveCouponsForDisplay(), getPublicMetrics()]);
 
   const baseFilter = { gameFormat, networkId, sortBy: sortBy as 'price_asc' | 'price_desc', gamePlatformGen: gens };
 
