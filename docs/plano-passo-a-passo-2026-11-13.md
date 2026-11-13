@@ -33,6 +33,11 @@ Medido no banco (2026-11-13), masters por tipo:
 - Ou seja: celulares existem, mas ficam em **Eletrônicos**, não em Tecnologia; notebooks existem só **12**; e a vitrine do departamento ordenava pelo **menor preço**, o que empilhava itens baratos do mesmo tipo.
 - Amazon **não aparece nos departamentos** (regra `REDES_DEPARTAMENTO`: só Mercado Livre e Shopee), por decisão anterior. Por isso a pergunta "a Amazon não vende?" tem resposta: vende, mas está fora da vitrine dos departamentos.
 
+**Causa raiz medida depois (2026-11-13 ~21h UTC):**
+- Os **notebooks** de Tecnologia (9 masters) têm oferta **só na Amazon**; nenhum tem oferta no Mercado Livre ou na Shopee. Como o departamento só mostra Mercado Livre e Shopee (regra `REDES_DEPARTAMENTO`), eles somem. A semeadura de notebook no ML devolve catálogo sem vendedor (404).
+- Os **celulares** estão em Eletrônicos com muita oferta no Mercado Livre (158 masters, 1.369 ofertas frescas); só não aparecem em Tecnologia por causa do departamento em que foram classificados.
+- Conclusão: **celulares aparecem em Tecnologia só movendo o tipo de departamento** (sem coletar nada novo); **notebooks só aparecem com a Amazon liberada nos departamentos ou com coleta nova no Mercado Livre**.
+
 Passos:
 
 1. **Feito agora:** destaques com **um item de cada tipo** (notebook, desktop, monitor, placa de vídeo, SSD, teclado, impressora, roteador...) antes de repetir tipo; cache novo (`v3`).
