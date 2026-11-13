@@ -453,8 +453,11 @@ ok(plan.next?.masterProductId === '1', 'semana da BF: 31 enviados ainda cabem (t
 // dedup 48 h
 plan = applyLimits([cand('1')], [sent('1', 0.5)], midday);
 ok(plan.next === null && plan.deferred[0]?.reason.startsWith('produto_ja_enviado'), 'dedup por produto (1 h)', plan);
+// R-47 (2026-11-13): o piso de 1 h virou cooldown de 8 h entre TODOS os gatilhos (GROUP_MASTER_COOLDOWN_H); detalhes em test-mensagens-cooldown-diversificacao.ts
 plan = applyLimits([cand('1')], [sent('1', 1.6)], midday);
-ok(plan.next?.masterProductId === '1', 'após 90 min o produto pode voltar');
+ok(plan.next === null && /^produto_em_cooldown_8h/.test(plan.deferred[0]?.reason ?? ''), 'após 90 min o produto ainda está em cooldown (8 h)', plan);
+plan = applyLimits([cand('1')], [sent('1', 8.5)], midday);
+ok(plan.next?.masterProductId === '1', 'após o cooldown (8 h 30 min) o produto pode voltar');
 eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday), null, 'novo menor preço (menor que o enviado) repete depois de 30 min');
 eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'OK1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday), null, 'OK1 (novo mínimo) também repete depois de 30 min');
 ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 0.3, 'mercado-livre', 10000)], midday) !== null, 'antes de 30 min não repete');

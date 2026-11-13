@@ -203,6 +203,13 @@ export const RULES = {
   /** Cota de diversidade: nenhum TIPO passa desta parcela das mensagens da loja nas ultimas 24 h (so vale com alternativa de outro tipo e depois de TIPO_SHARE_MIN_SENT envios). */
   TIPO_MAX_SHARE_PCT: 30,
   TIPO_SHARE_MIN_SENT: 6,
+  /** Cooldown do MESMO produto entre TODOS os gatilhos (dono, 2026-11-13; R-47): horas (GROUP_MASTER_COOLDOWN_H; 0/off desliga). */
+  MASTER_COOLDOWN_H: 8,
+  /** Exceção do cooldown: nova queda do preço enviado de pelo menos isto (%), depois de MASTER_COOLDOWN_EXC_MIN (GROUP_MASTER_COOLDOWN_QUEDA_PCT). */
+  MASTER_COOLDOWN_QUEDA_PCT: 5,
+  MASTER_COOLDOWN_EXC_MIN: 120,
+  /** Mensagens do mesmo TIPO na mesma loja por hora (soft: só com alternativa de outro tipo na fila; GROUP_TIPO_POR_HORA; 0 = sem teto). */
+  TIPO_MAX_PER_HOUR: 2,
   // ---- CUPOM ATIVO (gatilho CUPOM por oferta; dono, 2026-11-12) ----
   /** Mesmo produto: a mensagem de cupom so volta depois disto (conta so entre mensagens de cupom; nao bloqueia a de preco e vice-versa). */
   CUPOM_PRODUCT_GAP_MIN: 60,
@@ -1708,6 +1715,62 @@ export function isSummarySlot(now: Date): boolean {
   return hours.includes(spHour(now)) && spMinute(now) < RULES.RADAR_SLOT_MINUTES;
 }
 
+/** Cooldown do mesmo produto (R-47): horas. Ausente = padrão (RULES.MASTER_COOLDOWN_H); '0'/'off'/'false' = desligado (comportamento anterior). */
+export function masterCooldownHours(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.GROUP_MASTER_COOLDOWN_H?.trim();
+  if (!raw) return RULES.MASTER_COOLDOWN_H;
+  if (/^(off|false|0)$/i.test(raw)) return 0;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 && n <= 72 ? n : RULES.MASTER_COOLDOWN_H;
+}
+
+/** Cota por tipo vale também para alertas G2/OK2 (R-47b). GROUP_TIPO_COTA_ALERTA=off volta a isentar todo alerta. */
+export function tipoCotaAlertaOn(env: Record<string, string | undefined> = process.env): boolean {
+  return !/^(off|false|0)$/i.test(env.GROUP_TIPO_COTA_ALERTA?.trim() ?? '');
+}
+
+/** Teto horário por tipo e loja (R-47b). GROUP_TIPO_POR_HORA: inteiro 1 a 60; 0/off = sem teto; ausente = RULES.TIPO_MAX_PER_HOUR. */
+export function tipoPorHora(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.GROUP_TIPO_POR_HORA?.trim();
+  if (!raw) return RULES.TIPO_MAX_PER_HOUR;
+  if (/^(off|false|0)$/i.test(raw)) return 0;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 1 && n <= 60 ? n : RULES.TIPO_MAX_PER_HOUR;
+}
+
+/**
+ * Cooldown único por produto entre TODOS os gatilhos (dono, 2026-11-13: o mesmo produto saiu em duas mensagens seguidas, CUPOM e Boa compra).
+ * O mesmo master só volta depois de masterCooldownHours (padrão 8 h), qualquer que seja o gatilho do envio anterior. Exceções (mudança material,
+ * sempre contra o ÚLTIMO envio do produto): (1) cupom NOVO (referência ainda não divulgada em nenhuma mensagem do produto na janela), depois de 1 h;
+ * (2) queda adicional de pelo menos MASTER_COOLDOWN_QUEDA_PCT sobre o preço enviado, depois de 2 h; (3) degrau da régua MAIS FORTE que o enviado, depois
+ * de 2 h. A mensagem de preço já incorpora o cupom válido (bloco de cupom no envio), então o par CUPOM + preço do mesmo produto vira UMA mensagem.
+ * Plataforma, resumo (G4) e radar composto ficam fora (não têm produto único).
+ */
+export function masterCooldownBlock(
+  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger' | 'offerIds' | 'couponRef' | 'regua'> & { cls?: MessageClass },
+  history: SentRecord[],
+  now: Date,
+  hours: number = masterCooldownHours()
+): string | null {
+  if (!(hours > 0) || !c.masterProductId || c.trigger === 'G4' || c.trigger === 'RADAR' || c.cls === 'plataforma') return null;
+  const winMs = hours * 3600_000;
+  const mine = history.filter((h) => h.masterProductId === c.masterProductId && h.cls !== 'plataforma' && h.sentAt.getTime() <= now.getTime() + 5_000 && now.getTime() - h.sentAt.getTime() < winMs);
+  if (!mine.length) return null;
+  const prior = mine.sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
+  const sinceMin = (now.getTime() - prior.sentAt.getTime()) / 60_000;
+  if (c.trigger === 'CUPOM') {
+    const ref = c.couponRef ?? c.offerIds[0];
+    if (!mine.some((h) => h.couponOfferId && h.couponOfferId === ref) && sinceMin >= RULES.CUPOM_PRODUCT_GAP_MIN) return null;
+  }
+  const pct = Number(process.env.GROUP_MASTER_COOLDOWN_QUEDA_PCT);
+  const minDrop = Number.isFinite(pct) && pct > 0 ? pct : RULES.MASTER_COOLDOWN_QUEDA_PCT;
+  // Novo menor preço registrado (G1/OK1) já tinha a exceção de 30 min (NEW_MIN_REPEAT_MIN) com preço menor que o enviado; ela continua, agora exigindo a queda mínima.
+  const dropMin = c.trigger === 'G1' || c.trigger === 'OK1' ? RULES.NEW_MIN_REPEAT_MIN : RULES.MASTER_COOLDOWN_EXC_MIN;
+  if (sinceMin >= dropMin && prior.priceCents > 0 && c.priceCents > 0 && c.priceCents <= prior.priceCents * (1 - minDrop / 100)) return null;
+  if (sinceMin >= RULES.MASTER_COOLDOWN_EXC_MIN && c.regua?.degrau != null && prior.degrau != null && c.regua.degrau > prior.degrau) return null;
+  return `produto_em_cooldown_${hours}h_ultimo_envio_ha_${Math.floor(sinceMin)}min_${prior.trigger ?? 'x'}`;
+}
+
 /**
  * Duplicata do produto (dono, 2026-11-11): o mesmo produto só repete depois de 1 h. Exceção: novo mínimo (OK1/G1) com preço
  * MENOR que o do último envio pode repetir depois de 30 min.
@@ -1869,6 +1932,11 @@ export function tipoShare(vertical: string, tipo: string | null | undefined, his
   const recs = storeLast24h(history, vertical, now);
   const n = tipo ? recs.filter((h) => h.tipo === tipo).length : 0;
   return { tipoCount: n, total: recs.length, pct: recs.length ? (n / recs.length) * 100 : 0 };
+}
+
+/** Mensagens do TIPO na loja na última hora (teto horário por tipo, R-47b). */
+export function tipoHourCount(vertical: string, tipo: string, history: SentRecord[], now: Date): number {
+  return storeLast24h(history, vertical, now).filter((h) => h.tipo === tipo && now.getTime() - h.sentAt.getTime() < 3600_000).length;
 }
 
 /** Algum item do radar composto enviado há menos de 90 min. Conta também os itens de radar (itemOnly). */
@@ -2076,6 +2144,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && !opts.ignoreSpacing) why = chatSpacingBlock(c.vertical, all, now);
     if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
+    if (!why && !platform && !opts.ignoreSpacing) why = masterCooldownBlock(c, history, now);
     if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);
@@ -2085,10 +2154,16 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
 
   // Cota de diversidade por TIPO (ata 2026-11-12): nenhum tipo passa de TIPO_MAX_SHARE_PCT das mensagens da loja em 24 h, mas SO se houver
   // alternativa de outro tipo na fila (cota suave: sem alternativa, o canal nao fica parado). Alerta (queda real) nao e freado.
+  // R-47b (2026-11-13): o alerta G2/OK2 (quase tudo o que sai) também entra na cota; ficam isentos o novo mínimo (G1/OK1) e os degraus 4 e 5 da régua.
+  const cotaAlerta = tipoCotaAlertaOn();
+  const porHoraTipo = tipoPorHora();
+  const tipoIsento = (c: Candidate): boolean =>
+    c.cls === 'plataforma' || (c.cls === 'alerta' && (!cotaAlerta || c.trigger === 'G1' || c.trigger === 'OK1' || (c.regua?.degrau ?? 0) >= 4));
   const tipoOver = (c: Candidate): boolean => {
-    if (!c.tipo || !c.vertical || c.cls === 'alerta' || c.cls === 'plataforma') return false;
+    if (!c.tipo || !c.vertical || tipoIsento(c)) return false;
     const s = tipoShare(c.vertical, c.tipo, real, now);
-    return s.total >= RULES.TIPO_SHARE_MIN_SENT && s.pct >= RULES.TIPO_MAX_SHARE_PCT;
+    if (s.total >= RULES.TIPO_SHARE_MIN_SENT && s.pct >= RULES.TIPO_MAX_SHARE_PCT) return true;
+    return cotaAlerta && porHoraTipo > 0 && tipoHourCount(c.vertical, c.tipo, real, now) >= porHoraTipo;
   };
   // Cota de cupom por loja: cupom nao passa de CUPOM_MAX_SHARE_PCT das mensagens da loja em 24 h, mas so se houver alternativa (nao-cupom) na fila.
   const cupomOver = (c: Candidate): boolean => {
@@ -2118,7 +2193,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   const platOk = ok.filter((c) => c.cls === 'plataforma');
   // Rodizio de tipos: dentro da mesma classe (insight, radar), o tipo MENOS enviado hoje na loja vai primeiro; depois a ordem de sempre.
   const tipoCountOf = (c: Candidate) => (c.tipo && c.vertical ? tipoShare(c.vertical, c.tipo, real, now).tipoCount : 0);
-  const rotates = (c: Candidate) => c.cls === 'insight' || c.cls === 'radar';
+  const rotates = (c: Candidate) => c.cls === 'insight' || c.cls === 'radar' || (cotaAlerta && c.cls === 'alerta' && c.trigger !== 'G1' && c.trigger !== 'OK1');
   // Chave transitiva: classe; dentro de insight/radar, o ACHADO (sem comparacao) nunca passa na frente de um insight com comparacao real (G2, G3, T1...);
   // depois, o tipo MENOS enviado hoje na loja; depois a ordem de sempre (games e alertas: tipo nulo/classe propria, ordem inalterada entre si).
   const priceOk = ok

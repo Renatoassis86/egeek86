@@ -200,7 +200,9 @@ const rec = (over: Partial<SentRecord> & { masterProductId: string; sentAt: Date
   ok(applyLimits([c], sent30, NOW).next === null, 'applyLimits adia o cupom repetido em 30 min');
   const sent61 = [rec({ masterProductId: c.masterProductId, sentAt: new Date(NOW.getTime() - 61 * MIN), trigger: 'CUPOM', cls: 'cupom', couponOfferId: 'o-cup' })];
   ok(productDedupBlock(c, sent61, NOW) === null && cupomDedupBlock(c, sent61, NOW) === null, 'depois de 1 h o cupom pode voltar');
-  ok(applyLimits([c], sent61, NOW).next?.messageKey === 'cup', 'applyLimits libera depois de 1 h');
+  ok(applyLimits([c], sent61, NOW).next === null, 'R-47: o mesmo cupom ja divulgado ha 61 min segue em cooldown de produto (8 h)');
+  const sent9h = [rec({ masterProductId: c.masterProductId, sentAt: new Date(NOW.getTime() - 9 * 60 * MIN), trigger: 'CUPOM', cls: 'cupom', couponOfferId: 'o-cup' })];
+  ok(applyLimits([c], sent9h, NOW).next?.messageKey === 'cup', 'applyLimits libera depois do cooldown de 8 h');
   // preco enviado do mesmo produto nao bloqueia o cupom
   const priceSent = [rec({ masterProductId: c.masterProductId, sentAt: new Date(NOW.getTime() - 5 * MIN), trigger: 'OK2', cls: 'alerta' })];
   ok(productDedupBlock(c, priceSent, NOW) === null, 'mensagem de preco do mesmo produto nao bloqueia o cupom');

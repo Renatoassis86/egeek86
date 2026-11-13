@@ -9,6 +9,7 @@ import {
   applyLimits,
   cardAllowed,
   composeRadar,
+  masterCooldownHours,
   netKind,
   priceWithinTolerance,
   type Candidate,
@@ -108,9 +109,20 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   // (AC, teto de 2/h e produto ja enviado em 24 h), todas adiadas pelo plano, e as G2/CUPOM/P* mais novas ficavam FORA da janela lida:
   // o ciclo nao tinha o que enviar. Agora a janela e justa: rodizio por (gatilho, departamento), as mais antigas de cada grupo primeiro,
   // com 'rn' como primeira chave de ordem. Nao ha teto de envio: so a leitura deixa de ser monopolizada por um unico gatilho bloqueado.
+  // R-47 (2026-11-13): (a) a janela também rodizia por TIPO dentro de cada (gatilho, loja), para um tipo não encher as 300 vagas; (b) o pré-filtro
+  // de produto passa a barrar qualquer envio do mesmo master dentro de 60 min, de qualquer gatilho (o cooldown de horas é do plano; 60 min é o piso
+  // das exceções, então nada que o plano liberaria é escondido aqui). Ambos atrás de GROUP_MASTER_COOLDOWN_H (0/off = SQL de antes, byte a byte).
+  const novo = masterCooldownHours() > 0;
+  const tipoPart = novo ? sql`, g.candidate ->> 'tipo'` : sql``;
+  const cupomWin = novo
+    ? sql`(g.trigger = 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.CUPOM_PRODUCT_GAP_MIN}::int))`
+    : sql`(g.trigger = 'CUPOM' AND s.trigger = 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.CUPOM_PRODUCT_GAP_MIN}::int))`;
+  const precoWin = novo
+    ? sql`(g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int))`
+    : sql`(g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int))`;
   const rows = await db.execute<Row>(sql`
     SELECT * FROM (
-      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, g.created_at) AS rn_fair
+      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical${tipoPart} ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, g.created_at) AS rn_fair
       FROM group_messages g
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
         -- Pre-filtro SEGURO (subconjunto do que o plano ja barra): produto ja enviado dentro da janela do proprio gatilho (Achado 24 h, cupom 1 h, demais 1 h
@@ -119,8 +131,8 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
           SELECT 1 FROM group_messages s
           WHERE s.master_product_id = g.master_product_id AND s.channel = 'tg' AND s.status IN ('enviada', 'enviando')
             AND ((g.trigger = 'AC' AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(hours => ${RULES.ACHADO_PRODUCT_GAP_HOURS}::int))
-              OR (g.trigger = 'CUPOM' AND s.trigger = 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.CUPOM_PRODUCT_GAP_MIN}::int))
-              OR (g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int)))
+              OR ${cupomWin}
+              OR ${precoWin})
         ))
     ) q
     ORDER BY q.rn_fair, q.created_at LIMIT ${limit}::int
