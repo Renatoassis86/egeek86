@@ -383,6 +383,9 @@
   }
   async function lerPagina(asin) {
     var r = await lerAmazon('/dp/' + encodeURIComponent(asin));
+    // 404 na página do produto = anúncio removido da Amazon: NÃO é erro de servidor. Antes caía em 'amazon_5xx' e o loop repetia o mesmo ASIN com
+    // pausas de 2 a 30 min, travando a fila (incidente 2026-11-13, ASIN B0H2JY6WBC). Agora descarta esse item e segue para o próximo.
+    if (r.falha && /respondeu 404/.test(r.det || '')) return { nao_repetir: true, pag: { ok: false, motivo: 'pagina_404' } };
     if (r.falha) return r;
     return { pag: PURO.parsePagina(r.html, asin) };
   }
