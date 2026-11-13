@@ -1,6 +1,7 @@
+import { Paginacao } from '@/components/ui/paginacao';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Award } from 'lucide-react';
+import { Award } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -294,35 +295,11 @@ export default async function NoticiasPage({
 
       </div>
 
-      {totalPages > 1 && (
-        <div className="mt-10 flex items-center justify-center gap-3">
-          <Link
-            href={`/noticias?${new URLSearchParams({ ...(category ? { categoria: category } : {}), pagina: String(Math.max(1, page - 1)) })}`}
-            aria-disabled={page <= 1}
-            className={cn(
-              'inline-flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] px-3 py-2 text-body-sm',
-              page <= 1 ? 'pointer-events-none opacity-40' : 'hover:bg-[var(--color-bg-surface)]'
-            )}
-          >
-            <ChevronLeft className="size-4" />
-            Anterior
-          </Link>
-          <Text variant="body-sm" color="tertiary">
-            Página {page} de {totalPages}
-          </Text>
-          <Link
-            href={`/noticias?${new URLSearchParams({ ...(category ? { categoria: category } : {}), pagina: String(Math.min(totalPages, page + 1)) })}`}
-            aria-disabled={page >= totalPages}
-            className={cn(
-              'inline-flex items-center gap-1 rounded-[var(--radius-md)] border border-[var(--color-border-subtle)] px-3 py-2 text-body-sm',
-              page >= totalPages ? 'pointer-events-none opacity-40' : 'hover:bg-[var(--color-bg-surface)]'
-            )}
-          >
-            Próxima
-            <ChevronRight className="size-4" />
-          </Link>
-        </div>
-      )}
+      <Paginacao
+        pagina={page}
+        totalPaginas={totalPages}
+        href={(n) => `/noticias?${new URLSearchParams({ ...(category ? { categoria: category } : {}), pagina: String(n) })}`}
+      />
       </div>
     </section>
   );

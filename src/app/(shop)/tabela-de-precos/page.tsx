@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Paginacao } from '@/components/ui/paginacao';
 import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { MarketplaceHeroBanner } from '@/components/affiliate/marketplace-hero-banner';
@@ -120,28 +120,6 @@ export default async function TabelaDePrecosPage({
             Página {page} de {totalPages} · {totalCount} {totalCount === 1 ? 'item encontrado' : 'itens encontrados'}
           </Text>
           <div className="flex items-center gap-2">
-            {page <= 1 ? (
-              <Button variant="outline" size="sm" disabled className="gap-1">
-                <ChevronLeft className="size-4" /> Anterior
-              </Button>
-            ) : (
-              <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link href={pageHref(page - 1)}>
-                  <ChevronLeft className="size-4" /> Anterior
-                </Link>
-              </Button>
-            )}
-            {page >= totalPages ? (
-              <Button variant="outline" size="sm" disabled className="gap-1">
-                Próxima <ChevronRight className="size-4" />
-              </Button>
-            ) : (
-              <Button asChild variant="outline" size="sm" className="gap-1">
-                <Link href={pageHref(page + 1)}>
-                  Próxima <ChevronRight className="size-4" />
-                </Link>
-              </Button>
-            )}
             {totalCount > PAGE_SIZE && (
               <Button asChild variant="ghost" size="sm">
                 <Link href={showAllHref}>Ver todos ({totalCount})</Link>
@@ -150,6 +128,8 @@ export default async function TabelaDePrecosPage({
           </div>
         </div>
       )}
+
+      {!showAll && totalCount > 0 ? <Paginacao pagina={page} totalPaginas={totalPages} href={pageHref} className="mt-2" /> : null}
 
       {showAll && totalCount > 0 && (
         <Text variant="body-sm" color="secondary">

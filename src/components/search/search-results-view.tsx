@@ -1,3 +1,4 @@
+import { Paginacao } from '@/components/ui/paginacao';
 import Link from 'next/link';
 import { X, SlidersHorizontal, SearchX } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -362,29 +363,7 @@ function FilterPanel({
 }
 
 function Pagination({ p, page, pageCount }: { p: ParsedSearchParams; page: number; pageCount: number }) {
-  if (pageCount <= 1) return null;
-  const link = 'inline-flex min-h-11 min-w-24 items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border-strong)] px-4 text-[15px] font-semibold text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-border-focus)]';
-  return (
-    <nav aria-label="Paginação" className="mt-8 flex items-center justify-center gap-4">
-      {page > 1 ? (
-        <Link rel="prev" href={buildHref(p, { pagina: page - 1 > 1 ? String(page - 1) : null })} className={link}>
-          Anterior
-        </Link>
-      ) : (
-        <span aria-hidden className={cn(link, 'pointer-events-none opacity-40')}>Anterior</span>
-      )}
-      <span className="text-[14px] tabular-nums text-[var(--color-text-secondary)]">
-        Página {page} de {pageCount}
-      </span>
-      {page < pageCount ? (
-        <Link rel="next" href={buildHref(p, { pagina: String(page + 1) })} className={link}>
-          Próxima
-        </Link>
-      ) : (
-        <span aria-hidden className={cn(link, 'pointer-events-none opacity-40')}>Próxima</span>
-      )}
-    </nav>
-  );
+  return <Paginacao pagina={page} totalPaginas={pageCount} href={(n) => buildHref(p, { pagina: n > 1 ? String(n) : null })} />;
 }
 
 function EmptyState({

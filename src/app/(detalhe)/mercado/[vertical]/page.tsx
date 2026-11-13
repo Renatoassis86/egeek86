@@ -1,3 +1,4 @@
+import { Paginacao } from '@/components/ui/paginacao';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Text } from '@/components/ui/text';
@@ -154,14 +155,7 @@ export default async function DepartamentoPage({
               </li>
             ))}
           </ul>
-          <nav aria-label="Paginação" className="mt-8 flex items-center gap-3">
-            {res.pagina > 1 ? (
-              <Button asChild variant="outline" size="md"><Link href={href(res.pagina - 1)}>Anterior</Link></Button>
-            ) : null}
-            {res.pagina < res.totalPaginas ? (
-              <Button asChild variant="outline" size="md"><Link href={href(res.pagina + 1)}>Próxima</Link></Button>
-            ) : null}
-          </nav>
+          <Paginacao pagina={res.pagina} totalPaginas={res.totalPaginas} href={href} />
         </>
       )}
     </section>
