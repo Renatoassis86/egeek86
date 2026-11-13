@@ -1,5 +1,8 @@
 # Prompts das fotos dos cartões do Espaço Geek Plus (versão com itens reais)
 
+> **DESCARTADO em 2026-11-13 (dono):** as imagens geradas por IA ficaram com coisas que não existem e aspecto futurista. Os cartões do Plus em `/plus` passaram a usar a FOTO REAL do produto em destaque de cada departamento (menor preço agora, loja e horário). Estes prompts ficam só como referência; não gerar nem ligar nada de `public/images/plus/`.
+
+
 Versão de 2026-11-13, pedida pelo dono: objetos que existem de verdade e que o público geek reconhece (action figures, placa de vídeo, mangás, air fryer, TV, chuteira). Esta versão **substitui** a anterior (engrenagem, carretel, chaleira genérica), que foi recusada.
 
 Quem gera: o dono, no ChatGPT, um prompt por vez. Quem salva e liga no código: o engenheiro-frontend, depois do `git grep` de "um arquivo, um uso".

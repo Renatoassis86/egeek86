@@ -5,6 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Text } from '@/components/ui/text';
 import type { LojaPlusView } from '@/server/plus';
 import type { TipoLink } from '@/server/plus-tipos';
+import { ProductImage } from '@/components/ui/product-image';
+import { VerificadoHa } from '@/components/affiliate/verificado-ha';
+import { formatBRL } from '@/lib/format';
 
 const ICONES: Record<string, ComponentType<{ className?: string }>> = {
   impressao3d: Box,
@@ -15,10 +18,13 @@ const ICONES: Record<string, ComponentType<{ className?: string }>> = {
   esporte: Dumbbell,
 };
 
-/** Cartão de uma loja do Espaço Geek Plus. Área aberta leva aos produtos; fechada mostra o estado. Sem imagem (ícone), sem selo. */
+/** Produto real em destaque do departamento (foto da loja, nome e menor preço lido). Nada de imagem gerada: se não houver, o cartão fica só com o ícone. */
+export interface DestaqueCartaoPlus { slug: string; nome: string; imagem: string | null; menorCents: number; lojaMenor: string | null; verificadoEm: string }
+
+/** Cartão de uma loja do Espaço Geek Plus. Área aberta leva aos produtos; fechada mostra o estado. Foto real do produto em destaque (sem selo nem média, R-36). */
 export const ICONES_LOJA_PLUS = ICONES;
 
-export function CartaoLojaPlus({ loja, tipos }: { loja: LojaPlusView; tipos?: TipoLink[] }) {
+export function CartaoLojaPlus({ loja, tipos, destaque }: { loja: LojaPlusView; tipos?: TipoLink[]; destaque?: DestaqueCartaoPlus | null }) {
   const Icone = ICONES[loja.dept] ?? Box;
   return (
     <Card className="flex h-full flex-col gap-4 p-5">
@@ -39,6 +45,23 @@ export function CartaoLojaPlus({ loja, tipos }: { loja: LojaPlusView; tipos?: Ti
           </Text>
         ) : null}
       </div>
+      {loja.aberta && destaque ? (
+        <Link
+          href={`/mercado/${loja.dept}/${destaque.slug}`}
+          className="flex gap-3 border border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] p-3 hover:border-[var(--color-accent-primary)] focus-visible:outline-2 focus-visible:outline-[var(--color-border-focus)]"
+        >
+          <ProductImage src={destaque.imagem} alt={destaque.nome} ratio="square" className="w-24 shrink-0 sm:w-28" />
+          <span className="flex min-w-0 flex-1 flex-col gap-1">
+            <Text variant="label" color="tertiary">Menor preço agora</Text>
+            <Text variant="body-sm" className="line-clamp-2 font-bold leading-snug">{destaque.nome}</Text>
+            <Text variant="mono-lg" className="mt-auto font-black text-[var(--color-accent-primary)]">{formatBRL(destaque.menorCents)}</Text>
+            <Text variant="caption" color="tertiary">
+              {destaque.lojaMenor ? `em ${destaque.lojaMenor} · ` : ''}
+              <VerificadoHa iso={destaque.verificadoEm} />
+            </Text>
+          </span>
+        </Link>
+      ) : null}
       {loja.aberta && tipos && tipos.length > 0 ? (
         <ul className="flex flex-wrap gap-2" aria-label={`Tipos em ${loja.rotulo}`}>
           {tipos.map((t) => (
