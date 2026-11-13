@@ -29,16 +29,25 @@ export function ReguaEtiqueta({ regua, className = '' }: { regua: ReguaFront; cl
   if (!v) return null;
   const d = DEGRAUS[v.degrau];
   return (
-    // Layout que NUNCA corta nem sobrepõe texto (erro visto no cartão de 240 px): a etiqueta quebra em linhas, as marcas ▼ têm
-    // espaçamento normal (antes tracking negativo empilhava os triângulos sobre o número) e nenhum pedaço é truncado ou fica fora do cartão.
+    // Visual premium (dono, 2026-11-13): em vez de um bloco chapado e saturado, painel escuro com filete lateral na cor do degrau, fundo
+    // com 10% da cor, moldura interna fina, rótulo em creme (contraste alto) e o PERCENTUAL como número grande na cor do degrau.
+    // A cor nunca fica sozinha: marcas ▼ + rótulo em texto + percentual. Cantos retos. Nunca corta nem sobrepõe texto: o rótulo quebra
+    // em linhas, as marcas têm espaçamento normal e nada é truncado. Vale para os 5 degraus (azul, verde, amarelo, laranja, vermelho).
     <span
-      className={`flex w-fit max-w-full flex-wrap items-center gap-x-1.5 gap-y-0.5 px-2 py-1 text-[12px] font-black leading-snug ${className}`}
-      style={{ background: d.cor, color: d.corTexto }}
+      className={`flex w-full flex-col gap-1 border-l-[3px] py-1.5 pl-2.5 pr-2 leading-snug ${className}`}
+      style={{ background: `${d.cor}1A`, borderColor: d.cor, boxShadow: `inset 0 0 0 1px ${d.cor}33` }}
       data-degrau={v.degrau}
     >
-      <span aria-hidden className="shrink-0 whitespace-nowrap leading-none tracking-normal">{d.marcas}</span>
-      <span className="min-w-0 break-words">{d.destaque ? v.rotulo.toLocaleUpperCase('pt-BR') : v.rotulo}</span>
-      {v.mostrarPct ? <span className="whitespace-nowrap font-semibold">· {pt1(v.pct)}% abaixo da média</span> : null}
+      <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs font-semibold uppercase tracking-[0.06em] text-[var(--color-text-primary)]">
+        <span aria-hidden className="shrink-0 whitespace-nowrap leading-none tracking-normal" style={{ color: d.cor }}>{d.marcas}</span>
+        <span className="min-w-0 break-words">{v.rotulo}</span>
+      </span>
+      {v.mostrarPct ? (
+        <span className="flex items-baseline gap-1.5">
+          <span className="tabular whitespace-nowrap text-xl font-bold leading-none" style={{ color: d.cor }}>−{pt1(v.pct)}%</span>
+          <span className="text-xs text-[var(--color-text-secondary)]">abaixo da média</span>
+        </span>
+      ) : null}
       <span className="sr-only">{`Degrau ${v.degrau} de 5 pela queda sobre a média das lojas.`}</span>
     </span>
   );
