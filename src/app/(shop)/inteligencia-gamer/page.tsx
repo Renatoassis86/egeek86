@@ -35,7 +35,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Renato Silva de Assis',
     date: '27 Jul 2026',
     readTime: '8 min',
-    imageUrl: '/images/categorias/hero-gamer-panel.png',
+    imageUrl: '/images/categorias/hero-gamer-panel.webp',
     isMainHighlight: true,
   },
   {
@@ -47,7 +47,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Renato Silva de Assis',
     date: '25 Jul 2026',
     readTime: '12 min',
-    imageUrl: '/images/home/pesquisa-comunidade.png',
+    imageUrl: '/images/home/pesquisa-comunidade.webp',
     isMainHighlight: true,
   },
   {
@@ -59,7 +59,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Arkos Intelligence',
     date: '23 Jul 2026',
     readTime: '6 min',
-    imageUrl: '/images/home/statement-band.png',
+    imageUrl: '/images/home/statement-band.webp',
     isMainHighlight: true,
   },
   {
@@ -71,7 +71,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Felipe Santos',
     date: '25 Jul 2026',
     readTime: '5 min',
-    imageUrl: '/images/noticias-hub/gamer-setup.png',
+    imageUrl: '/images/noticias-hub/gamer-setup.webp',
   },
   {
     id: '5',
@@ -82,7 +82,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Mariana Costa',
     date: '24 Jul 2026',
     readTime: '6 min',
-    imageUrl: '/images/noticias-hub/esports-event.png',
+    imageUrl: '/images/noticias-hub/esports-event.webp',
   },
   {
     id: '6',
@@ -93,7 +93,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Mariana Costa',
     date: '24 Jul 2026',
     readTime: '5 min',
-    imageUrl: '/images/sobre/locadora.png',
+    imageUrl: '/images/sobre/locadora.webp',
   },
   {
     id: '7',
@@ -104,7 +104,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Renato Silva de Assis',
     date: '20 Jul 2026',
     readTime: '15 min',
-    imageUrl: '/images/home/por-que-geek86.png',
+    imageUrl: '/images/home/por-que-geek86.webp',
   },
   {
     id: '8',
@@ -115,7 +115,7 @@ const INTEL_ITEMS: IntelItem[] = [
     author: 'Renato Silva de Assis',
     date: '19 Jul 2026',
     readTime: '14 min',
-    imageUrl: '/images/home/painel-analitico-86-light.png',
+    imageUrl: '/images/home/painel-analitico-86-light.webp',
   },
 ];
 

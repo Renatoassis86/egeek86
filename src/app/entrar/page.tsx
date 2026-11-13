@@ -34,7 +34,7 @@ function EntrarForm() {
           sem cortar a foto num painel baixo demais pra fazer sentido. */}
       <div className="relative hidden overflow-hidden lg:block">
         <Image
-          src="/images/login/arcade-neon-noite.png"
+          src="/images/login/arcade-neon-noite.webp"
           alt=""
           fill
           priority

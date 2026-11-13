@@ -120,7 +120,7 @@ export default async function MonitoramentoPage({
               style={{ clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)' }}
             >
               <Image
-                src="/images/monitoramento/demo-banner.png"
+                src="/images/monitoramento/demo-banner.webp"
                 alt="Bolsa Gamer: monitoramento de preços"
                 fill
                 className="object-cover object-center"

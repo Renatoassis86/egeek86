@@ -208,7 +208,7 @@ export default async function NoticiasPage({
                 <div className="flex gap-3.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all items-start">
                   <div className="relative size-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
                     <Image
-                      src="/images/colunistas/arthur.png"
+                      src="/images/colunistas/arthur.webp"
                       alt="Arthur Pendragon"
                       fill
                       className="object-cover"
@@ -231,7 +231,7 @@ export default async function NoticiasPage({
                 <div className="flex gap-3.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all items-start">
                   <div className="relative size-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
                     <Image
-                      src="/images/colunistas/jessica.png"
+                      src="/images/colunistas/jessica.webp"
                       alt="Jéssica Ramos"
                       fill
                       className="object-cover"
@@ -254,7 +254,7 @@ export default async function NoticiasPage({
                 <div className="flex gap-3.5 p-3.5 bg-[var(--color-bg-surface)] border border-[var(--color-border-subtle)] rounded hover:border-[var(--color-border-strong)] transition-all items-start">
                   <div className="relative size-9 rounded-full overflow-hidden shrink-0 border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]">
                     <Image
-                      src="/images/colunistas/renato.png"
+                      src="/images/colunistas/renato.webp"
                       alt="Renato Assis"
                       fill
                       className="object-cover"

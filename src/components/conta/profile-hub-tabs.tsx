@@ -327,7 +327,7 @@ export function ProfileHubTabs({ initialTab = 'visao_geral', profile, seller, wa
             <Card>
               <CardContent className="flex flex-col items-center gap-3 p-12 text-center">
                 <div className="relative mb-2 aspect-[8/5] w-full max-w-sm overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)]">
-                  <Image src="/images/conta/empty-state.png" alt="" fill sizes="384px" className="object-cover" />
+                  <Image src="/images/conta/empty-state.webp" alt="" fill sizes="384px" className="object-cover" />
                 </div>
                 <Text variant="heading-sm">Você ainda não está acompanhando nenhum jogo</Text>
                 <Text variant="body-sm" color="secondary" className="max-w-[46ch]">

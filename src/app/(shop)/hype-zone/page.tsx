@@ -100,7 +100,7 @@ export default async function HypeZonePage() {
             }}
           >
             <Image
-              src="/images/hype-zone/banner.png"
+              src="/images/hype-zone/banner.webp"
               alt="Hype Zone Banner"
               fill
               className="object-cover object-center"
@@ -325,7 +325,7 @@ export default async function HypeZonePage() {
           {/* Coluna da Imagem */}
           <div className="lg:col-span-5 relative aspect-[4/3] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)]">
             <Image
-              src="/images/hype-zone/reputation-guide.png"
+              src="/images/hype-zone/reputation-guide.webp"
               alt="Sistema de Reputação e Consenso"
               fill
               className="object-cover"

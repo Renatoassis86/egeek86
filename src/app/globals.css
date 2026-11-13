@@ -513,3 +513,52 @@ rect, svg rect {
   .news-ticker-track { animation: none !important; transform: none !important; }
   .news-ticker-dup { display: none !important; }
 }
+
+/* ===========================================================
+ * RESPONSIVO (checklist #18, agente desempenho/responsivo)
+ * 1) Texto nunca abaixo de 12 px: utilitarios arbitrarios text-[9px|10px|11px]
+ *    viram 12 px (CSS sem camada vence as utilities do Tailwind).
+ * 2) Celular em paisagem curta (ex.: 844x390): as barras fixas comiam 31% da
+ *    janela. Aqui a barra inferior some, o cabecalho deixa de ser fixo e a
+ *    tarja institucional e a barra Arkos saem; a pagina de produto passa a
+ *    duas colunas com a imagem em no maximo 60% da altura util.
+ * =========================================================== */
+[class*="text-[9px]"],
+[class*="text-[10px]"],
+[class*="text-[11px]"],
+[class*="text-[0.6rem]"],
+[class*="text-[0.65rem]"],
+[class*="text-[0.7rem]"] {
+  font-size: 12px;
+}
+
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 1023px) {
+  :root {
+    --bottom-tab-bar: 0px;
+  }
+  nav[aria-label="Navegação inferior"] {
+    display: none !important;
+  }
+  header.sticky {
+    position: static;
+  }
+  header.sticky > div:first-child:not(:only-child) {
+    display: none;
+  }
+  .w-full:has(> .h-7 > a[href^="https://arkosintelligence.com"]) {
+    display: none;
+  }
+  /* Produto: duas colunas e imagem limitada a 60% da altura util (sem barras fixas). */
+  div:has(> [class*="lg:sticky"] > .group\/pimg) {
+    grid-template-columns: minmax(0, 38%) minmax(0, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+  [class*="lg:sticky"] > .group\/pimg {
+    max-height: 60dvh;
+    margin-inline: auto;
+    width: min(100%, 48dvh);
+  }
+  [class*="lg:sticky"] {
+    position: static !important;
+  }
+}

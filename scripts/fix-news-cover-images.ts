@@ -8,7 +8,7 @@ async function main() {
   await db
     .update(newsArticles)
     .set({
-      coverImageUrl: '/images/home/observatorio-gamer-hero.png',
+      coverImageUrl: '/images/home/observatorio-gamer-hero.webp',
       updatedAt: new Date(),
     })
     .where(sql`cover_image_url IS NULL OR cover_image_url NOT LIKE '/images/%'`);

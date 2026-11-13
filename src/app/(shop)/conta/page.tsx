@@ -52,7 +52,7 @@ export default async function ContaPage({
         <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
           <div className="relative w-full h-full">
             <Image
-              src="/images/conta/profile-hero.png"
+              src="/images/conta/profile-hero.webp"
               alt=""
               fill
               className="object-cover object-center"

@@ -119,7 +119,7 @@ export default async function AuctionsPage({
             }}
           >
             <Image
-              src="/images/hype-zone/geek-hammer.png"
+              src="/images/hype-zone/geek-hammer.webp"
               alt="Geek Hammer Banner"
               fill
               className="object-cover object-center"

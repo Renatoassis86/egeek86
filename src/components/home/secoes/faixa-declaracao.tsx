@@ -23,7 +23,7 @@ export function StatementBand({ products, stores, quotes }: { products: number; 
         <Reveal>
           <div className="relative isolate flex min-h-[460px] flex-col justify-center overflow-hidden border border-amber-400/50 bg-[#140d05] shadow-2xl lg:aspect-[21/9] lg:min-h-0">
             <Image
-              src="/images/home/hero-watermark.png"
+              src="/images/home/hero-watermark.webp"
               alt="Mesa gamer com painéis de gráfico de preço em tons de dourado"
               fill
               sizes="(min-width: 1280px) 1280px, 100vw"

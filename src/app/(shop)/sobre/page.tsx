@@ -95,7 +95,7 @@ function HeroSection() {
         <Reveal delay={0.08}>
           <div className="relative aspect-[16/7] sm:aspect-[21/9] w-full overflow-hidden rounded-[var(--radius-xl)] border border-amber-500/30 shadow-2xl bg-[#0B0805]">
             <Image
-              src="/images/sobre/hero-geracoes.png"
+              src="/images/sobre/hero-geracoes.webp"
               alt="Duas gerações de consoles e jogos no Espaço Geek 86"
               fill
               priority
@@ -157,7 +157,7 @@ function QuemSomosSection() {
           <div className="grid grid-cols-2 gap-3">
             <div className="relative col-span-2 aspect-[16/10] w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-2xl">
               <Image
-                src="/images/sobre/fliperama.png"
+                src="/images/sobre/fliperama.webp"
                 alt="Fliperama lotado nos anos 80 e 90"
                 fill
                 className="object-cover object-center"
@@ -165,7 +165,7 @@ function QuemSomosSection() {
             </div>
             <div className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-xl">
               <Image
-                src="/images/sobre/aluguel-tv.png"
+                src="/images/sobre/aluguel-tv.webp"
                 alt="Crianças jogando videogame numa TV de tubo"
                 fill
                 className="object-cover object-center"
@@ -173,7 +173,7 @@ function QuemSomosSection() {
             </div>
             <div className="relative aspect-square w-full overflow-hidden rounded-[var(--radius-lg)] border border-purple-500/30 bg-[#0B0805] shadow-xl">
               <Image
-                src="/images/sobre/arcade-anos-90-noite.png"
+                src="/images/sobre/arcade-anos-90-noite.webp"
                 alt="Garotos jogando videogame numa locadora nos anos 90"
                 fill
                 className="object-cover object-center"
@@ -265,7 +265,7 @@ function MissaoVisaoValoresSection() {
         <Reveal delay={0.12}>
           <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full overflow-hidden border border-amber-400/40 bg-[#0B0805] shadow-2xl group">
             <Image
-              src="/images/sobre/arcade-anos-80.png"
+              src="/images/sobre/arcade-anos-80.webp"
               alt="Fliperama e cultura gamer retro"
               fill
               className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
@@ -287,12 +287,7 @@ function ObjetivosJustificativaSection() {
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-emerald-500/30 bg-[#0B0805] shadow-2xl">
-            <Image
-              src="/images/sobre/quarto-retro.png"
-              alt="Justificativa e inteligência de dados no mercado gamer"
-              fill
-              className="object-cover object-center"
-            />
+            {/* Imagem repetida removida (regra "uma imagem, um lugar"): fundo sólido até a foto nova (checklist #20/#21). */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-emerald-400 font-bold">
               Preços que variam muito de uma loja para outra.
@@ -346,7 +341,7 @@ function FerramentasShowcaseSection() {
       title: '1. Monitoramento de preços',
       description:
         'Gráfico com duas linhas: o menor preço ativo e a média entre todas as lojas. Dá para escolher o período e ver se o produto está no menor preço já registrado.',
-      imageSrc: '/images/sobre/ferramenta-bolsa-gamer.png',
+      imageSrc: '/images/sobre/ferramenta-bolsa-gamer.webp',
       badgeColor: 'bg-amber-500 text-black',
       borderHover: 'hover:border-amber-500 hover:shadow-xl',
       bullets: [
@@ -357,12 +352,12 @@ function FerramentasShowcaseSection() {
       reverse: false,
     },
     {
-      id: 'ferramenta-gestao-afiliados',
+      id: 'ferramenta-painel-divulgadores',
       badge: 'Divulgadores e vendedores',
       title: '2. Painel para divulgadores e vendedores',
       description:
         'Para quem divulga ofertas: gere mensagens para WhatsApp e Telegram, use links com rastreamento e acompanhe cliques e resultados.',
-      imageSrc: '/images/sobre/ferramenta-gestao-afiliados.png',
+      imageSrc: '/images/sobre/ferramenta-painel-divulgadores.webp',
       badgeColor: 'bg-orange-500 text-white',
       borderHover: 'hover:border-orange-500 hover:shadow-xl',
       bullets: [
@@ -378,7 +373,7 @@ function FerramentasShowcaseSection() {
       title: '3. Ajuda na hora de comprar',
       description:
         'Mostra se vale comprar agora: a variação percentual em relação ao preço médio, selos de oportunidade e o link da loja com o menor preço ativo.',
-      imageSrc: '/images/sobre/assistente-decisao-comprador.png',
+      imageSrc: '/images/sobre/assistente-decisao-comprador.webp',
       badgeColor: 'bg-emerald-600 text-white',
       borderHover: 'hover:border-emerald-500 hover:shadow-xl',
       bullets: [
@@ -394,7 +389,7 @@ function FerramentasShowcaseSection() {
       title: '4. Observatório Gamer e notícias',
       description:
         'Reportagens originais, análises e relatórios com dados de pesquisas de mercado do Brasil e do mundo (Newzoo, Statista e Pesquisa Game Brasil).',
-      imageSrc: '/images/sobre/vitrine-colecionaveis.png',
+      imageSrc: '/images/sobre/vitrine-colecionaveis.webp',
       badgeColor: 'bg-cyan-600 text-white',
       borderHover: 'hover:border-cyan-500 hover:shadow-xl',
       bullets: [
@@ -410,7 +405,7 @@ function FerramentasShowcaseSection() {
       title: '5. Pesquisas de mercado',
       description:
         'Pesquisas com consumidores e com o público gamer, como testes de aceitação no lançamento de marcas.',
-      imageSrc: '/images/noticias-hub/data-analysis.png',
+      imageSrc: '/images/noticias-hub/data-analysis.webp',
       badgeColor: 'bg-purple-600 text-white',
       borderHover: 'hover:border-purple-500 hover:shadow-xl',
       bullets: [
@@ -426,7 +421,7 @@ function FerramentasShowcaseSection() {
       title: '6. Geek Hype Index (0-100)',
       description:
         'Nota de 0 a 100 que mede o engajamento e a percepção da comunidade sobre títulos e consoles.',
-      imageSrc: '/images/sobre/snes-colecao.png',
+      imageSrc: '/images/sobre/snes-colecao.webp',
       badgeColor: 'bg-rose-600 text-white',
       borderHover: 'hover:border-rose-500 hover:shadow-xl',
       bullets: [
@@ -517,7 +512,7 @@ function IdealizadorSection() {
           <div className="rounded-[var(--radius-xl)] bg-gradient-to-r from-[#140E08] via-[#0F0A05] to-[#181109] border border-amber-500/30 overflow-hidden shadow-2xl p-6 sm:p-8 lg:p-12 grid gap-8 lg:grid-cols-12 lg:items-center">
             <div className="lg:col-span-5 relative aspect-[4/3] w-full rounded-[var(--radius-xl)] overflow-hidden border-2 border-amber-500/40 shadow-2xl bg-[#0B0805] group">
               <Image
-                src="/images/sobre/idealizador.png"
+                src="/images/sobre/idealizador.webp"
                 alt="Renato Silva de Assis, fundador e Idealizador"
                 fill
                 priority

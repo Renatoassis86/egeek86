@@ -21,7 +21,7 @@ export default function NotFound() {
 
         <div className="relative aspect-[4/5] w-full max-w-[280px]">
           <Image
-            src="/images/errors/404-illustration.png"
+            src="/images/errors/404-illustration.webp"
             alt=""
             fill
             sizes="280px"

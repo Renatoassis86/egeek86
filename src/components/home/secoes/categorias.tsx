@@ -86,7 +86,7 @@ export function CategoriesSection() {
       <div data-theme="dark" className="bg-gradient-to-b from-[#1c0c32] via-[#160928] to-[#10061e] text-white border-b border-purple-900/40">
         <Cluster
           word="GAMER"
-          src="/images/categorias/gamer-mask-light.png"
+          src="/images/categorias/gamer-mask-light.webp"
           label="O lado do jogo"
           heading="Jogos, consoles e acessórios."
           text="Jogos físicos, consoles e acessórios, cada um com preço monitorado e histórico de preços."
@@ -97,7 +97,7 @@ export function CategoriesSection() {
       <div data-theme="dark" className="bg-gradient-to-b from-[#053024] via-[#03241b] to-[#021812] text-white border-b border-emerald-900/40">
         <Cluster
           word="GEEK"
-          src="/images/categorias/geek-mask-light.png"
+          src="/images/categorias/geek-mask-light.webp"
           label="O lado da cultura"
           heading="Franquias, lançamentos e comunidade."
           text="Notícias, lançamentos e conteúdo sobre cultura geek."

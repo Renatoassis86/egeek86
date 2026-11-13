@@ -39,7 +39,7 @@ export function IndicatorsSection({ metrics }: { metrics: PublicMetrics }) {
         <Reveal delay={0.12} className="w-full">
           <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full rounded-[var(--radius-xl)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-2xl">
             <Image
-              src="/images/home/painel-analitico-86.png"
+              src="/images/home/painel-analitico-86.webp"
               alt="Gráficos de métricas do Espaço Geek 86"
               fill
               className="object-cover object-center"

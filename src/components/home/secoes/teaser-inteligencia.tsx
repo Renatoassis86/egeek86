@@ -20,7 +20,7 @@ export function InteligenciaGamerTeaserSection() {
           <div className="lg:col-span-6 flex flex-col gap-4">
             <Reveal>
               <SceneImage
-                src="/images/home/observatorio-gamer-hero.png"
+                src="/images/home/observatorio-gamer-hero.webp"
                 alt="Pesquisadores e analistas do Observatório Gamer"
                 tone="ember"
                 className="aspect-[16/9] rounded-[var(--radius-lg)] border border-[var(--color-border-subtle)] mb-2"
@@ -107,7 +107,7 @@ export function InteligenciaGamerTeaserSection() {
             <Reveal delay={0.28}>
               <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-xl">
                 <Image
-                  src="/images/home/observatorio-cards-bg.png"
+                  src="/images/home/observatorio-cards-bg.webp"
                   alt="Pesquisa Acadêmica e Análise de Mercado Gamer"
                   fill
                   className="object-cover object-center"

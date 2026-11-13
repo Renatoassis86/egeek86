@@ -189,7 +189,7 @@ export function WatchlistPanel({
           <DialogHeader className="flex flex-col items-center text-center gap-3">
             <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)] border border-[var(--color-border-subtle)]">
               <Image
-                src="/images/monitoramento/unlock-account.png"
+                src="/images/monitoramento/unlock-account.webp"
                 alt="Desbloqueie o Monitoramento Ilimitado"
                 fill
                 className="object-cover"
