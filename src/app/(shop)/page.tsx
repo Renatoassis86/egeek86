@@ -7,7 +7,6 @@ import { getHomeSearchData } from '@/server/queries/home-search';
 import { WeeklyPromosSection } from '@/components/geek-deals/weekly-promos-section';
 import { SalesHighlights } from '@/components/geek-deals/sales-highlights';
 import { SecaoPlusHome } from '@/components/plus/secao-plus-home';
-import { FaixasPlusHome } from '@/components/plus/faixas-plus-home';
 import { Hero } from '@/components/home/secoes/hero';
 import { StatementBand } from '@/components/home/secoes/faixa-declaracao';
 import { CategoriesSection } from '@/components/home/secoes/categorias';
@@ -16,6 +15,7 @@ import { IndicatorsSection } from '@/components/home/secoes/indicadores';
 import { InteligenciaGamerTeaserSection } from '@/components/home/secoes/teaser-inteligencia';
 import { HomeNewsSection } from '@/components/home/secoes/noticias-home';
 import { Benefits } from '@/components/home/secoes/beneficios';
+import { Contatos } from '@/components/home/secoes/contatos';
 import { NewsletterCTA } from '@/components/home/secoes/newsletter';
 
 // HOME: so compoe as secoes (cada uma em src/components/home/secoes/*).
@@ -52,9 +52,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <Suspense fallback={null}>
         <SecaoPlusHome />
       </Suspense>
-      <Suspense fallback={null}>
-        <FaixasPlusHome />
-      </Suspense>
       <SurveySection surveyData={surveyData} />
       <IndicatorsSection metrics={metrics} />
       <InteligenciaGamerTeaserSection />
@@ -62,6 +59,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <HomeNewsSection />
       </Suspense>
       <Benefits />
+      <Suspense fallback={null}>
+        <Contatos />
+      </Suspense>
       <NewsletterCTA />
     </>
   );
