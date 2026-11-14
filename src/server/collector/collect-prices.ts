@@ -32,6 +32,7 @@ import {
 } from '@/lib/affiliate/master-consolidation';
 import { getMasterGroupingScope, shouldGroupByMaster } from '@/lib/affiliate/master-grouping-config';
 import { NOOP_RUN, collectorRunsEnabled, startCollectorRun, type CollectorRunHandle } from './collector-runs';
+import { escolherRodizio, rodizioConfig, rodizioSelectSql, type RodizioCandidato } from '@/lib/affiliate/rodizio-expirados';
 import './sources'; // registra os adapters disponíveis (efeito colateral do import)
 
 /**
@@ -115,6 +116,11 @@ export interface CollectPricesSummary {
    * para o retorno ficar idêntico ao anterior.
    */
   masterGrouping?: MasterGroupingStats;
+  /**
+   * Rodízio de reconferência das ofertas EXPIRADAS do ML (C6, flag COLLECT_RODIZIO_EXPIRADOS=on). Ausente com a flag desligada.
+   * `catalogos` = catálogos de masters sem oferta ativa lidos neste ciclo pela via legada (por catálogo).
+   */
+  rodizioExpirados?: { catalogos: number; porRun: number };
 }
 
 export interface MasterGroupingStats {
@@ -227,6 +233,30 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
   const { catalogGroups, masterTargets, masterBaselineCalls } = groupDueOffers(dueOffers, (masterId) =>
     shouldGroupByMaster(masterId, scope)
   );
+  // C6 — rodízio das expiradas do ML: masters SEM oferta ativa nunca vencem o refresh. Uma fatia por ciclo entra pela via LEGADA
+  // (por catálogo; a via por master só lê active/draft e ignoraria esses masters). Mesma identidade/guardas/carimbo; reativa só com leitura nova.
+  const rodizio = rodizioConfig();
+  // Recuo em 429: ao primeiro rate limit de um grupo do rodízio, os demais grupos do rodízio deste ciclo são pulados (o carimbo não
+  // avança em exceção, então retomam no ciclo seguinte; a coleta normal da fila nunca é afetada).
+  const rodizioOfferIds = new Set<string>();
+  let rodizioParou = false;
+  if (rodizio.ativo) {
+    try {
+      const rows = (await db.execute(sql.raw(rodizioSelectSql(rodizio.horasEntreChecagens, rodizio.porRun * 4)))) as unknown as RodizioCandidato[];
+      const naFila = new Set(dueOffers.map((o) => `${o.networkId}:${o.externalRef}`));
+      const escolhidos = escolherRodizio(
+        rows.map((r) => ({ ...r, lastCheckedAt: r.lastCheckedAt ? new Date(r.lastCheckedAt) : null })),
+        { limite: rodizio.porRun, catalogosNaFila: naFila }
+      );
+      for (const c of escolhidos) {
+        rodizioOfferIds.add(c.id);
+        catalogGroups.push({ networkId: c.networkId, networkSlug: c.networkSlug, externalRef: c.externalRef, masterProductId: c.masterProductId, offerIds: [c.id] });
+      }
+      summary.rodizioExpirados = { catalogos: escolhidos.length, porRun: rodizio.porRun };
+    } catch (err) {
+      console.error('[rodizio-expirados] seleção falhou (ignorada, coleta normal segue):', err instanceof Error ? err.message : err);
+    }
+  }
   const masterStats: MasterGroupingStats | null = scope.enabled
     ? {
         scope: scope.all ? 'todos' : scope.masterIds.size > 0 ? 'lista' : 'vazio',
@@ -401,6 +431,8 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       summary.skippedNoSource += group.offerIds.length;
       return;
     }
+    const ehRodizio = group.offerIds.length === 1 && rodizioOfferIds.has(group.offerIds[0]!);
+    if (ehRodizio && rodizioParou) return;
     const run = runs.get(group.networkSlug) ?? NOOP_RUN;
     run.counters.queries++;
 
@@ -434,6 +466,7 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
       await stampChecked(group.offerIds);
     } catch (err) {
       // Sem finally: falha NÃO grava last_checked_at (EG-03).
+      if (ehRodizio && /429|rate.?limit/i.test((err as Error).message)) rodizioParou = true;
       summary.errors.push({ externalRef: group.externalRef, message: (err as Error).message });
       run.addError((err as Error).message);
     }
