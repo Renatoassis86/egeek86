@@ -53,3 +53,23 @@ Respostas do dono em 2026-11-14 (todas pelo motor de perguntas):
 - C14: rever em tamanho cheio os 36 itens dos lotes por miniatura.
 - C15: investigar `cobertura-shopee`, `group-messages`, `refresh-snapshots:stats`.
 - B1: impressão 3D (Kobra e Bambu): cota reservada de mensagens + destaque no front + coleta priorizada.
+
+## E. Segunda rodada do motor de perguntas (2026-11-14, noite)
+Regra-mãe do dono: a única restrição de entrada é usado e retrô; barreira nova só com aval; grupos só de produtos iguais; indicadores não mudam de estrutura.
+- R2-1: master novo da Amazon entra direto (regra geral), sem revisão obrigatória.
+- R2-2: remover o teto de 50% de queda (toda queda entra na série e no selo).
+- R2-3: frescor: mostrar sempre, com "visto há X"; mensagem mantém janela curta.
+- R2-4: vendedor fraco: grava e mostra; fica fora só da média.
+- R2-5: jogo digital segue fora.
+- R2-6: dúvida de identidade entra em grupo separado ("não identificado"), sem misturar.
+- R2-7: cobertura Shopee com cota própria e espaçada.
+- R2-8: marcar como encerradas por tempo as 25 linhas presas do refresh-snapshots:stats (com backup).
+- R2-9: migrar o job antigo do pg_net para Authorization: Bearer e remover o ?key= da URL.
+- R2-10: remover a rota de diagnóstico loja-teste e ligar limite de requisições (D2).
+- R2-11: liberar os 1.515 masters em revisão sem sinal de usado/retrô (dry-run, backup, rollback).
+- R2-12: preço implausível (<35% ou >300% da mediana) grava em quarentena nas duas lojas.
+- R2-13: "Amazon Quase Novo" / "Usado - Como novo" lidos na página = usado (fora).
+- R2-14: ligar já GROUP_PROMO_PRIME (feito, deploy aab8e41 Ready).
+- R2-15: promo sem validade lida: registrar sem validade, não divulgar sem confirmação na página do item.
+- R2-16: caneleira volta em Esporte (power bank segue fora).
+- R2-17: tirar botões Telegram/WhatsApp da home e dos departamentos; só /contatos.
