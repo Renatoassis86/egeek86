@@ -1,0 +1,180 @@
+{
+  "criadoEm": "2026-11-14T17:27:04.487Z",
+  "por": "Renato (decisao 2026-11-14: rejeitar sinais de uso)",
+  "backup": "foto-com-mao-2026-11-14T17-27-03-242Z.ndjson",
+  "gravados": [
+    {
+      "id": "0538c3b3-bf22-435f-be07-b4fb358437a0",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "07c8ba22-c0ba-4e48-adac-109f47826fdd",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "4cfac2ad-7d95-48d2-b9dc-3f22ee65109a",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "5a49dfb5-bd38-4396-ae9e-d95298f5b477",
+      "antes": null,
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "602f6d4d-29f7-42cb-91fc-fa6a74aaa7fc",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "6a3aae43-575e-45f9-a63c-62019a95dada",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "a2e2cb97-cb94-4870-904f-1ebf4a5e3e00",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "e85a5a67-7ad0-40f5-92ed-743b77a1e39a",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    },
+    {
+      "id": "f21da0b3-5ccc-4829-995d-1ac9f7431267",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "sinal_de_uso",
+        "matched": "sinal_de_uso",
+        "version": 1,
+        "at": "2026-11-14T17:27:04.487Z"
+      }
+    }
+  ],
+  "rollback": "npx tsx --env-file=.env.local scripts/aplicar-foto-com-mao.ts --rollback docs/backups/foto-com-mao-log-2026-11-14T17-27-03-242Z.json --apply"
+}

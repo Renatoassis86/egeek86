@@ -19,6 +19,8 @@ import { GATE_VERSION, type PersistedGate } from '../src/lib/catalog/gate';
 
 const argv = process.argv.slice(2);
 const APPLY = argv.includes('--apply');
+const motIdx = argv.indexOf('--motivo');
+const MOTIVO = motIdx >= 0 ? argv[motIdx + 1]! : 'foto_com_mao';
 const porIdx = argv.indexOf('--por');
 const POR = porIdx >= 0 ? argv[porIdx + 1] : '';
 const rbIdx = argv.indexOf('--rollback');
@@ -40,8 +42,9 @@ async function main() {
       return void console.log('ROLLBACK aplicado.');
     }
     const files = argv.filter((a, i) => a.endsWith('.json') && argv[i - 1] !== '--rollback');
+    const SO_USO = argv.includes('--uso-visivel'); // trata usado_visivel=true como alvo (classe ignorada)
     const ids = new Set<string>();
-    for (const f of files) for (const r of JSON.parse(fs.readFileSync(f, 'utf8')) as Array<{ id: string; classe: string }>) if (r.classe === 'mao') ids.add(r.id);
+    for (const f of files) for (const r of JSON.parse(fs.readFileSync(f, 'utf8')) as Array<{ id: string; classe: string; usado_visivel?: boolean }>) if (SO_USO ? r.usado_visivel === true : r.classe === 'mao') ids.add(r.id);
     if (!ids.size) return void console.log('nenhum item com mão.');
     const rows = await sql<{ id: string; name: string; gate: PersistedGate | null }[]>`SELECT id::text AS id, name, attributes -> 'catalogGate' AS gate FROM master_products WHERE id = ANY(${[...ids]}::uuid[])`;
     const alvo = rows.filter((r) => !r.gate?.manual && r.gate?.verdict !== 'rejected');
@@ -50,7 +53,7 @@ async function main() {
     if (!APPLY) return void console.log('DRY-RUN: nada gravado. Use --apply --por "Nome".');
     if (!POR) throw new Error('--por "Nome" é obrigatório com --apply');
     const at = new Date().toISOString();
-    const depois: PersistedGate = { verdict: 'rejected', category: 'out_of_scope', reason: 'foto_com_mao', matched: 'foto_com_mao', version: GATE_VERSION, at };
+    const depois: PersistedGate = { verdict: 'rejected', category: 'out_of_scope', reason: MOTIVO, matched: MOTIVO, version: GATE_VERSION, at };
     const bk = path.join(DIR, `foto-com-mao-${stamp}.ndjson`);
     fs.writeFileSync(bk, alvo.map((r) => JSON.stringify({ id: r.id, nome: r.name, catalogGateAnterior: r.gate })).join('\n') + '\n');
     const gravados: Array<{ id: string; antes: PersistedGate | null; depois: PersistedGate }> = [];
