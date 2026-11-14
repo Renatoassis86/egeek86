@@ -1,0 +1,18 @@
+# Motor de perguntas: barreiras de entrada no banco e de saída para site e mensagens
+
+Origem: `docs/relatorio-barreiras-produtos-2026-11-13.md`. O dono responde uma pergunta por vez; cada resposta vira regra a executar (fase de código ou de dados, com backup e rollback). Atualizado a cada resposta.
+
+| # | Barreira | Pergunta | Resposta do dono | Ação a executar |
+|---|---|---|---|---|
+| 1 | Base de preço (5 cotações e 14 dias) esconde ~1.800 jogos | Como tratar produto sem base? | **Aparece sem selo** (selo continua exigindo 5 e 14) | Módulo de exibição com degrau "presença" separado do "selo" |
+| 2 | Amazon fora dos departamentos | Liberar como oferta e menor preço, sem mediana? | **Sim, só como oferta** (janela de 24 h para a Amazon, sem média nem histórico dela nos departamentos) | `REDES_DEPARTAMENTO` inclui a Amazon só para oferta/menor preço; mediana segue só ML |
+| 3 | Mensagens exigem média elegível | Produto sem base pode ir em mensagem? | **Sim, mensagem neutra sem selo** ('Preço agora: R$ X em [loja], lido às HH:MM', sem 'abaixo da média') | Novo tipo de mensagem neutra em `group-rules.ts` com limite diário baixo; a régua de degraus continua só para produto com base |
+| 4 | Cadastros em `review` com oferta ativa (~6.300) | Promover em lote com critério e backup? | **Tudo de uma vez com o mesmo critério** (mitigação mantida: dry-run, amostra revisada, backup NDJSON e `--rollback`) | Script de promoção dos `review` com critério determinístico (marca, modelo, plataforma, novo, em linha, sem peça/usado/retrô) |
+| 5 | Fila de conferência dos departamentos (1.180) | Aprovação automática v3 com backup? | **Marca + modelo + oferta clicável** (sem exigir GTIN; mantém filtros de item miúdo, escopo, usado e retrô) | Rodar `aprovacao-nicho` v3 nos 1.180 com esse critério, backup e `--rollback` |
+| 6 | Produto em uma loja só (5.565) | Busca cruzada por chave forte? | **Só com chave forte** (GTIN, ISBN ou código de modelo exato; restaurar o modelo na consulta da Shopee quando for código válido) | Rodada de busca cruzada por master de 1 loja; junta só se a chave bater |
+| 7 | Vendedor fraco bloqueia o produto (96) | Escolher oferta de vendedor não fraco? | **Usar a menor oferta de vendedor confiável** (oferta do vendedor fraco fica fora do preço exibido e da média) | Pool de vitrine escolhe a menor oferta entre vendedores não fracos antes de avaliar |
+| 8 | Ofertas ML expiradas (7.393) | Reconferir por rodízio? | **Reconferir por rodízio** (prioriza produtos sem nenhuma oferta ativa; só reativa com preço e checagem frescos) | Rodízio de reconferência das expiradas do ML dentro do orçamento de chamadas |
+| 9 | Rascunhos e fila de identidade (400 e 756) | Decidir por regra reaproveitável? | **Decidir por regra reaproveitável** (rascunho sem resposta em 14 dias sai da fila e volta como 'não identificado') | Regras em `identity_decisions` (`is_rule`) com log reversível; prazo de 14 dias para rascunho |
+| 10 | GTIN e MPN vazios (6.300 sem GTIN) | Enriquecer pela API oficial? | **Enriquecer pela API oficial** (GTIN como chave só quando exato e com marca compatível) | Backfill de GTIN/MPN por ML e Amazon; chave de junção exata |
+| 11 | Link pendente do ML e cota (404, 429) | Terminar `meli.la` e priorizar coleta? | **Só terminar a troca para links meli.la** (não autorizou: priorizar termos com menos 404, recuo após 429, dividir lote da Shopee) | Concluir o loop de links `meli.la` para as ofertas pendentes dos departamentos |
+| 12 | Consoles com 3 itens e plataforma desconhecida (112) | Aceitar 3 em consoles e backfill? | **Só descobrir a plataforma dos 112 jogos** (mínimo de consoles continua 4) | Backfill de plataforma por título e API, com backup; quem continuar sem plataforma fica fora das faixas |
