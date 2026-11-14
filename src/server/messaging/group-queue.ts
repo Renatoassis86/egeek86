@@ -24,6 +24,7 @@ import { gerarCodigoCurto, linkCurto } from '@/lib/messaging/short-code';
 import { vaiParaDestaques } from '@/lib/messaging/regua';
 import { runLivePhase, type LiveCheckLog, type LiveDeps } from '@/lib/messaging/live-recheck';
 import { loadLiveTargets, realLiveDeps } from '@/server/messaging/live-recheck';
+import { registrarSombraML } from '@/server/messaging/ml-sombra';
 
 type Row = Record<string, unknown>;
 export type GroupChannelDb = 'tg' | 'wa';
@@ -644,6 +645,11 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
           recheck_due_at = ${recheckAt}::timestamptz
         WHERE id = ${id}::uuid
       `);
+      // Modo sombra do modelo de preço (GROUP_ML_SOMBRA): só REGISTRA o score em candidate.mlSombra; nunca bloqueia (já enviada). Isolado e com prazo curto.
+      await timeout(
+        registrarSombraML({ groupMessageId: id, offerId: match.offerIds[0], trigger: row.trigger, priceCents: match.priceCents, avgCents: match.avgCents ?? null, networkSlug: match.networkSlug, at: now }),
+        2500
+      ).catch(() => null);
       // Canal Destaques (degraus 4 e 5): segunda publicação com o MESMO texto, cartão e botão. Isolada: a linha já está 'enviada', então falha aqui
       // não reenvia a da loja nem a muda de status; o resultado fica em candidate.destaques. Desligado sem TELEGRAM_DESTAQUES_CHAT_ID.
       const destChat = (env as Record<string, string | undefined>).TELEGRAM_DESTAQUES_CHAT_ID;
