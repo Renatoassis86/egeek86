@@ -287,7 +287,14 @@ function ObjetivosJustificativaSection() {
       <div className="mx-auto max-w-7xl px-4 lg:px-8 grid gap-12 lg:grid-cols-2 lg:items-center">
         <Reveal>
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[var(--radius-lg)] border border-emerald-500/30 bg-[#0B0805] shadow-2xl">
-            {/* Imagem repetida removida (regra "uma imagem, um lugar"): fundo sólido até a foto nova (checklist #20/#21). */}
+            {/* Imagem exclusiva deste bloco (regra "uma imagem, um lugar"): loja-retro.webp não é usada em nenhuma outra página. */}
+            <Image
+              src="/images/sobre/loja-retro.webp"
+              alt="Cliente comparando caixas de jogos na prateleira de uma loja"
+              fill
+              sizes="(min-width: 1024px) 560px, 100vw"
+              className="object-cover object-center"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4 text-xs font-mono text-emerald-400 font-bold">
               Preços que variam muito de uma loja para outra.
