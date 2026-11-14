@@ -1,0 +1,7 @@
+{
+  "criadoEm": "2026-11-14T18:16:53.480Z",
+  "por": "Renato (C13 GTIN/MPN, 2026-11-14)",
+  "backup": "enriquecer-gtin-2026-11-14T18-12-39-490Z.ndjson",
+  "gravados": [],
+  "rollback": "npx tsx --conditions=react-server --env-file=.env.local scripts/enriquecer-gtin-mpn-ml.ts --rollback docs/backups/enriquecer-gtin-log-2026-11-14T18-12-39-490Z.json --apply"
+}

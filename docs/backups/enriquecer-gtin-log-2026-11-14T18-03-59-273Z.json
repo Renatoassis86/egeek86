@@ -1,0 +1,38 @@
+{
+  "criadoEm": "2026-11-14T18:08:20.476Z",
+  "por": "Renato (C13 GTIN/MPN, 2026-11-14)",
+  "backup": "enriquecer-gtin-2026-11-14T18-03-59-273Z.ndjson",
+  "gravados": [
+    {
+      "id": "de27a55d-dd6c-4daf-9e00-118316c0fd64",
+      "gtin": null,
+      "mpn": "MKULPS5"
+    },
+    {
+      "id": "e942f1ec-e04f-49e4-a4e1-ccd53ea2ed4b",
+      "gtin": null,
+      "mpn": "44615"
+    },
+    {
+      "id": "f6db45a8-87c5-4fd1-b6ba-aafb47463026",
+      "gtin": "7892110206457",
+      "mpn": null
+    },
+    {
+      "id": "f8d4f881-6fea-4453-b041-647404dfa023",
+      "gtin": null,
+      "mpn": "98782"
+    },
+    {
+      "id": "fcbd5fdc-8e8f-4cc3-b503-6956fbf04d74",
+      "gtin": null,
+      "mpn": "20689"
+    },
+    {
+      "id": "fd40cf31-b9ee-4fbc-b8bb-3028e630eff2",
+      "gtin": null,
+      "mpn": "S10209027"
+    }
+  ],
+  "rollback": "npx tsx --conditions=react-server --env-file=.env.local scripts/enriquecer-gtin-mpn-ml.ts --rollback docs/backups/enriquecer-gtin-log-2026-11-14T18-03-59-273Z.json --apply"
+}
