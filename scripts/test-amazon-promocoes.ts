@@ -110,7 +110,7 @@ async function main() {
 
   // ---------------- lógica pura do loop ----------------
   check('loop: ids de promoção do HTML (sem repetir)', JSON.stringify(L.idsDePromocao('<a href="/promotion/psp/A2G3U1520PCGB0?ref=x">a</a><a href="https://www.amazon.com.br/promotion/psp/A29MK98EPUD5DV">b</a>/promotion/psp/A2G3U1520PCGB0')) === '["A2G3U1520PCGB0","A29MK98EPUD5DV"]');
-  check('loop: título restrito (Prime, compre N, em 2 itens, seguir)', L.tituloRestrito('Exclusivo Prime: 20% off em Automotivo', '') && L.tituloRestrito('App only: 20% off em 2 Bebidas Alcoólicas', '') && L.tituloRestrito('Compre 3 e ganhe 15% off', '') && L.tituloRestrito('x', 'seguir a loja') && !L.tituloRestrito('Leve 10% off em Livros', ''));
+  check('loop: título restrito (compre N, em 2 itens, seguir; Prime passa a ser lido, 2026-11-14)', !L.tituloRestrito('Exclusivo Prime: 20% off em Automotivo', '') && L.tituloRestrito('App only: 20% off em 2 Bebidas Alcoólicas', '') && L.tituloRestrito('Compre 3 e ganhe 15% off', '') && L.tituloRestrito('x', 'seguir a loja') && !L.tituloRestrito('Leve 10% off em Livros', ''));
   check('loop: título livre não é restrito', !L.tituloRestrito('Só no app: 20% off em Limpeza', 'Só no app: 20% off em Limpeza De terça-feira') && !L.tituloRestrito('20% de desconto em 1 item(ns)', ''));
   check('loop: preço whole+fraction', L.precoDe('1.234', '56') === '1234,56' && L.precoDe('13', '9') === '13,90' && L.precoDe('', '90') === null);
   check('loop: bloqueios', L.detectarBloqueio({ status: 429 }) === 'http_429' && L.detectarBloqueio({ pathname: '/errors/validateCaptcha' }) === 'captcha' && L.detectarBloqueio({ texto: 'Fazer login', temCards: false }) === 'login' && L.detectarBloqueio({ texto: 'Fazer login', temCards: true }) === null);

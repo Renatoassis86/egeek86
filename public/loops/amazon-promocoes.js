@@ -40,7 +40,8 @@
   /** Título que NUNCA gera cupom para todos (Prime, compre N, seguir a loja): o loop manda só o cabeçalho e o servidor fecha o que houver. */
   PURO.tituloRestrito = function (titulo, banner) {
     var t = (String(titulo || '') + ' ' + String(banner || '').slice(0, 140)).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-    if (/\bseguir\b|\bprime\b/.test(t)) return true;
+    // 2026-11-14 (dono): 'Exclusivo Prime' deixa de ser restrito aqui: o loop LE os cards e o servidor decide (flag PROMO_PRIME_DERIVADA; desligada ele descarta como antes).
+    if (/\bseguir\b/.test(t)) return true;
     var q = /\b(?:compre|leve)\s+(\d+)\b(?!\s*%)/.exec(t) || /\bem\s+(\d+)\s+(?:item|itens|produtos?|bebidas?|livros?|unidades?|pecas?|artigos?)\b/.exec(t);
     return !!(q && +q[1] >= 2);
   };
