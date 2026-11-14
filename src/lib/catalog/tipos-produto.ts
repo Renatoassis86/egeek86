@@ -45,7 +45,6 @@ const ELETRONICOS: TipoDef[] = [
   { slug: 'camera-acao', rotulo: 'Câmera de ação', re: r(' (camera|cameras|filmadora) .*(acao|sports|sportiva|action)| gopro | insta360 | osmo action ') },
   { slug: 'camera-foto', rotulo: 'Câmeras fotográficas', re: r(' (mirrorless|dslr|camera fotografica|camera instantanea|camera digital|camera compacta|camera infantil|coolpix|instax) ') },
   { slug: 'drone', rotulo: 'Drones', re: r(' (drone|drones) ') },
-  { slug: 'celular', rotulo: 'Celulares e smartphones', re: r(' (celular|celulares|smartphone|smartphones|iphone|galaxy [asmz] ?\\d+|redmi|poco [xfm]\\d+|moto [gex]\\d+) ') },
   { slug: 'tv-box', rotulo: 'TV Box e streaming', re: r(' (tv box|tvbox|fire tv|fire stick|chromecast|apple tv|mi box|streaming player) ') },
   { slug: 'microfone', rotulo: 'Microfones', re: r(' (microfone|microfones|lapela) ') },
   { slug: 'audio-hifi', rotulo: 'Receivers, amplificadores e toca-discos', re: r(' (receiver|amplificador|amplificadores|vitrola|toca discos|toca disco) ') },
@@ -53,8 +52,6 @@ const ELETRONICOS: TipoDef[] = [
   { slug: 'fones', rotulo: 'Fones de ouvido', re: r(' (fone|fones|headphone|headset|earbuds|earphone|tws|airpods) ') },
   { slug: 'caixa-de-som', rotulo: 'Caixas de som', re: r(' (caixa de som|caixinha de som|caixa som|caixa amplificada|caixa acustica|speaker|alto falante) ') },
   { slug: 'smart-tv', rotulo: 'Smart TV', re: r(' (smart tv|tv|tvs|televisao|televisor) ') },
-  { slug: 'tablet-leitor', rotulo: 'Tablets e leitores', re: r(' (tablet|ipad|e reader|kindle|galaxy tab|tab [as]\\d+) ') },
-  { slug: 'relogios', rotulo: 'Relógios inteligentes', re: r(' (smartwatch|smart watch|relogio inteligente|relogio smart|smartband|galaxy watch|apple watch|amazfit|mi band) ') },
 ];
 
 const CASA: TipoDef[] = [
@@ -102,6 +99,9 @@ const TECNOLOGIA: TipoDef[] = [
   { slug: 'cadeira-gamer', rotulo: 'Cadeiras gamer', re: r(' (cadeira|cadeiras) (gamer|gaming|ergonomica|ergonomicas|de escritorio|presidente|para (pc|computador|escritorio|jogos))') },
   { slug: 'moveis-gamer', rotulo: 'Mesas, racks e estantes gamer', re: r(' (mesa (gamer|gaming|para (pc|computador|escritorio|jogos)|de (escritorio|computador))|escrivaninha gamer|rack (gamer|para (pc|computador))|estante gamer|bancada gamer) ') },
   { slug: 'computador-desktop', rotulo: 'Computadores e mini PCs', re: r(' (all in one|mini pc|desktop|computador|computadores|pc gamer) ') },
+  { slug: 'celular', rotulo: 'Celulares e smartphones', re: r(' (celular|celulares|smartphone|smartphones|iphone|galaxy [asmz] ?\\d+|redmi|poco [xfm]\\d+|moto [gex]\\d+) ') },
+  { slug: 'tablet-leitor', rotulo: 'Tablets e leitores', re: r(' (tablet|ipad|e reader|kindle|galaxy tab|tab [as]\\d+) ') },
+  { slug: 'relogios', rotulo: 'Relógios inteligentes', re: r(' (smartwatch|smart watch|relogio inteligente|relogio smart|smartband|galaxy watch|apple watch|amazfit|mi band) ') },
 ];
 
 const ESPORTE: TipoDef[] = [

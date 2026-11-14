@@ -12,7 +12,7 @@ export interface LojaPlus {
 
 export const LOJAS_PLUS: readonly LojaPlus[] = [
   { storeSlug: 'impressao-3d', dept: 'impressao3d', rotulo: 'Impressão 3D', chamada: 'Impressoras, filamentos e resinas.' },
-  { storeSlug: 'tecnologia', dept: 'tecnologia', rotulo: 'Tecnologia', chamada: 'Hardware, armazenamento e periféricos.' },
+  { storeSlug: 'tecnologia', dept: 'tecnologia', rotulo: 'Tecnologia', chamada: 'Hardware, celulares, tablets, armazenamento e periféricos.' },
   { storeSlug: 'livros', dept: 'livros', rotulo: 'Livros', chamada: 'Livros identificados por ISBN.' },
   { storeSlug: 'eletrodomesticos', dept: 'eletrodomesticos', rotulo: 'Casa', chamada: 'Eletrodomésticos para a casa.' },
   { storeSlug: 'eletroeletronicos', dept: 'eletroeletronicos', rotulo: 'Eletrônicos', chamada: 'TVs, áudio e vídeo.' },

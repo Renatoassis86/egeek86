@@ -8,7 +8,7 @@ export const MIN_DESTAQUES_HOME = 4;
 
 export const destaquesPlusCached = createPersistedQuery(
   async (dept: DepartamentoSlug) => destaquesDepartamento(dept, 8),
-  ['home-plus-destaques-v3'],
+  ['home-plus-destaques-v4'],
   { revalidate: 120, maxStaleSeconds: 900, coldTimeoutSeconds: 5, persist: { maxAgeSeconds: 900, maxStaleSeconds: 3 * 3600 } }
 );
 const porDept = destaquesPlusCached;

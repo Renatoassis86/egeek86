@@ -1,0 +1,15 @@
+{
+  "criadoEm": "2026-11-14T00:23:12.410Z",
+  "de": "eletroeletronicos",
+  "para": "tecnologia",
+  "masters": 196,
+  "ofertas": 1016,
+  "porTipo": {
+    "tablet-leitor": 79,
+    "relogios": 52,
+    "celular": 65
+  },
+  "backupMasters": "mover-celulares-masters-2026-11-14T00-23-10-274Z.ndjson",
+  "backupOfertas": "mover-celulares-ofertas-2026-11-14T00-23-10-274Z.ndjson",
+  "rollback": "npx tsx --env-file=.env.local scripts/mover-celulares-tecnologia.ts --rollback docs/backups/mover-celulares-log-2026-11-14T00-23-10-274Z.json --apply"
+}

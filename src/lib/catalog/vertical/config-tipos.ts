@@ -62,7 +62,7 @@ const EL_VOLT = ['ALPHANUMERIC_MODEL', 'VOLTAGE'];
 // ---------------------------------------------------------------------------------------------------------------------
 const ELETRO: SegmentConfig[] = [
   seg({
-    key: 'celular', vertical: 'eletroeletronicos', label: 'Celular e smartphone', rank: 100, domains: [/^MLB-CELLPHONES$/, /SMARTPHONES/],
+    key: 'celular', vertical: 'tecnologia', label: 'Celular e smartphone', rank: 100, domains: [/^MLB-CELLPHONES$/, /SMARTPHONES/],
     terms: [
       'iphone 16', 'iphone 15', 'galaxy s25', 'galaxy a56', 'galaxy a36', 'galaxy a16', 'redmi note 14', 'moto g85', 'moto g55',
       ...combineTerms('celular', ['128gb', '256gb', '5g', '64gb', '512gb'], ['samsung galaxy', 'motorola moto g', 'xiaomi redmi', 'apple iphone', 'realme', 'poco', 'infinix', 'tcl', 'honor', 'oppo', 'nothing phone', 'asus rog phone', 'zte']),

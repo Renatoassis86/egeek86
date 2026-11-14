@@ -284,15 +284,15 @@ const ELETRO_EL: SegmentConfig[] = [
     terms: [...combineTerms('projetor', ['full hd', '4k', 'portatil', 'smart', 'led', 'mini'], ['epson', 'benq', 'xiaomi', 'samsung', 'lg', 'viewsonic', 'optoma', 'acer', 'philips', 'multilaser', 'elgin', 'xgimi', 'anker nebula', 'hisense'])],
   }),
   seg({
-    key: 'tablet', vertical: 'eletroeletronicos', label: 'Tablet', domain: 'MLB-TABLETS', rank: 71, profile: GTIN_P(),
+    key: 'tablet', vertical: 'tecnologia', label: 'Tablet', domain: 'MLB-TABLETS', rank: 71, profile: GTIN_P(),
     terms: [...combineTerms('tablet', ['', '10 polegadas', '128gb', '64gb', 'wifi', '5g'], ['samsung galaxy tab', 'apple ipad', 'xiaomi redmi pad', 'lenovo tab', 'multilaser', 'positivo', 'philco', 'motorola', 'tcl', 'realme', 'huawei matepad', 'oppo', 'amazon fire', 'dl', 'oneplus', 'honor'])],
   }),
   seg({
-    key: 'e-reader', vertical: 'eletroeletronicos', label: 'E-reader', domain: 'MLB-E_READERS', rank: 72, profile: GTIN_P(),
+    key: 'e-reader', vertical: 'tecnologia', label: 'E-reader', domain: 'MLB-E_READERS', rank: 72, profile: GTIN_P(),
     terms: [...combineTerms('e-reader', ['', '16gb', '8gb', 'paperwhite', 'colorido'], ['kindle', 'kobo', 'onyx boox', 'pocketbook', 'tolino', 'amazon', 'positivo', 'daymaker', 'meebook', 'hisense']), 'kindle paperwhite', 'kindle 11a geracao', 'kindle scribe', 'kobo clara', 'kobo libra'],
   }),
   seg({
-    key: 'smartwatch', vertical: 'eletroeletronicos', label: 'Smartwatch e smartband', domain: 'MLB-SMARTWATCHES', rank: 73, profile: GTIN_P(),
+    key: 'smartwatch', vertical: 'tecnologia', label: 'Smartwatch e smartband', domain: 'MLB-SMARTWATCHES', rank: 73, profile: GTIN_P(),
     terms: [...combineTerms('smartwatch', ['', 'gps', 'amoled', 'esportivo', 'feminino', 'infantil'], ['apple watch', 'samsung galaxy watch', 'xiaomi', 'amazfit', 'garmin', 'huawei', 'haylou', 'mi band', 'polar', 'suunto', 'fitbit', 'oppo', 'realme', 'motorola', 'multilaser', 'ticwatch', 'colmi', 'imilab', 'qcy', 'tcl']), 'xiaomi smart band', 'garmin forerunner', 'garmin venu', 'apple watch se', 'apple watch series 10', 'galaxy watch 7', 'galaxy fit'],
   }),
   seg({

@@ -33,11 +33,16 @@ export const POR_PAGINA = 24;
 export const OFERTA_CLICAVEL_MAX_HORAS = 6;
 /** Mediana de preço só com este mínimo de vendedores distintos. */
 export const MIN_VENDEDORES_MEDIANA = 3;
-/** Redes que podem aparecer em departamento (Amazon fora). */
-export const REDES_DEPARTAMENTO = ['mercado-livre', 'shopee'] as const;
+/** Idade máxima do último check de uma oferta clicável da Amazon (a licença permite guardar preço por até 24 h; ML e Shopee seguem em 6 h). */
+export const OFERTA_CLICAVEL_MAX_HORAS_AMAZON = 24;
+/**
+ * Redes que podem aparecer em departamento. Amazon entra SÓ como oferta e menor preço (dono, 2026-11-13): nunca na mediana (a mediana
+ * é "apenas Mercado Livre") e sem histórico ou média da Amazon nos departamentos.
+ */
+export const REDES_DEPARTAMENTO = ['mercado-livre', 'shopee', 'amazon'] as const;
 
 export const DEPARTAMENTOS: readonly Departamento[] = [
-  { slug: 'tecnologia', rotulo: 'Tecnologia', descricao: 'Hardware, armazenamento, impressoras e periféricos.', tipoCartao: 'tecnologia', flag: 'dept_tecnologia' },
+  { slug: 'tecnologia', rotulo: 'Tecnologia', descricao: 'Hardware, notebooks, celulares, tablets, armazenamento, impressoras e periféricos.', tipoCartao: 'tecnologia', flag: 'dept_tecnologia' },
   { slug: 'eletroeletronicos', rotulo: 'Eletrônicos', descricao: 'TVs, áudio e vídeo.', tipoCartao: 'eletro', flag: 'dept_eletroeletronicos' },
   { slug: 'livros', rotulo: 'Livros', descricao: 'Livros identificados por ISBN.', tipoCartao: 'livro', flag: 'dept_livros' },
   { slug: 'eletrodomesticos', rotulo: 'Casa', descricao: 'Eletrodomésticos para a casa.', tipoCartao: 'eletro', flag: 'dept_eletrodomesticos' },
