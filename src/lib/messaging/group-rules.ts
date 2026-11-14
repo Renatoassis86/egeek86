@@ -1166,8 +1166,12 @@ export function riskAssess(
 
 /** Só produto NOVO e EM LINHA (dono, 2026-11-11): plataformas retrô e as que saíram de linha (Xbox One, Xbox 360, PS3 e anteriores, Wii, DS/3DS...) nunca vão para mensagem. */
 const OUT_OF_LINE_PLATFORM = /\b(?:xbox one(?: [sx])?|xbox 360|ps ?[123]|playstation ?[123]|psp|ps vita|wii(?: u)?|3ds|2ds|nintendo ds|gamecube|n64|nintendo 64|snes|game ?boy|mega ?drive|dreamcast)\b/i;
-export function isOutOfLine(p: Pick<ProductFacts, 'vertical' | 'platformLabel'>): boolean {
-  return p.vertical === 'games' && OUT_OF_LINE_PLATFORM.test(p.platformLabel ?? '');
+/** PS4 como APARELHO saiu de linha (dono, 2026-11-14); jogos de PS4 seguem (ainda vendem novos). */
+const OUT_OF_LINE_CONSOLE_ONLY = /(?:ps ?4|playstation ?4)/i;
+export function isOutOfLine(p: Pick<ProductFacts, 'vertical' | 'platformLabel'> & { productType?: string | null }): boolean {
+  if (p.vertical !== 'games') return false;
+  if (OUT_OF_LINE_PLATFORM.test(p.platformLabel ?? '')) return true;
+  return p.productType === 'console' && OUT_OF_LINE_CONSOLE_ONLY.test(p.platformLabel ?? '');
 }
 
 function scopeBlock(p: ProductFacts): string | null {

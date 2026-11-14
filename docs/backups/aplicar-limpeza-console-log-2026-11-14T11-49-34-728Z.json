@@ -1,0 +1,1091 @@
+{
+ "em": "2026-11-14T11:49:36.362Z",
+ "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)",
+ "marca": "limpeza-console-2026-11-13",
+ "plano": "docs/backups/limpeza-console-plano-2026-11-14T11-49-26-535Z.json",
+ "backup": "docs\\backups\\aplicar-limpeza-console-2026-11-14T11-49-34-728Z.ndjson",
+ "gravados": [
+  {
+   "id": "5a0261fa-ba19-405f-9c3b-b2ab44d36b46",
+   "titulo": "Console Playstation 4 1tb Slim Bundle Uncharted 4 Sony",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "a6fe362b-c3af-43cc-b5ee-fb68dfb3db67",
+   "titulo": "Console PlayStation 4 Mega Pack 18 - Ghost of Tsushima, God of War e Ratchet & Clank",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "b1138957-ef88-4447-ab43-ab9682383b13",
+   "titulo": "Console PlayStation 4 PlayStation Dualshock 4 Pro Batman Edition",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "40e90971-9e0a-44ab-a203-d6b4d1b935cf",
+   "titulo": "Console PlayStation 4 Pro 1tb 4k HDR",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "8052ee67-0705-435a-9e8a-dafe0c0b2018",
+   "titulo": "Console PlayStation 4 PS4 Fat 500GB com Jogo",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "39b4b275-8b77-4a19-80b1-fd35bea76b91",
+   "titulo": "Console Playstation 4 Slim 1Tb Impecável Completo na Caixa + Jogo",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "ac3ac01d-9b5b-420c-b354-7e367cc805c1",
+   "titulo": "Console Playstation 4 Slim Hits Bundle 4 Geração - Ps4",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "a24e4f15-b642-4c25-9c8e-a7e5d0ce1308",
+   "titulo": "Console Playstation 4 Slim Hits Bundle V15 1tb Mega Pack Cor Preto",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "9a1db38d-ca2e-48b3-8762-fb3f91543c68",
+   "titulo": "Console PlayStation CUH-2214BB01X",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "cuh 2214bb01x",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "2d4500f3-6beb-4266-98c7-0bf23b79544a",
+   "titulo": "Console PlayStation Playstation 4 1TB",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "05742593-30eb-4326-b612-24d5bcc2a7f8",
+   "titulo": "Console PlayStation PlayStation 4 Slim Standard",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "57b15865-0d95-49cd-9cd2-82dd4b295491",
+   "titulo": "Console PS4 FAT 500GB PlayStation 4 com Controle",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "797fdc44-cec8-4bf2-b801-853181a2ea67",
+   "titulo": "Console Ps4 Slim Playstation 4 500gb + 1 Controle Dualshock",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "f4ac511b-8647-4e2f-b424-7fc3bd209ec9",
+   "titulo": "Console Sony PlayStation 4 Slim 1TB Preto",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "f67ffd58-323a-41d9-bb97-520d4eaffb16",
+   "titulo": "Console Sony PlayStation 4 Slim de 1TB Com 3 Jogos e Mega Pack",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "ff7cd034-db25-40be-947e-45066f86cb8c",
+   "titulo": "PlayStation 4 Fat + 3 Jogos Aleatório + Acessórios Completos, Caixa e Garantia",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:retro_ou_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "0e0ab2bd-399f-4fdf-937d-b34d492dd47c",
+   "titulo": "Playstation 4 fat 1TB ou 500gb - Video game Ps4 Fat",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "39aac9c2-ddde-44ed-8845-38769d51e5f1",
+   "titulo": "Playstation 4 Pro 1TB - Video game Ps4 Pro",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "e32264c6-a13b-4305-84f2-9e7933638a36",
+   "titulo": "PlayStation 4 PRO 1TB | 2 Controles | Pronto para Jogar",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "36e6b338-36f0-42c0-b6a6-ec527d051533",
+   "titulo": "PlayStation 4 PS4 Slim 500GB / 1000 GB com 1 ou 2 Manetes + Ea Fc Fifa 26  + God Raganarok + Gta 5 + lançamentos",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "4692dcf7-3df9-45f0-9937-80028b6ab961",
+   "titulo": "Playstation 4 Slim 1tb - Video Game PS4 com 1 ou 2 controles 500gb ou 1tb + Jogos",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "6cd92419-bc7e-4236-94a8-e0662cd2c8da",
+   "titulo": "Playstation 4 Slim 1tb + 4 Jogos Aleatórios + 2 Controles",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "0207c287-0591-43ad-97d6-ab6e57af5856",
+   "titulo": "PLAYSTATION 4 SLIM 1TB | PS4 SLIM 1TB COM 1 JOGO",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "b7635cb3-dee8-49e5-9282-4f4ba9bea03a",
+   "titulo": "PlayStation 4 Slim 500 GB + 2  Controles + Garantia + Nota Fiscal",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "25d21e59-1928-49b2-a0ac-8777543dedf7",
+   "titulo": "Playstation 4 slim 500gb",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "b990ea6c-7a62-452a-b4e0-fe7cc4c23bce",
+   "titulo": "Playstation 4 slim 500gb 1 controle e 2 jogos",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "3e89f113-ce67-4cac-9aa1-979c4fd977ce",
+   "titulo": "Playstation 4 Sony - PS4 FAT/SLIM ORIGINAL - 6 Meses Garantia + Jogos",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:retro_ou_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "fbfc64f2-cdec-477f-a1af-7d70107be6b7",
+   "titulo": "PS4",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "bceef55d-2cb3-4c68-932d-ccb67d5da000",
+   "titulo": "PS4 FAT EDIÇÃO UNCHARTED VERSÃO 12.00 LACRE SONY",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "5cd56cfb-0106-4e78-92b8-33a7221ced61",
+   "titulo": "PS4 PlayStation 4 Slim 1TB + 2 Controles + Garantia + Nota Fiscal",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "0c228f02-00ed-4b29-9a2d-e4c8b4f94d3c",
+   "titulo": "Ps4 Playstation Original PRO Controle Original - EA FC 25 FIFA 26- GTA 5- GOD RAGANAROK - THE LAST",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:retro_ou_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "d1c30d87-6260-4e02-8d02-119181000db5",
+   "titulo": "Ps4 Playstation Original PRO Raridade com Controle Sem fio Original - EA FC FIFA - GTA 5- GOD RAGANAROK - THE LAST",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "b50608f0-dd02-4a83-a812-f784dc0a81c3",
+   "titulo": "PS4 Slim (Playstation 4 Slim) vertical stand",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_nao_e_aparelho:retro_ou_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "3ae3dafb-fc63-4dab-8160-a8e64f0d0c81",
+   "titulo": "PS4 SLIM 500GB + Jogo + Controles + Meses de Garantia + Nota",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "e96ffc43-7d5d-4963-a843-f100058f1aeb",
+   "titulo": "Ps4 Slim de 1 TB God Of War",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "03127c23-372e-4496-bf0b-6030181bc1ed",
+   "titulo": "PS4 Slim Original - 500 GB ou 1 TB",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "00272f61-827e-4b08-8ced-9c93081e112f",
+   "titulo": "PS4 Slim Original - 500 GB ou 1 TB COM 2 JOGOS",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "cbdef8af-75c5-4c1b-a682-488dbbf53cb3",
+   "titulo": "Ps4 Slim Playstation 4 500GB + Opção Com Controles e Jogo. Videogame Original, Console Com Nota Fiscal",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "8115d356-30a9-4c1f-b5ab-5252c4cba944",
+   "titulo": "Ps4 Video Game Slim Playstation 4 + Controles + 1 Jogo - Garantia - 500GB ou 1TB",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "705e1ab2-1d5f-47df-9ada-66717bec5372",
+   "titulo": "Sony Playstation 4 1000gb / 500 gb Ps4 Slim 1 ou 2 Manetes + Ea Fc Fifa 26 + God Raganarok + Gta 5+ mortal+ homem aranha",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "9647b786-c38a-4a42-a929-ac0dd1c2e4f6",
+   "titulo": "Sony Playstation 4 1000gb ou 500gb Com 1 ou 2 Manetes Ps4 Slim +Ea Fc 27 + God Raganarok + Gta 5 + e Muito Mais",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "dd0564ab-0854-44c3-ad1b-99fd591757bb",
+   "titulo": "Sony Playstation 4 1000gb Ps4 Pro + 8 JOGOS III",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "738222f9-c214-4220-8c17-930a4f5dcedd",
+   "titulo": "Sony Playstation 4 1000gb Ps4 Pro + Ea Fc Fifa 25 + God Raganarok + Gta 5 + Mkt 11",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "d02636f6-377a-4676-ac2e-9967c576ace9",
+   "titulo": "Sony Playstation 4 1000gb Ps4 Slim + Ea Fc Fifa 26 + God Raganarok + Gta 5 + Spider Man",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "a2f8c6d3-98a8-4b06-bd92-65aa99c1a160",
+   "titulo": "Sony PlayStation 4 Ps4 slim Ps4 Slim Ps4 Pro",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "a0c1912f-0579-4c1b-b748-eb6ac2e3c3b4",
+   "titulo": "Video Game Console Ps4 Fat Playstation 4 + Controles + 1 Jogo - Garantia - 500GB",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "ps4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  },
+  {
+   "id": "b165d7c2-56ac-4359-9a04-351e0f84868a",
+   "titulo": "Vídeo game Sony PlayStation 4 Slim - 500Gb",
+   "antes": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "depois": {
+    "verdict": "rejected",
+    "category": "out_of_scope",
+    "reason": "console_fora_de_linha",
+    "matched": "playstation 4",
+    "version": 1,
+    "at": "2026-11-14T11:49:36.362Z",
+    "limpeza": "limpeza-console-2026-11-13",
+    "por": "Renato (decisao 2026-11-14: console so em linha, PS4 fora)"
+   }
+  }
+ ],
+ "falhas": []
+}

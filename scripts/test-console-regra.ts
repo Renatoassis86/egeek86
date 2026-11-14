@@ -70,7 +70,9 @@ esperar('Console Nintendo Switch 32GB Neon V2', 179900, 'sim');
 esperar('Steam Deck OLED 512GB', 399900, 'sim');
 esperar('ASUS ROG Ally X 1TB', 599900, 'sim');
 esperar('Lenovo Legion Go 512GB', 449900, 'sim');
-esperar('Console PS4 Slim 1TB Novo Lacrado', 199900, 'sim');
+esperar('Console PS4 Slim 1TB Novo Lacrado', 199900, 'nao', true);
+esperar('Scarlet Nexus - Playstation 4', 7590, 'nao', false);
+esperar('Console PS5 Slim 1TB + jogo PS4 compativel', 399900, 'sim');
 esperar('Videogame Sony PlayStation 5 Slim', 349900, 'sim');
 esperar('PS5 Slim Digital', null, 'sim');
 
