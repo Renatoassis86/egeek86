@@ -122,6 +122,8 @@ export function parsePromoPage(p: PromoPayload, now: Date): PromoParse {
   else if (minItens != null && minItens >= 2) restricao = 'quantidade';
 
   const cat = /\boff\s+em\s+(?!\d)(.{2,40}?)\s*$/i.exec(titulo) ?? /\bdesconto\s+em\s+(?!\d)(.{2,40}?)\s*$/i.exec(titulo);
+  // "Jogos de Nintendo Switch e Nintendo Switch 2 com 25% OFF": o departamento vem no INÍCIO do título (sem "off em <categoria>"). Só games é reconhecido aqui.
+  const catInicio = !cat && /^(jogos?|games?|video ?games?)\b/.test(norm(titulo)) ? 'Games' : null;
   const termosCurtos: string[] = [];
   const tn = norm(p.termos ?? '');
   if (/apenas para produtos vendidos pela amazon/.test(tn)) termosCurtos.push('vale só para itens vendidos pela Amazon.com.br (não por vendedores parceiros)');
@@ -129,9 +131,34 @@ export function parsePromoPage(p: PromoPayload, now: Date): PromoParse {
 
   return {
     ok: true,
-    promo: { id: p.id, titulo, percentual, categoria: cat ? clean(cat[1]) : null, soApp, restricao, minItens, validFrom: v.from, validUntil: v.until, validityRaw: v.raw.slice(0, 200), termosCurtos },
+    promo: { id: p.id, titulo, percentual, categoria: cat ? clean(cat[1]) : catInicio, soApp, restricao, minItens, validFrom: v.from, validUntil: v.until, validityRaw: v.raw.slice(0, 200), termosCurtos },
   };
 }
+
+/**
+ * PROMOÇÃO PRIME NA FINALIZAÇÃO (dono, 2026-11-14): o concorrente divulga "Exclusivo Prime: 25% de desconto na finalização do pedido" e nós descartávamos
+ * essas promoções (`restrita_prime`). Passa a valer, atrás da flag PROMO_PRIME_DERIVADA, SÓ quando: a restrição é Prime (não "seguir a loja", não "compre N"),
+ * há percentual e validade lidos e o departamento do título é mapeado (trava de departamento). O preço final é DERIVADO da regra escrita (como o de toda
+ * promoção) e a oferta só vale depois da confirmação na página do próprio ASIN.
+ */
+export function primeNaFinalizacao(p: Pick<PromoRead, 'restricao' | 'minItens' | 'percentual' | 'categoria' | 'validUntil'>): boolean {
+  if (p.restricao !== 'prime') return false;
+  if (p.minItens != null && p.minItens >= 2) return false;
+  if (!(p.percentual > 0 && p.percentual <= 70)) return false;
+  if (!p.validUntil) return false;
+  return verticaisDaCategoria(p.categoria).length > 0;
+}
+
+type Env = Record<string, string | undefined>;
+const processEnv = (): Env => (typeof process !== 'undefined' ? process.env : {});
+/** PROMO_PRIME_DERIVADA=on liga o registro das promoções Prime (desligada por padrão). */
+export const promoPrimeLigada = (env: Env = processEnv()): boolean => (env.PROMO_PRIME_DERIVADA ?? '').toLowerCase() === 'on';
+/** PROMO_DESCOBERTA=on liga o cadastro dos ASINs novos da página da promoção (games) pelo caminho da vitrine da Amazon (desligada por padrão). */
+export const promoDescobertaLigada = (env: Env = processEnv()): boolean => (env.PROMO_DESCOBERTA ?? '').toLowerCase() === 'on';
+/** GROUP_PROMO_PRIME=on deixa a mensagem CUPOM divulgar promoção Prime na finalização (desligada por padrão: a agulha segue barrando público restrito). */
+export const promoPrimeMensagemLigada = (env: Env = processEnv()): boolean => (env.GROUP_PROMO_PRIME ?? '').toLowerCase() === 'on';
+/** Texto do público lido (a página diz "Exclusivo para membros Prime"; o desconto entra na finalização do pedido). */
+export const PUBLICO_PRIME_TEXTO = 'Exclusivo para membros Prime; desconto aplicado na finalização do pedido';
 
 /** "431,06" / "R$ 1.234,56" -> centavos; null se não for valor. */
 export function brlCents(raw: unknown): number | null {
@@ -178,20 +205,21 @@ export function nomeDaPromocao(titulo: string): string {
 }
 
 /** Corpo de UM cupom (contrato /api/ingest/cupons) para UM ASIN ligado à oferta. Escopo `produto`: estável mesmo que os outros cards mudem. */
-export function cupomDoItem(promo: PromoRead, item: { asin: string; offerId: string }, fonte: string): Record<string, unknown> {
+export function cupomDoItem(promo: PromoRead, item: { asin: string; offerId: string }, fonte: string, opts: { primeCheckout?: boolean } = {}): Record<string, unknown> {
   const nome = nomeDaPromocao(promo.titulo);
   // condicoes_texto entra no hash de deduplicação: só texto ESTÁVEL (os termos, que às vezes não são lidos, vão em `condicoes.termos`, fora do hash).
-  const condicoes = [`Promoção da Amazon: ${nome}`, promo.soApp ? 'vale só pelo app da Amazon' : 'o desconto é aplicado pela própria Amazon'].join('; ');
+  const condicoes = [`Promoção da Amazon: ${nome}`, promo.soApp ? 'vale só pelo app da Amazon' : 'o desconto é aplicado pela própria Amazon', ...(opts.primeCheckout ? ['exclusivo para membros Prime, aplicado na finalização do pedido'] : [])].join('; ');
   return {
     tipo: 'percentual',
     valor: promo.percentual,
     valor_unidade: 'percentual',
     escopo: 'produto',
     escopo_ref: { item_ids: [item.asin], offer_ids: [item.offerId] },
-    publico: 'todos',
+    publico: opts.primeCheckout ? 'assinantes' : 'todos',
+    ...(opts.primeCheckout ? { publico_texto: PUBLICO_PRIME_TEXTO } : {}),
     texto_bruto: `${promo.titulo} | Amazon.com.br${promo.categoria ? ` | ${promo.categoria}` : ''}`.slice(0, 3900),
     condicoes_texto: condicoes.slice(0, 1400),
-    condicoes: { promo_id: promo.id, ativacao: promo.soApp ? 'app' : 'automatica', so_app: promo.soApp, preco_derivado_da_regra: true, termos: promo.termosCurtos.join('; ').slice(0, 190) || null },
+    condicoes: { promo_id: promo.id, ativacao: promo.soApp ? 'app' : 'automatica', so_app: promo.soApp, preco_derivado_da_regra: true, ...(opts.primeCheckout ? { prime_checkout: true } : {}), termos: promo.termosCurtos.join('; ').slice(0, 190) || null },
     validade_inicio: promo.validFrom ?? undefined,
     validade_fim: promo.validUntil,
     validade_origem: 'texto_da_pagina',

@@ -54,6 +54,20 @@ export interface EventoMenorPreco {
   loja: string | null;
 }
 
+/**
+ * Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): "Exclusivo Prime: 25% de desconto na finalização do pedido". O preço do cartão segue sendo o de PRATELEIRA
+ * (a média e o selo usam só ele); aqui vai o preço final DERIVADO da regra escrita (prateleira x (1 - pct)), confirmado na página do próprio item.
+ */
+export interface PromoPrime {
+  pct: number;
+  /** Preço final derivado da regra, centavos. */
+  finalCentavos: number;
+  /** ISO do fim lido na página da promoção. */
+  validaAte: string | null;
+  /** ISO da última confirmação na página do item. */
+  confirmadoEm: string;
+}
+
 /** Um cartão de vitrine. Tudo serializável em JSON (passa pelo snapshot persistido). Nada aqui é inventado: campo ausente = null. */
 export interface VitrineItem {
   masterProductId: string;
@@ -81,6 +95,8 @@ export interface VitrineItem {
   menorRegistrado: MenorRegistrado | null;
   /** Só na vitrine 'mudancas'. */
   evento: EventoMenorPreco | null;
+  /** Promoção Prime na finalização ativa e confirmada (flag PROMO_PRIME_DERIVADA); null/ausente = sem promoção. */
+  promoPrime?: PromoPrime | null;
   /** Só na vitrine 'plus': slug do departamento (impressao3d, tecnologia, livros, eletrodomesticos, eletroeletronicos, esporte). */
   departamento: string | null;
 }

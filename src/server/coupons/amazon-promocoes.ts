@@ -4,7 +4,8 @@ import { db } from '@/lib/db';
 import { ingestCouponBatch, recordCouponRun, isMissingCouponTable, type IngestSummary } from '@/server/coupons/store';
 import { parseIsoStrict, validateBatch } from '@/server/coupons/normalize';
 import {
-  confirmarNoItem, cupomDoItem, departamentoCompativel, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, type PromoCard, type PromoPayload, precoCasa,
+  confirmarNoItem, cupomDoItem, departamentoCompativel, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, primeNaFinalizacao, promoDescobertaLigada, promoPrimeLigada,
+  type PromoCard, type PromoPayload, precoCasa, verticaisDaCategoria,
 } from '@/lib/coupons/amazon-promocoes';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
 
@@ -39,6 +40,8 @@ export interface PromoIngestResult {
   fechados: number;
   /** Ofertas com cupom verificado que ganharam leitura por anúncio (alimenta o gatilho CUPOM). */
   leituras_item?: number;
+  /** Resultado da descoberta de lançamentos (flag PROMO_DESCOBERTA): quantos masters/rascunhos novos nasceram dos ASINs da promoção. */
+  descoberta?: { masters_novos: number; rascunhos_novos: number; delegados: number; descartados: Record<string, number> };
 }
 
 const vazio = (over: Partial<PromoIngestResult>): PromoIngestResult => ({ ok: false, promo_id: null, itens_lidos: 0, casados: 0, preco_nao_casa: 0, fora_do_departamento: 0, asins_novos: [], total_asins_novos: 0, resumo: null, fechados: 0, ...over });
@@ -85,7 +88,10 @@ export async function ingestPromocaoAmazon(body: unknown, now: Date = new Date()
     return vazio({ promo_id: pid, motivo: parsed.reason, fechados });
   }
   const p = parsed.promo;
-  if (p.restricao || (p.minItens != null && p.minItens >= 2)) {
+  // Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): com a flag PROMO_PRIME_DERIVADA liga os cupons de público `assinantes` (preço derivado da regra escrita);
+  // sem a flag (padrão) segue a regra antiga (restrita = descartada).
+  const primeCheckout = promoPrimeLigada() && primeNaFinalizacao(p);
+  if (!primeCheckout && (p.restricao || (p.minItens != null && p.minItens >= 2))) {
     const fechados = await fechar(p.id, `promocao_restrita_${p.restricao ?? 'quantidade'}`).catch(() => 0);
     return vazio({ promo_id: p.id, motivo: `restrita_${p.restricao ?? 'quantidade'}`, fechados });
   }
@@ -114,10 +120,21 @@ export async function ingestPromocaoAmazon(body: unknown, now: Date = new Date()
       continue;
     }
     if (!precoCasa(c.priceCents, Number(o.price))) { result.preco_nao_casa++; continue; }
-    if (cupons.length < MAX_CUPONS_POR_CHAMADA) { cupons.push(cupomDoItem(p, { asin: c.asin, offerId: o.id }, fonte)); casadas.push({ card: c, offerId: o.id }); }
+    if (cupons.length < MAX_CUPONS_POR_CHAMADA) { cupons.push(cupomDoItem(p, { asin: c.asin, offerId: o.id }, fonte, { primeCheckout })); casadas.push({ card: c, offerId: o.id }); }
   }
   result.casados = cupons.length;
   result.total_asins_novos = novos.length;
+  // DESCOBERTA DE LANÇAMENTOS (dono, 2026-11-14): card de games da promoção que ainda não é oferta nossa entra pelo caminho da vitrine da Amazon (master em REVISÃO + rascunho).
+  // Atrás da flag PROMO_DESCOBERTA; nunca derruba a ingestão da promoção.
+  if (novos.length && promoDescobertaLigada() && verticaisDaCategoria(p.categoria).includes('games')) {
+    try {
+      const { descobrirPelaPromocao } = await import('@/server/collector/amazon-vitrine');
+      const st = await descobrirPelaPromocao(novos.map((c) => ({ asin: c.asin, titulo: c.titulo, priceCents: c.priceCents, listCents: c.listCents })), { tag: process.env.AMAZON_ASSOCIATE_TAG || 'manusmonteiro-20', apply: true });
+      result.descoberta = { masters_novos: st.masters_novos, rascunhos_novos: st.rascunhos_novos, delegados: st.delegados, descartados: st.descartados };
+    } catch (e) {
+      console.error('[amazon-promocoes] descoberta falhou', e instanceof Error ? e.message.slice(0, 160) : e);
+    }
+  }
   result.asins_novos = novos.slice(0, 40).map((c) => ({ asin: c.asin, titulo: c.titulo.slice(0, 120), preco_cents: c.priceCents }));
 
   const started = Date.now();
@@ -204,13 +221,13 @@ export async function confirmarItens(body: unknown, now: Date = new Date()): Pro
   const out: ConfirmacaoResult = { ok: !!readAt, recebidos: lista.length, confirmados: 0, recusados: [] };
   if (!readAt || !lista.length) return out;
   if (Math.abs(now.getTime() - Date.parse(readAt)) > 15 * 60_000) return { ...out, ok: false, recusados: [{ asin: '*', motivo: 'lidos_em_fora_da_janela' }] };
-  type Row = { pct: number; offer: string; price: string; raw: string };
+  type Row = { pct: number; offer: string; price: string; raw: string; prime: boolean | null };
   for (const it of lista) {
     const asin = String(it.asin ?? '').toUpperCase();
     const promoId = String(it.promo_id ?? '');
     if (!/^[A-Z0-9]{10}$/.test(asin) || !/^[A-Z0-9]{8,20}$/.test(promoId)) { out.recusados.push({ asin, motivo: 'identificacao_invalida' }); continue; }
     const rows = (await db.execute<Row>(sql`
-      SELECT ci.value_num::float AS pct, ci.scope->'offer_ids'->>0 AS offer, o.current_price_cents::text AS price, ci.raw_text AS raw
+      SELECT ci.value_num::float AS pct, ci.scope->'offer_ids'->>0 AS offer, o.current_price_cents::text AS price, ci.raw_text AS raw, (ci.conditions->>'prime_checkout' = 'true') AS prime
       FROM coupon_items ci JOIN affiliate_offers o ON o.id = (ci.scope->'offer_ids'->>0)::uuid AND o.status = 'active'
       WHERE ci.network_slug = 'amazon' AND ci.source_kind <> 'manual_dono' AND ci.state IN ('nao_verificado', 'verificado') AND ci.conditions->>'promo_id' = ${promoId}
         AND ci.scope->'item_ids'->>0 = ${asin} AND ci.valid_until > ${now.toISOString()}::timestamptz LIMIT 1`)) as unknown as Row[];
@@ -232,6 +249,11 @@ export async function confirmarItens(body: unknown, now: Date = new Date()): Pro
     await db.execute(sql`
       INSERT INTO offer_coupon_reads (offer_id, campaign_id, status, label, price_with_coupon_cents, price_seen_cents, source, read_at)
       VALUES (${c.offer}::uuid, ${promoId}, 'derivado_do_rotulo', ${label}, ${conf.finalCents}::int, ${conf.priceCents}::int, ${FONTE_CONFIRMACAO}, ${readAt}::timestamptz)`);
+    // Promoção Prime: a página do próprio item acabou de mostrar o MESMO preço da oferta; isso é leitura fresca de preço e renova a confirmação (sem ela a oferta da Amazon
+    // some das mensagens em 60 min). Só com preço IDÊNTICO; nunca altera o preço.
+    if (c.prime && conf.priceCents === Number(c.price)) {
+      await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = ${readAt}::timestamptz, last_checked_at = ${readAt}::timestamptz WHERE id = ${c.offer}::uuid AND current_price_cents = ${conf.priceCents}::int AND status = 'active'`).catch(() => undefined);
+    }
     await reconciliarConfirmacoes(promoId, [c.offer]);
     out.confirmados++;
   }

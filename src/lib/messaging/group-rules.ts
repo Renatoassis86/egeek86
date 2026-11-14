@@ -383,6 +383,8 @@ export interface CouponOfferFact {
   howTo?: string[];
   /** false = cupom sem nome (clicar e ativar): `name` é o rótulo do valor lido. */
   named?: boolean;
+  /** Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): a mensagem diz "Exclusivo Prime"; cota própria baixa (primePromoQuotaBlock). */
+  exclusivePrime?: boolean;
   readAt: Date;
   expiresAt: Date | null;
 }
@@ -607,6 +609,8 @@ export interface Candidate {
   couponFinalCents?: number;
   /** Gatilho CUPOM: nome do cupom (ou rótulo do valor, quando sem nome) para o card simples. */
   couponName?: string;
+  /** Gatilho CUPOM de promoção Prime na finalização (cota própria baixa). */
+  exclusivePrime?: boolean;
   /** Régua de destaque (regua.ts, 2026-11-12): degrau, veredito e texto do botão. Só em lojas liberadas por GROUP_REGUA_LOJAS. */
   regua?: ReguaInfo;
 }
@@ -1310,7 +1314,7 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
     title: parts.title,
     meta: parts.meta,
     offer: toMsgOffer(o),
-    coupon: { name: cf.name, offCents: cf.offCents, pct: cf.pct, finalCents: cf.finalCents, minOrderCents: cf.minOrderCents, maxDiscountCents: cf.maxDiscountCents, ruleKnown: cf.ruleKnown, activation: cf.activation, code: cf.code ?? null, howTo: cf.howTo, named: cf.named, readAt: cf.readAt, expiresAt: cf.expiresAt },
+    coupon: { name: cf.name, offCents: cf.offCents, pct: cf.pct, finalCents: cf.finalCents, minOrderCents: cf.minOrderCents, maxDiscountCents: cf.maxDiscountCents, ruleKnown: cf.ruleKnown, activation: cf.activation, code: cf.code ?? null, howTo: cf.howTo, named: cf.named, exclusivePrime: cf.exclusivePrime === true, readAt: cf.readAt, expiresAt: cf.expiresAt },
     cheaperOther: cheaper ? { cents: cheaper.priceCents, networkName: cheaper.networkName } : null,
   };
   const cand = finish(p, 'CUPOM', input, {
@@ -1329,6 +1333,7 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
   candidates.push({
     ...cand,
     couponRef: cf.couponRef,
+    ...(cf.exclusivePrime ? { exclusivePrime: true } : {}),
     couponFinalCents: cf.finalCents,
     couponName: cf.name,
     couponInfo: { code: cf.name, typedCode: cf.code ?? null, unnamed: cf.named === false, conditions: cf.conditions, expiresAt: cf.expiresAt ? cf.expiresAt.toISOString() : null, verifiedAt: cf.readAt.toISOString(), couponRef: cf.couponRef, annKind: 'anuncio' },
@@ -1753,6 +1758,8 @@ export interface SentRecord {
   tipo?: string | null;
   /** Oferta cujo cupom foi divulgado nesta mensagem (mensagem de cupom OU mensagem de preco com bloco de cupom). */
   couponOfferId?: string | null;
+  /** Mensagem CUPOM de promoção Prime na finalização (texto traz "Exclusivo Prime"): conta na cota própria. */
+  primePromo?: boolean;
   /** Degrau da régua (1 a 5) da mensagem enviada, quando houve (candidate.regua.degrau). */
   degrau?: number | null;
 }
@@ -1872,6 +1879,22 @@ export function cupomDedupBlock(c: Pick<Candidate, 'trigger' | 'offerIds' | 'cou
   const gapMs = RULES.CUPOM_COUPON_GAP_MIN * 60_000;
   const hit = history.filter((h) => !h.itemOnly && h.couponOfferId && h.couponOfferId === ref && now.getTime() - h.sentAt.getTime() < gapMs).sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
   return hit ? `cupom_ja_divulgado_ha_${Math.floor((now.getTime() - hit.sentAt.getTime()) / 60_000)}min` : null;
+}
+
+/**
+ * Cota PRÓPRIA da promoção Prime na finalização (dono, 2026-11-14: "cota própria baixa"): no máximo PROMO_PRIME_POR_HORA por hora e PROMO_PRIME_POR_DIA em 24 h,
+ * em todo o canal (soma dos departamentos). Vale além da cota geral de cupom. Env GROUP_PROMO_PRIME_POR_HORA / GROUP_PROMO_PRIME_POR_DIA sobrescrevem.
+ */
+export const PROMO_PRIME_POR_HORA = 2;
+export const PROMO_PRIME_POR_DIA = 8;
+export function primePromoQuotaBlock(history: SentRecord[], now: Date, env: Record<string, string | undefined> = typeof process !== 'undefined' ? process.env : {}): string | null {
+  const num = (v: string | undefined, d: number) => (v != null && /^[0-9]+$/.test(v) ? Number(v) : d);
+  const perHour = num(env.GROUP_PROMO_PRIME_POR_HORA, PROMO_PRIME_POR_HORA);
+  const perDay = num(env.GROUP_PROMO_PRIME_POR_DIA, PROMO_PRIME_POR_DIA);
+  const mine = history.filter((h) => !h.itemOnly && h.primePromo === true && h.sentAt.getTime() <= now.getTime() + 5_000);
+  if (mine.filter((h) => now.getTime() - h.sentAt.getTime() < 3600_000).length >= perHour) return `promo_prime_maximo_${perHour}_por_hora`;
+  if (mine.filter((h) => now.getTime() - h.sentAt.getTime() < 86_400_000).length >= perDay) return `promo_prime_maximo_${perDay}_por_dia`;
+  return null;
 }
 
 /** Cota de cupom por loja: no maximo CUPOM_MAX_PER_HOUR_STORE mensagens de cupom por hora na loja. null = pode. */
@@ -2243,7 +2266,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
     if (!why && !platform && !opts.ignoreSpacing) why = masterCooldownBlock(c, history, now);
-    if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now);
+    if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now) ?? (c.exclusivePrime ? primePromoQuotaBlock(real, now) : null);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);
     if (!why && c.trigger === 'N1') why = neutroQuotaBlock(c.vertical, real, now);

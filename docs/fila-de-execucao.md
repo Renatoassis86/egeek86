@@ -80,3 +80,8 @@ Quando a tarefa avança, trocar o estado aqui no mesmo commit da mudança. Taref
 - Ordem de dependência: #13 antes de #14; #17 antes de #16, #18 e #20; #15 antes de #29; #14 e #15 andam em paralelo com a infra. O núcleo do pre-push (#24) é adiantado.
 - Prazo-guia: as tarefas P1 que tocam o que o público vê (#14, #15, #19, #21, #23) valem até a Black Friday de 27/11; a divergência do estrategista sobre adiar #3, #4, #24 completo, #29 e #31 está na seção 9 do `FLUXO_MESTRE.md` (item 12) para o dono decidir.
 - Tarefas novas (#13 a #32) entram na fila e não abrem frente enquanto o WIP do P0 (#2, #3, #4) não fechar, salvo "urgente" do dono.
+
+## Jogos em promoção Prime (2026-11-14)
+| # | Prio | Tarefa | Dono | Estado | Critério de pronto |
+|---|---|---|---|---|---|
+| 33 | P0 | Promoção Prime na finalização (Switch/Switch 2): inventário de motivos, regra de decisão, front, mensagens, descoberta | fork do dono | **verificação (2026-11-14)**: código e testes (37/37, tsc limpo) prontos, flags desligadas; `docs/inventario-motivos-jogos-promocao-2026-11-14.md` | dono liberar `PROMO_PRIME_DERIVADA`, `PROMO_DESCOBERTA`, `GROUP_PROMO_PRIME`, ajustar e reinjetar o loop `amazon-promocoes.js`, e os jogos do concorrente aparecerem no front e em mensagem |

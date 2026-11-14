@@ -370,6 +370,7 @@ Numeradas, sem contradição entre si. Quando dois capítulos divergiam, a regra
 | R-28 | Faixas de risco: queda > 30% exige aprovação humana; > 45% ou fora de 0,35x a 3x fica retida e só o clique do dono libera. | CÓDIGO |
 | R-29 | Mensagem enviada nunca é apagada pelo recheck; só se registra a divergência. Um envio em `enviando` por mais de 10 min vira `erro` e nunca volta à fila (não duplicar). | CÓDIGO; perda possível (FM-13) |
 | R-30 | **Cupom só com leitura na fonte e validade futura**; preço com cupom menor que o atual; "seguir a loja", público restrito e conta não elegível são barrados; "sem cupom" só quando a página provou ser o anúncio certo. Nome do cupom quando lido; sem nome, passo a passo. Divulgação de cupom é acompanhada até o fim e o grupo é avisado. | CÓDIGO; Shopee sem leitura (FM-11) |
+| R-49a | **Promoção Prime na finalização** (Amazon, games): restrição única Prime, validade futura e confirmação na página do item geram preço derivado só para ordenar o front e para a mensagem CUPOM "Exclusivo Prime" (sem "% OFF", carimbo "sujeito a alteração", cota 2/h e 8/dia). Nunca vira selo, média ou menor preço. Atrás das flags PROMO_PRIME_DERIVADA, PROMO_DESCOBERTA, GROUP_PROMO_PRIME (desligadas). Ver docs/inventario-motivos-jogos-promocao-2026-11-14.md | CÓDIGO (flags desligadas) |
 
 ### 6.6 Front
 | Id | Regra | Estado |

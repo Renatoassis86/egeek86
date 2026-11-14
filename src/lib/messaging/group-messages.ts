@@ -271,6 +271,8 @@ export interface CouponMsgData {
   howTo?: string[];
   /** false = cupom SEM nome (de clicar e ativar): `name` é o rótulo do valor lido e a mensagem explica como usar. */
   named?: boolean;
+  /** Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): vira o tópico "Exclusivo Prime" e o preço é rotulado como com a promoção. */
+  exclusivePrime?: boolean;
   /** Quando a página foi lida. */
   readAt: Date;
   /** Validade lida da loja (a página do anúncio normalmente não informa). */
@@ -780,7 +782,9 @@ export function formatPrecoAgoraMessage(input: Extract<GroupMessageInput, { mode
  */
 export function formatCouponMessage(input: Extract<GroupMessageInput, { model: 'cupom' }>, channel: GroupChannel): string {
   const f = channel === 'tg' ? TG : WA;
-  guardNetwork(input.offer);
+  // A Amazon só entra na mensagem de CUPOM no caso Prime na finalização (dono, 2026-11-14, flag GROUP_PROMO_PRIME na agulha), sempre com o carimbo "sujeito a alteração".
+  // Qualquer outro cupom da Amazon segue barrado aqui, como antes (zero mensagens de cupom da Amazon em 14 dias).
+  if (!input.coupon.exclusivePrime) guardNetwork(input.offer);
   const o = input.offer;
   const c = input.coupon;
   const title = (input.title ?? input.name).trim();
@@ -791,10 +795,12 @@ export function formatCouponMessage(input: Extract<GroupMessageInput, { model: '
   const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
   const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
   const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
-  const priceLine = `${f.b(fmtBRL(c.finalCents))} com o cupom ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
+  const priceLine = `${f.b(fmtBRL(c.finalCents))} ${c.exclusivePrime ? 'com a promoção Prime' : 'com o cupom'} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
   // NOME DO CUPOM sempre (ordem do dono, 2026-11-12). Com código digitável: linha extra "Código". Sem nome (clicar e ativar): rótulo do valor + passo a passo.
   const topics: string[] = [];
-  if (!c.code || c.code !== c.name) topics.push(topic(f, 'Cupom', c.name));
+  // Promoção Prime na finalização: o público e o momento do desconto vêm ANTES de tudo (nunca esconder que é só para membros Prime).
+  if (c.exclusivePrime) topics.push(topic(f, 'Exclusivo Prime', `${Number.isInteger(c.pct) ? String(c.pct) : fmtPct1(c.pct)}% de desconto na finalização do pedido, só para membros Prime`));
+  if (!c.code || c.code !== c.name) topics.push(topic(f, c.exclusivePrime ? 'Promoção' : 'Cupom', c.name));
   if (c.code) topics.push(`• ${f.b('Código:')} ${channel === 'tg' ? `<code>${escapeTelegramHtml(c.code)}</code>` : escapeWhatsapp(c.code)}`);
   topics.push(
     topic(f, 'Desconto', `${fmtBRL(c.offCents)} (${Number.isInteger(c.pct) ? String(c.pct) : fmtPct1(c.pct)}%); o anúncio sem cupom está em ${fmtBRL(o.priceCents)}`)
@@ -810,7 +816,9 @@ export function formatCouponMessage(input: Extract<GroupMessageInput, { model: '
   for (const t of seloLines(o, f)) topics.push(t);
   const buyUrl = o.affiliateUrl && /^https:\/\/[^\s<>"]+$/.test(o.affiliateUrl) ? o.affiliateUrl : null;
   const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
-  const read = `Preço lido na página do anúncio em ${fmtStamp(c.readAt)}${c.ruleKnown ? '' : '; regra completa na tela do cupom'}.`;
+  const read = isAmazonOffer(o)
+    ? `Preço na Amazon em ${fmtStamp(c.readAt)}, sujeito a alteração. Preço final calculado pela regra da promoção.`
+    : `Preço lido na página do anúncio em ${fmtStamp(c.readAt)}${c.ruleKnown ? '' : '; regra completa na tela do cupom'}.`;
   const foot = italic(withTag(read, input.adTag));
   const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
   return [headLabel, head, priceLine, topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');

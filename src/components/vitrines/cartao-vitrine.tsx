@@ -72,6 +72,7 @@ export function CartaoVitrine({ item, prioridade = false, className }: { item: V
   const lido = horaDaLeitura(item.lidoEm);
   const plataforma = rotuloPlataforma(item.plataforma);
   const reg = item.menorRegistrado;
+  const promo = item.promoPrime ?? null;
 
   return (
     <article
@@ -92,18 +93,28 @@ export function CartaoVitrine({ item, prioridade = false, className }: { item: V
         <h3 className="line-clamp-2 h-10 text-sm font-semibold leading-5 text-[var(--color-text-primary)]">{item.titulo}</h3>
 
         <p className="text-xl font-black leading-6 tabular-nums text-[var(--color-text-primary)]">
-          <span className="sr-only">Preço agora: </span>
-          {formatBRL(item.precoCentavos)}
+          <span className="sr-only">{promo ? 'Preço com a promoção Prime na finalização: ' : 'Preço agora: '}</span>
+          {formatBRL(promo ? promo.finalCentavos : item.precoCentavos)}
         </p>
 
         <p className="h-4 truncate text-xs leading-4 text-[var(--color-text-secondary)]">
-          {item.media ? `Média das lojas: ${formatBRL(item.media.centavos)}` : ''}
+          {promo ? (
+            <>
+              <s>{formatBRL(item.precoCentavos)}</s> prateleira · {Math.round(promo.pct)}% Prime na finalização
+            </>
+          ) : item.media ? (
+            `Média das lojas: ${formatBRL(item.media.centavos)}`
+          ) : (
+            ''
+          )}
         </p>
         <p className={cn('line-clamp-2 h-8 text-xs leading-4', pos.bom ? 'font-semibold text-[var(--color-accent-primary)]' : 'text-[var(--color-text-secondary)]')}>
           {pos.texto}
         </p>
-        <p className={cn('h-4 truncate text-xs leading-4', reg?.noMenor ? 'font-semibold text-[var(--color-accent-primary)]' : 'text-[var(--color-text-secondary)]')}>
-          {reg?.noMenor
+        <p className={cn('h-4 truncate text-xs leading-4', promo || reg?.noMenor ? 'font-semibold text-[var(--color-accent-primary)]' : 'text-[var(--color-text-secondary)]')}>
+          {promo
+            ? 'Exclusivo Prime'
+            : reg?.noMenor
             ? 'No menor preço registrado'
             : reg?.corroborado
               ? `Menor registrado: ${formatBRL(reg.centavos)} (${FORMATO_DATA_COMPLETA.format(new Date(reg.em))})`

@@ -63,6 +63,21 @@ export function vitrineQueries(): VitrineQuery[] {
   return out;
 }
 
+/**
+ * Consulta FIXA da descoberta por promoção (dono, 2026-11-14): os ASINs da página de uma promoção de games que ainda não são oferta nossa entram pelo MESMO
+ * caminho da vitrine (casarJogo + dedup + master novo em REVISÃO + oferta em RASCUNHO), só que sem uma busca por trás. Não entra em vitrineQueries(),
+ * então o laço da aba nunca a pede como busca.
+ */
+export const PROMO_DESCOBERTA_QUERY: VitrineQuery = { id: idDe('games', 'promocao-prime-descoberta'), vertical: 'games', q: 'promoção da Amazon (descoberta)' };
+
+export interface CardPromoNovo { asin: string; titulo: string; priceCents: number; listCents?: number | null }
+const brl = (c: number) => `R$ ${(c / 100).toFixed(2).replace('.', ',')}`;
+
+/** Monta a linha da vitrine a partir dos cards novos de uma promoção (puro; testado). */
+export function linhaDaPromocao(cards: readonly CardPromoNovo[]): AmzRow {
+  return { id: PROMO_DESCOBERTA_QUERY.id, q: PROMO_DESCOBERTA_QUERY.q, r: cards.map((c) => ({ a: c.asin, t: c.titulo, p: brl(c.priceCents), l: c.listCents ? brl(c.listCents) : null, s: 0, i: null })) };
+}
+
 export function vitrineQueryById(id: string): VitrineQuery | undefined {
   return vitrineQueries().find((x) => x.id === id);
 }
@@ -154,7 +169,7 @@ async function criarRascunho(netId: string, masterId: string, vertical: Vertical
 
 const bump = (s: VitrineStats, k: string) => { s.descartados[k] = (s.descartados[k] ?? 0) + 1; };
 
-export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; apply: boolean; deadlineMs?: number }): Promise<{ stats: VitrineStats }> {
+export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; apply: boolean; deadlineMs?: number; consultaFixa?: VitrineQuery }): Promise<{ stats: VitrineStats }> {
   const [net] = await db.select().from(affiliateNetworks).where(eq(affiliateNetworks.slug, 'amazon')).limit(1);
   if (!net) throw new Error('rede amazon não existe');
   const client = (db as unknown as { $client: Sql }).$client;
@@ -165,7 +180,7 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
   const limite = Date.now() + (opts.deadlineMs ?? 50_000);
 
   for (const row of rows) {
-    const consulta = vitrineQueryById(row.id);
+    const consulta = vitrineQueryById(row.id) ?? (opts.consultaFixa && opts.consultaFixa.id === row.id ? opts.consultaFixa : undefined);
     if (!consulta) { bump(s, 'consulta_desconhecida'); continue; }
     s.linhas++;
     for (const raw of (row.r ?? []).slice(0, 10)) {
@@ -254,4 +269,15 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
     s.ingest = { novos: stats.novos, atualizados: stats.atualizados, rascunhos_novos: stats.rascunhos_novos, rascunhos_atualizados: stats.rascunhos_atualizados, aceitos: stats.aceitos };
   }
   return { stats: s };
+}
+
+/**
+ * Descoberta por promoção: cards de games sem oferta nossa viram master em revisão + rascunho (mesmas travas da vitrine: preço lido, não patrocinado,
+ * porteiro de games, dedup antes de criar). `apply:false` só conta (dry-run).
+ */
+export async function descobrirPelaPromocao(cards: readonly CardPromoNovo[], opts: { tag: string; apply: boolean }): Promise<VitrineStats> {
+  const lote = cards.slice(0, 100);
+  if (!lote.length) return { linhas: 0, cartoes: 0, atualizados: 0, ja_fresco: 0, delegados: 0, rascunhos_novos: 0, masters_novos: 0, descartados: {}, erros: 0, truncado: false, criados: { masters: [], ofertas: [] }, ingest: null };
+  const { stats } = await ingestAmazonVitrine([linhaDaPromocao(lote)], { tag: opts.tag, apply: opts.apply, consultaFixa: PROMO_DESCOBERTA_QUERY, deadlineMs: 40_000 });
+  return stats;
 }

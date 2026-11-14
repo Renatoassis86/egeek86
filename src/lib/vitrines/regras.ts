@@ -5,7 +5,7 @@ import { avaliarConsoleVideoGame, ehConsoleDeVideoGame } from '@/lib/catalog/con
 import { ehItemMiudo } from '@/lib/catalog/item-miudo';
 import { legacyPlatformLabel, readPlatform, titleIsLegacyPlatformOnly } from '@/lib/catalog/platform';
 import type { GamePlatformGen } from '@/db/schema';
-import type { FaixaTipo, MenorRegistrado, PlataformaVitrine, PosicaoMedia, VitrineChave, VitrineItem } from './tipos';
+import type { FaixaTipo, MenorRegistrado, PlataformaVitrine, PosicaoMedia, PromoPrime, VitrineChave, VitrineItem } from './tipos';
 
 /** Quantidades e pisos da nova landing (PROPOSTA_NOVA_VERSAO.md seção 3; D2 do dono). Um lugar só. */
 export const VITRINE_REGRAS = {
@@ -83,6 +83,8 @@ export interface Candidato {
   vendedoresProximos: number;
   vendedor: SellerSignals | null;
   stats: StatsCandidato | null;
+  /** Promoção Prime na finalização confirmada para a oferta do cartão (src/server/vitrines/pool.ts, passo C). Nunca entra na média nem no selo. */
+  promoPrime?: PromoPrime | null;
 }
 
 export interface StatsCandidato {
@@ -291,6 +293,7 @@ export function avaliarCandidato(c: Candidato, ctx: ContextoAvaliacao, opts: Opc
     menorRegistrado,
     evento: null,
     departamento: null,
+    ...(c.promoPrime ? { promoPrime: c.promoPrime } : {}),
   };
   return { ok: true, avaliado: { candidato: c, tipo, plataforma: plat.plataforma, posicao, quedaPct, idadeHoras: horasDesde(c.lidoEm, ctx.agora), item } };
 }
@@ -310,9 +313,19 @@ function contar(m: Partial<Record<MotivoExclusao, number>>, k: MotivoExclusao) {
   m[k] = (m[k] ?? 0) + 1;
 }
 
-/** Maior queda real primeiro; empate pelo menor preço; depois id (ordem estável). */
+/**
+ * Chave de ordem da faixa: a maior entre a queda REAL contra a média e o desconto da promoção Prime confirmada (dono, 2026-11-14: o item que o concorrente
+ * divulga a 25% não pode ficar no fim da fila só porque o preço de prateleira não caiu). Só ordena: a posição e o selo seguem só a média.
+ */
+export function chaveDeOrdem(a: Avaliado): number {
+  const promo = a.candidato.promoPrime;
+  const p = promo && promo.pct > 0 && promo.pct <= VITRINE_REGRAS.QUEDA_MAX_PCT ? promo.pct : 0;
+  return Math.max(a.quedaPct, p);
+}
+
+/** Maior queda real (ou desconto Prime confirmado) primeiro; empate pelo menor preço; depois id (ordem estável). */
 export function ordenarPorQueda(a: Avaliado, b: Avaliado): number {
-  return b.quedaPct - a.quedaPct || a.candidato.precoCentavos - b.candidato.precoCentavos || (a.candidato.masterProductId < b.candidato.masterProductId ? -1 : 1);
+  return chaveDeOrdem(b) - chaveDeOrdem(a) || a.candidato.precoCentavos - b.candidato.precoCentavos || (a.candidato.masterProductId < b.candidato.masterProductId ? -1 : 1);
 }
 
 /** Um item por master (o pool já traz 1 por master; a trava garante mesmo se vier repetido). */

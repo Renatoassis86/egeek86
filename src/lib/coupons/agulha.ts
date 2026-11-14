@@ -101,6 +101,8 @@ export interface AgulhaInput {
   rule?: AgulhaRule | null;
   /** Departamentos que o rótulo de categoria do cupom declara (resolvido por quem chama; ver categoria-vertical). */
   categoriaVerticais?: string[];
+  /** Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): quem chama só liga com a flag GROUP_PROMO_PRIME e com o cupom `assinantes` + `prime_checkout` gravado pela leitura da promoção. Libera só o corte de público Prime; todo o resto da agulha segue. */
+  permitirPrimeNaFinalizacao?: boolean;
 }
 
 export type AgulhaResult =
@@ -177,12 +179,12 @@ export function evaluateAgulha(input: AgulhaInput): AgulhaResult {
 
   // (c) condição.
   if (input.label && /seguir/i.test(input.label)) return miss('cupom_exige_seguir_loja');
-  if (source === 'item' && offer.network !== 'mercado-livre' && input.label && PUBLICO_RESTRITO_RE.test(input.label)) return miss('publico_restrito', 'rotulo');
+  if (source === 'item' && offer.network !== 'mercado-livre' && input.label && PUBLICO_RESTRITO_RE.test(input.label) && !input.permitirPrimeNaFinalizacao) return miss('publico_restrito', 'rotulo');
   if (rule) {
     // Anúncio: o preço com cupom exibido pela loja já é a verificação; só cupom vencido/invalidado na lista barra.
     const stateOk = source === 'item' ? rule.state !== 'vencido' && rule.state !== 'invalido' : !rule.state || rule.state === 'verificado';
     if (!stateOk) return miss('estado_nao_verificado', rule.state);
-    if (rule.audience && rule.audience !== 'todos') return miss('publico_restrito', rule.audience);
+    if (rule.audience && rule.audience !== 'todos' && !(input.permitirPrimeNaFinalizacao && rule.audience === 'assinantes')) return miss('publico_restrito', rule.audience);
     if (rule.eligibleOnReadAccount === false) return miss('conta_lida_nao_elegivel');
     if (rule.scopeKind === 'categoria' && source === 'loja_categoria') {
       // Cupom de categoria sem o anúncio confirmando: só vale se a loja declara TODOS os produtos da categoria e o departamento casa.

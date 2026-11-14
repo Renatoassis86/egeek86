@@ -69,6 +69,7 @@ export async function validateCouponOffers(offerIds: string[], now: Date, concur
         code: d.code,
         howTo: d.howTo,
         named: d.named,
+        ...(d.exclusivePrime ? { exclusivePrime: true } : {}),
         readAt: new Date(d.readAt),
         expiresAt: r.info.expiresAt ? new Date(r.info.expiresAt) : null,
       });

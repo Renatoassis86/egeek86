@@ -7,6 +7,7 @@ import { AGULHA, evaluateAgulha, ITEM_READ_NETWORKS, type AgulhaRule, type MissT
 import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
 import { resolveCouponUse, stepsText } from '@/lib/coupons/coupon-name';
+import { promoPrimeMensagemLigada } from '@/lib/coupons/amazon-promocoes';
 
 /**
  * Cupom POR ANÚNCIO (dono, 2026-11-11): a aba logada lê a página do item e grava o "preço com cupom" (offer_coupon_reads). Vale 2 horas.
@@ -26,6 +27,7 @@ type ReadRow = {
   c_aud: string | null; c_elig: boolean | null; c_scope: string | null; c_cats: string | null; c_raw: string | null; c_title: string | null; c_where: string | null; c_ativ: string | null;
   p_name: string | null; p_code: string | null;
   src: string | null; pc_valid: string | Date | null; pc_state: string | null; pc_title: string | null; pc_app: string | null; pc_termos: string | null;
+  pc_aud: string | null; pc_prime: boolean | null;
 };
 
 /**
@@ -52,6 +54,8 @@ export interface ItemCouponDetail {
   readAt: string;
   priceSeenCents: number | null;
   validUntil: string | null;
+  /** Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): a mensagem diz "Exclusivo Prime" e que o desconto entra no fim do pedido. */
+  exclusivePrime?: boolean;
 }
 
 export async function lookupItemCoupon(offerId: string, trace?: MissTrace, now: Date = new Date()): Promise<(CouponInfo & CouponRefMeta) | null> {
@@ -65,7 +69,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
            c.kind AS c_kind, c.value_num::text AS c_value, c.min_order_cents::text AS c_min, c.max_discount_cents::text AS c_cap, c.valid_until AS c_valid,
            c.state AS c_state, c.audience AS c_aud, c.eligible_on_read_account AS c_elig, c.scope_kind AS c_scope, c.scope->'categorias'->>0 AS c_cats, c.conditions_raw AS c_raw, c.title AS c_title, c.onde AS c_where, c.ativ AS c_ativ,
            to_jsonb(r)->>'coupon_name' AS p_name, to_jsonb(r)->>'coupon_code' AS p_code,
-           r.source AS src, pc.valid_until AS pc_valid, pc.state AS pc_state, pc.title AS pc_title, pc.so_app AS pc_app, pc.termos AS pc_termos
+           r.source AS src, pc.valid_until AS pc_valid, pc.state AS pc_state, pc.title AS pc_title, pc.so_app AS pc_app, pc.termos AS pc_termos, pc.aud AS pc_aud, pc.prime AS pc_prime
     FROM offer_coupon_reads r
     JOIN affiliate_offers o ON o.id = r.offer_id
     JOIN affiliate_networks nn ON nn.id = o.network_id
@@ -78,7 +82,8 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
     ) c ON true
     -- Promoção da Amazon (amazon-promocoes): validade, estado (2 leituras) e título vêm do cupom gravado em coupon_items (escopo produto da oferta).
     LEFT JOIN LATERAL (
-      SELECT ci.valid_until, ci.state, split_part(ci.raw_text, ' | ', 1) AS title, ci.conditions->>'so_app' AS so_app, ci.conditions->>'termos' AS termos
+      SELECT ci.valid_until, ci.state, split_part(ci.raw_text, ' | ', 1) AS title, ci.conditions->>'so_app' AS so_app, ci.conditions->>'termos' AS termos,
+             ci.audience AS aud, (ci.conditions->>'prime_checkout' = 'true') AS prime
       FROM coupon_items ci
       WHERE r.source = 'amazon-promocoes' AND ci.network_slug = 'amazon' AND ci.conditions->>'promo_id' = r.campaign_id
         AND ci.scope->'offer_ids' @> to_jsonb(r.offer_id::text)
@@ -125,10 +130,13 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
       if (!rule) { lastReason = 'tipo_sem_preco_final'; continue; }
     }
     const rulePromo: AgulhaRule | null = isPromo && rule ? { ...rule, validUntil: new Date(r.pc_valid as string | Date).toISOString() } : rule;
+    // Promoção Prime na finalização: só com GROUP_PROMO_PRIME=on E o cupom gravado como `assinantes` + prime_checkout pela leitura da promoção (nunca pelo rótulo).
+    const primeOk = isPromo && promoPrimeMensagemLigada() && r.pc_prime === true && r.pc_aud === 'assinantes';
     const readIso = new Date(r.read_at).toISOString();
     const verdict = evaluateAgulha({
       source: 'item', now, offer: { network: r.net, vertical: r.vertical, priceCents: current }, verifiedAt: readIso,
       priceWithCents: r.pw, priceSeenCents: r.ps, label: r.label, rule: rulePromo, categoriaVerticais: rulePromo?.categorias?.flatMap((c) => verticaisDaCategoria(c)),
+      permitirPrimeNaFinalizacao: primeOk,
     });
     if (!verdict.ok) { lastReason = verdict.reason; continue; }
     const parts: string[] = [];
@@ -146,7 +154,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
     if (isPromo) {
       // Promoção da Amazon não tem botão "Aplicar cupom" nem código: o desconto é aplicado pela Amazon (às vezes só no app). Sem inventar o fluxo do carrinho.
       const vendida = /vendidos pela Amazon/i.test(r.pc_termos ?? '') ? 'vale só para itens vendidos pela Amazon.com.br' : 'confira no anúncio se o item é vendido pela Amazon.com.br';
-      use.howTo = [r.pc_app === 'true' ? 'Abra o anúncio no app da Amazon (a promoção vale só pelo app)' : 'Abra o anúncio', 'O desconto é aplicado pela própria Amazon; não tem código para digitar', `Confira o preço final antes de finalizar (${vendida})`];
+      use.howTo = primeOk ? ['Abra o anúncio (precisa ser membro Prime)', 'O desconto entra na finalização do pedido, aplicado pela própria Amazon; não tem código para digitar', 'Confira o preço final antes de pagar'] : [r.pc_app === 'true' ? 'Abra o anúncio no app da Amazon (a promoção vale só pelo app)' : 'Abra o anúncio', 'O desconto é aplicado pela própria Amazon; não tem código para digitar', `Confira o preço final antes de finalizar (${vendida})`];
       use.activation = stepsText(use.howTo);
     }
     const dlinha = `Desconto de ${fmt(off)} (${String(pct).replace('.', ',')}%): você paga ${fmt(Number(r.pw))}. `;
@@ -170,7 +178,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
       detail: {
         net: r.net, offerPriceCents: current, finalCents: Number(r.pw), offCents: off, pct, name,
         minOrderCents: rule?.minOrderCents ?? null, maxDiscountCents: rule?.maxDiscountCents ?? null, ruleKnown: verdict.ruleKnown,
-        activation: ativar, named: use.named, code: use.code, howTo: use.howTo, readAt: readIso, priceSeenCents: r.ps, validUntil: rulePromo?.validUntil ?? null,
+        activation: ativar, named: use.named, code: use.code, howTo: use.howTo, readAt: readIso, priceSeenCents: r.ps, validUntil: rulePromo?.validUntil ?? null, ...(primeOk ? { exclusivePrime: true } : {}),
       },
     };
   }

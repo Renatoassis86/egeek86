@@ -8,7 +8,8 @@ import { getDimensionOverrides } from '@/server/queries/catalog-dimensions';
 import { STATS_PERSIST_MAX_AGE_MS } from '@/server/queries/product-price-stats';
 import { sellerTier } from '@/lib/affiliate/price-verdict';
 import { swr } from '@/lib/cache/swr';
-import { VITRINE_REGRAS, type Candidato, type ContextoAvaliacao } from '@/lib/vitrines';
+import { VITRINE_REGRAS, type Candidato, type ContextoAvaliacao, type PromoPrime } from '@/lib/vitrines';
+import { precoComPromocao, promoPrimeLigada } from '@/lib/coupons/amazon-promocoes';
 import type { GamePlatformGen } from '@/db/schema';
 
 /**
@@ -88,6 +89,38 @@ async function comTeto<T>(fn: (tx: Parameters<Parameters<typeof db.transaction>[
   });
 }
 
+/**
+ * Passo C (dono, 2026-11-14): promoção Prime NA FINALIZAÇÃO confirmada para as ofertas vencedoras (poucas linhas: coupon_items da Amazon, PK por lista de ids).
+ * Só com a flag PROMO_PRIME_DERIVADA. Exige cupom `verificado` + `assinantes` + `prime_checkout`, validade lida no futuro e confirmação na página do item (120 min).
+ * O preço final é DERIVADO (prateleira x (1 - pct)); a falha desta consulta nunca derruba a vitrine.
+ */
+export async function carregarPromosPrime(ofertas: ReadonlyArray<{ offerId: string; precoCentavos: number }>): Promise<Map<string, PromoPrime>> {
+  const out = new Map<string, PromoPrime>();
+  if (!promoPrimeLigada() || !ofertas.length) return out;
+  try {
+    const ids = ofertas.map((o) => o.offerId).join(',');
+    const rows = await comTeto((tx) => tx.execute<Row>(sql`
+      SELECT ci.scope->'offer_ids'->>0 AS oid, max(ci.value_num)::float AS pct, max(ci.valid_until) AS valid_until, max(r.read_at) AS conf
+      FROM coupon_items ci
+      JOIN offer_coupon_reads r ON r.offer_id = (ci.scope->'offer_ids'->>0)::uuid AND r.campaign_id = ci.conditions->>'promo_id'
+        AND r.source = 'amazon-item-confirmado' AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - interval '120 minutes'
+      WHERE ci.network_slug = 'amazon' AND ci.state = 'verificado' AND ci.audience = 'assinantes' AND ci.conditions->>'prime_checkout' = 'true'
+        AND ci.valid_until > now() AND (ci.valid_from IS NULL OR ci.valid_from <= now())
+        AND ci.scope->'offer_ids'->>0 = ANY(string_to_array(${ids}, ','))
+      GROUP BY 1`));
+    const preco = new Map(ofertas.map((o) => [o.offerId, o.precoCentavos]));
+    for (const r of rows) {
+      const p = preco.get(str(r.oid));
+      const pct = num(r.pct);
+      if (!p || !(pct > 0 && pct <= VITRINE_REGRAS.QUEDA_MAX_PCT)) continue;
+      out.set(str(r.oid), { pct, finalCentavos: precoComPromocao(p, pct), validaAte: r.valid_until ? new Date(r.valid_until as string | Date).toISOString() : null, confirmadoEm: new Date(r.conf as string | Date).toISOString() });
+    }
+  } catch (e) {
+    console.error('[vitrines] promo prime falhou (segue sem)', e instanceof Error ? e.message.slice(0, 160) : e);
+  }
+  return out;
+}
+
 export async function carregarPoolBruto(): Promise<Candidato[]> {
   const brutas = await comTeto((tx) => tx.execute<Row>(sqlOfertasPublicas()));
   const ofertas: OfertaPublica[] = brutas.map((r) => ({
@@ -126,6 +159,8 @@ export async function carregarPoolBruto(): Promise<Candidato[]> {
     if (!t) continue;
     out.push(paraCandidato(r, t.oferta, t.ativas, t.lojas, t.proximos));
   }
+  const promos = await carregarPromosPrime(out.map((c) => ({ offerId: c.offerId, precoCentavos: c.precoCentavos })));
+  if (promos.size) for (const c of out) { const pp = promos.get(c.offerId); if (pp) c.promoPrime = pp; }
   return out;
 }
 
