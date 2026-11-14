@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     console.log('[aprovacao-auto]', JSON.stringify({ cand: r.candidatos, tent: r.tentados, lib: r.liberadas, mast: r.masters, err: r.erros, ms: r.duracaoMs }));
     return NextResponse.json({ ...r, decisionIds: r.decisionIds.length });
   } catch (e) {
-    return NextResponse.json({ error: 'falha', mensagem: String((e as Error).message).slice(0, 200) }, { status: 500 });
+    console.error('[cron aprovacao-auto] falhou:', (e as Error).message);
+    return NextResponse.json({ error: 'falha' }, { status: 500 });
   }
 }

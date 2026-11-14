@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
     const status = r.erroApi && (r.erroApi.kind === 'auth' || r.erroApi.kind === 'access') ? 502 : 200;
     return NextResponse.json({ ...r, duracao_ms: Date.now() - started, reverter: r.modo === 'apply' && r.runId ? `?rollback=${r.runId}&apply=1` : null }, { status });
   } catch (e) {
-    return NextResponse.json({ error: 'falha', mensagem: String((e as Error).message).slice(0, 300) }, { status: 500 });
+    console.error('[cron cobertura-shopee] falhou:', (e as Error).message);
+    return NextResponse.json({ error: 'falha' }, { status: 500 });
   }
 }

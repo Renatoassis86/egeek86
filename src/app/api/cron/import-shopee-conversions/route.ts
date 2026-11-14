@@ -26,6 +26,7 @@ export async function GET(request: NextRequest) {
     const summary = await upsertConversions(rows, { batch: `shopee:${new Date().toISOString()}` });
     return NextResponse.json({ ok: true, ...summary, rejected: summary.rejected.length });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: (e as Error).message.slice(0, 300) }, { status: 502 });
+    console.error('[cron import-shopee-conversions] falhou:', (e as Error).message);
+    return NextResponse.json({ ok: false, error: 'falha' }, { status: 502 });
   }
 }

@@ -1,4 +1,12 @@
+import { timingSafeEqual } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
+
+/** Comparação em tempo constante (não vaza o tamanho/prefixo do segredo por tempo de resposta). */
+function iguais(a: string | null, b: string): boolean {
+  if (a == null) return false;
+  const x = Buffer.from(a), y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+}
 
 /**
  * Autorização de rotas /api/cron/*. Falha FECHADA: sem CRON_SECRET configurado
@@ -14,8 +22,8 @@ export function rejectUnlessCronAuthorized(request: NextRequest): NextResponse |
     return NextResponse.json({ error: 'cron_secret_not_configured' }, { status: 500 });
   }
   const bearer = request.headers.get('authorization');
-  if (bearer === `Bearer ${secret}`) return null;
-  if (request.nextUrl.searchParams.get('key') === secret) return null;
+  if (iguais(bearer, `Bearer ${secret}`)) return null;
+  if (iguais(request.nextUrl.searchParams.get('key'), secret)) return null;
   return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 }
 

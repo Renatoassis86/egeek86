@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { NextResponse, type NextRequest } from 'next/server';
 import { eq, and, isNull, gt } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -24,8 +25,11 @@ interface TelegramUpdate {
  * setWebhook (ver docs/pg-cron-setup.md).
  */
 export async function POST(request: NextRequest) {
-  const secretHeader = request.headers.get('x-telegram-bot-api-secret-token');
-  if (secretHeader !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+  // Falha fechada: sem segredo configurado nada passa; comparação em tempo constante.
+  const esperado = process.env.TELEGRAM_WEBHOOK_SECRET ?? '';
+  const recebido = request.headers.get('x-telegram-bot-api-secret-token') ?? '';
+  const a = Buffer.from(recebido), b = Buffer.from(esperado);
+  if (!esperado || a.length !== b.length || !timingSafeEqual(a, b)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 

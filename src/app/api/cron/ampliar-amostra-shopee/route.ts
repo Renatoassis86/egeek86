@@ -109,6 +109,7 @@ export async function GET(request: NextRequest) {
       { status }
     );
   } catch (e) {
-    return NextResponse.json({ error: 'falha', mensagem: String((e as Error).message).slice(0, 300) }, { status: 500 });
+    console.error('[cron ampliar-amostra-shopee] falhou:', (e as Error).message);
+    return NextResponse.json({ error: 'falha' }, { status: 500 });
   }
 }

@@ -5,7 +5,7 @@ import { getMasterProductPriceHistory, type PriceHistoryTimeframe } from '@/serv
 export const dynamic = 'force-dynamic';
 
 const querySchema = z.object({
-  masterProductId: z.string().min(1),
+  masterProductId: z.string().uuid(),
   timeframe: z.enum(['1D', '1S', '1M', '3M', '6M', '1A', 'Tudo']),
 });
 

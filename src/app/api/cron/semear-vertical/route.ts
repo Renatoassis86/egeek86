@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(summary);
   } catch (err) {
     console.error('[semear-vertical] falhou:', (err as Error).message.slice(0, 200));
-    return NextResponse.json({ error: 'falha_na_semeadura', message: (err as Error).message.slice(0, 200) }, { status: 500 });
+    console.error('[cron semear-vertical] falhou:', (err as Error).message);
+    return NextResponse.json({ error: 'falha_na_semeadura' }, { status: 500 });
   }
 }
