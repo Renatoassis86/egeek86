@@ -6,7 +6,8 @@ import { recordPriceSnapshot } from '@/server/collector/record-price-snapshot';
 import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-auth';
 import { lookupShopeeItem } from '@/server/collector/sources/shopee';
 import { RULES } from '@/lib/messaging/group-rules';
-import type { LiveDeps, LiveTarget } from '@/lib/messaging/live-recheck';
+import { meliItemIdFromUrl, type LiveDeps, type LiveTarget } from '@/lib/messaging/live-recheck';
+import { GUARD, anuncioIdentificado, type PricePoint } from '@/lib/messaging/price-guard';
 
 type Row = Record<string, unknown>;
 
@@ -44,6 +45,23 @@ export async function loadLiveTargets(
     LIMIT 200
   `);
   const detectedBy = new Map(originals.map((o) => [o.offerId, o.detectedPriceCents]));
+  // Histórico de preço de 24 h das ofertas ORIGINAIS (porta `preco_oscilando`): snapshots da janela e o último antes dela (preço de partida).
+  const histSince = new Date(now.getTime() - GUARD.OSC_WINDOW_HOURS * 3_600_000).toISOString();
+  const histRows = await db.execute<Row>(sql`
+    SELECT offer_id, price_cents, collected_at FROM affiliate_price_snapshots
+    WHERE offer_id IN (${idList(ids)}) AND collected_at >= ${histSince}::timestamptz
+    UNION ALL
+    SELECT DISTINCT ON (offer_id) offer_id, price_cents, collected_at FROM affiliate_price_snapshots
+    WHERE offer_id IN (${idList(ids)}) AND collected_at < ${histSince}::timestamptz
+    ORDER BY offer_id, collected_at DESC
+  `).catch(() => [] as Row[]);
+  const historyBy = new Map<string, PricePoint[]>();
+  for (const h of histRows) {
+    const k = String(h.offer_id);
+    const arr = historyBy.get(k) ?? [];
+    arr.push({ at: new Date(h.collected_at as string | Date), priceCents: Number(h.price_cents) });
+    historyBy.set(k, arr);
+  }
   const perProduct = new Map<string, number>();
   const out: LiveTarget[] = [];
   for (const r of rows) {
@@ -71,6 +89,12 @@ export async function loadLiveTargets(
       storedPriceCents: price,
       confirmedAt: r.last_price_confirmed_at ? new Date(r.last_price_confirmed_at as string | Date) : null,
       detectedPriceCents: isOriginal ? (detectedBy.get(offerId) ?? null) : null,
+      ...(isOriginal
+        ? {
+            listingIdTrusted: !/mercado/i.test(`${r.net_slug} ${r.net_name}`) || anuncioIdentificado({ externalItemId: (r.external_item_id as string | null) ?? null, itemIdFromUrl: meliItemIdFromUrl((r.affiliate_url as string | null) ?? null) }),
+            priceHistory: historyBy.get(offerId) ?? [],
+          }
+        : {}),
     });
   }
   return out;

@@ -9,6 +9,7 @@
 
 import { RULES, netKind, type NetKind } from '@/lib/messaging/group-rules';
 import type { FetchLike } from '@/lib/messaging/telegram-send';
+import { avaliarOscilacao, motivoOscilacao, type PricePoint } from '@/lib/messaging/price-guard';
 
 export interface LiveTarget {
   offerId: string;
@@ -29,6 +30,13 @@ export interface LiveTarget {
   confirmedAt: Date | null;
   /** Preço detectado do candidato (originais). null = só conferir disponibilidade. */
   detectedPriceCents: number | null;
+  /**
+   * Anúncio identificado de forma confiável (external_item_id ou id MLB na URL)? `false` = oferta casada só por vendedor + catálogo:
+   * a reconferência ao vivo nunca é pulada e a falha vira `link_sem_conferencia` (2026-11-14). `undefined` = comportamento antigo.
+   */
+  listingIdTrusted?: boolean;
+  /** Snapshots de preço das últimas 24 h (mais o último anterior à janela): base do bloqueio `preco_oscilando`. */
+  priceHistory?: PricePoint[];
 }
 
 export type LiveQuote =
@@ -79,6 +87,8 @@ export function isStale(confirmedAt: Date | null, now: Date): boolean {
 /** Precisa de consulta ao vivo? ML: preço velho. Shopee: sempre nas originais do envio automático, senão preço velho. Amazon/outras: nunca. */
 export function needsLive(t: LiveTarget, now: Date, humanApproved: boolean): boolean {
   const k = asKind(t);
+  // Anúncio não identificado (só vendedor + catálogo): o preço gravado pode ser de um anúncio irmão; nunca confiar no frescor.
+  if (k === 'ml' && t.role === 'original' && t.listingIdTrusted === false) return true;
   if (k === 'ml') return isStale(t.confirmedAt, now);
   if (k === 'shopee') return t.role === 'original' && !humanApproved ? true : isStale(t.confirmedAt, now);
   return false;
@@ -101,7 +111,10 @@ async function meliQuote(t: LiveTarget, deps: LiveDeps): Promise<LiveQuote> {
   const data = (await res.json()) as { results?: Array<{ item_id?: string; price?: number; condition?: string | null; seller_id?: number | string }> };
   const rows = Array.isArray(data?.results) ? data.results : null;
   if (!rows) return { ok: false, kind: 'error', reason: 'ml_resposta_invalida' };
-  const row = itemId ? rows.find((r) => r.item_id === itemId) : rows.find((r) => r.seller_id != null && String(r.seller_id) === t.sellerExternalId);
+  const bySeller = itemId ? [] : rows.filter((r) => r.seller_id != null && String(r.seller_id) === t.sellerExternalId);
+  // Vários anúncios do mesmo vendedor no catálogo com preços diferentes e sem id do anúncio: não dá para saber qual é o da oferta.
+  if (!itemId && new Set(bySeller.map((r) => Math.round(Number(r.price) * 100))).size > 1) return { ok: false, kind: 'unavailable', reason: 'ml_vendedor_com_varios_anuncios' };
+  const row = itemId ? rows.find((r) => r.item_id === itemId) : bySeller[0];
   if (!row) return { ok: false, kind: 'unavailable', reason: 'ml_anuncio_fora_dos_vencedores' };
   if (row.condition !== 'new') return { ok: false, kind: 'unavailable', reason: 'ml_condicao_nao_nova' };
   const cents = Math.round(Number(row.price) * 100);
@@ -186,6 +199,15 @@ export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResu
   const out: LivePhaseResult = { ok: true, verified: [], droppedOfferIds: [], changed: false, logs: [] };
   const tasks = targets.map(async (t) => {
     const log: LiveCheckLog = { offerId: t.offerId, role: t.role, checked: false, storedCents: t.storedPriceCents, verdict: 'skipped' };
+    // Porta 1 (2026-11-14): oferta que oscila de preço não sai em mensagem até estabilizar, mesmo com preço gravado fresco.
+    if (t.role === 'original' && t.priceHistory?.length) {
+      const osc = avaliarOscilacao(t.priceHistory, now);
+      if (osc.oscilando) {
+        log.verdict = 'fail';
+        log.reason = motivoOscilacao(osc);
+        return log;
+      }
+    }
     if (!needsLive(t, now, input.humanApproved)) {
       if (t.role === 'original' && asKind(t) === 'amazon') log.reason = 'amazon_segue_a_regra_de_frescor_da_coleta_assistida';
       return log;
@@ -193,7 +215,8 @@ export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResu
     log.checked = true;
     const q = await fetchLiveQuote(t, deps);
     if (!q.ok) {
-      log.reason = q.reason;
+      // Porta 4: sem identificação do anúncio, a falha da conferência ao vivo é `link_sem_conferencia`.
+      log.reason = t.role === 'original' && t.listingIdTrusted === false ? `link_sem_conferencia: ${q.reason}` : q.reason;
       if (t.role === 'original') log.verdict = 'fail';
       else log.verdict = q.kind === 'error' ? 'fail' : 'ignored';
       return log;
