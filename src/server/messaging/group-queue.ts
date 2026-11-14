@@ -589,7 +589,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     }
 
     let photo: Buffer | null = null;
-    const simpleCard = match.trigger === 'AC' || match.trigger === 'CUPOM';
+    const simpleCard = match.trigger === 'AC' || match.trigger === 'CUPOM' || match.trigger === 'N1';
     const cardKind: 'oferta' | 'historico' | 'simples' = simpleCard ? 'simples' : match.trigger === 'P1' || match.trigger === 'G5' ? 'historico' : 'oferta';
     const cardCls = match.cls === 'alerta' || match.cls === 'insight' || match.cls === 'radar' || match.cls === 'plataforma' || simpleCard;
     if (deps.cardFor && cardCls && match.trigger !== 'RADAR' && match.trigger !== 'G4') {
@@ -600,7 +600,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
           photo = null;
         }
       }
-    } else if (deps.renderCard && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR' && match.trigger !== 'G4' && match.trigger !== 'AC' && cardAllowed(match.masterProductId, hist.records, now)) {
+    } else if (deps.renderCard && (match.cls === 'alerta' || match.cls === 'insight') && match.trigger !== 'RADAR' && match.trigger !== 'G4' && match.trigger !== 'AC' && match.trigger !== 'N1' && cardAllowed(match.masterProductId, hist.records, now)) {
       try {
         photo = await timeout(deps.renderCard(match.masterProductId), 8000);
       } catch {

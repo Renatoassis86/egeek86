@@ -200,6 +200,9 @@ export const RULES = {
   ACHADO_OWN_MIN_DAYS: 3,
   ACHADO_OWN_MAX_RATIO: 1.1,
   ACHADO_OWN_MIN_RATIO: 0.5,
+  /** PREÇO AGORA (N1, dono 2026-11-13; produto sem base de preço): por canal (loja), no máximo isto por hora e por dia (GROUP_N1_POR_HORA / GROUP_N1_POR_DIA só podem BAIXAR). */
+  N1_MAX_PER_HOUR: 1,
+  N1_MAX_PER_DAY: 6,
   /** Cota de diversidade: nenhum TIPO passa desta parcela das mensagens da loja nas ultimas 24 h (so vale com alternativa de outro tipo e depois de TIPO_SHARE_MIN_SENT envios). */
   TIPO_MAX_SHARE_PCT: 30,
   TIPO_SHARE_MIN_SENT: 6,
@@ -226,7 +229,7 @@ export const RULES = {
 /** Departamentos liberados no porteiro e no /go. Os demais geram G6 marcado como não enviável. */
 export const RELEASED_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d']; // todas as lojas (dono, 2026-11-11): cada uma envia ao seu canal
 
-export type Trigger = 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'OK1' | 'OK2' | 'T1' | 'T2' | 'RADAR' | 'CUPOM' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'AC';
+export type Trigger = 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'OK1' | 'OK2' | 'T1' | 'T2' | 'RADAR' | 'CUPOM' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'AC' | 'N1';
 
 /** Classes de mensagem (ata §1.1): A alerta imediato, B radar horário, C insight, D resumo, E cupom verificado. */
 export type MessageClass = 'alerta' | 'radar' | 'insight' | 'resumo' | 'cupom' | 'plataforma';
@@ -252,6 +255,7 @@ export const TRIGGER_CLASS: Record<Trigger, MessageClass> = {
   P4: 'plataforma',
   P5: 'plataforma',
   AC: 'insight',
+  N1: 'insight',
 };
 
 /** Ponto da série diária do menor preço do produto (dias ANTERIORES a hoje, ordem crescente). */
@@ -634,6 +638,8 @@ export interface EvalContext {
   amazonMode?: AmazonMode;
   /** Gatilho ACHADO ligado (migration 0032 aplicada). Ausente = desligado: comportamento de sempre. */
   achado?: boolean;
+  /** Gatilho N1 'Preço agora' (produto sem média elegível; dono 2026-11-13). Ausente/false = DESLIGADO: comportamento de sempre. */
+  neutro?: boolean;
 }
 
 /** Janela de 6 h (fuso de São Paulo) para o dedup por oferta/gatilho. */
@@ -787,7 +793,7 @@ export function finish(
   const serieDoPreco = netKind(base.primary) === 'amazon' ? p.amazonSeries : p.series;
   const viaMinimo = rcfg.elegivelMin && noMenorRegistrado(serieDoPreco, base.primary.priceCents, rcfg.elegivelMinDias, spDayStr(ctx.now), rcfg.elegivelMinAmplitudePct).ok;
   const belowRule =
-    trigger !== 'AC' && !viaMinimo && minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
+    trigger !== 'AC' && trigger !== 'N1' && !viaMinimo && minBelow > 0 && (priceClass === 'alerta' || priceClass === 'insight' || priceClass === 'radar') && (belowAvgPct == null || belowAvgPct < minBelow)
       ? `abaixo_da_media_menos_de_${minBelow}pct`
       : null;
   const notSendable =
@@ -1562,6 +1568,66 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
       }
     }
   }
+  // ---------------- N1 'PREÇO AGORA' (dono, 2026-11-13) ----------------
+  // Produto SEM média elegível (sem base de preço): mensagem NEUTRA com preço, loja e horário da leitura. NUNCA queda, média, "menor preço" ou selo.
+  // Só com ctx.neutro (flag GROUP_NEUTRO_SEM_BASE, desligada por padrão). Só quando o produto passou em TUDO (porteiro, plataforma e fora de linha em
+  // scopeBlock; oferta válida em judgeOffer: link, frescor, identidade, vendedor) e NENHUM outro gatilho de preço do produto está enviável.
+  // Régua de degraus e G1/G2 seguem exclusivos de produto COM base.
+  if (ctx.neutro && released && !(p.avg && p.avg.eligible && p.avg.cents > 0) && !candidates.some((c) => c.sendable && c.trigger !== 'G4')) {
+    const n1Stop = (reasons: string[]) => blocked.push({ masterProductId: p.masterProductId, name: nm, trigger: 'N1', reasons: ['preco_agora', ...reasons] });
+    const comparable = verdicts.filter((x) => (netKind(x.o) === 'ml' || netKind(x.o) === 'shopee') && x.v.kind !== 'block').sort((a, b) => a.o.priceCents - b.o.priceCents);
+    const holder = comparable[0];
+    if (!holder) n1Stop(['sem_oferta_ml_ou_shopee_valida']);
+    else {
+      const o = holder.o;
+      const price = o.priceCents;
+      const why: string[] = [];
+      if (o.identidade === 'incerta') why.push('identidade_incerta');
+      // Referência de plausibilidade (sem ela um preço sentinela passaria): faixa do tipo/plataforma, histórico próprio (>= 3 dias) ou >= 3 ofertas.
+      let ref = false;
+      if (p.vertical === 'games') {
+        if (p.platMedianCents && (p.platSample ?? 0) >= RULES.ACHADO_GAMES_PLAT_MIN_SAMPLE) {
+          ref = true;
+          const ratio = price / p.platMedianCents;
+          if (ratio < RULES.ACHADO_GAMES_RATIO_MIN || ratio > RULES.ACHADO_GAMES_RATIO_MAX) why.push('preco_fora_da_faixa_da_plataforma');
+        }
+      } else if (p.tipo && p.tipo !== 'outros' && p.tipoMedianCents && (p.tipoSample ?? 0) >= RULES.ACHADO_TIPO_MIN_SAMPLE) {
+        ref = true;
+        const ratio = price / p.tipoMedianCents;
+        if (ratio < RULES.ACHADO_TIPO_RATIO_MIN || ratio > RULES.ACHADO_TIPO_RATIO_MAX) why.push('preco_fora_da_faixa_do_tipo');
+      }
+      const ownDays = (p.series ?? []).filter((x) => x.minCents > 0);
+      if (ownDays.length >= RULES.ACHADO_OWN_MIN_DAYS) {
+        ref = true;
+        const own = medianOf(ownDays.map((x) => x.minCents)) as number;
+        if (price > own * RULES.ACHADO_OWN_MAX_RATIO || price < own * RULES.ACHADO_OWN_MIN_RATIO) why.push('preco_fora_do_historico_proprio');
+      }
+      if (comparable.length >= 3) ref = true;
+      if (!ref) why.push('sem_referencia_de_plausibilidade');
+      const risk = riskAssess(price, null, null, median);
+      why.push(...risk.review, ...risk.held);
+      if (why.length) n1Stop(why);
+      else {
+        const parts = displayParts(p);
+        const messageKey = makeMessageKey('N1', `${p.masterProductId}:N1:${o.offerId}:${windowKey(ctx.now)}`, ctx.now);
+        const input: GroupMessageInput = { vertical: p.vertical, adTag: ctx.adTag, messageKey, model: 'preco-agora', name: nm, title: parts.title, meta: parts.meta, offer: toMsgOffer(o) };
+        candidates.push(
+          finish(p, 'N1', input, {
+            offerIds: [o.offerId],
+            primary: o,
+            reason: `Preço agora (sem base de preço): ${fmtBRL(price)} ${o.networkName}, leitura de ${(o.confirmedAt ?? ctx.now).toISOString()}. Não compara, não alega queda nem média.`,
+            avgCents: null,
+            belowPct: null,
+            dropPct: null,
+            reviewReasons: holder.v.reasons,
+            cls: 'insight',
+            moveScore: 0,
+            dedupSuffix: windowKey(ctx.now) + 'n1',
+          }, ctx)
+        );
+      }
+    }
+  }
   return { candidates, blocked };
 }
 
@@ -1782,7 +1848,7 @@ export function productDedupBlock(
 ): string | null {
   if (!c.masterProductId) return null;
   const isCupom = c.trigger === 'CUPOM';
-  const gapMs = isCupom ? RULES.CUPOM_PRODUCT_GAP_MIN * 60_000 : c.trigger === 'AC' ? RULES.ACHADO_PRODUCT_GAP_HOURS * 3600_000 : RULES.PRODUCT_GAP_MIN * 60_000;
+  const gapMs = isCupom ? RULES.CUPOM_PRODUCT_GAP_MIN * 60_000 : (c.trigger === 'AC' || c.trigger === 'N1') ? RULES.ACHADO_PRODUCT_GAP_HOURS * 3600_000 : RULES.PRODUCT_GAP_MIN * 60_000;
   // Mensagem de cupom e mensagem de preco do mesmo produto sao independentes: cada uma so conta o proprio tipo (cupom x nao-cupom).
   const prior = history
     .filter((h) => h.masterProductId === c.masterProductId && (h.trigger === 'CUPOM') === isCupom && now.getTime() - h.sentAt.getTime() < gapMs)
@@ -1791,7 +1857,7 @@ export function productDedupBlock(
   const minSince = (now.getTime() - prior.sentAt.getTime()) / 60_000;
   if (isCupom) return `cupom_produto_ja_enviado_ha_${Math.floor(minSince)}min`;
   if ((c.trigger === 'G1' || c.trigger === 'OK1') && c.priceCents < prior.priceCents && minSince >= RULES.NEW_MIN_REPEAT_MIN) return null;
-  return c.trigger === 'AC' ? `achado_produto_ja_enviado_ha_${Math.floor(minSince / 60)}h` : `produto_ja_enviado_ha_${Math.floor(minSince)}min`;
+  return c.trigger === 'AC' || c.trigger === 'N1' ? `achado_produto_ja_enviado_ha_${Math.floor(minSince / 60)}h` : `produto_ja_enviado_ha_${Math.floor(minSince)}min`;
 }
 
 /** Mesmo cupom (mesma oferta/leitura) ja divulgado ha menos de 1 h, em mensagem de cupom OU de preco com bloco de cupom. null = pode. */
@@ -1816,7 +1882,7 @@ export function cupomShare(vertical: string, history: SentRecord[], now: Date): 
   return { count: n, total: recs.length, pct: recs.length ? (n / recs.length) * 100 : 0 };
 }
 
-const TRIGGER_RANK: Record<Trigger, number> = { G1: 0, OK1: 0, G2: 1, OK2: 1, T1: 2, T2: 3, G3: 4, G4: 5, G5: 6, G6: 7, RADAR: 8, CUPOM: 9, P1: 10, P2: 11, P3: 12, P4: 13, P5: 14, AC: 15 };
+const TRIGGER_RANK: Record<Trigger, number> = { G1: 0, OK1: 0, G2: 1, OK2: 1, T1: 2, T2: 3, G3: 4, G4: 5, G5: 6, G6: 7, RADAR: 8, CUPOM: 9, P1: 10, P2: 11, P3: 12, P4: 13, P5: 14, AC: 15, N1: 16 };
 /** Prioridade: alerta > resumo > CUPOM > insight (achado incluso) > radar > plataforma. Dono, 2026-11-12: cupom ativo e prioridade ALTA, acima de insight/achado. */
 const CLASS_RANK: Record<MessageClass, number> = { alerta: 0, resumo: 1, cupom: 2, insight: 3, radar: 4, plataforma: 5 };
 
@@ -1924,6 +1990,33 @@ export function achadoQuotaBlock(vertical: string, history: SentRecord[], now: D
   const allowed = Math.max(RULES.ACHADO_MIN_PER_DAY, Math.floor(others / 3), porHora * 24);
   if (ac.length >= allowed) return `achado_cota_diaria_da_loja_${ac.length}_de_${allowed}`;
   if (ac.filter((h) => now.getTime() - h.sentAt.getTime() < 3600_000).length >= porHora) return `achado_maximo_${porHora}_por_hora`;
+  return null;
+}
+
+/**
+ * Flag do gatilho N1 'Preço agora' (produto sem base). DESLIGADA por padrão: só o valor exato on/1/true liga (GROUP_NEUTRO_SEM_BASE).
+ * Qualquer outra coisa, inclusive vazio ou ausente, é desligado (falha fechada).
+ */
+export function neutroSemBaseLigado(env: Record<string, string | undefined> = typeof process !== 'undefined' ? process.env : {}): boolean {
+  const v = (env.GROUP_NEUTRO_SEM_BASE ?? '').trim().toLowerCase();
+  return v === 'on' || v === '1' || v === 'true';
+}
+
+/** Cota do N1 por canal (loja). Os números do ambiente só podem ficar ABAIXO dos de RULES (nunca acima). */
+export function neutroLimites(env: Record<string, string | undefined> = typeof process !== 'undefined' ? process.env : {}): { porHora: number; porDia: number } {
+  const lim = (raw: string | undefined, max: number): number => {
+    const n = Number(raw);
+    return Number.isInteger(n) && n >= 1 && n <= max ? n : max;
+  };
+  return { porHora: lim(env.GROUP_N1_POR_HORA, RULES.N1_MAX_PER_HOUR), porDia: lim(env.GROUP_N1_POR_DIA, RULES.N1_MAX_PER_DAY) };
+}
+
+/** Cota do N1 'Preço agora' por canal: no máximo 1 por hora e 6 por dia (24 h). null = pode enviar. */
+export function neutroQuotaBlock(vertical: string, history: SentRecord[], now: Date, env: Record<string, string | undefined> = typeof process !== 'undefined' ? process.env : {}): string | null {
+  const { porHora, porDia } = neutroLimites(env);
+  const n1 = storeLast24h(history, vertical, now).filter((h) => h.trigger === 'N1');
+  if (n1.length >= porDia) return `n1_cota_diaria_do_canal_${n1.length}_de_${porDia}`;
+  if (n1.filter((h) => now.getTime() - h.sentAt.getTime() < 3600_000).length >= porHora) return `n1_maximo_${porHora}_por_hora`;
   return null;
 }
 
@@ -2148,6 +2241,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);
+    if (!why && c.trigger === 'N1') why = neutroQuotaBlock(c.vertical, real, now);
     if (why) deferred.push({ messageKey: c.messageKey, reason: why });
     else ok0.push(c);
   }
@@ -2202,7 +2296,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
       CLASS_RANK[a.cls] - CLASS_RANK[b.cls] ||
       // Régua de destaque (2026-11-12): o degrau mais alto vai primeiro dentro da classe (sem régua = 0, ordem de sempre).
       (b.regua?.degrau ?? 0) - (a.regua?.degrau ?? 0) ||
-      (rotates(a) ? Number(a.trigger === 'AC') : 0) - (rotates(b) ? Number(b.trigger === 'AC') : 0) ||
+      (rotates(a) ? Number(a.trigger === 'AC' || a.trigger === 'N1') : 0) - (rotates(b) ? Number(b.trigger === 'AC' || b.trigger === 'N1') : 0) ||
       (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||
       compareCandidates(a, b)
     );

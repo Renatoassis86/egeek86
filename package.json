@@ -42,6 +42,8 @@
     "test:shopee-esporte": "tsx scripts/test-shopee-esporte.ts",
     "semear:vertical": "tsx --conditions=react-server --env-file=.env.local scripts/semear-vertical.ts",
     "test:mensagens-diversidade": "tsx scripts/test-mensagens-diversidade.ts",
+    "test:mensagens-neutro": "tsx scripts/test-mensagens-neutro-sem-base.ts",
+    "simular:neutro-sem-base": "tsx --conditions=react-server --env-file=.env.local scripts/simular-neutro-sem-base.ts",
     "test:redesenho-home": "tsx scripts/test-redesenho-home.ts",
     "test:vitrine-regras": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-vitrine-regras.ts",
     "test:vitrine-plataforma": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-vitrine-plataforma.ts",

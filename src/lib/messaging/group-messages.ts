@@ -4,7 +4,7 @@
 // a palavra "afiliado" nunca aparece; Amazon nunca (preço da Amazon fica fora de mensagem).
 
 export type GroupChannel = 'tg' | 'wa';
-export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar' | 'achado' | 'cupom';
+export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar' | 'achado' | 'cupom' | 'preco-agora';
 
 /** Gatilhos por movimento da série diária (ata 2026-11-10 §2). */
 export type MoveKind = 'OK1' | 'OK2' | 'T1' | 'T2';
@@ -390,6 +390,14 @@ export type GroupMessageInput = Common &
         meta?: string | null;
       }
     | {
+        /** PREÇO AGORA (gatilho N1, dono 2026-11-13): produto SEM base de preço (sem média elegível). Só o preço lido, a loja e o horário. NUNCA compara, NUNCA alega queda/média/menor preço. */
+        model: 'preco-agora';
+        name: string;
+        offer: MsgOffer;
+        title?: string;
+        meta?: string | null;
+      }
+    | {
         /** CUPOM ATIVO (gatilho CUPOM, 2026-11-12): oferta com cupom que passou nas 4 conferências da agulha. Não compara com média nem alega "menor preço". */
         model: 'cupom';
         name: string;
@@ -735,6 +743,34 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   const foot = italic(withTag(stampLine(o), input.adTag));
   const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
   return [novo, head, priceLine, reading ? f.t(reading) : null, topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
+}
+
+/**
+ * PREÇO AGORA (gatilho N1, dono 2026-11-13). Produto sem base de preço suficiente: mensagem NEUTRA. Só o preço lido, a loja e o horário da
+ * leitura ("Preço agora: R$ X em [loja], lido às HH:MM"). Sem "%", sem "abaixo", sem "média", sem "menor", sem "queda", sem selo.
+ * Amazon fica fora deste gatilho (carimbo próprio); `guardNetwork` mantém a barreira.
+ */
+export function formatPrecoAgoraMessage(input: Extract<GroupMessageInput, { model: 'preco-agora' }>, channel: GroupChannel): string {
+  const f = channel === 'tg' ? TG : WA;
+  guardNetwork(input.offer);
+  const o = input.offer;
+  if (isAmazonOffer(o)) throw new Error('Preço agora (N1) não vale para a Amazon.');
+  const title = (input.title ?? input.name).trim();
+  const pre = prefix(input, f);
+  const italic = (s: string) => (channel === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
+  const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
+  const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
+  const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
+  const priceLine = `${f.t('Preço agora:')} ${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}, ${f.t(`lido às ${fmtClock(o.confirmedAt)}`)}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
+  const topics: string[] = [];
+  const sellerText = sellerLine(o);
+  if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
+  for (const t of seloLines(o, f)) topics.push(t);
+  const buyUrl = o.affiliateUrl && /^https:\/\/[^\s<>"]+$/.test(o.affiliateUrl) ? o.affiliateUrl : null;
+  const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
+  const foot = italic(withTag(`Preço sujeito a alteração.`, input.adTag));
+  const slogan = italic(`Espaço Geek 86 · ${getSlogan()}`);
+  return [head, priceLine, topics.join('\n'), link, promoLine(channel, input.messageKey), [foot, slogan].join('\n')].filter((l): l is string => !!l && l.trim() !== '').join('\n\n');
 }
 
 /**
@@ -1103,6 +1139,8 @@ function render(input: GroupMessageInput, channel: GroupChannel): string {
       return formatPlatformMessage(input, channel);
     case 'achado':
       return formatAchadoMessage(input, channel);
+    case 'preco-agora':
+      return formatPrecoAgoraMessage(input, channel);
     case 'cupom':
       return formatCouponMessage(input, channel);
     case 'radar': {

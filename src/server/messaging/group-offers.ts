@@ -26,6 +26,7 @@ import {
   composeRadar,
   detectMovement,
   evaluateProductV2,
+  neutroSemBaseLigado,
   productDedupBlock,
   type Blocked,
   type Candidate,
@@ -83,6 +84,8 @@ export interface DetectOptions {
   includePlatform?: boolean;
   /** Gatilho ACHADO (ata 2026-11-12). Padrão: ligado quando a migration 0032 está aplicada (CHECK de gatilho aceita 'AC') e GROUP_ACHADO != 'off'. */
   achado?: boolean;
+  /** Gatilho N1 'Preço agora' (produto sem base de preço; dono 2026-11-13). Padrão: DESLIGADO (GROUP_NEUTRO_SEM_BASE=on E migration 0051 aplicada). `true` aqui força a avaliação (só simulação/teste: o envio real sempre revalida pelo padrão). */
+  neutro?: boolean;
   /** Gatilho CUPOM (mensagem 'Cupom ativo' por oferta). Padrao: ligado, salvo GROUP_CUPOM=off. */
   cupom?: boolean;
 }
@@ -202,6 +205,25 @@ export async function groupMessagesAchadoReady(): Promise<boolean> {
     ok = false;
   }
   achadoCache = { at: Date.now(), ok };
+  return ok;
+}
+
+let neutroCache: { at: number; ok: boolean } | null = null;
+
+/** Migration 0051 aplicada (o CHECK group_messages_trigger_chk aceita 'N1')? Sem ela o N1 fica desligado (a gravação falharia). */
+export async function groupMessagesNeutroReady(): Promise<boolean> {
+  if (neutroCache && Date.now() - neutroCache.at < 60_000) return neutroCache.ok;
+  let ok = false;
+  try {
+    const rows = await db.execute<Row>(sql`
+      SELECT pg_get_constraintdef(c.oid) AS def FROM pg_constraint c
+      WHERE c.conname = 'group_messages_trigger_chk' AND c.conrelid = to_regclass('public.group_messages')
+    `);
+    ok = String(rows[0]?.def ?? '').includes("'N1'");
+  } catch {
+    ok = false;
+  }
+  neutroCache = { at: Date.now(), ok };
   return ok;
 }
 
@@ -919,7 +941,9 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode, cupom, cupomMemo });
 
   const tFacts = Date.now() - tFacts0;
-  const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode, achado };
+  // N1: só com a flag ligada E a migration aplicada. Desligado (padrão) = ctx idêntico ao de antes (a chave `neutro` nem existe).
+  const neutro = opts.neutro ?? (neutroSemBaseLigado() && (await groupMessagesNeutroReady().catch(() => false)));
+  const ctx = { now, maxAgeMin, adTag, amazonMaxAgeMin, amazonPaused, amazonMode, achado, ...(neutro ? { neutro: true } : {}) };
   const candidates: Candidate[] = [];
   const blocked: Blocked[] = [];
   for (const p of facts) {
