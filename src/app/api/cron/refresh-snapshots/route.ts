@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
   const part = request.nextUrl.searchParams.get('part') ?? 'all';
   const force = request.nextUrl.searchParams.get('force') === '1';
   const started = Date.now();
-  const BUDGET_MS = 240_000;
+  // 'stats' roda o lote inteiro sozinho: 190 s deixam folga de ~110 s sob o teto de 300 s para o ultimo lote (rodadas de :30 ficavam 'running' para sempre por estourar o teto).
+  const BUDGET_MS = part === 'stats' ? 190_000 : 240_000;
   const out: Record<string, unknown> = { part };
   // Registro de execucao (flag COLLECTOR_RUNS=1; no-op sem a flag; nunca lanca).
   const run = await startCollectorRun(`refresh-snapshots:${part}`, null);
@@ -61,7 +62,8 @@ export async function GET(request: NextRequest) {
     vitrinesLock?.release();
     console.error('[cron refresh-snapshots] falhou:', err);
     await run.finish({ fatal: true, meta: { part, error: err instanceof Error ? err.message.slice(0, 200) : 'erro' } });
-    return NextResponse.json({ ...out, error: err instanceof Error ? err.message : 'erro' }, { status: 500 });
+    console.error('[cron refresh-snapshots] falhou:', err instanceof Error ? err.message : err);
+    return NextResponse.json({ ...out, error: 'falha' }, { status: 500 });
   }
   vitrinesLock?.release();
   out.elapsedMs = Date.now() - started;

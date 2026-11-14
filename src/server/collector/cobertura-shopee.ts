@@ -237,7 +237,8 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
   const fecharRun = async (erro?: Error) => {
     if (!runId) return;
     try {
-      const fatal = erro != null || res.parou === 'rate_limit' || res.parou === 'auth' || res.parou === 'access' || res.parou === 'erros_seguidos';
+      // 10030 (rate limit) e parada esperada: o cursor foi salvo e a rodada seguinte retoma; fica 'partial' com stopped_because='rate_limit' (visivel), nao 'error'.
+      const fatal = erro != null || res.parou === 'auth' || res.parou === 'access' || res.parou === 'erros_seguidos';
       await sql`update collector_runs set finished_at = now(), duration_ms = ${Date.now() - startedMs}, status = ${fatal ? 'error' : res.parou ? 'partial' : 'ok'},
         checked = ${res.chamadas.usadas}, errors = ${res.chamadas.erros}, offers_created = ${res.offersCreated.length}, stopped_because = ${res.parou},
         meta = ${JSON.stringify(metaAtual(erro ? { erro: erro.message.slice(0, 200) } : undefined))}::text::jsonb where id = ${runId}::bigint`;
