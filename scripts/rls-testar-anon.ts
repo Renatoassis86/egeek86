@@ -27,3 +27,5 @@ async function main() {
   console.log(`POST  auth token (credencial invalida; so prova que o Auth responde) -> ${s.status}`);
 }
 main();
+
+export {}; // marca de modulo: evita 'Duplicate function implementation' com o main de outros scripts globais
