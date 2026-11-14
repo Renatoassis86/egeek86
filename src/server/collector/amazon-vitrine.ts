@@ -102,6 +102,10 @@ export interface VitrineStats {
   descartados: Record<string, number>; erros: number; truncado: boolean;
   criados: { masters: string[]; ofertas: string[] };
   ingest: Pick<AmzStats, 'novos' | 'atualizados' | 'rascunhos_novos' | 'rascunhos_atualizados' | 'aceitos'> | null;
+  /** Descoberta por promoção: masters novos aprovados cuja oferta segue para ativa (a ingestão da Amazon julga). Só preenchido com `ativarNovoAprovado`. */
+  novos_ativos?: number;
+  /** Dry-run: destino previsto de cada card novo (amostra). */
+  previstos: Array<{ asin: string; titulo: string; destino: string }>;
 }
 
 const dedupCache = new Map<string, { em: number; indice: IndiceDedup }>();
@@ -169,12 +173,18 @@ async function criarRascunho(netId: string, masterId: string, vertical: Vertical
 
 const bump = (s: VitrineStats, k: string) => { s.descartados[k] = (s.descartados[k] ?? 0) + 1; };
 
-export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; apply: boolean; deadlineMs?: number; consultaFixa?: VitrineQuery }): Promise<{ stats: VitrineStats }> {
+/**
+ * `ativarNovoAprovado` (dono, 2026-11-14: "a única restrição é não seguir usado e retrô; precisamos ir colocando os itens em nosso banco"): SÓ para a descoberta por
+ * promoção. O master de games que o porteiro aprova já nasce aprovado; com esta opção a oferta dele segue para a ingestão da Amazon (julgamento de identidade
+ * `judgeGame`, que decide ativa x rascunho) em vez de ficar sempre em rascunho. Master em REVISÃO (porteiro duvidou) continua em revisão. O caminho geral da vitrine
+ * (laço da aba) NÃO passa esta opção e segue como antes.
+ */
+export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; apply: boolean; deadlineMs?: number; consultaFixa?: VitrineQuery; ativarNovoAprovado?: boolean }): Promise<{ stats: VitrineStats }> {
   const [net] = await db.select().from(affiliateNetworks).where(eq(affiliateNetworks.slug, 'amazon')).limit(1);
   if (!net) throw new Error('rede amazon não existe');
   const client = (db as unknown as { $client: Sql }).$client;
   const runTag = `vitrine-${new Date().toISOString().slice(0, 16)}`;
-  const s: VitrineStats = { linhas: 0, cartoes: 0, atualizados: 0, ja_fresco: 0, delegados: 0, rascunhos_novos: 0, masters_novos: 0, descartados: {}, erros: 0, truncado: false, criados: { masters: [], ofertas: [] }, ingest: null };
+  const s: VitrineStats = { linhas: 0, cartoes: 0, atualizados: 0, ja_fresco: 0, delegados: 0, rascunhos_novos: 0, masters_novos: 0, descartados: {}, erros: 0, truncado: false, criados: { masters: [], ofertas: [] }, ingest: null, previstos: [] };
   const delegar: AmzRow[] = [];
   const vistos = new Set<string>();
   const limite = Date.now() + (opts.deadlineMs ?? 50_000);
@@ -223,7 +233,12 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
             if (dup) { masterId = dup.id; podeAtivar = dup.aprovado; }
           }
           if (!masterId && 'novo' in m) {
-            if (!opts.apply) { s.masters_novos++; s.rascunhos_novos++; continue; }
+            if (!opts.apply) {
+              s.masters_novos++;
+              if (opts.ativarNovoAprovado && m.novo.aprovado) { s.novos_ativos = (s.novos_ativos ?? 0) + 1; s.previstos.push({ asin: c.a, titulo: c.t.slice(0, 80), destino: 'ativa (julgamento da Amazon decide)' }); }
+              else { s.rascunhos_novos++; s.previstos.push({ asin: c.a, titulo: c.t.slice(0, 80), destino: m.novo.aprovado ? 'rascunho' : 'revisao' }); }
+              continue;
+            }
             masterId = await criarMasterGame({ ...m.novo, itemId: c.a, imageUrl: safeAmazonImage(c.i), runId: null });
             await marcarOrigemAmazon(masterId, c.a, runTag);
             podeAtivar = m.novo.aprovado; novo = true;
@@ -245,7 +260,8 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
         if (!masterId) continue;
         if (novo) { s.masters_novos++; s.criados.masters.push(masterId); }
         // Master aprovado e identidade forte: o julgamento da Amazon (mesmas réguas da busca por master) decide ativa x rascunho.
-        if (podeAtivar && !novo && (consulta.vertical === 'games' || (await masterAprovado(masterId).catch(() => false)))) { // games: o veredito do porteiro gamer já veio de casarJogo (sem veredito = aprovado)
+        const novoLiberado = novo && opts.ativarNovoAprovado === true && consulta.vertical === 'games'; // master NOVO aprovado pelo porteiro, só na descoberta por promoção
+        if (podeAtivar && (!novo || novoLiberado) && (consulta.vertical === 'games' || (await masterAprovado(masterId).catch(() => false)))) { // games: o veredito do porteiro gamer já veio de casarJogo (sem veredito = aprovado)
           delegar.push({ id: masterId, q: consulta.q, r: [c as AmzCand] });
           s.delegados++;
           continue;
@@ -272,12 +288,13 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
 }
 
 /**
- * Descoberta por promoção: cards de games sem oferta nossa viram master em revisão + rascunho (mesmas travas da vitrine: preço lido, não patrocinado,
- * porteiro de games, dedup antes de criar). `apply:false` só conta (dry-run).
+ * Descoberta por promoção: cards de games sem oferta nossa viram master APROVADO (porteiro aprova) ou EM REVISÃO (porteiro duvida; rejeitado não nasce);
+ * a oferta do aprovado segue para a ingestão da Amazon (ativa x rascunho pelo julgamento de identidade) — decisão do dono em 2026-11-14: só usado/retrô barram.
+ * Mesmas travas da vitrine: preço lido, não patrocinado, porteiro de games, dedup antes de criar. `apply:false` só conta (dry-run).
  */
 export async function descobrirPelaPromocao(cards: readonly CardPromoNovo[], opts: { tag: string; apply: boolean }): Promise<VitrineStats> {
   const lote = cards.slice(0, 100);
-  if (!lote.length) return { linhas: 0, cartoes: 0, atualizados: 0, ja_fresco: 0, delegados: 0, rascunhos_novos: 0, masters_novos: 0, descartados: {}, erros: 0, truncado: false, criados: { masters: [], ofertas: [] }, ingest: null };
-  const { stats } = await ingestAmazonVitrine([linhaDaPromocao(lote)], { tag: opts.tag, apply: opts.apply, consultaFixa: PROMO_DESCOBERTA_QUERY, deadlineMs: 40_000 });
+  if (!lote.length) return { linhas: 0, cartoes: 0, atualizados: 0, ja_fresco: 0, delegados: 0, rascunhos_novos: 0, masters_novos: 0, descartados: {}, erros: 0, truncado: false, criados: { masters: [], ofertas: [] }, ingest: null, previstos: [] };
+  const { stats } = await ingestAmazonVitrine([linhaDaPromocao(lote)], { tag: opts.tag, apply: opts.apply, consultaFixa: PROMO_DESCOBERTA_QUERY, deadlineMs: 40_000, ativarNovoAprovado: true });
   return stats;
 }
