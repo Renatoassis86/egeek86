@@ -5,7 +5,8 @@ import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { CartaoDepartamentoView } from '@/components/mercado/cartao-departamento';
 import { exigirDepartamento } from '@/server/departamentos-rotas';
-import { indiceTiposDepartamento, listarDepartamento, normalizarOrdem } from '@/server/queries/departamento';
+import { destaquesDepartamento, indiceTiposDepartamento, listarDepartamento, normalizarOrdem } from '@/server/queries/departamento';
+import { ehPrioridade3d, prioridade3dLigada } from '@/lib/messaging/prioridade-3d';
 import { canaisDaLoja } from '@/server/plus';
 import { lojaPlusPorDept } from '@/lib/catalog/plus';
 import { departamentoPorSlug } from '@/lib/catalog/departamentos';
@@ -47,6 +48,10 @@ export default async function DepartamentoPage({
     listarDepartamento(dept.slug, { pagina, q, ordem, tipo }),
     indiceTiposDepartamento(dept.slug).catch(() => ({ porId: {}, tipos: [] })),
   ]);
+  // Impressão 3D (dono, 2026-11-14): faixa de destaque com as Anycubic Kobra e Bambu Lab de menor preço (foto real, sem selo, sem mediana).
+  const destaques3d = dept.slug === 'impressao3d' && prioridade3dLigada() && pagina === 1 && !q && !tipo
+    ? (await destaquesDepartamento('impressao3d', 6).catch(() => [])).filter((m) => ehPrioridade3d('impressao3d', m.nome)).slice(0, 4)
+    : [];
   const rotuloTipoAtivo = tipo ? rotuloTipo(dept.slug, tipo) : null;
   const totalDept = indice.tipos.reduce((a, t) => a + t.n, 0);
   const loja = lojaPlusPorDept(dept.slug);
@@ -133,6 +138,19 @@ export default async function DepartamentoPage({
         </select>
         <Button type="submit" variant="secondary" size="md">Aplicar</Button>
       </form>
+
+      {destaques3d.length > 0 ? (
+        <div className="mb-8">
+          <Text as="h2" variant="heading-sm" className="mb-3 font-bold">Em destaque: Anycubic Kobra e Bambu Lab</Text>
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {destaques3d.map((m, i) => (
+              <li key={`d-${m.id}`}>
+                <CartaoDepartamentoView vertical={dept.slug} tipo={dept.tipoCartao} master={m} priority={i < 4} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {res.itens.length === 0 ? (
         <div className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">

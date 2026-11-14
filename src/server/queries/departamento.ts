@@ -1,4 +1,5 @@
 import 'server-only';
+import { priorizarImpressao3d } from '@/lib/messaging/prioridade-3d';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { publicOffersCtes } from '@/server/queries/public-offers';
@@ -364,5 +365,5 @@ export async function destaquesDepartamento(vertical: string, limite = 8): Promi
   `);
   // Cinto de segurança (dono, 2026-11-13): destaque ordenado por menor preço é onde o item miúdo apareceria primeiro.
   const limpas = rows.filter((r) => !ehItemMiudoOuDuvida(r.name, Number(r.min_cents), 'general', vertical));
-  return diversificarPorTipo(vertical, limpas, lim).map(mapCartao);
+  return priorizarImpressao3d(vertical, limpas.map((r) => ({ ...r, min_cents: r.min_cents })), lim, diversificarPorTipo).map(mapCartao);
 }

@@ -370,6 +370,17 @@ export const NOVOS_SEGMENTOS_TIPOS: SegmentConfig[] = [...ELETRO, ...TECNOLOGIA,
 // ---------------------------------------------------------------------------------------------------------------------
 const NB_BRANDS = ['acer', 'lenovo', 'dell', 'hp', 'asus', 'samsung', 'apple', 'positivo', 'multilaser', 'avell', 'vaio', 'msi', 'gigabyte', 'lg gram', 'huawei', 'xiaomi redmibook', 'razer', 'alienware', 'infinix'];
 
+/**
+ * Prioridade de impressão 3D (dono, 2026-11-14): Anycubic Kobra e Bambu Lab, por MODELO (a semeadura por marca genérica deixava
+ * modelos de fora: faltavam, entre outros, Kobra S1 simples, Kobra 3 e 3 Combo, Kobra Neo, Bambu X1C, P1P e H2S/H2C).
+ */
+export const TERMOS_3D_PRIORIDADE: string[] = [
+  'anycubic kobra s1', 'anycubic kobra s1 combo', 'anycubic kobra s1 max', 'anycubic kobra 3', 'anycubic kobra 3 combo', 'anycubic kobra 3 v2',
+  'anycubic kobra 3 max', 'anycubic kobra neo', 'anycubic kobra 2 pro', 'anycubic kobra x combo', 'anycubic kobra 2 max',
+  'bambu lab a1', 'bambu lab a1 combo', 'bambu lab a1 mini combo', 'bambu lab p1s', 'bambu lab p1s combo', 'bambu lab p1p', 'bambu lab p2s',
+  'bambu lab p2s combo', 'bambu lab x1 carbon', 'bambu lab x1c combo', 'bambu lab h2s', 'bambu lab h2c', 'bambu lab h2d combo', 'bambu lab x2d',
+];
+
 export const TERMOS_EXTRAS_TIPOS: Record<string, string[]> = {
   notebook: [
     ...combineTerms('notebook', ['i3 8gb', 'i5 16gb', 'ryzen 7 16gb', 'core ultra', 'ryzen 5 7520u', 'celeron', 'oled', 'touch 2 em 1', '15.6 full hd', '14 polegadas'], NB_BRANDS),
@@ -393,7 +404,7 @@ export const TERMOS_EXTRAS_TIPOS: Record<string, string[]> = {
   processador: [...combineTerms('processador', ['ryzen 5 5600', 'ryzen 7 5700x3d', 'ryzen 5 7600', 'ryzen 7 9800x3d', 'intel core i3 12100f', 'intel core i5 14400f', 'intel core ultra 7', 'ryzen 9 9950x'], ['amd', 'intel'])],
   impressora: [...combineTerms('impressora', ['multifuncional tanque de tinta', 'laser colorida', 'jato de tinta', 'termica cupom', 'matricial', 'a3'], ['epson', 'hp', 'canon', 'brother', 'samsung', 'elgin', 'xerox', 'ricoh', 'kyocera', 'lexmark', 'zebra', 'argox', 'bematech', 'daruma'])],
   // Impressão 3D: mais marcas e modelos (a lista original ficou curta para o mercado)
-  'impressora-3d': [...combineTerms('impressora 3d', ['', 'fdm', 'resina', 'corexy', 'multicolor', 'laser', 'grande formato'], ['neptune', 'kobra', 'ender', 'saturn', 'mars', 'photon', 'halot', 'k1 max', 'centauri', 'prusa', 'snapmaker', 'two trees', 'longer', 'geeetech', 'tronxy', 'bambu lab h2d', 'bambu lab a1 mini', 'creality hi', 'flsun', 'kingroon'])],
+  'impressora-3d': [...combineTerms('impressora 3d', ['', 'fdm', 'resina', 'corexy', 'multicolor', 'laser', 'grande formato'], ['neptune', 'kobra', 'ender', 'saturn', 'mars', 'photon', 'halot', 'k1 max', 'centauri', 'prusa', 'snapmaker', 'two trees', 'longer', 'geeetech', 'tronxy', 'bambu lab h2d', 'bambu lab a1 mini', 'creality hi', 'flsun', 'kingroon']), ...TERMOS_3D_PRIORIDADE],
   'filamento-3d': [...combineTerms('filamento', ['pla 1kg', 'petg 1kg', 'abs 1kg', 'tpu 1kg', 'pla silk', 'pla matte', 'pla carbono', 'pla+ 1kg', 'asa 1kg', 'pa nylon', 'pla madeira', 'pla glow'], ['hatchbox', 'geeetech', 'kingroon', 'sunlu', 'esun', 'eryone', 'jayo', 'polymaker', 'prusament', 'amolen', 'tianse', 'sain smart', 'tecnoprint', 'cliever', '3d fila', 'flashforge', 'inland', 'rosa 3d', 'filamentos brasil', 'atomic filament', 'reprap brasil'])],
   'resina-3d': [...combineTerms('resina', ['3d standard', '3d abs like', '3d water washable', '3d 8k', '3d tough', '3d flexible', 'castable', 'plant based'], ['elegoo', 'anycubic', 'creality', 'siraya tech', 'phrozen', 'esun', 'sunlu', 'jayo', 'amazon basics', 'liqcreate', 'formlabs', 'monocure', 'uniz', 'tecnoprint', 'wanhao'])],
 };

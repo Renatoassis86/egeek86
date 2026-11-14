@@ -1,6 +1,7 @@
 // Regras dos gatilhos e limites anti-spam das mensagens para grupos (ata 2026-11-10). PURO: recebe fatos, devolve decisões.
 // Nada aqui lê banco, relógio ou env: o chamador passa `now` e os fatos medidos.
 
+import { ehPrioridade3d, prioridade3dLigada } from './prioridade-3d';
 import {
   buildGoLink,
   buildGroupMessages,
@@ -2255,8 +2256,9 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   // R-47b (2026-11-13): o alerta G2/OK2 (quase tudo o que sai) também entra na cota; ficam isentos o novo mínimo (G1/OK1) e os degraus 4 e 5 da régua.
   const cotaAlerta = tipoCotaAlertaOn();
   const porHoraTipo = tipoPorHora();
+  const prio3d = prioridade3dLigada();
   const tipoIsento = (c: Candidate): boolean =>
-    c.cls === 'plataforma' || (c.cls === 'alerta' && (!cotaAlerta || c.trigger === 'G1' || c.trigger === 'OK1' || (c.regua?.degrau ?? 0) >= 4));
+    c.cls === 'plataforma' || (prio3d && ehPrioridade3d(c.vertical, c.name, c.tipo)) || (c.cls === 'alerta' && (!cotaAlerta || c.trigger === 'G1' || c.trigger === 'OK1' || (c.regua?.degrau ?? 0) >= 4));
   const tipoOver = (c: Candidate): boolean => {
     if (!c.tipo || !c.vertical || tipoIsento(c)) return false;
     const s = tipoShare(c.vertical, c.tipo, real, now);
@@ -2300,6 +2302,8 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
       CLASS_RANK[a.cls] - CLASS_RANK[b.cls] ||
       // Régua de destaque (2026-11-12): o degrau mais alto vai primeiro dentro da classe (sem régua = 0, ordem de sempre).
       (b.regua?.degrau ?? 0) - (a.regua?.degrau ?? 0) ||
+      // Impressão 3D (dono, 2026-11-14): impressora Kobra/Bambu passa à frente das demais da vertical (só reordena o que já passou pelos bloqueios).
+      (prio3d ? Number(ehPrioridade3d(b.vertical, b.name, b.tipo)) - Number(ehPrioridade3d(a.vertical, a.name, a.tipo)) : 0) ||
       (rotates(a) ? Number(a.trigger === 'AC' || a.trigger === 'N1') : 0) - (rotates(b) ? Number(b.trigger === 'AC' || b.trigger === 'N1') : 0) ||
       (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||
       compareCandidates(a, b)
