@@ -1,0 +1,297 @@
+[
+ {
+  "id": "a7f64a3a-835c-4ae6-9dcd-541eb232407d",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "a94df2d7-89ca-48b6-bb6b-23129cd6c5d6",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "a9ac6ac3-c709-437e-8a87-ac440c3c0f62",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "aa4821c2-e918-465a-beed-8574670ff372",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "ab834e2e-5416-4a76-a81f-05e1adf66179",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "ae6cc27c-13e7-489a-87ea-c4af62aaa96b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "b0996ccb-ca0b-447c-95d2-7db9bd3d973f",
+  "classe": "mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "b109954f-fda7-4913-9c41-14629960f9b0",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "b64f6eaf-429b-4efe-9485-aeb5e9bd2501",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "b746659e-dd36-4521-8c6a-49d93e011ce4",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "b7560511-d722-4a7d-95d2-e4295b0a1065",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "b813ff46-0c42-48cf-91cd-1d4a5e83c01b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "b8b24c35-4217-4ae9-86b2-33c80c46a05f",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "b9994f0d-1f8a-4e81-95eb-e397d8b08841",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "bbe41702-82c8-433f-b198-2c24388d6131",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c240cffd-8a76-4c90-8810-c914739149f1",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c273c3a2-c2b2-4f73-84cd-49b8b79a7eaf",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c2f08e2b-a175-4bfc-ad31-4a82a97ceb8c",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c34d4058-e764-4c2b-ae81-7b999d37791d",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c8366787-ab0e-4342-a67f-c9e095d1ebc1",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c86f90ce-e429-4d0b-987d-54070c1858a4",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c8a82f2b-f5ea-454e-8947-50b8cad8914b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "c9dde1f6-4eea-4505-9f95-2e39cb17b96f",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "ce741ff9-7b10-460f-b557-d73ce6e15cc4",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "ce99e9bb-a935-4922-90ad-6b4efc2550e3",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "d083a3e2-6ac7-4a41-a6d5-747e1617b3ee",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "d31cb32e-5a58-4731-86c8-b2f207cef06e",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "d3a13621-6285-423a-a060-5442ea03e09b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "d80e46ac-4d51-4013-a669-da4adc51b748",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "da23c113-d848-4d9c-9d3a-bba3f8a828a8",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "daef0755-14cc-43b6-85ec-670a7c94b21c",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "db79425d-5c6d-4629-8cb1-9625810cc576",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "dba77f51-ec2f-4af4-9271-c7e027eeabc2",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "ddac0f7a-76d3-4a4a-a739-1557d952ee5d",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "de13a718-b37e-4caf-a9f4-48df30ef71c6",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "e0087c44-2d26-42e9-aad5-5abae403cf4d",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "e06f54ea-ebb0-443c-a566-80727d0f1cef",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "e099dfa9-e9fe-4571-ab96-a400b6a5a70f",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "e5f084f2-07eb-4fef-a213-4e5d76ea6387",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "e80321e0-c631-4bd1-ab32-fdad84d3a48a",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "e85a5a67-7ad0-40f5-92ed-743b77a1e39a",
+  "classe": "sem_mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "e8f8aabb-b3ba-436a-90d1-33c972a29312",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "ed5eb6b8-d543-4ff7-a90a-6f98c6d87259",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "eea69841-63ab-498d-83bf-de358e89b91c",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "efacc4f7-da6d-46a0-9232-be67b98d6b5c",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "f21da0b3-5ccc-4829-995d-1ac9f7431267",
+  "classe": "sem_mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "f2681cb4-e86b-4548-9f6c-e044ac6f4f85",
+  "classe": "mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "f3748f58-d41d-46bd-8671-cd894e543c25",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "f6131773-2cb4-4c65-95c3-aef32e49cc83",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "f65392a5-0818-43ae-80da-bf24e469d937",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "f7768fb6-3cd5-4e40-a7dd-54479d42f89a",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "f9cd118c-2336-4084-a1cc-ff4f260d48bf",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "fa821356-ecc1-495b-b7f6-83c62ab56038",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "fc914743-373f-4546-bf63-390f75fddcae",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "fcbd5fdc-8e8f-4cc3-b503-6956fbf04d74",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "fd024a5a-804f-4c97-b38f-04bf3e4232cd",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "fd51e22b-7775-4159-aa44-ab1baf4444e4",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "fea28c9c-dad3-45a2-a2fb-6907a368f939",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "ff33ca60-b0d8-4c7f-8659-c3cdd1e2e575",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ }
+]

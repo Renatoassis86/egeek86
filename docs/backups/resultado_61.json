@@ -1,0 +1,307 @@
+[
+ {
+  "id": "58177400-c27d-4804-b2fa-c9fbc5f44e10",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "585ec641-417a-4706-8da8-68f9bf227b3e",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "588d5206-6ad0-4fd4-a329-91a13395a34b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "59a47300-37a3-402d-ac47-223f3a972008",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "5a49dfb5-bd38-4396-ae9e-d95298f5b477",
+  "classe": "sem_mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "5baf8033-4fa2-4984-9101-f52cd79a2dc0",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "5cca7a09-b194-48af-82ef-83dc2327b1b1",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "5d0d4b38-bf09-412a-94b9-faf3f403e838",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "5d5566f4-efba-4fcd-8df2-5a2646ca142f",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "5dd611be-70fd-48c8-97aa-2f6b63d9167a",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "5f9bd7b5-bfb6-4198-922b-74104f853895",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "602f6d4d-29f7-42cb-91fc-fa6a74aaa7fc",
+  "classe": "sem_mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "609c151f-7d80-476f-b0b9-91d903076030",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "612612d6-9cca-426d-a8fb-c846064e810a",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "61d54fbd-2cba-4bcc-8a44-c2b052ced4f8",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "62a026df-79a9-48fe-863a-5f1e66f0b2e9",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "68041832-b62f-426b-8e60-df57c676b77f",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "680b0180-f5ff-4f63-a493-2c99d7cc4cad",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "68c32439-b142-493a-8dba-e7aab840ea0a",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "69b094fc-76f2-4e41-92d5-d77388aa275e",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "69daf7c7-acd3-40c5-b391-24e96657007b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "6a3aae43-575e-45f9-a63c-62019a95dada",
+  "classe": "sem_mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "6b679a63-35b3-4170-892d-829d9e59d009",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "6bc5321d-2820-425f-bd4d-042b448b1e87",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "6d3fa70f-156e-48db-9ea7-8433218444f0",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "71a42333-540f-4c64-a335-230af1782ee0",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "729b5504-9738-4ef6-abe2-699a96183305",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "73b60c36-1579-4824-8abf-e215c7fbbc6b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "74ec16c4-8305-476b-a1ac-a1044e1ed63c",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "74eca0d6-9cf9-4f9c-8467-f932311f616b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "777b11cd-168e-4738-8465-b9e7472f386d",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "789ccfa8-189a-41c7-b936-37c779887f71",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "79c7687c-0c47-4b23-94df-322a894401ad",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "7f47de59-0795-44b0-bca8-ffb3d14ee817",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "7f5519b4-74f2-4cae-aa36-352c481949c4",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "8099c676-5a78-40fa-a702-3da6b8a93de8",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "80be473b-4d87-4699-8d66-7e45b8a3ea71",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "814d788e-2afb-453c-977e-72fd48eb9b26",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "879c710e-6068-4314-a724-e0cef561579a",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "8a8eeb59-19c5-4a70-9835-d46d13de45aa",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "8e45c859-fc36-4ec4-8b9c-5fe11d7ed9d3",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "8e973e55-f03d-4717-bd08-40f28837c770",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "8f2c9697-9808-4a95-8251-51ef4dc8b701",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "8fa8cc81-da4b-4e76-9769-e35d4d960462",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "9045adf9-f147-40dd-98d3-5f353420acac",
+  "classe": "mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "90e3875e-42b9-4bf8-9fbc-0168c7def2bd",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "91b3938e-2296-4d00-bd29-2afa6272121b",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "9408f677-d7ff-4bc6-a847-65090ef1148e",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "943b55c8-9526-4739-a8b2-4905284ba3ee",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "94d3999b-6df5-4592-a958-69fa291bf0ec",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "94e63610-efe3-453a-ba4b-1d6567bf517c",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "9b77b9dd-5f0d-4232-82f8-7055f2172fe9",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "9cb7aafd-f76b-480c-8906-91f03bb3eeff",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "9cc08920-1c39-477c-9991-6461128db9ef",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "9ff79895-0673-43bb-8a5f-bcc529d8366a",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "a1893143-f8ad-4cc1-84ff-58b0c7df593e",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "a265eb0c-3a9e-43b8-9d4a-541f1ef44465",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "a2e2cb97-cb94-4870-904f-1ebf4a5e3e00",
+  "classe": "sem_mao",
+  "usado_visivel": true
+ },
+ {
+  "id": "a3232051-ade5-44f5-9bc2-188c26b29ea6",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "a3de7388-9537-4f8b-9672-f2fb7331da09",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ },
+ {
+  "id": "a4ff041e-7924-44e0-ad4c-f29f2d8904bb",
+  "classe": "sem_mao",
+  "usado_visivel": false
+ }
+]

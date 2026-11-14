@@ -1,0 +1,68 @@
+{
+  "criadoEm": "2026-11-14T11:53:54.277Z",
+  "por": "Renato (decisao 2026-11-14: foto com mao = seminovo)",
+  "backup": "foto-com-mao-2026-11-14T11-53-53-158Z.ndjson",
+  "gravados": [
+    {
+      "id": "9045adf9-f147-40dd-98d3-5f353420acac",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T11:53:54.277Z"
+      }
+    },
+    {
+      "id": "b0996ccb-ca0b-447c-95d2-7db9bd3d973f",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T11:53:54.277Z"
+      }
+    },
+    {
+      "id": "f2681cb4-e86b-4548-9f6c-e044ac6f4f85",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T11:53:54.277Z"
+      }
+    }
+  ],
+  "rollback": "npx tsx --env-file=.env.local scripts/aplicar-foto-com-mao.ts --rollback docs/backups/foto-com-mao-log-2026-11-14T11-53-53-158Z.json --apply"
+}
