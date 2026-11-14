@@ -1,0 +1,1628 @@
+{
+  "criadoEm": "2026-11-14T17:25:26.810Z",
+  "por": "Renato (decisao 2026-11-14: foto com mao = seminovo, jogos)",
+  "backup": "foto-com-mao-2026-11-14T17-25-25-656Z.ndjson",
+  "gravados": [
+    {
+      "id": "00351cc9-a0fa-48c9-af4a-14905f69d662",
+      "antes": {
+        "at": "2026-11-14T00:42:01.014Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "029d39a0-0976-455d-9188-2fbf78b10067",
+      "antes": {
+        "at": "2026-11-14T00:42:01.027Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "0379cdc3-9761-4e12-a6a3-e68492745d61",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "0b21a839-096e-4e8e-9a81-5f281c7f361c",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "0b798507-bc67-4cdb-a94c-8458129267a3",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "0d4236cd-c8b0-40f2-934f-c6e296cccc5b",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "0feac975-d933-43f6-a0ed-ad968099bdcd",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "14ce4c73-d07a-4f54-93d8-0c810de4b2b2",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "14cff87f-a703-4935-abb2-f9fde5589229",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "1593cd02-0436-4828-a0c6-ee0299589f18",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "167fc459-a9b4-4c35-b46a-75fea9b13987",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "16c41ab6-396b-47f9-bbb7-8b7fa880f727",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "16ec842c-9621-4761-83c7-91d99827ed59",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "2bb612be-f3ed-44da-b8a6-3df91651a117",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "2c015334-b9d6-4711-8ca6-b40785029416",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "39c2ebb7-d4e7-4d51-8d11-dbaa802a31dc",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "3da47985-fa4c-40ec-b7b4-bd45725fcdd6",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "4498f7f6-a3cd-442c-bbca-2b4b43c3f045",
+      "antes": {
+        "at": "2026-11-02T13:17:43.567Z",
+        "reason": "porta_cartao_organizador",
+        "matched": "porta cartao",
+        "verdict": "review",
+        "version": 1,
+        "category": "owner_decision"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "46c5cd8d-1185-49a9-8935-851eb9fb253d",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "4923e983-381f-4950-990f-5ea0cae3fb55",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "4b715597-387b-4b2d-af20-f3453057522a",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "50efa4d8-4a1f-4ba3-b0f3-b53032a1b5a3",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "55c60a6d-4bea-4f75-9199-e6291f262caa",
+      "antes": {
+        "at": "2026-11-14T00:42:01.174Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "57552f5c-9451-4006-8c2f-b4ce715115a6",
+      "antes": {
+        "at": "2026-11-14T00:42:01.177Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "5c4a4abd-26fb-4a0d-ab2c-9ad6536d7704",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "5e42aa19-b41f-40e2-beca-2547bca13ffc",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "62a77f93-db28-4437-97cc-bd51ae044ee0",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "63278e1d-4f44-4b25-a2d6-32f95717bbd1",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "64f13b65-188d-4b63-9b1a-fd5af2a00d1f",
+      "antes": {
+        "at": "2026-11-14T00:42:01.197Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "6a3a2acb-1d4d-42db-ab1f-8f1d48262c54",
+      "antes": {
+        "at": "2026-11-14T00:42:01.205Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "6facb6f3-34b7-41ea-92e7-fb4fd2c51692",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "72d8235c-60e0-49f4-b55a-c2599508d9cb",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "75948fc7-e31a-4a89-aa84-781871e08023",
+      "antes": {
+        "at": "2026-11-14T00:42:01.220Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "76a2e07e-0325-4e94-a300-622c9083c460",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "77c5f030-b288-4c59-9334-77b494e5b1fc",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "859c6abd-30e9-48a9-b693-8c30f88095d8",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "878b1bf7-586a-40d3-acac-48467853f7e1",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "87c81a50-f044-47b5-a8ff-859590a40aec",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "893be719-a064-4f79-94a8-41168bbf7480",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "8d981244-5f65-436a-a382-b28ef151b6af",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "909a47a9-a25f-4642-8be6-5b0697e3b5e1",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "91709cd6-2c47-4d82-b9fc-cb038f6753a8",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "98c112f5-cd5d-470a-be49-7425f68b9b4b",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "9ab8eaed-783d-43b3-8a58-ec62052ab307",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "9c1685b3-854a-4943-b6c6-979f84198826",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "a845bc42-eaee-403a-be8d-31c57a2fef87",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "a933b913-cf51-4ad5-9340-6154ee681b35",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "b463c5f8-f4f8-419c-8ffd-9036c17d6dd1",
+      "antes": {
+        "at": "2026-11-14T00:42:01.339Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "b5520f09-069b-4d26-afe9-2342adb1b583",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "b6f7f401-b54e-4025-8453-0d5fc3e44906",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "b72c1c0c-0e39-4a98-9313-614e3a8940ed",
+      "antes": {
+        "at": "2026-11-14T00:42:01.344Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "c3029706-4c5c-4cc7-852e-2dcf4a047dc8",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "c3661cf6-fb40-4a2c-8952-fc60b5b2ba2b",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "c42169fb-522b-46c4-a79d-eb1215deb9ea",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "c474e825-de3f-4d76-8c5a-a83437149d46",
+      "antes": {
+        "at": "2026-11-14T00:42:01.370Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "c61575df-297b-45cd-ae47-880cdb4fddfd",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "c74aac86-27cb-4e23-a6be-5195087ca570",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "ca820f45-7642-446a-af62-cdf1bf2dec28",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "cb26cab2-d8b3-40a9-b8ee-a24381fb0b82",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "cc367d12-e2b4-4548-b9b6-c43c3f780e89",
+      "antes": {
+        "at": "2026-11-14T00:42:01.384Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "ccc4811a-1e00-4211-83c0-f82e00ea10e8",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "cd277341-2935-4c84-9e31-76aef8f7c2f5",
+      "antes": {
+        "at": "2026-11-14T00:42:01.387Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "cd587b15-2857-41f9-9498-49d263cd9141",
+      "antes": {
+        "at": "2026-11-14T00:42:01.387Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "d03b53c7-fafb-4b20-87e7-2a41146a4572",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "d12d2de8-fe03-4a83-9702-df7b85ec6935",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "d38b6a51-9d0f-4d72-9c6a-5754b52df97b",
+      "antes": {
+        "at": "2026-11-14T00:42:01.399Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "d47f15f6-24ba-4b48-9e69-f9d11249efe6",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "da8224ff-3e2c-464c-9808-5ac5ae418920",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "de2b0aef-3cb8-42df-8e2d-24af49207995",
+      "antes": {
+        "at": "2026-11-14T00:42:01.418Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "df65fa7d-685d-41d7-933c-7a08fbc29c1c",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "e1a5a604-1e71-4a2d-a822-8b9ddd5662cf",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "e2473ce8-ba8f-4ca7-8aad-ef138626b552",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "e2b53a55-e03c-4442-8873-402c625fd43d",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "e424df5f-3d70-45eb-8f17-81083230c309",
+      "antes": {
+        "at": "2026-11-14T00:42:01.428Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "e76325c2-1add-4cdc-aa14-75f268f186c1",
+      "antes": {
+        "at": "2026-11-14T00:42:01.432Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "ea933156-b169-407e-81a4-699c67bb863b",
+      "antes": {
+        "at": "2026-11-14T00:42:01.438Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "eda79e86-64f5-48ce-85ab-74b315560919",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "f26c4d13-5488-434c-8352-3ce2a7b9a143",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "f81fb0fe-8a04-4799-9ba2-5b041645a134",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "f83d2753-92e6-4243-bef9-adddbf5438dc",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "fbcfe155-01dd-487a-bd6a-8b7bd3c08dba",
+      "antes": {
+        "at": "2026-11-14T00:42:01.463Z",
+        "reason": "geracao_ambigua",
+        "matched": "cross-gen",
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    },
+    {
+      "id": "fcca5359-6091-486e-b0a3-332ea159d06d",
+      "antes": {
+        "at": "2026-11-14T00:42:00.986Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      },
+      "depois": {
+        "verdict": "rejected",
+        "category": "out_of_scope",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "version": 1,
+        "at": "2026-11-14T17:25:26.810Z"
+      }
+    }
+  ],
+  "rollback": "npx tsx --env-file=.env.local scripts/aplicar-foto-com-mao.ts --rollback docs/backups/foto-com-mao-log-2026-11-14T17-25-25-656Z.json --apply"
+}
