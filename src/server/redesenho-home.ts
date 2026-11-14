@@ -28,6 +28,8 @@ async function lerLinha(): Promise<number | null> {
 }
 
 export async function getPercentualRedesenhoHome(): Promise<number> {
+  // QA local (Playwright): só fora da Vercel (nunca em produção), força o percentual sem tocar na flag do banco.
+  if (!process.env.VERCEL && process.env.REDESENHO_HOME_DEV) return parsePercentual(process.env.REDESENHO_HOME_DEV);
   const agora = Date.now();
   if (cache && agora - cache.at < TTL_MS) return cache.valor;
   try {

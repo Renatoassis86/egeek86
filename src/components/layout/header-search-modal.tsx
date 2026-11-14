@@ -99,7 +99,7 @@ export function HeaderSearchModal() {
         size="icon" 
         aria-label="Pesquisar jogos e notícias" 
         onClick={() => setIsOpen(true)}
-        className="relative group"
+        className="relative group text-[#E6E0D4] hover:bg-white/10 hover:text-[#F59E0B]"
         title="Pesquisar (Ctrl + K)"
       >
         <Search className="size-5 transition-transform group-hover:scale-110" />
