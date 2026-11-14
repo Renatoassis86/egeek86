@@ -256,7 +256,9 @@ async function banco() {
         check(`[destaques] ${i.masterProductId.slice(0, 8)}: base de 5 cotações e 14 dias`, !!i.media && i.media.cotacoes >= 5 && i.media.dias >= 14, i.media);
         check(`[destaques] ${i.masterProductId.slice(0, 8)}: leitura de até 6 h`, (Date.now() - Date.parse(i.lidoEm)) / 3_600_000 <= 6.1, i.lidoEm);
       } else if (r.chave !== 'plus' && r.chave !== 'mudancas') {
-        check(`[${r.chave}] ${i.masterProductId.slice(0, 8)}: nunca acima do normal e com base`, i.posicao.tipo === 'abaixo' || i.posicao.tipo === 'em_linha', i.posicao);
+        // Presença (dono, 2026-11-13): faixas e acessórios aceitam produto sem base (sem selo e sem média); menor registrado continua exigindo base.
+        const semBaseOk = r.chave !== 'menor-registrado';
+        check(`[${r.chave}] ${i.masterProductId.slice(0, 8)}: nunca acima do normal; sem base só sem selo e sem média`, i.posicao.tipo === 'abaixo' || i.posicao.tipo === 'em_linha' || (semBaseOk && i.posicao.tipo === 'sem_base' && i.media == null), i.posicao);
         check(`[${r.chave}] ${i.masterProductId.slice(0, 8)}: leitura de até 24 h`, (Date.now() - Date.parse(i.lidoEm)) / 3_600_000 <= 24.1, i.lidoEm);
       }
       if (r.chave === 'mudancas') {

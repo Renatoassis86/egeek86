@@ -199,6 +199,8 @@ const TIPO_PUBLICO = { game: 'jogo', console: 'console', accessory: 'acessorio' 
 export interface OpcoesAvaliacao {
   /** Exige base de preço (5 cotações e 14 dias), veredito não "acima" e queda até 50%. Padrão true; as mudanças do menor preço dispensam. */
   exigirBase?: boolean;
+  /** Presença (dono, 2026-11-13): aceita produto SEM base de preço (sem selo), mas ainda barra 'acima do normal' e queda acima do teto quando há base. */
+  presenca?: boolean;
 }
 
 /**
@@ -246,6 +248,10 @@ export function avaliarCandidato(c: Candidato, ctx: ContextoAvaliacao, opts: Opc
     const abaixo = -verdict.deltaPercent;
     posicao = verdict.kind === 'below' ? { tipo: 'abaixo', pct: abaixo } : verdict.kind === 'above' ? { tipo: 'acima', pct: -abaixo } : { tipo: 'em_linha', pct: Math.abs(abaixo) };
     quedaPct = abaixo;
+  }
+  if (!exigirBase && opts.presenca) {
+    if (posicao.tipo === 'acima') return { ok: false, motivo: 'acima_do_normal' };
+    if (quedaPct > VITRINE_REGRAS.QUEDA_MAX_PCT) return { ok: false, motivo: 'queda_acima_do_teto' };
   }
   if (exigirBase) {
     if (posicao.tipo === 'sem_base') return { ok: false, motivo: 'sem_base_de_preco' };
@@ -345,7 +351,9 @@ export function selecionar(chave: VitrineChave, candidatos: readonly Candidato[]
   const bons: Avaliado[] = [];
   const maxH = chave === 'destaques' ? VITRINE_REGRAS.LEITURA_MAX_HORAS_DESTAQUE : VITRINE_REGRAS.LEITURA_MAX_HORAS;
   for (const c of candidatos) {
-    const r = avaliarCandidato(c, ctx, { exigirBase: true });
+    // Só destaques e menor registrado exigem base (selo). Faixas e acessórios mostram o produto sem selo quando não há base.
+    const exigeBase = chave === 'destaques' || chave === 'menor-registrado';
+    const r = avaliarCandidato(c, ctx, exigeBase ? { exigirBase: true } : { exigirBase: false, presenca: true });
     if (!r.ok) {
       contar(motivos, r.motivo);
       continue;

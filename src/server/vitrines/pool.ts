@@ -6,6 +6,7 @@ import { publicOffersCtes } from '@/server/queries/public-offers';
 import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { getDimensionOverrides } from '@/server/queries/catalog-dimensions';
 import { STATS_PERSIST_MAX_AGE_MS } from '@/server/queries/product-price-stats';
+import { sellerTier } from '@/lib/affiliate/price-verdict';
 import { swr } from '@/lib/cache/swr';
 import { VITRINE_REGRAS, type Candidato, type ContextoAvaliacao } from '@/lib/vitrines';
 import type { GamePlatformGen } from '@/db/schema';
@@ -39,8 +40,10 @@ export function sqlOfertasPublicas(): SQL {
   return sql`
     WITH ${publicOffersCtes(GAMES)}
     SELECT o.id, o.master_product_id AS mid, o.current_price_cents AS p, n.slug AS net_slug, o.seller_id,
-           COALESCE(o.last_price_confirmed_at, o.last_checked_at) AS read_at
+           COALESCE(o.last_price_confirmed_at, o.last_checked_at) AS read_at,
+           s.reputation_level AS s_rep, s.power_seller_status AS s_power, s.total_sales AS s_sales, (s.id IS NOT NULL) AS s_has
     FROM affiliate_offers o
+    LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
     INNER JOIN public_offers po ON po.id = o.id
     INNER JOIN affiliate_networks n ON n.id = o.network_id
     WHERE o.affiliate_link_pending = false AND o.affiliate_url ~* '^https?://'
@@ -73,6 +76,8 @@ interface OfertaPublica {
   netSlug: string;
   sellerId: string | null;
   readAt: number;
+  /** Vendedor de reputação baixa (mesma regra do selo): a vitrine prefere a menor oferta de vendedor confiável. */
+  fraco: boolean;
 }
 
 async function comTeto<T>(fn: (tx: Parameters<Parameters<typeof db.transaction>[0]>[0]) => Promise<T>): Promise<T> {
@@ -92,6 +97,7 @@ export async function carregarPoolBruto(): Promise<Candidato[]> {
     netSlug: str(r.net_slug),
     sellerId: strOrNull(r.seller_id),
     readAt: r.read_at == null ? 0 : new Date(r.read_at as string | Date).getTime(),
+    fraco: r.s_has ? sellerTier({ reputationLevel: strOrNull(r.s_rep), powerSellerStatus: strOrNull(r.s_power), totalSales: r.s_sales == null ? null : num(r.s_sales) }) === 'low' : false,
   }));
   // Por produto: a oferta mais barata (empate: leitura mais recente, depois id), contagens e vendedores dentro de +-10%.
   const porMaster = new Map<string, OfertaPublica[]>();
@@ -103,10 +109,11 @@ export async function carregarPoolBruto(): Promise<Candidato[]> {
   const banda = 1 + VITRINE_REGRAS.BANDA_CORROBORACAO_PCT / 100;
   const topo = new Map<string, { oferta: OfertaPublica; ativas: number; lojas: number; proximos: number }>();
   for (const [mid, lista] of porMaster) {
-    lista.sort((a, b) => a.p - b.p || b.readAt - a.readAt || (a.id < b.id ? -1 : 1));
+    // Dono, 2026-11-13: se a mais barata é de vendedor fraco, vale a menor oferta de vendedor confiável (o produto não some por causa dela).
+    lista.sort((a, b) => Number(a.fraco) - Number(b.fraco) || a.p - b.p || b.readAt - a.readAt || (a.id < b.id ? -1 : 1));
     const menor = lista[0]!;
     const vend = new Set<string>();
-    for (const o of lista) if (o.p <= menor.p * banda) vend.add(o.sellerId ?? o.id);
+    for (const o of lista) if (!o.fraco && o.p <= menor.p * banda) vend.add(o.sellerId ?? o.id);
     topo.set(mid, { oferta: menor, ativas: lista.length, lojas: new Set(lista.map((o) => o.netSlug)).size, proximos: vend.size });
   }
   const ids = [...topo.values()].map((t) => t.oferta.id);

@@ -42,7 +42,7 @@ async function main() {
              (SELECT MIN(o.current_price_cents) FROM affiliate_offers o WHERE o.master_product_id = m.id AND o.status = 'active' AND o.current_price_cents > 0)::bigint::float8 AS preco,
              (SELECT COUNT(*) FROM affiliate_offers o WHERE o.master_product_id = m.id AND o.vertical = 'eletroeletronicos')::int AS ofertas
       FROM master_products m WHERE m.vertical = 'eletroeletronicos'`;
-    const mover: typeof rows = [];
+    const mover: Array<(typeof rows)[number]> = [];
     const barrados: { name: string; motivo: string }[] = [];
     for (const r of rows) {
       const tipo = classificarTipo('tecnologia', r.name);

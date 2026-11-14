@@ -10,6 +10,7 @@ import { classificarTipo, contarTipos, type TipoContagem } from '@/lib/catalog/t
 import {
   MIN_VENDEDORES_MEDIANA,
   OFERTA_CLICAVEL_MAX_HORAS,
+  OFERTA_CLICAVEL_MAX_HORAS_AMAZON,
   POR_PAGINA,
   REDES_DEPARTAMENTO,
   departamentoPorSlug,
@@ -28,7 +29,7 @@ import {
  *  - Master só entra com porteiro APROVADO por inclusão (`catalogGate.verdict = 'approved'` ou `manual = 'approved'`),
  *    nunca pela ausência de 'review'. `manual = 'rejected'` vence.
  *  - Oferta clicável = passa em `publicOffersCtes(vertical)` (ativa, preço > 0, plausível, sem quarentena, identidade ok)
- *    E link NÃO pendente E checada há menos de OFERTA_CLICAVEL_MAX_HORAS E rede Mercado Livre ou Shopee (Amazon fora)
+ *    E link NÃO pendente E checada há menos de OFERTA_CLICAVEL_MAX_HORAS E rede Mercado Livre, Shopee ou Amazon (Amazon só como oferta e menor preço, 24 h, nunca na mediana)
  *    E URL http(s).
  *  - Sem histórico, sem selo, sem "de/por": só preço atual, número de vendedores, carimbo de tempo e, com 3+ vendedores
  *    do Mercado Livre, a mediana (rotulada pela interface como "apenas Mercado Livre").
@@ -53,6 +54,7 @@ export function masterAprovadoSql(alias: string): SQL {
 export function departamentoClicaveisCtes(vertical: string, opts: { vitrine?: boolean } = {}): SQL {
   assertDepartamento(vertical);
   const horas = sql.raw(String(Math.trunc(OFERTA_CLICAVEL_MAX_HORAS)));
+  const horasAmazon = sql.raw(String(Math.trunc(OFERTA_CLICAVEL_MAX_HORAS_AMAZON)));
   const redes = sql.join(REDES_DEPARTAMENTO.map((r) => sql`${r}`), sql`, `);
   return sql`
     ${publicOffersCtes(vertical)},
@@ -71,7 +73,7 @@ export function departamentoClicaveisCtes(vertical: string, opts: { vitrine?: bo
         AND o.quarantined_at IS NULL
         AND o.status = 'active'
         AND o.current_price_cents > 0
-        AND o.last_checked_at >= now() - interval '${horas} hours'
+        AND o.last_checked_at >= now() - (CASE WHEN n.slug = 'amazon' THEN interval '${horasAmazon} hours' ELSE interval '${horas} hours' END)
         AND n.slug IN (${redes})
         AND o.affiliate_url ~* '^https?://'
     ),
@@ -234,7 +236,7 @@ export async function listarDepartamento(vertical: string, opts: { pagina?: numb
 
 export interface VendedorDetalhe {
   ofertaSlug: string;
-  rede: 'mercado-livre' | 'shopee';
+  rede: 'mercado-livre' | 'shopee' | 'amazon';
   redeNome: string;
   vendedor: string | null;
   precoCents: number;
@@ -271,7 +273,7 @@ export async function detalheDepartamento(vertical: string, slug: string): Promi
   `);
   if (!lista.length) return null;
   const master = mapCartao(lista[0]);
-  const vend = await db.execute<{ offer_slug: string; network_slug: 'mercado-livre' | 'shopee'; network_name: string; nickname: string | null; current_price_cents: string | number; last_checked_at: Date | string }>(sql`
+  const vend = await db.execute<{ offer_slug: string; network_slug: 'mercado-livre' | 'shopee' | 'amazon'; network_name: string; nickname: string | null; current_price_cents: string | number; last_checked_at: Date | string }>(sql`
     WITH ${departamentoClicaveisCtes(vertical)}
     SELECT sb.offer_slug, sb.network_slug, sb.network_name, s.nickname, sb.current_price_cents, sb.last_checked_at
     FROM seller_best sb
@@ -297,8 +299,8 @@ export async function detalheDepartamento(vertical: string, slug: string): Promi
  * pega a mais barata de CADA tipo, na ordem de interesse do departamento, e só depois repete tipos. Só reordena o que já passou pelos filtros.
  */
 const ORDEM_INTERESSE: Record<string, readonly string[]> = {
-  tecnologia: ['notebook', 'computador-desktop', 'monitor', 'placa-de-video', 'ssd-hd', 'teclado', 'impressora', 'roteador', 'memoria-ram', 'headset', 'mouse'],
-  eletroeletronicos: ['celular', 'smart-tv', 'tablet-leitor', 'fones', 'caixa-de-som', 'soundbar', 'relogios', 'camera-acao', 'drone', 'projetor'],
+  tecnologia: ['celular', 'notebook', 'tablet-leitor', 'relogios', 'computador-desktop', 'monitor', 'placa-de-video', 'ssd-hd', 'teclado', 'impressora', 'roteador', 'memoria-ram', 'headset', 'mouse'],
+  eletroeletronicos: ['smart-tv', 'fones', 'caixa-de-som', 'soundbar', 'camera-acao', 'drone', 'projetor'],
 };
 
 export function diversificarPorTipo<T extends { name: string }>(vertical: string, itens: readonly T[], limite: number): T[] {
