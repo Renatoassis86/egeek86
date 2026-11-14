@@ -105,12 +105,14 @@ export function InteligenciaGamerTeaserSection() {
 
             {/* Imagem Ilustrativa Estratégica do Observatório Gamer */}
             <Reveal delay={0.28}>
-              <div className="relative aspect-[21/9] sm:aspect-[24/9] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-xl">
+              {/* Proporção nativa da arte (1200x800 = 3:2) para não cortar os balões e os personagens. */}
+              <div className="relative aspect-[3/2] w-full rounded-[var(--radius-lg)] overflow-hidden border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)] shadow-xl">
                 <Image
                   src="/images/home/observatorio-cards-bg.webp"
                   alt="Pesquisa Acadêmica e Análise de Mercado Gamer"
                   fill
-                  className="object-cover object-center"
+                  sizes="(min-width: 1024px) 560px, 100vw"
+                  className="object-contain object-center"
                 />
               </div>
             </Reveal>
