@@ -130,6 +130,8 @@ bloqueia({ offers: [offer({ offerId: 'a', priceCents: 280000, avgExcluded: true 
 bloqueia({ catalogGate: 'review' }, null, 'porteiro em revisão');
 bloqueia({ catalogGate: 'rejected' }, null, 'porteiro rejeitado');
 bloqueia({ vertical: 'nao-liberada' }, null, 'departamento não liberado');
+bloqueia({ vertical: 'games', platformLabel: 'Xbox One' }, null, 'fora de linha (Xbox One)');
+bloqueia({ vertical: 'games', productType: 'console', platformLabel: 'PlayStation 4' }, null, 'console PS4 fora de linha (2026-11-14)');
 bloqueia({ offers: [offer({ offerId: 'a', priceCents: 280000, priceSince: new Date(NOW.getTime() - 5 * MIN), confirmedAt: new Date(NOW.getTime() - 4 * MIN) })] }, null, 'preço não reconfirmado em 15 min');
 bloqueia({ offers: [offer({ offerId: 'a', priceCents: 15000 })] }, /fora_da_faixa|abaixo_de|preco_/, 'preço sentinela (0,05x do tipo)');
 bloqueia({ offers: [offer({ offerId: 'a', priceCents: 900000 })] }, /fora_da_faixa/, 'preço absurdo (3x do tipo)');
