@@ -14,6 +14,7 @@ import path from 'node:path';
 import { connect } from './_dup-shared';
 import { carregarEAvaliar } from './_aprovacao-plus-shared';
 import { avaliarItemMiudo } from '../src/lib/catalog/item-miudo';
+import { avaliarModelo } from '../src/lib/catalog/marca-linha';
 import { evaluateCatalogGate, entryGateAttributes, toPersistedGate, type GateVerdict } from '../src/lib/catalog/gate';
 
 const argv = process.argv.slice(2);
@@ -34,14 +35,20 @@ async function planoNichos(sql: any) {
   // Marca + modelo REAIS (dono: sem exigir GTIN). Marca >= 3 letras; modelo/part number nao pode ser 'desconhecido', so resolucao ('4K') nem nome de categoria.
   // Eletronicos/eletrodomesticos/tecnologia: o modelo (ou mpn) precisa de codigo com digito. Esporte aceita linha do fabricante. Livro: editora.
   const mk = new Map<string, string>(); // id -> '' (ok) | motivo
+  const via = new Map<string, string>(); // id -> via do afrouxamento C5 (so os que antes ficavam como modelo_fraco)
   for (const r of marcas as any[]) {
     const marca = String(r.brand || r.manufacturer || r.pub || '').trim();
     const modelo = String(r.model || r.mpn || '').trim();
     const lin = String(r.line || '').trim();
-    const lixo = (t: string) => !t || /desconhecid|^null$|^n\/?a$/i.test(t) || /^\d+\s?k$/i.test(t);
     let motivo = '';
     if (marca.length < 3) motivo = 'sem_marca';
-    else if (['eletroeletronicos', 'eletrodomesticos', 'tecnologia'].includes(r.vertical ?? '') && (lixo(modelo) || !/\d/.test(modelo))) motivo = 'modelo_fraco';
+    else if (['eletroeletronicos', 'eletrodomesticos', 'tecnologia'].includes(r.vertical ?? '')) {
+      // C5 (dono, 2026-11-14): modelo com digito OU marca reconhecida + linha OU codigo alfanumerico no titulo (src/lib/catalog/marca-linha.ts).
+      const nome = String(todos.find((t) => t.id === r.id)?.name ?? '');
+      const av = avaliarModelo({ marca, modelo: r.model, linha: r.line, mpn: r.mpn, nome });
+      if (av.veredito !== 'ok') motivo = av.veredito === 'sem_marca' ? 'sem_marca' : 'modelo_fraco';
+      else if (!(r.model || r.mpn) || !/\d/.test(modelo)) via.set(r.id, av.via);
+    }
     mk.set(r.id, motivo);
   }
   const aprov: Chg[] = []; const fica: Chg[] = [];
@@ -51,7 +58,7 @@ async function planoNichos(sql: any) {
     if (x.destino === 'aprovar') {
       const mm = mk.get(x.id) ?? '';
       if (mm && x.vertical !== 'impressao3d' && !(mm === 'modelo_fraco' && x.vertical === 'livros')) { fica.push({ ...base, after: null, motivo: mm }); continue; }
-      aprov.push({ ...base, after: { ...(x.gateAntes ?? {}), verdict: 'approved', approvedBy: APPROVED_BY, approvedAt: now, criteriaVersion: 3, previousVerdict: 'review', por: por ?? null }, motivo: x.origem });
+      aprov.push({ ...base, after: { ...(x.gateAntes ?? {}), verdict: 'approved', approvedBy: APPROVED_BY, approvedAt: now, criteriaVersion: 3, previousVerdict: 'review', por: por ?? null }, motivo: via.get(x.id) ? `${x.origem}+c5:${via.get(x.id)}` : x.origem });
     } else fica.push({ ...base, after: null, motivo: (x.motivosV3.join('+') || x.destino) + (x.destino === 'fila' ? ' [fila]' : '') });
   }
   return { aprov, fica };

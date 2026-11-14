@@ -1,0 +1,1931 @@
+{
+ "status": "applied",
+ "fase": "nichos",
+ "stamp": "2026-11-14T17-33-21-270Z",
+ "por": "Renato (C5 2026-11-14: marca + linha)",
+ "approvedBy": "bloco:q4q5:2026-11-13",
+ "backup": "docs\\backups\\q4q5-nichos-2026-11-14T17-33-21-270Z.ndjson",
+ "changes": [
+  {
+   "id": "822c368e-8a08-4541-a4a3-65580a389066",
+   "name": "Air fryer Lumi Fritadeira Air Fryer Fritadeira Eletrica Air Fryer",
+   "vertical": "eletrodomesticos",
+   "before": {
+    "at": "2026-11-08T16:11:40.443Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model"
+   },
+   "after": {
+    "at": "2026-11-08T16:11:40.443Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "2853650c-e4af-4342-8a65-65c219873d89",
+   "name": "Ar Condicionado Split Frio 9000 Btus Facst9f-02 Agratto",
+   "vertical": "eletrodomesticos",
+   "before": {
+    "at": "2026-11-11T16:35:54.275Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-11T16:35:54.275Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "c16fa004-9744-4734-8c24-6349ade8706e",
+   "name": "Aspirador de pó robô de esvaziamento automático Ilife T20s 5000pa",
+   "vertical": "eletrodomesticos",
+   "before": {
+    "at": "2026-11-11T17:01:58.838Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-11T17:01:58.838Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "9d8f187a-c55c-44d8-89fb-21d53d354fb3",
+   "name": "Cafeteira Expresso Casita 6 Xícaras Alumínio 300ml",
+   "vertical": "eletrodomesticos",
+   "before": {
+    "at": "2026-11-11T17:03:58.020Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-11T17:03:58.020Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "62c2b68e-6462-49f8-b619-ea31aacb6524",
+   "name": "Drone Dji Air 3 Dji Rc-n2 (sem Tela) - Dji039 Cor Cinza",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T10:48:04.631Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T10:48:04.631Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "52acb37b-5afb-46d3-a6e7-c9cc4f83d3a0",
+   "name": "Drone DJI Air 3S Standard (Sem tela) BR - DJI054",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T10:48:05.160Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T10:48:05.160Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "32fc5959-9f22-42f5-b3a7-005a232282f6",
+   "name": "Drone 4k Câmera Motor Brushless Sem Escova 2 Baterias Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T10:48:05.610Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T10:48:05.610Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "0ea73f13-774b-4b7a-9ebc-f0e9f9eb9ed2",
+   "name": "Xt808 Drone 4k Dual Camera Brushless Motor Rc Quadcopter - Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T10:48:06.056Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T10:48:06.056Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "8d3f8dfc-bdfd-4e56-9fd1-524ca06fcccd",
+   "name": "Drone 4k Dobrável Com Câmera Wifi Bateria De Longa Duração Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T10:48:06.561Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T10:48:06.561Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "f701cbd2-299e-41d4-b9b7-4228f47ae956",
+   "name": "Drone DJI Mavic Air 2 com câmera 4K cinza 1 bateria",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T10:48:07.005Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T10:48:07.005Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "c2b6e819-d233-4c7a-83c8-3bf85578168e",
+   "name": "Projetor Portátil ViewSonic M1 Mini, Com JBL e USB",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T12:08:14.875Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T12:08:14.875Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "5b564f8b-c9ae-4571-9a6d-c6538aa830ad",
+   "name": "Câmera Segurança Inteligente Externa Wifi 3mp Smart Noturna Branco",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T11:48:03.139Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T11:48:03.139Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "d9f55224-b7a8-4b41-8650-cb3ecd1c5663",
+   "name": "Câmera Segurança Wifi Inteligente Externa Sonoff Cam-b1p App Branco",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T11:48:03.605Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T11:48:03.605Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "e94c81cc-5ae6-462a-b4a6-c06f3cd4b4e0",
+   "name": "Câmera Segurança Inteligente 360 Wifi Hd Visão Noturna Alexa Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T11:48:04.066Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T11:48:04.066Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "7cc9d407-d9d5-4a9b-939f-ea19ccac1e2f",
+   "name": "Câmera Segurança Inteligente Monitoramento 360° Wi-fi Geonav",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T11:48:04.990Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T11:48:04.990Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "f9e93227-3c6c-42ac-8cb0-a6e1aea76e03",
+   "name": "Power Bank Kaidi KD-951 10000mAh Rápida Carga Preto para iPhone Samsung",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T13:08:12.448Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T13:08:12.448Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "65dff8de-db45-4bb7-a698-24573a58184f",
+   "name": "Carregador Portatil Power Bank Magsafe 10000mah C/ Cabos Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T13:08:11.438Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T13:08:11.438Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "e500de35-b783-46d0-aab8-297353643d18",
+   "name": "Marantz Cinema 60 7.2 Receiver Premium Canais 8k Wifi",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:08:04.042Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:08:04.042Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "3ac71a33-e3a2-4d10-ab89-9132c94dd28a",
+   "name": "Receiver Marantz Cinema 40 9.4 Canais 8K Dolby Atmos Bluetooth Wifi",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:08:06.657Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model"
+   },
+   "after": {
+    "at": "2026-11-14T14:08:06.657Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "d81e5405-2bc7-4557-8114-76a03d730be7",
+   "name": "Smart Tv Ptv50m8gagcmbl 50'' 4k Android Tv Philco",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:26.765Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:26.765Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "7dd8860c-66a2-4f4f-a493-5f09a4a6e38c",
+   "name": "Marantz Nr1510 Receiver 5.2 Canais 4k Bluetooth Wi-fi",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:08:04.487Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:08:04.487Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "8c1a33da-24a0-419c-a487-0effc2bf8aaf",
+   "name": "Marantz Cinema 70s receiver slim 7.2 canais 3d 8k wifi",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:08:05.385Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:08:05.385Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "2d94ddb3-1cfc-4548-b9ee-80905acb54bf",
+   "name": "Receiver Marantz Cinema 30 11.4 Canais Wifi Imax 3d 8k",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:08:05.798Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:08:05.798Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "0c61cff3-45f1-4e80-b985-c9104c4d9558",
+   "name": "Marantz Nr-1510 Receiver Slim 5.2 Canais 4k Wifi Bluetooth",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:08:04.973Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:08:04.973Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "759be2d4-c808-4d88-b8c1-041c89b7c3c9",
+   "name": "Marantz Cinema 50 receiver 9.4 canais 8k wifi e bluetooth cor preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:08:06.246Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:08:06.246Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "e838c7d6-82d0-4abe-94a0-762e978e685f",
+   "name": "Microfone Condensador Gamer Fifine A9 USB RGB Cardioide Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:05.121Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:05.121Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "41e99c1c-7ed4-4460-9fe9-32c7726aa7fb",
+   "name": "Microfone Condensador USB Fifine Cardioide Ampligame AM6 Gamer",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:04.161Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:04.161Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "8d8de638-748f-4984-bc29-aa0ff34b4c8a",
+   "name": "Microfone Condensador Fifine USB Tipo-C AM6 Preto Unidirecional",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:04.671Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:04.671Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "64fdec7e-089d-44ea-8640-b4f71aab8d69",
+   "name": "Microfone Condensador Fifine USB Cardioide Mesa Profile 3 20kHz",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:06.052Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:06.052Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "8d7e5d6c-6530-422d-b0c9-6cdc2bb2e465",
+   "name": "Microfone Condensador Fifine Superframe Edition Sfm2 Rgb Usb",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:05.577Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:05.577Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "a72714e2-8058-4831-8944-5ef76ab23ce2",
+   "name": "Microfone Condensador Fifine K669B USB Cardioide Preto para PC",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:06.497Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:06.497Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "36d45020-5f0d-4539-b31f-760e9c00ee5f",
+   "name": "Microfone Condensador Fifine AmpliGame A8 Cardioide Gamer com Fio",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:06.958Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:06.958Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "c4a4a8d3-e108-4629-b1fc-3a5a5877a404",
+   "name": "Microfone Condensador Sem Fio Bluetooth Fifine E2W Branco Para Karaokê",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:07.432Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:07.432Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "c9658cf9-7aae-4372-9156-9bfa6320c806",
+   "name": "Microfone Condensador Fifine K669pro3 USB Type-C RGB Preto Cardioide Gamer",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:07.879Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:07.879Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "31e48349-cad7-45fb-8c42-c4e76db91994",
+   "name": "Microfone Lapela Sem Fio Fifine M9 P/ iPhone Android Câmera Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:08.363Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:08.363Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "94675100-f721-456f-9ef1-0ad6dc359269",
+   "name": "Fifine Microfone Lapela Sem Fio USB-C M6 Para Celular Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:08.839Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:08.839Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "68eaf597-794f-45ab-b06f-4aec62543406",
+   "name": "Microfone Dinamico Fifine K669d Xlr Streaming Podcast Vocal",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:09.282Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:09.282Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "8cbe67a7-231a-4d94-b543-61eb432bc444",
+   "name": "Microfone Fifine A6t Rgb Plug Play Streaming Podcast Vídeos Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:10.213Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:10.213Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "56e9c2bd-5c3c-43c7-bc35-c16b74952801",
+   "name": "Microfone Fifine K678 Condensador Cardioide USB para Podcast e Streaming",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:10.665Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:10.665Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "a65fbf67-feb7-45d3-ba7d-a345a1591745",
+   "name": "Microfone Condensador USB Fifine A8 Plus AmpliGame RGB Para Streaming",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:11.105Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:11.105Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "2bef83c4-9185-43fe-b053-3b58d900a793",
+   "name": "Microfone Condensador Fifine T732 USB com Filtro Cardioide para Streaming",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:11.580Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:11.580Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "391322b6-d84f-48e6-aa41-2a828f6faff6",
+   "name": "Microfone Gamer Dinâmico Fifine AM8T USB e XLR para Streaming",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T14:48:12.026Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T14:48:12.026Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "5bef3455-44a7-43fb-9f3b-7ad6de25636b",
+   "name": "Fone De Ouvido Philips Bluetooth Com Cancelamento De Ruido Azul Celeste",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T15:08:11.476Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model"
+   },
+   "after": {
+    "at": "2026-11-14T15:08:11.476Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "284124e3-4d23-4cd6-8916-c6867cc7dc38",
+   "name": "Alto Falante inteligente Intelbras Izy Speak ISS 102A com assistente virtual Alexa - preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T15:28:05.183Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T15:28:05.183Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "ef2a93cf-30cd-4cef-97f5-ad4bad586fcf",
+   "name": "Caixa Som Bluetooth Xiaomi Portátil Amplificada 16w Azul. Cor Azul",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T15:48:02.526Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model"
+   },
+   "after": {
+    "at": "2026-11-14T15:48:02.526Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "5dc175e6-72fa-4e5e-8bc5-5733f9423d81",
+   "name": "Drone Profissional Xt606 Dual Cam 720p 2 Baterias Brushless Preto",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T16:08:06.553Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T16:08:06.553Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "7cd8773b-7bb4-4297-abbb-4d07046df0bc",
+   "name": "Câmera digital Kodak Pixpro Fz45 Cor prata",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T16:08:22.010Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T16:08:22.010Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "89b8f1a6-e457-4f49-bfc3-d884259c091f",
+   "name": "Câmera digital Kodak PIXPRO WPZ2 (Yellow)",
+   "vertical": "eletroeletronicos",
+   "before": {
+    "at": "2026-11-14T16:08:23.486Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-14T16:08:23.486Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "adb22101-8714-4f25-bede-da8ea8831100",
+   "name": "Chuteira Umbro Neo Masculino",
+   "vertical": "esporte",
+   "before": {
+    "at": "2026-11-13T01:27:18.139Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model_shopee"
+   },
+   "after": {
+    "at": "2026-11-13T01:27:18.139Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model_shopee",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "6487f2f2-a1d7-4be0-af2c-e22c92a84e68",
+   "name": "Chuteira Mizuno Alpha Masculino",
+   "vertical": "esporte",
+   "before": {
+    "at": "2026-11-13T06:27:44.124Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model_shopee"
+   },
+   "after": {
+    "at": "2026-11-13T06:27:44.124Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model_shopee",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "e87e403d-960b-4c96-b92d-22aa3de6dd00",
+   "name": "Tablet Xiaomi Redmi Pad",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-13T07:48:10.600Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-13T07:48:10.600Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "7941c152-7cec-4dd4-9ca1-681881e96804",
+   "name": "Placa Vídeo Arktek Cyclops Gaming 1gb Geforce Gt610 Ddr3",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-11T12:13:31.313Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-11T12:13:31.313Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "754aa77d-b228-43d7-a5fa-a682c27969ea",
+   "name": "Apple iPad Pro 11",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-12T19:28:12.850Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-12T19:28:12.850Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "8e7e2484-b0e4-44c0-8efc-1882a73ff344",
+   "name": "iPad Air 11\" WiFi Cellular 256GB M3 Tablet Apple cor Cinza Espacial",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-12T19:28:12.453Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-12T19:28:12.453Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "08885618-4b3b-41c3-b0d1-c6ae34b24234",
+   "name": "Tablet Xiaomi Redmi Pad Se 128gb 4gb Ram Verde",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-13T07:48:11.034Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-13T07:48:11.034Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "4e275484-77ec-45e4-b21e-5ee8765cbbc8",
+   "name": "Relógio Smartwatch Gps Wahoo Elemnt Rival Ciclismo Esportivo",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-12T13:48:10.624Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-12T13:48:10.624Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "c3f04ad7-579f-4a47-a518-5f55181a7ede",
+   "name": "Relógio Inteligente Wlxy Pulsepro Smartwatch GPS Bluetooth Tela Touch Preto",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-12T13:48:12.163Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-12T13:48:12.163Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "0eb5d923-358f-4ed5-bc7f-46cc651eb68a",
+   "name": "Tablet Xiaomi Redmi Pad Pro 12.1 8gb 256gb Cor Azul",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-13T07:48:13.523Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-13T07:48:13.523Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "543bd083-ea4f-414f-a4d9-7187fed1c784",
+   "name": "Relógio Smartwatch Xiaomi Poco Watch Azul Global 1.6 Amoled",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-13T08:28:18.629Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-13T08:28:18.629Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "28f48981-9fec-424e-871a-7d6a878fd3bd",
+   "name": "Tablet Lenovo Tab 10.1\" com 128 GB e 4 GB RAM",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-13T20:28:19.730Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-13T20:28:19.730Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "9b4df883-4e8c-49df-98b0-f5cd0a8d9ed7",
+   "name": "Smartwatch Amazfit Basic Bip U 1.43 Black A2017",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-13T21:08:18.804Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-13T21:08:18.804Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "05f6017d-c222-4f7a-b05d-19d88d3a92a9",
+   "name": "Tablet Samsung Galaxy Tab A P585m 16gb 8mp Wifi 4g Bluetooth",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-12T19:28:09.654Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-12T19:28:09.654Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "9456766a-7810-4da1-89ed-cdf3a36ee1e9",
+   "name": "Apple iPad Mini A17 Pro Cinza Espacial 256GB",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-12T19:28:14.849Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin"
+   },
+   "after": {
+    "at": "2026-11-12T19:28:14.849Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:gtin",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  },
+  {
+   "id": "d8be63e7-6be2-45ed-ba09-04758839b149",
+   "name": "Tablet Xiaomi Redmi Pad Se 256gb 8ram Black Promocional Cor Preto",
+   "vertical": "tecnologia",
+   "before": {
+    "at": "2026-11-13T07:48:16.396Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "review",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model"
+   },
+   "after": {
+    "at": "2026-11-13T07:48:16.396Z",
+    "reason": "semeadura_vertical_aguardando_conferencia",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "unverified",
+    "suggested": "approved",
+    "suggestedReason": "evidencia_positiva:brand_model",
+    "approvedBy": "bloco:q4q5:2026-11-13",
+    "approvedAt": "2026-11-14T17:33:25.198Z",
+    "criteriaVersion": 3,
+    "previousVerdict": "review",
+    "por": "Renato (C5 2026-11-14: marca + linha)"
+   }
+  }
+ ],
+ "gravados": 64
+}
