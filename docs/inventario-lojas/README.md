@@ -7,7 +7,7 @@ Uma ficha por loja: canal oficial, pré-requisitos, cotas, campos, termos, impli
 | Mercado Livre | Integrado, coletando a cada 5 min | API oficial com OAuth + PKCE | ~9.900 (games) | Não documentada; 300 ofertas por rodada, 0 erros e 0 respostas 429 | Não lidos | [mercado-livre.md](mercado-livre.md) |
 | Shopee | Integrado, coletando a cada 5 min | Open API GraphQL | ~1.150 | 8.000 chamadas por hora; resto não documentado | Sem cláusula; ambíguo | [shopee.md](shopee.md) |
 | Amazon BR | Não integrado; conta **não aprovada** para a API | Creators API (PA-API morta) | 0 | 1 por segundo e 8.640 por dia | **Lidos: proíbem histórico (cache de até 24 h), rastreio e alerta de preço sem aprovação escrita** | [amazon.md](amazon.md) |
-| AliExpress | Não integrado | Affiliate API (fonte não oficial) | 0 | Não lida | Não lidos | [aliexpress.md](aliexpress.md) |
+| AliExpress | Não integrado | Affiliate API (fonte não oficial) | 0 | Não lida | Não lidos | aliexpress.md (arquivado em docs/arquivo/aliexpress.md) |
 | Magalu | Não integrado; raspagem desligada | Nenhuma conhecida para afiliado | 0 | — | — | [magalu.md](magalu.md) |
 
 ## Como cada loja entra na média (ADR 0004)

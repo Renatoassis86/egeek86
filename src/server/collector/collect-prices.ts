@@ -79,8 +79,8 @@ function dueWhere(operationalSlugs: string[]) {
         // discover-products.ts), então 'draft' aqui cobre principalmente o
         // fluxo manual do admin.
         inArray(affiliateOffers.status, ['active', 'draft']),
-        // Só redes com coleta oficial operacional (EG-03): stubs (Shopee,
-        // Amazon, AliExpress) sempre lançam erro e, sem renovar o carimbo,
+        // Só redes com coleta oficial operacional (EG-03): stubs (Shopee e
+        // Amazon) sempre lançam erro e, sem renovar o carimbo,
         // ficariam no topo da fila e starvariam o Mercado Livre.
         inArray(affiliateNetworks.slug, operationalSlugs),
         isNotNull(affiliateOffers.externalRef),

@@ -3,4 +3,3 @@
 import './mercado-livre';
 import './amazon';
 import './shopee';
-import './aliexpress';
