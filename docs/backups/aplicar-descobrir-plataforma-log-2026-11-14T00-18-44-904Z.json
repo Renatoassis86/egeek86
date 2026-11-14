@@ -1,0 +1,52 @@
+{
+ "em": "2026-11-14T00:18:47.412Z",
+ "por": "guardiao-catalogo",
+ "backup": "docs\\backups\\aplicar-descobrir-plataforma-2026-11-14T00-18-44-904Z.ndjson",
+ "antes": {
+  "switch_1": 852,
+  "ps4": 664,
+  "ps5": 646,
+  "xbox_series": 295,
+  "unknown": 229,
+  "switch_2": 114,
+  "xbox_one": 106,
+  "xbox_360": 12
+ },
+ "depois": {
+  "switch_1": 853,
+  "ps4": 665,
+  "ps5": 646,
+  "xbox_series": 297,
+  "unknown": 225,
+  "switch_2": 114,
+  "xbox_one": 106,
+  "xbox_360": 12
+ },
+ "gravados": [
+  {
+   "id": "76ddb583-ceb8-4d3b-a272-83065c5dee42",
+   "titulo": "Jogo Super Mario Bros Wonder Nsw Nintendo - Ação Plataforma",
+   "de": "unknown",
+   "para": "switch_1"
+  },
+  {
+   "id": "ebcd8f25-0cb4-46c9-aae1-7c32269b5f1d",
+   "titulo": "JOGO XBOX SERIE X FIFA 2022 4K HDR MIDIA FISICA",
+   "de": "unknown",
+   "para": "xbox_series"
+  },
+  {
+   "id": "eda79e86-64f5-48ce-85ab-74b315560919",
+   "titulo": "Jumanji PS 4 mídia física",
+   "de": "unknown",
+   "para": "ps4"
+  },
+  {
+   "id": "909a47a9-a25f-4642-8be6-5b0697e3b5e1",
+   "titulo": "The King Of Fighters XV Xbox Séries X",
+   "de": "unknown",
+   "para": "xbox_series"
+  }
+ ],
+ "falhas": []
+}
