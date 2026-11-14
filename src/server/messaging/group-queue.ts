@@ -305,28 +305,42 @@ export async function atribuirCodigoCurto(messageKey: string, linkLongo: string)
   return null;
 }
 
+/** UPDATE de manutenção: tenta 2 vezes (concorrência/timeout transitório) e, se falhar, devolve 0 e registra a CAUSA, sem derrubar o job que envia mensagens. */
+async function manutencaoComRetry(rotulo: string, fn: () => Promise<number>): Promise<number> {
+  for (let t = 1; t <= 2; t++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const causa = e instanceof Error ? ((e as Error & { cause?: unknown }).cause ?? e.message) : e;
+      console.warn(`[group-queue] ${rotulo} falhou (tentativa ${t}/2):`, typeof causa === 'string' ? causa : (causa as { message?: string })?.message ?? String(causa));
+      if (t === 2) return 0;
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  }
+  return 0;
+}
+
 export async function expireStale(): Promise<number> {
   if (!(await groupMessagesTableExists())) return 0;
   const v2 = await groupMessagesV2Ready();
   if (!v2) {
-    const res = await db.execute(sql`
+    return manutencaoComRetry('expirar (v1)', async () => n(await db.execute(sql`
       UPDATE group_messages SET status = 'expirada', updated_at = now(), error = COALESCE(error, 'expirada sem envio')
       WHERE (status = 'proposta' AND created_at < now() - interval '6 hours') OR (status = 'aprovada' AND created_at < now() - interval '12 hours')
-    `);
-    return n(res);
+    `)));
   }
-  const res = await db.execute(sql`
+  const expiradas = await manutencaoComRetry('expirar', async () => n(await db.execute(sql`
     UPDATE group_messages SET status = 'expirada', claimed_at = NULL, updated_at = now(), error = COALESCE(error, 'expirada sem envio')
     WHERE (status IN ('proposta', 'proposta_auto') AND created_at < now() - (CASE WHEN trigger = 'RADAR' AND status = 'proposta_auto' THEN interval '20 minutes' ELSE interval '6 hours' END))
        OR (status = 'aprovada' AND created_at < now() - interval '12 hours')
        OR (status = 'retida' AND created_at < now() - interval '24 hours')
-  `);
-  const stuck = await db.execute(sql`
+  `)));
+  const travadas = await manutencaoComRetry('enviando travado', async () => n(await db.execute(sql`
     UPDATE group_messages SET status = 'erro', claimed_at = NULL, updated_at = now(),
       error = 'envio interrompido: confira o canal antes de reenviar (a mensagem pode ter saído)'
     WHERE status = 'enviando' AND claimed_at < now() - interval '10 minutes'
-  `);
-  return n(res) + n(stuck);
+  `)));
+  return expiradas + travadas;
 }
 
 /** Aprova ou rejeita a proposta nos dois canais (mesmo message_key). Retida também pode ser aprovada por um humano. */
