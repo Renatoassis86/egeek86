@@ -85,6 +85,9 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
   });
   // Guardião de cupons (~5 min, tolerante a falha, orçamento próprio): fecha cupons divulgados que acabaram, avisa o grupo da loja
   // com um card silencioso e grava o relatório da equipe em collector_runs (job 'agente-cupons').
-  const agente = Date.now() - startedAt < 35_000 ? await cicloAgenteCupons({ budgetMs: 12_000 }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  // Orçamento pelo tempo REAL que sobra (maxDuration 60 s, margem de 5 s): antes o ciclo era pulado sempre que o envio passava de 35 s, o que
+  // acontece nos minutos 00 a 20 de cada hora (crons empilhados) e deixava o agente de cupons até 15 min sem rodar (vigia 2026-11-15).
+  const restanteMs = maxDuration * 1000 - (Date.now() - startedAt) - 5_000;
+  const agente = restanteMs >= 6_000 ? await cicloAgenteCupons({ budgetMs: Math.min(12_000, restanteMs - 1_000) }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   return NextResponse.json({ ...summary, agenteCupons: agente, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
 }
