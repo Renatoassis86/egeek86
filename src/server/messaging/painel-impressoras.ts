@@ -7,6 +7,7 @@ import { classificarTipo } from '@/lib/catalog/tipos-produto';
 import { ehItemMiudoOuDuvida } from '@/lib/catalog/item-miudo';
 import { beneficiosVivosPorOferta } from '@/server/coupons/card-benefits';
 import { rotuloBeneficioCartao } from '@/lib/coupons/card-benefit';
+import { linhasFretePrazoPorOferta } from '@/server/shipping/frete-prazo';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
 import { decidir, quedaMinimaCents, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
@@ -116,6 +117,14 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
   const anterior = await ultimaLista();
   const prev = anterior && now.getTime() - new Date(anterior.inicio).getTime() < 3 * 3600_000 ? anterior.precos : null;
   const comAnterior: (OfertaPainel & { id: string })[] = ofertas.map((o) => ({ ...o, anteriorCents: prev ? (prev[id12(o.id)] ?? null) : null }));
+  // Frete e prazo (#118): só nos 20 primeiros itens de cada rede (combos P2S/P1S) para não estourar 4096. Sem leitura fresca: 'Prazo ainda não lido'.
+  try {
+    for (const rede of ['mercado-livre', 'amazon']) {
+      const ord = comAnterior.filter((o) => o.rede === rede).sort((a, b) => { const x = secaoDe(a), y = secaoDe(b); return x.rank - y.rank || x.ordemFixa - y.ordemFixa || a.cents - b.cents; }).slice(0, 20);
+      const linhas = await linhasFretePrazoPorOferta(ord.map((o) => o.id), now);
+      for (const o of ord) o.fretePrazo = linhas.get(o.id) ?? 'Prazo ainda não lido';
+    }
+  } catch { /* sem frete: a lista sai sem a linha */ }
 
   // Quedas: só com base do ciclo anterior. Cooldown de 2 h por oferta (collector_runs). Novo mínimo = abaixo do menor preço do anúncio em 14 dias.
   const quedas: QuedaTexto[] = [];
@@ -151,7 +160,8 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
       const bens = ((await beneficiosVivosPorOferta([o.id]).catch(() => new Map())).get(o.id) ?? []) as (Parameters<typeof rotuloBeneficioCartao>[0] & { needsConfirm: boolean; kind: string; finalPriceCents: number | null })[];
       const cartoes = bens.filter((b) => b.kind === 'cartao_pct' || b.kind === 'pix_pct').map((b) => ({ rotulo: rotuloBeneficioCartao(b) ?? '', finalCents: b.finalPriceCents, needsConfirm: b.needsConfirm })).filter((b) => b.rotulo);
       const t = textoQuedaSeguro({
-        rede: o.rede, titulo: o.title || o.masterName, loja: o.loja, reputacao: (o as { reputacao?: string | null }).reputacao ?? null, cents: o.cents, anteriorCents: o.anteriorCents as number,
+        rede: o.rede, titulo: o.title || o.masterName, loja: o.loja, reputacao: (o as { reputacao?: string | null }).reputacao ?? null, cents: o.cents, anteriorCents: o.anteriorCents as number, anteriorEm: anterior ? new Date(anterior.inicio) : null,
+        fretePrazo: (await linhasFretePrazoPorOferta([o.id], now).catch(() => new Map<string, string>())).get(o.id) ?? 'Prazo ainda não lido',
         minimo14: c.min, url: o.url, leituraEm: o.checkedAt, cupom, cartoes, adTag: getAdTag(),
       });
       if (t.text) quedas.push({ oferta: o.id, text: t.text }); else problemas.push(`queda ${id12(o.id)}: ${t.problemas.join('; ')}`);

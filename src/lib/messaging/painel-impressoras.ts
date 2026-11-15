@@ -43,6 +43,8 @@ export interface OfertaPainel {
   anteriorCents?: number | null;
   /** Caiu abaixo do menor preço dos últimos 14 dias do próprio anúncio. */
   minimo14?: boolean;
+  /** Frete e prazo MEDIDOS (#118), só nos primeiros itens da lista; ausente = não mostra. */
+  fretePrazo?: string | null;
 }
 
 export interface EntradaPaineis { ofertas: OfertaPainel[]; inicio: Date; adTag: string; guiaUrl?: string }
@@ -119,6 +121,7 @@ function linhaOferta(i: number, o: OfertaPainel, rede: string): string {
   const loja = rede === 'amazon' ? '' : nomeLoja(o.loja);
   const l1 = o.url ? `${i}. <a href="${escapeTelegramAttr(o.url)}">${brl(o.cents)}</a>${loja}` : `${i}. ${brl(o.cents)}${loja}`;
   const r = resumoOferta(o);
+  if (o.fretePrazo) return `${l1}${r ? `\n    ${e(r)}` : ''}\n    🚚 ${e(o.fretePrazo)}`;
   return r ? `${l1}
     ${e(r)}` : l1;
 }
@@ -228,7 +231,7 @@ export function montarPaineis(inp: EntradaPaineis): SaidaPaineis {
 // QUEDA INDIVIDUAL (mensagem com notificação). Só afirma o que foi lido; nunca prazo inventado; "ative" só quando o tipo do cupom é conhecido.
 // ---------------------------------------------------------------------------
 export const MAX_QUEDAS_POR_CICLO = 6;
-export const QUEDA_MAX_PLAUSIVEL_PCT = 50;
+export const QUEDA_MAX_PLAUSIVEL_PCT = 100;
 
 export interface EntradaQueda {
   rede: string;
@@ -238,6 +241,8 @@ export interface EntradaQueda {
   reputacao?: string | null;
   cents: number;
   anteriorCents: number;
+  /** Quando o preço anterior foi lido (ciclo anterior da lista). */
+  anteriorEm?: Date | null;
   minimo14: boolean;
   url: string | null;
   leituraEm: Date;
@@ -255,11 +260,12 @@ export function textoQueda(q: EntradaQueda): string {
   L.push('📉 <b>Queda de preço · impressora 3D</b>');
   L.push(`<b>${e(q.titulo.length > 140 ? `${q.titulo.slice(0, 139)}…` : q.titulo)}</b>`);
   L.push(`<b>${brl(q.cents)}</b> (era ${brl(q.anteriorCents)}, queda de ${pct}%)${q.minimo14 ? ' · novo mínimo de 14 dias' : ''}`);
+  if (q.anteriorEm) L.push(`Preço anterior lido: ${brl(q.anteriorCents)} em ${diaSP(q.anteriorEm)} às ${horaSP(q.anteriorEm)}`);
   const onde = [amazon ? 'Amazon' : q.loja ? e(q.loja) : null, q.reputacao ? e(q.reputacao) : null].filter(Boolean).join(' · ');
   if (onde) L.push(`Loja: ${onde}`);
   if (q.cupom) L.push(`🎟️ Cupom${q.cupom.nome ? ` ${e(q.cupom.nome)}` : ''}: <b>${brl(q.cupom.finalCents)}</b> com cupom${q.cupom.passo ? ` · ${e(q.cupom.passo)}` : ''}`);
   for (const c of (q.cartoes ?? []).slice(0, 2)) L.push(`💳 ${e(c.rotulo)}${c.finalCents ? `: ${brl(c.finalCents)}` : ''}${c.needsConfirm ? ' · a confirmar no carrinho' : ''}`);
-  L.push(q.fretePrazo ? `🚚 ${e(q.fretePrazo)}` : 'Frete e prazo: a data aparece na página da loja, conforme o seu CEP.');
+  L.push(q.fretePrazo ? `🚚 ${e(q.fretePrazo)}` : 'Frete e prazo: ainda não lidos para este anúncio.');
   if (q.url) L.push(`<a href="${escapeTelegramAttr(q.url)}">Ver anúncio</a>`);
   L.push(amazon ? `Preço na Amazon em ${diaSP(q.leituraEm)} às ${horaSP(q.leituraEm)}` : `Lido às ${horaSP(q.leituraEm)}`);
   if (q.adTag) L.push(e(q.adTag));
