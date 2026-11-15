@@ -25,13 +25,21 @@ export type MotivoConfirmacao =
   | 'sem_confirmacao'
   | 'confirmacao_velha'
   | 'link_de_outro_anuncio'
-  | 'troca_de_anuncio';
+  | 'troca_de_anuncio'
+  | 'link_divergente';
 
 export function confirmacaoLigada(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.CONFIRMACAO_PRECO_MENSAGEM ?? '').trim());
 }
 
+/** Vereditos da auditoria de links (offer_link_audit) que tiram a oferta de mensagem e lista. erro_leitura e oferta nunca auditada NÃO bloqueiam (fail-open). */
+export const VEREDITOS_BLOQUEANTES = ['preco_divergente', 'item_diferente', 'pausado', 'sem_link'] as const;
+/** Auditoria mais velha que isto não vale (a página pode ter mudado). */
+export const AUDITORIA_VALE_MIN = 360;
+
 export interface FatosConfirmacao {
+  /** Último veredito da auditoria do link (a página do link x a oferta). */
+  auditoria?: { verdict: string; checkedAt: Date } | null;
   uso: UsoPreco;
   /** 'mercado-livre' | 'amazon' | 'shopee' | outra (slug da rede). */
   rede: string;
@@ -62,6 +70,7 @@ const NOTA: Record<MotivoConfirmacao, string> = {
   sem_confirmacao: 'preço nunca confirmado na API',
   confirmacao_velha: 'preço sem confirmação recente',
   link_de_outro_anuncio: 'o link leva a outro anúncio, não ao que tem o preço lido',
+  link_divergente: 'a página do link mostra outro anúncio, outro preço ou anúncio pausado (auditoria de links)',
   troca_de_anuncio: 'o preço lido é de outro anúncio do vendedor (troca de anúncio, não queda)',
 };
 
@@ -95,6 +104,7 @@ export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito
   const limite = f.uso === 'lista' ? CONFIRMACAO.LISTA_MIN : /amazon/i.test(f.rede) ? CONFIRMACAO.QUEDA_MIN_AMAZON : CONFIRMACAO.QUEDA_MIN;
   const idadeMin = (f.now.getTime() - f.confirmedAt.getTime()) / 60_000;
   if (idadeMin > limite) return falha('confirmacao_velha');
+  if (f.auditoria && (VEREDITOS_BLOQUEANTES as readonly string[]).includes(f.auditoria.verdict) && (f.now.getTime() - f.auditoria.checkedAt.getTime()) / 60_000 <= AUDITORIA_VALE_MIN) return falha('link_divergente');
   if (f.linkItemId && f.priceItemId && !mesmoAnuncio(f.linkItemId, f.priceItemId)) return falha('link_de_outro_anuncio');
   return { ok: true };
 }

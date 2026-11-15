@@ -95,7 +95,7 @@ async function main() {
       SELECT x.id, x.item FROM (
         SELECT DISTINCT ON (t->>'id') (t->>'id') AS id, 'MLB' || substring(t->>'old' from '/MLB-?([0-9]{6,})') AS item
         FROM collector_runs r, jsonb_array_elements(r.meta->'trocas') t
-        WHERE r.job = 'ml-links-assistida' AND t->>'old' ~ '/MLB-?[0-9]{6,}' ORDER BY t->>'id', r.started_at DESC
+        WHERE r.job = 'ml-links-assistida' AND t->>'old' ~ '/MLB-?[0-9]{6,}' AND t->>'old' !~ '/p/MLB' ORDER BY t->>'id', r.started_at DESC
       ) x JOIN affiliate_offers o ON o.id = x.id::uuid WHERE o.link_item_id IS NULL AND o.affiliate_url LIKE 'https://meli.la/%'`;
     const [{ n: diretas }] = await sql<{ n: number }[]>`SELECT count(*)::int n FROM affiliate_offers WHERE link_item_id IS NULL AND affiliate_url ~ '^https://produto[.]mercadolivre[.]com[.]br/MLB-?[0-9]{6,}'`;
     console.log(`PLANO link_item_id: ${alvoLink.length} por registro do gerador (meli.la) + ${diretas} por URL direta`);
@@ -103,7 +103,11 @@ async function main() {
       const diretasIds = await sql<{ id: string }[]>`SELECT id::text FROM affiliate_offers WHERE link_item_id IS NULL AND affiliate_url ~ '^https://produto[.]mercadolivre[.]com[.]br/MLB-?[0-9]{6,}'`;
       const ids = [...alvoLink.map((a) => a.id), ...diretasIds.map((a) => a.id)];
       for (let i = 0; i < ids.length; i += 500) await guardar(ids.slice(i, i + 500));
-      for (const a of alvoLink) await sql`UPDATE affiliate_offers SET link_item_id = ${a.item} WHERE id = ${a.id}::uuid AND link_item_id IS NULL`;
+      await sql`UPDATE affiliate_offers o SET link_item_id = x.item FROM (
+          SELECT DISTINCT ON (t->>'id') (t->>'id')::uuid AS id, 'MLB' || substring(t->>'old' from '/MLB-?([0-9]{6,})') AS item
+          FROM collector_runs r, jsonb_array_elements(r.meta->'trocas') t
+          WHERE r.job = 'ml-links-assistida' AND t->>'old' ~ '/MLB-?[0-9]{6,}' AND t->>'old' !~ '/p/MLB' ORDER BY t->>'id', r.started_at DESC) x
+        WHERE o.id = x.id AND o.link_item_id IS NULL AND o.affiliate_url LIKE 'https://meli.la/%'`;
       await sql`UPDATE affiliate_offers SET link_item_id = 'MLB' || substring(affiliate_url from '/MLB-?([0-9]{6,})') WHERE link_item_id IS NULL AND affiliate_url ~ '^https://produto[.]mercadolivre[.]com[.]br/MLB-?[0-9]{6,}'`;
       console.log('link_item_id preenchido.');
     }

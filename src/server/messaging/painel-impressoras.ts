@@ -11,6 +11,7 @@ import { linhasFretePrazoPorOferta } from '@/server/shipping/frete-prazo';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
 import { avaliarConfirmacao, confirmacaoLigada, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
+import { ultimosVereditos } from '@/server/links/auditoria-links';
 import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
   alvosLigados, INTERVALO_RODADA_MS, MAX_QUEDAS_POR_CICLO, MASTERS_PRIVADO, montarPaineis, secaoDe, textoQuedaSeguro,
@@ -76,9 +77,10 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
       AND nn.slug IN ('mercado-livre', 'amazon') AND o.last_checked_at > now() - interval '24 hours'
       AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
   const ligada = confirmacaoLigada();
+  const audit = ligada ? await ultimosVereditos(rows.map((r) => r.id)) : new Map<string, { verdict: string; checkedAt: Date }>();
   const fatos = (r: RowOferta, uso: 'queda' | 'lista') => avaliarConfirmacao({
     uso, rede: r.rede, status: 'active', quarantined: false, confirmedAt: r.conf ? new Date(r.conf) : null, missCount: r.miss != null ? Number(r.miss) : 0,
-    priceItemId: r.item, linkItemId: r.link_item ?? itemIdDaUrl(r.url), now,
+    priceItemId: r.item, linkItemId: r.link_item ?? itemIdDaUrl(r.url), auditoria: audit.get(r.id) ?? null, now,
   }, ligada);
   // Lista: preço confirmado há <= 6 h e anúncio achado na última coleta; sem isso a oferta NÃO entra na lista (nunca "preço a confirmar" inventado).
   const aprovadas = rows.filter((r) => { const v = fatos(r, 'lista'); if (!v.ok) foraDaLista++; return v.ok; });

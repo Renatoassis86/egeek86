@@ -9,7 +9,7 @@
 
 import { RULES, netKind, type NetKind } from '@/lib/messaging/group-rules';
 import type { FetchLike } from '@/lib/messaging/telegram-send';
-import { confirmacaoLigada, mesmoAnuncio } from '@/lib/messaging/confirmacao-preco';
+import { avaliarConfirmacao, confirmacaoLigada, mesmoAnuncio } from '@/lib/messaging/confirmacao-preco';
 import { avaliarOscilacao, motivoOscilacao, type PricePoint } from '@/lib/messaging/price-guard';
 
 export interface LiveTarget {
@@ -25,6 +25,8 @@ export interface LiveTarget {
   externalItemId?: string | null;
   /** Anúncio para o qual o link afiliado aponta (affiliate_offers.link_item_id, #119). */
   linkItemId?: string | null;
+  /** Último veredito da auditoria do link (offer_link_audit, #119). */
+  auditoria?: { verdict: string; checkedAt: Date } | null;
   /** URL do anúncio (ML: contém o id do item, ex.: produto.mercadolivre.com.br/MLB-123456). */
   affiliateUrl: string | null;
   /** Vendedor da oferta (ML: seller_id) para conferir que o anúncio é o mesmo. */
@@ -216,6 +218,10 @@ export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResu
       log.verdict = 'fail';
       log.reason = `link_de_outro_anuncio: preço do anúncio ${t.externalItemId}, link do anúncio ${t.linkItemId}`;
       return log;
+    }
+    if (t.role === 'original' && confirmacaoLigada() && t.auditoria) {
+      const v = avaliarConfirmacao({ uso: 'queda', rede: t.networkSlug, status: 'active', confirmedAt: now, auditoria: t.auditoria, now });
+      if (!v.ok) { log.verdict = 'fail'; log.reason = `link_divergente: auditoria do link = ${t.auditoria.verdict}`; return log; }
     }
     if (!needsLive(t, now, input.humanApproved)) {
       if (t.role === 'original' && asKind(t) === 'amazon') log.reason = 'amazon_segue_a_regra_de_frescor_da_coleta_assistida';

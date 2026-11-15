@@ -7,6 +7,7 @@ import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-au
 import { lookupShopeeItem } from '@/server/collector/sources/shopee';
 import { RULES } from '@/lib/messaging/group-rules';
 import { meliItemIdFromUrl, type LiveDeps, type LiveTarget } from '@/lib/messaging/live-recheck';
+import { ultimosVereditos } from '@/server/links/auditoria-links';
 import { GUARD, anuncioIdentificado, type PricePoint } from '@/lib/messaging/price-guard';
 
 type Row = Record<string, unknown>;
@@ -62,6 +63,7 @@ export async function loadLiveTargets(
     arr.push({ at: new Date(h.collected_at as string | Date), priceCents: Number(h.price_cents) });
     historyBy.set(k, arr);
   }
+  const auditoriaBy = await ultimosVereditos(ids);
   const perProduct = new Map<string, number>();
   const out: LiveTarget[] = [];
   for (const r of rows) {
@@ -85,6 +87,7 @@ export async function loadLiveTargets(
       externalRef: (r.external_ref as string | null) ?? null,
       externalItemId: (r.external_item_id as string | null) ?? null,
       linkItemId: (r.link_item_id as string | null) ?? null,
+      auditoria: auditoriaBy.get(offerId) ?? null,
       affiliateUrl: (r.affiliate_url as string | null) ?? null,
       sellerExternalId: (r.external_seller_id as string | null) ?? null,
       storedPriceCents: price,
