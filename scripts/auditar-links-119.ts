@@ -23,6 +23,7 @@ const ESCOPO = (arg('escopo') ?? 'combos') as Escopo;
 const LIMITE = Number(arg('limite') ?? 150);
 const ATE_MIN = Number(arg('ate-min') ?? 0);
 const ROLLBACK = arg('rollback');
+const SHARD = arg('shard') ? { i: Number(arg('shard')!.split('/')[0]), n: Number(arg('shard')!.split('/')[1]) } : undefined; // --shard=0/3: fatia por hash do id (execuções paralelas sem repetir leitura)
 
 async function main() {
   const sql = connect();
@@ -38,10 +39,10 @@ async function main() {
       return;
     }
     if (APPLY && !POR) throw new Error('--apply exige --por=<quem>');
-    const alvos = await carregarAlvos(ESCOPO, LIMITE, ATE_MIN);
+    const alvos = await carregarAlvos(ESCOPO, LIMITE, ATE_MIN, SHARD);
     console.log(`escopo ${ESCOPO}: ${alvos.length} links a ler (1 a cada 1,2-2 s, ~${Math.round((alvos.length * 1.6) / 60)} min)`);
     const t0 = Date.now();
-    const res = await auditarLote(alvos, 9 * 60_000, { gravar: APPLY });
+    const res = await auditarLote(alvos, Number(arg('minutos') ?? 9) * 60_000, { gravar: APPLY });
     console.log(`lidas ${res.lidas} em ${Math.round((Date.now() - t0) / 1000)} s | por veredito ${JSON.stringify(res.porVeredito)} | parou: ${res.parou ?? 'não'}`);
     const ruins = res.linhas.filter((l) => l.r.verdict !== 'ok');
     for (const l of ruins.slice(0, 40)) console.log(`${l.r.verdict.padEnd(17)} ${l.alvo.offerId.slice(0, 8)} ${l.r.nota} ${l.r.diffPct != null ? `(${l.r.diffPct}%)` : ''}`);

@@ -1,0 +1,433 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import Image from 'next/image';
+import { eq, desc, and } from 'drizzle-orm';
+import { db } from '@/lib/db';
+import { auctions, profiles, sellers } from '@/db/schema';
+import { LiveBidRoom } from '@/components/geek-deals/live-bid-room';
+import { CreateAuctionForm } from '@/components/geek-deals/create-auction-form';
+import { Glow } from '@/components/motion/glow';
+import { Reveal } from '@/components/motion/reveal';
+import { Text } from '@/components/ui/text';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { getCurrentProfile } from '@/lib/auth/require-admin';
+import { formatBRL } from '@/lib/format';
+import { cn } from '@/lib/cn';
+import { Gavel, Clock, ArrowRight, ShieldCheck, Plus, User } from 'lucide-react';
+
+export const metadata: Metadata = {
+  title: 'Geek Hammer - Leilões de Raridades',
+  description: 'Leilões síncronos e assíncronos de colecionáveis do Espaço Geek 86. Dispute com segurança.',
+};
+
+export const dynamic = 'force-dynamic';
+
+export default async function AuctionsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ aba?: string }>;
+}) {
+  const profile = await getCurrentProfile();
+  const isAuthenticated = !!profile;
+  const activeTab = (await searchParams).aba || 'ativos';
+
+  // Verifica se o usuário é um vendedor ativo
+  let seller = null;
+  if (profile) {
+    try {
+      const [existingSeller] = await db
+        .select()
+        .from(sellers)
+        .where(and(eq(sellers.userId, profile.id), eq(sellers.status, 'active')))
+        .limit(1);
+      seller = existingSeller;
+    } catch (e) {
+      console.error('Erro ao verificar registro de vendedor:', e);
+    }
+  }
+
+  // 1. Carrega leilões do banco
+  let list: any[] = [];
+  try {
+    list = await db
+      .select({
+        id: auctions.id,
+        title: auctions.title,
+        description: auctions.description,
+        images: auctions.images,
+        startsAt: auctions.startsAt,
+        endsAt: auctions.endsAt,
+        minBidCents: auctions.minBidCents,
+        currentBidCents: auctions.currentBidCents,
+        buyoutPriceCents: auctions.buyoutPriceCents,
+        status: auctions.status,
+        sellerName: profiles.name,
+      })
+      .from(auctions)
+      .leftJoin(profiles, eq(auctions.sellerId, profiles.id))
+      .orderBy(desc(auctions.createdAt));
+  } catch (err) {
+    console.error('Erro ao carregar leilões do banco:', err);
+  }
+
+  const now = new Date();
+  const targetList = list;
+
+  // Filtragem conforme aba
+  const activeAuctions = targetList.filter((a) => {
+    const isLive = a.status === 'active' || (new Date(a.startsAt) <= now && new Date(a.endsAt) > now && a.status === 'scheduled');
+    return activeTab === 'ativos' && isLive;
+  });
+
+  const upcomingAuctions = targetList.filter((a) => {
+    const isScheduled = a.status === 'scheduled' && new Date(a.startsAt) > now;
+    return activeTab === 'agendados' && isScheduled;
+  });
+
+  const endedAuctions = targetList.filter((a) => {
+    const isEnded = a.status === 'completed' || a.status === 'failed_reserve' || a.status === 'defaulted' || new Date(a.endsAt) <= now;
+    return activeTab === 'encerrados' && isEnded;
+  });
+
+  const countActive = targetList.filter((a) => a.status === 'active' || (new Date(a.startsAt) <= now && new Date(a.endsAt) > now)).length;
+  const countUpcoming = targetList.filter((a) => a.status === 'scheduled' && new Date(a.startsAt) > now).length;
+  const countEnded = targetList.filter((a) => a.status === 'completed' || a.status === 'failed_reserve' || a.status === 'defaulted' || new Date(a.endsAt) <= now).length;
+
+  return (
+    <section className="relative mx-auto max-w-7xl px-4 lg:px-8 py-10 lg:py-16 overflow-hidden">
+      
+      {/* Background Glows */}
+      <Glow color="gold" size="lg" className="-top-36 -right-24" intensity={0.12} />
+      <Glow color="hype" size="md" className="-bottom-28 -left-16" intensity={0.08} />
+
+      {/* Header Banner Visual */}
+      <div className="relative border border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/30 rounded-[var(--radius-xl)] p-6 md:p-10 lg:p-14 overflow-hidden mb-10 z-10">
+        
+        {/* Imagem do banner inteira com recorte diagonal na direita (igual Hype Zone/Ofertas) */}
+        <div className="absolute right-0 top-0 bottom-0 w-full md:w-[48%] hidden md:block z-0 overflow-hidden select-none pointer-events-none rounded-r-[var(--radius-xl)]">
+          <div 
+            className="relative w-full h-full"
+            style={{
+              clipPath: 'polygon(15% 0, 100% 0, 100% 100%, 0% 100%)',
+            }}
+          >
+            <Image
+              src="/images/hype-zone/geek-hammer.png"
+              alt="Geek Hammer Banner"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+            {/* Gradiente sutil de fade na junção do corte diagonal */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[var(--color-bg-inset)] via-transparent to-transparent opacity-80 pointer-events-none" />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 relative z-10 max-w-2xl">
+          <Reveal>
+            <Badge variant="hype" size="md">
+              Geek Hammer Leilões
+            </Badge>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <Text as="h1" variant="display-md" className="text-[32px] md:text-[40px] font-black leading-none tracking-tight">
+              Lances & Martelo Hype
+            </Text>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <Text variant="body-sm" color="secondary" className="max-w-[50ch] leading-relaxed text-xs md:text-sm">
+              Leilões conduzidos pela comunidade, com caução nos lances 
+              e prorrogação automática do tempo.
+            </Text>
+          </Reveal>
+
+          {/* Botões de Ação Diretos no Hero */}
+          <Reveal delay={0.12}>
+            <div className="flex flex-wrap items-center gap-3 mt-2">
+              {!profile ? (
+                <>
+                  <Button asChild size="lg" variant="primary" className="font-bold shadow-lg" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="border-[var(--color-accent-primary)]/60 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Entrar / Fazer Login</Link>
+                  </Button>
+                </>
+              ) : seller?.status === 'active' || profile?.role === 'admin' ? (
+                <Button asChild size="lg" variant="primary" className="font-bold shadow-lg" rightIcon={<Plus className="size-4" />}>
+                  <Link href="/hype-zone/leiloes?aba=novo">Cadastrar novo lote de leilão</Link>
+                </Button>
+              ) : seller?.status === 'pending_kyc' ? (
+                <Button asChild size="lg" variant="outline" className="border-amber-500/60 text-amber-400 font-bold">
+                  <Link href="/conta/vendedor">⏳ Credenciamento em Análise</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" variant="primary" className="font-bold shadow-lg" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="border-[var(--color-accent-primary)]/60 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Entrar / Fazer Login</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </Reveal>
+        </div>
+      </div>
+
+      {/* BANNER DE ACESSO DO LEILOEIRO (DESTACADO: CADASTRO OU LOGIN) */}
+      <Reveal delay={0.12}>
+        <div className="mb-10 p-6 md:p-8 rounded-[var(--radius-xl)] border-2 border-[var(--color-accent-primary)]/40 bg-gradient-to-r from-[var(--color-accent-primary)]/10 via-[var(--color-bg-surface)] to-[var(--color-bg-inset)] shadow-[var(--shadow-xl)] relative overflow-hidden backdrop-blur-md">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+            <div className="flex flex-col gap-2 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="primary" size="md">
+                  <Gavel className="size-3.5" /> Credenciamento de Leiloeiro
+                </Badge>
+                {seller?.status === 'pending_kyc' && (
+                  <Badge variant="outline" className="border-amber-500/50 text-amber-400">
+                    <Clock className="size-3 mr-1" /> Cadastro em Análise Admin
+                  </Badge>
+                )}
+                {seller?.status === 'active' && (
+                  <Badge variant="outline" className="border-emerald-500/50 text-emerald-400">
+                    <ShieldCheck className="size-3 mr-1" /> Credenciado Ativo
+                  </Badge>
+                )}
+              </div>
+              <Text variant="heading-md" className="text-xl md:text-2xl font-black">
+                Quer Cadastrar Lotes de Leilão no Geek Hammer?
+              </Text>
+              <Text variant="body-sm" color="secondary" className="text-xs md:text-sm leading-relaxed">
+                Para abrir leilões, faça o cadastro de leiloeiro e entre na sua conta. Só membros validados podem enviar novos lotes.
+              </Text>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto shrink-0">
+              {!profile ? (
+                <>
+                  <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-[var(--color-accent-primary)]/50 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Fazer Login</Link>
+                  </Button>
+                </>
+              ) : seller?.status === 'pending_kyc' ? (
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-amber-500/50 text-amber-400 font-bold">
+                  <Link href="/conta/vendedor">Ver Status da Análise</Link>
+                </Button>
+              ) : seller?.status === 'active' || profile?.role === 'admin' ? (
+                <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<Plus className="size-4" />}>
+                  <Link href="/hype-zone/leiloes?aba=novo">Cadastrar novo lote de leilão</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg" variant="primary" className="w-full sm:w-auto font-bold shadow-md" rightIcon={<ArrowRight className="size-4" />}>
+                    <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-[var(--color-accent-primary)]/50 text-[var(--color-text-primary)] hover:bg-[var(--color-accent-primary)]/10 font-bold">
+                    <Link href="/entrar?next=/hype-zone/leiloes?aba=novo">Fazer Login</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* Sub-Abas do Painel */}
+      <div className="flex flex-wrap border-b border-[var(--color-border-subtle)] pb-px gap-4 mb-8">
+        <Link
+          href="/hype-zone/leiloes?aba=ativos"
+          className={cn(
+            'pb-3 text-xs font-bold transition-all border-b-2 border-transparent focus:outline-none flex items-center gap-1.5',
+            activeTab === 'ativos'
+              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)]'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          )}
+        >
+          Leilões Ativos ({countActive})
+        </Link>
+        <Link
+          href="/hype-zone/leiloes?aba=agendados"
+          className={cn(
+            'pb-3 text-xs font-bold transition-all border-b-2 border-transparent focus:outline-none flex items-center gap-1.5',
+            activeTab === 'agendados'
+              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)]'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          )}
+        >
+          Próximos Lotes ({countUpcoming})
+        </Link>
+        <Link
+          href="/hype-zone/leiloes?aba=encerrados"
+          className={cn(
+            'pb-3 text-xs font-bold transition-all border-b-2 border-transparent focus:outline-none flex items-center gap-1.5',
+            activeTab === 'encerrados'
+              ? 'border-[var(--color-accent-primary)] text-[var(--color-text-primary)]'
+              : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+          )}
+        >
+          Encerrados ({countEnded})
+        </Link>
+        <Link
+          href="/hype-zone/leiloes?aba=novo"
+          className={cn(
+            'pb-3 text-xs font-bold transition-all border-b-2 border-transparent focus:outline-none flex items-center gap-1.5 ml-auto text-[var(--color-accent-primary)] hover:text-[var(--color-text-primary)]',
+            activeTab === 'novo' ? 'border-[var(--color-accent-primary)]' : ''
+          )}
+        >
+          <Plus className="size-3.5" /> Cadastrar Lote
+        </Link>
+      </div>
+
+      {/* RENDERIZAR ABAS DE LISTAGEM */}
+      {activeTab === 'ativos' && (
+        <div className="flex flex-col gap-8">
+          {activeAuctions.length === 0 ? (
+            <div className="text-center py-16 border border-dashed border-[var(--color-border-subtle)] rounded-[var(--radius-xl)] bg-[var(--color-bg-inset)]/20">
+              <Text variant="body-sm" color="tertiary">Não há leilões ativos no momento.</Text>
+            </div>
+          ) : (
+            activeAuctions.map((auc) => (
+              <LiveBidRoom
+                key={auc.id}
+                auction={auc}
+                currentUserProfile={profile}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'agendados' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {upcomingAuctions.length === 0 ? (
+            <div className="col-span-2 text-center py-16 border border-dashed border-[var(--color-border-subtle)] rounded-[var(--radius-xl)] bg-[var(--color-bg-inset)]/20">
+              <Text variant="body-sm" color="tertiary">Nenhum leilão agendado para os próximos dias.</Text>
+            </div>
+          ) : (
+            upcomingAuctions.map((auc) => (
+              <Card key={auc.id} className="border-[var(--color-border-default)] bg-[var(--color-bg-inset)]/10">
+                <CardContent className="p-5 flex flex-col gap-3 justify-between h-full">
+                  <div>
+                    <Badge variant="outline" size="sm" className="mb-2">Abertura: {new Date(auc.startsAt).toLocaleString('pt-BR')}</Badge>
+                    <Text variant="heading-sm" className="font-bold">{auc.title}</Text>
+                    <Text color="secondary" className="text-xs leading-relaxed mt-2 line-clamp-2">{auc.description}</Text>
+                  </div>
+                  
+                  <div className="border-t border-[var(--color-border-subtle)] pt-3 flex justify-between items-center mt-2">
+                    <div>
+                      <span className="text-[8px] font-mono text-[var(--color-text-tertiary)] uppercase tracking-wider block">Lance Mínimo</span>
+                      <span className="text-sm font-bold font-mono text-[var(--color-accent-primary)]">{formatBRL(auc.minBidCents)}</span>
+                    </div>
+                    <Button disabled size="sm" className="text-xs">Aguardando Abertura</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'encerrados' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {endedAuctions.length === 0 ? (
+            <div className="col-span-2 text-center py-16 border border-dashed border-[var(--color-border-subtle)] rounded-[var(--radius-xl)] bg-[var(--color-bg-inset)]/20">
+              <Text variant="body-sm" color="tertiary">Nenhum leilão encerrado para listar.</Text>
+            </div>
+          ) : (
+            endedAuctions.map((auc) => (
+              <Card key={auc.id} className="border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] opacity-85">
+                <CardContent className="p-5 flex flex-col gap-3 justify-between h-full">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <Badge variant="outline" size="sm">Encerrado</Badge>
+                      <Badge variant={auc.status === 'completed' ? 'success' : 'danger'} size="sm">
+                        {auc.status === 'completed' ? 'Vendido' : auc.status === 'failed_reserve' ? 'Reserva não Atingida' : 'Inadimplente'}
+                      </Badge>
+                    </div>
+                    <Text variant="heading-sm" className="font-bold text-[var(--color-text-secondary)]">{auc.title}</Text>
+                  </div>
+                  
+                  <div className="border-t border-[var(--color-border-subtle)] pt-3 flex justify-between items-center mt-2">
+                    <div>
+                      <span className="text-[8px] font-mono text-[var(--color-text-tertiary)] uppercase tracking-wider block">Valor de Arremate</span>
+                      <span className="text-sm font-bold font-mono text-[var(--color-text-primary)]">{formatBRL(auc.currentBidCents)}</span>
+                    </div>
+                    <span className="text-[10px] text-[var(--color-text-tertiary)] font-mono">Leiloeiro: {auc.sellerName}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === 'novo' && (
+        <div className="z-10 relative">
+          {!isAuthenticated ? (
+            <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
+              <div className="flex size-14 items-center justify-center rounded-full bg-[var(--color-accent-primary)]/10 text-[var(--color-accent-primary)] mx-auto">
+                <User className="size-8" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Text variant="heading-md">Área Restrita a Leiloeiros</Text>
+                <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
+                  Para cadastrar lotes de leilão e vender em nosso portal, faça seu cadastro como Leiloeiro/Colecionador e aguarde a aprovação da administração.
+                </Text>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button asChild size="lg" variant="hype" className="w-full">
+                  <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full">
+                  <Link href="/entrar?next=/leiloes?aba=novo">Fazer Login</Link>
+                </Button>
+              </div>
+            </Card>
+          ) : seller?.status === 'pending_kyc' ? (
+            <Card className="border-amber-500/30 bg-amber-500/5 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
+              <div className="flex size-14 items-center justify-center rounded-full bg-amber-500/10 text-amber-400 mx-auto">
+                <Clock className="size-8" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Badge variant="outline" className="w-fit mx-auto border-amber-500/40 text-amber-400">
+                  Em Análise pela Administração
+                </Badge>
+                <Text variant="heading-md">Aguardando Liberação</Text>
+                <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
+                  Seu cadastro de Leiloeiro/Colecionador foi recebido e está em análise. Assim que o administrador aprovar seu credenciamento no painel admin, a publicação de leilões será ativada automaticamente aqui.
+                </Text>
+              </div>
+            </Card>
+          ) : !seller || seller.status !== 'active' ? (
+            <Card className="border-[var(--color-border-subtle)] bg-[var(--color-bg-inset)]/40 backdrop-blur-md max-w-md mx-auto text-center p-8 flex flex-col gap-6">
+              <div className="flex size-14 items-center justify-center rounded-full bg-[var(--color-accent-hype)]/10 text-[var(--color-accent-hype)] mx-auto">
+                <ShieldCheck className="size-8" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Text variant="heading-md">Torne-se um Leiloeiro Credenciado</Text>
+                <Text variant="body-sm" color="secondary" className="leading-relaxed text-xs">
+                  Sua conta está autenticada como Comprador. Faça o cadastro como Leiloeiro/Colecionador para ativar seu perfil e enviar seus lotes.
+                </Text>
+              </div>
+              <div className="flex flex-col gap-3">
+                <Button asChild size="lg" variant="hype" className="w-full">
+                  <Link href="/entrar?role=colecionador">Cadastrar como Leiloeiro</Link>
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <CreateAuctionForm />
+          )}
+        </div>
+      )}
+
+    </section>
+  );
+}

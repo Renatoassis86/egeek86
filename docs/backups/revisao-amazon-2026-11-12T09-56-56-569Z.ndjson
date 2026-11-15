@@ -1,0 +1,253 @@
+{"kind":"oferta","oid":"96607f94-cac8-474b-af32-bc5a3e1eb165","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"9a93b24e-29ce-4353-a423-1e15dffcfd66"}
+{"kind":"item_fila","itemId":"0f121307-1cfc-4e55-a05a-92097bc5d220","oid":"96607f94-cac8-474b-af32-bc5a3e1eb165"}
+{"kind":"oferta","oid":"00823a26-f73c-4abe-b26d-821f095418b3","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"5cf3cd9b-4277-417a-8e88-3da3659c79fe"}
+{"kind":"item_fila","itemId":"25ac679b-573e-431f-ae2b-4b748829b010","oid":"00823a26-f73c-4abe-b26d-821f095418b3"}
+{"kind":"oferta","oid":"20d719bb-49a8-48a9-bd90-2466437443a4","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"5cf3cd9b-4277-417a-8e88-3da3659c79fe"}
+{"kind":"item_fila","itemId":"57257cc5-73ec-4482-8b79-9a57373353d6","oid":"20d719bb-49a8-48a9-bd90-2466437443a4"}
+{"kind":"oferta","oid":"2fdd4d4e-7996-48f0-8146-23c9e2c4b856","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:07:27.865+00","acao":"descartar","mid":"29816054-647c-4dfd-9205-91917c1612bc"}
+{"kind":"oferta","oid":"20a6b2b2-6b8b-48e5-b7c6-6e3081c47608","prevStatus":"paused","prevPublishedAt":"2026-11-11 10:52:05.476+00","acao":"descartar","mid":"2e0193fe-1406-4563-8eb3-4a48f7ef62ff"}
+{"kind":"oferta","oid":"82c45321-065c-4481-8b61-f846ebeb00c9","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"745bef50-bffd-430b-892e-b3c8bfbec746"}
+{"kind":"oferta","oid":"069059b8-5d2e-4ef9-916c-709962365793","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c4f8a99e-8486-4d5a-b65c-113a7fed9938"}
+{"kind":"oferta","oid":"143a5e19-1c8f-44a3-8793-6a2537c46e86","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"4f988822-b78b-4735-9c4a-10a6b5ff4729"}
+{"kind":"oferta","oid":"19bff371-ab97-4be0-8e7c-ce50b76d1e5e","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"0d2a6921-092a-40ef-9552-3c29c8d7ca8d"}
+{"kind":"item_fila","itemId":"11e409ea-a478-479b-9c6f-85d0e12c6f6c","oid":"19bff371-ab97-4be0-8e7c-ce50b76d1e5e"}
+{"kind":"oferta","oid":"71845eed-89e0-4909-be5a-2220f87d5915","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"9c2e0191-e029-4cff-b2e9-c1e55fc8a54a"}
+{"kind":"item_fila","itemId":"8400fb3e-2209-4e9b-8d43-5480600d17a6","oid":"71845eed-89e0-4909-be5a-2220f87d5915"}
+{"kind":"oferta","oid":"1c898222-b222-4734-8abc-3e94db8b135a","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"0d2a6921-092a-40ef-9552-3c29c8d7ca8d"}
+{"kind":"item_fila","itemId":"12a78327-7066-414e-8f5d-7e716bdbb495","oid":"1c898222-b222-4734-8abc-3e94db8b135a"}
+{"kind":"oferta","oid":"68da5a63-06ea-47ea-8ad2-f3aebf2d1efe","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"02f4799c-9309-492d-80bc-3a024fad7455"}
+{"kind":"oferta","oid":"4e18b663-8c41-46c4-9fd0-2924f3c892f9","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"3e80f15b-0696-46fd-9036-bd5ab502f69c"}
+{"kind":"oferta","oid":"cd621f06-b98b-4a90-a489-b478b06e24bd","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"761a34c8-22e7-43dd-bdba-bb17c768c40a"}
+{"kind":"item_fila","itemId":"c1f6ec95-17f2-4c7f-92bf-c24eeacb7386","oid":"cd621f06-b98b-4a90-a489-b478b06e24bd"}
+{"kind":"oferta","oid":"ca55f520-0217-4a0e-af58-53567c419b1a","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"761a34c8-22e7-43dd-bdba-bb17c768c40a"}
+{"kind":"item_fila","itemId":"f0d79010-3d1b-4391-afb3-e50facafd82d","oid":"ca55f520-0217-4a0e-af58-53567c419b1a"}
+{"kind":"oferta","oid":"e129b133-936f-47ef-808a-9ec3cfde1181","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"4bbac569-356b-4655-8c40-ee3e8146d1d0"}
+{"kind":"oferta","oid":"8cadff4e-4413-4023-8285-4b7dbdc6ab55","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"0c5a44f8-4ff7-4ff4-820c-5359711d7222"}
+{"kind":"item_fila","itemId":"43b395af-3c58-4e8e-9cbe-9f1c161b015c","oid":"8cadff4e-4413-4023-8285-4b7dbdc6ab55"}
+{"kind":"oferta","oid":"5b18b830-0b53-4cf6-8e60-1e0eaf18ee6d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"083dd99d-dec4-4119-b301-f73a7d65e30b"}
+{"kind":"item_fila","itemId":"585b1be1-8098-4cda-8ca1-2618e0c80d63","oid":"5b18b830-0b53-4cf6-8e60-1e0eaf18ee6d"}
+{"kind":"oferta","oid":"6b8b97ff-4f23-448d-b598-824d704a7619","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"b4ccf5a5-4b50-4211-ab3b-57a43239302a"}
+{"kind":"oferta","oid":"fd04b046-c394-4651-9e99-33ea21f01b6f","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"3e4cc60d-3772-4b54-82c7-69087313fdbf"}
+{"kind":"oferta","oid":"5e33dfd9-0f1a-4107-a3ac-5af5b64c4b9e","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"3e4cc60d-3772-4b54-82c7-69087313fdbf"}
+{"kind":"oferta","oid":"74d0c601-e5b9-492f-a169-f41b521db1c6","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"0fd269fa-184c-4928-94e3-39f23851f38b"}
+{"kind":"oferta","oid":"515a477a-6a04-461f-ad89-3583b33287c9","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"8df947d4-5932-4421-8263-f6601b63d076"}
+{"kind":"item_fila","itemId":"76f23f7c-d959-430a-a051-a6216d3f0d98","oid":"515a477a-6a04-461f-ad89-3583b33287c9"}
+{"kind":"oferta","oid":"60e89733-c85f-4ffe-ba57-87a2c33ef3e3","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c3cd4b3f-b6ee-4198-9cb1-799630ee22ba"}
+{"kind":"oferta","oid":"a548c807-215b-4232-bdfe-09aafd429254","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"43865858-3e19-4471-9c05-90908d21ff8f"}
+{"kind":"oferta","oid":"824359f6-735d-48d4-931f-c03d08c330b1","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"dad7eb19-2f8b-4918-ae9a-5bc16379a0ce"}
+{"kind":"item_fila","itemId":"1383f434-1a70-4c3f-a464-0570a57b11b3","oid":"824359f6-735d-48d4-931f-c03d08c330b1"}
+{"kind":"oferta","oid":"26db3c01-846e-4c55-af39-84cc7ad22338","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"1b620e05-aee9-4281-8079-45c3f1ccb4bd"}
+{"kind":"oferta","oid":"b79456d8-6b43-4523-9170-cdc59d1f4d03","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"841506b3-4b33-4240-a749-6ee36cd5fd8a"}
+{"kind":"oferta","oid":"cf40a2be-fb01-4b2d-971f-87ec73de4760","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"380594bf-ae6f-4d47-bd56-2904f166c3cb"}
+{"kind":"oferta","oid":"7db49467-f4e3-4525-82d9-412682affe10","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c2eee753-821f-4332-932c-0d21b21db321"}
+{"kind":"item_fila","itemId":"ecb71fe4-0d09-4339-95db-6d3ac928f442","oid":"7db49467-f4e3-4525-82d9-412682affe10"}
+{"kind":"oferta","oid":"31e1a250-95cc-4269-a6b1-de5969f0aa41","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"b566f0c9-db87-46b2-8902-1df7a951ffff"}
+{"kind":"oferta","oid":"5037ca0b-a5be-4a0d-82dd-b67f99f37879","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"58f57796-db6a-46c1-8df2-32dab432c9d2"}
+{"kind":"oferta","oid":"45621e79-6604-4e18-9ff9-a94142af9343","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"58f57796-db6a-46c1-8df2-32dab432c9d2"}
+{"kind":"oferta","oid":"79689ff9-3747-4927-a079-956d846ed0ac","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"5957be0b-7206-48b4-8280-ccb46874445c"}
+{"kind":"item_fila","itemId":"12f121c2-ad69-420d-86b5-d4bc2c150612","oid":"79689ff9-3747-4927-a079-956d846ed0ac"}
+{"kind":"oferta","oid":"7cf9f63c-f63a-4eb1-b774-7fc1a825f24b","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"359960a7-e221-4235-9469-2fe8162cc786"}
+{"kind":"item_fila","itemId":"d3e46c11-599e-4e12-82ed-301a00b2149a","oid":"7cf9f63c-f63a-4eb1-b774-7fc1a825f24b"}
+{"kind":"oferta","oid":"9dd954e9-2133-4e2f-8ef5-a1f49d45342e","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"5957be0b-7206-48b4-8280-ccb46874445c"}
+{"kind":"item_fila","itemId":"bf984930-5738-49e4-8051-d655c478c3cb","oid":"9dd954e9-2133-4e2f-8ef5-a1f49d45342e"}
+{"kind":"oferta","oid":"982013e5-a5d1-4947-b213-6555d10ed8f9","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"81bf7069-2716-41b7-b166-ced93672949c"}
+{"kind":"oferta","oid":"eea97004-a442-41e0-98c1-237ebff35526","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"7e2ad28e-e3db-4182-94d2-f00c61078e03"}
+{"kind":"oferta","oid":"c1716608-31e9-42a6-b2cf-310637c74a4c","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"fafd99c6-0d8a-4c29-8c85-f42876023d5c"}
+{"kind":"oferta","oid":"894ac12c-ef3b-4628-b1e7-6b9b86b0a04e","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"3975aa64-4e60-4710-a66c-c30d2dc4d33a"}
+{"kind":"item_fila","itemId":"68633358-7d6e-4657-b185-01e275400248","oid":"894ac12c-ef3b-4628-b1e7-6b9b86b0a04e"}
+{"kind":"oferta","oid":"0c96b785-d002-4315-85d4-36e914d28faf","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"9555eab9-444d-4c09-a6fe-451beef452f4"}
+{"kind":"oferta","oid":"a844fb9f-8f98-471d-950c-9c5ce3e6d4f0","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"b1483815-d75d-4699-a8a0-65f4a0539aaa"}
+{"kind":"item_fila","itemId":"f123ce71-ed2a-44f3-bec1-5978be416610","oid":"a844fb9f-8f98-471d-950c-9c5ce3e6d4f0"}
+{"kind":"oferta","oid":"f0250552-4342-478c-9f4c-3b30b4ef4c6d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"fece2674-135a-4906-8180-74c5bf45b7d9"}
+{"kind":"item_fila","itemId":"f2016a4b-a58d-460e-b4de-95ac6d26ecf8","oid":"f0250552-4342-478c-9f4c-3b30b4ef4c6d"}
+{"kind":"oferta","oid":"af6c0c4c-743a-485a-af1b-b4502853f830","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"83d2c643-459b-41b4-beb0-19cdde907d42"}
+{"kind":"item_fila","itemId":"94a6bb30-e3af-4aa5-afab-63349ed70c53","oid":"af6c0c4c-743a-485a-af1b-b4502853f830"}
+{"kind":"oferta","oid":"6e596e5b-f298-4a62-91f6-50e2cd98d6e8","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c8095e40-e88b-440b-af10-b9b998917745"}
+{"kind":"oferta","oid":"ac9c605b-700f-47cc-ba8a-8a478a3d4e1b","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c8095e40-e88b-440b-af10-b9b998917745"}
+{"kind":"oferta","oid":"87389549-b181-42ed-b8fa-48d69ae2ede0","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:16:00.151+00","acao":"descartar","mid":"da5d4506-5285-47fd-8520-4884779a6a75"}
+{"kind":"oferta","oid":"04fff3cb-8774-4e4c-b29c-e715f22d7888","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"dfeb690f-bebf-46a2-bf77-cabfaa652f5f"}
+{"kind":"oferta","oid":"1938de04-0e12-4c98-9a57-dd81bfe0f262","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"dfeb690f-bebf-46a2-bf77-cabfaa652f5f"}
+{"kind":"oferta","oid":"c17eae0f-6c02-4db4-9ce4-0a22c9f83090","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"597021e4-10eb-4813-8b8c-f52c885f1860"}
+{"kind":"oferta","oid":"ace66c2b-8bb7-4747-a8f2-2fba99d2ef98","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"fa05da41-f488-4843-9190-de7c6fa0fab5"}
+{"kind":"oferta","oid":"ed6593e3-8a0c-48fe-9aad-99394dc9ccbf","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"a5fa0b52-bd4a-4189-afaa-210ace895e15"}
+{"kind":"item_fila","itemId":"e56ce2ea-6fe9-4999-8003-6b573e54f341","oid":"ed6593e3-8a0c-48fe-9aad-99394dc9ccbf"}
+{"kind":"oferta","oid":"1dffa86c-e1a1-4619-acfa-d9b3538a4d39","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"597021e4-10eb-4813-8b8c-f52c885f1860"}
+{"kind":"oferta","oid":"5b573487-5046-4f90-968f-80ba022d0bf7","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"36381211-3ed9-473f-8e31-1c745070bc3f"}
+{"kind":"oferta","oid":"a4ecc9a2-e361-48f5-b09f-6bd3bcd02a9c","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"36381211-3ed9-473f-8e31-1c745070bc3f"}
+{"kind":"oferta","oid":"d33da734-8263-460e-be14-eef0ba43fc79","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"fece2674-135a-4906-8180-74c5bf45b7d9"}
+{"kind":"item_fila","itemId":"2117c5c4-9328-46b9-9e09-d33af2e03bcc","oid":"d33da734-8263-460e-be14-eef0ba43fc79"}
+{"kind":"oferta","oid":"da6c1437-c407-4927-a362-79464804cb45","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"8e5c4cbe-838e-4cc5-8a39-4d32f67d381d"}
+{"kind":"oferta","oid":"77952637-705a-4fda-8fce-ccbb5fcefa5a","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"9e046e45-a2b6-455d-9f25-fe85716aa365"}
+{"kind":"oferta","oid":"98cd3256-ae9e-499c-82b9-0364cc916c84","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"91c8265f-5207-4174-af65-db65de1a020c"}
+{"kind":"oferta","oid":"316b4099-2187-4ac0-a5e9-b2cfea573553","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"48dacdf5-0667-4905-b4a1-372f4702e4a0"}
+{"kind":"oferta","oid":"72f14abd-4b70-4f5e-b36e-495827ce8b21","prevStatus":"active","prevPublishedAt":"2026-11-11 10:10:54.87+00","acao":"ativa_para_fila","mid":"209bd5d9-ad53-402a-91c8-71c7e8398e44"}
+{"kind":"item_fila","itemId":"ee1a4817-3f1e-46ee-b9a9-5f464b0633eb","oid":"72f14abd-4b70-4f5e-b36e-495827ce8b21"}
+{"kind":"oferta","oid":"bcbe472f-4651-4070-8680-08117c9f4e0b","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"48dacdf5-0667-4905-b4a1-372f4702e4a0"}
+{"kind":"oferta","oid":"d279e453-4cf0-421f-8926-4860b22518f1","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"f2d02cc4-82c3-4b28-8952-61ba994a80bf"}
+{"kind":"oferta","oid":"cbb7a214-478d-479c-8bf0-d5c398980042","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"19b33760-afb3-4c56-b29c-76f291a97274"}
+{"kind":"oferta","oid":"d3e71320-301d-4c33-8fd0-981929f6e597","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"94084fa4-2966-464d-9093-865f3a809b92"}
+{"kind":"oferta","oid":"ebd8c28c-3d79-4c68-b73d-601b2747af1d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"147acde9-3a13-4952-9028-3427b989568b"}
+{"kind":"oferta","oid":"23d5c92f-de3f-41a4-96bc-f80b851feccd","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"ab487bd1-3741-4c7c-9cdc-d3008b20f650"}
+{"kind":"oferta","oid":"841377ef-cd80-40c9-a73b-33a4588a095b","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"a89002cb-dfb5-4f8f-aa64-51bff889aa01"}
+{"kind":"oferta","oid":"dd68971d-df9e-43dd-8eb0-c1b867f2e075","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"a89002cb-dfb5-4f8f-aa64-51bff889aa01"}
+{"kind":"oferta","oid":"055d991b-5efc-462d-a727-a4860092436b","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"2b37811a-87d7-4aa6-ba1f-413d4c4ebe87"}
+{"kind":"oferta","oid":"eb044a36-6df5-4e54-8dda-19ff111959c7","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"2db6e75b-0a74-4fdd-b684-ab7a28244488"}
+{"kind":"item_fila","itemId":"b15adf14-d92c-4efc-b3dc-2d2ba2d70cf2","oid":"eb044a36-6df5-4e54-8dda-19ff111959c7"}
+{"kind":"oferta","oid":"81567891-c193-405d-b521-4baff79b316c","prevStatus":"draft","prevPublishedAt":null,"acao":"reativar","mid":"4024cd76-a6b8-4bb8-b5ce-235832278c47"}
+{"kind":"oferta","oid":"41ea87e2-cb1a-4c04-a484-181c8e72008f","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:41:50.887+00","acao":"descartar","mid":"9a4cc1db-13f5-47ed-8a2d-060c1bf59ee5"}
+{"kind":"oferta","oid":"fdd19dba-b351-471e-8dac-8a72411219e0","prevStatus":"draft","prevPublishedAt":null,"acao":"descartar","mid":"de4c35d7-ad19-40d8-bbe0-92f07f957067"}
+{"kind":"oferta","oid":"3533828f-8742-4562-87a1-41b8b4385c7a","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"9d518181-362f-486b-8f48-2504f246fd1f"}
+{"kind":"item_fila","itemId":"d3af4d31-51c3-4c1f-b205-4b8f9d22698d","oid":"3533828f-8742-4562-87a1-41b8b4385c7a"}
+{"kind":"oferta","oid":"bc41e2a4-88c6-490b-8a93-1890f00f9e37","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"b78920dd-babe-4c04-8b2a-59a84564adff"}
+{"kind":"item_fila","itemId":"906b33e1-4482-4f6a-a9e6-6e4d08a40b1a","oid":"bc41e2a4-88c6-490b-8a93-1890f00f9e37"}
+{"kind":"oferta","oid":"f7bc0ea1-d25d-4745-b787-173deedc7fe3","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"de4c35d7-ad19-40d8-bbe0-92f07f957067"}
+{"kind":"item_fila","itemId":"4f3655bc-814f-4979-ad20-0415f9b17dae","oid":"f7bc0ea1-d25d-4745-b787-173deedc7fe3"}
+{"kind":"oferta","oid":"615c4f43-50fc-41d3-ba66-4d528582da2e","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:58:59.585+00","acao":"descartar","mid":"69f163bd-d11c-4726-a3f9-dac8e9470f3b"}
+{"kind":"oferta","oid":"60096666-a0d0-4e77-8f77-b2201078949e","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"b78920dd-babe-4c04-8b2a-59a84564adff"}
+{"kind":"item_fila","itemId":"1cbd1363-a73e-404f-bfc8-0a86311a181a","oid":"60096666-a0d0-4e77-8f77-b2201078949e"}
+{"kind":"oferta","oid":"ae0a5680-83ee-4b13-9061-b2f03d83bcad","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"d8bb0989-1e21-4f4d-b124-c3eec95ef9bf"}
+{"kind":"oferta","oid":"72240af6-9a2b-4a75-9d71-575b80f67fe5","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:58:59.168+00","acao":"descartar","mid":"69f163bd-d11c-4726-a3f9-dac8e9470f3b"}
+{"kind":"oferta","oid":"15f3280e-7569-4bf2-a0b8-bf3e7e4cf8be","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"de671e37-c5ea-4743-a438-97d305fbd0fd"}
+{"kind":"oferta","oid":"82765f0a-b390-4fc8-bd0f-c2d2dd74c9d0","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:29:22.453+00","acao":"descartar","mid":"6c933b0e-6448-447e-b7fd-74fd2abbb53f"}
+{"kind":"oferta","oid":"fbe75d4d-f39a-444b-9c61-46c2c72a417b","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:08:34.309+00","acao":"descartar","mid":"3689ecdd-7ee0-4675-b901-476b1d5cb9ee"}
+{"kind":"oferta","oid":"cd55b9fa-eada-4ceb-8eec-5f8b334c8b7e","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:36:56.568+00","acao":"descartar","mid":"8f4b8534-9bdd-4a09-b00f-00f30e40a2e0"}
+{"kind":"oferta","oid":"3f8f96d4-da50-4d40-a5ac-1aadc76f5b6d","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:34:23.148+00","acao":"descartar","mid":"82985cb9-7982-4a67-aef4-9aaefce5c5f9"}
+{"kind":"oferta","oid":"b2f9c509-ac4d-46c2-a803-c2a0e3fffef2","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:00:08.012+00","acao":"descartar","mid":"79ee1a7b-934f-4f67-b29e-8eaba5f394f8"}
+{"kind":"oferta","oid":"c5658e86-70f5-496c-a067-4670a8403b37","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"d51effa2-9ffc-4def-9333-db2d8279e4fd"}
+{"kind":"item_fila","itemId":"b7bbb50d-5ec1-4672-b322-3560a03e4ee4","oid":"c5658e86-70f5-496c-a067-4670a8403b37"}
+{"kind":"oferta","oid":"fde97ccb-c5e3-4077-b3df-515248e4e12d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"bf71afda-1c25-4534-94d7-622a255d90ee"}
+{"kind":"item_fila","itemId":"35ff6399-2f36-4a44-805f-d93cb3759062","oid":"fde97ccb-c5e3-4077-b3df-515248e4e12d"}
+{"kind":"oferta","oid":"01e79574-a3b1-4ca3-9627-6cde0a951918","prevStatus":"draft","prevPublishedAt":null,"acao":"reativar","mid":"bcca1c77-278e-47a9-aa85-dcef69fb32f0"}
+{"kind":"oferta","oid":"9e865d54-28f7-458a-af76-8d0cabdf45b2","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"d261a336-298a-490a-b951-3197b5d0f2ba"}
+{"kind":"item_fila","itemId":"f9419d45-8c46-452a-9e8c-72c57281300d","oid":"9e865d54-28f7-458a-af76-8d0cabdf45b2"}
+{"kind":"oferta","oid":"a6eba802-00e7-4cf1-a71e-074596b41b69","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"3280d20b-5dfd-4891-94e2-274c4ef6f65f"}
+{"kind":"item_fila","itemId":"7bce5eb5-d6f9-41de-a1cf-5a11ca7f0c0b","oid":"a6eba802-00e7-4cf1-a71e-074596b41b69"}
+{"kind":"oferta","oid":"088cf5b9-bd9a-4346-ae97-d2b699aaca92","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"3280d20b-5dfd-4891-94e2-274c4ef6f65f"}
+{"kind":"item_fila","itemId":"443d74a1-e6b4-4a3e-8e5b-9b68bd89bb78","oid":"088cf5b9-bd9a-4346-ae97-d2b699aaca92"}
+{"kind":"oferta","oid":"af5a7edc-8c68-48ab-a02e-d5ffb72429aa","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c87c097e-44e2-48e5-8ea1-a73c831a6e0c"}
+{"kind":"item_fila","itemId":"00287180-8229-4744-bace-b3fcecceb3bf","oid":"af5a7edc-8c68-48ab-a02e-d5ffb72429aa"}
+{"kind":"oferta","oid":"f7bd538a-79ec-4b4d-b3a5-6f0f92edd8ff","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"cc386b73-b57a-4c3f-8b8a-dc7cee4ed21a"}
+{"kind":"item_fila","itemId":"e59ff901-5421-47a7-b5cb-76d6ab330647","oid":"f7bd538a-79ec-4b4d-b3a5-6f0f92edd8ff"}
+{"kind":"oferta","oid":"1334d741-ca49-45fd-9a28-31e38510d36a","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c87c097e-44e2-48e5-8ea1-a73c831a6e0c"}
+{"kind":"item_fila","itemId":"ef25794a-37c8-41eb-a005-8df5fb6b7b56","oid":"1334d741-ca49-45fd-9a28-31e38510d36a"}
+{"kind":"oferta","oid":"9f5a9e12-c69a-44c8-a435-faf3051b23eb","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"bec71a3a-60f6-4ca8-a061-b6fdcd76a71b"}
+{"kind":"item_fila","itemId":"6e865f22-1c86-4b43-90a9-ba5c39717d56","oid":"9f5a9e12-c69a-44c8-a435-faf3051b23eb"}
+{"kind":"oferta","oid":"943b906d-17b0-4680-831e-621f2669e691","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"d94dfb47-6b71-4dba-a522-08fb20bd8733"}
+{"kind":"oferta","oid":"1ff5e17b-6b7f-4fd3-8b80-bc15c02d4a69","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"efc93480-1363-4e2b-8257-d30a1c8fa80c"}
+{"kind":"oferta","oid":"f06540d8-7b5b-4c98-ac21-fb773dd64c8f","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:23:21.715+00","acao":"descartar","mid":"42d7ab02-1cf9-4461-8a50-5ba3423605fc"}
+{"kind":"oferta","oid":"7a14df29-798a-4a7e-a528-f05ed017dd16","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c692defb-8871-480b-a876-1a3290832ade"}
+{"kind":"item_fila","itemId":"94df6bff-0f57-4859-af1c-c7570c599757","oid":"7a14df29-798a-4a7e-a528-f05ed017dd16"}
+{"kind":"oferta","oid":"d4c4fc12-e355-438e-892f-3530cda312b3","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:23:22.165+00","acao":"descartar","mid":"42d7ab02-1cf9-4461-8a50-5ba3423605fc"}
+{"kind":"oferta","oid":"bdead27e-6eaf-4411-8946-2d6aee53bb5c","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"bc9c10f0-c3d1-4706-860a-d821dd1a30c7"}
+{"kind":"item_fila","itemId":"0f8387d4-6db7-42e3-bdef-d0806d8944b3","oid":"bdead27e-6eaf-4411-8946-2d6aee53bb5c"}
+{"kind":"oferta","oid":"76b65087-bb6c-454f-8e9e-c1fab67e6dd3","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"89a32913-6607-4751-b6b3-04418d948269"}
+{"kind":"item_fila","itemId":"c7a9c3ed-4481-4ec0-82e5-4bae5a323253","oid":"76b65087-bb6c-454f-8e9e-c1fab67e6dd3"}
+{"kind":"oferta","oid":"f638892e-875f-4df9-80b7-98e43c49879b","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"ca63e168-d878-4564-8944-a5f9b9c96f7f"}
+{"kind":"item_fila","itemId":"a7b7fdb6-9735-401b-81f6-ef2364894ec6","oid":"f638892e-875f-4df9-80b7-98e43c49879b"}
+{"kind":"oferta","oid":"614e6844-8aea-44f8-9260-a6fe4f956762","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"27b6fc41-e6ad-43d6-947c-73fd5374053b"}
+{"kind":"oferta","oid":"0e39053d-2861-41c2-9124-1aa806daef0c","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:16:00.661+00","acao":"descartar","mid":"e489460a-8e27-4f1a-b1c2-d967366739b0"}
+{"kind":"oferta","oid":"e3999eee-08c7-4f3a-8272-0bad3eeafa5a","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:16:01.085+00","acao":"descartar","mid":"e489460a-8e27-4f1a-b1c2-d967366739b0"}
+{"kind":"oferta","oid":"1ee3c254-e7b6-4d90-8a4e-7c57e5b3db7c","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"aa033599-30d4-466a-afc1-b7a292b5853c"}
+{"kind":"item_fila","itemId":"8dc40d71-a787-4a3a-a413-5ce3a78c1aec","oid":"1ee3c254-e7b6-4d90-8a4e-7c57e5b3db7c"}
+{"kind":"oferta","oid":"264d4dc8-cd1f-4803-b5e3-f5add225f06d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"e13fbd06-af81-4acf-aa20-a62d718ae6ea"}
+{"kind":"oferta","oid":"4cfd8356-49a1-4bae-b01a-b3468fcaf054","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:34:22.695+00","acao":"descartar","mid":"82985cb9-7982-4a67-aef4-9aaefce5c5f9"}
+{"kind":"oferta","oid":"c1ea8117-436f-4c87-90a8-e2209206a96e","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c1f774a0-d529-41fc-a1df-0a01dbfa5b41"}
+{"kind":"item_fila","itemId":"2264677c-3f15-43c9-88f3-a7b8ad868786","oid":"c1ea8117-436f-4c87-90a8-e2209206a96e"}
+{"kind":"oferta","oid":"dfb1f44c-e34d-497d-b11f-4d4d7b3c91c8","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"d8bb0989-1e21-4f4d-b124-c3eec95ef9bf"}
+{"kind":"oferta","oid":"9da299e4-8eb1-4e57-a559-9bcba2117ec9","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c10bcd32-bcdb-4be9-abdc-1f6a718e2e1d"}
+{"kind":"oferta","oid":"fb6fe3b7-784b-4e0b-b670-fe8d2969c03a","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"bab00c25-5408-4d0b-a931-e871f83f18e1"}
+{"kind":"oferta","oid":"7452198a-b502-4a33-aa83-7558d4488e98","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"bb9bcd03-4348-4ed1-9984-acda876ed471"}
+{"kind":"item_fila","itemId":"c6df87db-90bf-4b3a-a883-588165a9f713","oid":"7452198a-b502-4a33-aa83-7558d4488e98"}
+{"kind":"oferta","oid":"6f2dc4de-d23c-40a4-b50d-74ed61cb1a87","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:41:51.306+00","acao":"descartar","mid":"9a4cc1db-13f5-47ed-8a2d-060c1bf59ee5"}
+{"kind":"oferta","oid":"e1b7f92b-a29c-48e9-a361-4be0d2a0a147","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:46:38.061+00","acao":"descartar","mid":"7ed0eb9b-c747-4893-b626-449258b3b06d"}
+{"kind":"oferta","oid":"7d80f237-b06b-44d4-bf67-ea27641892bb","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"14cc4908-4e8f-4970-ab9c-87b6d2e5fa5f"}
+{"kind":"item_fila","itemId":"d8e6c128-17c7-4bba-9118-c955239c6e1e","oid":"7d80f237-b06b-44d4-bf67-ea27641892bb"}
+{"kind":"oferta","oid":"26bc2d84-5483-4231-afe4-017e4a6043a1","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"8e940395-c211-42a6-acd4-6cdb89ef2fa7"}
+{"kind":"item_fila","itemId":"6f2bd0bf-2c8b-4fd5-ac91-d00a1c98c494","oid":"26bc2d84-5483-4231-afe4-017e4a6043a1"}
+{"kind":"oferta","oid":"63573ee3-0d80-411b-b493-98339259f805","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:46:37.58+00","acao":"descartar","mid":"7ed0eb9b-c747-4893-b626-449258b3b06d"}
+{"kind":"oferta","oid":"d1a6aaaa-374e-4470-930d-bd72fb78698c","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:03:42.704+00","acao":"descartar","mid":"d55a0945-4eaa-4839-bac3-1e393762d519"}
+{"kind":"oferta","oid":"d7180504-0539-4dfc-a86f-2f280b478e4b","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:51:53.424+00","acao":"descartar","mid":"7ec7156c-d0e2-4ab2-a302-bc3234338b3b"}
+{"kind":"oferta","oid":"fce9f8a7-0dcb-4085-a0f6-7f76ba4e7320","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"70550556-57d7-46b9-a4ea-a5a5b04e08c2"}
+{"kind":"item_fila","itemId":"90554f94-9545-425f-82cf-32f93c99350e","oid":"fce9f8a7-0dcb-4085-a0f6-7f76ba4e7320"}
+{"kind":"oferta","oid":"47191f9c-61fb-41d0-b218-f0f97df103ea","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:54:16.966+00","acao":"descartar","mid":"ba72273c-45e8-471e-b432-a207323ef615"}
+{"kind":"oferta","oid":"6d8c4418-9a10-468d-bc19-e34c147d65d5","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:49:18.278+00","acao":"descartar","mid":"380cdef8-65b0-4317-8577-288aa1b33c27"}
+{"kind":"oferta","oid":"b6ab42fb-8107-4698-b1d5-de96b95cf331","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"1417549b-cbff-4c4c-bd81-4768d03ca143"}
+{"kind":"item_fila","itemId":"2c7c4c94-50ac-4b0e-94dd-e30a2aed9268","oid":"b6ab42fb-8107-4698-b1d5-de96b95cf331"}
+{"kind":"oferta","oid":"5a7cebcd-6bc6-4185-bc2a-a3509353fef7","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:00:07.591+00","acao":"descartar","mid":"79ee1a7b-934f-4f67-b29e-8eaba5f394f8"}
+{"kind":"oferta","oid":"f5ab7d75-0135-49d8-9f1f-8e443e40245d","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:45:20.679+00","acao":"descartar","mid":"69bebc25-c831-42e3-84ff-9d1bf237adcd"}
+{"kind":"oferta","oid":"708db1ae-3d8f-42d2-968d-7c5ce982a93c","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:15:59.713+00","acao":"descartar","mid":"da5d4506-5285-47fd-8520-4884779a6a75"}
+{"kind":"oferta","oid":"73d84119-52e4-4488-8030-1f7443da66a8","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"0e0e9303-0dec-48e1-b0af-1d8633fec001"}
+{"kind":"oferta","oid":"4f5adddd-6d1f-469c-9a2f-833eb1150a0f","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"0e0e9303-0dec-48e1-b0af-1d8633fec001"}
+{"kind":"oferta","oid":"70190432-84e0-4b88-8410-addc26f69d18","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"dea62dd7-dd71-414b-b92b-275eb93facd6"}
+{"kind":"oferta","oid":"c777d36c-3b6a-4d5a-a4e8-69eaf552ece6","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"fbac8a29-585c-4584-8e75-5691cec1c580"}
+{"kind":"oferta","oid":"0e9f7e77-58a0-4774-a56e-e83a4dc562fc","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"fbac8a29-585c-4584-8e75-5691cec1c580"}
+{"kind":"oferta","oid":"0dfa01e2-1337-4820-8f7d-12606f02bd6d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c4dae344-c9a8-44ff-b841-6f069d24cd6f"}
+{"kind":"oferta","oid":"5ab99eac-de39-4c90-8382-a5de9bb960fd","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"7d7b00bf-8de6-4fa0-bfff-01ddaebb6317"}
+{"kind":"item_fila","itemId":"8989d560-f8c6-442a-9233-14b35840de8f","oid":"5ab99eac-de39-4c90-8382-a5de9bb960fd"}
+{"kind":"oferta","oid":"2dcab649-544c-485e-b31b-15c9a4dd3c07","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"7d7b00bf-8de6-4fa0-bfff-01ddaebb6317"}
+{"kind":"item_fila","itemId":"f4893e77-7c4d-4ab9-8ca2-41cd04ea2c23","oid":"2dcab649-544c-485e-b31b-15c9a4dd3c07"}
+{"kind":"oferta","oid":"77f9c5af-2d48-435f-b6d4-964b50850c85","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"8305c0c8-1000-4eb2-b834-7ed97e3388a5"}
+{"kind":"oferta","oid":"4d00e335-8f4a-4977-9d30-ee0206ced55e","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"41b7df7c-8297-4439-977c-66576abceaed"}
+{"kind":"oferta","oid":"02810562-1e87-407b-bae7-1fb557bc2eba","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:08:34.744+00","acao":"descartar","mid":"3689ecdd-7ee0-4675-b901-476b1d5cb9ee"}
+{"kind":"oferta","oid":"547c0ffd-b032-4684-ae35-e33fb50c9274","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:24:19.08+00","acao":"descartar","mid":"53b5751c-86d3-45ff-baa4-0ed1b4b45aa7"}
+{"kind":"oferta","oid":"2a1b88c3-ccce-4d5a-9036-c2e18416880e","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:56:45.051+00","acao":"descartar","mid":"1e1a3c8e-b768-4e67-a216-770ca1fd181d"}
+{"kind":"oferta","oid":"d3d19615-6741-41c6-9607-d9d630350ea6","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"f6c21c68-f48f-4c68-8918-208dfee5d3bf"}
+{"kind":"oferta","oid":"a5cf5462-be04-403e-8989-ffab7ed547f7","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"f6c21c68-f48f-4c68-8918-208dfee5d3bf"}
+{"kind":"oferta","oid":"514d0e14-84df-4e68-a855-a8ac767c9c6f","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"a356c6be-901c-46f1-b472-7685e15fd4ff"}
+{"kind":"oferta","oid":"832e0464-dd99-44be-bfee-142ec1b812d8","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"22bd2ecb-341d-4f49-a8f7-a62ad03fc4fa"}
+{"kind":"oferta","oid":"ab8e7994-f841-4f37-8259-7726a3536b50","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"8754a4d7-2cb5-4d5b-88a3-72854e8eeaf7"}
+{"kind":"oferta","oid":"547aca88-ce81-434e-9ab0-c554f17ad094","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"760c7f4f-d0e8-4ce7-99a3-292168585942"}
+{"kind":"oferta","oid":"cae480a4-70b9-4e70-a805-2505c742803d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"760c7f4f-d0e8-4ce7-99a3-292168585942"}
+{"kind":"oferta","oid":"3886441d-6858-4f2f-b44c-3a89aade4419","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"f37ce25e-11ff-494b-8000-ac44c6bc2c42"}
+{"kind":"oferta","oid":"16d72695-0308-4e14-91b3-8b66f5bff491","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:36:56.13+00","acao":"descartar","mid":"8f4b8534-9bdd-4a09-b00f-00f30e40a2e0"}
+{"kind":"oferta","oid":"ff983974-090c-4da2-9147-bc0d66306a43","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:51:53.849+00","acao":"descartar","mid":"7ec7156c-d0e2-4ab2-a302-bc3234338b3b"}
+{"kind":"oferta","oid":"1b525d1e-c531-4e08-b31f-8b58e2302592","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"d688b311-51b6-4604-a830-c81549ee95a5"}
+{"kind":"item_fila","itemId":"5b711594-5083-4088-9332-0dad2424c75c","oid":"1b525d1e-c531-4e08-b31f-8b58e2302592"}
+{"kind":"oferta","oid":"9aa762dc-97ad-464b-8ce2-041a76caf93b","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:29:34.704+00","acao":"descartar","mid":"86ea37bb-690a-40d8-87ca-d4d35e217ea6"}
+{"kind":"oferta","oid":"4e741b07-be3f-48fe-994a-d66eea102c81","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:24:16.986+00","acao":"descartar","mid":"2ff1e310-9631-419a-97b4-56bb60307587"}
+{"kind":"oferta","oid":"91e070e6-a023-41b5-9ffe-3a02710ec773","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:20:58.112+00","acao":"descartar","mid":"28bef9dc-37f3-479a-a54a-e3997dd0452d"}
+{"kind":"oferta","oid":"f797b61e-9351-47a0-8e33-a4ede364c508","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"852f163b-21e7-4632-8199-b513f8aceda9"}
+{"kind":"item_fila","itemId":"830e2bcb-1c80-47e9-9159-33bacdafd144","oid":"f797b61e-9351-47a0-8e33-a4ede364c508"}
+{"kind":"oferta","oid":"d03ae68e-8a12-42ed-b3da-11142b0c90c6","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"852f163b-21e7-4632-8199-b513f8aceda9"}
+{"kind":"item_fila","itemId":"f4301a8d-d4e5-44df-8919-05191a3d10f1","oid":"d03ae68e-8a12-42ed-b3da-11142b0c90c6"}
+{"kind":"oferta","oid":"57ee57c9-98e7-40a5-b177-ba334fac851b","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:08:35.221+00","acao":"descartar","mid":"3cdeda30-82a9-4344-a33f-f2e90e4a658a"}
+{"kind":"oferta","oid":"e1840ed5-b90f-41d6-b1fa-0104a70bbf8a","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:31:54.415+00","acao":"descartar","mid":"e22e7407-6788-4652-8e9c-d0687498ffc3"}
+{"kind":"oferta","oid":"d5686e25-b3a8-45d5-be18-a5e61d9968b0","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"8235b849-c146-4499-9fe5-bc0140318dc7"}
+{"kind":"oferta","oid":"ede0b0e7-6dd9-4490-8956-33012882cd15","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"7f69793c-609b-424f-8224-d2fc18c6bf4d"}
+{"kind":"oferta","oid":"7fba93dc-ec3a-4ab2-b3fb-54ab868bdd64","prevStatus":"paused","prevPublishedAt":"2026-11-11 01:30:56.184+00","acao":"descartar","mid":"98530f1c-815b-4883-93cb-4ed0ad61c2df"}
+{"kind":"oferta","oid":"c2d64e53-4502-4273-bbcc-d16e11ed5621","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"35e650e3-eb9f-4f40-8886-d8116afc2a1b"}
+{"kind":"item_fila","itemId":"ff0dac4e-02a0-4528-8784-b5da6e87779a","oid":"c2d64e53-4502-4273-bbcc-d16e11ed5621"}
+{"kind":"oferta","oid":"9b8ce303-4c93-4d87-8b99-52cebf0fad62","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"94cda446-108c-43ae-a647-07ea55b1f6ae"}
+{"kind":"oferta","oid":"ab6e8a7c-1cc0-4e14-a509-66cbd92b0f36","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"94cda446-108c-43ae-a647-07ea55b1f6ae"}
+{"kind":"oferta","oid":"bf6c8b6c-e2a2-42a2-9d64-23f5697c323d","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"90a0b64d-fc46-4b46-8374-2a2a8e87f642"}
+{"kind":"item_fila","itemId":"6864a732-b523-4049-bee4-0499a9a645a0","oid":"bf6c8b6c-e2a2-42a2-9d64-23f5697c323d"}
+{"kind":"oferta","oid":"aa8b1705-7f50-43b9-a62d-17b0f59bc514","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"8fc13308-73b9-43a8-9d0c-a2439eb7fd76"}
+{"kind":"item_fila","itemId":"bf761d89-e45c-4743-9d1c-ce9bfb38581d","oid":"aa8b1705-7f50-43b9-a62d-17b0f59bc514"}
+{"kind":"oferta","oid":"8e3da308-8da3-44e8-a403-b09ec7de7768","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"9eff1e44-f1ea-4ae4-8a96-b242f271ae67"}
+{"kind":"item_fila","itemId":"6e736130-16c5-4163-b459-184edb605378","oid":"8e3da308-8da3-44e8-a403-b09ec7de7768"}
+{"kind":"oferta","oid":"6d681bfc-9c23-4d54-8cd7-443bca81c1c0","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c86e097d-1017-471e-8910-407c4e04fda7"}
+{"kind":"item_fila","itemId":"f4eaf2ca-c32a-41d1-8a82-70ebb976f9d6","oid":"6d681bfc-9c23-4d54-8cd7-443bca81c1c0"}
+{"kind":"oferta","oid":"83df0748-6ea9-4810-9ff3-0a3e677d5a00","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"48e407c6-114a-4985-8a33-3506cddfd57f"}
+{"kind":"item_fila","itemId":"b3922988-966f-45de-a576-ef03fd08513d","oid":"83df0748-6ea9-4810-9ff3-0a3e677d5a00"}
+{"kind":"oferta","oid":"46ea533c-3c73-4ec5-bef7-b6e00ef0a2c6","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"c86e097d-1017-471e-8910-407c4e04fda7"}
+{"kind":"item_fila","itemId":"dae94183-c6a9-4ce5-b01f-653e0a2d9f48","oid":"46ea533c-3c73-4ec5-bef7-b6e00ef0a2c6"}
+{"kind":"oferta","oid":"dafe23dd-f397-46e6-b9fe-334f306a15e2","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"62f3fc36-5fca-4996-8cfc-fc0a87e689fc"}
+{"kind":"oferta","oid":"240f61d6-3faf-424c-846a-1772ab37a879","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"678b8c8b-72c1-4c05-882c-2c01b97136bc"}
+{"kind":"oferta","oid":"787034da-1fff-41d4-982f-6b132fa33be8","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"104fe565-281c-4d55-8ea8-6726b7ba5dab"}
+{"kind":"oferta","oid":"fba0037f-44e4-4d6a-8c2b-ad3bd91979e8","prevStatus":"paused","prevPublishedAt":"2026-11-11 00:31:54.946+00","acao":"descartar","mid":"e22e7407-6788-4652-8e9c-d0687498ffc3"}
+{"kind":"oferta","oid":"81af3964-2bd1-4400-91a7-bc053c1ad0a2","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"33927a0d-17ea-4332-829e-834afe841243"}
+{"kind":"oferta","oid":"a998d0b0-c1b6-445b-95c7-913b95a60388","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"62080372-6c6d-47e5-a0cf-856c17305fe5"}
+{"kind":"item_fila","itemId":"a9633f2b-c00d-4f15-adfc-cb063aefbcf9","oid":"a998d0b0-c1b6-445b-95c7-913b95a60388"}
+{"kind":"oferta","oid":"e2749478-886b-4886-8360-439a6c5c7df1","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"2667b32e-f080-470a-8125-2fb1a02bdee6"}
+{"kind":"item_fila","itemId":"7cf892a4-db31-431a-a84e-6b52569872cf","oid":"e2749478-886b-4886-8360-439a6c5c7df1"}
+{"kind":"oferta","oid":"2a22a78c-c158-4900-95a8-7cef28d1783a","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"2667b32e-f080-470a-8125-2fb1a02bdee6"}
+{"kind":"item_fila","itemId":"26e7636c-e54e-43f2-bc62-de7065ee8700","oid":"2a22a78c-c158-4900-95a8-7cef28d1783a"}
+{"kind":"oferta","oid":"9c1f5820-04f8-4e78-b196-6102907f438b","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"5c4660f0-41f2-4a92-b5dc-e250bd108e24"}
+{"kind":"item_fila","itemId":"fca7ffb9-4971-4321-960f-f20a0c508759","oid":"9c1f5820-04f8-4e78-b196-6102907f438b"}
+{"kind":"oferta","oid":"34c9be1b-cf0e-42d7-a18b-57e824bbd578","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"1b620e05-aee9-4281-8079-45c3f1ccb4bd"}
+{"kind":"oferta","oid":"78fdffe5-449a-42d8-8068-5033d54e6a02","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"6f937d48-8a6d-4769-bab1-659cc55857c7"}
+{"kind":"oferta","oid":"b3a48fe3-db74-4605-94d5-3c38da08ab32","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"6f937d48-8a6d-4769-bab1-659cc55857c7"}
+{"kind":"oferta","oid":"b3e5f272-d794-4e4b-b302-633c0d53db43","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"9a018e6e-7422-4622-b18e-ddd713f2fe7a"}
+{"kind":"oferta","oid":"3834b515-e211-43e0-8e59-28048048e172","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"104fe565-281c-4d55-8ea8-6726b7ba5dab"}
+{"kind":"oferta","oid":"522fd818-73a2-4287-859c-f09f9e4240d1","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"f2d02cc4-82c3-4b28-8952-61ba994a80bf"}
+{"kind":"oferta","oid":"810b84ab-e58f-444c-9d43-02ac8dd7eeb4","prevStatus":"draft","prevPublishedAt":null,"acao":"fila","mid":"cc595e54-2089-4cb5-b324-f17d63ba1ee5"}
