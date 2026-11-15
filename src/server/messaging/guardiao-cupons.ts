@@ -64,6 +64,8 @@ export interface GuardiaoDeps {
   now?: Date;
   /** false = só fecha os cupons (modo dry/sem token): os cards ficam pendentes. */
   canSend?: boolean;
+  /** false = texto antigo (sem nome do cupom e sem produto). Padrão: ligado. */
+  detail?: boolean;
   /** Prazo total (ms) para não estourar o tempo da rota. */
   budgetMs?: number;
 }
@@ -138,14 +140,14 @@ export async function rodarGuardiao(deps: GuardiaoDeps): Promise<GuardiaoResult>
       const netName = NETWORK_NAMES[ann.networkSlug] ?? 'a loja';
       let photo: Uint8Array | null = null;
       try {
-        photo = await deps.render({ storeSlug: ch.slug, label: cardLabel(ann.kind, ann.label), networkName: netName, at: now });
+        photo = await deps.render({ storeSlug: ch.slug, label: cardLabel(ann.kind, ann.label, deps.detail !== false), networkName: netName, at: now });
       } catch {
         photo = null; // sem imagem, o aviso sai só em texto
       }
       const sent = await sendTelegramGroupMessage({
         token: deps.token,
         chatId: ch.chatId,
-        text: endedCaption({ kind: ann.kind, label: ann.label, networkSlug: ann.networkSlug, adTag: deps.adTag ?? '' }, escapeTelegramHtml),
+        text: endedCaption({ kind: ann.kind, label: ann.label, networkSlug: ann.networkSlug, adTag: deps.adTag ?? '', productTitle: ann.productTitle, detail: deps.detail }, escapeTelegramHtml),
         silent: true,
         photo,
         fetchImpl: deps.fetchImpl,
@@ -171,11 +173,11 @@ export async function rodarGuardiao(deps: GuardiaoDeps): Promise<GuardiaoResult>
 // ---------------------------------------------------------------------------
 type AnnRow = {
   id: string; network_slug: string; kind: string; coupon_ref: string; label: string; offer_id: string | null; vertical: string;
-  store_id: string | null; first_sent_at: string | Date; last_sent_at: string | Date; ended_at?: string | Date; end_reason?: string;
+  store_id: string | null; first_sent_at: string | Date; last_sent_at: string | Date; ended_at?: string | Date; end_reason?: string; product_title?: string | null;
 };
 const mapAnn = (r: AnnRow): Announcement => ({
   id: r.id, networkSlug: r.network_slug, kind: r.kind as AnnKind, couponRef: r.coupon_ref, label: r.label, offerId: r.offer_id,
-  vertical: r.vertical, storeId: r.store_id, firstSentAt: new Date(r.first_sent_at), lastSentAt: new Date(r.last_sent_at),
+  vertical: r.vertical, storeId: r.store_id, firstSentAt: new Date(r.first_sent_at), lastSentAt: new Date(r.last_sent_at), productTitle: r.product_title ?? null,
 });
 const ANN_COLS = sql`id::text AS id, network_slug, kind, coupon_ref, label, offer_id::text AS offer_id, vertical, store_id::text AS store_id, first_sent_at, last_sent_at`;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -228,7 +230,8 @@ export const dbGuardiaoStore: GuardiaoStore = {
 
   async listPending(now, limit) {
     const rows = (await db.execute<AnnRow>(sql`
-      SELECT ${ANN_COLS}, ended_at, end_reason FROM coupon_announcements
+      SELECT ${ANN_COLS}, ended_at, end_reason, (SELECT o.title FROM affiliate_offers o WHERE o.id = coupon_announcements.offer_id) AS product_title
+      FROM coupon_announcements
       WHERE ended_at IS NOT NULL AND end_notified_at IS NULL AND ended_at > ${now.toISOString()}::timestamptz - make_interval(mins => ${ENDED_CARD_STALE_MIN}::int)
         AND (end_reason IN ('sumiu_da_pagina', 'cancelado_pelo_dono') OR (end_reason = 'venceu' AND kind <> 'anuncio'))
       ORDER BY ended_at LIMIT ${limit}`)) as unknown as AnnRow[];
@@ -310,6 +313,7 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
       token: process.env.TELEGRAM_BOT_TOKEN,
       adTag: getAdTag(),
       canSend,
+      detail: process.env.GROUP_ENDED_COUPON_DETAIL !== 'off',
       budgetMs: opts.budgetMs ?? 15_000,
       now: started,
     });

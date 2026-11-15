@@ -1,6 +1,8 @@
 // Regras PURAS do Guardião de Cupons (Agente de Cupons). Sem server-only, sem banco, sem rede: testável.
 // Decide se um cupom que JÁ DIVULGAMOS segue válido, por que encerrou e se isso merece um card nos grupos.
 
+import { isGenericCouponName } from '@/lib/coupons/coupon-name';
+
 export const ANN_KINDS = ['anuncio', 'campanha', 'loja', 'categoria'] as const;
 export type AnnKind = (typeof ANN_KINDS)[number];
 
@@ -33,6 +35,8 @@ export interface Announcement {
   storeId: string | null;
   firstSentAt: Date;
   lastSentAt: Date;
+  /** Título do produto da oferta em que o cupom foi divulgado (só cupom de anúncio; null = desconhecido). */
+  productTitle?: string | null;
 }
 
 /** O que a fonte diz hoje sobre o cupom de ANÚNCIO (última leitura da aba logada na página do item). */
@@ -98,23 +102,45 @@ export function shouldNotifyEnd(kind: AnnKind, reason: EndReason): boolean {
   return false;
 }
 
-/** Rótulo do card: sem preço (o card não promete valor). Cupom de anúncio vira texto genérico. */
-export function cardLabel(kind: AnnKind, label: string): string {
-  if (kind === 'anuncio') return 'Cupom no anúncio';
+/**
+ * Rótulo do card. Cupom de anúncio: o nome/valor lido do cupom ("CUPOMPRAHOME", "R$ 50 de desconto"); se só temos o rótulo genérico
+ * ("Cupom", "R$ 315 com cupom") ou `detail` está desligado, texto genérico. NUNCA inventa nome.
+ */
+export function cardLabel(kind: AnnKind, label: string, detail = true): string {
   const l = label.replace(/\s+/g, ' ').trim().slice(0, 60);
+  if (kind === 'anuncio') return detail && l && !isGenericCouponName(l) ? l : 'Cupom no anúncio';
   return l || 'Cupom';
+}
+
+/** Título do produto curto para a legenda (sem marcação). */
+export function shortTitle(t: string | null | undefined, max = 70): string | null {
+  const s = (t ?? '').replace(/[<>]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!s || /afiliad/i.test(s)) return null;
+  return s.length > max ? `${s.slice(0, max - 1).trimEnd()}…` : s;
 }
 
 export const NETWORK_NAMES: Record<string, string> = { 'mercado-livre': 'Mercado Livre', shopee: 'Shopee', amazon: 'Amazon' };
 
 /** Legenda HTML do Telegram (curta, sem a palavra proibida, com a marcação de publicidade quando houver). */
-export function endedCaption(input: { kind: AnnKind; label: string; networkSlug: string; adTag: string }, esc: (s: string) => string): string {
+export function endedCaption(input: { kind: AnnKind; label: string; networkSlug: string; adTag: string; productTitle?: string | null; detail?: boolean }, esc: (s: string) => string): string {
   const net = NETWORK_NAMES[input.networkSlug] ?? 'a loja';
-  const lbl = cardLabel(input.kind, input.label);
+  const detail = input.detail !== false;
+  const lbl = cardLabel(input.kind, input.label, detail);
+  const title = detail && input.kind === 'anuncio' ? shortTitle(input.productTitle) : null;
   const head = `<b>Cupom encerrado</b>`;
-  const body = input.kind === 'anuncio' ? `O cupom que aparecia no anúncio do ${esc(net)} não vale mais.` : `O cupom <b>${esc(lbl)}</b> do ${esc(net)} não vale mais.`;
-  const tag = input.adTag.trim() ? `\n\n${esc(input.adTag.trim())}` : '';
-  return `${head}\n${body}${tag}`;
+  let body: string;
+  if (input.kind === 'anuncio') {
+    const named = lbl !== 'Cupom no anúncio';
+    const onde = title ? `do anúncio de ${esc(title)} (${esc(net)})` : `do anúncio do ${esc(net)}`;
+    body = named ? `O cupom <b>${esc(lbl)}</b> ${onde} não vale mais.` : `O cupom que aparecia no anúncio ${title ? `de ${esc(title)} (${esc(net)})` : `do ${esc(net)}`} não vale mais.`;
+  } else {
+    body = `O cupom <b>${esc(lbl)}</b> do ${esc(net)} não vale mais.`;
+  }
+  const tag = input.adTag.trim() ? `
+
+${esc(input.adTag.trim())}` : '';
+  return `${head}
+${body}${tag}`;
 }
 
 /** Quantos cards ainda cabem na hora (3 por hora por grupo). */

@@ -105,6 +105,15 @@ async function main() {
   check('legenda: negrito, rede, rótulo e #publicidade', cap.includes('<b>Cupom encerrado</b>') && cap.includes('TODOSITE1111') && cap.includes('Mercado Livre') && cap.includes('#publicidade'));
   check('legenda: sem a palavra "afiliado" e sem preço', !/afiliad/i.test(cap) && !/R\$/.test(cap));
   check('legenda de anúncio não repete o preço do rótulo', !/315/.test(endedCaption({ kind: 'anuncio', label: 'R$ 315,46 com cupom', networkSlug: 'mercado-livre', adTag: '' }, (s) => s)) && cardLabel('anuncio', 'R$ 315,46 com cupom') === 'Cupom no anúncio');
+  // #56: nome do cupom e produto
+  check('rótulo: anúncio com nome lido mostra o nome', cardLabel('anuncio', 'CUPOMPRAHOME') === 'CUPOMPRAHOME' && cardLabel('anuncio', 'R$ 50 de desconto') === 'R$ 50 de desconto');
+  check('rótulo: nome genérico ou flag desligada => texto genérico (nunca inventa)', cardLabel('anuncio', 'Cupom') === 'Cupom no anúncio' && cardLabel('anuncio', 'CUPOMPRAHOME', false) === 'Cupom no anúncio');
+  const c56 = endedCaption({ kind: 'anuncio', label: 'CUPOMPRAHOME', networkSlug: 'mercado-livre', adTag: '', productTitle: 'Headset Gamer X' }, (s) => s);
+  check('legenda: nome do cupom e produto', c56.includes('<b>CUPOMPRAHOME</b>') && c56.includes('Headset Gamer X') && c56.includes('Mercado Livre') && !/%\s*OFF/i.test(c56), c56);
+  const c56b = endedCaption({ kind: 'anuncio', label: 'Cupom', networkSlug: 'mercado-livre', adTag: '', productTitle: 'Headset Gamer X' }, (s) => s);
+  check('legenda: sem nome lido cita só o produto', c56b.includes('Headset Gamer X') && !c56b.includes('<b>Cupom</b>'), c56b);
+  const c56c = endedCaption({ kind: 'anuncio', label: 'CUPOMPRAHOME', networkSlug: 'mercado-livre', adTag: '', productTitle: 'Headset', detail: false }, (s) => s);
+  check('legenda: flag desligada = texto antigo', !c56c.includes('CUPOMPRAHOME') && !c56c.includes('Headset'), c56c);
 
   // ---------------------------------------------------------------- 2) consulta única do motor
   const audits: unknown[] = [];
