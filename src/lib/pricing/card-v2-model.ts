@@ -118,14 +118,10 @@ export function endedLabelV2(raw: string): { text: string; font: number } {
   return { text, font };
 }
 
-/** Cor do quadro da foto: a cor de fundo da própria foto quando uniforme (some a "moldura"), senão branco. Entrada: 2 cantos RGB. */
-export function stageColorV2(a: [number, number, number] | null, b: [number, number, number] | null): string {
-  const white = V2_COLORS.stage;
-  if (!a || !b) return white;
-  const close = a.every((v, i) => Math.abs(v - b[i]) <= 20);
-  if (!close) return white;
-  const avg = a.map((v, i) => Math.round((v + b[i]) / 2));
-  if (avg.every((v) => v >= 238)) return white;
-  const hex = (n: number) => n.toString(16).padStart(2, '0');
-  return `#${hex(avg[0])}${hex(avg[1])}${hex(avg[2])}`;
+/**
+ * Cor do quadro da foto: SEMPRE branco (dono, 2026-11-15: "essa parte preta interna fique branca"), inclusive quando a foto tem fundo
+ * escuro uniforme e no card sem capa. Mantida a assinatura (2 cantos RGB) por compatibilidade; os cantos já não alteram a cor.
+ */
+export function stageColorV2(_a?: [number, number, number] | null, _b?: [number, number, number] | null): string {
+  return V2_COLORS.stage;
 }

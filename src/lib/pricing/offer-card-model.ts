@@ -65,6 +65,8 @@ export interface OfferCardInput {
   checkedAt: Date;
   /** URL da capa (affiliate_offers.image_url); null = card sem capa. */
   imageUrl: string | null;
+  /** Fila #65: capas candidatas em ordem (oferta do card, demais ofertas ativas do master, default_images). Ausente = só `imageUrl`. */
+  imageCandidates?: string[];
   /** Hoje em America/Sao_Paulo (YYYY-MM-DD). */
   today: string;
   stats: OfferCardStats;

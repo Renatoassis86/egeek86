@@ -18,6 +18,7 @@ import {
   tagPriceV2,
 } from '@/lib/pricing/card-v2-model';
 import { STORE_PROFILES, loadLogo } from '@/server/messaging/store-profile-card';
+import { resolveCover } from '@/server/messaging/card-cover';
 
 /**
  * CARDS v2 (fila #58): layout premium em 1080x1350 (4:5). Atrás da flag GROUP_CARD_V2=on (padrão OFF = cards antigos).
@@ -34,9 +35,6 @@ export interface PreparedCover {
   h: number | null;
   stage: string;
 }
-
-const COVER_TIMEOUT_MS = 5000;
-const COVER_MAX_BYTES = 6 * 1024 * 1024;
 
 type FontDef = { name: string; data: ArrayBuffer; weight: 400 | 600 | 800; style: 'normal' };
 let fontsCache: FontDef[] | null = null;
@@ -56,22 +54,16 @@ export async function loadFontsV2(): Promise<FontDef[] | undefined> {
   }
 }
 
-/** Busca a foto, recorta a borda uniforme (sharp), limita o tamanho e descobre a cor do fundo. Qualquer falha de sharp: foto original. */
-export async function prepareCoverV2(url: string | null): Promise<PreparedCover | null> {
-  if (!url) return null;
-  let buf: Buffer;
-  let type: string;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(COVER_TIMEOUT_MS), redirect: 'follow' });
-    if (!res.ok) return null;
-    type = (res.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
-    if (!/^image\/(png|jpe?g|webp|gif)$/.test(type)) return null;
-    buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length < 200 || buf.length > COVER_MAX_BYTES) return null;
-  } catch {
-    return null;
-  }
-  return coverFromBufferV2(buf, type);
+/**
+ * Busca a foto (fila #65: várias fontes, variantes de endereço, retentativa, conversão de formato), recorta a borda uniforme (sharp),
+ * limita o tamanho e devolve a capa sobre quadro BRANCO. `diag` (opcional) recebe as causas das tentativas que falharam.
+ */
+export async function prepareCoverV2(source: string | null | Array<string | null | undefined>, diag?: string[]): Promise<PreparedCover | null> {
+  const list = Array.isArray(source) ? source : [source];
+  const r = await resolveCover(list);
+  if (diag) diag.push(...r.diag);
+  if (!r.cover) return null;
+  return coverFromBufferV2(r.cover.buf, r.cover.type);
 }
 
 export async function coverFromBufferV2(buf: Buffer, type: string): Promise<PreparedCover> {
@@ -87,7 +79,7 @@ export async function coverFromBufferV2(buf: Buffer, type: string): Promise<Prep
       const d = await sharp(flat).extract({ left, top, width: 1, height: 1 }).removeAlpha().raw().toBuffer();
       return d.length >= 3 ? [d[0], d[1], d[2]] : null;
     };
-    const stage = stageColorV2(await px(0, 0), await px(W - 1, H - 1));
+    const stage = stageColorV2(await px(0, 0), await px(W - 1, H - 1)); // sempre branco (dono, 2026-11-15)
     let out = flat;
     let ow = W;
     let oh = H;
@@ -164,8 +156,8 @@ function OfferView({ input, cover, logo, insight }: { input: OfferCardInput; cov
     imgW = Math.round(cover.w * s);
     imgH = Math.round(cover.h * s);
   }
-  const stageBg = hasCover ? cover.stage : 'rgba(0,0,0,0.30)';
-  const stageBorder = hasCover ? '0px solid transparent' : '2px solid rgba(212,175,55,0.35)';
+  const stageBg = K.stage; // quadro interno SEMPRE branco, com ou sem capa (dono, 2026-11-15)
+  const stageBorder = hasCover ? '0px solid transparent' : `2px solid ${K.goldDeep}`;
   return (
     <div style={{ width: CARD_V2_W, height: CARD_V2_H, display: 'flex', position: 'relative', background: `linear-gradient(180deg, ${fundoDaLoja(input.vertical)} 0%, ${K.ink} 100%)`, color: K.cream, fontFamily: 'Inter' }}>
       <Header logo={logo} right={input.store} accent={K.gold} />
@@ -195,9 +187,9 @@ function OfferView({ input, cover, logo, insight }: { input: OfferCardInput; cov
           <img src={cover.uri} width={imgW} height={imgH} alt="" style={{ width: imgW, height: imgH, objectFit: 'contain' }} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: g.stageW - 2 * 56 }}>
-            {input.platformLabel ? <div style={{ display: 'flex', fontSize: 26, fontWeight: 600, letterSpacing: 3, color: K.gold, marginBottom: 26 }}>{input.platformLabel.toLocaleUpperCase('pt-BR')}</div> : null}
-            <div style={{ display: 'flex', width: 120, height: 5, background: K.gold, marginBottom: 34 }} />
-            <div style={{ display: 'flex', justifyContent: 'center', textAlign: 'center', width: g.stageW - 2 * 56, maxHeight: nc.line * 4, overflow: 'hidden', fontSize: nc.font, lineHeight: `${nc.line}px`, fontWeight: 800, color: K.cream }}>{nc.text}</div>
+            {input.platformLabel ? <div style={{ display: 'flex', fontSize: 26, fontWeight: 600, letterSpacing: 3, color: K.goldDeep, marginBottom: 26 }}>{input.platformLabel.toLocaleUpperCase('pt-BR')}</div> : null}
+            <div style={{ display: 'flex', width: 120, height: 5, background: K.goldDeep, marginBottom: 34 }} />
+            <div style={{ display: 'flex', justifyContent: 'center', textAlign: 'center', width: g.stageW - 2 * 56, maxHeight: nc.line * 4, overflow: 'hidden', fontSize: nc.font, lineHeight: `${nc.line}px`, fontWeight: 800, color: K.onGold }}>{nc.text}</div>
           </div>
         )}
       </div>
@@ -267,7 +259,7 @@ export async function drawEndedCouponCardV2(input: EndedCouponV2Input): Promise<
         <div style={abs(PAD, 380, { width: CARD_V2_W - 2 * PAD, justifyContent: 'center', fontSize: 132, fontWeight: 800, letterSpacing: -2, lineHeight: 1, color: K.cream })}>CUPOM</div>
         <div style={abs(PAD, 520, { width: CARD_V2_W - 2 * PAD, justifyContent: 'center', fontSize: 132, fontWeight: 800, letterSpacing: -2, lineHeight: 1, color: p.accent })}>ENCERRADO</div>
         <div style={abs(PAD + 100, 700, { width: CARD_V2_W - 2 * PAD - 200, height: 4, background: p.accent, opacity: 0.6 })} />
-        <div style={abs(PAD + 20, 760, { width: CARD_V2_W - 2 * PAD - 40, height: 150, justifyContent: 'center', alignItems: 'center', background: 'rgba(0,0,0,0.30)', border: `2px dashed ${p.accent}`, fontSize: lb.font, fontWeight: 800, letterSpacing: 2, color: K.cream })}>{lb.text}</div>
+        <div style={abs(PAD + 20, 760, { width: CARD_V2_W - 2 * PAD - 40, height: 150, justifyContent: 'center', alignItems: 'center', background: K.stage, border: `3px dashed ${p.accent}`, fontSize: lb.font, fontWeight: 800, letterSpacing: 2, color: K.onGold })}>{lb.text}</div>
         <div style={abs(PAD, 970, { width: CARD_V2_W - 2 * PAD, justifyContent: 'center', fontSize: 38, fontWeight: 600, color: K.cream })}>{input.networkName}</div>
         <div style={abs(PAD, 1032, { width: CARD_V2_W - 2 * PAD, justifyContent: 'center', fontSize: 32, color: K.muted })}>Este cupom não vale mais</div>
         <div style={abs(PAD, 1104, { width: CARD_V2_W - 2 * PAD, justifyContent: 'center', fontSize: 26, color: K.muted })}>{`Atualizado em ${hora}`}</div>

@@ -1,4 +1,5 @@
 /** Testes dos cards v2 (fila #58). Puro + renderização sintética (sem banco, sem rede). npx tsx --conditions=react-server scripts/test-card-v2.ts */
+import { coverUrlOk, coverUrlVariants, orderCoverCandidates } from '../src/lib/pricing/card-cover-urls';
 import { CARD_V2_H, CARD_V2_W, V2_PAD, cardV2On, clampTitleNoCoverV2, clampTitleV2, endedLabelV2, geomV2, sideColumnV2, stageColorV2, tagPriceV2 } from '../src/lib/pricing/card-v2-model';
 
 export {};
@@ -39,8 +40,17 @@ async function main() {
   check('título antes do quadro', g.titleTop + g.titleBlockH < g.stageTop && V2_PAD * 2 + g.stageW === CARD_V2_W);
   check('sem foto: quadro maior', geomV2({ regua: false, hasCover: false }).stageH > g.stageH);
   check('cor do quadro: branco', stageColorV2([255, 255, 255], [250, 251, 252]) === '#FFFFFF');
-  check('cor do quadro: fundo uniforme escuro', stageColorV2([20, 20, 22], [24, 22, 20]) === '#161515', stageColorV2([20, 20, 22], [24, 22, 20]));
+  check('cor do quadro: fundo uniforme escuro AGORA também branco (dono, 2026-11-15)', stageColorV2([20, 20, 22], [24, 22, 20]) === '#FFFFFF', stageColorV2([20, 20, 22], [24, 22, 20]));
   check('cor do quadro: cantos diferentes => branco', stageColorV2([0, 0, 0], [255, 255, 255]) === '#FFFFFF');
+  check('cor do quadro: sem cantos => branco', stageColorV2(null, null) === '#FFFFFF');
+  // Variantes de endereço e ordem das candidatas (fila #65)
+  const ml = coverUrlVariants('https://http2.mlstatic.com/D_NQ_NP_123-MLA9_092025-I.webp');
+  check('ML: variantes -F/-O e .jpg', ml[0].endsWith('-I.webp') && ml.some((u) => u.endsWith('-F.webp')) && ml.some((u) => u.endsWith('-F.jpg')) && ml.length <= 5, ml);
+  const am = coverUrlVariants('https://m.media-amazon.com/images/I/61TAHz1AS8L._AC_UL320_AIweblab1378949,T1_.jpg');
+  check('Amazon: versão grande e original', am.some((u) => u.endsWith('/61TAHz1AS8L._AC_SL1000_.jpg')) && am.some((u) => u.endsWith('/61TAHz1AS8L.jpg')), am);
+  check('host de outra loja é recusado', coverUrlOk('https://cf.shopee.com.br/file/x', 'mercado-livre') === null && coverUrlOk('http://http2.mlstatic.com/a.jpg', 'mercado-livre') === null && coverUrlOk('https://http2.mlstatic.com/a.jpg', 'mercado-livre') !== null);
+  const ord = orderCoverCandidates('https://http2.mlstatic.com/own.jpg', [{ url: 'https://cf.shopee.com.br/file/a', networkSlug: 'shopee' }, { url: 'https://http2.mlstatic.com/own.jpg', networkSlug: 'mercado-livre' }, { url: 'https://m.media-amazon.com/images/I/b.jpg', networkSlug: 'amazon' }, { url: 'https://http2.mlstatic.com/ml2.jpg', networkSlug: 'mercado-livre', official: true }], ['https://http2.mlstatic.com/def.jpg']);
+  check('candidatas: própria primeiro, sem repetir, oficial/ML antes, default por último', ord[0].endsWith('own.jpg') && ord[1].endsWith('ml2.jpg') && ord.length === 5 && ord[ord.length - 1].endsWith('def.jpg'), ord);
   check('rótulo de cupom longo corta', endedLabelV2('x'.repeat(60)).text.length === 34 && endedLabelV2('ABC').font <= 72);
 
   // Renderização sintética (o fallback sem foto loga '[card-v2]': qualquer log desses é falha)
@@ -88,6 +98,78 @@ async function main() {
   const e = await drawEndedCouponCardV2({ storeSlug: 'inexistente', label: 'TODOSITE', networkName: 'Shopee', at: new Date() });
   check('cupom encerrado v2 PNG 1080x1350', isPng(e));
   check('nenhum card caiu no fallback sem foto', fallbackLogs === 0, fallbackLogs);
+
+  // Quadro interno BRANCO (dono, 2026-11-15): sem capa, com capa escura e cupom encerrado
+  const pix = async (b: Buffer, x: number, y: number) => {
+    const d = await sharp(b).extract({ left: x, top: y, width: 1, height: 1 }).removeAlpha().raw().toBuffer();
+    return [d[0], d[1], d[2]];
+  };
+  const isWhite = (p: number[]) => p.every((v) => v >= 250);
+  const gNo = geomV2({ regua: false, hasCover: false });
+  const gCv = geomV2({ regua: false, hasCover: true });
+  const noCover = await drawOfferCardV2(base, null, null);
+  const cantos = await Promise.all(
+    [
+      [V2_PAD + 12, gNo.stageTop + 12],
+      [V2_PAD + gNo.stageW - 12, gNo.stageTop + 12],
+      [V2_PAD + 12, gNo.stageTop + gNo.stageH - 12],
+      [V2_PAD + gNo.stageW - 12, gNo.stageTop + gNo.stageH - 12],
+    ].map(([x, y]) => pix(noCover, x, y))
+  );
+  check('sem capa: quadro interno branco nos 4 cantos', cantos.every(isWhite), cantos);
+  const darkSrc = await sharp({ create: { width: 900, height: 900, channels: 3, background: '#101012' } })
+    .composite([{ input: await sharp({ create: { width: 400, height: 400, channels: 3, background: '#e0c040' } }).png().toBuffer(), left: 250, top: 250 }])
+    .png()
+    .toBuffer();
+  const darkCover = await coverFromBufferV2(darkSrc, 'image/png');
+  check('capa de fundo escuro: quadro continua branco', darkCover.stage === '#FFFFFF');
+  const withDark = await drawOfferCardV2(base, darkCover, null);
+  check('capa escura: cantos do quadro brancos', isWhite(await pix(withDark, V2_PAD + 6, gCv.stageTop + 6)) && isWhite(await pix(withDark, V2_PAD + gCv.stageW - 6, gCv.stageTop + gCv.stageH - 6)));
+  const miolo = await sharp(noCover).extract({ left: V2_PAD + 60, top: gNo.stageTop + 100, width: 900, height: 500 }).removeAlpha().raw().toBuffer();
+  check('sem capa: título escuro sobre o branco (há pixel escuro no miolo)', miolo.some((v, i) => i % 3 === 0 && v < 90));
+  check('cupom encerrado: caixa do rótulo branca', isWhite(await pix(e, V2_PAD + 20 + 12, 760 + 12)));
+
+  // Busca da capa: várias fontes, retentativa, conversão de formato (servidor HTTP local)
+  const { resolveCover } = await import('../src/server/messaging/card-cover');
+  const http = await import('node:http');
+  const okPng = await png(700, 700, { w: 300, h: 300, c: '#aa3322' });
+  const okWebp = await sharp(okPng).webp().toBuffer();
+  const tinyPng = await png(60, 60, { w: 30, h: 30, c: '#000000' });
+  let flaky = 0;
+  const srv = http.createServer((req, res) => {
+    const u = req.url ?? '';
+    if (u === '/ok.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(okPng);
+    if (u === '/w.webp') return void res.writeHead(200, { 'content-type': 'image/webp' }).end(okWebp);
+    if (u === '/octet') return void res.writeHead(200, { 'content-type': 'application/octet-stream' }).end(okPng);
+    if (u === '/flaky.png') return void (flaky++ < 1 ? res.writeHead(503).end('x') : res.writeHead(200, { 'content-type': 'image/png' }).end(okPng));
+    if (u === '/tiny.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(tinyPng);
+    if (u === '/html') return void res.writeHead(200, { 'content-type': 'text/html' }).end('<html>' + 'x'.repeat(400));
+    if (u === '/lixo.png') return void res.writeHead(200, { 'content-type': 'image/png' }).end(Buffer.from('x'.repeat(400)));
+    res.writeHead(404).end('nao');
+  });
+  await new Promise<void>((ok) => srv.listen(0, '127.0.0.1', ok));
+  const B = `http://127.0.0.1:${(srv.address() as { port: number }).port}`;
+  const r1 = await resolveCover([`${B}/404`, `${B}/ok.png`]);
+  check('capa: 1a candidata 404, usa a 2a', r1.cover?.url.endsWith('/ok.png') === true && r1.diag.length === 1 && r1.diag[0].startsWith('http_404'), r1.diag);
+  const r2 = await resolveCover([`${B}/w.webp`]);
+  check('capa: webp convertido para jpeg', r2.cover?.type === 'image/jpeg' && r2.cover.w === 700);
+  const r3 = await resolveCover([`${B}/octet`]);
+  check('capa: content-type genérico mas imagem válida é aceita', r3.cover?.type === 'image/png');
+  const r4 = await resolveCover([`${B}/flaky.png`]);
+  check('capa: HTTP 503 é retentado', r4.cover?.url.endsWith('/flaky.png') === true && flaky === 2, flaky);
+  const r5 = await resolveCover([`${B}/tiny.png`, `${B}/ok.png`]);
+  check('capa: miniatura cede lugar à foto boa', r5.cover?.url.endsWith('/ok.png') === true);
+  const r6 = await resolveCover([`${B}/tiny.png`]);
+  check('capa: só miniatura => usa a miniatura (melhor que nada)', r6.cover?.w === 60);
+  const r7 = await resolveCover([`${B}/html`, `${B}/lixo.png`, null, undefined, `${B}/404`]);
+  check('capa: html, lixo e 404 => sem capa com 3 causas', r7.cover === null && r7.diag.length === 3, r7.diag);
+  const r8 = await resolveCover([`${B}/ok.png`]);
+  check('capa: cache em memória (2a leitura sem falhas)', r8.cover?.url.endsWith('/ok.png') === true && r8.diag.length === 0);
+  const { prepareCoverV2 } = await import('../src/server/messaging/card-v2');
+  const pv = await prepareCoverV2([`${B}/404`, `${B}/w.webp`]);
+  check('prepareCoverV2 com lista: recupera pela 2a e quadro branco', !!pv && pv.stage === '#FFFFFF');
+  check('prepareCoverV2 sem nenhuma boa => null', (await prepareCoverV2([null, `${B}/404`])) === null);
+  srv.close();
   console.log(`${total - fails}/${total} verificações ok`);
   process.exit(fails ? 1 : 0);
 }

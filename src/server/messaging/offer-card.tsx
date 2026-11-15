@@ -31,14 +31,16 @@ import {
 import { fundoDaLoja } from '@/lib/pricing/cor-loja';
 import { cardV2On } from '@/lib/pricing/card-v2-model';
 import { drawOfferCardV2, prepareCoverV2 } from '@/server/messaging/card-v2';
+import { resolveCover } from '@/server/messaging/card-cover';
+import { coverUrlOk, orderCoverCandidates, type CoverSource } from '@/lib/pricing/card-cover-urls';
 import { CARD_MAX_DAYS, platformLabel } from '@/lib/pricing/price-card-model';
 import { OFFER_ACTIVE_DAYS, PRICE_DAILY_REGIME_START, addDays, computeDayState, computePeriodMetrics, spDay, type PeriodDay } from '@/lib/pricing/daily-state';
 
 /**
  * CARD DE OFERTA (PNG 1080x1080) para Telegram e WhatsApp (pedido do dono, 2026-11-11). SOMENTE LEITURA do banco.
  *  - Logo oficial lida de `public/geek 86.png` em tempo de renderização e embutida como data URI (nada copiado para public/images).
- *  - Capa: `affiliate_offers.image_url` buscada na hora (timeout 5 s, em memória, nada em disco). Falhou ou formato ilegível:
- *    card SEM capa, com o título em destaque. Nunca imagem inventada.
+ *  - Capa (fila #65): oferta do card, demais ofertas ativas do master e default_images, com variantes de endereço, retentativa e conversão de formato
+ *    (`card-cover.ts`). Falhou em tudo: card SEM capa, título em destaque sobre quadro BRANCO. Nunca imagem inventada.
  *  - Série do insight: a MESMA regra do site (`computeDayState`, ADR 0004) com a Amazon segundo a flag PRICE_AMAZON_MODE (off/shadow: sem). Amazon: insight só com o histórico dela mesma, e com a média única quando o modo é `on`.
  *  - Preço: o atual da própria oferta, só se ativa, elegível, com link pronto e confirmada há <= 6 h (Amazon <= 24 h).
  */
@@ -46,8 +48,29 @@ import { OFFER_ACTIVE_DAYS, PRICE_DAILY_REGIME_START, addDays, computeDayState, 
 type Row = Record<string, unknown>;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const REGIME_START = PRICE_DAILY_REGIME_START;
-const COVER_TIMEOUT_MS = 5000;
-const COVER_MAX_BYTES = 6 * 1024 * 1024;
+
+/** Capas candidatas do master (foto REAL de outras ofertas ativas e default_images). Falha de consulta: só a da própria oferta. */
+export async function loadCoverCandidates(masterId: string, own: string | null): Promise<string[]> {
+  try {
+    const rows = await db.execute<Row>(sql`
+      SELECT o.image_url, n.slug AS net_slug, (o.store_name ILIKE '%oficial%' OR o.store_name ILIKE '%official%') AS official
+      FROM affiliate_offers o INNER JOIN affiliate_networks n ON n.id = o.network_id
+      WHERE o.master_product_id = ${masterId}::uuid AND o.status = 'active' AND COALESCE(o.image_url, '') <> ''
+      ORDER BY o.last_checked_at DESC NULLS LAST LIMIT 12
+    `);
+    const others: CoverSource[] = [];
+    for (const x of rows) {
+      const u = coverUrlOk(x.image_url, String(x.net_slug));
+      if (u) others.push({ url: u, networkSlug: String(x.net_slug), official: x.official === true });
+    }
+    const m = await db.execute<Row>(sql`SELECT default_images FROM master_products WHERE id = ${masterId}::uuid`);
+    const di = m[0]?.default_images;
+    const defaults = Array.isArray(di) ? di.filter((d): d is string => typeof d === 'string').slice(0, 3) : [];
+    return orderCoverCandidates(own, others, defaults);
+  } catch {
+    return own ? [own] : [];
+  }
+}
 
 export async function loadOfferCardInput(
   offerId: string,
@@ -123,6 +146,8 @@ export async function loadOfferCardInput(
   const rawImg = typeof r.image_url === 'string' && /^https:\/\//i.test(r.image_url.trim()) ? r.image_url.trim() : null;
   const okRe = hostOk[String(r.net_slug)];
   const img = rawImg && (!okRe || okRe.test(rawImg)) ? rawImg : null;
+  // Fila #65: se a foto da oferta falhar, o card tenta as demais ofertas ativas do mesmo master e, por fim, master_products.default_images.
+  const imageCandidates = await loadCoverCandidates(masterId, img);
   // Cupom: o preço do card é o COM cupom (lido na página do anúncio) e o do anúncio sem cupom vai riscado; só vale se o com-cupom é menor.
   const withCoupon = opts?.simple && opts.couponFinalCents && opts.couponFinalCents > 0 && opts.couponFinalCents < priceCents ? opts.couponFinalCents : null;
   return {
@@ -137,6 +162,7 @@ export async function loadOfferCardInput(
     priceCents: withCoupon ?? priceCents,
     checkedAt: withCoupon && opts?.couponReadAt ? opts.couponReadAt : checkedAt,
     imageUrl: img,
+    imageCandidates,
     today,
     stats,
   };
@@ -158,20 +184,10 @@ async function loadLogo(): Promise<string | null> {
   }
 }
 
-/** Busca a capa em memória. Qualquer falha (rede, status, tipo, tamanho, 5 s) devolve null. */
-async function fetchCover(url: string | null): Promise<string | null> {
-  if (!url) return null;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(COVER_TIMEOUT_MS), redirect: 'follow' });
-    if (!res.ok) return null;
-    const type = (res.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
-    if (!/^image\/(png|jpe?g|webp|gif)$/.test(type)) return null;
-    const buf = Buffer.from(await res.arrayBuffer());
-    if (buf.length < 200 || buf.length > COVER_MAX_BYTES) return null;
-    return `data:${type};base64,${buf.toString('base64')}`;
-  } catch {
-    return null;
-  }
+/** Busca a capa (card legado): mesmas fontes, variantes e conversão de formato do v2. Falhou em tudo: null (card sem capa). */
+async function fetchCover(input: OfferCardInput): Promise<string | null> {
+  const { cover } = await resolveCover(input.imageCandidates?.length ? input.imageCandidates : [input.imageUrl]);
+  return cover ? `data:${cover.type};base64,${cover.buf.toString('base64')}` : null;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -220,14 +236,14 @@ function OfferCardView({ input, cover, logo, insight }: { input: OfferCardInput;
         <div style={abs(G.pad, G.logoTop, { fontSize: 30, color: C.gold })}>ESPAÇO GEEK 86</div>
       )}
 
-      <div style={abs(panel.x, panel.y, { width: panel.w, height: panelH, background: C.surface, border: `1px solid ${C.grid}`, alignItems: 'center', justifyContent: 'center' })}>
+      <div style={abs(panel.x, panel.y, { width: panel.w, height: panelH, background: '#FFFFFF', border: `1px solid ${C.grid}`, alignItems: 'center', justifyContent: 'center' })}>
         {hasCover ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={cover} width={box.w} height={box.h} alt="" style={{ width: box.w, height: box.h, objectFit: 'contain' }} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', width: panel.w - 2 * G.panelPad, justifyContent: 'center' }}>
-            {input.platformLabel ? <div style={{ display: 'flex', fontSize: 26, color: C.gold, marginBottom: 22 }}>{input.platformLabel}</div> : null}
-            <div style={{ display: 'flex', fontSize: 62, lineHeight: 1.15, color: C.text }}>{truncateTitle(input.title, OFFER_TITLE_NOCOVER_MAX_CHARS)}</div>
+            {input.platformLabel ? <div style={{ display: 'flex', fontSize: 26, color: '#8A6D12', marginBottom: 22 }}>{input.platformLabel}</div> : null}
+            <div style={{ display: 'flex', fontSize: 62, lineHeight: 1.15, color: '#1B1408' }}>{truncateTitle(input.title, OFFER_TITLE_NOCOVER_MAX_CHARS)}</div>
           </div>
         )}
       </div>
@@ -286,10 +302,13 @@ export async function renderOfferCard(input: OfferCardInput): Promise<{ png: Buf
   const insight = fitInsight(chooseInsight(input)?.text ?? null);
   // GROUP_CARD_V2=on (fila #58): layout premium 4:5; padrão OFF = card antigo abaixo, intocado.
   if (cardV2On()) {
-    const cover2 = await prepareCoverV2(input.imageUrl);
+    const diag: string[] = [];
+    const cover2 = await prepareCoverV2(input.imageCandidates?.length ? input.imageCandidates : input.imageUrl, diag);
+    if (!cover2) console.warn(`[card-cover] SEM CAPA "${input.title.slice(0, 50)}" (${input.store}): ${diag.slice(0, 4).join(' | ') || 'sem endereço de imagem'}`);
+    else if (diag.length) console.warn(`[card-cover] capa recuperada após ${diag.length} falha(s) em "${input.title.slice(0, 50)}": ${diag[0]}`);
     return { png: await drawOfferCardV2(input, cover2, insight), alt: buildOfferAlt(input, insight) };
   }
-  const [logo, cover] = await Promise.all([loadLogo(), fetchCover(input.imageUrl)]);
+  const [logo, cover] = await Promise.all([loadLogo(), fetchCover(input)]);
   let png: Buffer;
   try {
     png = await draw(input, cover, logo, insight);
