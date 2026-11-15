@@ -1,6 +1,6 @@
-// PAINÉIS VIVOS das impressoras 3D (aparelhos) do Mercado Livre e da Amazon (#117, 2026-11-15). PURO: sem banco, sem rede.
+// LISTA das impressoras 3D (aparelhos) do Mercado Livre e da Amazon + QUEDAS individuais (#117, 2026-11-15). PURO: sem banco, sem rede.
 // TODAS as ofertas ativas, frescas (24 h) e fora da quarentena, por modelo na ordem do dono (P2S Combo, P1S Combo, A1 Combo, A1 Mini Combo,
-// P2S, P1S, A1, A1 Mini, Kobra, demais Bambu, demais), do menor ao maior preço. Mensagens FIXAS editadas a cada 10 min.
+// P2S, P1S, A1, A1 Mini, Kobra, demais Bambu, demais), do menor ao maior preço. Mensagens NOVAS e silenciosas a cada 10 min (a lista anterior é apagada); queda de preço sai em mensagem individual.
 // Amazon em mensagens PRÓPRIAS: a barreira de texto proíbe Amazon junto de outras lojas e exige o carimbo "Preço na Amazon em dd/mm às hh:mm" (ADR 0010).
 // Não afirma prazo de entrega. Sem aviso de comissão (só a marca de publicidade das mensagens do canal).
 import { escapeTelegramHtml, escapeTelegramAttr, textProblems, TELEGRAM_MAX_CHARS, GROUP_LINK_BASE } from '@/lib/messaging/group-messages';
@@ -13,21 +13,21 @@ export const LIMITE_PAINEL = 3900;
 /** Os dois modelos em destaque. */
 export const DESTAQUES = ['p2s-combo', 'p1s-combo'] as const;
 
-export type Alvo = 'canal' | 'privado';
+/** O CANAL não recebe lista nem painel (decisão do dono, 2026-11-15): o único destino é o chat privado do dono. */
+export type Alvo = 'privado';
 
-/** Flag PAINEL_IMPRESSORAS: 1/on/true = canal e privado; canal; privado. Padrão desligada. */
+/** Flag PAINEL_IMPRESSORAS: 1/on/true/privado liga o destino privado; qualquer outro valor (inclusive 'canal') = desligada. */
 export function alvosLigados(env: Record<string, string | undefined> = process.env): Alvo[] {
   const v = (env.PAINEL_IMPRESSORAS ?? '').trim().toLowerCase();
-  if (v === '1' || v === 'on' || v === 'true') return ['canal', 'privado'];
-  if (v === 'canal') return ['canal'];
-  if (v === 'privado') return ['privado'];
-  return [];
+  return v === '1' || v === 'on' || v === 'true' || v === 'privado' ? ['privado'] : [];
 }
 
 export const REDE_ROTULO: Record<string, string> = { 'mercado-livre': 'Mercado Livre', amazon: 'Amazon' };
 
 export interface BeneficioPainel { rotulo: string; needsConfirm: boolean }
 export interface OfertaPainel {
+  id?: string;
+  title?: string | null;
   masterId: string;
   masterName: string;
   rede: string;
@@ -39,6 +39,10 @@ export interface OfertaPainel {
   cupomFinalCents?: number | null;
   cupomNome?: string | null;
   beneficios?: BeneficioPainel[];
+  /** Preço visto na lista do ciclo anterior (null = sem base). */
+  anteriorCents?: number | null;
+  /** Caiu abaixo do menor preço dos últimos 14 dias do próprio anúncio. */
+  minimo14?: boolean;
 }
 
 export interface EntradaPaineis { ofertas: OfertaPainel[]; inicio: Date; adTag: string; guiaUrl?: string }
@@ -97,9 +101,26 @@ function tituloSeguro(titulo: string): string {
   return textProblems(titulo, 'tg').length ? 'Impressora 3D' : titulo;
 }
 
+/** Resumo de 1 linha: variação contra o ciclo anterior, novo mínimo de 14 dias, cupom e cartão (só o que foi lido). */
+export function resumoOferta(o: OfertaPainel): string {
+  const p: string[] = [];
+  if (o.anteriorCents && o.anteriorCents !== o.cents) {
+    const pct = Math.max(1, Math.round((Math.abs(o.cents - o.anteriorCents) / o.anteriorCents) * 100));
+    p.push(`${o.cents < o.anteriorCents ? '↓' : '↑'} ${pct}% (era ${brl(o.anteriorCents)})`);
+  }
+  if (o.minimo14) p.push('novo mínimo de 14 dias');
+  if (o.cupomFinalCents != null && o.cupomFinalCents > 0 && o.cupomFinalCents < o.cents) p.push(`${o.cupomNome ? `cupom ${o.cupomNome}` : 'com cupom'} ${brl(o.cupomFinalCents)}`);
+  const b = (o.beneficios ?? [])[0];
+  if (b) p.push(`${b.rotulo}${b.needsConfirm ? ' (a confirmar no carrinho)' : ''}`);
+  return p.join(' · ');
+}
+
 function linhaOferta(i: number, o: OfertaPainel, rede: string): string {
   const loja = rede === 'amazon' ? '' : nomeLoja(o.loja);
-  return o.url ? `${i}. <a href="${escapeTelegramAttr(o.url)}">${brl(o.cents)}</a>${loja}` : `${i}. ${brl(o.cents)}${loja}`;
+  const l1 = o.url ? `${i}. <a href="${escapeTelegramAttr(o.url)}">${brl(o.cents)}</a>${loja}` : `${i}. ${brl(o.cents)}${loja}`;
+  const r = resumoOferta(o);
+  return r ? `${l1}
+    ${e(r)}` : l1;
 }
 
 function cabecalhoSecao(s: Secao, cont: boolean): string {
@@ -110,14 +131,10 @@ function cabecalhoSecao(s: Secao, cont: boolean): string {
   return `\n<b>${s.destaque ? '⭐ ' : ''}${t}</b> · ${n} anúncio${n === 1 ? '' : 's'} · a partir de ${brl(base)}`;
 }
 
-function resumo(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: number, inicio: Date): string[] {
-  const nomeRede = REDE_ROTULO[rede];
+function resumo(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: number): string[] {
   const L: string[] = [];
-  L.push(`🖨️ <b>IMPRESSORAS 3D · ${e(nomeRede.toUpperCase())}</b>`);
   const pl = total === 1 ? '' : 's';
-  L.push(rede === 'amazon'
-    ? `${total} anúncio${pl} ativo${pl} · Preço na Amazon em ${diaSP(inicio)} às ${horaSP(inicio)}`
-    : `${total} anúncio${pl} ativo${pl} em ${secoes.length} modelo${secoes.length === 1 ? '' : 's'} · conferido às ${horaSP(inicio)}`);
+  L.push(`${total} anúncio${pl} ativo${pl} em ${secoes.length} modelo${secoes.length === 1 ? '' : 's'}`);
   const dest = secoes.filter((s) => s.destaque).sort((a, b) => a.ordemFixa - b.ordemFixa);
   if (dest.length) {
     L.push('', '🏆 <b>MENOR PREÇO</b>');
@@ -142,13 +159,23 @@ function resumo(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: number
     }
   }
   L.push('', 'Prazo de entrega: não é medido por nós; a data aparece na página da loja, conforme o seu CEP.');
+  void rede;
   return L;
+}
+
+const RESERVA_CABECALHO = 170;
+
+export function cabecalhoParte(rede: 'mercado-livre' | 'amazon', inicio: Date, i: number, n: number): string {
+  const nome = rede === 'amazon' ? 'Amazon' : 'Mercado Livre';
+  const l1 = `🖨️ <b>Lista de impressoras 3D · ${nome} · ${horaSP(inicio)} · parte ${i}/${n}</b>`;
+  return rede === 'amazon' ? `${l1}
+Preço na Amazon em ${diaSP(inicio)} às ${horaSP(inicio)}` : l1;
 }
 
 /** Empacota seções em mensagens: seção inteira vai junta quando cabe; seção grande começa mensagem nova e continua nas seguintes. */
 function empacotar(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: number, inicio: Date, rodape: string): string[] {
-  const max = LIMITE_PAINEL - rodape.length - 4;
-  const msgs: string[][] = [resumo(rede, secoes, total, inicio)];
+  const max = LIMITE_PAINEL - rodape.length - RESERVA_CABECALHO;
+  const msgs: string[][] = [resumo(rede, secoes, total)];
   const tam = (m: string[]) => m.join('\n').length;
   for (const s of secoes) {
     const linhas = s.ofertas.map((o, i) => linhaOferta(i + 1, o, rede));
@@ -156,7 +183,6 @@ function empacotar(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: num
     const atual = msgs[msgs.length - 1];
     if (tam(atual) + 1 + tam(bloco) <= max) { atual.push(...bloco); continue; }
     if (tam(bloco) <= max) { msgs.push(bloco); continue; }
-    // Seção maior que uma mensagem: começa em mensagem nova e divide pelas linhas.
     let cur: string[] = [cabecalhoSecao(s, false)];
     msgs.push(cur);
     for (const l of linhas) {
@@ -164,10 +190,10 @@ function empacotar(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: num
       cur.push(l);
     }
   }
-  return msgs.map((m) => `${m.join('\n')}\n\n${rodape}`);
+  return msgs.map((m, i) => `${cabecalhoParte(rede, inicio, i + 1, msgs.length)}\n${m.join('\n')}\n\n${rodape}`);
 }
 
-/** Monta todos os painéis (ML primeiro, depois Amazon). Painel que a barreira recusa sai e entra em `problemas`, sem derrubar os demais. */
+/** Monta a lista em mensagens (ML primeiro, depois Amazon). Painel que a barreira recusa sai e entra em `problemas`, sem derrubar os demais. */
 export function montarPaineis(inp: EntradaPaineis): SaidaPaineis {
   const guiaUrl = inp.guiaUrl ?? `${GROUP_LINK_BASE}/mercado/impressao3d`;
   const t = inp.inicio.getTime();
@@ -196,4 +222,54 @@ export function montarPaineis(inp: EntradaPaineis): SaidaPaineis {
     modelosMl: modelos['mercado-livre'] ?? 0, modelosAmazon: modelos.amazon ?? 0,
     omitidasVelhas: validas.length - fresh.length,
   };
+}
+
+// ---------------------------------------------------------------------------
+// QUEDA INDIVIDUAL (mensagem com notificação). Só afirma o que foi lido; nunca prazo inventado; "ative" só quando o tipo do cupom é conhecido.
+// ---------------------------------------------------------------------------
+export const MAX_QUEDAS_POR_CICLO = 6;
+export const QUEDA_MAX_PLAUSIVEL_PCT = 50;
+
+export interface EntradaQueda {
+  rede: string;
+  titulo: string;
+  loja: string | null;
+  /** "98% de avaliações positivas" etc., só quando houver. */
+  reputacao?: string | null;
+  cents: number;
+  anteriorCents: number;
+  minimo14: boolean;
+  url: string | null;
+  leituraEm: Date;
+  cupom?: { nome: string | null; finalCents: number; passo: string | null } | null;
+  cartoes?: { rotulo: string; finalCents: number | null; needsConfirm: boolean }[];
+  /** Frete/prazo MEDIDOS até o CEP (quando existirem colunas/dados). Sem isso, a mensagem remete à página da loja. */
+  fretePrazo?: string | null;
+  adTag: string;
+}
+
+export function textoQueda(q: EntradaQueda): string {
+  const pct = Math.max(1, Math.round(((q.anteriorCents - q.cents) / q.anteriorCents) * 100));
+  const amazon = q.rede === 'amazon';
+  const L: string[] = [];
+  L.push('📉 <b>Queda de preço · impressora 3D</b>');
+  L.push(`<b>${e(q.titulo.length > 140 ? `${q.titulo.slice(0, 139)}…` : q.titulo)}</b>`);
+  L.push(`<b>${brl(q.cents)}</b> (era ${brl(q.anteriorCents)}, queda de ${pct}%)${q.minimo14 ? ' · novo mínimo de 14 dias' : ''}`);
+  const onde = [amazon ? 'Amazon' : q.loja ? e(q.loja) : null, q.reputacao ? e(q.reputacao) : null].filter(Boolean).join(' · ');
+  if (onde) L.push(`Loja: ${onde}`);
+  if (q.cupom) L.push(`🎟️ Cupom${q.cupom.nome ? ` ${e(q.cupom.nome)}` : ''}: <b>${brl(q.cupom.finalCents)}</b> com cupom${q.cupom.passo ? ` · ${e(q.cupom.passo)}` : ''}`);
+  for (const c of (q.cartoes ?? []).slice(0, 2)) L.push(`💳 ${e(c.rotulo)}${c.finalCents ? `: ${brl(c.finalCents)}` : ''}${c.needsConfirm ? ' · a confirmar no carrinho' : ''}`);
+  L.push(q.fretePrazo ? `🚚 ${e(q.fretePrazo)}` : 'Frete e prazo: a data aparece na página da loja, conforme o seu CEP.');
+  if (q.url) L.push(`<a href="${escapeTelegramAttr(q.url)}">Ver anúncio</a>`);
+  L.push(amazon ? `Preço na Amazon em ${diaSP(q.leituraEm)} às ${horaSP(q.leituraEm)}` : `Lido às ${horaSP(q.leituraEm)}`);
+  if (q.adTag) L.push(e(q.adTag));
+  return L.join('\n');
+}
+
+/** Texto da queda passa na barreira; se não passar devolve null (e o motivo). */
+export function textoQuedaSeguro(q: EntradaQueda): { text: string | null; problemas: string[] } {
+  const text = textoQueda(q);
+  const problemas = textProblems(text, 'tg');
+  if (text.length > TELEGRAM_MAX_CHARS) problemas.push('texto acima do limite');
+  return { text: problemas.length ? null : text, problemas };
 }

@@ -3,7 +3,8 @@
  * --previa: monta com dados reais e imprime resumo + 1o painel de cada rede (nunca envia). --privado | --canal: roda de verdade (rodada com cursor).
  * Uso: npx tsx --conditions=react-server --env-file=.env.local scripts/test-painel-impressoras-117.ts [--previa|--privado|--canal]
  */
-import { alvosLigados, brl, montarPaineis, ordenar, type OfertaPainel } from '../src/lib/messaging/painel-impressoras';
+import { alvosLigados, brl, MAX_QUEDAS_POR_CICLO, montarPaineis, ordenar, textoQuedaSeguro, type OfertaPainel } from '../src/lib/messaging/painel-impressoras';
+import { decidir, quedaMinimaCents } from '../src/lib/coupons/monitor-preco-impressoras';
 import { textProblems } from '../src/lib/messaging/group-messages';
 
 let fails = 0;
@@ -14,7 +15,7 @@ const of = (nome: string, cents: number, rede = 'mercado-livre', loja: string | 
   ({ masterId: `m-${nome}`, masterName: nome, rede, loja, cents, url: `https://exemplo.test/${rede}/${++seq}?a=1&b=2`, checkedAt: new Date(now.getTime() - horas * 3600_000), ...extra });
 
 ok(brl(833000) === 'R$ 8.330,00', 'BRL');
-ok(alvosLigados({}).length === 0 && alvosLigados({ PAINEL_IMPRESSORAS: '1' }).join() === 'canal,privado' && alvosLigados({ PAINEL_IMPRESSORAS: 'privado' }).join() === 'privado', 'flag');
+ok(alvosLigados({}).length === 0 && alvosLigados({ PAINEL_IMPRESSORAS: '1' }).join() === 'privado' && alvosLigados({ PAINEL_IMPRESSORAS: 'privado' }).join() === 'privado' && alvosLigados({ PAINEL_IMPRESSORAS: 'canal' }).length === 0, 'flag: so o privado, canal nunca');
 
 // Ordem do dono + do menor ao maior + destaque.
 const mix = [
@@ -30,7 +31,7 @@ ok(ordem.every((v, i) => v >= 0 && (i === 0 || v > ordem[i - 1])), 'ordem do don
 ok(t0.indexOf('R$ 8.330,00</a>') < t0.indexOf('R$ 9.000,00</a>'), 'menor ao maior');
 ok(t0.includes('⭐') && t0.includes('MENOR PREÇO'), 'destaque P2S/P1S Combo');
 ok(t0.includes('#publicidade') && t0.includes('/mercado/impressao3d'), 'rodape');
-ok(/conferido às \d{2}:\d{2}/.test(t0) && !/Bras[ií]lia/i.test(t0), 'hora sem Brasília');
+ok(/Lista de impressoras 3D · Mercado Livre · [0-9]{2}:[0-9]{2} · parte 1[/]1/.test(t0) && !/Bras[ií]lia/i.test(t0), 'hora sem Brasília');
 ok(!/amazon/i.test(t0), 'ML sem Amazon');
 ok(/não é medido por nós/.test(t0) && !/chega em \d|entrega em \d|prazo de \d/i.test(t0), 'prazo não afirmado');
 
@@ -68,24 +69,40 @@ const b = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 800000, 'me
 ok(b.ativosMl === 1 && !/Afiliada/.test(b.paineis[0].text), 'loja vetada sai');
 ok(ordenar(of('x', 1), of('x', 2)) < 0, 'ordenar');
 
+// Lista: cabeçalho "Lista de impressoras 3D · HH:MM · parte i/N" em toda mensagem; resumo de 1 linha por item.
+ok(g.paineis.every((p, i) => p.text.includes(`parte ${i + 1}/${g.paineis.length}`) && /Lista de impressoras 3D · Mercado Livre · \d{2}:\d{2}/.test(p.text)), 'cabeçalho com parte i/N');
+const rs = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 90000, 'mercado-livre', 'L', 1, { anteriorCents: 100000, minimo14: true, beneficios: [{ rotulo: 'Itaú Mastercard 15%', needsConfirm: true }] })], inicio: now, adTag: '' });
+ok(rs.paineis[0].text.includes('↓ 10% (era R$ 1.000,00)') && rs.paineis[0].text.includes('novo mínimo de 14 dias') && rs.paineis[0].text.includes('(a confirmar no carrinho)'), 'resumo: queda, mínimo, cartão', rs.paineis[0].text);
+const alta = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 110000, 'mercado-livre', 'L', 1, { anteriorCents: 100000 })], inicio: now, adTag: '' });
+ok(alta.paineis[0].text.includes('↑ 10%'), 'resumo: alta');
+const am3 = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 90000, 'amazon', 'Amazon.com.br')], inicio: now, adTag: '#publicidade' });
+ok(am3.paineis.length === 1 && /Preço na Amazon em [0-9]{2}[/][0-9]{2} às [0-9]{2}:[0-9]{2}/.test(am3.paineis[0].text) && !/Amazon.com/.test(am3.paineis[0].text), 'Amazon: carimbo em todas as partes, loja não aparece');
+
+// Queda individual.
+const q = textoQuedaSeguro({ rede: 'mercado-livre', titulo: 'Impressora 3D Bambu Lab P2S Combo <FDM>', loja: 'LOJA X', reputacao: '98% de avaliações positivas', cents: 800000, anteriorCents: 833000, minimo14: true, url: 'https://meli.la/abc', leituraEm: now,
+  cupom: { nome: 'R$ 20 OFF em LOJA', finalCents: 780000, passo: 'ative em Cupons' }, cartoes: [{ rotulo: 'Itaú Mastercard 15%', finalCents: 680000, needsConfirm: true }], adTag: '#publicidade' });
+ok(!!q.text && q.text.length < 4096, 'queda cabe', q.problemas);
+ok(q.text!.includes('queda de 4%') && q.text!.includes('R$ 8.330,00') && q.text!.includes('novo mínimo de 14 dias') && q.text!.includes('&lt;FDM&gt;'), 'queda: preços, %, mínimo, escape');
+ok(q.text!.includes('Cupom R$ 20 OFF em LOJA') && q.text!.includes('R$ 6.800,00') && q.text!.includes('a confirmar no carrinho'), 'queda: cupom e cartão');
+ok(q.text!.includes('Frete e prazo: a data aparece na página da loja') && !/chega em \d|entrega em \d/i.test(q.text!), 'queda: prazo não inventado');
+const qa = textoQuedaSeguro({ rede: 'amazon', titulo: 'Impressora 3D Bambu Lab A1', loja: null, cents: 150000, anteriorCents: 200000, minimo14: false, url: 'https://amzn.to/x', leituraEm: now, adTag: '#publicidade' });
+ok(!!qa.text && /Preço na Amazon em \d{2}\/\d{2} às \d{2}:\d{2}/.test(qa.text) && !/mercado ?livre|shopee/i.test(qa.text), 'queda Amazon: carimbo, sem outra loja', qa.problemas);
+ok(!textoQuedaSeguro({ rede: 'mercado-livre', titulo: 'Bambu garantido', loja: null, cents: 1, anteriorCents: 2, minimo14: false, url: null, leituraEm: now, adTag: '' }).text, 'queda: termo proibido barra');
+const dec = (cents: number, min14: number | null, ult: Date | null = null) => decidir({ atual: { chave: 'x', rotulo: 'x', cents, rede: 'mercado-livre', loja: null, slug: '' }, base: { cents: 833000, rede: 'mercado-livre' }, min14, ultimoAvisoEm: ult, now });
+ok(MAX_QUEDAS_POR_CICLO === 6 && quedaMinimaCents(833000) === 16660 && dec(833000 - 16660, null) === 'queda' && dec(833000 - 16659, null) === 'nada', 'limites: 6 por ciclo, 2% ou R$ 50');
+ok(dec(833000 - 10000, 840000) === 'minimo', 'decidir: novo mínimo com queda menor que 2%');
+ok(dec(833000 - 30000, null, new Date(now.getTime() - 3600_000)) === 'nada' && dec(833000 - 30000, null, new Date(now.getTime() - 3 * 3600_000)) === 'queda', 'cooldown de 2 h');
+
 async function modo(m: string) {
   const mod = await import('../src/server/messaging/painel-impressoras');
   if (m === '--previa') {
-    const r = await mod.montarPaineisAgora(new Date());
-    console.log(`ML ${r.ativosMl} anúncios em ${r.modelosMl} modelos | Amazon ${r.ativosAmazon} em ${r.modelosAmazon} | velhas ${r.omitidasVelhas} | painéis ${r.paineis.length} | problemas ${r.problemas.length}`);
-    console.log('tamanhos:', r.paineis.map((p) => `${p.key}:${p.text.length}`).join(' '));
-    if (r.problemas.length) console.log('PROBLEMAS:', r.problemas.slice(0, 5));
-    console.log('\n===== ml-00 =====\n' + r.paineis[0]?.text.slice(0, 2600));
-    const am2 = r.paineis.find((p) => p.rede === 'amazon');
-    if (am2) console.log('\n===== ' + am2.key + ' =====\n' + am2.text.slice(0, 1800));
-  } else if (m === '--privado' || m === '--canal') {
-    const alvo = m === '--canal' ? 'canal' : 'privado';
-    for (let i = 0; i < 12; i++) {
-      const r = await mod.atualizarPaineisImpressoras(new Date(), { budgetMs: 50_000, force: i === 0, alvos: [alvo] });
-      console.log(JSON.stringify(r.alvos));
-      if (r.alvos[0]?.acao !== 'em_andamento' && r.alvos[0]?.acao !== 'pausado') break;
-      if (r.alvos[0]?.acao === 'pausado') await new Promise((res) => setTimeout(res, 10_000));
-    }
+    const L = await mod.gerarLista(new Date(), false);
+    console.log(`ML ${L.ativosMl} | Amazon ${L.ativosAmazon} | partes ${L.listas.length} | quedas ${L.quedas.length} | problemas ${L.problemas.length}`);
+    console.log('tamanhos:', L.listas.map((p) => `${p.key}:${p.text.length}`).join(' '));
+    if (L.problemas.length) console.log('PROBLEMAS:', L.problemas.slice(0, 5));
+    console.log('\n===== ml-00 =====\n' + L.listas[0]?.text.slice(0, 2400));
+    const am2 = L.listas.find((p) => p.rede === 'amazon');
+    if (am2) console.log('\n===== ' + am2.key + ' =====\n' + am2.text.slice(0, 1500));
   }
 }
 async function main() {
