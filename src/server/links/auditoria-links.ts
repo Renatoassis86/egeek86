@@ -188,7 +188,7 @@ async function alarmeSeDivergirMuito(): Promise<void> {
  * nova da página. O veredito registra a idade dessa leitura: `ok` se a confirmação está dentro da janela (Amazon 130 min, Shopee 6 h), senão
  * `erro_leitura` com a idade. Só ofertas que foram para mensagem nas últimas 24 h e ainda sem veredito recente. Sem rede.
  */
-export async function veredictosAmazonShopee(limite = 400): Promise<number> {
+export async function veredictosAmazonShopee(limite = 150): Promise<number> {
   const r = (await db.execute(sql`
     INSERT INTO offer_link_audit (offer_id, link, offer_price_cents, verdict, note, regra_versao)
     SELECT o.id, o.affiliate_url, o.current_price_cents,
@@ -197,7 +197,7 @@ export async function veredictosAmazonShopee(limite = 400): Promise<number> {
     FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id AND n.slug IN ('amazon', 'shopee')
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0
       AND o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL)
-      AND NOT EXISTS (SELECT 1 FROM offer_link_audit a WHERE a.offer_id = o.id AND a.checked_at > now() - interval '30 minutes')
+      AND NOT EXISTS (SELECT 1 FROM offer_link_audit a WHERE a.offer_id = o.id AND a.checked_at > now() - interval '3 hours')
     LIMIT ${limite} RETURNING id`)) as unknown as unknown[];
   return r.length;
 }
