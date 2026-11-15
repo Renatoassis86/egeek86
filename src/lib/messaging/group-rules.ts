@@ -1,7 +1,7 @@
 // Regras dos gatilhos e limites anti-spam das mensagens para grupos (ata 2026-11-10). PURO: recebe fatos, devolve decisões.
 // Nada aqui lê banco, relógio ou env: o chamador passa `now` e os fatos medidos.
 
-import { ehPrioridade3d, prioridade3dLigada } from './prioridade-3d';
+import { ehPrioridade3d, posicaoPrioridade3d, prioridade3dLigada } from './prioridade-3d';
 import {
   buildGoLink,
   buildGroupMessages,
@@ -2326,7 +2326,8 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
       // Régua de destaque (2026-11-12): o degrau mais alto vai primeiro dentro da classe (sem régua = 0, ordem de sempre).
       (b.regua?.degrau ?? 0) - (a.regua?.degrau ?? 0) ||
       // Impressão 3D (dono, 2026-11-14): impressora Kobra/Bambu passa à frente das demais da vertical (só reordena o que já passou pelos bloqueios).
-      (prio3d ? Number(ehPrioridade3d(b.vertical, b.name, b.tipo)) - Number(ehPrioridade3d(a.vertical, a.name, a.tipo)) : 0) ||
+      // Dentro da prioridade, ordem fixa do dono (#111): P2S Combo, P1S Combo, A1 Combo, A1 Mini Combo, depois as sem combo, por ultimo Kobra.
+      (prio3d ? posicaoPrioridade3d(a.vertical, a.name, a.tipo) - posicaoPrioridade3d(b.vertical, b.name, b.tipo) : 0) ||
       (rotates(a) ? Number(a.trigger === 'AC' || a.trigger === 'N1') : 0) - (rotates(b) ? Number(b.trigger === 'AC' || b.trigger === 'N1') : 0) ||
       (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||
       compareCandidates(a, b)

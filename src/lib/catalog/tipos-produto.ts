@@ -185,7 +185,24 @@ export function classificarTipo(dept: string, titulo: string): string {
   return melhor;
 }
 
+/**
+ * Loja de Impressao 3D em 3 SECOES (dono, 2026-11-15, #63): Impressoras, Filamentos e Demais itens (resinas, secadores, lavagem e cura,
+ * ferramentas e o resto que passa nas regras). `demais` e um filtro de secao (todo tipo que nao e impressora nem filamento), nao um tipo de titulo.
+ */
+export const TIPO_3D_DEMAIS = 'demais';
+export const SECOES_3D = [
+  { slug: 'impressoras', rotulo: 'Impressoras', ancora: 'impressoras' },
+  { slug: 'filamentos', rotulo: 'Filamentos', ancora: 'filamentos' },
+  { slug: TIPO_3D_DEMAIS, rotulo: 'Demais itens', ancora: 'demais-itens' },
+] as const;
+/** true se o tipo de titulo pertence ao filtro `tipo` do departamento (trata `demais` da Impressao 3D). */
+export function tipoPertenceAoFiltro(dept: string, tipoDoMaster: string, filtro: string): boolean {
+  if (dept === 'impressao3d' && filtro === TIPO_3D_DEMAIS) return tipoDoMaster !== 'impressoras' && tipoDoMaster !== 'filamentos';
+  return tipoDoMaster === filtro;
+}
+
 export function rotuloTipo(dept: string, slug: string): string | null {
+  if (dept === 'impressao3d' && slug === TIPO_3D_DEMAIS) return 'Demais itens';
   if (slug === TIPO_OUTROS) return ROTULO_OUTROS;
   const defs = (TIPOS_POR_DEPT as Record<string, readonly TipoDef[] | undefined>)[dept];
   return defs?.find((d) => d.slug === slug)?.rotulo ?? null;

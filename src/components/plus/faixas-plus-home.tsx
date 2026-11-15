@@ -38,9 +38,16 @@ export async function FaixasPlusHome() {
                     {l.chamada} Os menores preços do momento, com anúncio confirmado nas últimas horas.
                   </Text>
                 </div>
-                <Link href={`/mercado/${l.dept}`} className="inline-flex min-h-11 items-center gap-2 text-[14px] font-bold text-[var(--color-accent-primary)] hover:underline">
-                  Ver todos de {l.rotulo} <ArrowRight className="size-4" aria-hidden />
-                </Link>
+                <div className="flex flex-wrap gap-x-4">
+                  {l.dept === 'impressao3d' ? (
+                    <Link href="/mercado/impressao3d#guia" className="inline-flex min-h-11 items-center gap-2 text-[14px] font-bold text-[var(--color-accent-primary)] hover:underline">
+                      Guia das impressoras Bambu Lab <ArrowRight className="size-4" aria-hidden />
+                    </Link>
+                  ) : null}
+                  <Link href={`/mercado/${l.dept}`} className="inline-flex min-h-11 items-center gap-2 text-[14px] font-bold text-[var(--color-accent-primary)] hover:underline">
+                    Ver todos de {l.rotulo} <ArrowRight className="size-4" aria-hidden />
+                  </Link>
+                </div>
               </div>
               {(tipos[l.dept] ?? []).length > 0 ? (
                 <ul className="-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0" aria-label={`Tipos em ${l.rotulo}`}>

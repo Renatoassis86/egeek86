@@ -8,7 +8,11 @@ import { exigirDepartamento } from '@/server/departamentos-rotas';
 import { destaquesDepartamento, indiceTiposDepartamento, listarDepartamento, normalizarOrdem } from '@/server/queries/departamento';
 import { ehPrioridade3d, prioridade3dLigada } from '@/lib/messaging/prioridade-3d';
 import { departamentoPorSlug } from '@/lib/catalog/departamentos';
-import { normalizarTipo, rotuloTipo } from '@/lib/catalog/tipos-produto';
+import { normalizarTipo, rotuloTipo, SECOES_3D } from '@/lib/catalog/tipos-produto';
+import { secoes3dLigada } from '@/lib/catalog/guia-3d';
+import { guiaImpressoras3d } from '@/server/queries/guia-3d';
+import { GuiaImpressoras3d } from '@/components/plus/guia-impressoras-3d';
+import { Secoes3d } from '@/components/plus/secoes-3d';
 
 // Dinâmica por flag no banco; fora de sitemap e sem generateStaticParams (renderização sob demanda).
 export const dynamic = 'force-dynamic';
@@ -42,12 +46,19 @@ export default async function DepartamentoPage({
   const pagina = Number(Array.isArray(sp.pagina) ? sp.pagina[0] : sp.pagina) || 1;
   const ordem = normalizarOrdem(Array.isArray(sp.ordem) ? sp.ordem[0] : sp.ordem);
   const tipo = normalizarTipo(dept.slug, Array.isArray(sp.tipo) ? sp.tipo[0] : sp.tipo);
-  const [res, indice] = await Promise.all([
-    listarDepartamento(dept.slug, { pagina, q, ordem, tipo }),
+  // Impressão 3D em 3 seções + guia (dono, 2026-11-15, #63/#111): só na vista padrão (sem busca, sem tipo, página 1). DEPT_3D_SECOES=off volta à página anterior.
+  const modoSecoes = dept.slug === 'impressao3d' && secoes3dLigada() && !q && !tipo && pagina === 1;
+  const vazio = { itens: [], total: 0, pagina: 1, totalPaginas: 1 };
+  const [res, indice, secoes, guia] = await Promise.all([
+    modoSecoes ? Promise.resolve(vazio) : listarDepartamento(dept.slug, { pagina, q, ordem, tipo }),
     indiceTiposDepartamento(dept.slug).catch(() => ({ porId: {}, tipos: [] })),
+    modoSecoes
+      ? Promise.all(SECOES_3D.map((s) => listarDepartamento(dept.slug, { pagina: 1, ordem: 'menor', tipo: s.slug }).catch(() => vazio)))
+      : Promise.resolve(null),
+    modoSecoes ? guiaImpressoras3d().catch(() => []) : Promise.resolve([]),
   ]);
-  // Impressão 3D (dono, 2026-11-14): faixa de destaque com as Anycubic Kobra e Bambu Lab de menor preço (foto real, sem selo, sem mediana).
-  const destaques3d = dept.slug === 'impressao3d' && prioridade3dLigada() && pagina === 1 && !q && !tipo
+  // Impressão 3D (dono, 2026-11-14): faixa de destaque com as Anycubic Kobra e Bambu Lab de menor preço (foto real, sem selo, sem mediana). Na vista em seções, a guia a substitui.
+  const destaques3d = dept.slug === 'impressao3d' && !modoSecoes && prioridade3dLigada() && pagina === 1 && !q && !tipo
     ? (await destaquesDepartamento('impressao3d', 6).catch(() => [])).filter((m) => ehPrioridade3d('impressao3d', m.nome)).slice(0, 4)
     : [];
   const rotuloTipoAtivo = tipo ? rotuloTipo(dept.slug, tipo) : null;
@@ -79,7 +90,7 @@ export default async function DepartamentoPage({
         </Text>
       </header>
 
-      {indice.tipos.length > 1 ? (
+      {!modoSecoes && indice.tipos.length > 1 ? (
         <nav aria-label={`Tipos de produto em ${dept.rotulo}`} className="mb-4">
           <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
             <li className="shrink-0">
@@ -124,6 +135,39 @@ export default async function DepartamentoPage({
         <Button type="submit" variant="secondary" size="md">Aplicar</Button>
       </form>
 
+      {modoSecoes && secoes ? (
+        <>
+          <nav aria-label="Seções da loja de Impressão 3D" className="-mx-4 mb-6 border-b border-[var(--color-border-subtle)] bg-[var(--color-bg-canvas)] px-4 lg:mx-0 lg:px-0">
+            <ul className="flex gap-2 overflow-x-auto py-2">
+              {guia.length > 0 ? (
+                <li className="shrink-0">
+                  <a href="#guia" className={`${chipBase} ${chipOff}`}>Guia Bambu Lab</a>
+                </li>
+              ) : null}
+              {SECOES_3D.map((sec, i) => (
+                <li key={sec.slug} className="shrink-0">
+                  <a href={`#${sec.ancora}`} className={`${chipBase} ${chipOff}`}>
+                    {sec.rotulo} <span className="font-mono text-[12px] font-normal">{secoes[i].total}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <GuiaImpressoras3d itens={guia} />
+          <Secoes3d
+            dept={dept.slug}
+            tipoCartao={dept.tipoCartao}
+            secoes={SECOES_3D.map((sec, i) => ({ slug: sec.slug, rotulo: sec.rotulo, ancora: sec.ancora, total: secoes[i].total, itens: secoes[i].itens }))}
+          />
+        </>
+      ) : null}
+
+      {dept.slug === 'impressao3d' && secoes3dLigada() && (tipo || q || pagina > 1) ? (
+        <Link href="/mercado/impressao3d" className="mb-4 inline-flex min-h-11 items-center text-[14px] font-bold text-[var(--color-accent-primary)] hover:underline">
+          ← Voltar às seções da loja de Impressão 3D
+        </Link>
+      ) : null}
+
       {destaques3d.length > 0 ? (
         <div className="mb-8">
           <Text as="h2" variant="heading-sm" className="mb-3 font-bold">Em destaque: Anycubic Kobra e Bambu Lab</Text>
@@ -137,7 +181,7 @@ export default async function DepartamentoPage({
         </div>
       ) : null}
 
-      {res.itens.length === 0 ? (
+      {modoSecoes ? null : res.itens.length === 0 ? (
         <div className="border border-[var(--color-border-subtle)] bg-[var(--color-bg-surface)] p-6">
           <Text variant="body-md" color="secondary">
             {q ? `Nenhum produto de ${rotuloTipoAtivo ?? dept.rotulo} encontrado para "${q}".` : 'Nenhum produto com oferta verificada agora.'}

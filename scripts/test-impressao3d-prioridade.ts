@@ -39,7 +39,7 @@ const divers = <T,>(_v: string, l: readonly T[], n: number): T[] => l.slice(0, n
 const d = priorizarImpressao3d('impressao3d', lista, 6, divers);
 ok(d.length === 6, 'destaque tem 6 itens', d.length);
 ok(d.slice(0, 4).every((x) => ehPrioridade3d('impressao3d', x.name)), 'abre com Kobra/Bambu', d.map((x) => x.name));
-ok(d[0].name.includes('A1 Mini'), 'ordenado por preço dentro da prioridade', d[0].name);
+ok(d[0].name.includes('P1S Combo'), 'ordem do dono (#111): combo primeiro, depois menor preço dentro da posição', d[0].name);
 ok(d.filter((x) => !ehPrioridade3d('impressao3d', x.name)).length >= 1, 'deixa vaga para outros itens', d.map((x) => x.name));
 const so = priorizarImpressao3d('impressao3d', lista.filter((x) => ehPrioridade3d('impressao3d', x.name)), 3, divers);
 ok(so.length === 3, 'sem outros itens, só prioridade');

@@ -18,6 +18,7 @@ import type postgres from 'postgres';
 import { slugify } from '@/lib/slugify';
 import { masterFromRow } from '@/server/collector/amazon-assisted';
 import { buildShopeeQueries, filtroAnuncio, judgeShopee, prepareGeneric, LINK_OFICIAL } from '@/lib/affiliate/shopee-identity';
+import { ordenarPorPrioridade3d } from '@/lib/messaging/prioridade-3d';
 import { proximoOffset, TETO_HORARIO_PADRAO, type VerticalAlvo } from '@/lib/affiliate/ampliar-amostra-params';
 
 export type Sql = postgres.Sql<{}>;
@@ -312,7 +313,8 @@ export async function ampliarAmostraShopee(sql: Sql, opts: AmpliarOpts): Promise
       const st = (res.porVertical[vert] = novoStats());
       const todos = await carregarMasters(sql, vert, opts.soMaster, opts.soNome);
       st.masters = todos.length;
-      const elegiveis = todos.filter((m) => m.n_shopee < MAX_POR_MASTER);
+      // Impressao 3D (dono, 2026-11-15, #111): a cobertura comeca pela impressora COM COMBO (P2S Combo, P1S Combo, A1 Combo, A1 Mini Combo), depois as sem combo e Kobra.
+      const elegiveis = ordenarPorPrioridade3d(vert, todos.filter((m) => m.n_shopee < MAX_POR_MASTER));
       st.elegiveis = elegiveis.length;
       const masters = elegiveis.slice(opts.offset, opts.limitMasters ? opts.offset + opts.limitMasters : undefined);
       log(`--- ${vert}: masters aprovados=${st.masters}; elegiveis=${st.elegiveis}; a testar nesta rodada=${masters.length}`);

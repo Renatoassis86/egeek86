@@ -278,8 +278,9 @@ export const SEGMENTS: SegmentConfig[] = [
     searchDomain: 'MLB-3D_PRINTERS',
     terms: dedupeTerms([
       // Tarefa #59 (dono, 2026-11-15): P1S e P2S em PRIORIDADE; cada variante (solo/Combo) e cada A1 (A1/A1 Mini) tem termo proprio para achar TODOS os catalogos do ML.
-      'impressora 3d bambu lab p2s', 'impressora 3d bambu lab p2s combo', 'impressora 3d bambu lab p1s', 'impressora 3d bambu lab p1s combo',
-      'impressora 3d bambu lab a1', 'impressora 3d bambu lab a1 combo', 'impressora 3d bambu lab a1 mini', 'impressora 3d bambu lab a1 mini combo',
+      // #111 (dono, 2026-11-15): SEMPRE a impressora COM COMBO primeiro (P2S Combo, P1S Combo, A1 Combo, A1 Mini Combo), depois as sem combo (P2S, P1S, A1, A1 Mini).
+      'impressora 3d bambu lab p2s combo', 'impressora 3d bambu lab p1s combo', 'impressora 3d bambu lab a1 combo', 'impressora 3d bambu lab a1 mini combo',
+      'impressora 3d bambu lab p2s', 'impressora 3d bambu lab p1s', 'impressora 3d bambu lab a1', 'impressora 3d bambu lab a1 mini',
       'impressora bambu lab p2s', 'impressora bambu lab p1s', 'impressora bambu lab a1 mini', 'impressora 3d creality ender', 'impressora 3d creality k1',
       ...combineTerms('impressora 3d', ['fdm', 'resina'], ['creality', 'bambu lab', 'anycubic', 'elegoo', 'flashforge', 'voxelab', 'sovol', 'artillery', 'qidi', 'phrozen']),
       'impressora 3d ender 3 v3', 'impressora 3d anycubic kobra', 'impressora 3d elegoo neptune', 'impressora 3d elegoo centauri carbon', 'impressora 3d bambu lab x1 carbon',

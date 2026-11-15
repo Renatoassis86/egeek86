@@ -7,7 +7,7 @@ import { verticalSql } from '@/lib/catalog/verticais';
 import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { createCachedQuery, createPersistedQuery } from '@/lib/cache/server-cache';
 import { ehItemMiudoOuDuvida } from '@/lib/catalog/item-miudo';
-import { classificarTipo, contarTipos, type TipoContagem } from '@/lib/catalog/tipos-produto';
+import { classificarTipo, contarTipos, tipoPertenceAoFiltro, type TipoContagem } from '@/lib/catalog/tipos-produto';
 import {
   MIN_VENDEDORES_MEDIANA,
   OFERTA_CLICAVEL_MAX_HORAS,
@@ -188,7 +188,7 @@ async function calcularListaDepartamento(vertical: string, opts: OpcoesLista = {
   let busca = termos.length ? sql.join(termos.map((t) => sql`AND m.name ILIKE ${'%' + t + '%'}`), sql` `) : sql``;
   if (opts.tipo) {
     const { porId } = await indiceTiposDepartamento(vertical);
-    const ids = Object.keys(porId).filter((id) => porId[id] === opts.tipo && /^[0-9a-f-]{36}$/i.test(id));
+    const ids = Object.keys(porId).filter((id) => tipoPertenceAoFiltro(vertical, porId[id], opts.tipo as string) && /^[0-9a-f-]{36}$/i.test(id));
     if (!ids.length) return { itens: [], total: 0, pagina, totalPaginas: 1 };
     busca = sql`${busca} AND m.id IN (${sql.join(ids.map((id) => sql`${id}::uuid`), sql`, `)})`;
   }
@@ -390,7 +390,7 @@ async function calcularDestaquesDepartamento(vertical: string, limite = 8): Prom
     WHERE ${verticalSql('m', vertical)}
       AND COALESCE(m.default_images ->> 0, '') ~* '^https?://'
     GROUP BY m.id
-    ORDER BY MIN(sb.current_price_cents) ASC, m.name ASC
+    ORDER BY ${vertical === 'impressao3d' ? sql`(m.name ~* '(bambu|kobra|anycubic)' AND m.name ~* '(impressora|printer|p2s|p1s|a1|kobra)' AND m.name !~* '(filamento|resina|extrusor|bico|hotend|placa|mesa)') DESC,` : sql``} MIN(sb.current_price_cents) ASC, m.name ASC
     LIMIT 160
   `);
   // Cinto de segurança (dono, 2026-11-13): destaque ordenado por menor preço é onde o item miúdo apareceria primeiro.
@@ -399,7 +399,7 @@ async function calcularDestaquesDepartamento(vertical: string, limite = 8): Prom
 }
 
 /** Destaques com cache de 5 min (mesma regra da lista). */
-const destaquesCache = createCachedQuery(calcularDestaquesDepartamento, ['dept-destaques-v1'], { revalidate: 300, maxStaleSeconds: 3600, coldTimeoutSeconds: 30, live: true });
+const destaquesCache = createCachedQuery(calcularDestaquesDepartamento, ['dept-destaques-v2'], { revalidate: 300, maxStaleSeconds: 3600, coldTimeoutSeconds: 30, live: true });
 export async function destaquesDepartamento(vertical: string, limite = 8): Promise<CartaoDepartamento[]> {
   assertDepartamento(vertical);
   return destaquesCache(vertical, Math.max(1, Math.min(12, Math.trunc(limite) || 8)));

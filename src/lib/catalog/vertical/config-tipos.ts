@@ -375,10 +375,12 @@ const NB_BRANDS = ['acer', 'lenovo', 'dell', 'hp', 'asus', 'samsung', 'apple', '
  * modelos de fora: faltavam, entre outros, Kobra S1 simples, Kobra 3 e 3 Combo, Kobra Neo, Bambu X1C, P1P e H2S/H2C).
  */
 export const TERMOS_3D_PRIORIDADE: string[] = [
+  // #111 (dono, 2026-11-15): ordem fixa, SEMPRE a impressora COM COMBO primeiro; depois as sem combo; por ultimo a Anycubic Kobra.
+  'bambu lab p2s combo', 'bambu lab p1s combo', 'bambu lab a1 combo', 'bambu lab a1 mini combo',
+  'bambu lab p2s', 'bambu lab p1s', 'bambu lab a1', 'bambu lab a1 mini',
+  'bambu lab p1p', 'bambu lab x1 carbon', 'bambu lab x1c combo', 'bambu lab h2s', 'bambu lab h2c', 'bambu lab h2d combo', 'bambu lab x2d',
   'anycubic kobra s1', 'anycubic kobra s1 combo', 'anycubic kobra s1 max', 'anycubic kobra 3', 'anycubic kobra 3 combo', 'anycubic kobra 3 v2',
   'anycubic kobra 3 max', 'anycubic kobra neo', 'anycubic kobra 2 pro', 'anycubic kobra x combo', 'anycubic kobra 2 max',
-  'bambu lab a1', 'bambu lab a1 combo', 'bambu lab a1 mini combo', 'bambu lab p1s', 'bambu lab p1s combo', 'bambu lab p1p', 'bambu lab p2s',
-  'bambu lab p2s combo', 'bambu lab x1 carbon', 'bambu lab x1c combo', 'bambu lab h2s', 'bambu lab h2c', 'bambu lab h2d combo', 'bambu lab x2d',
 ];
 
 export const TERMOS_EXTRAS_TIPOS: Record<string, string[]> = {
