@@ -15,6 +15,8 @@ import { formatBRL } from '@/lib/format';
 import { listOffersForAdminFiltered, listNetworks, type AdminOffersFilter } from '@/server/queries/affiliate';
 import type { AffiliateOffer, GameFormat, GamePlatformGen, GameEditionType } from '@/db/schema';
 import { requireAdmin } from '@/lib/auth/require-admin';
+import { comissaoPorOfertas } from '@/server/queries/admin-comissao';
+import { SeloEstimada, ComissaoOfertaTexto } from '@/components/admin/comissao-celula';
 
 const STATUS_VALUES: readonly AffiliateOffer['status'][] = ['draft', 'active', 'paused', 'expired', 'archived'];
 const FORMAT_VALUES: readonly GameFormat[] = ['physical', 'digital', 'unknown'];
@@ -87,6 +89,7 @@ export default async function AdminOffersPage({
   ]);
 
   const offers = offersPage.items;
+  const comissoes = await comissaoPorOfertas(offers.map((o) => o.id));
 
   const paginationParams = new URLSearchParams();
   if (filter.status) paginationParams.set('status', filter.status);
@@ -166,6 +169,8 @@ export default async function AdminOffersPage({
                   <th className="px-4 py-3 text-caption font-medium text-[var(--color-text-tertiary)]">Rede</th>
                   <th className="px-4 py-3 text-caption font-medium text-[var(--color-text-tertiary)]">Classificação</th>
                   <th className="px-4 py-3 text-right text-caption font-medium text-[var(--color-text-tertiary)]">Preço</th>
+                  <th className="px-4 py-3 text-right text-caption font-medium text-[var(--color-text-tertiary)]">Comissão prevista (%)</th>
+                  <th className="px-4 py-3 text-right text-caption font-medium text-[var(--color-text-tertiary)]">Comissão prevista (R$)</th>
                   <th className="px-4 py-3 text-caption font-medium text-[var(--color-text-tertiary)]">Status</th>
                   <th className="px-4 py-3" />
                 </tr>
@@ -208,6 +213,17 @@ export default async function AdminOffersPage({
                     <td className="px-4 py-3 text-right">
                       <Text variant="mono-md" className="tabular">
                         {formatBRL(offer.currentPriceCents)}
+                      </Text>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Text variant="body-sm" className="tabular">
+                        {comissoes.get(offer.id) ? `${(comissoes.get(offer.id)!.taxa * 100).toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%` : '—'}
+                        {comissoes.get(offer.id)?.confianca === 'estimada' ? <SeloEstimada /> : null}
+                      </Text>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <Text variant="body-sm" className="tabular">
+                        {comissoes.get(offer.id) ? formatBRL(comissoes.get(offer.id)!.cents) : '—'}
                       </Text>
                     </td>
                     <td className="px-4 py-3">
@@ -269,6 +285,9 @@ export default async function AdminOffersPage({
                     <div className="flex shrink-0 flex-col items-end gap-1">
                       <Text variant="mono-md" className="tabular">
                         {formatBRL(offer.currentPriceCents)}
+                      </Text>
+                      <Text variant="caption" color="tertiary" className="text-right">
+                        Comissão prevista: <ComissaoOfertaTexto c={comissoes.get(offer.id)} />
                       </Text>
                       <ChevronRight className="size-4 text-[var(--color-text-tertiary)]" />
                     </div>

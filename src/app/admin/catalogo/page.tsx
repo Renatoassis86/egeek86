@@ -7,6 +7,8 @@ import {
   LOJAS, MAX_PAGES, PAGE_SIZE, ROTULO_REDE, ROTULO_STATUS, REDES_FILTRO, STATUS_PORTEIRO, caminhoProduto, deltaSerie, parseFiltros, rotuloLoja,
   type Filtros, type LojaTotais,
 } from '@/lib/catalog/inventario';
+import { comissaoPorMasters } from '@/server/queries/admin-comissao';
+import { celulasComissaoProduto } from '@/components/admin/comissao-celula';
 import { carregarEvolucao, carregarLinhas, carregarTotaisLojas } from '@/server/queries/catalogo-inventario';
 
 /**
@@ -82,6 +84,7 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
     carregarEvolucao(loja, 14),
   ]);
   const t = totais[loja];
+  const comissoes = await comissaoPorMasters(lista.linhas.map((l) => l.id));
   const paginas = Math.min(MAX_PAGES, Math.max(1, Math.ceil(lista.total / PAGE_SIZE)));
   const teveCorte = lista.total > MAX_PAGES * PAGE_SIZE;
   const dAprov = deltaSerie(evolucao, 'mastersAprovados');
@@ -217,6 +220,8 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
               <th className={`${th} text-right`}>Amazon</th>
               <th className={`${th} text-right`}>Menor preço</th>
               <th className={`${th} text-right`}>Média única</th>
+              <th className={`${th} text-right`}>Comissão prevista (%)</th>
+              <th className={`${th} text-right`}>Comissão prevista (R$)</th>
               <th className={th}>Última coleta</th>
               <th className={th}>Porteiro</th>
               <th className={th}>Links</th>
@@ -225,7 +230,7 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
           <tbody>
             {lista.linhas.length === 0 ? (
               <tr>
-                <td className={td} colSpan={11}>
+                <td className={td} colSpan={13}>
                   Nenhum produto com esses filtros.
                 </td>
               </tr>
@@ -233,6 +238,7 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
               lista.linhas.map((l) => {
                 const caminho = caminhoProduto(l);
                 const semOficial = l.ofertasTotal > l.ofertasOficiais;
+                const com = celulasComissaoProduto(comissoes.get(l.id));
                 return (
                   <tr key={l.id} className={bodyRow}>
                     <td className={`${td} max-w-[360px] text-[var(--color-text-primary)]`}>
@@ -258,6 +264,8 @@ export default async function CatalogoPage({ searchParams }: { searchParams: Pro
                       {money(l.mediaCents)}
                       {l.mediaDia ? <div className="text-[11px] text-[var(--color-text-tertiary)]">em {l.mediaDia.slice(8, 10)}/{l.mediaDia.slice(5, 7)}</div> : null}
                     </td>
+                    <td className={`${td} text-right`}>{com.pct}</td>
+                    <td className={`${td} text-right`}>{com.valor}</td>
                     <td className={`${td} whitespace-nowrap`}>{dataHora(l.ultimaColeta)}</td>
                     <td className={td}>
                       <span

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CheckCircle2, Tags, Network, Ticket, MessageSquareText, Newspaper, ShieldCheck, Users, ShoppingBag, ClipboardList, BrainCircuit, Library, Workflow, type LucideIcon } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, Tags, Network, Ticket, MessageSquareText, Newspaper, ShieldCheck, Users, ShoppingBag, ClipboardList, BrainCircuit, Library, Workflow, Percent, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 export interface AdminNavItem {
@@ -22,6 +22,7 @@ export const adminNavItems: AdminNavItem[] = [
   { href: '/admin/ofertas', label: 'Ofertas', icon: Tags },
   { href: '/admin/carrinhos', label: 'Listas de interesse', icon: ShoppingBag },
   { href: '/admin/redes', label: 'Redes', icon: Network },
+  { href: '/admin/comissao', label: 'Comissão prevista', icon: Percent },
   { href: '/admin/cupons', label: 'Cupons', icon: Ticket },
   { href: '/admin/cupons-campanha', label: 'Códigos de campanha', icon: Ticket },
   { href: '/admin/noticias', label: 'Notícias', icon: Newspaper },
