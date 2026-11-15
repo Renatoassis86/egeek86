@@ -25,6 +25,9 @@ const APPLY = argv.includes('--apply');
 const arg = (n: string) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : undefined; };
 const FASE = arg('--fase');
 const POR = arg('--por') ?? '';
+/** #60 (2026-11-15): restringe a liberação a UM departamento (ex.: --vertical tecnologia) e só aos que o porteiro do departamento sugeriu 'approved'. */
+const VERT = arg('--vertical') ?? null;
+const SO_SUGERIDO = argv.includes('--so-sugerido-aprovado');
 const ROLLBACK = arg('--rollback');
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const DIR = path.resolve('docs/backups');
@@ -60,7 +63,9 @@ async function main() {
         FROM master_products m
         WHERE m.attributes -> 'catalogGate' ->> 'verdict' = 'review'
           AND COALESCE(m.attributes -> 'catalogGate' ->> 'manual', '') = ''
-          AND (m.attributes ->> 'mergedInto') IS NULL`;
+          AND (m.attributes ->> 'mergedInto') IS NULL
+          AND (${VERT}::text IS NULL OR m.vertical = ${VERT}::text)
+          AND (NOT ${SO_SUGERIDO}::boolean OR m.attributes -> 'catalogGate' ->> 'suggested' = 'approved')`;
       for (const r of rows) {
         const g = r.gate;
         const titulos = [r.name, ...r.ofertas];
