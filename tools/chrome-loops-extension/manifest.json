@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Espaco Geek 86 - Loops",
+  "version": "1.0.0",
+  "description": "Reinjeta os loops de coleta assistida do Espaco Geek 86 (ML, Amazon) a cada carregamento e impede o Chrome de descartar as abas.",
+  "permissions": ["scripting", "tabs", "webNavigation", "alarms", "storage"],
+  "host_permissions": [
+    "https://www.mercadolivre.com.br/*",
+    "https://www.amazon.com.br/*",
+    "https://shopee.com.br/*",
+    "https://www.egeek86.com/*"
+  ],
+  "background": { "service_worker": "background.js" }
+}

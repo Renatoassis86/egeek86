@@ -50,3 +50,7 @@ next-env.d.ts
 
 # dumps do banco e logs de backup local (PII + 700MB, nunca versionar)
 /backup/
+
+# Extensao local de loops: token e copias geradas
+tools/chrome-loops-extension/config.local.json
+tools/chrome-loops-extension/loops/*.js
