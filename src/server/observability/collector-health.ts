@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { collectorRunsEnabled } from '@/server/collector/collector-runs';
 import { sendTelegramMessage } from '@/server/notifications/send-telegram';
+import { SLO } from '@/lib/collector-runs/slo';
 import {
   evaluateHealth,
   formatAlertMessage,
@@ -81,8 +82,22 @@ export async function loadHealthInput(now: Date): Promise<HealthInput> {
     dayClose = { day, rowsTotal: rows[0]?.total ?? 0, rowsOpen: rows[0]?.open ?? 0 };
   }
 
+  // Loops do Chrome: ultima gravacao concluida (ok/partial) por job, 3 dias de janela.
+  const chromeJobs = SLO.chromeLoops.map((r) => r.job);
+  const lastRows = await db.execute<{ job: string; last_at: Date | null }>(sql`
+    SELECT job, max(COALESCE(finished_at, started_at)) AS last_at
+    FROM collector_runs
+    WHERE started_at > now() - interval '3 days' AND status IN ('ok', 'partial') AND job IN (${sql.join(chromeJobs.map((j) => sql`${j}`), sql`, `)})
+    GROUP BY job
+  `);
+  const chromeLoops = chromeJobs.map((job) => {
+    const r = lastRows.find((x) => x.job === job);
+    return { job, lastAt: r?.last_at ? new Date(r.last_at) : null };
+  });
+
   return {
     now,
+    chromeLoops,
     runs,
     volumeSeries: [
       { name: 'cotacoes gravadas', points: snapRows.map((r) => ({ hour: new Date(r.h), n: r.n })) },

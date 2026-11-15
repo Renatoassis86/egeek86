@@ -11,6 +11,12 @@ export interface DeadManRule {
   abandonedAfterMin: number;
 }
 
+export interface ChromeLoopRule {
+  job: string;
+  label: string;
+  maxSilenceMin: number;
+}
+
 export const SLO = {
   /** Dead-man switch por rede: nenhuma execucao FINALIZADA (ok/partial) dentro do silencio maximo. */
   deadMan: [
@@ -19,6 +25,20 @@ export const SLO = {
     // Amazon assistida (aba logada do dono envia lotes de ~75 s durante ~85 min a cada 2 h; ata 2026-11-10). Silencio maximo de 3 h = aba parada.
     { job: 'amazon-assistida', network: 'amazon', everyMinutes: 120, maxSilenceMin: 180, abandonedAfterMin: 5 },
   ] satisfies DeadManRule[],
+
+  /**
+   * Loops do Chrome (abas do dono, #113 passo 7). Limiar = silencio maximo sem gravar (ok/partial). Medido em collector_runs (24 h, 2026-11-15):
+   * batimento p95 20 min, picos normais ate 32; ml-links picos normais ate 31; amazon-assistida roda ~85 min a cada 2 h, pausa normal
+   * de 58 a 60 min. Acima disso (quedas reais medidas: 80, 132, 139, 234 min) o dono e avisado. Cron: a cada 30 min, entao o aviso
+   * chega em ate limiar + 30 min.
+   */
+  chromeLoops: [
+    { job: 'cupons-batimento', label: 'Batimento de cupons (aba __cup)', maxSilenceMin: 40 },
+    { job: 'ml-links-assistida', label: 'Links do Mercado Livre (aba __mll)', maxSilenceMin: 45 },
+    { job: 'amazon-assistida', label: 'Amazon assistida (aba __amza)', maxSilenceMin: 75 },
+  ] satisfies ChromeLoopRule[],
+  /** Lembrete enquanto o loop continuar caido (o aviso inicial e 1 por queda; nunca menos de 30 min entre avisos). */
+  chromeLoopRepeatMin: 120,
 
   /** Idade da oferta DEVIDA mais velha (no inicio da execucao). Acima disso = backlog crescendo / cobertura caindo. */
   oldestDueAgeMaxS: 6 * 3600,

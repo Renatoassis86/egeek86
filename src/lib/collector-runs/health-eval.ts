@@ -37,6 +37,8 @@ export interface HealthInput {
   volumeSeries: { name: string; points: HourPoint[] }[];
   /** null = sombra do dia desligada (regra nao se aplica). */
   dayClose: DayCloseState | null;
+  /** Ultima gravacao concluida (ok/partial) de cada loop do Chrome; lastAt null = nenhuma na janela lida. Ausente = regra desligada. */
+  chromeLoops?: { job: string; lastAt: Date | null }[];
 }
 
 export type Severity = 'critical' | 'warning';
@@ -256,8 +258,39 @@ export function evalDayClose(input: HealthInput): Alert[] {
   return [];
 }
 
+const CHROME_KEY = 'chrome_loop:';
+const ACAO_CHROME = 'Abrir as abas (ML, Amazon, Shopee) e reinjetar os loops; conferir a extensao "Espaco Geek 86 - Loops" em chrome://extensions.';
+
+function fmtSpClock(d: Date): string {
+  const sp = new Date(d.getTime() - 3 * HOUR);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${p(sp.getUTCDate())}/${p(sp.getUTCMonth() + 1)} ${p(sp.getUTCHours())}:${p(sp.getUTCMinutes())}`;
+}
+
+/** 6) Loops do Chrome (dead-man): sem gravar alem do silencio maximo da regra. Alerta por loop; a mensagem agrupa. */
+export function evalChromeLoops(input: HealthInput): Alert[] {
+  if (!input.chromeLoops) return [];
+  const out: Alert[] = [];
+  for (const rule of SLO.chromeLoops) {
+    const row = input.chromeLoops.find((r) => r.job === rule.job);
+    if (!row) continue; // sem leitura para este job: nao inventa alerta
+    const silence = row.lastAt ? input.now.getTime() - row.lastAt.getTime() : null;
+    if (silence != null && silence <= rule.maxSilenceMin * MIN) continue;
+    out.push({
+      key: `${CHROME_KEY}${rule.job}`,
+      severity: 'critical',
+      title: `Loop parado: ${rule.label}`,
+      detail:
+        (row.lastAt
+          ? `Sem gravar ha ${fmtMin(silence!)} (limite ${rule.maxSilenceMin} min); ultima gravacao em ${fmtSpClock(row.lastAt)} (Sao Paulo). `
+          : `Nenhuma gravacao na janela lida (limite ${rule.maxSilenceMin} min). `) + `Acao: ${ACAO_CHROME}`,
+    });
+  }
+  return out;
+}
+
 export function evaluateHealth(input: HealthInput): Alert[] {
-  return [...evalDeadMan(input), ...evalOldestDue(input), ...evalRates(input), ...evalVolumeDrop(input), ...evalDayClose(input)];
+  return [...evalDeadMan(input), ...evalChromeLoops(input), ...evalOldestDue(input), ...evalRates(input), ...evalVolumeDrop(input), ...evalDayClose(input)];
 }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -266,7 +299,13 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 export function formatAlertMessage(opened: Alert[], resolved: string[]): string {
   const lines: string[] = [];
   for (const a of opened) lines.push(`${a.severity === 'critical' ? '[CRITICO]' : '[ATENCAO]'} <b>${esc(a.title)}</b>\n${esc(a.detail)}`);
-  for (const k of resolved) lines.push(`[RESOLVIDO] ${esc(k)}`);
+  for (const k of resolved) {
+    if (k.startsWith(CHROME_KEY)) {
+      const job = k.slice(CHROME_KEY.length);
+      const label = SLO.chromeLoops.find((r) => r.job === job)?.label ?? job;
+      lines.push(`[VOLTOU] <b>${esc(label)}</b> voltou a gravar.`);
+    } else lines.push(`[RESOLVIDO] ${esc(k)}`);
+  }
   return `Coletor Espaco Geek 86\n\n${lines.join('\n\n')}`;
 }
 
@@ -277,10 +316,12 @@ export function planNotifications(
   now: Date,
   repeatEveryMs = 6 * HOUR
 ): { send: Alert[]; resolve: string[] } {
+  // Loops do Chrome: lembrete proprio (1 aviso por queda; repete so apos chromeLoopRepeatMin, nunca em menos de 30 min).
+  const repeatFor = (key: string) => (key.startsWith(CHROME_KEY) ? Math.max(30, SLO.chromeLoopRepeatMin) * MIN : repeatEveryMs);
   const open = new Map(state.filter((s) => !s.resolvedAt).map((s) => [s.key, s]));
   const send = active.filter((a) => {
     const s = open.get(a.key);
-    return !s || !s.lastSentAt || now.getTime() - s.lastSentAt.getTime() >= repeatEveryMs;
+    return !s || !s.lastSentAt || now.getTime() - s.lastSentAt.getTime() >= repeatFor(a.key);
   });
   const activeKeys = new Set(active.map((a) => a.key));
   const resolve = Array.from(open.keys()).filter((k) => !activeKeys.has(k));
