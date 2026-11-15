@@ -49,7 +49,7 @@ export function redeForaDasMensagens(rede: string | null | undefined, env: Recor
   return /amazon/i.test(rede ?? '') && amazonForaDasMensagens(env);
 }
 
-export const VEREDITOS_BLOQUEANTES = ['preco_divergente', 'item_diferente', 'pausado', 'sem_link'] as const;
+export const VEREDITOS_BLOQUEANTES = ['preco_divergente', 'item_diferente', 'pausado', 'sem_link', 'pendente_de_anuncio'] as const;
 /** Auditoria mais velha que isto não vale (a página pode ter mudado). */
 export const AUDITORIA_VALE_MIN = 360;
 

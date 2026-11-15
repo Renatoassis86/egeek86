@@ -17,6 +17,7 @@ export async function alinharLinkAoAnuncio(offerId: string, itemId: string | nul
     const r = (await db.execute(sql`
       UPDATE affiliate_offers SET affiliate_url = ${url}, link_item_id = ${itemId}, affiliate_link_pending = ${!toolId}, updated_at = now()
       WHERE id = ${offerId}::uuid
+        AND (last_price_confirmed_at IS NULL OR last_price_confirmed_at < now() - interval '180 minutes')
         AND COALESCE(link_item_id, CASE WHEN affiliate_url ~* 'meli[.]la|/p/MLB' THEN NULL ELSE 'MLB' || substring(affiliate_url from '/MLB-?([0-9]{6,})') END) IS NOT NULL
         AND COALESCE(link_item_id, CASE WHEN affiliate_url ~* 'meli[.]la|/p/MLB' THEN NULL ELSE 'MLB' || substring(affiliate_url from '/MLB-?([0-9]{6,})') END) <> ${itemId}
       RETURNING id`)) as unknown as unknown[];

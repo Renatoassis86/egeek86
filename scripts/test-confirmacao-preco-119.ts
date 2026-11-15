@@ -5,6 +5,7 @@
 import { decidirTrocaDeAnuncio, avaliarConfirmacao, CONFIRMACAO, confirmacaoLigada, itemIdDaUrl, mesmoAnuncio, planejarLinkDoAnuncio, quedaDoMesmoAnuncio } from '../src/lib/messaging/confirmacao-preco';
 import { runLivePhase, type LiveTarget } from '../src/lib/messaging/live-recheck';
 
+process.env.AMAZON_FORA_DAS_MENSAGENS = '0'; // contencao #120 (Amazon fora das mensagens) e de outra frente: estes testes cobrem as regras de confirmacao em si
 let fails = 0;
 function ok(c: boolean, n: string, x?: unknown) { if (!c) { fails++; console.error('FALHOU:', n, x ?? ''); } }
 const now = new Date('2026-11-15T21:00:00Z');

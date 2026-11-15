@@ -4,9 +4,10 @@
  */
 import fs from 'node:fs';
 import { auditarCartoes, extrairPolycardsJson, lerCartoes, toleranciaCents } from '../src/lib/links/polycard';
-import { avaliarAuditoria, avaliarConfirmacao, estritaCanalLigada } from '../src/lib/messaging/confirmacao-preco';
+import { avaliarAuditoria, avaliarConfirmacao, estritaCanalLigada, estritoCanalPara, VEREDITOS_BLOQUEANTES } from '../src/lib/messaging/confirmacao-preco';
 import { runLivePhase, type LiveTarget } from '../src/lib/messaging/live-recheck';
 
+process.env.AMAZON_FORA_DAS_MENSAGENS = '0'; // contencao #120 (Amazon fora das mensagens) e de outra frente: estes testes cobrem as regras de confirmacao em si
 let fails = 0;
 function ok(c: boolean, n: string, x?: unknown) { if (!c) { fails++; console.error('FALHOU:', n, x ?? ''); } }
 const ativo = fs.readFileSync('scripts/fixtures/polycards-p2s-egghome-ativo.html', 'utf8');
@@ -80,7 +81,20 @@ const fase = (t: LiveTarget) => runLivePhase({ now, targets: [t], mode: 'single'
   ok(!r3.ok && /veredito_obsoleto/.test(r3.reason ?? ''), 'canal estrito: ok obsoleto não sai', r3.reason);
   const r4 = await fase(alvo({ externalItemId: null, auditoria: { verdict: 'ok', checkedAt: h(5) } }));
   ok(!r4.ok, 'canal estrito: sem anúncio concreto não sai');
+  // Escopo Bambu: estrito só para Bambu Lab, fail-open (com bloqueio de veredito ruim) para o resto
+  ok(!estritoCanalPara(true, {}) && estritoCanalPara(true, { CONFIRMACAO_ESTRITA_CANAL_ESCOPO: 'bambu' }) && !estritoCanalPara(false, { CONFIRMACAO_ESTRITA_CANAL_ESCOPO: 'bambu' }), 'escopo bambu: só Bambu é estrito');
+  ok(estritoCanalPara(false, { CONFIRMACAO_ESTRITA_CANAL: '1' }), 'flag geral: tudo estrito');
   delete process.env.CONFIRMACAO_ESTRITA_CANAL;
+  process.env.CONFIRMACAO_ESTRITA_CANAL_ESCOPO = 'bambu';
+  const rb = await fase(alvo({ ehBambu: true, auditoria: null }));
+  ok(!rb.ok && /sem_veredito_ok/.test(rb.reason ?? ''), 'canal escopo bambu: Bambu sem veredito não sai', rb.reason);
+  ok((await fase(alvo({ ehBambu: false, auditoria: null }))).ok, 'canal escopo bambu: fora de Bambu segue fail-open');
+  ok(!(await fase(alvo({ ehBambu: false, auditoria: { verdict: 'preco_divergente', checkedAt: h(10) } }))).ok, 'canal escopo bambu: veredito ruim fora de Bambu bloqueia');
+  ok(!(await fase(alvo({ ehBambu: false, auditoria: { verdict: 'pendente_de_anuncio', checkedAt: h(10) } }))).ok && (VEREDITOS_BLOQUEANTES as readonly string[]).includes('pendente_de_anuncio'), 'pendente_de_anuncio bloqueia');
+  const ra = await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(200), auditoria: null }));
+  ok(!ra.ok && /confirmacao_velha/.test(ra.reason ?? ''), 'canal escopo bambu: Amazon Bambu com leitura de 200 min não sai', ra.reason);
+  ok((await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(60), auditoria: null }))).ok, 'canal escopo bambu: Amazon Bambu com leitura de 60 min sai');
+  delete process.env.CONFIRMACAO_ESTRITA_CANAL_ESCOPO;
   console.log(fails ? `${fails} falha(s)` : 'OK: auditoria de links #119');
   process.exit(fails ? 1 : 0);
 })();

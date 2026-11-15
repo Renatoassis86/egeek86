@@ -38,7 +38,7 @@ const JOB_LEGADO = (alvo: Alvo) => `painel-impressoras-${alvo}`;
 
 interface ItemTexto { key: string; rede: 'mercado-livre' | 'amazon'; text: string }
 interface QuedaTexto { oferta: string; text: string; url?: string | null; gatilho?: string }
-interface ListaCongelada { inicio: string; listas: ItemTexto[]; quedas: QuedaTexto[]; precos: Record<string, number>; itens?: Record<string, string>; foraPorConfirmacao?: number; ativosMl: number; ativosAmazon: number; problemas: string[] }
+interface ListaCongelada { inicio: string; listas: ItemTexto[]; quedas: QuedaTexto[]; precos: Record<string, number>; itens?: Record<string, string>; ids?: string[]; foraPorConfirmacao?: number; ativosMl: number; ativosAmazon: number; problemas: string[] }
 interface Estado { lista: string | null; cursor: number; ids: (string | null)[]; apagar: string[]; aberta: boolean; pausaAte: Date | null }
 
 export interface ResultadoAlvo {
@@ -118,6 +118,20 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
     const c = cupons.get(o.id);
     return { ...o, cupomFinalCents: c?.final ?? null, cupomNome: c?.nome ?? null, beneficios: bs };
   });
+}
+
+/**
+ * Porteiro NO ENVIO (#119, achado 17): a lista congelada é entregue em partes nos minutos seguintes. Se alguma oferta da lista mudou de preço, trocou
+ * de anúncio, saiu da coleta ou foi desativada DEPOIS do congelamento, a lista (e os cards) é regenerada antes de enviar mais nada.
+ */
+async function mudouDesdeCongelamento(L: ListaCongelada): Promise<number> {
+  const ids = L.ids ?? [];
+  if (!ids.length) return 0;
+  const rows = (await db.execute(sql`
+    SELECT count(*)::int AS n FROM affiliate_offers
+    WHERE id IN (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})
+      AND (last_price_change_at > ${L.inicio}::timestamptz OR item_trocado_at > ${L.inicio}::timestamptz OR status <> 'active' OR consecutive_miss_count > 0 OR quarantined_at IS NOT NULL)`)) as unknown as { n: number }[];
+  return Number(rows[0]?.n ?? 0);
 }
 
 async function ultimaLista(): Promise<ListaCongelada | null> {
@@ -210,9 +224,10 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
   const p: SaidaPaineis = montarPaineis({ ofertas: comAnterior, inicio: now, adTag: getAdTag() });
   const precos: Record<string, number> = {};
   const itens: Record<string, string> = {};
+  const idsCompletos = ofertas.map((o) => o.id);
   for (const o of ofertas) { precos[id12(o.id)] = o.cents; if (o.itemId) itens[id12(o.id)] = o.itemId; }
   const lista: ListaCongelada = {
-    inicio: now.toISOString(), listas: p.paineis.map((x) => ({ key: x.key, rede: x.rede, text: x.text })), quedas, precos, itens, foraPorConfirmacao: foraDaLista,
+    inicio: now.toISOString(), listas: p.paineis.map((x) => ({ key: x.key, rede: x.rede, text: x.text })), quedas, precos, itens, ids: idsCompletos, foraPorConfirmacao: foraDaLista,
     ativosMl: p.ativosMl, ativosAmazon: p.ativosAmazon, problemas: [...problemas, ...p.problemas].slice(0, 8),
   };
   if (gravarLista) {
@@ -329,6 +344,12 @@ export async function atualizarPaineisImpressoras(now: Date = new Date(), opts: 
     if (opts.force || !L || now.getTime() - new Date(L.inicio).getTime() >= INTERVALO_RODADA_MS) {
       L = await gerarLista(now, true);
       out.gerada = true;
+    }
+    if (!out.gerada && now.getTime() - new Date(L.inicio).getTime() > 60_000 && confirmacaoLigada()) {
+      const estados = await Promise.all(alvos.map((x) => lerEstado(x)));
+      const emAndamento = estados.some((e) => e.lista !== L!.inicio || e.aberta); // só regenera enquanto a entrega desta lista não terminou (evita lista nova a cada minuto)
+      const mudou = emAndamento ? await mudouDesdeCongelamento(L).catch(() => 0) : 0;
+      if (mudou > 0) { L = await gerarLista(now, true); out.gerada = true; out.problemas = [`lista regenerada no envio: ${mudou} oferta(s) mudaram depois do congelamento`]; }
     }
     out.ativosMl = L.ativosMl; out.ativosAmazon = L.ativosAmazon; out.quedas = L.quedas.length; out.problemas = L.problemas;
     for (const alvo of alvos) {

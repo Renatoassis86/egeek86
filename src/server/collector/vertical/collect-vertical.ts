@@ -15,7 +15,7 @@ import { fetchVerticalCatalog, VerticalPagingError, type RawPage, type VerticalC
 import { cadenciaCamadas, groupDueOldestFirst, plusCapsFromEnv, mayExpireStale, plusCallQuota, staleExpireHours, STALE_EXPIRE_MAX_PER_RUN, type CadenciaCamadas } from '@/lib/catalog/vertical/queue';
 import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { startCollectorRun, collectorRunsEnabled } from '../collector-runs';
-import { recordPriceSnapshot } from '../record-price-snapshot';
+import { recordPriceSnapshot, recordPriceSnapshotDetalhado } from '../record-price-snapshot';
 import { soldQuantityWrites } from '@/lib/affiliate/sold-quantity';
 import { saveOfferSoldQuantity } from './sold-quantity-store';
 import { quarentenaPrecoTipoLigada } from '../quarentena-preco-tipo';
@@ -320,7 +320,9 @@ async function applyVerticalGroup(
       // "Preco errado" decidido pelo dono na fila: a coleta nao libera a quarentena.
       sql`NOT EXISTS (SELECT 1 FROM identity_decisions d WHERE d.offer_id = ${affiliateOffers.id} AND d.undone_at IS NULL AND d.axis = 'preco' AND d.value = 'preco_errado')`,
     ));
-    if (await recordPriceSnapshot({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api', itemId: r.externalItemId })) out.snapshots++;
+    const rec = await recordPriceSnapshotDetalhado({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api', itemId: r.externalItemId });
+    if (rec.inserted) out.snapshots++;
+    if (rec.ignorado) { out.ignoredSiblings++; continue; } // anúncio irmão: não confirma o preço nem mexe no link (#119)
     await alinharLinkAoAnuncio(offerId, r.externalItemId);
     out.priced.push(offerId);
   }

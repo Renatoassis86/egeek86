@@ -103,3 +103,38 @@ export async function metricasIntegridade(): Promise<MetricasIntegridade> {
     idadeMediaUltimoVeredito: r?.idade ?? null, mensagens24hSemVeredito: Number(m?.n ?? 0),
   };
 }
+
+/**
+ * Shopee (#119, achado 21): `last_checked_at` não é confirmação de preço. Renova pela API oficial (lookupShopeeItem) as ofertas Shopee das impressoras
+ * Bambu Lab e dos combos P2S/P1S primeiro, sem confirmação há mais de 60 min: grava o preço pelo caminho único e carimba `last_price_confirmed_at`.
+ * Item indisponível soma uma falta (3 faltas expiram, mesma regra do coletor). Lote pequeno por minuto; nunca lança.
+ */
+export async function renovarShopee(opts: { limite?: number } = {}): Promise<{ lidas: number; renovadas: number; indisponiveis: number }> {
+  const out = { lidas: 0, renovadas: 0, indisponiveis: 0 };
+  try {
+    const { lookupShopeeItem } = await import('@/server/collector/sources/shopee');
+    const rows = (await db.execute(sql`
+      SELECT o.id::text AS id, o.external_ref AS ref
+      FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id AND n.slug = 'shopee' JOIN master_products m ON m.id = o.master_product_id
+      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND o.vertical = 'impressao3d' AND m.name ~* 'bambu|P2S|P1S'
+        AND (o.last_price_confirmed_at IS NULL OR o.last_price_confirmed_at < now() - interval '60 minutes')
+      ORDER BY o.last_price_confirmed_at ASC NULLS FIRST LIMIT ${opts.limite ?? 6}`)) as unknown as { id: string; ref: string | null }[];
+    for (const r of rows) {
+      const itemId = /^shopee-(\d{1,19})$/.exec(r.ref ?? '')?.[1];
+      if (!itemId) continue;
+      out.lidas++;
+      const q = await lookupShopeeItem(itemId);
+      if (q.status === 'ok') {
+        await recordPriceSnapshot({ offerId: r.id, priceCents: q.node.priceCents, source: 'api' });
+        await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now(), last_checked_at = now(), consecutive_miss_count = 0 WHERE id = ${r.id}::uuid`);
+        out.renovadas++;
+      } else {
+        await db.execute(sql`UPDATE affiliate_offers SET consecutive_miss_count = consecutive_miss_count + 1, status = CASE WHEN consecutive_miss_count + 1 >= 3 THEN 'expired'::affiliate_offer_status ELSE status END, updated_at = now() WHERE id = ${r.id}::uuid`);
+        out.indisponiveis++;
+      }
+    }
+  } catch (e) {
+    console.error('[renovarShopee] falhou (ignorado):', e instanceof Error ? e.message : e);
+  }
+  return out;
+}

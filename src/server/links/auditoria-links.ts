@@ -30,6 +30,9 @@ export async function resolverLinkMl(url: string, fetchImpl: typeof fetch = fetc
   }
 }
 
+/** Versão da regra de comparação gravada em cada veredito: 2 = tolerância maior entre R$ 1,00 e 0,1% (1 = 0,5%, reauditar). */
+export const REGRA_VERSAO = 2;
+
 export interface AlvoAuditoria {
   offerId: string;
   link: string | null;
@@ -38,7 +41,7 @@ export interface AlvoAuditoria {
   precoCents: number;
 }
 
-export type Escopo = 'privado' | 'canal' | 'combos' | 'impressoras' | 'resto';
+export type Escopo = 'privado' | 'bambu' | 'canal' | 'combos' | 'impressoras' | 'resto';
 /** Masters do privado do dono (P2S Combo e P1S Combo): auditados primeiro. Mantido igual a MASTERS_PRIVADO. */
 const MASTERS_PRIVADO_IDS = ['2e4a5bd1-27d7-42c6-bc62-dfa1d5eace45', '23bfa05b-053e-46cc-8308-7d4332fadf18'];
 const COMBO = 'P2S.*Combo|P1S.*Combo|A1 Combo';
@@ -47,8 +50,9 @@ const COMBO = 'P2S.*Combo|P1S.*Combo|A1 Combo';
 export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: number, shard?: { i: number; n: number }): Promise<AlvoAuditoria[]> {
   const frag = shard && shard.n > 1 ? sql`AND abs(hashtext(o.id::text)) % ${shard.n} = ${shard.i}` : sql``;
   const filtro =
-    escopo === 'privado' ? sql`o.master_product_id::text IN (${sql.join(MASTERS_PRIVADO_IDS.map((i) => sql`${i}`), sql`, `)}) AND NOT EXISTS (SELECT 1 FROM (SELECT verdict, checked_at FROM offer_link_audit k WHERE k.offer_id = o.id ORDER BY checked_at DESC LIMIT 1) l WHERE l.verdict = 'ok' AND l.checked_at > now() - make_interval(mins => ${ateMin}) AND l.checked_at >= GREATEST(coalesce(o.last_price_change_at, '-infinity'::timestamptz), coalesce(o.item_trocado_at, '-infinity'::timestamptz)))`
-    : escopo === 'canal' ? sql`o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND status IN ('enviada','proposta','proposta_auto') AND offer_id IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM (SELECT verdict, checked_at FROM offer_link_audit k WHERE k.offer_id = o.id ORDER BY checked_at DESC LIMIT 1) l WHERE l.verdict = 'ok' AND l.checked_at > now() - make_interval(mins => ${ateMin}) AND l.checked_at >= GREATEST(coalesce(o.last_price_change_at, '-infinity'::timestamptz), coalesce(o.item_trocado_at, '-infinity'::timestamptz)))`
+    escopo === 'privado' ? sql`o.master_product_id::text IN (${sql.join(MASTERS_PRIVADO_IDS.map((i) => sql`${i}`), sql`, `)}) AND NOT EXISTS (SELECT 1 FROM (SELECT verdict, checked_at, regra_versao FROM offer_link_audit k WHERE k.offer_id = o.id ORDER BY checked_at DESC LIMIT 1) l WHERE l.verdict = 'ok' AND l.regra_versao >= ${REGRA_VERSAO} AND l.checked_at > now() - make_interval(mins => ${ateMin}) AND l.checked_at >= GREATEST(coalesce(o.last_price_change_at, '-infinity'::timestamptz), coalesce(o.item_trocado_at, '-infinity'::timestamptz)))`
+    : escopo === 'bambu' ? sql`o.vertical = 'impressao3d' AND m.name ~* 'bambu' AND NOT EXISTS (SELECT 1 FROM (SELECT verdict, checked_at, regra_versao FROM offer_link_audit k WHERE k.offer_id = o.id ORDER BY checked_at DESC LIMIT 1) l WHERE l.verdict = 'ok' AND l.regra_versao >= ${REGRA_VERSAO} AND l.checked_at > now() - make_interval(mins => ${ateMin}) AND l.checked_at >= GREATEST(coalesce(o.last_price_change_at, '-infinity'::timestamptz), coalesce(o.item_trocado_at, '-infinity'::timestamptz)))`
+    : escopo === 'canal' ? sql`o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND status IN ('enviada','proposta','proposta_auto') AND offer_id IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM (SELECT verdict, checked_at, regra_versao FROM offer_link_audit k WHERE k.offer_id = o.id ORDER BY checked_at DESC LIMIT 1) l WHERE l.verdict = 'ok' AND l.regra_versao >= ${REGRA_VERSAO} AND l.checked_at > now() - make_interval(mins => ${ateMin}) AND l.checked_at >= GREATEST(coalesce(o.last_price_change_at, '-infinity'::timestamptz), coalesce(o.item_trocado_at, '-infinity'::timestamptz)))`
     : escopo === 'combos' ? sql`o.vertical = 'impressao3d' AND m.name ~* ${COMBO}`
     : escopo === 'impressoras' ? sql`o.vertical = 'impressao3d' AND NOT (m.name ~* ${COMBO})`
     : sql`o.vertical <> 'impressao3d'`;
@@ -60,7 +64,7 @@ export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: numb
     LEFT JOIN LATERAL (SELECT max(checked_at) AS ult FROM offer_link_audit a WHERE a.offer_id = o.id) au ON true
     LEFT JOIN (SELECT offer_id, count(*) AS c FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL GROUP BY 1) fr ON fr.offer_id = o.id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND ${filtro}
-      AND (${escopo === 'privado' || escopo === 'canal' ? sql`true` : sql`au.ult IS NULL OR au.ult < now() - make_interval(mins => ${ateMin})`}) ${frag}
+      AND (${escopo === 'privado' || escopo === 'canal' || escopo === 'bambu' ? sql`true` : sql`au.ult IS NULL OR au.ult < now() - make_interval(mins => ${ateMin})`}) ${frag}
     ORDER BY coalesce(fr.c, 0) DESC, au.ult ASC NULLS FIRST, o.current_price_cents DESC
     LIMIT ${limite}`)) as unknown as { id: string; link: string | null; item: string | null; cat: string | null; cents: number }[];
   return rows.map((r) => ({ offerId: r.id, link: r.link, itemEsperado: r.item, catalogo: r.cat && /^MLB\d+$/.test(r.cat) ? r.cat : null, precoCents: Number(r.cents) }));
@@ -102,9 +106,9 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
     if (opts.gravar !== false) {
       // A conexão do pooler fecha por ociosidade durante a espera do ritmo (2 s) e das chamadas à API: uma nova tentativa reabre a conexão.
       for (let t = 0; ; t++) try { await db.execute(sql`
-        INSERT INTO offer_link_audit (offer_id, link, item_id_link, product_id_link, price_link_cents, status_link, offer_price_cents, diff_pct, verdict, note)
+        INSERT INTO offer_link_audit (offer_id, link, item_id_link, product_id_link, price_link_cents, status_link, offer_price_cents, diff_pct, verdict, note, regra_versao)
         VALUES (${a.offerId}::uuid, ${a.link}, ${r.cartao?.itemId ?? null}, ${r.cartao?.productId ?? null}, ${r.cartao?.precoCents ?? null}, ${r.cartao ? (r.cartao.pausado ? 'pausado' : 'ativo') : null},
-                ${a.precoCents}, ${r.diffPct}, ${r.verdict}, ${r.nota.slice(0, 200)})`); break; } catch (e) { if (t >= 2) throw e; await dormir(400); }
+                ${a.precoCents}, ${r.diffPct}, ${r.verdict}, ${r.nota.slice(0, 200)}, ${REGRA_VERSAO})`); break; } catch (e) { if (t >= 2) throw e; await dormir(400); }
     }
   }
   return out;
@@ -117,10 +121,10 @@ export async function ultimosVereditos(offerIds: string[]): Promise<Map<string, 
   try {
     const rows = (await db.execute(sql`
       SELECT DISTINCT ON (offer_id) offer_id::text AS id, verdict, checked_at,
-        (SELECT max(k.checked_at) FROM offer_link_audit k WHERE k.offer_id = a.offer_id AND k.verdict = 'ok') AS ok_em
+        (SELECT max(k.checked_at) FROM offer_link_audit k WHERE k.offer_id = a.offer_id AND k.verdict = 'ok' AND k.regra_versao >= ${REGRA_VERSAO}) AS ok_em, regra_versao
       FROM offer_link_audit a
-      WHERE offer_id IN (${sql.join(offerIds.map((i) => sql`${i}::uuid`), sql`, `)}) ORDER BY offer_id, checked_at DESC`)) as unknown as { id: string; verdict: string; checked_at: Date | string; ok_em: Date | string | null }[];
-    for (const r of rows) m.set(r.id, { verdict: r.verdict, checkedAt: new Date(r.checked_at), okEm: r.ok_em ? new Date(r.ok_em) : null });
+      WHERE offer_id IN (${sql.join(offerIds.map((i) => sql`${i}::uuid`), sql`, `)}) ORDER BY offer_id, checked_at DESC`)) as unknown as { id: string; verdict: string; checked_at: Date | string; ok_em: Date | string | null; regra_versao: number }[];
+    for (const r of rows) m.set(r.id, { verdict: r.verdict === 'ok' && Number(r.regra_versao) < REGRA_VERSAO ? 'ok_regra_antiga' : r.verdict, checkedAt: new Date(r.checked_at), okEm: r.ok_em ? new Date(r.ok_em) : null });
   } catch { /* tabela ausente: sem porteiro de auditoria */ }
   return m;
 }
@@ -144,7 +148,7 @@ export async function cicloAuditoriaLinks(opts: { budgetMs: number }): Promise<R
     const res: Record<string, unknown> = {};
     res.amazonShopee = await veredictosAmazonShopee().catch(() => -1);
     let restante = opts.budgetMs;
-    for (const [escopo, ate, lim] of [['privado', 300, 12], ['canal', 300, 12], ['combos', 30, 12], ['impressoras', 360, 12], ['resto', 1440, 12]] as const) {
+    for (const [escopo, ate, lim] of [['privado', 300, 12], ['bambu', 300, 12], ['canal', 300, 12], ['combos', 30, 12], ['impressoras', 360, 12], ['resto', 1440, 12]] as const) {
       if (restante < 5000) break;
       const alvos = await carregarAlvos(escopo, lim, ate);
       if (!alvos.length) continue;
@@ -186,10 +190,10 @@ async function alarmeSeDivergirMuito(): Promise<void> {
  */
 export async function veredictosAmazonShopee(limite = 400): Promise<number> {
   const r = (await db.execute(sql`
-    INSERT INTO offer_link_audit (offer_id, link, offer_price_cents, verdict, note)
+    INSERT INTO offer_link_audit (offer_id, link, offer_price_cents, verdict, note, regra_versao)
     SELECT o.id, o.affiliate_url, o.current_price_cents,
       CASE WHEN o.last_price_confirmed_at > now() - (CASE WHEN n.slug = 'amazon' THEN interval '130 minutes' ELSE interval '6 hours' END) THEN 'ok' ELSE 'erro_leitura' END,
-      'fonte=' || CASE WHEN n.slug = 'amazon' THEN 'loop_assistido' ELSE 'api_shopee' END || '; idade_min=' || coalesce((extract(epoch FROM now() - o.last_price_confirmed_at) / 60)::int::text, 'nunca')
+      'fonte=' || CASE WHEN n.slug = 'amazon' THEN 'loop_assistido' ELSE 'api_shopee' END || '; idade_min=' || coalesce((extract(epoch FROM now() - o.last_price_confirmed_at) / 60)::int::text, 'nunca'), ${REGRA_VERSAO}
     FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id AND n.slug IN ('amazon', 'shopee')
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0
       AND o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL)

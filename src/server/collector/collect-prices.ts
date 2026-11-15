@@ -8,7 +8,7 @@ import { affiliateOffers, affiliateNetworks, masterProducts } from '@/db/schema'
 import { GAMES } from '@/lib/catalog/verticais';
 import { getPriceSource, listOperationalSourceSlugs } from './price-sources';
 import type { PriceSnapshotResult } from './price-sources';
-import { recordPriceSnapshot } from './record-price-snapshot';
+import { recordPriceSnapshot, recordPriceSnapshotDetalhado } from './record-price-snapshot';
 import { evaluateOfferIdentity, type OfferIdentityResult } from '@/lib/affiliate/offer-identity';
 import { upsertSellerFromOffer } from './sources/mercado-livre-seller';
 import { slugify } from '@/lib/slugify';
@@ -829,17 +829,15 @@ async function applySnapshotsToGroup(
       });
     }
 
-    if (
-      await recordPriceSnapshot({
-        offerId,
-        priceCents: result.priceCents,
-        listPriceCents: result.listPriceCents,
-        source: 'api',
-        itemId: group.networkSlug === 'mercado-livre' ? result.externalItemId : null,
-      })
-    ) {
-      snapshotsWritten++;
-    }
+    const rec = await recordPriceSnapshotDetalhado({
+      offerId,
+      priceCents: result.priceCents,
+      listPriceCents: result.listPriceCents,
+      source: 'api',
+      itemId: group.networkSlug === 'mercado-livre' ? result.externalItemId : null,
+    });
+    if (rec.inserted) snapshotsWritten++;
+    if (rec.ignorado) continue; // anúncio irmão do link lido há pouco: não confirma o preço nem mexe no link (#119)
     if (group.networkSlug === 'mercado-livre') await alinharLinkAoAnuncio(offerId, result.externalItemId);
     pricedOfferIds.push(offerId);
     // sellerId só pode ter mudado na oferta EXISTENTE (buy box trocou de

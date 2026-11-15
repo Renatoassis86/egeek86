@@ -1,6 +1,7 @@
 import 'server-only';
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { deveIgnorarAnuncioIrmao, ehIdDeCatalogo } from '@/lib/messaging/confirmacao-preco';
 import { affiliateOffers, affiliatePriceSnapshots } from '@/db/schema';
 
 export interface RecordSnapshotInput {
@@ -37,9 +38,16 @@ export interface RecordSnapshotInput {
 const HEARTBEAT_MS = 24 * 60 * 60 * 1000;
 
 /** Devolve true quando uma linha nova entrou em affiliate_price_snapshots (preco mudou ou batimento de 24 h). */
-export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<boolean> {
+export async function recordPriceSnapshot(inputOriginal: RecordSnapshotInput): Promise<boolean> {
+  return (await recordPriceSnapshotDetalhado(inputOriginal)).inserted;
+}
+
+/** Igual a recordPriceSnapshot, mas diz se a leitura foi IGNORADA por ser de anúncio irmão (#119): quem chama não deve confirmar nem realinhar o link. */
+export async function recordPriceSnapshotDetalhado(inputOriginal: RecordSnapshotInput): Promise<{ inserted: boolean; ignorado: boolean }> {
+  let input = inputOriginal;
   let inserted = false;
   let trocouDeAnuncio = false;
+  let ignoradoIrmao = false;
   await db.transaction(async (tx) => {
     // Serializa escritas concorrentes da mesma oferta (ticks do cron que se
     // sobrepõem): o lock vale até o fim da transação, então a segunda
@@ -53,9 +61,13 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<b
       .limit(1);
     // Anúncio anterior (coluna fora do schema Drizzle): só lido quando o chamador informa o anúncio atual.
     if (input.itemId) {
-      const prev = (await tx.execute(sql`SELECT external_item_id AS item FROM affiliate_offers WHERE id = ${input.offerId}::uuid`)) as unknown as { item: string | null }[];
+      const prev = (await tx.execute(sql`SELECT external_item_id AS item, link_item_id AS link, external_ref AS ref, last_price_confirmed_at AS conf FROM affiliate_offers WHERE id = ${input.offerId}::uuid`)) as unknown as { item: string | null; link: string | null; ref: string | null; conf: Date | string | null }[];
       const antes = prev[0]?.item ?? null;
-      trocouDeAnuncio = !!antes && antes.replace(/\D/g, '') !== input.itemId.replace(/\D/g, '');
+      // Guarda (#119): id de catálogo nunca é anúncio; ignora o informado.
+      if (ehIdDeCatalogo(input.itemId, prev[0]?.ref)) input = { ...input, itemId: null };
+      // Anúncio irmão com o do link lido há pouco: não troca preço nem anúncio (preço = o do anúncio do link).
+      else if (deveIgnorarAnuncioIrmao({ linkItemId: prev[0]?.link ?? null, itemNovo: input.itemId, confirmadoEm: prev[0]?.conf ? new Date(prev[0].conf) : null, now: new Date() })) { ignoradoIrmao = true; return; }
+      trocouDeAnuncio = !!antes && !!input.itemId && antes.replace(/\D/g, '') !== input.itemId.replace(/\D/g, '');
     }
 
     const priceChanged = current == null || current.currentPriceCents !== input.priceCents;
@@ -113,6 +125,7 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<b
           AND NOT EXISTS (SELECT 1 FROM affiliate_offers x WHERE x.network_id = affiliate_offers.network_id AND x.external_item_id = ${input.itemId} AND x.id <> affiliate_offers.id)`);
     }
   });
+  if (ignoradoIrmao) return { inserted: false, ignorado: true };
   // SOMBRA (flag PRICE_DAILY_SHADOW=1, desligada por padrão): cotação nova => atualiza a oferta-dia de hoje e
   // detecta mudança do menor preço do produto (price_min_events). Melhor esforço: NUNCA derruba a coleta.
   if (inserted && process.env.PRICE_DAILY_SHADOW === '1') {
@@ -129,5 +142,5 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<b
     const { avaliarEQuarentenarPreco } = await import('./quarentena-preco-tipo');
     await avaliarEQuarentenarPreco(input.offerId, input.priceCents);
   }
-  return inserted;
+  return { inserted, ignorado: false };
 }

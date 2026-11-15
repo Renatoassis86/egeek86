@@ -7,7 +7,7 @@ import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
 import { renderHistoryCard } from '@/server/messaging/price-card';
 import { consultarCupom, registrarDivulgacao } from '@/server/messaging/agente-cupons';
 import { cicloAgenteCupons } from '@/server/messaging/guardiao-cupons';
-import { preencherAnuncios } from '@/server/pricing/integridade-preco';
+import { preencherAnuncios, renovarShopee } from '@/server/pricing/integridade-preco';
 import { cicloAuditoriaLinks } from '@/server/links/auditoria-links';
 import { atualizarPaineisImpressoras } from '@/server/messaging/painel-impressoras';
 import { refreshShopeeCampaigns } from '@/server/collector/shopee-campaigns';
@@ -99,11 +99,13 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
   // Invariante 1 (#119): preenche o anúncio concreto das ofertas ML (um catálogo por minuto, 429 respeitado). ANUNCIOS_PREENCHER=0 desliga.
   const sobraAncMs = maxDuration * 1000 - (Date.now() - startedAt) - 12_000;
   const anuncios = !/^(0|off|false)$/i.test(process.env.ANUNCIOS_PREENCHER ?? '') && sobraAncMs >= 8_000 ? await preencherAnuncios({ orcamentoMs: Math.min(12_000, sobraAncMs), maxCatalogos: 1 }).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
+  // Shopee (#119): renova pela API o preço das impressoras Bambu/combos sem confirmação há mais de 60 min (last_checked_at não é confirmação).
+  const shopeeRenov = !/^(0|off|false)$/i.test(process.env.SHOPEE_RENOVAR ?? '') && maxDuration * 1000 - (Date.now() - startedAt) > 20_000 ? await renovarShopee({ limite: 6 }).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
   // Painéis vivos das impressoras 3D (#117; PAINEL_IMPRESSORAS, padrão desligada): mensagens fixas editadas, rodada a cada 10 min com cursor; usa só o tempo que sobra.
   const sobraMs = maxDuration * 1000 - (Date.now() - startedAt) - 4_000;
   const paineis = sobraMs >= 6_000 ? await atualizarPaineisImpressoras(new Date(), { budgetMs: sobraMs - 1_500 }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   // Frete e prazo das impressoras até o CEP do dono (#118; FRETE_PRAZO_IMPRESSORAS, padrão desligada): API oficial do ML, lote pequeno com orçamento do que sobra.
   const sobra2Ms = maxDuration * 1000 - (Date.now() - startedAt) - 4_000;
   const fretePrazo = sobra2Ms >= 6_000 ? await capturarFreteMl(new Date(), { budgetMs: Math.min(15_000, sobra2Ms - 2_500) }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
-  return NextResponse.json({ ...summary, agenteCupons: agente, auditoriaLinks, anuncios, paineisImpressoras: paineis, fretePrazo, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
+  return NextResponse.json({ ...summary, agenteCupons: agente, auditoriaLinks, anuncios, shopeeRenov, paineisImpressoras: paineis, fretePrazo, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
 }

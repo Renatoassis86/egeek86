@@ -1,6 +1,7 @@
 /** #119: invariantes do módulo integridade-preco (puro). */
 import { anuncioConcreto, escolherAnuncio, textoPrecoComVariacao, violacoes } from '../src/lib/pricing/integridade-preco';
-import { avaliarConfirmacao } from '../src/lib/messaging/confirmacao-preco';
+import { avaliarConfirmacao, deveIgnorarAnuncioIrmao, ehIdDeCatalogo } from '../src/lib/messaging/confirmacao-preco';
+process.env.AMAZON_FORA_DAS_MENSAGENS = '0'; // contencao #120 (Amazon fora das mensagens) e de outra frente: estes testes cobrem as regras de confirmacao em si
 let fails = 0;
 function ok(c: boolean, n: string, x?: unknown) { if (!c) { fails++; console.error('FALHOU:', n, x ?? ''); } }
 ok(anuncioConcreto('MLB5563781513', 'MLB53254557') && !anuncioConcreto('MLB53254557', 'MLB53254557') && !anuncioConcreto(null, 'MLB1') && !anuncioConcreto('B0ABC', null), 'I1: anúncio concreto x catálogo');
@@ -23,5 +24,13 @@ ok(avaliarConfirmacao({ ...f, priceItemId: null }).motivo === 'sem_anuncio_concr
 ok(avaliarConfirmacao({ ...f, priceItemId: 'MLB53254557', catalogoRef: 'MLB53254557' }).motivo === 'sem_anuncio_concreto', 'rígido: anúncio = catálogo não vale');
 ok(avaliarConfirmacao({ ...f, priceItemId: 'MLB5563781513', catalogoRef: 'MLB53254557' }).ok, 'rígido: anúncio concreto sai');
 ok(avaliarConfirmacao({ ...f, rede: 'amazon', priceItemId: null }).ok, 'rígido: Amazon não exige anúncio ML');
+// Escrita: irmão não derruba o anúncio do link; catálogo nunca é anúncio
+const now2 = new Date('2026-11-15T23:00:00Z');
+const ha = (m: number) => new Date(now2.getTime() - m * 60_000);
+ok(deveIgnorarAnuncioIrmao({ linkItemId: 'MLB5245600573', itemNovo: 'MLB4000000001', confirmadoEm: ha(20), now: now2 }), 'irmão com o do link confirmado há 20 min: ignora');
+ok(!deveIgnorarAnuncioIrmao({ linkItemId: 'MLB5245600573', itemNovo: 'MLB4000000001', confirmadoEm: ha(240), now: now2 }), 'link sem leitura há 4 h: irmão assume');
+ok(!deveIgnorarAnuncioIrmao({ linkItemId: 'MLB5245600573', itemNovo: 'MLB-5245600573', confirmadoEm: ha(5), now: now2 }), 'mesmo anúncio: grava');
+ok(!deveIgnorarAnuncioIrmao({ linkItemId: null, itemNovo: 'MLB4000000001', confirmadoEm: ha(5), now: now2 }), 'sem link conhecido: grava');
+ok(ehIdDeCatalogo('MLB53254557', 'MLB53254557') && !ehIdDeCatalogo('MLB5563781513', 'MLB53254557') && !ehIdDeCatalogo(null, 'MLB1'), 'guarda de id de catálogo');
 console.log(fails ? `${fails} falha(s)` : 'OK: integridade-preco #119');
 process.exit(fails ? 1 : 0);

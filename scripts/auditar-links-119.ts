@@ -62,11 +62,12 @@ async function main() {
         await sql`UPDATE affiliate_offers SET status = 'expired', updated_at = now() WHERE id = ${l.alvo.offerId}::uuid AND status = 'active'`;
         cont.expiradas++;
       } else {
+        await sql`UPDATE affiliate_offers SET link_item_id = ${c!.itemId} WHERE id = ${l.alvo.offerId}::uuid`; // antes do preço: a página é a verdade do anúncio do link
         await sql`UPDATE affiliate_offers SET external_item_id = NULL WHERE id = ${l.alvo.offerId}::uuid AND external_item_id IS DISTINCT FROM ${c!.itemId}`; // anúncio antigo não vale mais (evita falsa "troca")
         await recordPriceSnapshot({ offerId: l.alvo.offerId, priceCents: c!.precoCents!, listPriceCents: c!.precoAnteriorCents, source: 'scrape', itemId: c!.itemId });
         await sql`UPDATE affiliate_offers SET previous_price_cents = NULL, link_item_id = ${c!.itemId}, last_price_confirmed_at = now(), last_checked_at = now(), consecutive_miss_count = 0 WHERE id = ${l.alvo.offerId}::uuid`;
-        await sql`INSERT INTO offer_link_audit (offer_id, link, item_id_link, product_id_link, price_link_cents, status_link, offer_price_cents, diff_pct, verdict, note)
-          VALUES (${l.alvo.offerId}::uuid, ${l.alvo.link}, ${c!.itemId}, ${c!.productId}, ${c!.precoCents}, 'ativo', ${c!.precoCents}, 0, 'ok', ${`corrigido de ${l.r.verdict}; antes ${l.alvo.precoCents}`})`;
+        await sql`INSERT INTO offer_link_audit (offer_id, link, item_id_link, product_id_link, price_link_cents, status_link, offer_price_cents, diff_pct, verdict, note, regra_versao)
+          VALUES (${l.alvo.offerId}::uuid, ${l.alvo.link}, ${c!.itemId}, ${c!.productId}, ${c!.precoCents}, 'ativo', ${c!.precoCents}, 0, 'ok', ${`corrigido de ${l.r.verdict}; antes ${l.alvo.precoCents}`}, 2)`;
         cont.repostas_pela_pagina++;
       }
     }

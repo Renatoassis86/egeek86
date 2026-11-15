@@ -8,6 +8,7 @@ import { lookupShopeeItem } from '@/server/collector/sources/shopee';
 import { RULES } from '@/lib/messaging/group-rules';
 import { meliItemIdFromUrl, type LiveDeps, type LiveTarget } from '@/lib/messaging/live-recheck';
 import { ultimosVereditos } from '@/server/links/auditoria-links';
+import { ehBambuLab3d } from '@/lib/messaging/prioridade-3d';
 import { GUARD, anuncioIdentificado, type PricePoint } from '@/lib/messaging/price-guard';
 
 type Row = Record<string, unknown>;
@@ -31,11 +32,12 @@ export async function loadLiveTargets(
   const detectSince = new Date(now.getTime() - RULES.DETECT_MAX_AGE_MIN * 60_000).toISOString();
   const staleBefore = new Date(now.getTime() - RULES.LIVE_STALE_AFTER_MIN * 60_000).toISOString();
   const rows = await db.execute<Row>(sql`
-    SELECT o.id, o.master_product_id, n.slug AS net_slug, n.name AS net_name, o.external_ref, o.external_item_id, o.affiliate_url, o.link_item_id, o.last_price_change_at, o.item_trocado_at,
+    SELECT o.id, o.master_product_id, n.slug AS net_slug, n.name AS net_name, o.external_ref, o.external_item_id, o.affiliate_url, o.link_item_id, o.last_price_change_at, o.item_trocado_at, o.vertical, mp.name AS master_name,
            s.external_seller_id, o.current_price_cents, o.last_price_confirmed_at
     FROM affiliate_offers o
     INNER JOIN affiliate_networks n ON n.id = o.network_id
     LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
+    LEFT JOIN master_products mp ON mp.id = o.master_product_id
     WHERE o.id IN (${idList(ids)})
        OR (${products.length ? sql`o.master_product_id IN (${idList(products)})` : sql`false`}
            AND o.status = 'active' AND o.quarantined_at IS NULL AND o.affiliate_link_pending = false AND o.current_price_cents > 0
@@ -88,6 +90,7 @@ export async function loadLiveTargets(
       externalItemId: (r.external_item_id as string | null) ?? null,
       linkItemId: (r.link_item_id as string | null) ?? null,
       auditoria: auditoriaBy.get(offerId) ?? null,
+      ehBambu: ehBambuLab3d((r.vertical as string | null) ?? null, (r.master_name as string | null) ?? null),
       precoMudouEm: r.last_price_change_at ? new Date(r.last_price_change_at as string | Date) : null,
       itemTrocadoEm: r.item_trocado_at ? new Date(r.item_trocado_at as string | Date) : null,
       affiliateUrl: (r.affiliate_url as string | null) ?? null,
