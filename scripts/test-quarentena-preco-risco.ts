@@ -64,11 +64,11 @@ ok('título limpo: Switch OLED original lacrado e controle compatível não são
   assert.equal(g('Controle compatível com PS5 Gamer', 'accessory'), null);
 });
 ok('fora de games: celular "desbloqueado" e impressora com "cópia" NÃO são risco', () => {
-  assert.equal(avaliarTituloRisco('Samsung Galaxy A15 128GB desbloqueado', { vertical: 'eletroeletronicos', productType: 'general' }), null);
-  assert.equal(avaliarTituloRisco('Impressora multifuncional cópia e digitalização', { vertical: 'tecnologia', productType: 'general' }), null);
+  assert.equal(avaliarTituloRisco('Samsung Galaxy A15 128GB desbloqueado', { vertical: 'eletroeletronicos', productType: 'game' }), null);
+  assert.equal(avaliarTituloRisco('Impressora multifuncional cópia e digitalização', { vertical: 'tecnologia', productType: 'game' }), null);
 });
 ok('fora de games: falsificado/réplica/primeira linha SÃO risco', () => {
-  assert.ok(avaliarTituloRisco('Tênis réplica primeira linha', { vertical: 'esporte', productType: 'general' }));
-  assert.ok(avaliarTituloRisco('Relógio falsificado', { vertical: 'eletroeletronicos', productType: 'general' }));
+  assert.ok(avaliarTituloRisco('Tênis réplica primeira linha', { vertical: 'esporte', productType: 'game' }));
+  assert.ok(avaliarTituloRisco('Relógio falsificado', { vertical: 'eletroeletronicos', productType: 'game' }));
 });
 console.log(`\n${n} grupos de testes OK`);
