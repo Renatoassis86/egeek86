@@ -62,3 +62,17 @@ Por que a EGGHOME aparecia a R$ 19.899,10 (investigado): o vendedor tem anúncio
 | 6 tolerância | Maior entre R$ 1,00 e 0,1% (era 0,5%): R$ 30 em R$ 7,7 mil agora é divergência. |
 | 7 testes | `scripts/test-auditoria-links-119.ts`: ok obsoleto, estrito Amazon, caminho de envio de grupos (fail-open padrão, estrito por flag, bloqueante, obsoleto, sem anúncio). |
 | Backups | Nenhum foi apagado; o commit acidental foi desfeito em 8c0b519 (arquivos alheios só saíram do índice). Arquivos de trabalho temporários não são adicionados. |
+
+## Rodada 2 do revisor (tratamento) - 2026-11-15
+| Achado | Tratamento |
+|---|---|
+| 13 meta do ritmo | `src/lib/links/ritmo.ts`: `sanearMeta` (string jsonb vira JSON; array/objeto gigante/texto grande = estado zerado; só 6 chaves numéricas) e `metaParaGravar` (nunca espalha o meta lido); leitura com `pg_column_size` limitando o meta; teste `scripts/test-ritmo-119.ts` com string, array, objeto gigante e objeto de caracteres. Cron `auditoria-links` gravando de novo; `auditoria-ritmo` com 71 bytes. |
+| 18 ritmo | Intervalo global 4 s, teto 120 leituras por 10 min, recuo crescente 15/30/60 min (reinicia após 6 h sem bloqueio). |
+| 14 regra versionada | Migration 0057 (`regra_versao`): vereditos sob a regra antiga (0,5%) valem como `ok_regra_antiga` (não contam como ok) e são reauditados; vereditos gravados depois da tolerância nova foram marcados com versão 2. |
+| 15 (93607216) | **Causa**: o coletor gravava o anúncio irmão mais barato do vendedor (R$ 8.749) enquanto o link é do anúncio MLB5245600573 (R$ 9.978,38 na API hoje). Agora `recordPriceSnapshot` IGNORA anúncio irmão quando o do link foi confirmado há menos de 3 h (preço = o do anúncio do link); o coletor não confirma nem realinha o link nesse caso; com o do link sem leitura há mais de 3 h o irmão assume. O gravador de correção da auditoria define o `link_item_id` antes do preço. |
+| 16 canal | `CONFIRMACAO_ESTRITA_CANAL_ESCOPO=bambu` (modo estrito só para impressoras Bambu Lab; resto fail-open com veredito ruim bloqueando); escopo `bambu` na auditoria, priorizado depois do privado. **A flag não foi ligada em produção** (decisão de ligar fica com o coordenador/dono). |
+| 17 envio | Antes de entregar a lista congelada o porteiro revê preço, troca de anúncio, falta e quarentena das ofertas da lista; se algo mudou, a lista é regenerada (só enquanto a entrega da lista não terminou). |
+| 19 filler | Guarda contra id de catálogo em `recordPriceSnapshot`; sem anúncio do link e vendedor com vários anúncios novos no catálogo, o filler NÃO adivinha: grava veredito `pendente_de_anuncio` (bloqueante). |
+| 20 Amazon | `last_price_confirmed_at` da Amazon é carimbado em cada leitura da página (`amazon-assisted.ts`), enquanto o snapshot só nasce quando o preço muda: o snapshot não mede idade de leitura, então **a idade de confirmação é o critério** (sem unificação por snapshot). A contenção #120 (Amazon fora das mensagens) é de outra frente. |
+| 21 Shopee | `renovarShopee`: renova pela API (`lookupShopeeItem`) as ofertas Shopee Bambu/combos sem confirmação há mais de 60 min, 6 por minuto no cron; indisponível soma falta. `last_checked_at` não conta como confirmação. |
+| 22 links `/p/MLB` | O filler define o anúncio e `alinharLinkAoAnuncio` passa a URL direta do anúncio; ela entra na fila do gerador de links e a auditoria a lê pela API. Depende do filler cobrir o catálogo dessas ofertas. |
