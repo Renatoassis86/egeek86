@@ -63,9 +63,9 @@ export async function gravarEntregasAmazon(rows: Array<{ id?: unknown; entrega?:
   let gravadas = 0;
   let recusadas = 0;
   for (const r of rows) {
-    const e = r.entrega as { texto?: unknown; cep?: unknown; vendido?: unknown } | undefined;
+    const e = r.entrega as { texto?: unknown; cep?: unknown; cep_lido?: unknown; vendido?: unknown } | undefined;
     if (!e || typeof e.texto !== 'string' || !/^[0-9a-f-]{36}$/i.test(String(r.id))) continue;
-    const p = parseEntregaAmazon(e.texto, now, { cepTexto: typeof e.cep === 'string' ? e.cep.slice(0, 80) : null, vendidoPor: typeof e.vendido === 'string' ? e.vendido.slice(0, 120) : null });
+    const p = parseEntregaAmazon(e.texto, now, { cepTexto: typeof e.cep_lido === 'string' && /^\d{8}$/.test(e.cep_lido) ? e.cep_lido : typeof e.cep === 'string' ? e.cep.slice(0, 80) : null, vendidoPor: typeof e.vendido === 'string' ? e.vendido.slice(0, 120) : null });
     if (!p || !p.zip) { recusadas++; continue; }
     const ok = (await db.execute(sql`SELECT 1 FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id WHERE o.id = ${String(r.id)}::uuid AND nn.slug = 'amazon' LIMIT 1`)) as unknown as unknown[];
     if (!ok.length) { recusadas++; continue; }

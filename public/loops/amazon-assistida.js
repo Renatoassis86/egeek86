@@ -97,13 +97,31 @@
     return { ok: false, candidatos: [], motivo: 'layout_desconhecido' };
   };
 
-  /** HTML da página /dp/ASIN -> { ok, p, l } | { ok:false, motivo }. O preço vem SÓ do bloco de preço do produto (nunca de recomendados). */
+  /**
+   * HTML da página /dp/ASIN -> { ok, p, l, pl } | { ok:false, motivo }. O preço vem SÓ do bloco de preço do produto (nunca de recomendados).
+   * #120: na página nova com sanfona "Formas de comprar" (id="buyBoxAccordion") valem SÓ a linha ativa "Oferta em destaque" (a que o botão de compra
+   * cobra); "Parcelas sem juros" (outro vendedor/preço) nunca. Sanfona sem linha destaque ativa = motivo 'ambiguo' (não grava). `pl` = rótulo do preço
+   * ('oferta_em_destaque' | 'preco_a_pagar'), que o servidor confere.
+   */
   PURO.parsePagina = function (html, asin) {
     html = String(html || '');
     if (!html) return { ok: false, motivo: 'html_vazio' };
     var A = String(asin);
     var confere = new RegExp('(?:id="ASIN"|name="ASIN")[^>]*value="' + A + '"|value="' + A + '"[^>]*(?:id="ASIN"|name="ASIN")|rel="canonical"[^>]*\\/dp\\/' + A + '|\\/dp\\/' + A + '[^>]*rel="canonical"|data-asin="' + A + '"', 'i');
     if (!confere.test(html)) return { ok: false, motivo: 'asin_diferente_ou_nao_confirmado' };
+    var ac = html.indexOf('id="buyBoxAccordion"');
+    if (ac >= 0) {
+      // linhas da sanfona: cada uma abre com <div ... class="a-box ..."> filha direta; a ativa traz a-accordion-active e o rótulo "Oferta em destaque"
+      var corpo = html.slice(ac, ac + 60000), partes = corpo.split(/<div[^>]*\bclass="a-box\b/).slice(1), dest = [], outras = 0;
+      partes.forEach(function (pt) {
+        var cab = pt.slice(0, 200), ativa = /^[^"]*\ba-accordion-active\b/.test(cab) || /\ba-accordion-active\b/.test(cab.split('>')[0]);
+        var rot = /Oferta em destaque/i.test(pt.slice(0, 1500));
+        var pr = PURO.precosDe(pt.slice(0, 6000));
+        if (ativa && rot && pr.p) dest.push(pr); else outras++;
+      });
+      if (dest.length !== 1) return { ok: false, motivo: 'ambiguo' };
+      return { ok: true, p: dest[0].p, l: dest[0].l, pl: 'oferta_em_destaque' };
+    }
     var ini = -1, ids = ['id="corePrice_feature_div"', 'id="corePriceDisplay_desktop_feature_div"', 'id="apex_desktop"'];
     for (var i = 0; i < ids.length; i++) { var k = html.indexOf(ids[i]); if (k >= 0 && (ini < 0 || k < ini)) ini = k; }
     if (ini < 0) return { ok: false, motivo: 'sem_bloco_de_preco' };
@@ -111,12 +129,13 @@
     var resto = html.slice(ini + 10, ini + 4000), fim = resto.search(/id="[^"]*(?:_feature_div|similar|sims|sp_detail|carousel)[^"]*"/i);
     var pr = PURO.precosDe(html.slice(ini, fim >= 0 ? ini + 10 + fim : ini + 4000));
     if (!pr.p) return { ok: false, motivo: 'sem_preco' };
-    return { ok: true, p: pr.p, l: pr.l };
+    return { ok: true, p: pr.p, l: pr.l, pl: 'preco_a_pagar' };
   };
 
   /** Candidato reenviado após a página: { a,t,p,l,s:1,pg:1,i } (contrato AmzCand). */
   PURO.candidatoDePagina = function (cand, pagina) {
     var c = { a: cand.a, t: cand.t, p: pagina.p, l: pagina.l || null, s: 1, pg: 1 };
+    if (pagina.pl) c.pl = pagina.pl;
     if (cand.i) c.i = cand.i;
     return c;
   };
@@ -144,6 +163,7 @@
         if (!p && !(s && !pg)) { desc.push('sem_preco'); return; }
         var o = { a: c.a, t: t, p: p, l: typeof c.l === 'string' && PURO.parseBrl(c.l) ? c.l : null, s: s };
         if (pg) o.pg = 1;
+        if (pg && (c.pl === 'oferta_em_destaque' || c.pl === 'preco_a_pagar')) o.pl = c.pl;
         if (typeof c.i === 'string' && AMZ_IMG_RE.test(c.i)) o.i = c.i;
         cs.push(o);
       });

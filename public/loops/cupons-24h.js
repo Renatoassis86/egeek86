@@ -43,6 +43,44 @@
   var ID_AMAZON_OK = [/^couponsInBuybox_feature_div$/, /^couponBadgeRegularVpc$/, /^couponTextpctch/];
   var ANCESTRAL_PROIBIDO = /sp_detail|sponsored|sims-|similar|a-carousel|ad-feedback|_dp_ads|bundle|recommend/i;
 
+  /**
+   * #120 (2026-11-15): QUAL preço e QUAL entrega da página da Amazon valem. A página nova ("Formas de comprar") traz DUAS ofertas em linhas de
+   * sanfona: "Oferta em destaque" (a que o botão Adicionar ao carrinho cobra) e "Parcelas sem juros" (outro vendedor, outro preço e outro frete).
+   * Entrada: linhas { rotulo, ativa, centavos, entrega, vendedor } (uma por linha da sanfona) ou uma única linha sem rótulo (layout antigo).
+   * Regras: com sanfona, vale SÓ a linha ativa cujo rótulo é "Oferta em destaque"; nunca "Parcelas sem juros"/parcelado/outro vendedor. Com 2+ linhas e
+   * sem exatamente uma linha destaque ativa = ambíguo (não grava). Conferência: o preço "a pagar" do centro (centroCents), se vier, não pode divergir
+   * mais de 1% do escolhido (senão ambíguo).
+   * Devolve { ok, centavos, rotulo, fonte, vendedor, entrega, candidatos } ou { ok:false, motivo:'ambiguo'|'sem_preco', candidatos }.
+   */
+  PURO.escolherBuybox = function (linhas, centroCents) {
+    var ls = (linhas || []).filter(function (l) { return l && l.centavos > 0; });
+    var cands = ls.map(function (l) { return { rotulo: String(l.rotulo || '').slice(0, 40), centavos: l.centavos }; });
+    if (!ls.length) return { ok: false, motivo: 'sem_preco', candidatos: cands };
+    var esc, fonte;
+    if (ls.length === 1 && !ls[0].rotulo) { esc = ls[0]; fonte = 'preco_a_pagar'; }
+    else {
+      var dest = ls.filter(function (l) { return l.ativa && /oferta em destaque/i.test(l.rotulo || ''); });
+      if (dest.length !== 1) return { ok: false, motivo: 'ambiguo', candidatos: cands };
+      esc = dest[0]; fonte = 'oferta_em_destaque';
+    }
+    if (/parcelas? sem juros|parcelad/i.test(esc.rotulo || '')) return { ok: false, motivo: 'ambiguo', candidatos: cands };
+    if (centroCents && Math.abs(centroCents - esc.centavos) / esc.centavos > 0.01) return { ok: false, motivo: 'ambiguo', candidatos: cands.concat([{ rotulo: 'centro', centavos: centroCents }]) };
+    return { ok: true, centavos: esc.centavos, rotulo: fonte, fonte: fonte, vendedor: esc.vendedor || null, entrega: esc.entrega || null, candidatos: cands };
+  };
+  /** CEP exibido em "Enviar para Renato João Pessoa 58035090" (ou "58035-090") -> "58035090" | null. Nunca fixo: lido do seletor da página. */
+  PURO.cepDoTexto = function (t) {
+    var m = /(?:^|\D)(\d{5})[-\u2011\u2010\s]?(\d{3})(?!\d)/.exec(String(t || ''));
+    return m ? m[1] + m[2] : null;
+  };
+  /** "Vendido por: TNTinfoLoja" / "Enviado / Vendido WEMAK" -> nome curto; descarta blobs (JSON/script) e textos longos. */
+  PURO.vendedorDoTexto = function (t) {
+    t = String(t || '').replace(/\s+/g, ' ').trim();
+    if (!t || /[{}"\\]|marketplaceId|merchantId/i.test(t)) return null;
+    var m = /vendido\s+por:?\s*(.+)$/i.exec(t) || /vendido\s+(.+)$/i.exec(t);
+    var n = (m ? m[1] : t).replace(/^\s*(e enviado por|por):?\s*/i, '').trim().slice(0, 60);
+    return n || null;
+  };
+
   /** O elemento é selo do PRÓPRIO produto? id permitido, nunca sp_detail*, sem ancestral de carrossel/patrocinado, sem ASIN de outro produto no id. */
   PURO.idProprioAmazon = function (id, ancestorIds, asin) {
     if (!id || /sp_detail/i.test(id)) return false;
@@ -306,9 +344,50 @@
   function fecharFrame(f) { try { if (f && f.parentNode) f.parentNode.removeChild(f); } catch (e) { /* ok */ } if (frameAtual === f) frameAtual = null; }
   function docDe(f) { try { return f.contentDocument && f.contentDocument.body ? f.contentDocument : null; } catch (e) { return null; } }
 
+  function precoDaLinha(raiz) {
+    var els = raiz.querySelectorAll('.a-price .a-offscreen');
+    for (var i = 0; i < els.length; i++) {
+      var p = els[i].closest('.a-price');
+      if (p && /\ba-text-price\b/.test(p.className)) continue; // preço riscado ("de")
+      var c = PURO.centsFrom(txt(els[i]));
+      if (c) return c;
+    }
+    return null;
+  }
+  /** #120: linhas da sanfona "Formas de comprar" (ou a única linha do layout antigo) com rótulo, preço, entrega e vendedor de CADA oferta. */
+  function linhasBuybox(doc) {
+    var acc = doc.querySelector('#buyBoxAccordion');
+    var raizes = acc ? [].filter.call(acc.children, function (e) { return /\ba-box\b/.test(e.className) || /AccordionRow/.test(e.id || ''); }) : [];
+    if (!raizes.length) {
+      var uni = doc.querySelector('#desktop_qualifiedBuyBox, #qualifiedBuybox, #buybox, #corePrice_feature_div');
+      var base = doc.querySelector('#corePrice_feature_div') || uni;
+      return [{ rotulo: '', ativa: true, centavos: base ? precoDaLinha(base) : null, entrega: entregaDe(uni || doc), vendedor: vendedorDe(uni || doc) }];
+    }
+    return raizes.map(function (r) {
+      var cap = r.querySelector('#newAccordionCaption_feature_div') || r.querySelector('[id*="Caption"]');
+      var rot = txt(cap) || txt(r).slice(0, 40);
+      return { rotulo: rot, ativa: /\ba-accordion-active\b/.test(r.className), centavos: precoDaLinha(r), entrega: entregaDe(r), vendedor: vendedorDe(r) };
+    });
+  }
+  function entregaDe(raiz) {
+    var el = raiz.querySelector('[id^="mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE"]') || raiz.querySelector('#deliveryBlockMessage');
+    return el ? txt(el).slice(0, 300) : '';
+  }
+  function vendedorDe(raiz) {
+    var el = raiz.querySelector('#merchantInfoFeature_feature_div, #merchant-info, #sfsb_accordion_head');
+    return PURO.vendedorDoTexto(txt(el));
+  }
+  /** Preço "a pagar" do centro da página (bloco priceToPay) para a conferência de 1%. */
+  function precoCentro(doc) {
+    var p = doc.querySelector('#apex_desktop_newAccordionRow .priceToPay, #corePriceDisplay_desktop_feature_div .priceToPay');
+    if (!p) return null;
+    var w = p.querySelector('.a-price-whole'), f = p.querySelector('.a-price-fraction');
+    return w ? PURO.centsFrom('R$ ' + txt(w).replace(/[^\d.]/g, '') + ',' + ((f && txt(f).replace(/\D/g, '')) || '00')) : null;
+  }
+  function buyboxAmazon(doc) { return PURO.escolherBuybox(linhasBuybox(doc), precoCentro(doc)); }
   function precoAmazon(doc) {
-    var el = doc.querySelector('#corePrice_feature_div .a-price .a-offscreen, #apex_desktop .a-price .a-offscreen, #corePriceDisplay_desktop_feature_div .a-price .a-offscreen');
-    return PURO.centsFrom(txt(el));
+    var r = buyboxAmazon(doc);
+    return r.ok ? r.centavos : null;
   }
   function selosAmazonDoc(doc, asin) {
     var cands = [];
@@ -334,11 +413,12 @@
   }
 
   /** ENTREGA (#118): só leitura do texto que a própria página mostra para o CEP da conta ("Entrega GRÁTIS Sábado, 21 de Novembro", "Entrega R$201 24 - 26 de Novembro") + CEP exibido e vendedor. Sem requisição extra; o servidor interpreta e valida. */
-  function entregaDoc(doc) {
+  function entregaDoc(doc, bb) {
     try {
-      var texto = txt(doc.querySelector('#mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE_LARGE')) || txt(doc.querySelector('#deliveryBlockMessage'));
+      var texto = (bb && bb.entrega) || entregaDe(doc);
       if (!texto) return undefined;
-      return { texto: texto.slice(0, 300), cep: txt(doc.querySelector('#glow-ingress-block')).slice(0, 80), vendido: txt(doc.querySelector('#merchantInfoFeature_feature_div, #merchant-info, #tabular-buybox')).slice(0, 120) };
+      var cepTxt = txt(doc.querySelector('#glow-ingress-block'));
+      return { texto: texto.slice(0, 300), cep: cepTxt.slice(0, 80), cep_lido: PURO.cepDoTexto(cepTxt) || undefined, vendido: (bb && bb.vendedor) || '' };
     } catch (e) { return undefined; }
   }
 
@@ -364,7 +444,9 @@
           if ((selos.length && espera >= 1500) || espera >= 5000) {
             var a = (doc.querySelector('#ASIN, input[name="ASIN"]') || {}).value || (/\/dp\/([A-Z0-9]{10})/.exec(win.location.pathname) || [])[1];
             if (String(a || '').toUpperCase() !== String(item.ref).toUpperCase()) return { descarte: 'asin_diferente:' + a };
-            return { ok: true, asin: a, seen: seen, selos: selos, fonte: 'produto', cartao: beneficiosCartaoDoc(doc), entrega: entregaDoc(doc) };
+            var bb = buyboxAmazon(doc);
+            if (!bb.ok) return { descarte: 'preco_' + bb.motivo + ':' + (bb.candidatos || []).map(function (c) { return c.centavos; }).join('/') };
+            return { ok: true, asin: a, seen: seen, selos: selos, fonte: 'produto', cartao: beneficiosCartaoDoc(doc), entrega: entregaDoc(doc, bb), price_label: bb.rotulo, price_source: bb.fonte, seller: bb.vendedor || undefined };
           }
         }
       }
@@ -504,7 +586,7 @@
         var selos = res.selos;
         var fonte = res.fonte;
         if (REDE === 'amazon' && !selos.length && S.cuponsAsins[item.ref]) { selos = [S.cuponsAsins[item.ref]]; fonte = 'lista-oficial'; }
-        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, beneficios_cartao: res.cartao && res.cartao.length ? res.cartao : undefined, entrega: res.entrega, coupons: res.cupons || selos.map(function (label) { var c = { label: label }, cod = PURO.codigoDoTexto(label); if (cod) c.code = cod; return c; }) });
+        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, price_label: res.price_label, price_source: res.price_source, seller: res.seller, beneficios_cartao: res.cartao && res.cartao.length ? res.cartao : undefined, entrega: res.entrega, coupons: res.cupons || selos.map(function (label) { var c = { label: label }, cod = PURO.codigoDoTexto(label); if (cod) c.code = cod; return c; }) });
         linha({ ref: item.ref, seen: res.seen, selos: selos, fonte: fonte, codigos: rows[rows.length - 1].coupons.map(function (c) { return c.code || null; }) });
       } else if (res) {
         c.descartadas++;

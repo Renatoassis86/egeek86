@@ -50,6 +50,8 @@ export interface EntregaAmazon { free: boolean; costCents: number | null; etaFro
 export function parseEntregaAmazon(textoEntrega: string, leitura: Date, opts: { cepTexto?: string | null; vendidoPor?: string | null } = {}): EntregaAmazon | null {
   const t = sem(String(textoEntrega ?? '').replace(/\s+/g, ' ')).slice(0, 400);
   if (!t) return null;
+  // #120: frete grátis CONDICIONADO (só para membros Prime, ou "no seu primeiro pedido") não é o custo desta conta/CEP: leitura recusada (nunca vira "Frete grátis").
+  if (/para membros prime|no seu primeiro pedido|primeiro pedido/.test(t) && /gratis/.test(t)) return null;
   const free = /(entrega|frete)\s+gratis/.test(t);
   const mc = /entrega\s+r\$\s*([\d.]+(?:,\d{1,2})?)/.exec(t);
   const costCents = free ? 0 : mc ? Math.round(Number(mc[1].replace(/\./g, '').replace(',', '.')) * 100) : null;
@@ -68,7 +70,7 @@ export function parseEntregaAmazon(textoEntrega: string, leitura: Date, opts: { 
   else if (/\bamanha\b/.test(t)) etaFrom = etaTo = somaDias(dataBR(leitura), 1);
   if (costCents == null || !etaTo) return null; // sem valor/gratuidade ou sem data: leitura incompleta, não vira linha
   const zipM = /(\d{5})[-‑‐\s]?(\d{3})/.exec(opts.cepTexto ?? '');
-  const vendedor = opts.vendidoPor ? String(opts.vendidoPor).replace(/^\s*(enviado\s*\/?\s*vendido|vendido e enviado por|vendido por)\s*/i, '').trim().slice(0, 80) : '';
+  const vendedor = opts.vendidoPor && !/[{}"\\]|marketplaceid|merchantid/i.test(String(opts.vendidoPor)) ? String(opts.vendidoPor).replace(/^\s*(enviado\s*\/?\s*vendido|vendido e enviado por|vendido por)\s*/i, '').trim().slice(0, 80) : '';
   return { free, costCents, etaFrom, etaTo, zip: zipM ? `${zipM[1]}${zipM[2]}` : null, soldBy: vendedor || null };
 }
 

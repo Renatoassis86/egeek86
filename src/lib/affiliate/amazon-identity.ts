@@ -33,6 +33,8 @@ export interface AmzCand {
   i?: string | null;
   /** 1 = o preço `p` foi lido na PÁGINA do produto (/dp/ASIN), nunca no card da busca. Só assim um resultado patrocinado pode ser aceito. */
   pg?: number;
+  /** #120: rótulo do preço lido na página (`oferta_em_destaque` | `preco_a_pagar`). Com pg=1 e rótulo presente fora dessa lista, a leitura é recusada (ex.: Parcelas sem juros). */
+  pl?: string;
 }
 
 /**
@@ -131,6 +133,7 @@ function precheck(c: AmzCand, flex: boolean): { price: number; sponsored: boolea
   const sponsored = Boolean(c.s);
   if (sponsored && !flex) return { out: reject('patrocinado', 'patrocinado') };
   const price = parseBrl(c.p);
+  if (c.pg === 1 && c.pl != null && c.pl !== 'oferta_em_destaque' && c.pl !== 'preco_a_pagar') return { out: invalid('rotulo_de_preco_nao_aceito') };
   if (sponsored && c.pg !== 1) return { price: price ?? 1, sponsored }; // preço do card ignorado; o julgamento segue só pelo título
   if (!price) return { out: invalid('sem_preco') };
   return { price, sponsored };
