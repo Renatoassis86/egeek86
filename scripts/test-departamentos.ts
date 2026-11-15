@@ -190,7 +190,8 @@ async function secaoD() {
   const allGames = new Set((await db.execute<{ id: string }>(sql`SELECT id FROM master_products WHERE vertical = 'games'`)).map((r) => r.id));
   let vazouParaNicho = 0;
   for (const d of DEPARTAMENTOS) {
-    const pag = await dep.listarDepartamento(d.slug, { pagina: 1 });
+    // ao vivo: a lista pública tem snapshot de até 5 min (e serve vencido até 2 h), a contagem não
+    const pag = await dep.listarDepartamentoAoVivo(d.slug, { pagina: 1 });
     const ids = pag.itens.map((i) => i.id);
     check(ids.every((id) => !allGames.has(id) && !gamesIds.has(id)), `d:iso-nicho-sem-games:${d.slug}`, `${d.slug}: nenhum master de games na consulta de nicho`);
     if (ids.length) {
@@ -214,9 +215,9 @@ async function secaoD() {
     const r = await db.execute<{ bad: number }>(sql`
       WITH ${dep.departamentoClicaveisCtes(d.slug)}
       SELECT COUNT(*)::int AS bad FROM clickable c INNER JOIN affiliate_offers o ON o.id = c.id
-      WHERE o.affiliate_link_pending OR o.quarantined_at IS NOT NULL OR o.status <> 'active' OR c.network_slug NOT IN ('mercado-livre','shopee')
+      WHERE o.affiliate_link_pending OR o.quarantined_at IS NOT NULL OR o.status <> 'active' OR c.network_slug NOT IN ('mercado-livre','shopee','amazon')
          OR o.last_checked_at < now() - interval '${sql.raw(String(OFERTA_CLICAVEL_MAX_HORAS))} hours' OR o.vertical <> ${d.slug}`);
-    check(Number(r[0]?.bad) === 0, `d:clicavel-limpo:${d.slug}`, `${d.slug}: 0 oferta clicável pendente/quarentenada/velha/Amazon/outra vertical`);
+    check(Number(r[0]?.bad) === 0, `d:clicavel-limpo:${d.slug}`, `${d.slug}: 0 oferta clicável pendente/quarentenada/velha (24 h)/rede fora de ML-Shopee-Amazon/outra vertical`);
   }
   // Informativo: situação atual (nada foi aprovado ainda pelo dono).
   const cont = await Promise.all(DEPARTAMENTOS.map(async (d) => `${d.slug}=${await dep.contarMastersVisiveis(d.slug)}`));

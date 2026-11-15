@@ -251,6 +251,9 @@ const listaPersistida = createPersistedQuery(calcularListaDepartamento, ['dept-l
   live: true,
   persist: { maxAgeSeconds: 300, maxStaleSeconds: 2 * 3600 },
 });
+/** Mesma lista, sem cache nem snapshot (testes e verificações que comparam com a contagem ao vivo). */
+export const listarDepartamentoAoVivo = calcularListaDepartamento;
+
 export async function listarDepartamento(vertical: string, opts: OpcoesLista = {}): Promise<PaginaDepartamento> {
   assertDepartamento(vertical);
   if (termosBusca(opts.q).length) return calcularListaDepartamento(vertical, opts);

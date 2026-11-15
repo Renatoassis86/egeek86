@@ -255,7 +255,7 @@ async function main() {
   check('rota: maxDuration de 60 s', /maxDuration = 60/.test(route));
   const vj = JSON.parse(fs.readFileSync('vercel.json', 'utf8')) as { crons: Array<{ path: string; schedule: string }> };
   const cron = vj.crons.find((c) => c.path.startsWith('/api/cron/semear-vertical'));
-  check('vercel.json: cron a cada 10 min, conservador', !!cron && cron.schedule === '7-57/10 * * * *');
+  check('vercel.json: cron a cada 20 min, conservador (alivio do banco, f27a8a0)', !!cron && cron.schedule === '7-57/20 * * * *');
   const server = fs.readFileSync('src/server/collector/vertical/seed-vertical.ts', 'utf8');
   check('servidor: apply exige SEMEADURA_TERMOS_APROVADOS=1 e o master nasce em review/general', server.includes("SEMEADURA_TERMOS_APROVADOS === '1'") && server.includes('reviewGateFor') && server.includes("'general'::product_type"));
   check('servidor: nao usa /sites/MLB/search nem scraping', !/sites\/MLB|puppeteer|cheerio|playwright/i.test(server) && !/sites\/MLB/.test(fs.readFileSync('src/lib/catalog/vertical/seed-slice.ts', 'utf8')));

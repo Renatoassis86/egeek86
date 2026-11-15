@@ -166,7 +166,8 @@ check('kill-switch so liga com 1/true', isVerticalEnabled('livros', { VERTICAL_L
 check('nome do kill-switch', killSwitchEnvName('eletroeletronicos') === 'VERTICAL_ELETROELETRONICOS_ENABLED');
 check('refresh Plus (onda 1 = ritmo dos games): livros, esporte, casa 15 min; onda 2 (3D, tecnologia, eletro) 30 min', ['livros', 'esporte', 'eletrodomesticos'].every((v) => refreshMinutesFor(v as never, {}) === 15) && ['impressao3d', 'tecnologia', 'eletroeletronicos'].every((v) => refreshMinutesFor(v as never, {}) === 30));
 check('refresh: override respeitado e limitado pelo teto de 6 h dos termos do ML', refreshMinutesFor('livros', { VERTICAL_LIVROS_REFRESH_MIN: '10' }) === 10 && refreshMinutesFor('livros', { VERTICAL_LIVROS_REFRESH_MIN: '9999' }) === MAX_REFRESH_MIN);
-check('porteiro por vertical NAO importa o porteiro gamer (gate.ts)', ['gate.ts', 'identity.ts', 'config.ts', 'seed-plan.ts', 'paging.ts'].every((f) => !/@\/lib\/catalog\/gate['"]|from ['"]\.\.\/gate['"]/.test(fs.readFileSync(path.resolve('src/lib/catalog/vertical', f), 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, ''))));
+// Unica ponte permitida (desde fe5d67f, Black Friday): a funcao pura isNewRetroStyleHardware em identity.ts (excecao do retro NOVO). Qualquer outro import do gate.ts falha.
+check('porteiro por vertical NAO importa o porteiro gamer (gate.ts), salvo a funcao pura isNewRetroStyleHardware', ['gate.ts', 'identity.ts', 'config.ts', 'seed-plan.ts', 'paging.ts'].every((f) => !/@\/lib\/catalog\/gate['"]|from ['"]\.\.\/gate['"]/.test(fs.readFileSync(path.resolve('src/lib/catalog/vertical', f), 'utf8').replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '').replace(/import \{ isNewRetroStyleHardware \} from '\.\.\/gate';/, ''))));
 
 // --- Pacotes/combos (achado do dry-run 2): "+" so conta com 2+ produtos ou produto + acessorio ---
 const combos: Array<[string, string]> = [
@@ -426,7 +427,7 @@ const run = async () => {
   check('impressao3d: filamento e resina usam chave por campos sem GTIN (marca obrigatoria; material/medida vem do titulo)', [fil, res].every((x) => x.profile.keyIgnoresGtin === true && x.profile.fallbackAttrs.join() === 'BRAND'));
   check('impressao3d: impressora separa por voltagem na chave', imp.profile.keyExtras.includes('VOLTAGE'));
   check('impressao3d: domainMatches de filamento/resina nao aceita impressora nem epoxi', !domainMatches(fil, 'MLB-3D_PRINTERS') && domainMatches(fil, 'MLB-3D_PRINTER_FILAMENTS') && !domainMatches(res, 'MLB-EPOXY_RESINS') && domainMatches(res, 'MLB-3D_PRINTER_RESINS'));
-  check('impressao3d: termos sem duplicata e todos citam o produto', [imp, fil, res].every((x) => x.terms.length === new Set(x.terms).size && x.terms.every((t) => /impressora|filamento|resina/.test(t))));
+  check('impressao3d: termos sem duplicata e todos citam o produto (ou o modelo da prioridade 3D: Bambu Lab / Anycubic Kobra, sem a palavra impressora)', [imp, fil, res].every((x) => x.terms.length === new Set(x.terms).size && x.terms.every((t) => /impressora|filamento|resina|bambu|kobra|anycubic/.test(t))));
   const ok: Array<[string, string]> = [
     ['impressora-3d', 'Impressora 3d Bambu Lab P1s Combo'],
     ['impressora-3d', 'Impressora 3d Bambu Lab A1'],
