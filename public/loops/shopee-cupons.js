@@ -16,7 +16,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = 'shopee-1.0.0';
+  var VERSAO = 'shopee-1.1.0';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-raspagem-cupons.ts
@@ -127,7 +127,7 @@
 
   var RECUO = {
     captcha: [30, 60], login: [15, 30, 60], http_429: [30, 60], rede: [1, 2, 5, 10, 20], http_5xx_servidor: [1, 2, 5, 10, 20],
-    servidor_desligado: [10, 20, 30, 60], token_recusado: [15, 30, 60], origem_recusada: [15, 30, 60], campanha_expirou: [30, 60], leitura_vazia: [30, 60],
+    servidor_desligado: [10, 20, 30, 60], token_recusado: [15, 30, 60], origem_recusada: [15, 30, 60], campanha_expirou: [30, 60], leitura_vazia: [10, 15, 30],
   };
   PURO.politica = function (tipo, seguidos) {
     var lista = RECUO[tipo] || RECUO.rede;
@@ -174,7 +174,7 @@
 
   var S = {
     versao: VERSAO, rodando: true, enviar: CFG.enviar, iniciadoEm: new Date().toISOString(), pausa: null, parou: null, proximoEm: null, seguidos: {},
-    ciclos: 0, ultimoCiclo: null, sim: [],
+    ciclos: 0, ultimoCiclo: null, sim: [], maiorLeitura: 0, ultimaLeitura: -1, raf: null,
     totais: { paginas: 0, cartoes: 0, montados: 0, esgotados: 0, descartados: 0, enviados: 0, gravados: 0, novos: 0, rejeitados: 0, vencidosPorAusencia: 0, erros: 0 },
     descartes: {}, rejeicoes: {}, erros: [], linhas: [],
   };
@@ -245,13 +245,28 @@
     });
   }
 
+  /** Quadros por segundo que a aba consegue desenhar (rAF contado por 1 s com relógio do Worker). */
+  async function sondaRaf() {
+    var n = 0, vivo = true;
+    function q() { if (!vivo) return; n++; requestAnimationFrame(q); }
+    requestAnimationFrame(q);
+    await sleep(1000);
+    vivo = false;
+    return n;
+  }
+
   /** Uma página: iframe oculto, rolagem até a contagem de cartões estabilizar. { cartoes } | { bloqueio } | { vazia }. Nada é clicado. */
   async function lerPagina(caminho) {
     var f = novoFrame(caminho);
     try {
+      // A Shopee só desenha os cartões com rAF/IntersectionObserver. Em aba em segundo plano/oculta o Chrome estrangula isso (medido: ~1 quadro/s com visibilityState 'visible'),
+      // então o iframe demora ou desenha só parte. Sonda a taxa e, se estrangulado, espera bem mais antes de desistir.
+      var hz = await sondaRaf();
+      S.raf = { hz: hz, em: agora(), visibilidade: document.visibilityState };
+      var lento = hz < 20, limiteMs = lento ? 150000 : 45000, minEstavel = lento ? 6 : 3;
       var t0 = Date.now(), ant = -1, estavel = 0, doc = null, cartoes = [];
-      while (Date.now() - t0 < 45000 && !parado) {
-        await sleep(1500);
+      while (Date.now() - t0 < limiteMs && !parado) {
+        await sleep(lento ? 3000 : 1500);
         doc = docDe(f);
         if (!doc) continue;
         var loc = ''; try { loc = f.contentWindow.location.pathname; } catch (e) { /* ok */ }
@@ -260,11 +275,11 @@
         if (tp !== 'ok') return tp === 'campanha_expirou' ? { vazia: tp } : { bloqueio: tp };
         try { f.contentWindow.scrollBy(0, 1500); } catch (e) { /* ok */ }
         estavel = cartoes.length === ant ? estavel + 1 : 0; ant = cartoes.length;
-        if (cartoes.length > 0 && estavel >= 3) break;
+        if (cartoes.length > 0 && estavel >= minEstavel) break;
       }
       if (!doc) return { bloqueio: 'rede', detalhe: 'iframe não renderizou' };
       if (!cartoes.length) return { vazia: 'sem_cartoes' };
-      return { cartoes: cartoes, estavel: estavel >= 3 };
+      return { cartoes: cartoes, estavel: estavel >= minEstavel, lento: lento };
     } finally { fecharFrame(f); }
   }
 
@@ -289,6 +304,7 @@
     for (var i = 0; i < CFG.paginas.length && !parado; i++) {
       var caminho = CFG.paginas[i];
       var res = await lerPagina(caminho);
+      if (res.vazia === 'sem_cartoes') { linha({ pagina: caminho, vazia: res.vazia, raf: S.raf, nova_tentativa: true }); await sleep(20000); res = await lerPagina(caminho); }
       if (res.bloqueio) return pausarOuParar(res.bloqueio, 'página ' + caminho);
       if (res.vazia) { linha({ pagina: caminho, vazia: res.vazia }); return pausarOuParar(res.vazia === 'campanha_expirou' ? 'campanha_expirou' : 'leitura_vazia', 'página ' + caminho + ' sem cartões (nada é fechado)'); }
       S.seguidos = {};
@@ -303,7 +319,11 @@
       S.totais.paginas++; S.totais.cartoes += res.cartoes.length; S.totais.montados += montados.length;
       if (!CFG.enviar || S.linhas.length === 0) linha({ pagina: caminho, cartoes: res.cartoes.length, montados: montados.length, descartes: resumo, amostra: res.cartoes.slice(0, 2) });
       // leitura completa só com a rolagem estável e cartões suficientes; do contrário só grava (nada fecha por leitura duvidosa)
-      var completa = res.estavel && res.cartoes.length >= MIN_CARTOES_PARA_FECHAR;
+      // só fecha o que sumiu se a leitura é estável, tem cartões suficientes E não é uma renderização parcial (menos de 80% da maior leitura desta sessão)
+      var completa = res.estavel && res.cartoes.length >= MIN_CARTOES_PARA_FECHAR && (res.cartoes.length >= Math.ceil(0.8 * S.maiorLeitura) || res.cartoes.length === S.ultimaLeitura); // mesma contagem 2 ciclos seguidos = a página encolheu de verdade
+      if (!completa && res.cartoes.length < Math.ceil(0.8 * S.maiorLeitura)) linha({ pagina: caminho, parcial: res.cartoes.length, maior: S.maiorLeitura, raf: S.raf });
+      S.maiorLeitura = res.cartoes.length === S.ultimaLeitura ? res.cartoes.length : Math.max(S.maiorLeitura, res.cartoes.length);
+      S.ultimaLeitura = res.cartoes.length;
       if (montados.length || completa) { if (await enviar(montados, caminho, completa) === 'parar') return; }
       if (i < CFG.paginas.length - 1) await sleep(PURO.pausaEntre(CFG.pausaMs, null, PISO_PAUSA_MS));
     }
@@ -326,7 +346,7 @@
   function status() {
     return JSON.parse(JSON.stringify({
       versao: S.versao, rodando: S.rodando, enviar: S.enviar, iniciadoEm: S.iniciadoEm, ciclos: S.ciclos, ultimoCiclo: S.ultimoCiclo, pausa: S.pausa, parou: S.parou,
-      proximoEm: S.proximoEm, totais: S.totais, descartes: S.descartes, rejeicoes: S.rejeicoes, erros: S.erros.slice(-8), linhas: S.linhas.slice(-12),
+      proximoEm: S.proximoEm, raf: S.raf, maiorLeitura: S.maiorLeitura, totais: S.totais, descartes: S.descartes, rejeicoes: S.rejeicoes, erros: S.erros.slice(-8), linhas: S.linhas.slice(-12),
     }));
   }
   function stop(motivo) {
