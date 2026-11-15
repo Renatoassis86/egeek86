@@ -2,6 +2,7 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { auditarCartoes, lerCartoes, type ResultadoAuditoria } from '@/lib/links/polycard';
+import { auditarPorApi, registrarBloqueio, reservarSlot, type ListaCatalogo } from '@/server/links/ritmo-e-api';
 import { VEREDITOS_BLOQUEANTES } from '@/lib/messaging/confirmacao-preco';
 
 /**
@@ -46,8 +47,8 @@ const COMBO = 'P2S.*Combo|P1S.*Combo|A1 Combo';
 export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: number, shard?: { i: number; n: number }): Promise<AlvoAuditoria[]> {
   const frag = shard && shard.n > 1 ? sql`AND abs(hashtext(o.id::text)) % ${shard.n} = ${shard.i}` : sql``;
   const filtro =
-    escopo === 'privado' ? sql`o.affiliate_url LIKE 'https://meli.la/%' AND o.master_product_id::text IN (${sql.join(MASTERS_PRIVADO_IDS.map((i) => sql`${i}`), sql`, `)}) AND NOT EXISTS (SELECT 1 FROM offer_link_audit k WHERE k.offer_id = o.id AND k.verdict = 'ok' AND k.checked_at > now() - make_interval(mins => ${ateMin}))`
-    : escopo === 'canal' ? sql`o.affiliate_url LIKE 'https://meli.la/%' AND o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND status IN ('enviada','proposta','proposta_auto') AND offer_id IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM offer_link_audit k WHERE k.offer_id = o.id AND k.verdict = 'ok' AND k.checked_at > now() - make_interval(mins => ${ateMin}))`
+    escopo === 'privado' ? sql`o.master_product_id::text IN (${sql.join(MASTERS_PRIVADO_IDS.map((i) => sql`${i}`), sql`, `)}) AND NOT EXISTS (SELECT 1 FROM offer_link_audit k WHERE k.offer_id = o.id AND k.verdict = 'ok' AND k.checked_at > now() - make_interval(mins => ${ateMin}) AND k.checked_at >= GREATEST(coalesce(o.last_price_change_at, '-infinity'::timestamptz), coalesce(o.item_trocado_at, '-infinity'::timestamptz)))`
+    : escopo === 'canal' ? sql`o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND status IN ('enviada','proposta','proposta_auto') AND offer_id IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM offer_link_audit k WHERE k.offer_id = o.id AND k.verdict = 'ok' AND k.checked_at > now() - make_interval(mins => ${ateMin}) AND k.checked_at >= GREATEST(coalesce(o.last_price_change_at, '-infinity'::timestamptz), coalesce(o.item_trocado_at, '-infinity'::timestamptz)))`
     : escopo === 'combos' ? sql`o.vertical = 'impressao3d' AND m.name ~* ${COMBO}`
     : escopo === 'impressoras' ? sql`o.vertical = 'impressao3d' AND NOT (m.name ~* ${COMBO})`
     : sql`o.vertical <> 'impressao3d'`;
@@ -59,7 +60,7 @@ export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: numb
     LEFT JOIN LATERAL (SELECT max(checked_at) AS ult FROM offer_link_audit a WHERE a.offer_id = o.id) au ON true
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND ${filtro}
       AND (au.ult IS NULL OR au.ult < now() - make_interval(mins => ${ateMin})) ${frag}
-    ORDER BY au.ult ASC NULLS FIRST, o.current_price_cents DESC
+    ORDER BY (SELECT count(*) FROM group_messages gm WHERE gm.offer_id = o.id AND gm.created_at > now() - interval '24 hours') DESC, au.ult ASC NULLS FIRST, o.current_price_cents DESC
     LIMIT ${limite}`)) as unknown as { id: string; link: string | null; item: string | null; cat: string | null; cents: number }[];
   return rows.map((r) => ({ offerId: r.id, link: r.link, itemEsperado: r.item, catalogo: r.cat && /^MLB\d+$/.test(r.cat) ? r.cat : null, precoCents: Number(r.cents) }));
 }
@@ -71,21 +72,25 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
   const out: ResultadoLote = { lidas: 0, porVeredito: {}, parou: null, linhas: [] };
   const fim = Date.now() + orcamentoMs;
   const cache = new Map<string, Leitura>();
+  const listas = new Map<string, ListaCatalogo>();
   for (const a of alvos) {
     if (Date.now() > fim - 3000) break;
     let r: ResultadoAuditoria;
     if (!a.link || !/^https?:\/\//.test(a.link)) r = { verdict: 'sem_link', cartao: null, diffPct: null, nota: 'oferta sem link' };
-    else if (!/meli\.la\//i.test(a.link)) r = { verdict: 'erro_leitura', cartao: null, diffPct: null, nota: 'url_direta_sem_cartao (só meli.la é lido)' };
+    else if (!/meli\.la\//i.test(a.link)) r = await auditarPorApi(a, listas).catch((e) => ({ verdict: 'erro_leitura' as const, cartao: null, diffPct: null, nota: `api: ${e instanceof Error ? e.message.slice(0, 60) : 'erro'}` }));
     else {
       let leitura = cache.get(a.link);
       if (!leitura) {
-        if (out.lidas > 0) await dormir(1200 + Math.random() * 800);
+        const slot = await reservarSlot();
+        if (!slot.ok) { out.parou = 'recuo_global (captcha/429 recente)'; break; }
+        if (slot.esperaMs > Math.max(0, fim - Date.now() - 3000)) { out.parou = 'sem_orcamento_para_o_ritmo'; break; }
+        if (slot.esperaMs > 0) await dormir(slot.esperaMs);
         leitura = await resolverLinkMl(a.link, opts.fetchImpl);
         cache.set(a.link, leitura);
         out.lidas++;
       }
       if (!leitura.ok) {
-        if (leitura.parar) { out.parou = leitura.nota; break; }
+        if (leitura.parar) { out.parou = leitura.nota; await registrarBloqueio(leitura.nota); break; }
         r = { verdict: 'erro_leitura', cartao: null, diffPct: null, nota: leitura.nota };
       } else {
         r = auditarCartoes(lerCartoes(leitura.html), { itemId: a.itemEsperado, productId: a.catalogo, precoCents: a.precoCents });

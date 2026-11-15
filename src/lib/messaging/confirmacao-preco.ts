@@ -28,7 +28,8 @@ export type MotivoConfirmacao =
   | 'troca_de_anuncio'
   | 'link_divergente'
   | 'sem_veredito_ok'
-  | 'sem_anuncio_concreto';
+  | 'sem_anuncio_concreto'
+  | 'veredito_obsoleto';
 
 export function confirmacaoLigada(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.CONFIRMACAO_PRECO_MENSAGEM ?? '').trim());
@@ -59,6 +60,9 @@ export interface FatosConfirmacao {
   catalogoRef?: string | null;
   /** Anúncio para o qual o link afiliado aponta (link_item_id, ou o id da URL). */
   linkItemId?: string | null;
+  /** last_price_change_at e item_trocado_at: um veredito ok anterior a eles não vale (corrida coleta x envio). */
+  precoMudouEm?: Date | null;
+  itemTrocadoEm?: Date | null;
   now: Date;
 }
 
@@ -77,6 +81,7 @@ const NOTA: Record<MotivoConfirmacao, string> = {
   confirmacao_velha: 'preço sem confirmação recente',
   link_de_outro_anuncio: 'o link leva a outro anúncio, não ao que tem o preço lido',
   sem_anuncio_concreto: 'oferta sem anúncio concreto gravado (só o catálogo é conhecido)',
+  veredito_obsoleto: 'o preço ou o anúncio mudou depois do último veredito ok (precisa auditar de novo)',
   sem_veredito_ok: 'sem veredito ok da auditoria do link nas últimas 6 h (fica na fila para auditar)',
   link_divergente: 'a página do link mostra outro anúncio, outro preço ou anúncio pausado (auditoria de links)',
   troca_de_anuncio: 'o preço lido é de outro anúncio do vendedor (troca de anúncio, não queda)',
@@ -99,6 +104,30 @@ export function itemIdDaUrl(url: string | null | undefined): string | null {
 }
 
 /**
+ * Parte da AUDITORIA do porteiro (veredito da página do link). Bloqueante recente barra sempre. No modo estrito (privado; canal com
+ * CONFIRMACAO_ESTRITA_CANAL): ML exige anúncio concreto e veredito ok <= 6 h posterior à última mudança de preço/troca de anúncio.
+ * Amazon e Shopee não têm página auditada: no estrito valem pela janela de confirmação (avaliarConfirmacao), sem veredito.
+ */
+export function avaliarAuditoria(f: Pick<FatosConfirmacao, 'rede' | 'auditoria' | 'estrito' | 'priceItemId' | 'catalogoRef' | 'precoMudouEm' | 'itemTrocadoEm' | 'now'>): Veredito {
+  const recente = (d: Date) => (f.now.getTime() - d.getTime()) / 60_000 <= AUDITORIA_VALE_MIN;
+  if (f.auditoria && (VEREDITOS_BLOQUEANTES as readonly string[]).includes(f.auditoria.verdict) && recente(f.auditoria.checkedAt)) return falha('link_divergente');
+  const ml = /mercado/i.test(f.rede);
+  if (!f.estrito || !ml) return { ok: true };
+  const item = (f.priceItemId ?? '').trim();
+  if (!(/^MLB\d{6,}$/.test(item) && item !== (f.catalogoRef ?? '').trim())) return falha('sem_anuncio_concreto');
+  const okEm = f.auditoria?.verdict === 'ok' ? f.auditoria.checkedAt : f.auditoria?.okEm ?? null;
+  if (!okEm || !recente(okEm)) return falha('sem_veredito_ok');
+  const mudou = Math.max(f.precoMudouEm?.getTime() ?? 0, f.itemTrocadoEm?.getTime() ?? 0);
+  if (mudou > okEm.getTime()) return falha('veredito_obsoleto');
+  return { ok: true };
+}
+
+/** Flag CONFIRMACAO_ESTRITA_CANAL (padrão DESLIGADA): estende o modo estrito a grupos e canal (live-recheck). */
+export function estritaCanalLigada(env: Record<string, string | undefined> = process.env): boolean {
+  return /^(1|on|true|sim)$/i.test((env.CONFIRMACAO_ESTRITA_CANAL ?? '').trim());
+}
+
+/**
  * O preço desta oferta pode ser dito agora? Ordem: ativa e fora da quarentena; anúncio achado na última coleta; confirmação existente e
  * dentro da janela do uso; o link aponta para o mesmo anúncio do preço (quando os dois são conhecidos).
  * Desligada pela flag: sempre ok (comportamento antigo).
@@ -112,12 +141,8 @@ export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito
   const limite = f.uso === 'lista' ? CONFIRMACAO.LISTA_MIN : /amazon/i.test(f.rede) ? CONFIRMACAO.QUEDA_MIN_AMAZON : CONFIRMACAO.QUEDA_MIN;
   const idadeMin = (f.now.getTime() - f.confirmedAt.getTime()) / 60_000;
   if (idadeMin > limite) return falha('confirmacao_velha');
-  if (f.auditoria && (VEREDITOS_BLOQUEANTES as readonly string[]).includes(f.auditoria.verdict) && (f.now.getTime() - f.auditoria.checkedAt.getTime()) / 60_000 <= AUDITORIA_VALE_MIN) return falha('link_divergente');
-  if (f.estrito && /mercado/i.test(f.rede) && !(/^MLB\d{6,}$/.test((f.priceItemId ?? '').trim()) && (f.priceItemId ?? '').trim() !== (f.catalogoRef ?? '').trim())) return falha('sem_anuncio_concreto');
-  if (f.estrito) {
-    const okEm = f.auditoria?.verdict === 'ok' ? f.auditoria.checkedAt : f.auditoria?.okEm ?? null;
-    if (!okEm || (f.now.getTime() - okEm.getTime()) / 60_000 > AUDITORIA_VALE_MIN) return falha('sem_veredito_ok');
-  }
+  const aud = avaliarAuditoria(f);
+  if (!aud.ok) return aud;
   if (f.linkItemId && f.priceItemId && !mesmoAnuncio(f.linkItemId, f.priceItemId)) return falha('link_de_outro_anuncio');
   return { ok: true };
 }

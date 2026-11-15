@@ -31,7 +31,7 @@ export async function loadLiveTargets(
   const detectSince = new Date(now.getTime() - RULES.DETECT_MAX_AGE_MIN * 60_000).toISOString();
   const staleBefore = new Date(now.getTime() - RULES.LIVE_STALE_AFTER_MIN * 60_000).toISOString();
   const rows = await db.execute<Row>(sql`
-    SELECT o.id, o.master_product_id, n.slug AS net_slug, n.name AS net_name, o.external_ref, o.external_item_id, o.affiliate_url, o.link_item_id,
+    SELECT o.id, o.master_product_id, n.slug AS net_slug, n.name AS net_name, o.external_ref, o.external_item_id, o.affiliate_url, o.link_item_id, o.last_price_change_at, o.item_trocado_at,
            s.external_seller_id, o.current_price_cents, o.last_price_confirmed_at
     FROM affiliate_offers o
     INNER JOIN affiliate_networks n ON n.id = o.network_id
@@ -88,6 +88,8 @@ export async function loadLiveTargets(
       externalItemId: (r.external_item_id as string | null) ?? null,
       linkItemId: (r.link_item_id as string | null) ?? null,
       auditoria: auditoriaBy.get(offerId) ?? null,
+      precoMudouEm: r.last_price_change_at ? new Date(r.last_price_change_at as string | Date) : null,
+      itemTrocadoEm: r.item_trocado_at ? new Date(r.item_trocado_at as string | Date) : null,
       affiliateUrl: (r.affiliate_url as string | null) ?? null,
       sellerExternalId: (r.external_seller_id as string | null) ?? null,
       storedPriceCents: price,

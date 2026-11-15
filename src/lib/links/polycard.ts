@@ -98,7 +98,10 @@ export interface ResultadoAuditoria {
   nota: string;
 }
 
-export const TOLERANCIA_PCT = 0.5;
+/** Tolerância do preço da página x oferta: o MAIOR entre R$ 1,00 e 0,1% (a página mostra reais inteiros; 0,5% deixava passar R$ 30 em R$ 7,7 mil). */
+export const TOLERANCIA_MIN_CENTS = 100;
+export const TOLERANCIA_PCT = 0.1;
+export const toleranciaCents = (precoCents: number) => Math.max(TOLERANCIA_MIN_CENTS, Math.round((precoCents * TOLERANCIA_PCT) / 100));
 
 /**
  * Compara o que a página mostra com a oferta. Escolha do cartão: o primeiro cujo anúncio é o esperado; senão o primeiro do mesmo catálogo;
@@ -115,6 +118,6 @@ export function auditarCartoes(cartoes: Cartao[], esperado: OfertaEsperada): Res
   if (c.precoCents == null || esperado.precoCents <= 0) return { verdict: 'erro_leitura', cartao: c, diffPct: null, nota: 'preço não lido' };
   const diff = ((c.precoCents - esperado.precoCents) / esperado.precoCents) * 100;
   const d = Math.round(diff * 100) / 100;
-  if (Math.abs(diff) > TOLERANCIA_PCT) return { verdict: 'preco_divergente', cartao: c, diffPct: d, nota: `página ${c.precoCents}, oferta ${esperado.precoCents}` };
+  if (Math.abs(c.precoCents - esperado.precoCents) > toleranciaCents(esperado.precoCents)) return { verdict: 'preco_divergente', cartao: c, diffPct: d, nota: `página ${c.precoCents}, oferta ${esperado.precoCents}` };
   return { verdict: 'ok', cartao: c, diffPct: d, nota: 'confere' };
 }
