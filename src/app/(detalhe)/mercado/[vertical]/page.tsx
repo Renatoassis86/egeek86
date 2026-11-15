@@ -10,7 +10,7 @@ import { ehPrioridade3d, prioridade3dLigada } from '@/lib/messaging/prioridade-3
 import { departamentoPorSlug } from '@/lib/catalog/departamentos';
 import { normalizarTipo, rotuloTipo, SECOES_3D } from '@/lib/catalog/tipos-produto';
 import { secoes3dLigada } from '@/lib/catalog/guia-3d';
-import { guiaImpressoras3d } from '@/server/queries/guia-3d';
+import { avisosCartoesImpressoras3d, guiaImpressoras3d } from '@/server/queries/guia-3d';
 import { GuiaImpressoras3d } from '@/components/plus/guia-impressoras-3d';
 import { Secoes3d } from '@/components/plus/secoes-3d';
 
@@ -49,13 +49,14 @@ export default async function DepartamentoPage({
   // Impressão 3D em 3 seções + guia (dono, 2026-11-15, #63/#111): só na vista padrão (sem busca, sem tipo, página 1). DEPT_3D_SECOES=off volta à página anterior.
   const modoSecoes = dept.slug === 'impressao3d' && secoes3dLigada() && !q && !tipo && pagina === 1;
   const vazio = { itens: [], total: 0, pagina: 1, totalPaginas: 1 };
-  const [res, indice, secoes, guia] = await Promise.all([
+  const [res, indice, secoes, guia, avisos3d] = await Promise.all([
     modoSecoes ? Promise.resolve(vazio) : listarDepartamento(dept.slug, { pagina, q, ordem, tipo }),
     indiceTiposDepartamento(dept.slug).catch(() => ({ porId: {}, tipos: [] })),
     modoSecoes
       ? Promise.all(SECOES_3D.map((s) => listarDepartamento(dept.slug, { pagina: 1, ordem: 'menor', tipo: s.slug }).catch(() => vazio)))
       : Promise.resolve(null),
     modoSecoes ? guiaImpressoras3d().catch(() => []) : Promise.resolve([]),
+    dept.slug === 'impressao3d' ? avisosCartoesImpressoras3d() : Promise.resolve({} as Record<string, string[]>),
   ]);
   // Impressão 3D (dono, 2026-11-14): faixa de destaque com as Anycubic Kobra e Bambu Lab de menor preço (foto real, sem selo, sem mediana). Na vista em seções, a guia a substitui.
   const destaques3d = dept.slug === 'impressao3d' && !modoSecoes && prioridade3dLigada() && pagina === 1 && !q && !tipo
@@ -157,6 +158,7 @@ export default async function DepartamentoPage({
           <Secoes3d
             dept={dept.slug}
             tipoCartao={dept.tipoCartao}
+            avisos={avisos3d}
             secoes={SECOES_3D.map((sec, i) => ({ slug: sec.slug, rotulo: sec.rotulo, ancora: sec.ancora, total: secoes[i].total, itens: secoes[i].itens }))}
           />
         </>
@@ -174,7 +176,7 @@ export default async function DepartamentoPage({
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {destaques3d.map((m, i) => (
               <li key={`d-${m.id}`}>
-                <CartaoDepartamentoView vertical={dept.slug} tipo={dept.tipoCartao} master={m} priority={i < 4} />
+                <CartaoDepartamentoView vertical={dept.slug} tipo={dept.tipoCartao} master={m} priority={i < 4} avisos={avisos3d[m.id]} />
               </li>
             ))}
           </ul>
@@ -198,7 +200,7 @@ export default async function DepartamentoPage({
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {res.itens.map((m, i) => (
               <li key={m.id}>
-                <CartaoDepartamentoView vertical={dept.slug} tipo={dept.tipoCartao} master={m} priority={i < 4} />
+                <CartaoDepartamentoView vertical={dept.slug} tipo={dept.tipoCartao} master={m} priority={i < 4} avisos={avisos3d[m.id]} />
               </li>
             ))}
           </ul>

@@ -24,6 +24,7 @@ import { gravarCicloAgente, relatorioCupons, resumoRelatorio } from '@/server/me
 import { baixarCuponsParados } from '@/server/coupons/baixa';
 import { resumoSaude, saudeAgulha } from '@/server/coupons/agulha-health';
 import { vigiaRedesCupons } from '@/server/coupons/heartbeat-store';
+import { alertarCuponsImpressoras } from '@/server/coupons/aviso-impressoras';
 
 /**
  * GUARDIÃO DE CUPONS (Agente de Cupons). A cada ~5 min (passo do cron group-messages): para cada cupom que JÁ DIVULGAMOS confere se
@@ -320,6 +321,8 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
     });
     // Vigia do loop 24 h: Amazon/Shopee sem batimento ok há mais de 60 min => aviso interno (máx. 1 por rede a cada 6 h) + auditoria.
     const vigia = await vigiaRedesCupons(started);
+    // Aviso PRIVADO ao dono: cupom/desconto de cartao novo em P2S Combo e P1S Combo (#112; PRINTER_COUPON_ALERT; dry-run sem variaveis). Nunca derruba o ciclo.
+    const avisoImp = await alertarCuponsImpressoras(started).catch(() => null);
     const rel = await relatorioCupons(started);
     // Cobertura na agulha: histórico a cada ~30 min (consulta mais pesada que o resto do ciclo).
     const saude = started.getUTCMinutes() % 30 < 5 ? await saudeAgulha().then(resumoSaude).catch(() => ({})) : {};
@@ -327,7 +330,8 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
       verificados: res.checked, encerradosNoCiclo: res.ended.length, avisosEnviados: res.notified, avisosPulados: res.notifySkipped,
       divergenciasNoCiclo: res.divergencias.length, erros: res.errors, orcamentoEsgotado: res.budgetExhausted,
       vigiaAvisados: vigia?.avisados ?? [], vigiaRedesSemLeitura: vigia?.decisoes.filter((d) => d.acao === 'avisar' || d.acao === 'aviso_recente').map((d) => d.rede) ?? [],
-      baixaVencidosPorPrazo: baixa?.vencidosPorPrazo ?? null, baixaSemConferencia: baixa?.rebaixadosSemConferencia ?? null, ...saude,
+      baixaVencidosPorPrazo: baixa?.vencidosPorPrazo ?? null, baixaSemConferencia: baixa?.rebaixadosSemConferencia ?? null,
+      avisoImpressorasEnviaria: avisoImp?.enviaria ?? null, avisoImpressorasEnviados: avisoImp?.enviados ?? null, ...saude,
     });
     await gravarCicloAgente(meta, started, res.errors === 0);
     return meta;

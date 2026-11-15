@@ -21,7 +21,7 @@ export interface SecaoLoja3d {
  * Componente de servidor (dados prontos; sem importar banco). Mesmos cartões e mesma regra de elegibilidade do departamento; sem selo e sem média.
  * Itens vêm ordenados por menor preço (o primeiro é o menor da seção).
  */
-export function Secoes3d({ dept, tipoCartao, secoes }: { dept: string; tipoCartao: TipoCartao; secoes: SecaoLoja3d[] }) {
+export function Secoes3d({ dept, tipoCartao, secoes, avisos = {} }: { dept: string; tipoCartao: TipoCartao; secoes: SecaoLoja3d[]; avisos?: Record<string, string[]> }) {
   return (
     <div className="flex flex-col gap-10">
       {secoes.map((s) => {
@@ -51,7 +51,7 @@ export function Secoes3d({ dept, tipoCartao, secoes }: { dept: string; tipoCarta
               <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {mostrados.map((m, i) => (
                   <li key={m.id} className="min-w-0">
-                    <CartaoDepartamentoView vertical={dept} tipo={tipoCartao} master={m} priority={false} />
+                    <CartaoDepartamentoView vertical={dept} tipo={tipoCartao} master={m} priority={false} avisos={avisos[m.id]} />
                   </li>
                 ))}
               </ul>

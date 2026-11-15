@@ -1,0 +1,6 @@
+{
+  "tabelas_antes": [
+    "offer_coupon_reads"
+  ],
+  "rollback": "drizzle/migrations/0053_offer_card_benefits.rollback.sql"
+}

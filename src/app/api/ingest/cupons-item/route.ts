@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { couponCors as cors, couponGuard as guard } from '@/server/coupons/ingest-guard';
 import { listarFilaRevalidacao, resolverUrlsLeitura } from '@/server/coupons/revalidation-queue';
 import { sanitizeCouponCode, sanitizeCouponName } from '@/lib/coupons/coupon-name';
+import { gravarBeneficiosCartao } from '@/server/coupons/card-benefits';
 import { nomeColunasLigadas } from '@/server/coupons/nome-colunas';
 
 export const dynamic = 'force-dynamic';
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
   const headers = cors(request);
   const text = await request.text();
   if (text.length > 120_000) return NextResponse.json({ error: 'corpo_grande_demais' }, { status: 413, headers });
-  let body: { rows?: { id: string; coupons?: CouponRow[] }[] };
+  let body: { rows?: { id: string; coupons?: CouponRow[]; beneficios_cartao?: unknown }[] };
   try { body = JSON.parse(text); } catch { return NextResponse.json({ error: 'json_invalido' }, { status: 400, headers }); }
   const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, MAX_ROWS).filter((r) => r && /^[0-9a-f-]{36}$/i.test(String(r.id)));
   if (!rows.length) return NextResponse.json({ error: 'sem_linhas_validas' }, { status: 400, headers });
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest) {
       WHERE o.id = ${r.id}::uuid AND nn.slug = 'mercado-livre' AND o.status = 'active' LIMIT 1`);
     if (!offer[0]) continue;
     const price = Number(offer[0].price);
+    await gravarBeneficiosCartao(r.id, 'ml-pagina', r.beneficios_cartao, price);
     const valid = (Array.isArray(r.coupons) ? r.coupons : [])
       .map((c) => ({ campaign: /^\d{3,12}$/.test(String(c.campaign_id ?? '')) ? String(c.campaign_id) : null, label: String(c.label ?? '').slice(0, 120), status: String(c.status ?? '').slice(0, 40), name: sanitizeCouponName(c.name), code: sanitizeCouponCode(c.code) }))
       .map((c) => ({ ...c, cents: centsFromLabel(c.label) }))

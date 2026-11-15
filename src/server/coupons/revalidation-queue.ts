@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { AGULHA } from '@/lib/coupons/agulha';
 import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
+import { ordenarFila, CADENCIA_IMPRESSORA_MIN } from '@/lib/coupons/fila-impressoras';
 import { leituraUrlFor, type PageNetwork } from '@/lib/coupons/page-read';
 import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-auth';
 
@@ -73,7 +74,7 @@ export async function listarFilaRevalidacao(n: number, rede: string = 'mercado-l
   const hintCond = hint.length ? sql`c.vertical IN (${sql.join(hint.map((v) => sql`${v}`), sql`, `)})` : sql`false`;
   const rows = (await db.execute<{ id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null; aurl: string | null }>(sql`
     WITH ml AS (
-      SELECT o.id, o.external_ref AS ref, o.external_item_id AS item, s.external_seller_id AS seller, o.current_price_cents AS price, o.vertical, o.affiliate_url AS aurl,
+      SELECT o.id, m.name AS mname, o.external_ref AS ref, o.external_item_id AS item, s.external_seller_id AS seller, o.current_price_cents AS price, o.vertical, o.affiliate_url AS aurl,
              row_number() OVER (PARTITION BY o.master_product_id ORDER BY o.current_price_cents ASC, o.id) AS rn,
              (m.vertical = 'games' OR (m.attributes->'catalogGate'->>'verdict') = 'approved') AS gate,
              (${sql.raw(cfg.linkedCond)}) AS linked
@@ -104,19 +105,25 @@ export async function listarFilaRevalidacao(n: number, rede: string = 'mercado-l
       LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_read FROM offer_coupon_reads r WHERE r.offer_id = c.id AND r.source <> 'amazon-promocoes') lr ON true
       LEFT JOIN LATERAL (SELECT max(r.read_at) AS last_pos FROM offer_coupon_reads r WHERE r.offer_id = c.id AND r.price_with_coupon_cents IS NOT NULL AND r.source <> 'amazon-promocoes') lp ON true
     )
-    SELECT id::text AS id, ref, item, seller, price::text AS price, prio, aurl,
-           CASE WHEN last_read IS NULL THEN NULL ELSE round(extract(epoch FROM now() - last_read) / 60)::text END AS age_min
+    SELECT id::text AS id, ref, item, seller, price::text AS price, prio, aurl, mname, vertical,
+           CASE WHEN last_read IS NULL THEN NULL ELSE round(extract(epoch FROM now() - last_read) / 60)::text END AS age_min,
+           (last_read IS NULL OR last_read < now() - make_interval(mins => (CASE WHEN prio <= 3 THEN ${sql.raw(String(AGULHA.REREAD_TARGET_MIN))} ELSE ${sql.raw(String(AGULHA.REREAD_BASE_MIN))} END)::int)) AS devida
     FROM scored
     WHERE last_read IS NULL
-       OR last_read < now() - make_interval(mins => (CASE WHEN prio <= 3 THEN ${sql.raw(String(AGULHA.REREAD_TARGET_MIN))} ELSE ${sql.raw(String(AGULHA.REREAD_BASE_MIN))} END)::int)
+       OR last_read < now() - make_interval(mins => LEAST(${sql.raw(String(CADENCIA_IMPRESSORA_MIN))}, (CASE WHEN prio <= 3 THEN ${sql.raw(String(AGULHA.REREAD_TARGET_MIN))} ELSE ${sql.raw(String(AGULHA.REREAD_BASE_MIN))} END))::int)
     ORDER BY prio ASC,
              -- C7: dentro da mesma prioridade, ticket alto e impressão 3D (Bambu/Kobra) são lidos primeiro: cupom de % limitado pesa mais no preço final.
              ((vertical = 'impressao3d' AND price >= 100000) OR price >= 150000) DESC,
              last_read ASC NULLS FIRST
-    LIMIT ${Math.min(Math.max(1, n), 60)}`)) as unknown as { id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null; aurl: string | null }[];
-  return rows.map((r) => ({
-    id: r.id, ref: r.ref, item: r.item, seller: r.seller, price: r.price, prioridade: Number(r.prio),
-    motivo: PRIORIDADE_MOTIVO[Number(r.prio)] ?? 'outro', ultimaLeituraMin: r.age_min == null ? null : Number(r.age_min), affiliateUrl: r.aurl,
+    LIMIT 400`)) as unknown as { id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null; aurl: string | null; mname: string | null; vertical: string; devida: boolean }[];
+  // #112: impressoras 3D prioritárias na ordem do dono (combo primeiro), rodízio e cadência de 30 min; o resto segue a regra de sempre.
+  const ordenadas = ordenarFila(
+    rows.map((r, seq) => ({ ...r, seq, name: r.mname ?? '', ageMin: r.age_min == null ? null : Number(r.age_min), price: Number(r.price), prio: Number(r.prio), devidaPadrao: r.devida })),
+    Math.min(Math.max(1, n), 60),
+  );
+  return ordenadas.map((r) => ({
+    id: r.id, ref: r.ref, item: r.item, seller: r.seller, price: String(r.price), prioridade: Number(r.prio),
+    motivo: PRIORIDADE_MOTIVO[Number(r.prio)] ?? 'outro', ultimaLeituraMin: r.ageMin, affiliateUrl: r.aurl,
   }));
 }
 

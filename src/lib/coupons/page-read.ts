@@ -88,6 +88,8 @@ export interface PageRowIn {
   /** Preço do item lido na página (centavos). */
   price_seen_cents?: unknown;
   coupons?: unknown;
+  /** Textos de desconto por cartão/Pix/parcelas/cashback que a página escreve (opcional; interpretados em card-benefit.ts). */
+  beneficios_cartao?: unknown;
 }
 
 export type PageRowResult =

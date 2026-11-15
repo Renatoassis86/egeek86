@@ -19,6 +19,7 @@
     "test:quarentena-preco": "tsx scripts/test-quarentena-preco-risco.ts",
     "test:console-regra": "tsx scripts/test-console-regra.ts",
     "test:item-miudo": "tsx scripts/test-item-miudo.ts",
+    "test:cupons-impressoras": "tsx scripts/test-fila-impressoras-112.ts && tsx scripts/test-card-benefit-112.ts && tsx scripts/test-aviso-impressoras-112.ts",
     "test:amazon": "tsx scripts/test-amazon-identidade.ts && tsx scripts/test-amazon-flex.ts",
     "test:r4-api": "tsx scripts/test-r4-api-oficial.ts",
     "test:mensagens-grupo": "tsx scripts/test-mensagens-grupo.ts",

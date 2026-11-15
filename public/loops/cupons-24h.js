@@ -318,6 +318,21 @@
     return PURO.selosAmazon(cands, asin);
   }
 
+  /** DESCONTO POR CARTÃO (#112): textos do bloco de compra que falam de cartão/Pix/parcelas/cashback ("Use seu cartão Itaú Mastercard e ganhe 15% off!", "em até 10x de R$ 845,91 sem juros"). Só texto; o servidor interpreta. Até 6, 200 caracteres. NÃO VALIDADO em produção: conferir em status().linhas antes de enviar:true. */
+  function beneficiosCartaoDoc(doc) {
+    var out = [], vistos = {};
+    var alvo = doc.querySelectorAll('#buybox *, #desktop_buybox *, #rightCol *, #corePrice_feature_div *, #apex_desktop *, #installmentCalculator_feature_div *, [id*="promo"] *');
+    for (var i = 0; i < alvo.length && out.length < 6; i++) {
+      var el = alvo[i];
+      if (el.children && el.children.length) continue;
+      var t = txt(el);
+      if (t.length < 12 || t.length > 200) continue;
+      if (!(/cart[ãa]o.*\d\s*%|\d\s*x\s+(?:de\s+)?R\$.*sem juros|\d{1,2}\s*%.*pix|cashback/i.test(t))) continue;
+      if (!vistos[t]) { vistos[t] = 1; out.push(t); }
+    }
+    return out;
+  }
+
   /** Produto da Amazon renderizado (iframe oculto de mesma origem). Devolve { ok, asin, seen, selos } | { bloqueio } | { descarte }. */
   async function lerAmazonProduto(item) {
     var f = novoFrame('/dp/' + encodeURIComponent(item.ref));
@@ -340,7 +355,7 @@
           if ((selos.length && espera >= 1500) || espera >= 5000) {
             var a = (doc.querySelector('#ASIN, input[name="ASIN"]') || {}).value || (/\/dp\/([A-Z0-9]{10})/.exec(win.location.pathname) || [])[1];
             if (String(a || '').toUpperCase() !== String(item.ref).toUpperCase()) return { descarte: 'asin_diferente:' + a };
-            return { ok: true, asin: a, seen: seen, selos: selos, fonte: 'produto' };
+            return { ok: true, asin: a, seen: seen, selos: selos, fonte: 'produto', cartao: beneficiosCartaoDoc(doc) };
           }
         }
       }
@@ -480,7 +495,7 @@
         var selos = res.selos;
         var fonte = res.fonte;
         if (REDE === 'amazon' && !selos.length && S.cuponsAsins[item.ref]) { selos = [S.cuponsAsins[item.ref]]; fonte = 'lista-oficial'; }
-        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, coupons: res.cupons || selos.map(function (label) { var c = { label: label }, cod = PURO.codigoDoTexto(label); if (cod) c.code = cod; return c; }) });
+        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, beneficios_cartao: res.cartao && res.cartao.length ? res.cartao : undefined, coupons: res.cupons || selos.map(function (label) { var c = { label: label }, cod = PURO.codigoDoTexto(label); if (cod) c.code = cod; return c; }) });
         linha({ ref: item.ref, seen: res.seen, selos: selos, fonte: fonte, codigos: rows[rows.length - 1].coupons.map(function (c) { return c.code || null; }) });
       } else if (res) {
         c.descartadas++;

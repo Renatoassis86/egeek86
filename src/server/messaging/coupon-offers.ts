@@ -3,6 +3,8 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { AGULHA } from '@/lib/coupons/agulha';
 import type { CouponOfferFact } from '@/lib/messaging/group-rules';
+import { beneficiosVivosPorOferta } from '@/server/coupons/card-benefits';
+import { rotuloBeneficioCartao } from '@/lib/coupons/card-benefit';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
 
 /**
@@ -53,6 +55,9 @@ export async function validateCouponOffers(offerIds: string[], now: Date, concur
         return;
       }
       const d = r.detail;
+      const cardLines = ((await beneficiosVivosPorOferta([offerId])).get(offerId) ?? [])
+        .filter((b) => b.kind === 'cartao_pct' || b.kind === 'pix_pct')
+        .map((b) => `${rotuloBeneficioCartao(b)}${b.needsConfirm ? ' (a confirmar no carrinho)' : ''}`);
       facts.set(offerId, {
         offerId,
         couponRef: r.info.couponRef ?? offerId,
@@ -70,6 +75,7 @@ export async function validateCouponOffers(offerIds: string[], now: Date, concur
         howTo: d.howTo,
         named: d.named,
         ...(d.exclusivePrime ? { exclusivePrime: true } : {}),
+        ...(cardLines.length ? { cardLines } : {}),
         readAt: new Date(d.readAt),
         expiresAt: r.info.expiresAt ? new Date(r.info.expiresAt) : null,
       });

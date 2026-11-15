@@ -18,6 +18,16 @@ export interface LinhaGuia3d {
   precoCents: number;
   verificadoEm: string;
   ofertaSlug: string;
+  /** Id da oferta (para ligar cupom e desconto de cartao lidos na pagina). Opcional: testes antigos nao o enviam. */
+  offerId?: string;
+}
+
+/** Cupom e desconto de cartao LIDOS na pagina do anuncio (#112). Nunca inventado: sem leitura valida, sem aviso. */
+export interface AvisoOfertaGuia {
+  /** "Cupom: R$ 100 OFF (preco com cupom R$ 7.990,00)" ou null. */
+  cupom: string | null;
+  /** "Desconto no cartao: Itau Mastercard 15% (a confirmar no carrinho)", "Pagamento: 10x de R$ 845,91 sem juros"... */
+  cartoes: string[];
 }
 
 export interface LojaGuia {
@@ -26,6 +36,8 @@ export interface LojaGuia {
   precoCents: number;
   verificadoEm: string;
   ofertaSlug: string;
+  offerId?: string;
+  aviso?: AvisoOfertaGuia;
 }
 
 export interface ItemGuia3d {
@@ -50,7 +62,7 @@ export interface ItemGuia3d {
 export const MAX_KOBRA_GUIA = 4;
 
 function lojaDe(l: LinhaGuia3d): LojaGuia {
-  return { rede: l.rede, redeNome: ROTULO_REDE_GUIA[l.rede], precoCents: l.precoCents, verificadoEm: l.verificadoEm, ofertaSlug: l.ofertaSlug };
+  return { rede: l.rede, redeNome: ROTULO_REDE_GUIA[l.rede], precoCents: l.precoCents, verificadoEm: l.verificadoEm, ofertaSlug: l.ofertaSlug, offerId: l.offerId };
 }
 
 function melhorPorRede(linhas: readonly LinhaGuia3d[]): { lojas: LojaGuia[]; vencedora: LinhaGuia3d | null } {
@@ -116,4 +128,14 @@ export function variacaoSobreRegistrado(atualCents: number, registradoCents: num
 /** Flag de rollback das 3 secoes e da guia na pagina publica da Impressao 3D (padrao LIGADA; DEPT_3D_SECOES=off volta a pagina anterior). */
 export function secoes3dLigada(env: Record<string, string | undefined> = process.env): boolean {
   return (env.DEPT_3D_SECOES ?? '').toLowerCase() !== 'off';
+}
+
+/** Linhas de aviso (cupom e cartao) de uma oferta, na ordem de exibicao; vazio = nada a mostrar. */
+export function linhasAviso(a: AvisoOfertaGuia | null | undefined): string[] {
+  if (!a) return [];
+  return [...(a.cupom ? [a.cupom] : []), ...a.cartoes];
+}
+
+export function avisosCupomLigados(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.GUIA_3D_CUPONS ?? '').toLowerCase() !== 'off';
 }

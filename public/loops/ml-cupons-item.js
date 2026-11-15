@@ -107,6 +107,31 @@
   };
 
   /** A página é do anúncio pedido? (o itemId aparece no HTML e há preço em R$) */
+  /**
+   * DESCONTO POR CARTÃO / MEIO DE PAGAMENTO (#112, 2026-11-15): trechos de texto que a página escreve ("18x R$ 547,33 com cartão Mercado Pago",
+   * "R$ 46,65 de cashback em Meli Dólar com seu Cartão de Crédito Mercado Pago", "5% OFF no Pix"). Só texto copiado; o servidor interpreta e nunca inventa preço.
+   * NÃO VALIDADO em produção: conferir em status().linhas (simulação) antes de enviar:true. Até 6 trechos, 200 caracteres cada.
+   */
+  PURO.extrairBeneficiosCartao = function (html) {
+    var t = PURO.textoDoHtml(html), out = [], vistos = {};
+    var res = [
+      /\d{1,2}\s*x\s+R\$\s*[\d.]+,\d{2}(?:\s+sem juros|\s+com\s+[Cc]art[ãa]o\s+[A-ZÀ-Ú]\p{L}+(?: [A-ZÀ-Ú]\p{L}+){0,2})/gu,
+      /R\$\s*[\d.]+,\d{2}\s+de\s+cashback(?:\s+em\s+[A-ZÀ-Ú]\p{L}+(?: [A-ZÀ-Ú]\p{L}+)?)?(?:\s+com\s+seu\s+[Cc]art[ãa]o\s+de\s+[Cc]r[eé]dito(?:\s+[A-ZÀ-Ú]\p{L}+(?: [A-ZÀ-Ú]\p{L}+){0,2})?)?/gu,
+      /\d{1,2}(?:,\d{1,2})?\s*%\s*(?:OFF\s+|off\s+)?(?:no|via|com)\s+(?:o\s+)?Pix/gu,
+      /[Cc]art[ãa]o\s+[A-ZÀ-Ú]\p{L}+(?: [A-ZÀ-Ú]\p{L}+){0,2}\s+e\s+ganhe\s+\d{1,2}(?:,\d{1,2})?\s*%/gu,
+    ];
+
+
+    for (var i = 0; i < res.length; i++) {
+      var m;
+      while ((m = res[i].exec(t)) && out.length < 6) {
+        var x = m[0].replace(/\s+/g, ' ').trim().slice(0, 200);
+        if (!vistos[x]) { vistos[x] = 1; out.push(x); }
+      }
+    }
+    return out;
+  };
+
   PURO.paginaConfere = function (html, itemId) {
     return !!itemId && String(html || '').toUpperCase().indexOf(itemId) >= 0 && /R\$|"price"|price_/i.test(String(html || ''));
   };
@@ -297,7 +322,10 @@
     var x = PURO.extrairCupons(html);
     if (x.ambiguo) { S.totais.ambiguos++; return { descarte: 'ambiguo_mencao_a_cupom_sem_preco' }; }
     if (x.cupons.length) S.totais.comCupom++;
-    return { row: { id: item.id, coupons: x.cupons }, cupons: x.cupons.length };
+    var bc = PURO.extrairBeneficiosCartao(html);
+    var row = { id: item.id, coupons: x.cupons };
+    if (bc.length) row.beneficios_cartao = bc;
+    return { row: row, cupons: x.cupons.length };
   }
 
   async function ciclo() {
@@ -324,7 +352,7 @@
       }
       sucesso();
       lidosEm[it.id] = Date.now(); S.totais.lidos++; c.lidos++;
-      if (res.row) { rows.push(res.row); linha({ id: it.id, prio: it.prioridade, cupons: res.row.coupons.map(function (x) { return x.label + (x.campaign_id ? ' #' + x.campaign_id : '') + (x.name ? ' [nome: ' + x.name + ']' : ''); }) }); }
+      if (res.row) { rows.push(res.row); linha({ id: it.id, prio: it.prioridade, cartao: res.row.beneficios_cartao || [], cupons: res.row.coupons.map(function (x) { return x.label + (x.campaign_id ? ' #' + x.campaign_id : '') + (x.name ? ' [nome: ' + x.name + ']' : ''); }) }); }
       else { c.descartados++; linha({ id: it.id, descartado: res.descarte }); }
       if (i < novos.length - 1) await dormir(PURO.pausaEntreItens(CFG.pausaMs, null, PISO_PAUSA_MS));
     }

@@ -43,7 +43,7 @@ export function PrecoDepartamentoView({ master }: { master: CartaoDepartamento }
   );
 }
 
-export function CartaoDepartamentoView({ vertical, tipo, master, priority = false }: { vertical: string; tipo: TipoCartao; master: CartaoDepartamento; priority?: boolean }) {
+export function CartaoDepartamentoView({ vertical, tipo, master, priority = false, avisos }: { vertical: string; tipo: TipoCartao; master: CartaoDepartamento; priority?: boolean; avisos?: string[] }) {
   return (
     <Card interactive className="flex h-full flex-col overflow-hidden">
       <Link href={`/mercado/${vertical}/${master.slug}`} className="flex h-full flex-col gap-3 p-4 focus-visible:outline-2 focus-visible:outline-[var(--color-border-focus)]">
@@ -52,6 +52,13 @@ export function CartaoDepartamentoView({ vertical, tipo, master, priority = fals
         <LinhaIdentidadeView tipo={tipo} master={master} />
         <div className="mt-auto pt-2">
           <PrecoDepartamentoView master={master} />
+          {avisos && avisos.length ? (
+            <ul className="mt-1 flex flex-col gap-0.5">
+              {avisos.map((t) => (
+                <li key={t} className="break-words text-[12px] leading-snug text-[var(--color-text-secondary)]">{t}</li>
+              ))}
+            </ul>
+          ) : null}
         </div>
       </Link>
     </Card>

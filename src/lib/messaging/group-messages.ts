@@ -273,6 +273,8 @@ export interface CouponMsgData {
   named?: boolean;
   /** Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): vira o tópico "Exclusivo Prime" e o preço é rotulado como com a promoção. */
   exclusivePrime?: boolean;
+  /** Desconto por cartão/Pix lido na página (#112): "Itaú Mastercard 15% (a confirmar no carrinho)". */
+  cardLines?: string[];
   /** Quando a página foi lida. */
   readAt: Date;
   /** Validade lida da loja (a página do anúncio normalmente não informa). */
@@ -806,6 +808,7 @@ export function formatCouponMessage(input: Extract<GroupMessageInput, { model: '
     topic(f, 'Desconto', `${fmtBRL(c.offCents)} (${Number.isInteger(c.pct) ? String(c.pct) : fmtPct1(c.pct)}%); o anúncio sem cupom está em ${fmtBRL(o.priceCents)}`)
   );
   if (c.minOrderCents) topics.push(topic(f, 'Compra mínima', fmtBRL(c.minOrderCents)));
+  for (const cl of (c.cardLines ?? []).slice(0, 2)) topics.push(topic(f, 'Desconto no cartão', cl));
   if (c.maxDiscountCents) topics.push(topic(f, 'Desconto máximo', fmtBRL(c.maxDiscountCents)));
   topics.push(topic(f, 'Como usar', c.howTo?.length ? c.howTo.map((x, i) => `${i + 1}. ${x}`).join('; ') + '.' : c.activation));
   if (c.expiresAt) topics.push(topic(f, 'Válido até', `${fmtStamp(c.expiresAt)}, segundo a loja`));

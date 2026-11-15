@@ -385,6 +385,8 @@ export interface CouponOfferFact {
   named?: boolean;
   /** Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): a mensagem diz "Exclusivo Prime"; cota própria baixa (primePromoQuotaBlock). */
   exclusivePrime?: boolean;
+  /** Desconto por cartão/Pix lido na página do anúncio (#112), já em texto: "Itaú Mastercard 15% (a confirmar no carrinho)". Só informativo na mensagem. */
+  cardLines?: string[];
   readAt: Date;
   expiresAt: Date | null;
 }
@@ -1314,7 +1316,7 @@ export function evaluateCoupon(p: ProductFacts, ctx: EvalContext): { candidates:
     title: parts.title,
     meta: parts.meta,
     offer: toMsgOffer(o),
-    coupon: { name: cf.name, offCents: cf.offCents, pct: cf.pct, finalCents: cf.finalCents, minOrderCents: cf.minOrderCents, maxDiscountCents: cf.maxDiscountCents, ruleKnown: cf.ruleKnown, activation: cf.activation, code: cf.code ?? null, howTo: cf.howTo, named: cf.named, exclusivePrime: cf.exclusivePrime === true, readAt: cf.readAt, expiresAt: cf.expiresAt },
+    coupon: { name: cf.name, offCents: cf.offCents, pct: cf.pct, finalCents: cf.finalCents, minOrderCents: cf.minOrderCents, maxDiscountCents: cf.maxDiscountCents, ruleKnown: cf.ruleKnown, activation: cf.activation, code: cf.code ?? null, howTo: cf.howTo, named: cf.named, exclusivePrime: cf.exclusivePrime === true, cardLines: cf.cardLines, readAt: cf.readAt, expiresAt: cf.expiresAt },
     cheaperOther: cheaper ? { cents: cheaper.priceCents, networkName: cheaper.networkName } : null,
   };
   const cand = finish(p, 'CUPOM', input, {

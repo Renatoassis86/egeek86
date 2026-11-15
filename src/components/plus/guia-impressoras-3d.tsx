@@ -3,7 +3,7 @@ import { Text } from '@/components/ui/text';
 import { ProductImage } from '@/components/ui/product-image';
 import { VerificadoHa } from '@/components/affiliate/verificado-ha';
 import { formatBRL } from '@/lib/format';
-import { ROTULO_REDE_GUIA, variacaoSobreRegistrado } from '@/lib/catalog/guia-3d';
+import { ROTULO_REDE_GUIA, linhasAviso, variacaoSobreRegistrado } from '@/lib/catalog/guia-3d';
 import type { ItemGuiaComRegistro } from '@/server/queries/guia-3d';
 
 /**
@@ -50,11 +50,16 @@ function CartaoGuia({ item, destaque, priority }: { item: ItemGuiaComRegistro; d
       )}
       <ul className="mt-auto flex flex-col gap-1 border-t border-[var(--color-border-subtle)] pt-2">
         {item.lojas.map((l) => (
-          <li key={l.rede} className="flex items-center justify-between gap-2 text-[13px]">
-            <span className="text-[var(--color-text-secondary)]">{l.redeNome}</span>
-            <a href={`/go/${l.ofertaSlug}`} rel="nofollow noopener sponsored" className="inline-flex min-h-11 items-center font-mono font-bold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--color-border-focus)]">
-              {formatBRL(l.precoCents)}{item.menor?.rede === l.rede ? ' · menor' : ''}
-            </a>
+          <li key={l.rede} className="flex flex-col gap-0.5">
+            <div className="flex items-center justify-between gap-2 text-[13px]">
+              <span className="text-[var(--color-text-secondary)]">{l.redeNome}</span>
+              <a href={`/go/${l.ofertaSlug}`} rel="nofollow noopener sponsored" className="inline-flex min-h-11 items-center font-mono font-bold underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--color-border-focus)]">
+                {formatBRL(l.precoCents)}{item.menor?.rede === l.rede ? ' · menor' : ''}
+              </a>
+            </div>
+            {linhasAviso(l.aviso).map((t) => (
+              <span key={t} className="break-words text-[12px] leading-snug text-[var(--color-text-secondary)]">{t}</span>
+            ))}
           </li>
         ))}
         {item.semOferta.map((r) => (
