@@ -1,0 +1,1109 @@
+{
+  "criadoEm": "2026-11-15T17:42:37.974Z",
+  "por": "fila #72, limpeza inicial",
+  "motivo": "timeout_reaper",
+  "backup": "reaper-collector-runs-2026-11-15T17-42-00-163Z.ndjson",
+  "alterados": [
+    {
+      "id": "3301",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-11 02:35:01.127558+00",
+      "started_ms": "1794364501128",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3302",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-11 02:35:10.951949+00",
+      "started_ms": "1794364510952",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3303",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-11 02:35:45.783559+00",
+      "started_ms": "1794364545784",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3305",
+      "job": "collect-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-11 02:37:48.312458+00",
+      "started_ms": "1794364668312",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3307",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-11 02:40:45.457115+00",
+      "started_ms": "1794364845457",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3313",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-11 02:45:00.831611+00",
+      "started_ms": "1794365100832",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3318",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-11 02:50:10.523062+00",
+      "started_ms": "1794365410523",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3323",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-11 02:55:00.834659+00",
+      "started_ms": "1794365700835",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "3324",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-11 02:55:10.69599+00",
+      "started_ms": "1794365710696",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "9303",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 03:25:00.706166+00",
+      "started_ms": "1794453900706",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "9308",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 03:25:48.118238+00",
+      "started_ms": "1794453948118",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "9431",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 03:40:45.327121+00",
+      "started_ms": "1794454845327",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "9741",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-12 04:40:10.576704+00",
+      "started_ms": "1794458410577",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "10054",
+      "job": "collect-vertical:livros",
+      "status": "running",
+      "started_at": "2026-11-12 05:31:34.879874+00",
+      "started_ms": "1794461494880",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "10223",
+      "job": "collect-vertical:livros",
+      "status": "running",
+      "started_at": "2026-11-12 06:11:34.439602+00",
+      "started_ms": "1794463894440",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "10491",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-12 07:10:10.929482+00",
+      "started_ms": "1794467410929",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "10496",
+      "job": "collect-vertical:livros",
+      "status": "running",
+      "started_at": "2026-11-12 07:11:34.494031+00",
+      "started_ms": "1794467494494",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "10506",
+      "job": "collect-vertical:impressao3d",
+      "status": "running",
+      "started_at": "2026-11-12 07:14:29.444079+00",
+      "started_ms": "1794467669444",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "10571",
+      "job": "collect-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-12 07:32:11.908011+00",
+      "started_ms": "1794468731908",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "10767",
+      "job": "collect-vertical:impressao3d",
+      "status": "running",
+      "started_at": "2026-11-12 08:14:45.573244+00",
+      "started_ms": "1794471285573",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "11240",
+      "job": "collect-vertical:livros",
+      "status": "running",
+      "started_at": "2026-11-12 10:01:34.582346+00",
+      "started_ms": "1794477694582",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "11276",
+      "job": "collect-vertical:livros",
+      "status": "running",
+      "started_at": "2026-11-12 10:11:34.53637+00",
+      "started_ms": "1794478294536",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "11503",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-12 11:10:10.496896+00",
+      "started_ms": "1794481810497",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "11560",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-12 11:17:26.401223+00",
+      "started_ms": "1794482246401",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "12014",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 13:20:00.7165+00",
+      "started_ms": "1794489600717",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13426",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-12 17:40:11.4339+00",
+      "started_ms": "1794505211434",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13429",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 17:40:45.889485+00",
+      "started_ms": "1794505245889",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13558",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 18:05:01.247525+00",
+      "started_ms": "1794506701248",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13565",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 18:05:45.485998+00",
+      "started_ms": "1794506745486",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13588",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 18:10:00.849174+00",
+      "started_ms": "1794507000849",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13595",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 18:10:45.418085+00",
+      "started_ms": "1794507045418",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13655",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 18:21:09.864358+00",
+      "started_ms": "1794507669864",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13796",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 18:45:00.761044+00",
+      "started_ms": "1794509100761",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "13802",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-12 18:45:45.842849+00",
+      "started_ms": "1794509145843",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "14258",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-12 20:04:09.250303+00",
+      "started_ms": "1794513849250",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "15200",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-12 22:40:10.633734+00",
+      "started_ms": "1794523210634",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "15340",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-12 23:04:09.277583+00",
+      "started_ms": "1794524649278",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "15486",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-12 23:34:09.19132+00",
+      "started_ms": "1794526449191",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "15524",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-12 23:40:10.858418+00",
+      "started_ms": "1794526810858",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "15813",
+      "job": "collect-vertical:livros",
+      "status": "running",
+      "started_at": "2026-11-13 00:26:40.349645+00",
+      "started_ms": "1794529600350",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "16038",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-13 01:00:46.246006+00",
+      "started_ms": "1794531646246",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "16095",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-13 01:10:00.669362+00",
+      "started_ms": "1794532200669",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "16411",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 01:55:10.743733+00",
+      "started_ms": "1794534910744",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "16927",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 03:10:10.594318+00",
+      "started_ms": "1794539410594",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "17781",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 05:40:10.42053+00",
+      "started_ms": "1794548410421",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "18071",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-13 07:00:00.490119+00",
+      "started_ms": "1794553200490",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "18654",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 09:40:10.599173+00",
+      "started_ms": "1794562810599",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "18710",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 09:55:10.534401+00",
+      "started_ms": "1794563710534",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "18813",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 10:25:11.134103+00",
+      "started_ms": "1794565511134",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "18970",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 11:10:10.470186+00",
+      "started_ms": "1794568210470",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "19235",
+      "job": "collect-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-13 12:21:50.904568+00",
+      "started_ms": "1794572510905",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "19470",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-13 13:30:00.389253+00",
+      "started_ms": "1794576600389",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "20194",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 16:40:10.614216+00",
+      "started_ms": "1794588010614",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "20311",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-13 17:17:26.272398+00",
+      "started_ms": "1794590246272",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "21093",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-13 21:04:11.917876+00",
+      "started_ms": "1794603851918",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "21229",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-13 21:40:10.806219+00",
+      "started_ms": "1794606010806",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "21351",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-13 22:15:01.067107+00",
+      "started_ms": "1794608101067",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "21409",
+      "job": "semear-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-13 22:27:49.348002+00",
+      "started_ms": "1794608869348",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "21449",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-13 22:35:46.294187+00",
+      "started_ms": "1794609346294",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "21586",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-13 23:04:09.345254+00",
+      "started_ms": "1794611049345",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22055",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 00:50:45.514996+00",
+      "started_ms": "1794617445515",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22075",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 00:55:01.733126+00",
+      "started_ms": "1794617701733",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22078",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 00:55:45.783777+00",
+      "started_ms": "1794617745784",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22094",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 01:00:14.402447+00",
+      "started_ms": "1794618014402",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22097",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 01:00:56.326629+00",
+      "started_ms": "1794618056327",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22108",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-14 01:04:09.134085+00",
+      "started_ms": "1794618249134",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22112",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 01:05:01.218859+00",
+      "started_ms": "1794618301219",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22119",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 01:06:05.260626+00",
+      "started_ms": "1794618365261",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22134",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-14 01:10:10.897258+00",
+      "started_ms": "1794618610897",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22410",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-14 02:04:09.172895+00",
+      "started_ms": "1794621849173",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "22755",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 03:00:45.844983+00",
+      "started_ms": "1794625245845",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "23148",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-14 04:04:09.310082+00",
+      "started_ms": "1794629049310",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "23311",
+      "job": "collect-vertical:livros",
+      "status": "running",
+      "started_at": "2026-11-14 04:41:40.42699+00",
+      "started_ms": "1794631300427",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "23413",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-14 05:04:09.150259+00",
+      "started_ms": "1794632649150",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "23557",
+      "job": "collect-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-14 05:36:50.451819+00",
+      "started_ms": "1794634610452",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "25175",
+      "job": "collect-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-14 12:51:50.568314+00",
+      "started_ms": "1794660710568",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "25195",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-14 13:00:00.44331+00",
+      "started_ms": "1794661200443",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "25387",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-14 14:10:10.889537+00",
+      "started_ms": "1794665410890",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "25438",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-14 14:30:00.50729+00",
+      "started_ms": "1794666600507",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "25525",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-14 14:55:10.859959+00",
+      "started_ms": "1794668110860",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "25561",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-14 15:04:09.215593+00",
+      "started_ms": "1794668649216",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "25907",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-14 16:34:09.155723+00",
+      "started_ms": "1794674049156",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "26343",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 19:00:45.900544+00",
+      "started_ms": "1794682845901",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "26415",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-14 19:25:10.657516+00",
+      "started_ms": "1794684310658",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "26682",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-14 20:35:46.491901+00",
+      "started_ms": "1794688546492",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "26818",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-14 21:05:46.343752+00",
+      "started_ms": "1794690346344",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "26867",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-14 21:17:26.258088+00",
+      "started_ms": "1794691046258",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "26940",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-14 21:35:46.148125+00",
+      "started_ms": "1794692146148",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "27055",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-14 22:05:46.250797+00",
+      "started_ms": "1794693946251",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "27212",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-14 22:40:45.478773+00",
+      "started_ms": "1794696045479",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "27319",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-14 23:05:46.778994+00",
+      "started_ms": "1794697546779",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "27567",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-15 00:05:46.176001+00",
+      "started_ms": "1794701146176",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "27797",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 01:10:10.552537+00",
+      "started_ms": "1794705010553",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "27951",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 01:50:10.516586+00",
+      "started_ms": "1794707410517",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "27970",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 01:55:10.614699+00",
+      "started_ms": "1794707710615",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28070",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 02:20:10.431996+00",
+      "started_ms": "1794709210432",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28160",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 02:40:10.632875+00",
+      "started_ms": "1794710410633",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28204",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 02:50:10.536994+00",
+      "started_ms": "1794711010537",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28348",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 03:25:10.707517+00",
+      "started_ms": "1794713110708",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28394",
+      "job": "collect-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-15 03:36:51.136997+00",
+      "started_ms": "1794713811137",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28399",
+      "job": "collect-vertical:esporte",
+      "status": "running",
+      "started_at": "2026-11-15 03:38:11.583598+00",
+      "started_ms": "1794713891584",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28405",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-15 03:40:00.480872+00",
+      "started_ms": "1794714000481",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28406",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 03:40:10.874056+00",
+      "started_ms": "1794714010874",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "28990",
+      "job": "collect-shopee",
+      "status": "running",
+      "started_at": "2026-11-15 06:40:10.676763+00",
+      "started_ms": "1794724810677",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "29513",
+      "job": "discover-products",
+      "status": "running",
+      "started_at": "2026-11-15 09:30:00.573071+00",
+      "started_ms": "1794735000573",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "29532",
+      "job": "refresh-snapshots:vitrines",
+      "status": "running",
+      "started_at": "2026-11-15 09:35:46.372001+00",
+      "started_ms": "1794735346372",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "29577",
+      "job": "collect-vertical:eletroeletronicos",
+      "status": "running",
+      "started_at": "2026-11-15 09:51:50.485402+00",
+      "started_ms": "1794736310485",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "30651",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-15 15:30:00.839633+00",
+      "started_ms": "1794756600840",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "31098",
+      "job": "collect-prices",
+      "status": "running",
+      "started_at": "2026-11-15 17:30:45.689163+00",
+      "started_ms": "1794763845689",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    },
+    {
+      "id": "31108",
+      "job": "refresh-snapshots:showcase",
+      "status": "running",
+      "started_at": "2026-11-15 17:34:09.187567+00",
+      "started_ms": "1794764049188",
+      "finished_at": null,
+      "stopped_because": null,
+      "meta": null
+    }
+  ],
+  "rollback": "npx tsx --env-file=.env.local scripts/reaper-collector-runs.ts --rollback docs/backups/reaper-collector-runs-log-2026-11-15T17-42-00-163Z.json --apply"
+}

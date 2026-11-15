@@ -14,6 +14,21 @@ export function keyNaUrlAceita(env: Record<string, string | undefined> = process
 }
 
 /**
+ * #73: descreve QUEM chamou (so metadados nao secretos: user-agent e IP de borda) para achar o disparador externo do collect-prices.
+ * O cron da Vercel manda `user-agent: vercel-cron/1.0`; qualquer outro chamador autorizado e logado em [cron-auth] disparo externo.
+ */
+export function origemDoDisparo(headers: Pick<Headers, 'get'>): { vercelCron: boolean; ua: string; ip: string } {
+  const ua = (headers.get('user-agent') ?? '').slice(0, 80);
+  const ip = (headers.get('x-forwarded-for') ?? headers.get('x-real-ip') ?? '').split(',')[0]!.trim().slice(0, 45);
+  return { vercelCron: ua.toLowerCase().startsWith('vercel-cron'), ua, ip };
+}
+
+function registraOrigem(request: NextRequest, via: 'bearer'): void {
+  const o = origemDoDisparo(request.headers);
+  if (!o.vercelCron) console.warn('[cron-auth] disparo externo:', request.nextUrl.pathname, `via=${via}`, `ua="${o.ua}"`, `ip=${o.ip}`, `host=${request.headers.get('host') ?? ''}`);
+}
+
+/**
  * Autorização de rotas /api/cron/*. Falha FECHADA: sem CRON_SECRET configurado
  * a rota recusa tudo (antes, sem a variável, a coleta ficava aberta ao mundo e
  * notify-price-drops aceitava o texto "Bearer undefined").
@@ -27,11 +42,12 @@ export function rejectUnlessCronAuthorized(request: NextRequest): NextResponse |
     return NextResponse.json({ error: 'cron_secret_not_configured' }, { status: 500 });
   }
   const bearer = request.headers.get('authorization');
-  if (iguais(bearer, `Bearer ${secret}`)) return null;
+  if (iguais(bearer, `Bearer ${secret}`)) { registraOrigem(request, 'bearer'); return null; }
   // ?key= na URL e LEGADO (o segredo vaza em logs). R2-9 (dono, 2026-11-14): cada uso e REGISTRADO (so a rota, nunca o segredo) para achar o disparador externo
   // (o banco nao tem pg_cron/pg_net); com CRON_ACEITA_KEY_NA_URL=off a URL deixa de valer. Remover so depois de zero usos no log.
   if (keyNaUrlAceita() && iguais(request.nextUrl.searchParams.get('key'), secret)) {
-    console.warn('[cron-auth] autorizado por ?key= (legado):', request.nextUrl.pathname);
+    const o = origemDoDisparo(request.headers);
+    console.warn('[cron-auth] autorizado por ?key= (legado):', request.nextUrl.pathname, `ua="${o.ua}"`, `ip=${o.ip}`);
     return null;
   }
   return NextResponse.json({ error: 'unauthorized' }, { status: 401 });

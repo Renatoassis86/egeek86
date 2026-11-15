@@ -1,20 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * Health check público: responde só ok/falha, sem detalhe de infraestrutura.
  * O diagnóstico por componente (mensagens de erro incluídas) só sai com o
- * mesmo CRON_SECRET das rotas /api/cron (Bearer ou ?key=).
+ * mesmo CRON_SECRET das rotas /api/cron (mesma regra do rejectUnlessCronAuthorized).
  */
 export async function GET(request: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  const detailed =
-    !!secret &&
-    (request.headers.get('authorization') === `Bearer ${secret}` ||
-      request.nextUrl.searchParams.get('key') === secret);
+  // #73: mesma regra das rotas /api/cron (Bearer em tempo constante; ?key= so enquanto CRON_ACEITA_KEY_NA_URL nao for 'off').
+  // O corpo publico (so ok/fail) continua igual para qualquer sonda externa, sem credencial.
+  const detailed = rejectUnlessCronAuthorized(request) === null;
 
   let dbOk = false;
   let dbDetail: string | undefined;

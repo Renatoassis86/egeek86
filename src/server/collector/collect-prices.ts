@@ -60,6 +60,8 @@ const WATCHED_REFRESH_INTERVAL = sql`interval '5 minutes'`;
  * 150 (mesma concorrência de 4 grupos por vez, ver GROUP_CONCURRENCY) —
  * ainda cabe com folga dentro do maxDuration=250s do plano Pro da Vercel.
  */
+/** #72: 80% do maxDuration (200 s) da rota /api/cron/collect-prices; ver route.ts. */
+export const COLLECT_BUDGET_MS = 160_000;
 const MAX_OFFERS_PER_RUN = 500; // 150 até 2026-11-10: só 17% das ofertas ML games eram checadas em 30 min (mais velha 3 h); rodada levava 45-70 s de 200 s
 
 const isWatchedExpr = sql`EXISTS (
@@ -225,6 +227,10 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
 
   // Observabilidade (flag COLLECTOR_RUNS=1; no-op sem a flag): uma execucao registrada por rede operacional.
   const runs = await startRuns(operationalSlugs, dueOffers);
+  // #72: orcamento de tempo a 80% do teto (maxDuration=200 s => 160 s). Passado o prazo, grupos ainda nao iniciados ficam para o proximo ciclo
+  // (continuam devidos; so o carimbo de quem foi processado avanca). Antes nao havia prazo: a funcao morria no teto e a linha ficava 'running'.
+  const prazoMs = Date.now() + COLLECT_BUDGET_MS;
+  let pulouPorPrazo = 0;
 
   // Flag COLLECT_MASTER_GROUPING (desligada por padrão): masters-piloto são coletados por (rede, master); todo o
   // resto segue EXATAMENTE como antes, agrupado por (rede, catálogo). Com a flag desligada `masterTargets` é vazio e
@@ -476,10 +482,20 @@ export async function collectPrices(): Promise<CollectPricesSummary> {
     ...catalogGroups.map((group) => () => processCatalogGroup(group)),
     ...masterTargets.map((target) => () => processMasterTarget(target)),
   ];
-  await mapWithConcurrency(tasks, GROUP_CONCURRENCY, (task) => task());
-
-  for (const run of runs.values()) {
-    await run.finish({ meta: { errorSamples: summary.errors.slice(0, 3).map((e) => e.message.slice(0, 160)) } });
+  try {
+    await mapWithConcurrency(tasks, GROUP_CONCURRENCY, async (task) => {
+      if (Date.now() > prazoMs) { pulouPorPrazo++; return; }
+      await task();
+    });
+  } finally {
+    // #72: o fechamento das execucoes vale mesmo se algo lancar (finish nunca lanca e e idempotente).
+    for (const run of runs.values()) {
+      await run.finish({
+        budgetExhausted: pulouPorPrazo > 0,
+        stoppedBecause: pulouPorPrazo > 0 ? 'orcamento_80pct' : null,
+        meta: { errorSamples: summary.errors.slice(0, 3).map((e) => e.message.slice(0, 160)), pulouPorPrazo },
+      });
+    }
   }
 
   return summary;

@@ -13,6 +13,7 @@ const warn = console.warn; let avisos = 0; console.warn = () => { avisos++; };
 
 check('bearer correto autoriza', rejectUnlessCronAuthorized(req('https://x.test/api/cron/a', `Bearer ${S}`)) === null);
 check('bearer errado nega', rejectUnlessCronAuthorized(req('https://x.test/api/cron/a', 'Bearer errado'))?.status === 401);
+avisos = 0; // o Bearer de chamador nao-Vercel tambem registra a origem (#73)
 check('?key= correto autoriza por padrao (legado) e registra uso', rejectUnlessCronAuthorized(req(`https://x.test/api/cron/a?key=${S}`)) === null && avisos === 1);
 check('?key= errado nega', rejectUnlessCronAuthorized(req('https://x.test/api/cron/a?key=errado'))?.status === 401);
 process.env.CRON_ACEITA_KEY_NA_URL = 'off';
