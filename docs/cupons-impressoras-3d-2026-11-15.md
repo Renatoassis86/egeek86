@@ -42,3 +42,17 @@ Reinjetar os dois loops; uma leitura real de P2S Combo ML (R$ 8.330) e Amazon; c
 
 ## Testes
 `npm run test:cupons-impressoras` (fila, benefício de cartão, aviso privado; `scripts/test-aviso-impressoras-112.ts --db` grava um benefício temporário, confere front e dry-run e apaga).
+
+## Monitor de preço (#114)
+
+Aviso PRIVADO (somente `TELEGRAM_ALERT_CHAT_ID`; nunca canais públicos) quando o menor preço de um modelo cai.
+
+- Ofertas: as mesmas da guia 3D do Plus (`departamentoClicaveisCtes`: porteiro aprovado, sem quarentena, link pronto, frescor 24 h ML/Shopee e Amazon). Grupos idênticos: combo e avulsa são modelos separados; Kobra por produto.
+- Ordem fixa do dono: P2S Combo, P1S Combo, A1 Combo, A1 Mini Combo, P2S, P1S, A1, A1 Mini, Kobra.
+- Avisa quando: queda >= 2% ou R$ 50 (o maior) sobre o último valor avisado; novo mínimo dos últimos 14 dias; oferta de outra rede mais barata. Alta não avisa. No máximo 1 aviso por modelo a cada 2 h, no máximo 5 por ciclo.
+- Texto: modelo, de/para, rede, loja e link /go/<slug>. Não afirma prazo de entrega.
+- Estado: `collector_runs` (job `impressora-preco-monitor`, meta com chave, tipo baseline/aviso/obs, preço, rede). Sem migração nova.
+- 1ª execução de cada modelo grava só a LINHA DE BASE, sem enviar (evita despejar uma mensagem por modelo).
+- Onde roda: ciclo do guardião de cupons (~5 min), consulta única, limite próprio de 8 s, erro nunca derruba o ciclo; sem cron novo. Meta do ciclo: `avisoPrecoEnviaria`, `avisoPrecoEnviados`.
+- Flag `PRINTER_PRICE_ALERT` (padrão ligada; `off` desliga). Sem `COLLECTOR_ALERTS=1` + chat + token: dry-run (calcula, não grava, não envia).
+- Teste: `NODE_OPTIONS=--conditions=react-server npx tsx --env-file=.env.local scripts/test-monitor-preco-impressoras-114.ts --db`.
