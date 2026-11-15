@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 import { publicOffersCtes } from '@/server/queries/public-offers';
 import { verticalSql } from '@/lib/catalog/verticais';
 import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
-import { createCachedQuery } from '@/lib/cache/server-cache';
+import { createCachedQuery, createPersistedQuery } from '@/lib/cache/server-cache';
 import { ehItemMiudoOuDuvida } from '@/lib/catalog/item-miudo';
 import { classificarTipo, contarTipos, type TipoContagem } from '@/lib/catalog/tipos-produto';
 import {
@@ -173,13 +173,15 @@ async function calcularIndiceTipos(vertical: string): Promise<IndiceTipos> {
   return { porId, tipos: contarTipos(vertical, rows.map((r) => r.name)) };
 }
 
-const indiceTiposCache = createCachedQuery(calcularIndiceTipos, ['dept-indice-tipos-v2'], { revalidate: 120, maxStaleSeconds: 900 });
+const indiceTiposCache = createCachedQuery(calcularIndiceTipos, ['dept-indice-tipos-v3'], { revalidate: 300, maxStaleSeconds: 1800 });
 export async function indiceTiposDepartamento(vertical: string): Promise<IndiceTipos> {
   return indiceTiposCache(vertical);
 }
 
+type OpcoesLista = { pagina?: number; q?: string | null; ordem?: OrdemDepartamento; tipo?: string | null };
+
 /** Lista paginada (24 por página) com busca interna por nome e filtro por tipo; padrão: mais ofertas primeiro. */
-export async function listarDepartamento(vertical: string, opts: { pagina?: number; q?: string | null; ordem?: OrdemDepartamento; tipo?: string | null } = {}): Promise<PaginaDepartamento> {
+async function calcularListaDepartamento(vertical: string, opts: OpcoesLista = {}): Promise<PaginaDepartamento> {
   assertDepartamento(vertical);
   const pagina = Math.max(1, Math.min(500, Math.trunc(opts.pagina ?? 1) || 1));
   const termos = termosBusca(opts.q);
@@ -233,6 +235,31 @@ export async function listarDepartamento(vertical: string, opts: { pagina?: numb
   // Cinto de segurança (dono, 2026-11-13): item miúdo (peça, cabo, suporte avulso, acessório menor) nunca aparece, mesmo que o porteiro tenha deixado passar.
   const itens = rows.filter((r) => !ehItemMiudoOuDuvida(r.name, Number(r.min_cents), 'general', vertical)).map(mapCartao);
   return { itens, total, pagina, totalPaginas: Math.max(1, Math.ceil(total / POR_PAGINA)) };
+}
+
+/**
+ * Cache de 5 minutos (dono, 2026-11-15; as páginas levavam 4 a 14 s). Preço/oferta na lista pode ficar até 5 min defasado; o detalhe do
+ * produto continua ao vivo. As flags/trava mestra/404 NÃO passam por aqui (exigirDepartamento roda antes, com cache próprio de 30 s).
+ * Sem busca por texto e nas 2 primeiras páginas: snapshot persistido (instância fria lê 1 linha); o resto: só memória (SWR).
+ * Busca por texto (q) nunca é cacheada: texto livre.
+ */
+const listaCache = createCachedQuery(calcularListaDepartamento, ['dept-lista-v1'], { revalidate: 300, maxStaleSeconds: 3600, coldTimeoutSeconds: 30, live: true });
+const listaPersistida = createPersistedQuery(calcularListaDepartamento, ['dept-lista-p-v1'], {
+  revalidate: 300,
+  maxStaleSeconds: 3600,
+  coldTimeoutSeconds: 30,
+  live: true,
+  persist: { maxAgeSeconds: 300, maxStaleSeconds: 2 * 3600 },
+});
+export async function listarDepartamento(vertical: string, opts: OpcoesLista = {}): Promise<PaginaDepartamento> {
+  assertDepartamento(vertical);
+  if (termosBusca(opts.q).length) return calcularListaDepartamento(vertical, opts);
+  const norm = {
+    pagina: Math.max(1, Math.min(500, Math.trunc(opts.pagina ?? 1) || 1)),
+    ordem: normalizarOrdem(opts.ordem),
+    tipo: opts.tipo ?? null,
+  };
+  return norm.pagina <= 2 ? listaPersistida(vertical, norm) : listaCache(vertical, norm);
 }
 
 export interface VendedorDetalhe {
@@ -340,7 +367,7 @@ export function diversificarPorTipo<T extends { name: string }>(vertical: string
  * `listarDepartamento` (porteiro aprovado, oferta clicável checada nas últimas horas), só com foto real do anúncio.
  * Sem mediana, sem histórico, sem selo.
  */
-export async function destaquesDepartamento(vertical: string, limite = 8): Promise<CartaoDepartamento[]> {
+async function calcularDestaquesDepartamento(vertical: string, limite = 8): Promise<CartaoDepartamento[]> {
   assertDepartamento(vertical);
   const lim = Math.max(1, Math.min(12, Math.trunc(limite) || 8));
   const rows = await db.execute<RowLista>(sql`
@@ -366,4 +393,11 @@ export async function destaquesDepartamento(vertical: string, limite = 8): Promi
   // Cinto de segurança (dono, 2026-11-13): destaque ordenado por menor preço é onde o item miúdo apareceria primeiro.
   const limpas = rows.filter((r) => !ehItemMiudoOuDuvida(r.name, Number(r.min_cents), 'general', vertical));
   return priorizarImpressao3d(vertical, limpas.map((r) => ({ ...r, min_cents: r.min_cents })), lim, diversificarPorTipo).map(mapCartao);
+}
+
+/** Destaques com cache de 5 min (mesma regra da lista). */
+const destaquesCache = createCachedQuery(calcularDestaquesDepartamento, ['dept-destaques-v1'], { revalidate: 300, maxStaleSeconds: 3600, coldTimeoutSeconds: 30, live: true });
+export async function destaquesDepartamento(vertical: string, limite = 8): Promise<CartaoDepartamento[]> {
+  assertDepartamento(vertical);
+  return destaquesCache(vertical, Math.max(1, Math.min(12, Math.trunc(limite) || 8)));
 }
