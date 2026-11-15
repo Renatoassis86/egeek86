@@ -1,0 +1,11 @@
+{
+  "chave": "redesenho_home",
+  "linhaAnterior": {
+    "key": "redesenho_home",
+    "description": "Nova home por percentual",
+    "enabled": true,
+    "rollout_percentage": 10,
+    "updated_at": "2026-11-15 11:33:45.128805+00"
+  },
+  "efetivoAnterior": 10
+}
