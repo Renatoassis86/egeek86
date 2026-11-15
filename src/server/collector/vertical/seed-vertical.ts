@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { slugify } from '@/lib/slugify';
-import { reviewGateFor } from '@/lib/catalog/vertical/gate';
+import { identidadeDoGate, reviewGateFor } from '@/lib/catalog/vertical/gate';
 import { normalizeTitleKey } from '@/lib/catalog/vertical/identity';
 import { createMlClient } from '@/lib/catalog/vertical/ml-api';
 import type { ExistingLookup, SeedPlanEntry } from '@/lib/catalog/vertical/seed-plan';
@@ -96,8 +96,11 @@ async function buildLookup(): Promise<ExistingLookup & { remember(e: SeedPlanEnt
 /** Cria master (review, 'general') + oferta-placeholder do catálogo, numa transação. Idempotente por catálogo. */
 async function applyEntry(e: SeedPlanEntry, networkId: string): Promise<{ masterId: string; offerId: string } | { skipped: string }> {
   const now = new Date().toISOString();
+  const catalogGate = reviewGateFor(e.gate, now);
+  const identidade = identidadeDoGate(catalogGate);
   const attributes = {
-    catalogGate: reviewGateFor(e.gate, now),
+    catalogGate,
+    ...(identidade ? { identidade } : {}),
     vertical: {
       segment: e.segment,
       identityKey: e.identity.key,

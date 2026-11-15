@@ -127,27 +127,47 @@ export function gateFor(vertical: NonGamesVertical): VerticalGate {
 
 /** Valor gravado em master_products.attributes.catalogGate (compatível com PersistedGate do porteiro gamer). */
 export interface PersistedVerticalGate {
-  verdict: 'review';
-  category: 'unverified';
+  verdict: 'review' | 'approved';
+  category: 'unverified' | 'ok';
   reason: string;
   matched: string | null;
   version: number;
   at: string;
-  /** Parecer do porteiro do departamento (só sugestão; o veredito gravado é sempre review). */
+  /** Parecer do porteiro do departamento. */
   suggested: VerticalGateVerdict;
   suggestedReason: string;
+  /** Preenchidos só quando a regra permanente (GATE_SEMEADURA_DIRETO) já aprova na entrada. */
+  previousVerdict?: 'review';
+  approvedBy?: string;
 }
 
-/** Rede de segurança do ADR 0008: o master da semeadura SEMPRE nasce em `review` (invisível), qualquer que seja o parecer. */
-export function reviewGateFor(r: VerticalGateResult, at: string): PersistedVerticalGate {
-  return {
-    verdict: 'review',
-    category: 'unverified',
-    reason: 'semeadura_vertical_aguardando_conferencia',
-    matched: r.matched,
-    version: r.version,
-    at,
-    suggested: r.verdict,
-    suggestedReason: r.reason,
-  };
+/**
+ * #83/#55 (dono, 2026-11-15): "a única restrição é usado e retrô; precisamos ir colocando os itens no banco".
+ * Flag simples, padrão LIGADA: GATE_SEMEADURA_DIRETO=off devolve ao ADR 0008 (todo master de semeadura nasce em review).
+ */
+export function semeaduraDiretoLigado(env: Record<string, string | undefined> = process.env): boolean {
+  const v = (env.GATE_SEMEADURA_DIRETO ?? '').trim().toLowerCase();
+  return !(v === 'off' || v === '0' || v === 'false');
+}
+
+/**
+ * Gate gravado no master NOVO da semeadura/descoberta. Com a flag ligada:
+ *  - parecer `approved` (evidência positiva) nasce APROVADO;
+ *  - parecer `review` por identidade fraca (categoria `unverified`: chave fraca, sem chave forte) nasce APROVADO como `nao_identificado`
+ *    (grupo próprio; ver `identidadeDoGate`), nunca funde com outro;
+ *  - fora de escopo/miúdo (`out_of_scope`), usado/retrô e `rejected` NÃO mudam: continuam em review (o porteiro já os separa).
+ * Flag desligada: sempre `review`, como no ADR 0008.
+ */
+export function reviewGateFor(r: VerticalGateResult, at: string, env: Record<string, string | undefined> = process.env): PersistedVerticalGate {
+  const base = { matched: r.matched, version: r.version, at, suggested: r.verdict, suggestedReason: r.reason };
+  if (semeaduraDiretoLigado(env)) {
+    if (r.verdict === 'approved') return { ...base, verdict: 'approved', category: 'ok', reason: `semeadura_direta:${r.reason}`, previousVerdict: 'review', approvedBy: 'auto:semeadura-direta' };
+    if (r.verdict === 'review' && r.category === 'unverified') return { ...base, verdict: 'approved', category: 'ok', reason: `nao_identificado:${r.reason}`, previousVerdict: 'review', approvedBy: 'auto:semeadura-direta' };
+  }
+  return { ...base, verdict: 'review', category: 'unverified', reason: 'semeadura_vertical_aguardando_conferencia' };
+}
+
+/** `attributes.identidade` do master quando o gate nasceu como `nao_identificado` (senão `undefined`). */
+export function identidadeDoGate(g: PersistedVerticalGate): { estado: 'nao_identificado'; motivo: string; desde: string } | undefined {
+  return g.reason.startsWith('nao_identificado:') ? { estado: 'nao_identificado', motivo: g.suggestedReason, desde: g.at } : undefined;
 }

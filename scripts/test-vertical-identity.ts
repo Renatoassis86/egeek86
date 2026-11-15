@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { domainMatches, isVerticalEnabled, killSwitchEnvName, MAX_REFRESH_MIN, refreshMinutesFor, seedOrder, SEGMENTS, segmentByKey, segmentsOf } from '../src/lib/catalog/vertical/config';
 import { evaluateIdentity, extractGtins, isbn10to13, isIsbn13, isValidGtin, normalizeTitleKey, rejectionOf, type MlCatalogPayload } from '../src/lib/catalog/vertical/identity';
-import { gateFor, reviewGateFor } from '../src/lib/catalog/vertical/gate';
+import { gateFor, identidadeDoGate, reviewGateFor, semeaduraDiretoLigado } from '../src/lib/catalog/vertical/gate';
 import { fetchVerticalCatalog, VerticalPagingError, type FetchRawPage } from '../src/lib/catalog/vertical/paging';
 import { createMlClient, CallBudgetExceeded, RateLimited } from '../src/lib/catalog/vertical/ml-api';
 import { accessoryIssue, colorlessTitleKey, comboIssue, scopeIssue, splitPlus, stripColors } from '../src/lib/catalog/vertical/scope';
@@ -150,7 +150,17 @@ gv = g.evaluate({ segment: 'placa-de-video', name: 'x', domainId: 'MLB-GRAPHICS_
 check('segmento de outro departamento => review, nunca rejected', gv.verdict === 'review', gv);
 check('gateFor devolve o mesmo objeto (cache)', gateFor('tecnologia') === gateFor('tecnologia'));
 const rg = reviewGateFor(g.evaluate({ segment: 'livros', name: 'Dom Casmurro', domainId: 'MLB-BOOKS', identity: evaluateIdentity(P({ id: 'z', attributes: [attr('GTIN', isbn)] }), livros) }), '2026-11-08T00:00:00Z');
-check('master da semeadura SEMPRE nasce em review (rede de seguranca), com sugestao do porteiro', rg.verdict === 'review' && rg.suggested === 'approved', rg);
+const resApproved = g.evaluate({ segment: 'livros', name: 'Dom Casmurro', domainId: 'MLB-BOOKS', identity: evaluateIdentity(P({ id: 'z', attributes: [attr('GTIN', isbn)] }), livros) });
+check('#83/#55 flag ligada (padrao): parecer approved nasce APROVADO, com sugestao e marca do lote', rg.verdict === 'approved' && rg.suggested === 'approved' && rg.approvedBy === 'auto:semeadura-direta', rg);
+const rgOff = reviewGateFor(resApproved, '2026-11-08T00:00:00Z', { GATE_SEMEADURA_DIRETO: 'off' });
+check('GATE_SEMEADURA_DIRETO=off devolve ao ADR 0008 (review, com sugestao do porteiro)', rgOff.verdict === 'review' && rgOff.suggested === 'approved' && rgOff.reason === 'semeadura_vertical_aguardando_conferencia', rgOff);
+check('flag: ausente/vazia = ligada; off/0/false = desligada', semeaduraDiretoLigado({}) && semeaduraDiretoLigado({ GATE_SEMEADURA_DIRETO: 'on' }) && !semeaduraDiretoLigado({ GATE_SEMEADURA_DIRETO: 'OFF' }) && !semeaduraDiretoLigado({ GATE_SEMEADURA_DIRETO: '0' }) && !semeaduraDiretoLigado({ GATE_SEMEADURA_DIRETO: 'false' }));
+const fraco = { ...resApproved, verdict: 'review' as const, category: 'unverified' as const, reason: 'chave_fraca_titulo' };
+const rgFraco = reviewGateFor(fraco, '2026-11-08T00:00:00Z', {});
+check('identidade fraca (unverified) nasce aprovada como nao_identificado, em grupo proprio', rgFraco.verdict === 'approved' && rgFraco.reason.startsWith('nao_identificado:') && identidadeDoGate(rgFraco)?.estado === 'nao_identificado', rgFraco);
+check('aprovado com evidencia positiva nao ganha identidade nao_identificado', identidadeDoGate(rg) === undefined);
+const foraEscopo = { ...resApproved, verdict: 'review' as const, category: 'out_of_scope' as const, reason: 'lexico_fora_do_escopo' };
+check('fora do escopo/miudo e usado/retro (rejected) NAO passam direto: seguem em review', reviewGateFor(foraEscopo, 'x', {}).verdict === 'review' && reviewGateFor({ ...resApproved, verdict: 'rejected', category: 'used' }, 'x', {}).verdict === 'review');
 
 // --- Config ---
 check('todas as verticais da config existem na lista fixa do CHECK (VERTICALS)', SEGMENTS.every((s) => (VERTICALS as readonly string[]).includes(s.vertical)));

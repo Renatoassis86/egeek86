@@ -4,7 +4,7 @@ import type postgres from 'postgres';
 import { slugify } from '@/lib/slugify';
 import { norm } from '@/lib/affiliate/amazon-identity';
 import { IndiceDedup, type MarcasConhecidas, type PropostaMaster } from '@/lib/affiliate/shopee-master-novo';
-import { reviewGateFor, VERTICAL_GATE_VERSION } from '@/lib/catalog/vertical/gate';
+import { identidadeDoGate, reviewGateFor, VERTICAL_GATE_VERSION } from '@/lib/catalog/vertical/gate';
 import type { NonGamesVertical } from '@/lib/catalog/vertical/config';
 
 type Sql = postgres.Sql<{}>;
@@ -51,7 +51,7 @@ export async function criarMasterPlus(
       : gateRevisao;
   const attributes = {
     catalogGate,
-    ...(o.naoIdentificado && o.sugestao === 'review' ? { identidade: { estado: 'nao_identificado', motivo: o.motivo, desde: now } } : {}),
+    ...(o.naoIdentificado && o.sugestao === 'review' ? { identidade: { estado: 'nao_identificado', motivo: o.motivo, desde: now } } : identidadeDoGate(gateRevisao) ? { identidade: identidadeDoGate(gateRevisao) } : {}),
     vertical: {
       segment: p.segmento, identityKey: p.chave, keyKind: p.keyKind, domainId: null, parentId: null, gtins: p.gtin ? [p.gtin] : [], source: 'cobertura-shopee',
       titleDerived: true, seededAt: now, catalogAttributes: p.catalogAttributes,

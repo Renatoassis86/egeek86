@@ -47,7 +47,7 @@ import { randomUUID } from 'node:crypto';
 import type postgres from 'postgres';
 import { connect } from './_dup-shared';
 import { segmentByKey, segmentsOf, seedOrder, TERMS_STATUS, type NonGamesVertical, type SegmentConfig } from '../src/lib/catalog/vertical/config';
-import { reviewGateFor } from '../src/lib/catalog/vertical/gate';
+import { identidadeDoGate, reviewGateFor } from '../src/lib/catalog/vertical/gate';
 import { normalizeTitleKey } from '../src/lib/catalog/vertical/identity';
 import { createMlClient, RateLimited, type MlClient } from '../src/lib/catalog/vertical/ml-api';
 import { planSeed, type ExistingLookup, type SeedPlanEntry, type SeedReport } from '../src/lib/catalog/vertical/seed-plan';
@@ -187,8 +187,11 @@ function money(c: number | null) {
 /** Cria master (review, product_type 'general') + oferta-placeholder do catalogo, numa transacao. Idempotente por catalogo/GTIN/chave. */
 async function applyEntry(sql: Sql, e: SeedPlanEntry, networkId: string): Promise<{ masterId: string; offerId: string } | { skipped: string }> {
   const now = new Date().toISOString();
+  const catalogGate = reviewGateFor(e.gate, now);
+  const identidade = identidadeDoGate(catalogGate);
   const attributes = {
-    catalogGate: reviewGateFor(e.gate, now),
+    catalogGate,
+    ...(identidade ? { identidade } : {}),
     vertical: {
       segment: e.segment,
       identityKey: e.identity.key,
