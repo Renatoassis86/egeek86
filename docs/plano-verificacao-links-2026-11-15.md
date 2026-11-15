@@ -85,3 +85,18 @@ Por que a EGGHOME aparecia a R$ 19.899,10 (investigado): o vendedor tem anúncio
 - **27 canal**: consulta do escopo `canal` roda a cada 5 min (era todo minuto); índice `group_messages (offer_id, created_at)` na 0058. Medida antes: ~0,5 a 0,8 s.
 - **Filler**: 3 catálogos por minuto no cron (era 1).
 - **29 Procedimento para ligar `CONFIRMACAO_ESTRITA_CANAL_ESCOPO=bambu` em produção**: (1) medir a cobertura das ofertas Bambu ML com veredito ok recente (<= 6 h, regra 2) pelo medidor ou por `metricasIntegridade`; (2) só com cobertura >= 90%: `vercel env add CONFIRMACAO_ESTRITA_CANAL_ESCOPO production` com o valor `bambu` e `vercel redeploy <url> --target production`; (3) avisar o dono de que o canal fica mais rígido para as Bambu (oferta sem veredito ok sai da fila até ser auditada); (4) reverter removendo a variável. **Não foi ligada.**
+
+## Tempo do cron `group-messages` (regressão de 2026-11-15, 23:30Z) - medição por fase
+Medido em `collector_runs` job `group-messages-fases` (nova linha por invocação) e no meta de `group-messages`.
+
+| Fase | Antes (23:31 a 23:34Z, tudo na mesma invocação) | Depois da separação (23:38 a 23:40Z) |
+|---|---|---|
+| ciclo de envio (pick + facts + detect + persistência) | 28 a 54 s (pick 0,4 a 6,3; facts 2,4 a 11; detect 5,7 a 24) | 21 a 24 s (pick 0,4 a 1,6; facts 2,4; detect 5,7 a 7,1) |
+| frete e prazo (#118) | até 15 s | ~13 s (agora no máximo 8 s e só se restar >= 7 s até o teto) |
+| agente de cupons | 0,01 a 7 s | 0,01 a 7 s |
+| painel/lista do privado | 0,09 s | 0,09 s |
+| auditoria de links | pulada (sem tempo) | 6,4 a 7,8 s (invocação própria) |
+| preenchimento de anúncio (2 catálogos) | pulado | 1,6 s |
+| renovação da Shopee | pulada | 0,03 s |
+
+Conclusão: o que mais consumia tempo era o próprio ciclo de envio (carga do banco e fila de 11 mil mensagens) somado ao frete/prazo; as fases novas da integridade eram pequenas, mas só rodavam depois delas e morriam de fome. Mudanças: (1) integridade em invocação própria `?fase=integridade` (mesma rota, entrada própria em `vercel.json`, trava `group-messages:integridade`, orçamento ~42 s); (2) teto total de 40 s na invocação de envio, ordem fixa e mínimo por fase; (3) frete/prazo limitado a 8 s.
