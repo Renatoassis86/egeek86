@@ -11,6 +11,7 @@ import {
   buildQueryFor, judgeGame, judgeGeneric, parseBrl, prepareGame, prepareGeneric,
   type AmzCand, type MasterIdentity, type Verdict,
 } from '@/lib/affiliate/amazon-identity';
+import { posicaoPrioridade3d } from '@/lib/messaging/prioridade-3d';
 import { recordPriceSnapshot } from './record-price-snapshot';
 import { enfileirarDuvidaAmazon } from './amazon-fila';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
@@ -56,7 +57,7 @@ export function masterFromRow(r: QRow): MasterIdentity | null {
 /** Games: como sempre (sem 'review'); demais departamentos: SÓ porteiro aprovado (por inclusão). */
 const eligibleSql = (): SQL => sql`((m.vertical = 'games' AND (m.attributes->'catalogGate'->>'verdict') IS DISTINCT FROM 'review') OR (m.vertical <> 'games' AND (${masterAprovadoSql('m')})))`;
 
-function baseCte(mode: QueueMode, vertical?: Vertical): SQL {
+function baseCte(mode: QueueMode, vertical?: Vertical, excluir: readonly string[] = []): SQL {
   const cooldown = sql.raw(String(discoverCooldownHours()));
   const modeFilter = mode === 'refresh' ? sql`n_amz > 0` : mode === 'discover'
     ? sql`n_amz = 0 AND (scan_at IS NULL OR scan_at < now() - (${cooldown} * interval '1 hour'))`
@@ -64,6 +65,7 @@ function baseCte(mode: QueueMode, vertical?: Vertical): SQL {
   // QUENTES primeiro na atualização: master com oferta da Amazon que gerou candidato de mensagem nas últimas 6 h (a regra de envio exige preço confirmado em até 40 min).
   const orderBy = mode === 'refresh' ? sql`hot DESC, amz_checked ASC NULLS FIRST, id` : mode === 'discover' ? sql`scan_at ASC NULLS FIRST, n_other DESC, id` : sql`n_other DESC, id`;
   const only = vertical ? sql`AND m.vertical = ${vertical}` : sql``;
+  const fora = excluir.length ? sql`AND m.id NOT IN (${sql.join(excluir.map((id) => sql`${id}::uuid`), sql`, `)})` : sql``;
   return sql`
     WITH base AS (
       SELECT m.id, m.vertical, m.name, m.game_platform_gen AS gen, m.gtin, m.mpn, m.manufacturer, b.name AS brand_name,
@@ -77,47 +79,86 @@ function baseCte(mode: QueueMode, vertical?: Vertical): SQL {
       LEFT JOIN brands b ON b.id = m.brand_id
       JOIN affiliate_offers o ON o.master_product_id = m.id AND o.status = 'active' AND o.quarantined_at IS NULL
       JOIN affiliate_networks nn ON nn.id = o.network_id
-      WHERE ${eligibleSql()} ${only}
+      WHERE ${eligibleSql()} ${only} ${fora}
       GROUP BY m.id, b.name
     ), filtered AS (SELECT * FROM base WHERE ${modeFilter}),
     ranked AS (SELECT f.*, row_number() OVER (PARTITION BY f.vertical ORDER BY ${orderBy}) AS rn FROM filtered f)`;
 }
 
-async function countMode(mode: QueueMode, vertical?: Vertical): Promise<number> {
-  const r = await db.execute<{ n: number }>(sql`${baseCte(mode, vertical)} SELECT count(*)::int AS n FROM ranked`);
+async function countMode(mode: QueueMode, vertical?: Vertical, excluir: readonly string[] = []): Promise<number> {
+  const r = await db.execute<{ n: number }>(sql`${baseCte(mode, vertical, excluir)} SELECT count(*)::int AS n FROM ranked`);
   return Number(r[0]?.n ?? 0);
+}
+
+/**
+ * CABEÇA PRIORITÁRIA (dono, 2026-11-15, #59/#111): as impressoras 3D prioritárias (ordem fixa, SEMPRE COMBO PRIMEIRO: P2S Combo, P1S Combo,
+ * A1 Combo, A1 Mini Combo; depois P2S, P1S, A1, A1 Mini; Kobra por último) abrem as filas de ATUALIZAÇÃO e de DESCOBERTA, antes do rodízio
+ * por departamento, e IGNORAM a carência de 72 h da descoberta (a busca é refeita a cada ciclo: 8 a 12 buscas). Não é barreira: só ordem e
+ * cobertura. O laço baixa a fila no começo do ciclo e descarta repetidos (`vistoCiclo`), então o próximo ciclo já abre pelo P2S Combo.
+ * Desligar: AMAZON_PRIO_3D=off (ou GROUP_PRIORIDADE_3D=off, que zera a prioridade 3D inteira).
+ */
+const PRIO_3D_KOBRA_MAX = 6;
+export function prioridade3dAmazonLigada(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.AMAZON_PRIO_3D ?? '').toLowerCase() !== 'off';
+}
+type CabecaItem = AmzQueueItem & { pos: number; nome: string };
+async function cabecaPrioritaria(vertical?: Vertical): Promise<CabecaItem[]> {
+  if ((vertical && vertical !== 'impressao3d') || !prioridade3dAmazonLigada()) return [];
+  const rows = await db.execute<QRow>(sql`
+    SELECT m.id::text AS id, m.name, m.vertical, m.game_platform_gen AS gen, m.gtin, m.mpn, m.manufacturer, b.name AS brand_name,
+           m.attributes->'vertical'->>'segment' AS segment, m.attributes->'vertical'->'catalogAttributes' AS cat
+    FROM master_products m LEFT JOIN brands b ON b.id = m.brand_id
+    WHERE m.vertical = 'impressao3d' AND ${eligibleSql()} AND m.name ~* '(bambu|kobra|anycubic)'
+      AND EXISTS (SELECT 1 FROM affiliate_offers o WHERE o.master_product_id = m.id AND o.status = 'active' AND o.quarantined_at IS NULL)`);
+  const todos: CabecaItem[] = [];
+  for (const r of rows) {
+    const pos = posicaoPrioridade3d('impressao3d', r.name);
+    if (pos > 7 && pos !== 9) continue; // só os 8 modelos do dono e a Kobra; outros Bambu (H2D, X2D, A2L...) seguem o rodízio normal
+    const m = masterFromRow(r);
+    if (m) todos.push({ id: String(r.id), q: buildQueryFor(m), pos, nome: String(r.name) });
+  }
+  todos.sort((a, b) => a.pos - b.pos || a.nome.localeCompare(b.nome) || a.id.localeCompare(b.id));
+  let kobra = 0;
+  return todos.filter((t) => (t.pos === 9 ? ++kobra <= PRIO_3D_KOBRA_MAX : true));
 }
 
 /** Fila do modo, com rodízio proporcional por departamento (posição/peso) e teto de orçamento do ciclo. */
 async function loadQueue(mode: QueueMode, offset: number, n: number, vertical?: Vertical): Promise<AmzQueueItem[]> {
-  const refreshTotal = mode === 'discover' ? await countMode('refresh') : 0;
+  const cabeca = mode === 'queue' ? [] : await cabecaPrioritaria(vertical);
+  const excl = cabeca.map((c) => c.id);
+  const H = cabeca.length;
+  const refreshTotal = mode === 'discover' ? await countMode('refresh', undefined, excl) : 0;
   const cap = capFor(mode, refreshTotal);
   const off = Math.max(0, offset);
-  const lim = Math.min(Math.max(1, n), 200, Math.max(0, cap - off));
-  if (lim <= 0) return [];
+  const lim0 = Math.min(Math.max(1, n), 200);
+  const items: AmzQueueItem[] = cabeca.slice(off, off + lim0).map(({ id, q }) => ({ id, q }));
+  const restOff = Math.max(0, off - H);
+  const lim = Math.min(lim0 - items.length, Math.max(0, cap - restOff));
+  if (lim <= 0) return items;
   const w = sql.raw(weightCaseSql('r', mode));
-  const rows = await db.execute<QRow>(sql`${baseCte(mode, vertical)}
+  const rows = await db.execute<QRow>(sql`${baseCte(mode, vertical, excl)}
     SELECT r.id::text AS id, r.name, r.vertical, r.gen, r.gtin, r.mpn, r.manufacturer, r.brand_name, r.segment, r.cat
-    FROM ranked r ORDER BY (r.rn::float8 / (${w})), r.vertical, r.id OFFSET ${off} LIMIT ${lim}`);
-  const items: AmzQueueItem[] = [];
+    FROM ranked r ORDER BY (r.rn::float8 / (${w})), r.vertical, r.id OFFSET ${restOff} LIMIT ${lim}`);
   for (const r of rows) { const m = masterFromRow(r); if (m) items.push({ id: String(r.id), q: buildQueryFor(m) }); }
   return items;
 }
 
 /** Fila priorizada: masters elegíveis de todas as frentes, com mais ofertas ativas (ML/Shopee) primeiro. */
 export const amazonQueue = (offset: number, n: number, vertical?: Vertical) => loadQueue('queue', offset, n, vertical);
-/** Fila de ATUALIZAÇÃO: masters que JÁ têm oferta ativa da Amazon, da checagem mais antiga para a mais nova. */
+/** Fila de ATUALIZAÇÃO: impressoras 3D prioritárias primeiro (combo antes), depois masters que JÁ têm oferta ativa da Amazon, da checagem mais antiga para a mais nova. */
 export const amazonRefreshQueue = (offset: number, n: number, vertical?: Vertical) => loadQueue('refresh', offset, n, vertical);
-/** Fila de DESCOBERTA: masters elegíveis SEM oferta ativa da Amazon; nunca buscados primeiro, depois o rodízio por busca mais antiga (carência de 72 h). */
+/** Fila de DESCOBERTA: impressoras 3D prioritárias primeiro (sem carência); masters elegíveis SEM oferta ativa da Amazon: nunca buscados primeiro, depois o rodízio por busca mais antiga (carência de 72 h). */
 export const amazonDiscoverQueue = (offset: number, n: number, vertical?: Vertical) => loadQueue('discover', offset, n, vertical);
 
-/** Totais JÁ limitados pelo orçamento do ciclo (o laço pára em `total`). */
+/** Totais JÁ limitados pelo orçamento do ciclo (o laço pára em `total`); incluem a cabeça prioritária. */
 export async function amazonRefreshTotal(vertical?: Vertical): Promise<number> {
-  return Math.min(await countMode('refresh', vertical), capFor('refresh', 0));
+  const ids = (await cabecaPrioritaria(vertical)).map((c) => c.id);
+  return ids.length + Math.min(await countMode('refresh', vertical, ids), capFor('refresh', 0));
 }
 export async function amazonDiscoverTotal(vertical?: Vertical): Promise<number> {
-  const [d, r] = await Promise.all([countMode('discover', vertical), countMode('refresh')]);
-  return Math.min(d, capFor('discover', r));
+  const ids = (await cabecaPrioritaria(vertical)).map((c) => c.id);
+  const [d, r] = await Promise.all([countMode('discover', vertical, ids), countMode('refresh', undefined, ids)]);
+  return ids.length + Math.min(d, capFor('discover', r));
 }
 export async function amazonQueueTotal(vertical?: Vertical): Promise<number> {
   return Math.min(await countMode('queue', vertical), capFor('queue', 0));
@@ -217,7 +258,8 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
     }
 
     const refs = accepted.length || drafts.length ? await getMasterReferencePrices(row.id, '00000000-0000-0000-0000-000000000000') : [];
-    const todo = [...accepted.slice(0, 2).map((x) => ({ ...x, kind: 'active' as const })), ...drafts.slice(0, 2).map((x) => ({ ...x, kind: 'draft' as const }))];
+    const maxAceitos = v === 'impressao3d' ? 4 : 2; // impressora 3D: o mesmo modelo tem várias variantes de tensão/vendedor na Amazon (P2S Combo 110 V, 220 V...)
+    const todo = [...accepted.slice(0, maxAceitos).map((x) => ({ ...x, kind: 'active' as const })), ...drafts.slice(0, 2).map((x) => ({ ...x, kind: 'draft' as const }))];
     for (const a of todo) {
       const low = isImplausiblyLow(a.price, refs), high = isImplausiblyHigh(a.price, refs);
       // R2-12 (dono, 2026-11-14): preço implausível NÃO é descartado: a oferta é registrada e entra em QUARENTENA (quarantined_at), fora de média, selo e vitrines, para revisão.

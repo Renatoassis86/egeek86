@@ -617,8 +617,29 @@ export function judgeGeneric(ctx: GenericCtx, c: AmzCand, opts: JudgeOpts = {}):
   return pre.sponsored ? finishSponsored(v, c, opts) : v;
 }
 
+/**
+ * Impressora 3D Bambu Lab: o título da Amazon escreve o COMBO de outro jeito ("P2SC", "P1SC", "P2S + AMS 2 Pro", "com AMS 2 Pro") e traz
+ * "Gabinete Fechado" como especificação. O portão de escopo trata "AMS" solto e "gabinete" como PEÇA e recusava o aparelho inteiro
+ * (fora_do_nicho:ams / gabinete). Aqui o título é reescrito para a forma canônica (`P2S Combo`, `Fechada`) ANTES do julgamento, só quando
+ * é um anúncio de impressora (diz "impressora") e NÃO é peça "para/compatível com" um modelo. Combo continua SEPARANDO da avulsa
+ * (chave `variante=combo`); tensão (110/127/220 V) não separa (a chave é família + variante). Fora disso devolve o título intacto.
+ */
+export function normalizaTituloImpressora(title: string): string {
+  const f = fold(title);
+  if (!/\bimpressora\b/.test(f)) return title;
+  if (/\b(?:para|pra|compativel(?: com)?)\b[^+]{0,40}\b(?:p1s|p2s|p1p|a1|x1c?|h2[dsc])\b/.test(f)) return title;
+  return title
+    .replace(/\bP([12])SC\b/gi, 'P$1S Combo')
+    .replace(/\s*\+\s*AMS(?:\s*(?:2 Pro|HT|Lite))?(?:\s*\(?\s*Combo\s*\)?)?/gi, ' Combo')
+    .replace(/\bAMS\s*(?:2 Pro|HT)\b/gi, 'Combo')
+    .replace(/\bGabinete\s+Fechado\b/gi, 'Fechada')
+    .replace(/\b(?:bico|nozzle)\s*(?:de\s*)?\d(?:[.,]\d)?\s*mm\b/gi, ' ')
+    .replace(/\btela\s+(?:touch(?:screen)?|sensivel ao toque|sensível ao toque|lcd|colorida)\b/gi, ' ')
+    .replace(/\s+/g, ' ');
+}
+
 function judgeGenericTitle(ctx: GenericCtx, c: AmzCand, price0: number, flex: boolean): Verdict {
-  const title = String(c.t ?? '').slice(0, 300);
+  const title = ctx.i3d?.kind === 'impressora' ? normalizaTituloImpressora(String(c.t ?? '').slice(0, 300)) : String(c.t ?? '').slice(0, 300);
   if (ctx.m.vertical === 'livros') return judgeBook(ctx, c, title, price0);
   const cNorm = norm(title);
   const early = conditionOrPack(ctx, cNorm, title);

@@ -1,7 +1,7 @@
 /**
  * Testes da identidade da coleta assistida da Amazon (sem banco, sem rede). Uso: npx tsx scripts/test-amazon-identidade.ts
  */
-import { consultaImpressoraBambu, judgeGame, judgeGeneric, prepareGame, prepareGeneric, buildQueryFor, type AmzCand, type MasterIdentity } from '../src/lib/affiliate/amazon-identity';
+import { consultaImpressoraBambu, normalizaTituloImpressora, judgeGame, judgeGeneric, prepareGame, prepareGeneric, buildQueryFor, type AmzCand, type MasterIdentity } from '../src/lib/affiliate/amazon-identity';
 import { capFor, cycleMinutes, DEFAULT_CYCLE_BUDGET, REFRESH_WEIGHT, DISCOVER_WEIGHT } from '../src/lib/affiliate/amazon-budget';
 import { VERTICALS } from '../src/lib/catalog/verticais';
 
@@ -109,6 +109,25 @@ check('bambu: kit extrusor nao e impressora', consultaImpressoraBambu({ vertical
 check('bambu: filamento fora', consultaImpressoraBambu({ vertical: 'impressao3d', name: 'Filamento PLA Bambu Lab para impressora A1' }, 'Bambu Lab') === null);
 check('bambu: outra marca segue o fluxo normal', consultaImpressoraBambu({ vertical: 'impressao3d', name: 'Impressora 3D Creality K1 Combo' }, 'Creality') === null);
 check('bambu: so na vertical impressao3d', consultaImpressoraBambu({ vertical: 'tecnologia', name: 'Impressora Bambu Lab P1S' }, 'Bambu Lab') === null);
+
+// --- Impressora Bambu Lab, titulos reais da Amazon (#59, 2026-11-15): P2SC/P1SC, "+ AMS 2 Pro", Gabinete Fechado, Bico 0,4mm; combo separa, tensao nao ---
+const bm = (name: string, model: string) => M({ vertical: 'impressao3d', segment: 'impressora-3d', name, brand: 'Bambu Lab', cat: { BRAND: 'Bambu Lab', MODEL: model } });
+const mP2SC = bm('Impressora 3D Bambu Lab P2S Combo de FDM Automática,', 'P2S Combo'), mP2S = bm('Impressora 3D Bambu Lab P2s', 'P2S');
+const mP1SC = bm('Impressora 3d Bambu Lab P1s Combo', 'P1S-COMBO'), mP1S = bm('Impressora 3d Bambu Lab Fechada P1s', 'P1S');
+const tP2SC = 'Impressora 3D Bambu Lab P2S Combo 110V Cinza com AMS 2 Pro, CoreXY, Volume 256x256x256mm, Gabinete Fechado, Bico 0,4mm';
+check('amazon P2S Combo 110V (B0GP9LBGY7) entra no master P2S Combo', out(mP2SC, cand(tP2SC)).outcome === 'accept', out(mP2SC, cand(tP2SC)));
+check('P2S Combo NAO entra no master P2S avulso (combo separa)', out(mP2S, cand(tP2SC)).outcome === 'reject');
+check('P2S Combo NAO entra no P1S Combo', out(mP1SC, cand(tP2SC)).outcome === 'reject');
+check('P2SC P2S+AMS Combo 220V entra no P2S Combo (tensao nao separa)', out(mP2SC, cand('Bambu Lab Impressora 3D P2SC P2S+AMS Combo 220V')).outcome === 'accept');
+check('P2SC AMS 2 Pro 127V entra no P2S Combo', out(mP2SC, cand('Bambu Lab Impressora 3D P2SC AMS 2 Pro 127V')).outcome === 'accept');
+check('P2S 110V avulsa segue no P2S avulso', out(mP2S, cand('Bambu Lab Impressora 3D P2S 110V')).outcome === 'accept');
+check('P1S+AMS Combo P1SC Bivolt entra no P1S Combo', out(mP1SC, cand('Bambu Lab Impressora 3D P1S+AMS Combo P1SC Bivolt')).outcome === 'accept');
+check('P1S-Combo 127/220V entra no P1S Combo', out(mP1SC, cand('Impressora 3D Bambu Lab P1S-Combo 127/220V')).outcome === 'accept');
+check('P1S Combo NAO entra no P1S avulso', out(mP1S, cand('Bambu Lab Impressora 3D P1S+AMS Combo P1SC Bivolt')).outcome === 'reject');
+check('AMS 2 Pro avulso (acessorio) segue fora', out(mP2SC, cand('Bambu Lab AMS 2 Pro para Impressora 3D P2S')).outcome === 'reject');
+check('AMS 2 Pro avulso sem impressora segue fora', out(mP2S, cand('Bambu Lab AMS 2 Pro Sistema de Multimaterial')).outcome === 'reject');
+check('bico 0,4mm avulso (peca) segue fora', out(mP2S, cand('Bico 0,4mm para Impressora 3D Bambu Lab P2S')).outcome === 'reject');
+check('normaliza: titulo que nao e impressora fica intacto', normalizaTituloImpressora('Bambu Lab AMS 2 Pro') === 'Bambu Lab AMS 2 Pro');
 
 // --- Orçamento do ciclo ---
 check('orçamento: ciclo <= 40 min', cycleMinutes(DEFAULT_CYCLE_BUDGET) <= 40, cycleMinutes(DEFAULT_CYCLE_BUDGET));
