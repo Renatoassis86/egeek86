@@ -26,7 +26,8 @@ export type MotivoConfirmacao =
   | 'confirmacao_velha'
   | 'link_de_outro_anuncio'
   | 'troca_de_anuncio'
-  | 'link_divergente';
+  | 'link_divergente'
+  | 'sem_veredito_ok';
 
 export function confirmacaoLigada(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.CONFIRMACAO_PRECO_MENSAGEM ?? '').trim());
@@ -39,7 +40,9 @@ export const AUDITORIA_VALE_MIN = 360;
 
 export interface FatosConfirmacao {
   /** Último veredito da auditoria do link (a página do link x a oferta). */
-  auditoria?: { verdict: string; checkedAt: Date } | null;
+  auditoria?: { verdict: string; checkedAt: Date; okEm?: Date | null } | null;
+  /** REGRA RÍGIDA (privado do dono, #119): exige veredito `ok` da auditoria nas últimas 6 h; sem veredito ou só erro_leitura = não sai. */
+  estrito?: boolean;
   uso: UsoPreco;
   /** 'mercado-livre' | 'amazon' | 'shopee' | outra (slug da rede). */
   rede: string;
@@ -70,6 +73,7 @@ const NOTA: Record<MotivoConfirmacao, string> = {
   sem_confirmacao: 'preço nunca confirmado na API',
   confirmacao_velha: 'preço sem confirmação recente',
   link_de_outro_anuncio: 'o link leva a outro anúncio, não ao que tem o preço lido',
+  sem_veredito_ok: 'sem veredito ok da auditoria do link nas últimas 6 h (fica na fila para auditar)',
   link_divergente: 'a página do link mostra outro anúncio, outro preço ou anúncio pausado (auditoria de links)',
   troca_de_anuncio: 'o preço lido é de outro anúncio do vendedor (troca de anúncio, não queda)',
 };
@@ -105,6 +109,10 @@ export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito
   const idadeMin = (f.now.getTime() - f.confirmedAt.getTime()) / 60_000;
   if (idadeMin > limite) return falha('confirmacao_velha');
   if (f.auditoria && (VEREDITOS_BLOQUEANTES as readonly string[]).includes(f.auditoria.verdict) && (f.now.getTime() - f.auditoria.checkedAt.getTime()) / 60_000 <= AUDITORIA_VALE_MIN) return falha('link_divergente');
+  if (f.estrito) {
+    const okEm = f.auditoria?.verdict === 'ok' ? f.auditoria.checkedAt : f.auditoria?.okEm ?? null;
+    if (!okEm || (f.now.getTime() - okEm.getTime()) / 60_000 > AUDITORIA_VALE_MIN) return falha('sem_veredito_ok');
+  }
   if (f.linkItemId && f.priceItemId && !mesmoAnuncio(f.linkItemId, f.priceItemId)) return falha('link_de_outro_anuncio');
   return { ok: true };
 }
@@ -164,4 +172,9 @@ export function decidirTrocaDeAnuncio(e: EntradaTroca): 'gravar' | 'ignorar_irma
   if (e.precoNovoCents < e.precoAtualCents) return 'gravar';
   const idadeMin = e.confirmadoEm ? (e.now.getTime() - e.confirmadoEm.getTime()) / 60_000 : Infinity;
   return idadeMin <= TROCA_JANELA_MIN ? 'ignorar_irmao' : 'gravar';
+}
+
+/** Flag RIGIDO_PRIVADO: regra rígida no privado do dono, ligada por padrão; '0'/'off' desliga. */
+export function rigidoPrivadoLigado(env: Record<string, string | undefined> = process.env): boolean {
+  return !/^(0|off|false)$/i.test((env.RIGIDO_PRIVADO ?? '').trim());
 }

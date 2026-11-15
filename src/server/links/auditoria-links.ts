@@ -37,13 +37,17 @@ export interface AlvoAuditoria {
   precoCents: number;
 }
 
-export type Escopo = 'combos' | 'impressoras' | 'resto';
+export type Escopo = 'privado' | 'canal' | 'combos' | 'impressoras' | 'resto';
+/** Masters do privado do dono (P2S Combo e P1S Combo): auditados primeiro. Mantido igual a MASTERS_PRIVADO. */
+const MASTERS_PRIVADO_IDS = ['2e4a5bd1-27d7-42c6-bc62-dfa1d5eace45', '23bfa05b-053e-46cc-8308-7d4332fadf18'];
 const COMBO = 'P2S.*Combo|P1S.*Combo|A1 Combo';
 
 /** Ofertas ML ativas com link a auditar, as sem auditoria ou com a mais velha primeiro. `ateMin`: reaudita só as auditadas há mais que isto. */
 export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: number): Promise<AlvoAuditoria[]> {
   const filtro =
-    escopo === 'combos' ? sql`o.vertical = 'impressao3d' AND m.name ~* ${COMBO}`
+    escopo === 'privado' ? sql`o.affiliate_url LIKE 'https://meli.la/%' AND o.master_product_id::text IN (${sql.join(MASTERS_PRIVADO_IDS.map((i) => sql`${i}`), sql`, `)}) AND NOT EXISTS (SELECT 1 FROM offer_link_audit k WHERE k.offer_id = o.id AND k.verdict = 'ok' AND k.checked_at > now() - make_interval(mins => ${ateMin}))`
+    : escopo === 'canal' ? sql`o.affiliate_url LIKE 'https://meli.la/%' AND o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND status IN ('enviada','proposta','proposta_auto') AND offer_id IS NOT NULL) AND NOT EXISTS (SELECT 1 FROM offer_link_audit k WHERE k.offer_id = o.id AND k.verdict = 'ok' AND k.checked_at > now() - make_interval(mins => ${ateMin}))`
+    : escopo === 'combos' ? sql`o.vertical = 'impressao3d' AND m.name ~* ${COMBO}`
     : escopo === 'impressoras' ? sql`o.vertical = 'impressao3d' AND NOT (m.name ~* ${COMBO})`
     : sql`o.vertical <> 'impressao3d'`;
   const rows = (await db.execute(sql`
@@ -99,14 +103,16 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
 }
 
 /** Último veredito de cada oferta (porteiro de mensagem). Sem linha = nunca auditada. Tolera tabela ausente. */
-export async function ultimosVereditos(offerIds: string[]): Promise<Map<string, { verdict: string; checkedAt: Date }>> {
-  const m = new Map<string, { verdict: string; checkedAt: Date }>();
+export async function ultimosVereditos(offerIds: string[]): Promise<Map<string, { verdict: string; checkedAt: Date; okEm: Date | null }>> {
+  const m = new Map<string, { verdict: string; checkedAt: Date; okEm: Date | null }>();
   if (!offerIds.length) return m;
   try {
     const rows = (await db.execute(sql`
-      SELECT DISTINCT ON (offer_id) offer_id::text AS id, verdict, checked_at FROM offer_link_audit
-      WHERE offer_id IN (${sql.join(offerIds.map((i) => sql`${i}::uuid`), sql`, `)}) ORDER BY offer_id, checked_at DESC`)) as unknown as { id: string; verdict: string; checked_at: Date | string }[];
-    for (const r of rows) m.set(r.id, { verdict: r.verdict, checkedAt: new Date(r.checked_at) });
+      SELECT DISTINCT ON (offer_id) offer_id::text AS id, verdict, checked_at,
+        (SELECT max(k.checked_at) FROM offer_link_audit k WHERE k.offer_id = a.offer_id AND k.verdict = 'ok') AS ok_em
+      FROM offer_link_audit a
+      WHERE offer_id IN (${sql.join(offerIds.map((i) => sql`${i}::uuid`), sql`, `)}) ORDER BY offer_id, checked_at DESC`)) as unknown as { id: string; verdict: string; checked_at: Date | string; ok_em: Date | string | null }[];
+    for (const r of rows) m.set(r.id, { verdict: r.verdict, checkedAt: new Date(r.checked_at), okEm: r.ok_em ? new Date(r.ok_em) : null });
   } catch { /* tabela ausente: sem porteiro de auditoria */ }
   return m;
 }
@@ -129,7 +135,7 @@ export async function cicloAuditoriaLinks(opts: { budgetMs: number }): Promise<R
   try {
     const res: Record<string, unknown> = {};
     let restante = opts.budgetMs;
-    for (const [escopo, ate, lim] of [['combos', 30, 12], ['impressoras', 360, 12], ['resto', 1440, 12]] as const) {
+    for (const [escopo, ate, lim] of [['privado', 300, 12], ['canal', 300, 12], ['combos', 30, 12], ['impressoras', 360, 12], ['resto', 1440, 12]] as const) {
       if (restante < 5000) break;
       const alvos = await carregarAlvos(escopo, lim, ate);
       if (!alvos.length) continue;

@@ -32,3 +32,8 @@ Por que a EGGHOME aparecia a R$ 19.899,10 (investigado): o vendedor tem anúncio
 - Variação (voltagem 127V/220V, cor) não vem na página lida nem na API de catálogo: o veredito compara o anúncio e o preço do cartão, não a variação escolhida.
 - O cartão da página pode mostrar o preço de lista do anúncio, sem cupom, Pix ou cartão.
 - Leitura de produção (Vercel) do `meli.la` não foi testada: se o ML responder 429/captcha ao IP do servidor, o ciclo para e registra `parou` (sem silenciar mensagens).
+
+## Entrega 1 (ordem do dono: regra rígida no privado) - 2026-11-15
+- **Privado (lista de 10 min e cards de queda de P2S/P1S Combo)**: só entra oferta com último veredito `ok` em `offer_link_audit` nas últimas 6 h (um `erro_leitura` passageiro não derruba se houve `ok` nas 6 h). Queda: também confirmação de preço <= 60 min. Sem veredito ou só `erro_leitura` = não sai. Flag `RIGIDO_PRIVADO` (ligada; `0` desliga). Efeito conhecido: oferta com URL direta `produto.mercadolivre.com.br` não pode ser lida (a página do item cai em verificação de conta/captcha neste IP) e fica fora do privado até o gerador de links produzir o `meli.la`.
+- **Ciclo de auditoria** do cron agora audita primeiro as ofertas do privado, depois as ofertas que saíram ou foram propostas em mensagem de grupo/canal nas últimas 24 h, depois combos, impressoras e o resto.
+- Canal e grupos: regra atual mantida (confirmação + veredito ruim bloqueia); a regra rígida só chega lá quando a cobertura das ofertas de mensagem estiver completa.

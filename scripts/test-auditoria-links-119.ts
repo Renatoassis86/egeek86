@@ -38,5 +38,15 @@ ok(avaliarConfirmacao({ ...base, auditoria: { verdict: 'erro_leitura', checkedAt
 ok(avaliarConfirmacao({ ...base, auditoria: { verdict: 'pausado', checkedAt: new Date(now.getTime() - 7 * 3600_000) } }).ok, 'auditoria velha (> 6 h) não vale');
 ok(avaliarConfirmacao({ ...base, auditoria: null }).ok, 'nunca auditada passa');
 
+// Regra rígida do privado
+const rig = { ...base, estrito: true };
+ok(avaliarConfirmacao({ ...rig, auditoria: null }).motivo === 'sem_veredito_ok', 'rígido: sem veredito não sai');
+ok(avaliarConfirmacao({ ...rig, auditoria: { verdict: 'erro_leitura', checkedAt: new Date(now.getTime() - 600_000), okEm: null } }).motivo === 'sem_veredito_ok', 'rígido: só erro_leitura não sai');
+ok(avaliarConfirmacao({ ...rig, auditoria: { verdict: 'ok', checkedAt: new Date(now.getTime() - 3600_000) } }).ok, 'rígido: ok recente sai');
+ok(avaliarConfirmacao({ ...rig, auditoria: { verdict: 'ok', checkedAt: new Date(now.getTime() - 7 * 3600_000) } }).motivo === 'sem_veredito_ok', 'rígido: ok de 7 h não sai');
+ok(avaliarConfirmacao({ ...rig, auditoria: { verdict: 'erro_leitura', checkedAt: new Date(now.getTime() - 600_000), okEm: new Date(now.getTime() - 3 * 3600_000) } }).ok, 'rígido: erro transitório com ok de 3 h passa');
+ok(avaliarConfirmacao({ ...rig, uso: 'queda', confirmedAt: new Date(now.getTime() - 61 * 60_000), auditoria: { verdict: 'ok', checkedAt: now } }).motivo === 'confirmacao_velha', 'rígido: queda exige preço confirmado <= 60 min também');
+ok(avaliarConfirmacao({ ...rig, auditoria: { verdict: 'pausado', checkedAt: now, okEm: new Date(now.getTime() - 3600_000) } }).motivo === 'link_divergente', 'rígido: pausado depois de ok barra');
+
 console.log(fails ? `${fails} falha(s)` : 'OK: auditoria de links #119');
 process.exit(fails ? 1 : 0);
