@@ -87,7 +87,7 @@ export default async function DepartamentoPage({
         </Text>
         <Text as="h1" variant="display-md" className="font-black tracking-tight">{dept.rotulo}</Text>
         <Text variant="body-md" color="secondary">
-          {dept.descricao} Preços do Mercado Livre e da Shopee, só de anúncios com link ativo e verificados nas últimas horas.
+          {dept.descricao}
         </Text>
       </header>
 

@@ -82,9 +82,6 @@ export function GuiaImpressoras3d({ itens }: { itens: ItemGuiaComRegistro[] }) {
       <div className="mb-4 flex max-w-[70ch] flex-col gap-1 border-l-2 border-[var(--color-accent-primary)] pl-4">
         <Text variant="label" color="tertiary">Espaço Geek Plus · Guia</Text>
         <Text as="h2" id="guia-3d-titulo" variant="heading-lg" className="font-black tracking-tight">Guia das impressoras 3D Bambu Lab</Text>
-        <Text variant="body-sm" color="secondary">
-          Sempre a versão com combo primeiro, com a sem combo logo abaixo. O menor preço de cada modelo entre o Mercado Livre, a Amazon e a Shopee, só de anúncios novos confirmados nas últimas 24 horas.
-        </Text>
       </div>
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {principais.map((i, idx) => (
