@@ -26,7 +26,6 @@ import { resumoSaude, saudeAgulha } from '@/server/coupons/agulha-health';
 import { vigiaRedesCupons } from '@/server/coupons/heartbeat-store';
 import { alertarCuponsImpressoras } from '@/server/coupons/aviso-impressoras';
 import { monitorarPrecoImpressoras } from '@/server/coupons/monitor-preco-impressoras';
-import { atualizarPainelP2s } from '@/server/messaging/painel-p2s';
 
 /**
  * GUARDIÃO DE CUPONS (Agente de Cupons). A cada ~5 min (passo do cron group-messages): para cada cupom que JÁ DIVULGAMOS confere se
@@ -327,8 +326,6 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
     const avisoImp = await alertarCuponsImpressoras(started).catch(() => null);
     // Monitor de preco das impressoras 3D (#114; PRINTER_PRICE_ALERT): aviso PRIVADO de queda; consulta unica com limite de 8 s; nunca derruba o ciclo.
     const avisoPreco = await monitorarPrecoImpressoras(started).catch(() => null);
-    // Painel vivo do P2S Combo no canal 3D (#117; P2S_PAINEL_CANAL, padrao desligada): edita 1 mensagem a cada 30 min; limite de 12 s; nunca derruba o ciclo.
-    const painel = await atualizarPainelP2s(started).catch(() => null);
     const rel = await relatorioCupons(started);
     // Cobertura na agulha: histórico a cada ~30 min (consulta mais pesada que o resto do ciclo).
     const saude = started.getUTCMinutes() % 30 < 5 ? await saudeAgulha().then(resumoSaude).catch(() => ({})) : {};
@@ -338,7 +335,7 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
       vigiaAvisados: vigia?.avisados ?? [], vigiaRedesSemLeitura: vigia?.decisoes.filter((d) => d.acao === 'avisar' || d.acao === 'aviso_recente').map((d) => d.rede) ?? [],
       baixaVencidosPorPrazo: baixa?.vencidosPorPrazo ?? null, baixaSemConferencia: baixa?.rebaixadosSemConferencia ?? null,
       avisoImpressorasEnviaria: avisoImp?.enviaria ?? null, avisoImpressorasEnviados: avisoImp?.enviados ?? null,
-      avisoPrecoEnviaria: avisoPreco?.enviaria ?? null, avisoPrecoEnviados: avisoPreco?.enviados ?? null, painelP2s: painel && painel.acao !== 'desligado' && painel.acao !== 'recente' ? painel.acao : null, ...saude,
+      avisoPrecoEnviaria: avisoPreco?.enviaria ?? null, avisoPrecoEnviados: avisoPreco?.enviados ?? null, ...saude,
     });
     await gravarCicloAgente(meta, started, res.errors === 0);
     return meta;
