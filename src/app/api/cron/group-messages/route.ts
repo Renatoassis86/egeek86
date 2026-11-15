@@ -6,6 +6,7 @@ import { runGroupMessagesCycle } from '@/server/messaging/group-auto';
 import { renderHistoryCard } from '@/server/messaging/price-card';
 import { consultarCupom, registrarDivulgacao } from '@/server/messaging/agente-cupons';
 import { cicloAgenteCupons } from '@/server/messaging/guardiao-cupons';
+import { atualizarPaineisImpressoras } from '@/server/messaging/painel-impressoras';
 import { refreshShopeeCampaigns } from '@/server/collector/shopee-campaigns';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
 import { discoverStoreChats } from '@/server/stores-discover';
@@ -89,5 +90,8 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
   // acontece nos minutos 00 a 20 de cada hora (crons empilhados) e deixava o agente de cupons até 15 min sem rodar (vigia 2026-11-15).
   const restanteMs = maxDuration * 1000 - (Date.now() - startedAt) - 5_000;
   const agente = restanteMs >= 6_000 ? await cicloAgenteCupons({ budgetMs: Math.min(12_000, restanteMs - 1_000) }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
-  return NextResponse.json({ ...summary, agenteCupons: agente, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
+  // Painéis vivos das impressoras 3D (#117; PAINEL_IMPRESSORAS, padrão desligada): mensagens fixas editadas, rodada a cada 10 min com cursor; usa só o tempo que sobra.
+  const sobraMs = maxDuration * 1000 - (Date.now() - startedAt) - 4_000;
+  const paineis = sobraMs >= 6_000 ? await atualizarPaineisImpressoras(new Date(), { budgetMs: sobraMs - 1_500 }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  return NextResponse.json({ ...summary, agenteCupons: agente, paineisImpressoras: paineis, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
 }
