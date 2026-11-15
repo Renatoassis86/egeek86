@@ -46,7 +46,7 @@ export const OFERTA_CLICAVEL_MAX_HORAS_AMAZON = 24;
 export const REDES_DEPARTAMENTO = ['mercado-livre', 'shopee', 'amazon'] as const;
 
 export const DEPARTAMENTOS: readonly Departamento[] = [
-  { slug: 'tecnologia', rotulo: 'Tecnologia', descricao: 'Hardware, notebooks, celulares, tablets, armazenamento, impressoras e periféricos.', tipoCartao: 'tecnologia', flag: 'dept_tecnologia' },
+  { slug: 'tecnologia', rotulo: 'Tecnologia', descricao: 'Hardware, notebooks, celulares, tablets, armazenamento, impressoras, periféricos, instrumentos de medição, prototipagem e fabricação digital.', tipoCartao: 'tecnologia', flag: 'dept_tecnologia' },
   { slug: 'eletroeletronicos', rotulo: 'Eletrônicos', descricao: 'TVs, áudio e vídeo.', tipoCartao: 'eletro', flag: 'dept_eletroeletronicos' },
   { slug: 'livros', rotulo: 'Livros', descricao: 'Livros identificados por ISBN.', tipoCartao: 'livro', flag: 'dept_livros' },
   { slug: 'eletrodomesticos', rotulo: 'Casa', descricao: 'Eletrodomésticos para a casa.', tipoCartao: 'eletro', flag: 'dept_eletrodomesticos' },

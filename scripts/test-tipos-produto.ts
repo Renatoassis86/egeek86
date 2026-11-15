@@ -103,6 +103,25 @@ check('tipo não-string é recusado', normalizarTipo('esporte', ['bola']) === nu
 check('outros é aceito', normalizarTipo('esporte', 'outros') === 'outros');
 check('rótulo de tipo', rotuloTipo('eletroeletronicos', 'smart-tv') === 'Smart TV');
 
+// [FIXTURE] Ciência e tecnologia industrial (#60)
+eq('tecnologia', 'Microscópio Biológico Binocular 1600x', 'instrumentos-opticos');
+eq('tecnologia', 'Telescópio Refrator 70mm com Tripé', 'instrumentos-opticos');
+eq('tecnologia', 'Multímetro Digital True RMS', 'medicao-eletrica');
+eq('tecnologia', 'Fonte de Bancada Ajustável 30V 10A', 'medicao-eletrica');
+eq('tecnologia', 'Osciloscópio Digital 2 Canais 100MHz', 'medicao-eletrica');
+eq('tecnologia', 'Paquímetro Digital 150mm Inox', 'medicao-precisao');
+eq('tecnologia', 'Termômetro Infravermelho Laser Industrial', 'medicao-precisao');
+eq('tecnologia', 'Arduino Uno R3 Original', 'prototipagem');
+eq('tecnologia', 'Raspberry Pi 5 8GB', 'prototipagem');
+eq('tecnologia', 'Estação de Solda Digital 936 com Ar Quente', 'estacao-solda');
+eq('tecnologia', 'Scanner 3D Portátil Revopoint', 'fabricacao-digital');
+eq('tecnologia', 'Gravadora a Laser 40W Atomstack', 'fabricacao-digital');
+eq('tecnologia', 'Máquina CNC 3018 Router', 'fabricacao-digital');
+eq('tecnologia', 'Cricut Maker 3 Plotter de Recorte', 'fabricacao-digital');
+eq('tecnologia', 'NAS Synology 2 baias DS224+', 'nas-servidor');
+eq('tecnologia', 'Scanner de Mesa Epson A4', 'scanner');
+eq('tecnologia', 'Fonte ATX 750W 80 Plus Gold', 'placa-mae-gabinete');
+eq('tecnologia', 'Smartphone Galaxy A55 128GB nas cores preto', 'celular');
 // Integridade: slugs únicos por departamento, nenhum chamado 'outros'
 for (const [d, defs] of Object.entries(TIPOS_POR_DEPT)) {
   const slugs = defs.map((x) => x.slug);

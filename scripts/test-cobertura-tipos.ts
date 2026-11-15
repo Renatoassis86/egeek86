@@ -6,6 +6,7 @@
 import { SEGMENTS, segmentByKey, segmentsOf, domainMatches, type NonGamesVertical } from '../src/lib/catalog/vertical/config';
 import { MIN_TERMOS_COBERTO, TIPOS_ESPERADOS, existiaAntes, situacaoDepois } from '../src/lib/catalog/vertical/cobertura-tipos';
 import { NOVOS_SEGMENTOS_TIPOS, PROBE_CALLS_PER_RUN } from '../src/lib/catalog/vertical/config-tipos';
+import { NOVOS_SEGMENTOS_CIENCIA } from '../src/lib/catalog/vertical/config-ciencia';
 import { hasScopeLexicon, scopeIssue } from '../src/lib/catalog/vertical/scope';
 import { evaluateIdentity } from '../src/lib/catalog/vertical/identity';
 import { createMlClient } from '../src/lib/catalog/vertical/ml-api';
@@ -53,7 +54,7 @@ async function main() {
   check('Livros cobre generos', has('livros', /g.nero/i));
 
   // Causas validas e ausencias que dependem de outro agente (porteiro) ou do dono
-  check('scanner 3D e caneta 3D ausentes por causa do porteiro (nao por falta de semente)', TIPOS_ESPERADOS.filter((t) => /Scanner 3D|Caneta 3D/.test(t.tipo)).every((t) => t.causa === 'porteiro'));
+  check('scanner 3D e caneta 3D ausentes por causa do porteiro (nao por falta de semente)', TIPOS_ESPERADOS.filter((t) => t.loja === 'impressao3d' && /Scanner 3D|Caneta 3D/.test(t.tipo)).every((t) => t.causa === 'porteiro'));
   check('suplementos, camping, pesca, trilha, chuveiro, aquecedor de agua, mesa/rack gamer e ferramentas 3D entraram (aprovacao do dono, 2026-11-12)', ['suplemento', 'camping', 'pesca', 'trilha', 'chuveiro-eletrico', 'aquecedor-de-agua', 'mesa-gamer', 'rack-gamer', 'ferramenta-impressao-3d'].every((k) => TIPOS_ESPERADOS.some((t) => t.segmento === k) && !!segmentByKey(k)));
 
   // situacao calculada da configuracao
@@ -69,7 +70,7 @@ async function main() {
   const keys = SEGMENTS.map((s) => s.key);
   check('chaves de segmento unicas', new Set(keys).size === keys.length);
   const rankNovos = NOVOS_SEGMENTOS_TIPOS.map((s) => s.seedRank);
-  check('seedRank dos tipos novos unico e depois dos antigos', new Set(rankNovos).size === rankNovos.length && Math.min(...rankNovos) > Math.max(...SEGMENTS.filter((s) => !NOVOS_SEGMENTOS_TIPOS.includes(s)).map((s) => s.seedRank)));
+  check('seedRank dos tipos novos unico e depois dos antigos', new Set(rankNovos).size === rankNovos.length && Math.min(...rankNovos) > Math.max(...SEGMENTS.filter((s) => !NOVOS_SEGMENTOS_TIPOS.includes(s) && !NOVOS_SEGMENTOS_CIENCIA.includes(s)).map((s) => s.seedRank)));
   for (const s of NOVOS_SEGMENTOS_TIPOS) {
     check(`${s.key}: dominio nao confirmado => sem searchDomain (busca sem filtro) e flag ligada`, s.domainUnconfirmed === true && !s.searchDomain);
     check(`${s.key}: orcamento proprio por execucao (${s.callsPerRun})`, s.callsPerRun === PROBE_CALLS_PER_RUN && callsPerRunOf(s) <= DEFAULT_CALLS_PER_TYPE_RUN);

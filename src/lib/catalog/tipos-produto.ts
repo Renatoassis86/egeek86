@@ -77,6 +77,15 @@ const CASA: TipoDef[] = [
 ];
 
 const TECNOLOGIA: TipoDef[] = [
+  // Ciência e tecnologia industrial (#60, 2026-11-15). Vêm ANTES dos tipos gerais: em empate de posição vence a ordem da lista
+  // (ex.: "Scanner 3D" não é Scanner de documentos; "Fonte de bancada" não é Placa-mãe, fonte e gabinete).
+  { slug: 'instrumentos-opticos', rotulo: 'Microscópios, telescópios e binóculos', re: r(' (microscopio|microscopios|estereomicroscopio|telescopio|telescopios|binoculo|binoculos|monoculo) ') },
+  { slug: 'medicao-eletrica', rotulo: 'Multímetros, osciloscópios e fontes de bancada', re: r(' (multimetro|multimetros|osciloscopio|osciloscopios|analisador logico|alicate amperimetro|alicate multimetro|amperimetro|voltimetro|fonte de bancada|fonte ajustavel|fonte regulavel|fonte variavel) ') },
+  { slug: 'medicao-precisao', rotulo: 'Paquímetros, balanças de precisão e medidores', re: r(' (paquimetro|paquimetros|micrometro|micrometros|relogio comparador|balanca de precisao|balanca analitica|balanca de laboratorio|termometro infravermelho|termometro laser|pirometro|camera termica|camera termografica|trena a laser|trena laser|medidor de distancia a laser|telemetro) ') },
+  { slug: 'prototipagem', rotulo: 'Arduino, Raspberry Pi, ESP32 e prototipagem', re: r(' (arduino|raspberry|esp32|esp8266|jetson|stm32|micro bit|microbit|beaglebone|placa de desenvolvimento|microcontrolador) ') },
+  { slug: 'estacao-solda', rotulo: 'Estações de solda e retrabalho', re: r(' (estacao de solda|estacao de retrabalho|estacao retrabalho|estacao de ar quente|ferro de solda digital) ') },
+  { slug: 'fabricacao-digital', rotulo: 'Scanners 3D, CNC, laser e plotters de recorte', re: r(' (scanner 3d|escaner 3d|digitalizador 3d|cnc|fresadora cnc|gravadora a laser|gravador a laser|gravadora laser|cortadora a laser|cortadora laser|maquina a laser|laser engraver|plotter de recorte|plotter de corte|cortadora de vinil|cricut|silhouette cameo|silhouette portrait|scanncut) ') },
+  { slug: 'nas-servidor', rotulo: 'NAS e servidores', re: r(' (nas (de rede|[0-9] baias?|[0-9] bay|synology|qnap|ugreen|asustor|terramaster)|servidor|servidores|synology|qnap|diskstation) ') },
   { slug: 'placa-de-video', rotulo: 'Placas de vídeo', re: r(' (placa de video|placa video|gpu|rtx|gtx|radeon rx|geforce) ') },
   { slug: 'ssd-hd', rotulo: 'SSD e HD', re: r(' (ssd|hdd|nvme|disco rigido|disco solido|hd externo|hd interno|hd sata) ') },
   { slug: 'notebook', rotulo: 'Notebooks', re: r(' (notebook|laptop|macbook|ultrabook|chromebook) ') },
