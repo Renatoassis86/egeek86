@@ -3,6 +3,7 @@ import type { Vertical } from '@/lib/catalog/verticais';
 import { combineTerms, dedupeTerms } from './seed-utils';
 import { NOVOS_SEGMENTOS, REQUIRE_BRAND_KEYS, SEARCH_DOMAIN_EXTRAS, TERMOS_EXTRAS } from './config-ampliacao';
 import { NOVOS_SEGMENTOS_TIPOS, TERMOS_EXTRAS_TIPOS } from './config-tipos';
+import { NOVOS_SEGMENTOS_CIENCIA } from './config-ciencia';
 
 /**
  * CONFIGURAÇÃO POR DEPARTAMENTO (vertical) E SEGMENTO. ADR 0008 itens 4 e 5; ata 2026-11-08, Fase 2.
@@ -276,7 +277,10 @@ export const SEGMENTS: SegmentConfig[] = [
     domains: [/3D_PRINTERS$/],
     searchDomain: 'MLB-3D_PRINTERS',
     terms: dedupeTerms([
-      'impressora 3d bambu lab a1', 'impressora 3d bambu lab p1s', 'impressora 3d creality ender', 'impressora 3d creality k1',
+      // Tarefa #59 (dono, 2026-11-15): P1S e P2S em PRIORIDADE; cada variante (solo/Combo) e cada A1 (A1/A1 Mini) tem termo proprio para achar TODOS os catalogos do ML.
+      'impressora 3d bambu lab p2s', 'impressora 3d bambu lab p2s combo', 'impressora 3d bambu lab p1s', 'impressora 3d bambu lab p1s combo',
+      'impressora 3d bambu lab a1', 'impressora 3d bambu lab a1 combo', 'impressora 3d bambu lab a1 mini', 'impressora 3d bambu lab a1 mini combo',
+      'impressora bambu lab p2s', 'impressora bambu lab p1s', 'impressora bambu lab a1 mini', 'impressora 3d creality ender', 'impressora 3d creality k1',
       ...combineTerms('impressora 3d', ['fdm', 'resina'], ['creality', 'bambu lab', 'anycubic', 'elegoo', 'flashforge', 'voxelab', 'sovol', 'artillery', 'qidi', 'phrozen']),
       'impressora 3d ender 3 v3', 'impressora 3d anycubic kobra', 'impressora 3d elegoo neptune', 'impressora 3d elegoo centauri carbon', 'impressora 3d bambu lab x1 carbon',
       'impressora 3d resina anycubic photon mono', 'impressora 3d resina elegoo saturn', 'impressora 3d resina elegoo mars', 'impressora 3d corexy', 'impressora 3d multicolor',
@@ -507,7 +511,7 @@ export const SEGMENTS: SegmentConfig[] = [
 ];
 
 // Ampliação 2026-11-11 (config-ampliacao.ts): segmentos novos, termos extras (anexados ao fim) e filtro de marca.
-SEGMENTS.push(...NOVOS_SEGMENTOS, ...NOVOS_SEGMENTOS_TIPOS);
+SEGMENTS.push(...NOVOS_SEGMENTOS, ...NOVOS_SEGMENTOS_TIPOS, ...NOVOS_SEGMENTOS_CIENCIA);
 for (const s of SEGMENTS) {
   const extra = TERMOS_EXTRAS[s.key];
   if (extra?.length) s.terms = dedupeTerms([...s.terms, ...extra]);

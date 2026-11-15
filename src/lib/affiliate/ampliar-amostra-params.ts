@@ -20,8 +20,15 @@ export interface ParametrosRota {
   offset: number;
   maxCalls: number;
   apply: boolean;
+  /** Foco por nome (tarefa #59): palavras que o nome do master precisa conter TODAS (ex.: `bambu impressora`). Vazio = sem foco. */
+  nome: string[];
   /** run_id (collector_runs.id) a desfazer; quando presente a rota faz rollback em vez de coletar. */
   rollback: string | null;
+}
+
+/** Palavras do foco por nome: letras, dígitos e hífen, até 5 palavras de 2 a 20 caracteres. Qualquer outra coisa é descartada (vai para ILIKE parametrizado). */
+export function parseNomeFoco(raw: string | null): string[] {
+  return (raw ?? '').toLowerCase().split(/[\s,+]+/).filter((w) => /^[a-z0-9-]{2,20}$/.test(w)).slice(0, 5);
 }
 
 function inteiro(raw: string | null, padrao: number, min: number, max: number): number | { erro: string } {
@@ -61,6 +68,7 @@ export function parseParametrosRota(get: (nome: string) => string | null): { ok:
       offset: off as number,
       maxCalls: mc as number,
       apply: get('apply') === '1',
+      nome: parseNomeFoco(get('nome')),
       rollback,
     },
   };

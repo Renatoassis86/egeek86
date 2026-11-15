@@ -22,6 +22,7 @@ const MAX_PARES_NA_RESPOSTA = 40;
  *   &limitMasters=30             masters por vertical (padrao 30, maximo 80)
  *   &offset=0                    pula os N primeiros elegiveis (use proximoOffset da resposta anterior)
  *   &maxCalls=200                teto de chamadas a Shopee nesta rodada (padrao 200, maximo 450; tambem limitado pelo teto horario de 3000 deste job)
+ *   &nome=bambu+impressora       foco por nome: so masters cujo nome contem TODAS as palavras (tarefa #59: Bambu Lab A1/P1S/P2S na Shopee)
  *   &apply=1                     GRAVA (sem isso e dry-run); registro de reversao em collector_runs.meta
  *   ?rollback=<run_id>&apply=1   apaga so as ofertas criadas por aquele run (e suas cotacoes); sem apply so conta. Nunca toca masters.
  */
@@ -61,6 +62,7 @@ export async function GET(request: NextRequest) {
       limitMasters: p.limitMasters,
       offset: p.offset,
       maxCalls: p.maxCalls,
+      soNome: p.nome,
       deadlineMs: started + ORCAMENTO_MS,
     });
     const status = r.erroApi && (r.erroApi.kind === 'auth' || r.erroApi.kind === 'access') ? 502 : 200;

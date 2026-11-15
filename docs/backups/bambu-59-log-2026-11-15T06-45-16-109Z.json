@@ -1,0 +1,18 @@
+{
+  "criadoEm": "2026-11-15T06:45:16.112Z",
+  "por": "Tarefa 59 (dono 2026-11-15)",
+  "backup": "bambu-59-2026-11-15T06-45-16-109Z.ndjson",
+  "movidas": [
+    {
+      "oferta": "41997640-3f11-4d6c-8057-cd0920987115",
+      "de": "04804f96-ed95-4fa3-90be-bb818706c0a9",
+      "para": "fafd99c6-0d8a-4c29-8c85-f42876023d5c"
+    }
+  ],
+  "rascunhos": [
+    {
+      "oferta": "982013e5-a5d1-4947-b213-6555d10ed8f9",
+      "statusAntes": "active"
+    }
+  ]
+}

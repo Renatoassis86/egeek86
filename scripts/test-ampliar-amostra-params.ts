@@ -18,6 +18,10 @@ check('lista de verticais sem repeticao', JSON.stringify((P({ vertical: 'livros,
 check('rollback dispensa vertical', (P({ rollback: '42', apply: '1' }) as any).params.rollback === '42');
 check('rollback invalido', (P({ rollback: '4;2' }) as any).erro === 'rollback_invalido');
 
+check('nome: foco por palavras', JSON.stringify((P({ vertical: 'impressao3d', nome: 'bambu impressora' }) as any).params.nome) === '["bambu","impressora"]');
+check('nome: aceita + e descarta lixo', JSON.stringify((P({ vertical: 'impressao3d', nome: "bambu+x';drop" }) as any).params.nome) === '["bambu"]');
+check('nome: ausente = sem foco', (P({ vertical: 'impressao3d' }) as any).params.nome.length === 0);
+
 check('offset: dry-run avanca pelos consumidos', proximoOffset(0, 15, 0, 100) === 15);
 check('offset: continua do offset', proximoOffset(15, 15, 0, 100) === 30);
 check('offset: fim da lista => null', proximoOffset(90, 10, 0, 100) === null);

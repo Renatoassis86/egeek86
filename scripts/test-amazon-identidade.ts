@@ -1,7 +1,7 @@
 /**
  * Testes da identidade da coleta assistida da Amazon (sem banco, sem rede). Uso: npx tsx scripts/test-amazon-identidade.ts
  */
-import { judgeGame, judgeGeneric, prepareGame, prepareGeneric, buildQueryFor, type AmzCand, type MasterIdentity } from '../src/lib/affiliate/amazon-identity';
+import { consultaImpressoraBambu, judgeGame, judgeGeneric, prepareGame, prepareGeneric, buildQueryFor, type AmzCand, type MasterIdentity } from '../src/lib/affiliate/amazon-identity';
 import { capFor, cycleMinutes, DEFAULT_CYCLE_BUDGET, REFRESH_WEIGHT, DISCOVER_WEIGHT } from '../src/lib/affiliate/amazon-budget';
 import { VERTICALS } from '../src/lib/catalog/verticais';
 
@@ -94,6 +94,21 @@ check('filamento: 5 rolos => composição', out(fil, cand('Kit 5 Filamento PLA 1
 // --- Busca ---
 check('busca: TV usa marca+código', buildQueryFor(tv50).startsWith('Samsung UN50DU7700'), buildQueryFor(tv50));
 check('busca: tênis sem cor', !/preto/i.test(buildQueryFor(M({ vertical: 'esporte', segment: 'tenis', name: 'Tênis Nike Pegasus 41 Preto', brand: 'Nike' }))));
+
+// --- Impressora Bambu Lab (tarefa #59): consulta curta por modelo, variantes separadas ---
+const b3d = (name: string) => buildQueryFor(M({ vertical: 'impressao3d', name, brand: 'Bambu Lab' }));
+check('bambu: P1S solo sem ruido', b3d('Impressora 3d Bambu Lab Fechada P1s') === 'Bambu Lab P1S', b3d('Impressora 3d Bambu Lab Fechada P1s'));
+check('bambu: P1S Combo', b3d('Impressora 3d Bambu Lab P1s Combo') === 'Bambu Lab P1S Combo');
+check('bambu: P2S Combo', b3d('Impressora 3D Bambu Lab P2S Combo de FDM Automática,') === 'Bambu Lab P2S Combo');
+check('bambu: P2S solo', b3d('Impressora 3D Bambu Lab P2s') === 'Bambu Lab P2S');
+check('bambu: A1 Mini nao vira A1', b3d('Impressora 3d Bambu Lab A1 Mini') === 'Bambu Lab A1 Mini');
+check('bambu: A1 Mini Combo', b3d('Impressora 3d Bambu Lab A1 Mini Combo - A1MC') === 'Bambu Lab A1 Mini Combo');
+check('bambu: A1 Combo', b3d('Impressora 3d - Bambu Lab A1 Combo') === 'Bambu Lab A1 Combo');
+check('bambu: A1 solo', b3d('Impressora 3D Bambu Lab A1, Bivolt') === 'Bambu Lab A1');
+check('bambu: kit extrusor nao e impressora', consultaImpressoraBambu({ vertical: 'impressao3d', name: 'Kit Extrusor Original Bambu Lab Impressora 3D A1/A1Mini' }, 'Bambu Lab') === null);
+check('bambu: filamento fora', consultaImpressoraBambu({ vertical: 'impressao3d', name: 'Filamento PLA Bambu Lab para impressora A1' }, 'Bambu Lab') === null);
+check('bambu: outra marca segue o fluxo normal', consultaImpressoraBambu({ vertical: 'impressao3d', name: 'Impressora 3D Creality K1 Combo' }, 'Creality') === null);
+check('bambu: so na vertical impressao3d', consultaImpressoraBambu({ vertical: 'tecnologia', name: 'Impressora Bambu Lab P1S' }, 'Bambu Lab') === null);
 
 // --- Orçamento do ciclo ---
 check('orçamento: ciclo <= 40 min', cycleMinutes(DEFAULT_CYCLE_BUDGET) <= 40, cycleMinutes(DEFAULT_CYCLE_BUDGET));

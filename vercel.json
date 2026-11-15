@@ -91,6 +91,10 @@
     {
       "path": "/api/cron/discover-shopee-esporte?apply=1&terms=6&pages=2&maxCalls=40&maxMasters=12&maxOffers=60&link=offer",
       "schedule": "27 * * * *"
+    },
+    {
+      "path": "/api/cron/ampliar-amostra-shopee?vertical=impressao3d&nome=bambu+impressora&limitMasters=20&maxCalls=60&apply=1",
+      "schedule": "33 * * * *"
     }
   ]
 }

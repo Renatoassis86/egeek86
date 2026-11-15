@@ -85,5 +85,12 @@ if (base) {
   delete process.env.GROUP_PRIORIDADE_3D;
 } else ok(false, 'candidato base não gerado');
 
+// Tarefa #59: P1S, P2S e A1 (e variantes Combo/Mini) entram na prioridade; peça com o modelo no título não entra
+for (const n of ['Impressora 3d Bambu Lab Fechada P1s', 'Impressora 3d Bambu Lab P1s Combo', 'Impressora 3D Bambu Lab P2s', 'Impressora 3D Bambu Lab P2S Combo de FDM Automática,', 'Impressora 3d Bambu Lab A1', 'Impressora 3d Bambu Lab A1 Mini', 'Impressora 3d - Bambu Lab A1 Combo', 'Impressora 3d Bambu Lab A1 Mini Combo - A1MC']) {
+  ok(ehPrioridade3d('impressao3d', n, 'impressora-3d'), `prioridade: ${n}`);
+}
+ok(!ehPrioridade3d('impressao3d', 'Kit Extrusor Original Bambu Lab Impressora 3D A1/A1Mini', 'impressora-3d'), 'kit extrusor A1 não é prioridade');
+ok(!ehPrioridade3d('impressao3d', 'Filamento PLA Bambu Lab 1kg', 'filamento-3d'), 'filamento Bambu não é prioridade');
+
 console.log(`test-impressao3d-prioridade: ${total - fails}/${total} ok`);
 process.exit(fails ? 1 : 0);

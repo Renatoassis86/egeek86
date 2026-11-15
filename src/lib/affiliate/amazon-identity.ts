@@ -726,6 +726,23 @@ function judgeGenericTitle(ctx: GenericCtx, c: AmzCand, price0: number, flex: bo
 
 const COLOR_STRIP = /\b(preto|preta|branco|branca|azul|vermelho|vermelha|verde|amarelo|amarela|rosa|roxo|roxa|laranja|cinza|prata|prateado|prateada|dourado|dourada|grafite|marrom|bege|black|white|blue|red|green|silver|gold|pink|gray|grey)\b/gi;
 
+/**
+ * Impressora Bambu Lab (tarefa #59, dono 2026-11-15): consulta curta e exata `Bambu Lab <modelo> [Combo]`. O nome do master traz ruído do anúncio
+ * ("Fechada", "Bivolt", "FDM Automática,") e o atributo MODEL às vezes vem colado ("BambuLabA1Mini127V"), o que fazia a Amazon/Shopee devolverem
+ * outros produtos ou nada. Só impressora (peça, kit, filamento e AMS avulso não passam por aqui). Sem modelo reconhecido: null (segue o fluxo normal).
+ */
+const FAMILIA_BAMBU = /\b(a1 ?mini|a1|p1s|p1p|p2s|x1 carbon|x1c|h2d|h2s|h2c|x2d|a2l)\b/;
+export function consultaImpressoraBambu(m: Pick<MasterIdentity, 'vertical' | 'name'>, brand?: string | null): string | null {
+  if (m.vertical !== 'impressao3d') return null;
+  const n = norm(m.name);
+  if (!/\bimpressora\b/.test(n) || !/\bbambu\b/.test(`${n} ${norm(brand ?? '')}`)) return null;
+  if (/\b(?:kit|extrusor|bico|nozzle|hotend|placa|plate|filamento|resina|capa|case|enclosure|correia|ventoinha|refil|bobina|mesa)\b/.test(n)) return null;
+  const fam = FAMILIA_BAMBU.exec(n)?.[1];
+  if (!fam) return null;
+  const nome = fam === 'x1c' ? 'X1 Carbon' : /mini/.test(fam) ? 'A1 Mini' : fam === 'x1 carbon' ? 'X1 Carbon' : fam.toUpperCase();
+  return `Bambu Lab ${nome}${/\bcombo\b/.test(n) ? ' Combo' : ''}`;
+}
+
 /** Termo de busca da Amazon para um master de qualquer departamento (nome limpo + marca/modelo; livros por ISBN ou título+autor). */
 export function buildQueryFor(m: MasterIdentity): string {
   if (m.vertical === 'games') return buildAmazonQuery(m.name, m.gen);
@@ -738,6 +755,8 @@ export function buildQueryFor(m: MasterIdentity): string {
     return cap(`${title} ${author && !norm(title).includes(norm(author)) ? author.split(',')[0] : ''}`);
   }
   const brand = brandOf(m);
+  const bambu = consultaImpressoraBambu(m, brand);
+  if (bambu) return bambu;
   const f = extractFeat(m.name, m.segment);
   const codes = masterCodes(m, f);
   // código de modelo do atributo MODEL (o mais curto e específico) tem prioridade

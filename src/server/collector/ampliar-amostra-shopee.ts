@@ -42,6 +42,8 @@ export interface AmpliarOpts {
   comLookup?: boolean;
   /** Testa um master so (diagnostico). */
   soMaster?: string;
+  /** Foco por nome (tarefa #59): o nome do master contém TODAS as palavras. */
+  soNome?: string[];
   /** Nao chama a API: lista masters elegiveis e consultas. */
   soConsultas?: boolean;
   /** Instante (epoch ms) a partir do qual para de abrir trabalho novo (a rota usa ~50 s dos 60 s). */
@@ -125,7 +127,8 @@ export interface MasterRow {
   n_shopee: number;
 }
 
-export async function carregarMasters(sql: Sql, vertical: string, soMaster?: string): Promise<MasterRow[]> {
+export async function carregarMasters(sql: Sql, vertical: string, soMaster?: string, soNome: string[] = []): Promise<MasterRow[]> {
+  const filtroNome = soNome.map((w) => sql`and m.name ilike ${'%' + w + '%'}`);
   // Aprovado por INCLUSAO (mesmo predicado de masterAprovadoSql): verdict approved OU manual approved, e manual != rejected.
   // Ordem por id: estavel entre lotes (paginacao por offset); a contagem de ofertas muda quando se grava.
   return sql<MasterRow[]>`
@@ -142,6 +145,7 @@ export async function carregarMasters(sql: Sql, vertical: string, soMaster?: str
       and coalesce(m.attributes -> 'catalogGate' ->> 'manual', '') <> 'rejected'
       and (m.attributes ->> 'mergedInto') is null
       ${soMaster ? sql`and m.id = ${soMaster}::uuid` : sql``}
+      ${filtroNome.length ? filtroNome.reduce((a, b) => sql`${a} ${b}`) : sql``}
     group by m.id, b.name
     order by m.id`;
 }
@@ -306,7 +310,7 @@ export async function ampliarAmostraShopee(sql: Sql, opts: AmpliarOpts): Promise
 
     verticalLoop: for (const vert of verticals) {
       const st = (res.porVertical[vert] = novoStats());
-      const todos = await carregarMasters(sql, vert, opts.soMaster);
+      const todos = await carregarMasters(sql, vert, opts.soMaster, opts.soNome);
       st.masters = todos.length;
       const elegiveis = todos.filter((m) => m.n_shopee < MAX_POR_MASTER);
       st.elegiveis = elegiveis.length;
