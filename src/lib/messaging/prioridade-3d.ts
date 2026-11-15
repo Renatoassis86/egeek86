@@ -116,3 +116,18 @@ export function ordenarPorPrioridade3d<T extends { name: string }>(vertical: str
     .sort((a, b) => a.p - b.p || a.idx - b.idx)
     .map((x) => x.i);
 }
+
+// ---------------------------------------------------------------------------
+// REFORCO BAMBU LAB no canal Impressao 3D (dono, 2026-11-15, #117): "aumentar o fluxo de todas as Bambus". Flag GROUP_REFORCO_BAMBU (padrao desligada).
+// Liga: cooldown por OFERTA (nao por master) com queda real >= 2% ou R$ 50 depois de 30 min, cota extra por dia/hora so para Bambu e rodizio
+// entre as ofertas (a menos enviada nas ultimas 24 h passa na frente; empate = ordem fixa do dono). So Bambu Lab; so produto novo, sem regra do dono quebrada.
+// ---------------------------------------------------------------------------
+export function reforcoBambuLigado(env: Record<string, string | undefined> = process.env): boolean {
+  return /^(1|on|true)$/i.test((env.GROUP_REFORCO_BAMBU ?? '').trim());
+}
+export const REFORCO_BAMBU = { EXTRA_DIA: 24, EXTRA_HORA: 6, QUEDA_PCT: 2, QUEDA_MIN_CENTS: 5000, GAP_MIN: 30 } as const;
+
+/** true = impressora 3D Bambu Lab (o aparelho) da vertical impressao3d. */
+export function ehBambuLab3d(vertical: string | null | undefined, nome: string | null | undefined, tipo?: string | null): boolean {
+  return ehPrioridade3d(vertical, nome, tipo) && dobrar(nome ?? '').includes('bambu');
+}

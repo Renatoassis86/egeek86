@@ -1,7 +1,7 @@
 // Regras dos gatilhos e limites anti-spam das mensagens para grupos (ata 2026-11-10). PURO: recebe fatos, devolve decisões.
 // Nada aqui lê banco, relógio ou env: o chamador passa `now` e os fatos medidos.
 
-import { ehPrioridade3d, posicaoPrioridade3d, prioridade3dLigada } from './prioridade-3d';
+import { ehBambuLab3d, ehPrioridade3d, posicaoPrioridade3d, prioridade3dLigada, REFORCO_BAMBU, reforcoBambuLigado } from './prioridade-3d';
 import {
   buildGoLink,
   buildGroupMessages,
@@ -1760,6 +1760,8 @@ export interface SentRecord {
   tipo?: string | null;
   /** Oferta cujo cupom foi divulgado nesta mensagem (mensagem de cupom OU mensagem de preco com bloco de cupom). */
   couponOfferId?: string | null;
+  /** Oferta principal da mensagem (cooldown por oferta do reforço Bambu). */
+  offerId?: string | null;
   /** Mensagem CUPOM de promoção Prime na finalização (texto traz "Exclusivo Prime"): conta na cota própria. */
   primePromo?: boolean;
   /** Degrau da régua (1 a 5) da mensagem enviada, quando houve (candidate.regua.degrau). */
@@ -1827,14 +1829,16 @@ export function tipoPorHora(env: Record<string, string | undefined> = process.en
  * Plataforma, resumo (G4) e radar composto ficam fora (não têm produto único).
  */
 export function masterCooldownBlock(
-  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger' | 'offerIds' | 'couponRef' | 'regua'> & { cls?: MessageClass },
+  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger' | 'offerIds' | 'couponRef' | 'regua'> & { cls?: MessageClass; vertical?: string; name?: string; tipo?: string | null },
   history: SentRecord[],
   now: Date,
   hours: number = masterCooldownHours()
 ): string | null {
   if (!(hours > 0) || !c.masterProductId || c.trigger === 'G4' || c.trigger === 'RADAR' || c.cls === 'plataforma') return null;
   const winMs = hours * 3600_000;
-  const mine = history.filter((h) => h.masterProductId === c.masterProductId && h.cls !== 'plataforma' && h.sentAt.getTime() <= now.getTime() + 5_000 && now.getTime() - h.sentAt.getTime() < winMs);
+  // Reforço Bambu Lab (GROUP_REFORCO_BAMBU): o cooldown vale por OFERTA (outra loja/rede do mesmo modelo pode sair) quando o histórico sabe a oferta.
+  const bambu = reforcoBambuLigado() && ehBambuLab3d(c.vertical, c.name, c.tipo) && !!c.offerIds[0];
+  const mine = history.filter((h) => h.masterProductId === c.masterProductId && h.cls !== 'plataforma' && h.sentAt.getTime() <= now.getTime() + 5_000 && now.getTime() - h.sentAt.getTime() < winMs && (!bambu || !h.offerId || h.offerId === c.offerIds[0]));
   if (!mine.length) return null;
   const prior = mine.sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
   const sinceMin = (now.getTime() - prior.sentAt.getTime()) / 60_000;
@@ -1847,6 +1851,8 @@ export function masterCooldownBlock(
   // Novo menor preço registrado (G1/OK1) já tinha a exceção de 30 min (NEW_MIN_REPEAT_MIN) com preço menor que o enviado; ela continua, agora exigindo a queda mínima.
   const dropMin = c.trigger === 'G1' || c.trigger === 'OK1' ? RULES.NEW_MIN_REPEAT_MIN : RULES.MASTER_COOLDOWN_EXC_MIN;
   if (sinceMin >= dropMin && prior.priceCents > 0 && c.priceCents > 0 && c.priceCents <= prior.priceCents * (1 - minDrop / 100)) return null;
+  // Reforço Bambu: queda real da oferta (>= 2% ou R$ 50) volta em 30 min, em vez dos 5% / 2 h gerais.
+  if (bambu && sinceMin >= REFORCO_BAMBU.GAP_MIN && prior.priceCents > 0 && c.priceCents > 0 && prior.priceCents - c.priceCents >= Math.max(Math.round((prior.priceCents * REFORCO_BAMBU.QUEDA_PCT) / 100), REFORCO_BAMBU.QUEDA_MIN_CENTS)) return null;
   if (sinceMin >= RULES.MASTER_COOLDOWN_EXC_MIN && c.regua?.degrau != null && prior.degrau != null && c.regua.degrau > prior.degrau) return null;
   return `produto_em_cooldown_${hours}h_ultimo_envio_ha_${Math.floor(sinceMin)}min_${prior.trigger ?? 'x'}`;
 }
@@ -1856,16 +1862,17 @@ export function masterCooldownBlock(
  * MENOR que o do último envio pode repetir depois de 30 min.
  */
 export function productDedupBlock(
-  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger'> & { cls?: MessageClass },
+  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger'> & { cls?: MessageClass; vertical?: string; name?: string; tipo?: string | null; offerIds?: string[] },
   history: SentRecord[],
   now: Date
 ): string | null {
   if (!c.masterProductId) return null;
+  const bambuOferta = reforcoBambuLigado() && ehBambuLab3d(c.vertical, c.name, c.tipo) && c.trigger !== 'CUPOM' ? c.offerIds?.[0] : undefined;
   const isCupom = c.trigger === 'CUPOM';
   const gapMs = isCupom ? RULES.CUPOM_PRODUCT_GAP_MIN * 60_000 : (c.trigger === 'AC' || c.trigger === 'N1') ? RULES.ACHADO_PRODUCT_GAP_HOURS * 3600_000 : RULES.PRODUCT_GAP_MIN * 60_000;
   // Mensagem de cupom e mensagem de preco do mesmo produto sao independentes: cada uma so conta o proprio tipo (cupom x nao-cupom).
   const prior = history
-    .filter((h) => h.masterProductId === c.masterProductId && (h.trigger === 'CUPOM') === isCupom && now.getTime() - h.sentAt.getTime() < gapMs)
+    .filter((h) => h.masterProductId === c.masterProductId && (h.trigger === 'CUPOM') === isCupom && now.getTime() - h.sentAt.getTime() < gapMs && (!bambuOferta || !h.offerId || h.offerId === bambuOferta))
     .sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
   if (!prior) return null;
   const minSince = (now.getTime() - prior.sentAt.getTime()) / 60_000;
@@ -2251,8 +2258,9 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     const composite = c.trigger === 'RADAR';
     const platform = cls === 'plataforma';
     let why: string | null = null;
-    if (!platform && dayFull) why = `teto_diario_${cap}`;
-    else if (!platform && hourFull) why = `teto_horario_${spacing.hourlyCap}`;
+    const extraBambu = reforcoBambuLigado() && ehBambuLab3d(c.vertical, c.name, c.tipo);
+    if (!platform && (extraBambu ? sentToday.length >= cap + REFORCO_BAMBU.EXTRA_DIA : dayFull)) why = `teto_diario_${cap}`;
+    else if (!platform && (extraBambu ? spacing.hourSent >= spacing.hourlyCap + REFORCO_BAMBU.EXTRA_HORA : hourFull)) why = `teto_horario_${spacing.hourlyCap}`;
     else if (byClass[cls] >= (opts.caps?.byClass?.[cls] ?? classCap(cls, now))) why = `teto_classe_${cls}_${opts.caps?.byClass?.[cls] ?? classCap(cls, now)}`;
     else if (!platform) {
       // Radar composto: no máximo 1 a cada 45 min. Item de radar é mensagem individual, como as demais.
@@ -2321,6 +2329,8 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   const rotates = (c: Candidate) => c.cls === 'insight' || c.cls === 'radar' || (cotaAlerta && c.cls === 'alerta' && c.trigger !== 'G1' && c.trigger !== 'OK1');
   // Chave transitiva: classe; dentro de insight/radar, o ACHADO (sem comparacao) nunca passa na frente de um insight com comparacao real (G2, G3, T1...);
   // depois, o tipo MENOS enviado hoje na loja; depois a ordem de sempre (games e alertas: tipo nulo/classe propria, ordem inalterada entre si).
+  const reforcoOn = reforcoBambuLigado();
+  const bambuEnvios = (c: Candidate): number => real.filter((h) => !!c.offerIds[0] && h.offerId === c.offerIds[0] && now.getTime() - h.sentAt.getTime() < 24 * 3600_000).length;
   const priceOk = ok
     .filter((c) => c.cls !== 'plataforma')
     .sort((a, b) =>
@@ -2329,6 +2339,8 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
       (b.regua?.degrau ?? 0) - (a.regua?.degrau ?? 0) ||
       // Impressão 3D (dono, 2026-11-14): impressora Kobra/Bambu passa à frente das demais da vertical (só reordena o que já passou pelos bloqueios).
       // Dentro da prioridade, ordem fixa do dono (#111): P2S Combo, P1S Combo, A1 Combo, A1 Mini Combo, depois as sem combo, por ultimo Kobra.
+      // Reforço Bambu (GROUP_REFORCO_BAMBU): rodízio entre as ofertas Bambu; a menos enviada nas últimas 24 h passa na frente (empate = ordem do dono abaixo).
+      (reforcoOn && ehBambuLab3d(a.vertical, a.name, a.tipo) && ehBambuLab3d(b.vertical, b.name, b.tipo) ? bambuEnvios(a) - bambuEnvios(b) : 0) ||
       (prio3d ? posicaoPrioridade3d(a.vertical, a.name, a.tipo) - posicaoPrioridade3d(b.vertical, b.name, b.tipo) : 0) ||
       (rotates(a) ? Number(a.trigger === 'AC' || a.trigger === 'N1') : 0) - (rotates(b) ? Number(b.trigger === 'AC' || b.trigger === 'N1') : 0) ||
       (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||

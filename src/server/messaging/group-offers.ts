@@ -317,7 +317,7 @@ export async function loadSentHistory(
       ? sql`
     SELECT master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
            candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state, candidate -> 'regua' ->> 'degrau' AS degrau_c,
-           vertical AS vert, candidate ->> 'platformLabel' AS platform_label, candidate ->> 'tipo' AS tipo_c, candidate ->> 'name' AS nome_c,
+           vertical AS vert, candidate ->> 'platformLabel' AS platform_label, candidate ->> 'tipo' AS tipo_c, candidate ->> 'name' AS nome_c, offer_id::text AS offer_main,
            CASE WHEN trigger ~ '^P[1-5]$' THEN candidate ->> 'masterProductId' END AS plat_pid,
            CASE WHEN trigger = 'CUPOM' OR text_body LIKE '%CUPOM:%' OR text_body LIKE '%Cupom:%' THEN offer_id::text END AS cup_offer,
            (trigger = 'CUPOM' AND text_body LIKE '%Exclusivo Prime%') AS prime_promo
@@ -349,6 +349,7 @@ export async function loadSentHistory(
       tipo: tipoOfRow(r),
       platformProductId: (r.plat_pid as string | null) ?? null,
       couponOfferId: (r.cup_offer as string | null) ?? null,
+      offerId: (r.offer_main as string | null) ?? null,
       primePromo: r.prime_promo === true,
       trigger: (r.trigger as string | null) ?? null,
       cls,
