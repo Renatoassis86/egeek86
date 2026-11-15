@@ -55,3 +55,13 @@ Foto com mão passou a valer por OFERTA, e só mão REAL conta (mão ilustrada o
   - confirmação: a oferta `469067d8` (Switch Lite turquesa, Webfones) está visível, master `approved`.
 - **Fluxo futuro:** a regra mora em `scripts/reclassificar-foto-mao-por-oferta.ts` (cabeçalho documenta o critério). Para fotos novas: classificar por URL no mesmo formato de mapa e rodar sem `--liberar-masters`, o que só põe em quarentena as ofertas ativas cuja imagem é `mao_real` e nunca mexe no veredito do master. `scripts/aplicar-foto-com-mao.ts` (rejeição de master) só aplica com `--legado-master`. Não há classificador automático no código: a classificação visual continua sendo etapa manual/assistida.
 - **Duplicados `4704eddc`, `374675ec`, `4013d841`** (todos Switch 2 + Mario Kart World, consoles aprovados, com ofertas Shopee/ML/Amazon): consolidação NÃO feita, aguarda autorização.
+
+## Consolidação Switch 2 + Mario Kart World (autorizada pelo dono, 2026-11-15)
+
+Canônico `4704eddc` ("Bundle Nintendo Switch 2 + Mario Kart World": aprovado, console, nome mais limpo, 32 ofertas ativas contra 10 e 2). Absorvidos `374675ec` e `4013d841`.
+
+- **Identidade conferida:** 68 ofertas nos 3 masters, todas Switch 2 256 GB preto + Mario Kart World; nenhum título cita NSO/assinatura, outra região (Hong Kong/importado), outro jogo ou usado (o script aborta se houver). Os bundles com 3 meses de NSO (`613b1201`, `74ec16c4`) e Hong Kong (`f9502f26`) continuam masters separados.
+- **Resultado (SELECT):** canônico 32 -> 44 ofertas ativas (36 -> 68 no total), menor preço R$ 3.639,23; os dois absorvidos ficam com 0 ofertas, arquivados (`attributes.mergedInto`, nada apagado). Estado diário de 15/11 recalculado (menor 3.639,23, média por oferta/dia 5.132,96, 26 ofertas, 18 lojas, qualidade `complete`); 15 dias recalculados (de 2026-11-01).
+- **Histórico:** `price_daily_offer` das ofertas movidas passou para o canônico; `price_daily_state` do canônico foi recalculado pelo código do job; as linhas antigas de estado dos absorvidos ficam como histórico deles. Slugs: as páginas públicas são por slug de oferta (preservado); `/monitoramento/comparar/<id antigo>` agora redireciona ao canônico.
+- **Script:** `scripts/consolidar-switch2-mkw-2026-11-15.ts` (dry-run, `--apply --por`, backup NDJSON, log, `--rollback`, transação curta por duplicado). Backup `docs/backups/consolidar-switch2-mkw-2026-11-15T07-35-13-185Z.ndjson` (+ `-price_daily_state` e `-price_daily_offer`), log `docs/backups/consolidar-switch2-mkw-log-2026-11-15T07-35-13-185Z.json`.
+- Pendência de arrumação: o canônico mantém `attributes.identidade = nao_identificado` e o motivo `descoberta_duvida` no gate, de quando era "game"; não alterei.

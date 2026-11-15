@@ -1,5 +1,7 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
+import { sql } from 'drizzle-orm';
+import { db } from '@/lib/db';
 import { ShieldCheck, ArrowRight, Flame, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -75,6 +77,13 @@ export default async function CompararPrecosPage({
   params: Promise<{ masterProductId: string }>;
 }) {
   const { masterProductId } = await params;
+
+  // Master fundido em outro (attributes.mergedInto): o link antigo continua valendo e leva ao master que absorveu as ofertas.
+  if (/^[0-9a-f-]{36}$/i.test(masterProductId)) {
+    const r = await db.execute<{ t: string | null }>(sql`SELECT attributes ->> 'mergedInto' AS t FROM master_products WHERE id = ${masterProductId}::uuid`);
+    const alvo = r[0]?.t;
+    if (alvo && /^[0-9a-f-]{36}$/i.test(alvo) && alvo !== masterProductId) redirect(`/monitoramento/comparar/${alvo}`);
+  }
 
   const [summary, offers, profile] = await Promise.all([
     getMasterProductSummary(masterProductId),

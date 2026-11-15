@@ -1,0 +1,69 @@
+{
+  "criadoEm": "2026-11-15T07:35:25.252Z",
+  "por": "Claude (dono autorizou 2026-11-15)",
+  "canonical": "4704eddc-a50d-4935-bcb0-c635cc090daa",
+  "from": "2026-11-01",
+  "backup": "consolidar-switch2-mkw-2026-11-15T07-35-13-185Z.ndjson",
+  "status": "committed",
+  "merged": [
+    {
+      "masterId": "374675ec-3ccd-45fe-a084-be9e02e042df",
+      "moved": {
+        "affiliate_offers.master_product_id": [
+          "03a92f1c-b626-48c8-b1ac-03760b6e64a0",
+          "36e91e25-3ea4-4bff-8c09-2aba9d902801",
+          "4d45cf57-825e-45e1-a2eb-34b609b8bc8c",
+          "81b77068-03ca-46eb-a7de-77f356cd578a",
+          "746cf254-ba4b-4de0-9192-15d5c02d5c48",
+          "82e23fc3-46e8-4731-8f3c-8428a0f174af",
+          "9c1ddc01-c184-4d13-aa2b-b09bc48e18ce",
+          "c877582f-cdbe-4b43-a743-d0be23deba09",
+          "dd33b523-9103-49bd-b190-2d788ca84ae3",
+          "07da36e8-b36e-49ac-a815-2c613623d218",
+          "ac17deff-2799-46f8-a869-ec7692fdd465",
+          "4d07867c-60c2-47d8-be94-ee6dc3239e92",
+          "62efd30a-7cb9-4575-894b-56322f6354bb",
+          "ffb90b15-6abb-4b5e-b1b3-24e3c41bde88",
+          "23383f5f-1816-4ad0-b75d-9afe44fbeee5",
+          "4e301487-c299-4450-8e27-8323ea23c6c2",
+          "525e2d9b-0126-40a6-9f47-92b69947f72a",
+          "6b30c05f-0fe6-4dd8-a60f-d736fdd3a1fd",
+          "6db01a51-4a9a-4c26-afea-4a80c876d42a",
+          "706e20e8-d476-4bd3-9a00-bdc40cc49f37",
+          "a3c07158-1da1-4c2b-a188-ff7587ab0738",
+          "c57bc8e2-9f44-41d1-a7db-09d8e029af07",
+          "796e1610-af3c-4d6d-8bb6-799a982d9ed3",
+          "6269e8f2-a5de-41f3-8b10-9a5df22cc516",
+          "df2bd45b-d5c4-4ab1-bd83-d4058ada2cb9",
+          "079c2cf5-048a-499c-af46-faddc3f316b4",
+          "e08a7bbd-15d2-4914-93ae-3bdea6a0d2b0",
+          "69421ee6-c4a2-40f9-bbea-95435478c150",
+          "18dd8702-3e4b-4ef9-8c75-cc5f42728079",
+          "af94b280-6f24-4963-adbe-096fb3f4c389"
+        ]
+      },
+      "watchesMoved": [],
+      "watchesDeactivated": [],
+      "offerDaysMoved": 90
+    },
+    {
+      "masterId": "4013d841-8c48-413c-bb41-d6fedb106484",
+      "moved": {
+        "affiliate_offers.master_product_id": [
+          "5b30e8ea-193a-42ae-b709-843f6a60ae7e",
+          "7fcba9e0-302d-4fd9-8b55-02ed1f00891b"
+        ]
+      },
+      "watchesMoved": [],
+      "watchesDeactivated": [],
+      "offerDaysMoved": 6
+    }
+  ],
+  "estados": {
+    "from": "2026-11-01",
+    "ate": "2026-11-15",
+    "backupState": "consolidar-switch2-mkw-2026-11-15T07-35-13-185Z-price_daily_state.ndjson",
+    "backupOffer": "consolidar-switch2-mkw-2026-11-15T07-35-13-185Z-price_daily_offer.ndjson"
+  },
+  "rollback": "npx tsx --conditions=react-server --env-file=.env.local scripts/consolidar-switch2-mkw-2026-11-15.ts --rollback docs/backups/consolidar-switch2-mkw-log-2026-11-15T07-35-13-185Z.json --apply"
+}

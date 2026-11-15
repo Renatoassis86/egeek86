@@ -33,3 +33,7 @@ Efeitos colaterais da mesma rodada: criado o master "Bambu Lab H2s Combo Ams 2 P
 - Amazon: P2S, P2S Combo e P1S Combo seguem sem oferta; as varreduras anteriores deram `sem_match`. A nova consulta curta entra na proxima passada da coleta assistida (aba logada); nao foi possivel conferir a prateleira da Amazon agora (navegador desconectado).
 - "revisao_sem_identidade_forte: 40" na semeadura ML: catalogos de impressora sem marca/modelo forte ficam em revisao (barreira existente, nao alterada).
 - Master P1P (Bambu Lab) nao existe; criar so com aval.
+
+## Jogo Barato (Shopee): Switch 2 + Mario Kart World, Switch Lite e OLED (2026-11-15)
+
+Os três itens já estavam rastreados (preço do pix = preço cheio × 0,95 × 0,92); o Switch Lite estava escondido por rejeição de master por foto com mão, corrigida por oferta (84 masters liberados/reavaliados, 99 ofertas em quarentena por mão real). Masters duplicados do Switch 2 + Mario Kart World consolidados em `4704eddc` (44 ofertas ativas). Detalhes, contagens e rollback: `docs/inventario-itens-jogobarato-shopee-2026-11-15.md`.
