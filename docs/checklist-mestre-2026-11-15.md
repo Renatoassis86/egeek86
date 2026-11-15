@@ -50,7 +50,7 @@ Um item só fecha quando TODOS os elos existirem e estiverem verificados em prod
 | 11 | **Receita real e cliques válidos** (importar conversões; excluir bots) | #78, #79 | Tabela de conversões vazia | Sim (credenciais) |
 | 12 | **WhatsApp: 0 envios em 7 dias** e captação de inscritos | #100, #80 | Diagnóstico e plano | Sim (canal) |
 | 13 | **Firewall: exceção para Googlebot/TelegramBot; `proxy.ts` sem `getUser` por requisição** | #85, #86 | Regra e código | Não |
-| 14 | **Backup fora da máquina** | #71 | Escolher PITR do Supabase ou bucket | **Sim** |
+| 14 | **Backup fora da máquina** | #71 | Decidido ("Pode fazer"): export cifrado diário no GitHub Actions (`docs/backup-externo-2026-11-15.md`). Dono: cadastrar os secrets `DATABASE_URL` e `BACKUP_PASSPHRASE` e rodar o workflow uma vez; PITR pago opcional | **Sim (2 secrets)** |
 | 15 | **Equipe da Vercel + privar o repositório** | #69 | `renatoarkos` na equipe da Vercel e no GitHub; depois privar | **Sim** |
 | 16 | Magalu (pausado) | #61 | Login no portal, slug da loja, tabela de comissões | **Sim** (por último) |
 | 16b | **Quedas do Chrome (#113)**: diagnóstico e plano feitos; órfãos encerrados, Wi-Fi sem economia, dead-man dos 3 loops no ar (commit e410c4e); FALTA carregar a extensão local `tools/chrome-loops-extension` (Chrome 157 bloqueia carga por linha de comando: 3 cliques do dono em chrome://extensions) | #113 | Extensão pronta, não carregada | **Sim** (3 cliques) |

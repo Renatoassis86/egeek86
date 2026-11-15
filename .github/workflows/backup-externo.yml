@@ -1,0 +1,47 @@
+name: backup-externo
+# Backup logico cifrado do banco. Precisa dos secrets DATABASE_URL e BACKUP_PASSPHRASE (ver docs/backup-externo-2026-11-15.md).
+# Sem os secrets o job so avisa, sem falhar.
+on:
+  schedule:
+    - cron: '17 6 * * *'   # 03:17 BRT, essencial diario
+    - cron: '47 6 * * 0'   # domingo, completo
+  workflow_dispatch:
+    inputs:
+      perfil:
+        description: essencial ou completo
+        default: essencial
+permissions:
+  contents: read
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Perfil
+        id: p
+        run: |
+          if [ "${{ github.event.schedule }}" = "47 6 * * 0" ]; then echo "perfil=completo" >> "$GITHUB_OUTPUT"
+          else echo "perfil=${{ github.event.inputs.perfil || 'essencial' }}" >> "$GITHUB_OUTPUT"; fi
+      - name: Aviso sem secrets
+        if: env.DATABASE_URL == '' || env.BACKUP_PASSPHRASE == ''
+        run: echo "::warning::Secrets DATABASE_URL/BACKUP_PASSPHRASE ausentes. Backup NAO executado."
+      - name: Backup cifrado
+        if: env.DATABASE_URL != '' && env.BACKUP_PASSPHRASE != ''
+        run: npx tsx scripts/backup-externo.ts --executar --perfil=${{ steps.p.outputs.perfil }} --saida=out
+      - name: Conferir decifragem e checksum
+        if: env.DATABASE_URL != '' && env.BACKUP_PASSPHRASE != ''
+        run: npx tsx scripts/restaurar-backup-externo.ts "$(ls out/*.enc | head -1)"
+      - uses: actions/upload-artifact@v4
+        if: env.DATABASE_URL != '' && env.BACKUP_PASSPHRASE != ''
+        with:
+          name: backup-${{ steps.p.outputs.perfil }}
+          path: out/
+          retention-days: 30
