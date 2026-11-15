@@ -75,5 +75,5 @@ async function main() {
     await sql.end();
   }
 }
-main().catch((e) => { console.error('FALHA:', e instanceof Error ? e.message : e); process.exit(1); });
+main().catch((e) => { console.error('FALHA:', e instanceof Error ? e.message : e, process.env.DEBUG_119 && e instanceof Error ? e.stack : ''); process.exit(1); });
 export {};

@@ -58,9 +58,10 @@ export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: numb
     JOIN affiliate_networks n ON n.id = o.network_id AND n.slug = 'mercado-livre'
     JOIN master_products m ON m.id = o.master_product_id
     LEFT JOIN LATERAL (SELECT max(checked_at) AS ult FROM offer_link_audit a WHERE a.offer_id = o.id) au ON true
+    LEFT JOIN (SELECT offer_id, count(*) AS c FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL GROUP BY 1) fr ON fr.offer_id = o.id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND ${filtro}
       AND (${escopo === 'privado' || escopo === 'canal' ? sql`true` : sql`au.ult IS NULL OR au.ult < now() - make_interval(mins => ${ateMin})`}) ${frag}
-    ORDER BY (SELECT count(*) FROM group_messages gm WHERE gm.offer_id = o.id AND gm.created_at > now() - interval '24 hours') DESC, au.ult ASC NULLS FIRST, o.current_price_cents DESC
+    ORDER BY coalesce(fr.c, 0) DESC, au.ult ASC NULLS FIRST, o.current_price_cents DESC
     LIMIT ${limite}`)) as unknown as { id: string; link: string | null; item: string | null; cat: string | null; cents: number }[];
   return rows.map((r) => ({ offerId: r.id, link: r.link, itemEsperado: r.item, catalogo: r.cat && /^MLB\d+$/.test(r.cat) ? r.cat : null, precoCents: Number(r.cents) }));
 }
