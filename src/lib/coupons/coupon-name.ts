@@ -123,6 +123,8 @@ export function howToUse(i: { net: CouponNet; code: string | null; name: string;
   const at = String(i.ativacao ?? '').toUpperCase();
   if (at === 'AUTOMATIC') return ['Abra o anúncio', 'O cupom é aplicado sozinho no pagamento (não precisa ativar)', 'Finalize a compra'];
   if (at === 'EU_QUERO') return ['Abra o anúncio', i.named ? `Em Cupons, ative o cupom ${i.name}` : `Em Cupons, ative o cupom de ${valor}`, 'Finalize a compra'];
+  // Nome lido no modal "Ver cupons disponíveis" do próprio anúncio (#115): o cupom é identificado pelo nome que a página escreve, sem afirmar o tipo de ativação.
+  if (i.named) return ['Abra o anúncio', `Em "Ver cupons disponíveis", na página do anúncio, confira o cupom ${i.name} e aplique antes de pagar`, 'Finalize a compra'];
   return ['Abra o anúncio', 'O preço com cupom aparece na página do anúncio; confira lá como aplicar o cupom antes de pagar', 'Finalize a compra'];
 }
 

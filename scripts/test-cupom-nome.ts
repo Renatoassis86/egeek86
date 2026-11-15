@@ -90,3 +90,9 @@ ok(!/afiliad|% OFF/i.test(m1.telegram + m2.telegram + m3.telegram + m1.whatsapp)
 
 console.log(fails ? `${fails} FALHA(S) de ${total}` : `${total}/${total} ok`);
 process.exit(fails ? 1 : 0);
+
+// #115 (2026-11-15): NOME REAL do cupom no modal "Ver cupons disponiveis" (/cupons/pdp): "R$ 20 OFF em GHOX"
+const t5 = resolveCouponUse({ net: 'mercado-livre', pageName: 'R$ 20 OFF em GHOX', offCents: 2000, pct: 0.5 });
+ok(t5.named && t5.name === 'R$ 20 OFF em GHOX' && /Ver cupons disponíveis/.test(t5.activation) && !/ative/i.test(t5.activation), 'nome do modal vira o nome do cupom, sem afirmar ativacao', t5);
+const t6 = resolveCouponUse({ net: 'mercado-livre', pageName: '5% OFF em TESLARIA', offCents: 700, pct: 5 });
+ok(t6.named && t6.name === '5% de desconto em TESLARIA', 'percentual: "% OFF" vira "% de desconto" mantendo a loja', t6);

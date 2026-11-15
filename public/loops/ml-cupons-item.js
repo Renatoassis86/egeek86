@@ -22,7 +22,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.0.0';
+  var VERSAO = '1.1.0';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-ml-links-ui.ts
@@ -109,6 +109,49 @@
     }
     var t = /(?:[Uu]se|[Ii]nsira|[Dd]igite|[Aa]plique)\s+o\s+(?:cupom|c[óo]digo)\s+([A-Z0-9][A-Z0-9_-]{3,19})(?![A-Za-z0-9_-])/.exec(String(texto || ''));
     return t && /[A-Z]/.test(t[1]) ? t[1] : null;
+  };
+
+
+  /**
+   * NOME REAL DO CUPOM (#115, 2026-11-15): o nome está no modal "Ver cupons disponíveis" da página do anúncio, que é um iframe de
+   * GET /cupons/pdp?item_id=MLB..&unit_price=<reais inteiros>&quantity=1&loyalty=<nível> (HTML com o estado embutido; sem esses 4 parâmetros devolve a home de cupons).
+   * Cada cupom traz campaignId (o MESMO id de benefits.coupons[].id), title.text ("5% OFF", "R$ 20 OFF"), category (a loja: "GHOX"), amount.minAmount/capAmount,
+   * action.type ('apply' = botão Aplicar; 'search' = Conferir produtos) e isNewFollowerCoupon. Nome = title.text + ' em ' + category (o mesmo texto do srLabel
+   * "Aplicar cupom R$ 20 OFF em GHOX"). Só leitura: nada é clicado nem aplicado. O campo "code" do modal é um token assinado da sessão, NÃO é código digitável: ignorado.
+   */
+  PURO.urlModalCupons = function (html, itemId) {
+    var cru = String(html || '');
+    var b = /"base_price"\s*:\s*\{\s*"value"\s*:\s*([\d.]+)/.exec(cru);
+    var preco = b ? Math.round(+b[1]) : null;
+    var l = /"loyalty_level"\s*:\s*(\d{1,2})/.exec(cru);
+    if (!itemId || !preco || preco < 1) return null;
+    return '/cupons/pdp?item_id=' + encodeURIComponent(itemId) + '&unit_price=' + preco + '&quantity=1&loyalty=' + (l ? l[1] : '1');
+  };
+
+  PURO.cuponsDoModal = function (html) {
+    var cru = String(html || ''), out = {};
+    var re = /"campaignId"\s*:\s*"(\d{3,12})"/g, m, marcas = [];
+    while ((m = re.exec(cru))) marcas.push({ id: m[1], i: m.index });
+    for (var k = 0; k < marcas.length; k++) {
+      var id = marcas[k].id;
+      if (out[id]) continue;
+      var fim = k + 1 < marcas.length ? marcas[k + 1].i : marcas[k].i + 2500;
+      var bloco = cru.slice(marcas[k].i, Math.min(fim, marcas[k].i + 2500));
+      var t = /"title"\s*:\s*\{\s*"text"\s*:\s*"((?:[^"\\]|\\.){2,60})"/.exec(bloco);
+      if (!t) continue;
+      var cat = /"category"\s*:\s*"((?:[^"\\]|\\.){1,60})"/.exec(bloco);
+      var ac = /"action"\s*:\s*\{[^}]{0,200}?"type"\s*:\s*"(\w+)"/.exec(bloco);
+      var mn = /"minAmount"\s*:\s*"([^"]{1,40})"/.exec(bloco), cp = /"capAmount"\s*:\s*"([^"]{1,40})"/.exec(bloco);
+      var un = function (x) { return String(x || '').replace(/\u0026/g, '&').replace(/\u002F/g, '/').replace(/\\"/g, '"').replace(/[\s]+/g, ' ').replace(/\\[uU]0026/g, '&').replace(/\\[uU]002[Ff]/g, '/').trim(); };
+      var titulo = un(t[1]);
+      out[id] = {
+        name: titulo + (cat && un(cat[1]) ? ' em ' + un(cat[1]) : ''),
+        acao: ac ? ac[1] : null,
+        seguir: /"isNewFollowerCoupon"\s*:\s*true/.test(bloco),
+        minimo: mn ? un(mn[1]) : null, limite: cp ? un(cp[1]) : null,
+      };
+    }
+    return out;
   };
 
   PURO.extrairCupons = function (html) {
@@ -356,6 +399,21 @@
     if (tp !== 'ok') return { problema: tp, detalhe: 'item ' + id + ' status ' + r.status };
     if (!PURO.paginaConfere(html, id)) { S.totais.naoConfere++; return { descarte: 'pagina_nao_confere' }; }
     var x = PURO.extrairCupons(html);
+    if (x.cupons.some(function (c) { return c.campaign_id; })) {
+      // nome real do cupom: modal "Ver cupons disponíveis" (/cupons/pdp). Falha aqui NUNCA derruba a leitura (o cupom segue sem nome); só 429/403 vira pausa.
+      var mu = PURO.urlModalCupons(html, id);
+      if (mu) {
+        await dormir(1500);
+        try {
+          var rm = await fetch(mu, { credentials: 'include', redirect: 'follow' });
+          if (rm.status === 429 || rm.status === 403) return { problema: 'http_429', detalhe: 'modal de cupons ' + rm.status };
+          if (rm.status === 200 && /\/cupons\/pdp/.test(rm.url)) {
+            var md = PURO.cuponsDoModal(await rm.text());
+            x.cupons.forEach(function (c) { var d = c.campaign_id && md[c.campaign_id]; if (d) { c.name = d.name; c.acao = d.acao; c.seguir = d.seguir; } });
+          }
+        } catch (e) { /* sem nome nesta leitura */ }
+      }
+    }
     if (x.ambiguo) { S.totais.ambiguos++; return { descarte: 'ambiguo_mencao_a_cupom_sem_preco' }; }
     if (x.cupons.length) S.totais.comCupom++;
     var bc = PURO.extrairBeneficiosCartao(html);
@@ -388,7 +446,7 @@
       }
       sucesso();
       lidosEm[it.id] = Date.now(); S.totais.lidos++; c.lidos++;
-      if (res.row) { rows.push(res.row); linha({ id: it.id, prio: it.prioridade, cartao: res.row.beneficios_cartao || [], cupons: res.row.coupons.map(function (x) { return x.label + (x.campaign_id ? ' #' + x.campaign_id : '') + (x.name ? ' [nome: ' + x.name + ']' : ''); }) }); }
+      if (res.row) { rows.push(res.row); linha({ id: it.id, prio: it.prioridade, cartao: res.row.beneficios_cartao || [], cupons: res.row.coupons.map(function (x) { return x.label + (x.campaign_id ? ' #' + x.campaign_id : '') + (x.name ? ' [nome: ' + x.name + (x.acao ? ' | ' + x.acao : '') + (x.seguir ? ' | seguir loja' : '') + ']' : ''); }) }); }
       else { c.descartados++; linha({ id: it.id, descartado: res.descarte }); }
       if (i < novos.length - 1) await dormir(PURO.pausaEntreItens(CFG.pausaMs, null, PISO_PAUSA_MS));
     }
