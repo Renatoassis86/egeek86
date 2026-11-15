@@ -85,8 +85,8 @@ function add(id: string, nome: string, esc: Esc, n: number, valor: string, ids: 
       const g = E.filter((o) => o.aV === 'pausado' || o.miss >= 3);
       add('g', 'pausado/sumiu (miss>=3 ou veredito pausado) ainda ativa e elegível', e, g.length, String(g.length), g.map((o) => o.id), 'Anúncio pausado/encerrado sai da lista e do site');
       // (h)
-      const h = EM.filter((o) => o.aPrice != null && o.price > 0 && o.aAt && idade(o.aAt) <= VALE_MIN && Math.abs((o.aPrice - o.price) / o.price) * 100 > 0.5);
-      add('h', 'preço da oferta x preço_link do veredito (<=6 h) com |diff| > 0,5%', e, h.length, String(h.length), h.map((o) => o.id), 'Preço dito = preço da página');
+      const h = EM.filter((o) => o.aPrice != null && o.price > 0 && o.aAt && idade(o.aAt) <= VALE_MIN && Math.abs(o.aPrice - o.price) > Math.max(100, Math.round(o.price * 0.001)));
+      add('h', 'preço da oferta x preço_link do veredito (<=6 h) com |diff| > max(R$ 1; 0,1%) [tolerância nova]', e, h.length, String(h.length), h.map((o) => o.id), 'Preço dito = preço da página');
       // (k) veredito ok que já foi invalidado por mudança de preço/troca de anúncio posterior (corrida entre auditoria e envio)
       const k = EM.filter((o) => o.aV === 'ok' && o.aAt && idade(o.aAt) <= VALE_MIN && ((o.pchg && o.pchg > o.aAt) || (o.trocado && o.trocado > o.aAt)));
       add('k', 'veredito ok (<=6 h) anterior a mudança de preço/troca de anúncio (ok obsoleto ainda vale)', e, k.length, String(k.length), k.map((o) => o.id), 'Veredito ok vale só enquanto preço e anúncio não mudaram');
@@ -144,6 +144,12 @@ function add(id: string, nome: string, esc: Esc, n: number, valor: string, ids: 
       const sel = dentro.filter((x) => { const i = info.get(x.offer); if (!i) return false; if (i.rede !== 'mercado-livre') return false; return e === 'geral' || (e === 'amplo' ? i.vert === 'impressao3d' : PRIVADO.includes(i.master)); });
       const mal = sel.filter(semOkEnv);
       add('b', `mensagens ML enviadas (janela desde ${janela.toISOString().slice(5, 16)}Z: ${sel.length}) sem veredito ok <= 6 h antes do envio`, e, mal.length, `${mal.length}/${sel.length}`, mal.map((x) => `${x.offer.slice(0, 8)}@${x.origem}`), 'Mensagem só sai com veredito ok recente');
+      if (e === 'estrito' && mal.length) {
+        const hh = (d: Date) => new Date(d.getTime() - 3 * 3600_000).toISOString().slice(11, 16);
+        const agr = new Map<string, number>();
+        for (const x of mal) { const k = `${hh(x.at)} ${x.origem}`; agr.set(k, (agr.get(k) ?? 0) + 1); }
+        add('b.det', `  detalhe (hora de Brasília, origem): ${[...agr].sort().map(([k, n]) => `${k}x${n}`).join('; ')}`, e, 0, '-', [], '', true, true);
+      }
       // (j)
       const j = sel.filter((x) => x.dropped).filter((x) => { const t = info.get(x.offer)!.trocado; return t && t <= x.at && x.at.getTime() - t.getTime() <= 12 * 3600_000; });
       add('j', 'mensagens de queda enviadas com troca de anúncio nas 12 h anteriores (queda entre anúncios)', e, j.length, `${j.length}/${sel.filter((x) => x.dropped).length}`, j.map((x) => `${x.offer.slice(0, 8)}@${x.origem}`), 'Queda só entre leituras do mesmo anúncio');

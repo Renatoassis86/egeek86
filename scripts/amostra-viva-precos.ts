@@ -3,7 +3,7 @@
  * na última mensagem enviada da oferta. SOMENTE LEITURA (nenhuma escrita no banco).
  *   npx tsx --env-file=.env.local scripts/amostra-viva-precos.ts [--n 30] [--seed x] [--registrar]
  * Seleção: todas as P2S/P1S Combo ativas do ML (mencionadas em mensagem/lista nas últimas 24 h primeiro) + aleatórias elegíveis, N <= 40.
- * Ritmo: 1 requisição a cada 1,5 s; para em 429/captcha. Amazon: usa o último preço lido pelo loop (affiliate_price_snapshots) e a data; a página
+ * Ritmo: 1 leitura a cada 2 s pelo controle global auditoria-ritmo; para em 429/captcha. Amazon: usa o último preço lido pelo loop (affiliate_price_snapshots) e a data; a página
  * da Amazon não é lida sem Chrome. Nunca imprime segredo.
  */
 import fs from 'node:fs';
@@ -16,6 +16,25 @@ const REGISTRAR = process.argv.includes('--registrar');
 const DOC = 'docs/revisao-integridade-preco-2026-11-15.md';
 const PRIVADO = ['2e4a5bd1-27d7-42c6-bc62-dfa1d5eace45', '23bfa05b-053e-46cc-8308-7d4332fadf18'];
 const UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mobile/15E148 Safari/604.1) AppleWebKit/605.1.15 Version/17.0';
+/** Mesmo controle do cron (collector_runs job 'auditoria-ritmo', lock consultivo): 1 leitura a cada 2 s somando todos; recuo de 15 min em captcha/429. */
+async function reservar(sql: ReturnType<typeof connect>): Promise<{ ok: true; esperaMs: number } | { ok: false; ateMs: number }> {
+  return sql.begin(async (tx) => {
+    await tx`SELECT pg_advisory_xact_lock(hashtext('auditoria-ritmo'))`;
+    const rows = await tx<{ id: string; meta: { prox?: number; bloqueado_ate?: number } | null }[]>`SELECT id::text id, meta FROM collector_runs WHERE job='auditoria-ritmo' ORDER BY started_at DESC LIMIT 1`;
+    const agora = Date.now();
+    const m = rows[0]?.meta ?? {};
+    if ((m.bloqueado_ate ?? 0) > agora) return { ok: false as const, ateMs: m.bloqueado_ate! };
+    const prox = Math.max(m.prox ?? 0, agora);
+    const novo = JSON.stringify({ prox: prox + 2000, ...(m.bloqueado_ate ? { bloqueado_ate: m.bloqueado_ate } : {}) });
+    if (rows[0]) await tx`UPDATE collector_runs SET meta = ${novo}::text::jsonb, finished_at = now() WHERE id = ${rows[0].id}::bigint`;
+    else await tx`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-ritmo','mercado-livre',now(),now(),0,'ok',${novo}::text::jsonb)`;
+    return { ok: true as const, esperaMs: prox - agora };
+  });
+}
+async function bloquear(sql: ReturnType<typeof connect>, nota: string) {
+  await sql`UPDATE collector_runs SET meta = jsonb_set(coalesce(meta,'{}'::jsonb),'{bloqueado_ate}',to_jsonb(${Date.now() + 15 * 60_000}::bigint)) WHERE job='auditoria-ritmo'`;
+  await sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-links-bloqueio','mercado-livre',now(),now(),0,'error',${JSON.stringify({ nota, origem: 'amostra-viva-revisor' })}::jsonb)`;
+}
 const dormir = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const brl = (c: number | null) => (c == null ? '-' : `R$ ${(c / 100).toFixed(2).replace('.', ',')}`);
 const dig = (s: string | null | undefined) => (s ?? '').replace(/\D/g, '');
@@ -78,10 +97,12 @@ async function lerPagina(url: string): Promise<Pag> {
     console.log(`AMOSTRA VIVA — ${new Date().toISOString()} — ${escolha.length} ofertas (${Math.min(combos.length, N)} combos P2S/P1S + ${Math.max(0, escolha.length - combos.length)} aleatórias com mensagem enviada)`);
     let lidas = 0, parou: string | null = null;
     for (const o of escolha) {
-      if (lidas > 0) await dormir(1500);
+      const slot = await reservar(sql);
+      if (!slot.ok) { parou = 'recuo_global_ativo'; console.log('PAROU: recuo global (captcha/429 recente) ativo até ' + new Date(slot.ateMs).toISOString()); break; }
+      if (slot.esperaMs > 0) await dormir(slot.esperaMs);
       const pag = await lerPagina(o.link);
       lidas++;
-      if (!pag.ok && pag.parar) { parou = pag.nota; console.log(`PAROU: ${pag.nota}`); break; }
+      if (!pag.ok && pag.parar) { parou = pag.nota; await bloquear(sql, pag.nota); console.log(`PAROU: ${pag.nota} (recuo global de 15 min aberto)`); break; }
       const banco = Number(o.price);
       const msgP = precoDaMensagem(o.msg);
       const idadeLeitura = o.conf ? Math.round((Date.now() - o.conf.getTime()) / 60000) : null;
@@ -89,7 +110,7 @@ async function lerPagina(url: string): Promise<Pag> {
       if (!pag.ok) probs.push(`leitura_falhou(${pag.nota})`);
       else {
         if (pag.pausado) probs.push('PAGINA_PAUSADA');
-        if (pag.preco != null && Math.abs(pag.preco - banco) / banco > 0.005) probs.push(`pagina!=banco (${(((pag.preco - banco) / banco) * 100).toFixed(1)}%)`);
+        if (pag.preco != null && Math.abs(pag.preco - banco) > Math.max(100, Math.round(banco * 0.001))) probs.push(`pagina!=banco (${(((pag.preco - banco) / banco) * 100).toFixed(1)}%)`);
         const alvo = o.ext ?? o.link_item;
         if (alvo && pag.item && dig(alvo) !== dig(pag.item)) probs.push(`anuncio_pagina(${pag.item})!=banco(${alvo})`);
         if (pag.preco != null && msgP != null && Math.abs(pag.preco - msgP) / msgP > 0.005) probs.push(`pagina!=mensagem (${brl(msgP)})`);
@@ -129,4 +150,4 @@ async function lerPagina(url: string): Promise<Pag> {
   } finally {
     await sql.end();
   }
-})().catch((e) => { console.error('FALHA:', e instanceof Error ? e.message : e); process.exit(2); });
+})().catch((e) => { console.error('FALHA:', e instanceof Error ? (e.stack ?? e.message).split(String.fromCharCode(10)).slice(0, 4).join(' / ') : e); process.exit(2); });
