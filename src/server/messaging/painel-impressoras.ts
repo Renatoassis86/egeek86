@@ -10,7 +10,7 @@ import { rotuloBeneficioCartao } from '@/lib/coupons/card-benefit';
 import { linhasFretePrazoPorOferta } from '@/server/shipping/frete-prazo';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
-import { avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
+import { amazonForaDasMensagens, avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
 import { ultimosVereditos } from '@/server/links/auditoria-links';
 import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
@@ -74,7 +74,7 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
     JOIN master_products m ON m.id = o.master_product_id
     LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
-      AND nn.slug IN ('mercado-livre', 'amazon') AND o.last_checked_at > now() - interval '24 hours'
+      AND nn.slug IN ('mercado-livre', 'amazon') ${amazonForaDasMensagens() ? sql`AND nn.slug <> 'amazon'` : sql``} AND o.last_checked_at > now() - interval '24 hours'
       AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
   const ligada = confirmacaoLigada();
   const audit = ligada ? await ultimosVereditos(rows.map((r) => r.id)) : new Map<string, { verdict: string; checkedAt: Date; okEm: Date | null }>();

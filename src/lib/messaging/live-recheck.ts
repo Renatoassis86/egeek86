@@ -9,7 +9,7 @@
 
 import { RULES, netKind, type NetKind } from '@/lib/messaging/group-rules';
 import type { FetchLike } from '@/lib/messaging/telegram-send';
-import { avaliarAuditoria, confirmacaoLigada, estritaCanalLigada, mesmoAnuncio } from '@/lib/messaging/confirmacao-preco';
+import { avaliarAuditoria, redeForaDasMensagens, confirmacaoLigada, estritoCanalPara, mesmoAnuncio, CONFIRMACAO } from '@/lib/messaging/confirmacao-preco';
 import { avaliarOscilacao, motivoOscilacao, type PricePoint } from '@/lib/messaging/price-guard';
 
 export interface LiveTarget {
@@ -29,6 +29,8 @@ export interface LiveTarget {
   auditoria?: { verdict: string; checkedAt: Date; okEm?: Date | null } | null;
   /** external_ref (catálogo) e marcas de mudança, para o modo estrito do canal (CONFIRMACAO_ESTRITA_CANAL). */
   catalogoRef?: string | null;
+  /** Impressora Bambu Lab (vertical impressao3d): escopo do modo estrito do canal (CONFIRMACAO_ESTRITA_CANAL_ESCOPO=bambu). */
+  ehBambu?: boolean;
   precoMudouEm?: Date | null;
   itemTrocadoEm?: Date | null;
   /** URL do anúncio (ML: contém o id do item, ex.: produto.mercadolivre.com.br/MLB-123456). */
@@ -217,6 +219,12 @@ export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResu
         return log;
       }
     }
+    // Contenção #120: Amazon fora das mensagens (original e concorrente) até a correção do leitor de preço estar provada.
+    if (redeForaDasMensagens(t.networkSlug)) {
+      log.verdict = 'fail';
+      log.reason = 'amazon_fora_das_mensagens: contenção #120 (AMAZON_FORA_DAS_MENSAGENS)';
+      return log;
+    }
     // #119: o link leva a OUTRO anúncio que o do preço gravado (troca de anúncio do vendedor): o cliente veria outro preço (ou "Anúncio pausado").
     if (t.role === 'original' && confirmacaoLigada() && t.externalItemId && t.linkItemId && !mesmoAnuncio(t.externalItemId, t.linkItemId)) {
       log.verdict = 'fail';
@@ -225,8 +233,12 @@ export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResu
     }
     // Auditoria do link (#119): bloqueante recente barra sempre; com CONFIRMACAO_ESTRITA_CANAL=1 (padrão desligada) exige veredito ok recente, anúncio concreto e ok posterior a mudança de preço/anúncio.
     if (t.role === 'original' && confirmacaoLigada()) {
-      const v = avaliarAuditoria({ rede: t.networkSlug, auditoria: t.auditoria ?? null, estrito: estritaCanalLigada(), priceItemId: t.externalItemId, catalogoRef: t.catalogoRef ?? t.externalRef, precoMudouEm: t.precoMudouEm, itemTrocadoEm: t.itemTrocadoEm, now });
+      const v = avaliarAuditoria({ rede: t.networkSlug, auditoria: t.auditoria ?? null, estrito: estritoCanalPara(t.ehBambu), priceItemId: t.externalItemId, catalogoRef: t.catalogoRef ?? t.externalRef, precoMudouEm: t.precoMudouEm, itemTrocadoEm: t.itemTrocadoEm, now });
       if (!v.ok) { log.verdict = 'fail'; log.reason = `${v.motivo}: ${v.nota}`; return log; }
+      // Amazon no estrito: sem veredito de página, vale a janela de confirmação da coleta assistida (130 min).
+      if (estritoCanalPara(t.ehBambu) && /amazon/i.test(t.networkSlug) && (!t.confirmedAt || (now.getTime() - t.confirmedAt.getTime()) / 60_000 > CONFIRMACAO.QUEDA_MIN_AMAZON)) {
+        log.verdict = 'fail'; log.reason = `confirmacao_velha: Amazon sem leitura da página nos últimos ${CONFIRMACAO.QUEDA_MIN_AMAZON} min`; return log;
+      }
     }
     if (!needsLive(t, now, input.humanApproved)) {
       if (t.role === 'original' && asKind(t) === 'amazon') log.reason = 'amazon_segue_a_regra_de_frescor_da_coleta_assistida';

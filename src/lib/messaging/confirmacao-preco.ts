@@ -29,13 +29,26 @@ export type MotivoConfirmacao =
   | 'link_divergente'
   | 'sem_veredito_ok'
   | 'sem_anuncio_concreto'
-  | 'veredito_obsoleto';
+  | 'veredito_obsoleto'
+  | 'amazon_fora_das_mensagens';
 
 export function confirmacaoLigada(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.CONFIRMACAO_PRECO_MENSAGEM ?? '').trim());
 }
 
 /** Vereditos da auditoria de links (offer_link_audit) que tiram a oferta de mensagem e lista. erro_leitura e oferta nunca auditada NÃO bloqueiam (fail-open). */
+/**
+ * CONTENÇÃO #120 (2026-11-15): a página da Amazon mostrou R$ 8.499,90 (oferta em destaque) e a lista do privado disse R$ 8.074,99 ("Parcelas sem
+ * juros") com prazo de outro bloco. Até a correção do leitor estar provada, NENHUMA oferta da Amazon sai em mensagem (lista, card, queda, grupos, canal).
+ * Flag AMAZON_FORA_DAS_MENSAGENS: ligada por padrão (Amazon fora); '0' | 'off' | 'false' | 'nao' desliga.
+ */
+export function amazonForaDasMensagens(env: Record<string, string | undefined> = process.env): boolean {
+  return !/^(0|off|false|nao|não)$/i.test((env.AMAZON_FORA_DAS_MENSAGENS ?? '').trim());
+}
+export function redeForaDasMensagens(rede: string | null | undefined, env: Record<string, string | undefined> = process.env): boolean {
+  return /amazon/i.test(rede ?? '') && amazonForaDasMensagens(env);
+}
+
 export const VEREDITOS_BLOQUEANTES = ['preco_divergente', 'item_diferente', 'pausado', 'sem_link'] as const;
 /** Auditoria mais velha que isto não vale (a página pode ter mudado). */
 export const AUDITORIA_VALE_MIN = 360;
@@ -84,6 +97,7 @@ const NOTA: Record<MotivoConfirmacao, string> = {
   veredito_obsoleto: 'o preço ou o anúncio mudou depois do último veredito ok (precisa auditar de novo)',
   sem_veredito_ok: 'sem veredito ok da auditoria do link nas últimas 6 h (fica na fila para auditar)',
   link_divergente: 'a página do link mostra outro anúncio, outro preço ou anúncio pausado (auditoria de links)',
+  amazon_fora_das_mensagens: 'contenção #120: ofertas da Amazon fora das mensagens até o preço da oferta em destaque estar provado (AMAZON_FORA_DAS_MENSAGENS)',
   troca_de_anuncio: 'o preço lido é de outro anúncio do vendedor (troca de anúncio, não queda)',
 };
 
@@ -128,11 +142,21 @@ export function estritaCanalLigada(env: Record<string, string | undefined> = pro
 }
 
 /**
+ * Modo estrito do canal/grupos POR ESCOPO (decisão do dono com o revisor, rodada 2): `CONFIRMACAO_ESTRITA_CANAL_ESCOPO=bambu` liga o estrito
+ * só para impressoras Bambu Lab (ML e Amazon); `CONFIRMACAO_ESTRITA_CANAL=1` liga para tudo. Fora do escopo vale o fail-open (veredito ruim bloqueia).
+ */
+export function estritoCanalPara(ehBambu: boolean | undefined, env: Record<string, string | undefined> = process.env): boolean {
+  if (estritaCanalLigada(env)) return true;
+  return /^bambu$/i.test((env.CONFIRMACAO_ESTRITA_CANAL_ESCOPO ?? '').trim()) && !!ehBambu;
+}
+
+/**
  * O preço desta oferta pode ser dito agora? Ordem: ativa e fora da quarentena; anúncio achado na última coleta; confirmação existente e
  * dentro da janela do uso; o link aponta para o mesmo anúncio do preço (quando os dois são conhecidos).
  * Desligada pela flag: sempre ok (comportamento antigo).
  */
 export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito {
+  if (redeForaDasMensagens(f.rede)) return falha('amazon_fora_das_mensagens');
   if (!ligada) return { ok: true };
   if (f.status !== 'active') return falha('oferta_inativa');
   if (f.quarantined) return falha('em_quarentena');
@@ -207,4 +231,20 @@ export function decidirTrocaDeAnuncio(e: EntradaTroca): 'gravar' | 'ignorar_irma
 /** Flag RIGIDO_PRIVADO: regra rígida no privado do dono, ligada por padrão; '0'/'off' desliga. */
 export function rigidoPrivadoLigado(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false)$/i.test((env.RIGIDO_PRIVADO ?? '').trim());
+}
+
+/**
+ * Escrita (invariante 2/3, #119): o preço da oferta é o do anúncio do LINK. Anúncio irmão (id diferente do link) lido enquanto o anúncio do link
+ * foi confirmado há menos de 3 h NÃO substitui preço nem link (era o que fazia a 93607216 mostrar R$ 8.749 com link de R$ 9.978). Com o do link
+ * sem leitura há mais de 3 h (provável pausado) o irmão assume. Sem link conhecido: não ignora.
+ */
+export function deveIgnorarAnuncioIrmao(e: { linkItemId: string | null; itemNovo: string | null; confirmadoEm: Date | null; now: Date }): boolean {
+  if (!e.linkItemId || !e.itemNovo || mesmoAnuncio(e.linkItemId, e.itemNovo)) return false;
+  if (!e.confirmadoEm) return false;
+  return (e.now.getTime() - e.confirmadoEm.getTime()) / 60_000 <= TROCA_JANELA_MIN;
+}
+
+/** O id informado como anúncio é, na verdade, o id de catálogo da oferta (external_ref)? Nunca gravar como external_item_id. */
+export function ehIdDeCatalogo(itemId: string | null | undefined, externalRef: string | null | undefined): boolean {
+  return !!itemId && !!externalRef && mesmoAnuncio(itemId, externalRef);
 }
