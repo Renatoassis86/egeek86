@@ -1,5 +1,7 @@
 # Conselho Geek
 
+**Versão 2026-11-15** (anterior: 2026-10-31). O que mudou está no bloco "Atualizado em 2026-11-15" no fim deste documento.
+
 O **Conselho Geek** é a mesa de especialistas que opina antes de qualquer coisa ir ao ar. Cada membro é um **perfil de competência** (nível de doutorado na área) com método próprio, perguntas fixas e linhas vermelhas. **Não são pessoas reais**, e os pareceres são recomendações: quem decide é o responsável do projeto (Renato).
 
 ## Regra de ouro
@@ -65,3 +67,21 @@ Nada passa sem o parecer do conselho. O que muda é a profundidade, conforme o t
 
 ## Fluxo de trabalho com o responsável
 Pedido do responsável, triagem do geek-lead, reunião, decisão, execução, verificação, entrega. Quando o pedido for urgente e leve, a consulta rápida roda no mesmo turno e a ata fica de uma linha.
+
+---
+
+## Atualizado em 2026-11-15
+
+Ata: `docs/conselho/atas/2026-11-15-auditoria-geral.md`. Auditoria: `docs/auditoria-2026-11-15/00-sintese.md`.
+
+**O que mudou desde 2026-10-31**
+1. **Painéis de auditoria por tema.** Além da reunião por tarefa, o presidente pode abrir uma auditoria geral com painéis paralelos e uma síntese. A de 15/11 teve quatro painéis: (1) pedidos do dono atendidos e mudanças causadas (qa-verificador, guardiao-catalogo, gamer-veterano); (2) vulnerabilidades no contexto do negócio (seguranca-db, engenheiro-infra-sre, engenheiro-backend); (3) modelo de negócio, eficácia e efetividade (estrategista-mercado, cientista-precos, especialista-precos, estatistico-senior, pesquisador-benchmark, key-user-gamer, produtor-gamer-mundial, designer-marca); (4) eficiência técnica (engenheiro-software-principal, arquiteto-next, engenheiro-performance-web, engenheiro-coleta, dba-postgres, integrador-apis, bi-dataviz). Regra dos painéis: somente leitura, número só com fonte, hipótese marcada, NÃO VERIFICADO quando não deu para provar.
+2. **Membros.** A lista de perfis vive em `agents/` (28 arquivos em 15/11); a seção "Membros do conselho" acima cita só os de pareceres, e a matriz de temas segue válida. Quem opina em eficiência técnica, coleta e banco inclui `dba-postgres`, `engenheiro-performance-web` e `engenheiro-software-principal`.
+3. **Rotina permanente de auditoria de cobertura por produto (fila #57).** Cada produto que o dono manda (print do concorrente, link, nome) vira um caso: está ou não no monitoramento, por quê, colocar no fluxo e corrigir a causa geral para itens parecidos. Registro em `docs/inventario-itens-concorrente.md`. Barreira nova só com aval do dono.
+4. **Pedido novo vai para a lista (regra de 2026-11-15).** O pedido do dono entra em `docs/fila-de-execucao.md` com prioridade e não interrompe o que está em andamento, salvo "urgente". Nada fica inacabado: tarefa só sai da fila com critério de pronto verificável.
+5. **Relatórios de 6 em 6 horas e vigia.** O responsável pela operação emite um relatório a cada 6 horas (loops, cupons, coleta, mensagens, fila) e o vigia a cada 5 minutos reinjeta laços, reabre abas e encerra transações presas (regra "nenhum loop pode parar"). Ainda não há arquivo de relatório no repositório (NÃO VERIFICADO onde vive); fila #110 versiona.
+6. **Ata semanal.** Toda semana uma ata resume decisões, divergências e perguntas ao dono, mesmo sem reunião nova. Motivo: em 15/11 não havia ata desde 13/11 apesar de 102 commits, contrariando a regra de que toda tarefa passa pelo Conselho. Atas de 14 e 15/11 pendentes (fila #104). Porte da ata para tarefa leve: uma linha.
+7. **Dono das decisões.** Persistem: o conselho é consultivo; decisão de negócio e de risco é do dono, com uma pergunta por vez. Itens que dependem de credencial ou painel dele ficam marcados "DEPENDE DO DONO" na fila e na ata.
+
+**Mudança no rito.** A ata passa a ter, quando houver auditoria, as seções "O que fica de fora" e "Perguntas ao dono" (modelo em `docs/conselho/ATA_MODELO.md` continua válido; as seções entram como extras).
+

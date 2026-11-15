@@ -38,10 +38,10 @@ O dono autorizou no chat (2026-11-12): "Aprovo o que tiver ainda de aprovar. Pod
 - **FM-50**: `cobertura-shopee` (`22,52`) e `aprovacao-auto` (`12-52/10`) disparam juntos nos minutos 22 e 52. Registrada, sem mudança de cadência (R-41 exige ata e medida).
 
 ## Entregas
-`docs/03-metodologia/FLUXO_MESTRE.md` v1.1 (N61 a N65, Q20, R-46, D-14 a D-16, seção 9.1, FM-50 a FM-53, incidentes, SLOs); adendos em `docs/fluxo-mestre/01`, `02` e `06`; `docs/fluxo-mestre/visual/gerar-fluxo-visual.mjs` com a página 11; `docs/fila-de-execucao.md` (#37 e estados); `FLUXO_MESTRE.pdf` e `FLUXO_VISUAL.pdf` regenerados.
+`docs/03-metodologia/FLUXO_MESTRE.md` v1.1 (N61 a N65, Q20, R-46, D-14 a D-16, seção 9.1, FM-50 a FM-53, incidentes, SLOs); adendos em `docs/fluxo-mestre/01`, `02` e `06`; `docs/fluxo-mestre/visual/gerar-fluxo-visual.mjs` com a página 11; `docs/fila-de-execucao.md` (#37, hoje #67 por renumeração de 2026-11-15, e estados); `FLUXO_MESTRE.pdf` e `FLUXO_VISUAL.pdf` regenerados.
 
 ## Métrica de sucesso
 Nenhuma afirmação do guia sem lastro: cada item tem commit, arquivo ou ata de origem, ou a marca NÃO VERIFICADO. Site 200 e deploy Ready depois do push.
 
 ## Retrospectiva
-Preencher quando o dono responder as decisões pendentes (fila #37).
+Preencher quando o dono responder as decisões pendentes (fila #67, ex-#37 duplicada, renumerada em 2026-11-15).
