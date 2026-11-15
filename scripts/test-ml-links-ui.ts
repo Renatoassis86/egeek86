@@ -13,7 +13,7 @@ import {
 
 const req = createRequire(import.meta.url);
 const L = req(path.resolve(process.cwd(), 'scripts/chrome/ml-links-ui.js'));
-const C = req(path.resolve(process.cwd(), 'scripts/chrome/ml-cupons-item.js'));
+const C = req(path.resolve(process.cwd(), 'public/loops/ml-cupons-item.js'));
 
 let fails = 0, total = 0;
 function check(nome: string, ok: boolean, extra?: unknown) {
@@ -94,6 +94,13 @@ check('5xx do ML recua curto e rede recua até 20', C.politica('http_5xx', 1).mi
 check('cupom: NENHUM LOOP PARA (login/captcha/token/origem/429/5xx pausam, teto 30 min)', ['login', 'captcha', 'token_recusado', 'origem_recusada', 'http_429', 'http_5xx', 'rede'].every((t) => [1, 3, 99].every((n) => { const p = C.politica(t, n); return p.acao === 'pausar' && p.min <= 30; })));
 check('janela de sessão: não relê antes de 40 min, mantém a ordem', (() => { const it = [{ id: 'a', url: 'u' }, { id: 'b', url: 'u' }, { id: 'c', url: 'u' }]; const f = C.filtrarFila(it, { b: 1000 }, 1000 + 39 * 60000, 40); const g = C.filtrarFila(it, { b: 1000 }, 1000 + 41 * 60000, 40); return f.map((x: { id: string }) => x.id).join() === 'a,c' && g.length === 3; })());
 check('cfg do cupom válida e recusa token curto', C.validarCfg({ api: 'https://s.com', token: tok }, 'www.mercadolivre.com.br').ok && !C.validarCfg({ api: 'https://s.com', token: 'x' }, 'www.mercadolivre.com.br').ok);
+
+// #115 (2026-11-15): rotulo de categoria e codigo digitavel lidos so do que a pagina escreve (fixtures sinteticas no formato medido em benefits.coupons)
+const estadoLoja = '<p>R$ 3.685,08 com Cupom</p>{"benefits":{"coupons":[{"id":"14053565","benefit_type":"product_discount","resolution":"price_decrement","source":"seller_coupon","status":"applied","label":"Cupom da loja","restrictions":[]}]},"price_decrement":{"wording_label":"com Cupom","campaign_id":"14053565"}}';
+check('cupom da loja: nome = rotulo de categoria da pagina, sem codigo', (() => { const c = C.extrairCupons(estadoLoja).cupons[0]; return c.campaign_id === '14053565' && c.name === 'Cupom da loja' && c.code === undefined; })(), C.extrairCupons(estadoLoja));
+const estadoSeguir = '<p>R$ 1.690 com Cupom por seguir a loja</p>{"coupons":[{"id":"14771426","benefit_type":"product_discount","resolution":"pill","source":"new_followers_my_page","status":"available","label":"R$ 1.690 com Cupom por seguir a loja"}],"price_decrement":{"campaign_id":"14771426"}}';
+check('seguir a loja: nenhum rotulo/nome inventado', C.extrairCupons(estadoSeguir).cupons.every((c: { name?: string }) => c.name === undefined));
+check('codigo digitavel so quando a pagina escreve', C.codigoDaCampanha('{"id":"9","code":"beni200"}', '9', '') === 'BENI200' && C.codigoDaCampanha('', '9', 'Digite o cupom BENI200 no checkout') === 'BENI200' && C.codigoDaCampanha('', '9', 'use o cupom da loja') === null && C.codigoDaCampanha('{"id":"9"}', '9', '') === null);
 
 console.log(`\n${total - fails}/${total} ok`);
 process.exit(fails ? 1 : 0);

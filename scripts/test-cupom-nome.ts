@@ -34,13 +34,24 @@ const a4 = resolveCouponUse({ net: 'mercado-livre', listTitle: '5% OFF', listSco
 ok(a4.name === '5% de desconto', 'escopo "selecionados" nao entra no nome', a4);
 // (b) sem nome
 const b1 = resolveCouponUse({ net: 'mercado-livre', offCents: 10000, pct: 8, ativacao: 'EU_QUERO' });
-ok(!b1.named && b1.name === 'R$ 100,00 de desconto' && b1.howTo.length === 3 && b1.howTo[1] === 'Em Cupons, ative o cupom de R$ 100,00', 'ML sem nome: rotulo do valor e passo a passo', b1);
+ok(!b1.named && b1.name === 'Cupom de R$ 100,00' && b1.howTo.length === 3 && b1.howTo[1] === 'Em Cupons, ative o cupom de R$ 100,00', 'ML sem nome, tipo ativar (EU_QUERO): rotulo do valor e passo a passo', b1);
 const b2 = resolveCouponUse({ net: 'amazon', offCents: 2000, pct: 10 });
 ok(!b2.named && b2.howTo[1].startsWith('Clique em Aplicar o cupom de R$ 20,00') && b2.activation.startsWith('1. Abra o anúncio; 2.'), 'Amazon sem nome: Aplicar cupom abaixo do preco', b2);
 const b3 = resolveCouponUse({ net: 'mercado-livre', offCents: 1000, pct: 5, ativacao: 'AUTOMATIC' });
 ok(b3.howTo[1].includes('sozinho'), 'ML AUTOMATIC: nao precisa ativar', b3);
 const b4 = resolveCouponUse({ net: 'mercado-livre', offCents: 1000, pct: 10, rule: { kind: 'percentual', valueNum: 10 } });
-ok(b4.name === '10% de desconto', 'regra lida vira rotulo', b4);
+ok(b4.name === 'Cupom de 10%' && !/ative/i.test(b4.howTo.join(' ')), 'regra lida vira rotulo e, sem tipo conhecido, nao manda ativar', b4);
+
+// #115 (2026-11-15): tipo desconhecido nunca vira "ative"; codigo digitado; rotulo de categoria da pagina
+const t1 = resolveCouponUse({ net: 'mercado-livre', offCents: 20000, pct: 2.4 });
+ok(!t1.named && t1.name === 'Cupom de R$ 200,00' && !/ative/i.test(t1.activation) && /confira lá como aplicar/.test(t1.activation), 'ML sem nome e sem tipo: rotulo honesto, sem "ative"', t1);
+const t2 = resolveCouponUse({ net: 'mercado-livre', pageName: 'Cupom da loja', offCents: 20000, pct: 2.4 });
+ok(!t2.named && t2.name === 'Cupom da loja: R$ 200,00 de desconto' && !/ative/i.test(t2.activation), 'rotulo "Cupom da loja" da pagina complementa o valor e nao e nome', t2);
+const t3 = resolveCouponUse({ net: 'mercado-livre', code: 'beni200', pageName: 'Cupom da loja', offCents: 20000, pct: 2.4 });
+ok(t3.named && t3.name === 'BENI200' && t3.howTo[1] === 'No campo de cupom do carrinho ou do pagamento, digite o código BENI200', 'ML com codigo: Cupom CODIGO + digitar no campo de cupom', t3);
+const t4 = resolveCouponUse({ net: 'mercado-livre', listTitle: 'R$ 100 OFF', ativacao: 'EU_QUERO', offCents: 10000, pct: 8 });
+ok(t4.howTo[1] === 'Em Cupons, ative o cupom R$ 100 OFF', 'tipo ativar conhecido (lista): ative em Cupons com o nome', t4);
+ok(!/% OFF/.test([t1, t2, t3, t4].map((x) => x.name + x.activation).join(' ')), 'sem "% OFF"');
 
 // contrato do POST: name/code opcionais e validados
 const row = (coupons: unknown) => normalizePageRow('amazon', { ref: 'B0TESTE001', price_seen_cents: 10000, coupons }, { externalRef: 'amazon-B0TESTE001', priceCents: 10000 });

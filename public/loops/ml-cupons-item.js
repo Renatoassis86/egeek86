@@ -78,6 +78,39 @@
     return achado;
   };
 
+  /**
+   * RÓTULO DE CATEGORIA do cupom (#115, 2026-11-15): a página do ML NÃO traz nome próprio de cupom; o estado embutido (benefits.coupons[]) traz só
+   * { id, source: 'seller_coupon' | 'new_followers_my_page' | ..., label: 'Cupom da loja' | 'R$ x com Cupom por seguir a loja' | ... }. Medido em 2026-11-15.
+   * Devolve 'Cupom da loja' (rótulo escrito pela página, ou source seller_coupon) e null para tudo o mais (preço com cupom, seguir a loja, outras fontes).
+   * O servidor trata isso como complemento do valor ("Cupom da loja: R$ 200,00 de desconto"), nunca como nome para ativar.
+   */
+  PURO.rotuloDaCategoria = function (cru, campaignId) {
+    cru = String(cru || '');
+    if (!campaignId) return null;
+    var re = new RegExp('"id"\\s*:\\s*"' + String(campaignId).replace(/\D/g, '') + '"\\s*,\\s*"benefit_type"[^}]{0,300}?"source"\\s*:\\s*"([a-z_]+)"[\\s\\S]{0,400}?"label"\\s*:\\s*"([^"]{3,80})"');
+    var m = re.exec(cru);
+    if (!m) return null;
+    if (/seguir|follow/i.test(m[1] + ' ' + m[2])) return null;
+    if (/^cupom (da loja|do vendedor)$/i.test(m[2].trim())) return m[2].trim();
+    return m[1] === 'seller_coupon' ? 'Cupom da loja' : null;
+  };
+
+  /**
+   * CÓDIGO digitável (cupom que se INSERE no checkout, sem botão de ativar; dono, 2026-11-15). NÃO VALIDADO em produção (o anúncio do exemplo não trazia
+   * cupom no momento da medição): só devolve código quando a página o ESCREVE: campo code/coupon_code junto do id da campanha no estado embutido, ou
+   * frase "use/insira/digite o cupom|código XXXX" no texto. O servidor valida (4 a 20 [A-Z0-9_-], com letra). null = não há código lido.
+   */
+  PURO.codigoDaCampanha = function (cru, campaignId, texto) {
+    cru = String(cru || '');
+    var i = cru.indexOf('"id":"' + campaignId + '"');
+    if (i >= 0) {
+      var j = cru.slice(i, i + 900), m = /"(?:coupon_code|voucher_code|code)"\s*:\s*"([A-Za-z0-9_-]{4,20})"/.exec(j);
+      if (m && /[A-Za-z]/.test(m[1])) return m[1].toUpperCase();
+    }
+    var t = /(?:[Uu]se|[Ii]nsira|[Dd]igite|[Aa]plique)\s+o\s+(?:cupom|c[óo]digo)\s+([A-Z0-9][A-Z0-9_-]{3,19})(?![A-Za-z0-9_-])/.exec(String(texto || ''));
+    return t && /[A-Z]/.test(t[1]) ? t[1] : null;
+  };
+
   PURO.extrairCupons = function (html) {
     var texto = PURO.textoDoHtml(html);
     var vistos = {}, cupons = [];
@@ -100,6 +133,9 @@
         c.campaign_id = k[1];
         var nome = PURO.nomeDaCampanha(cru, k[1]);
         if (nome) c.name = nome;
+        else { var cat = PURO.rotuloDaCategoria(cru, k[1]); if (cat) c.name = cat; }
+        var cod = PURO.codigoDaCampanha(cru, k[1], texto);
+        if (cod) c.code = cod;
       }
     });
     var mencoes = (texto.match(/cupom|cupon/gi) || []).length;

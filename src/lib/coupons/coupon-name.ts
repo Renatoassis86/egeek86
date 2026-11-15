@@ -43,6 +43,16 @@ export function isGenericCouponName(s: string): boolean {
   return false;
 }
 
+/**
+ * Rótulo que o Mercado Livre escreve na página para QUALQUER cupom de loja/vendedor ("Cupom da loja", "Cupom do vendedor", "Cupom Mercado Livre"):
+ * é a categoria do cupom, não o nome da promoção. Medido em 2026-11-15 (benefits.coupons[].label): a página do ML NÃO traz nome próprio de cupom.
+ * Serve de complemento honesto do valor ("Cupom da loja: R$ 200,00 de desconto"), nunca de nome para ativar.
+ */
+export function isStoreCouponLabel(s: string): boolean {
+  const t = s.normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+  return /^cupom (da loja|do vendedor|da marca|mercado livre|meli|do mercado livre)$/.test(t);
+}
+
 /** Nome lido (página/POST): texto limpo e não genérico. */
 export function sanitizeCouponName(raw: unknown): string | null {
   const s = cleanCouponText(raw);
@@ -64,6 +74,8 @@ export interface CouponUseInput {
   code?: string | null;
   /** Nome/título da promoção lido na própria página do anúncio. */
   pageName?: string | null;
+  /** Rótulo de categoria que a página escreve ("Cupom da loja"); complementa o valor quando não há nome. */
+  storeLabel?: string | null;
   /** Título da campanha na lista de cupons do portal (ex.: "10% OFF"). */
   listTitle?: string | null;
   /** Escopo na lista ("Em produtos de Loja", "Em TV Toshiba"). */
@@ -102,12 +114,16 @@ function lowerFirst(s: string): string {
 /** Passos de uso por rede e tipo. Sem inventar interface: só o que as páginas mostram ("Em Cupons", "Aplicar cupom", voucher no carrinho). */
 export function howToUse(i: { net: CouponNet; code: string | null; name: string; named: boolean; ativacao?: string | null; offCents: number }): string[] {
   const valor = fmtBRL(i.offCents);
-  if (i.code) return ['Abra o anúncio e adicione ao carrinho', `No campo de cupom, digite o código ${i.code}`, 'Finalize a compra'];
+  if (i.code) return ['Abra o anúncio e adicione ao carrinho', `No campo de cupom do carrinho ou do pagamento, digite o código ${i.code}`, 'Finalize a compra'];
   if (i.net === 'amazon') return ['Abra o anúncio', `Clique em Aplicar o cupom de ${valor}, abaixo do preço`, 'Finalize a compra'];
   if (i.net === 'shopee') return ['Abra o anúncio', `Aplique o voucher${i.named ? ` ${i.name}` : ` de ${valor}`} no carrinho`, 'Finalize a compra'];
-  // Mercado Livre
-  if (String(i.ativacao ?? '').toUpperCase() === 'AUTOMATIC') return ['Abra o anúncio', 'O cupom é aplicado sozinho no pagamento (não precisa ativar)', 'Finalize a compra'];
-  return ['Abra o anúncio', i.named ? `Em Cupons, ative o cupom ${i.name}` : `Em Cupons, ative o cupom de ${valor}`, 'Finalize a compra'];
+  // Mercado Livre. O TIPO só é conhecido pela lista de cupons (ativacao): EU_QUERO = ativa com um clique em Cupons; AUTOMATIC = aplicado sozinho.
+  // Sem tipo conhecido (a página do anúncio não o diz) NÃO se afirma "ative": só o que a página mostrou (#115, 2026-11-15: havia cupom de código digitado
+  // no checkout e a mensagem mandava ativar em Cupons, porque o texto caía em "ativar com clique" sempre que não havia nome lido).
+  const at = String(i.ativacao ?? '').toUpperCase();
+  if (at === 'AUTOMATIC') return ['Abra o anúncio', 'O cupom é aplicado sozinho no pagamento (não precisa ativar)', 'Finalize a compra'];
+  if (at === 'EU_QUERO') return ['Abra o anúncio', i.named ? `Em Cupons, ative o cupom ${i.name}` : `Em Cupons, ative o cupom de ${valor}`, 'Finalize a compra'];
+  return ['Abra o anúncio', 'O preço com cupom aparece na página do anúncio; confira lá como aplicar o cupom antes de pagar', 'Finalize a compra'];
 }
 
 /**
@@ -117,7 +133,10 @@ export function howToUse(i: { net: CouponNet; code: string | null; name: string;
  */
 export function resolveCouponUse(inp: CouponUseInput): CouponUse {
   const code = sanitizeCouponCode(inp.code);
-  const page = sanitizeCouponName(inp.pageName);
+  const pageRaw = sanitizeCouponName(inp.pageName);
+  const extra = sanitizeCouponName(inp.storeLabel);
+  const storeLabel = pageRaw && isStoreCouponLabel(pageRaw) ? pageRaw : extra && isStoreCouponLabel(extra) ? extra : null;
+  const page = pageRaw && !isStoreCouponLabel(pageRaw) ? pageRaw : null;
   let list = sanitizeCouponName(inp.listTitle);
   if (list) {
     const scope = cleanCouponText(inp.listScope ?? '', 70);
@@ -127,9 +146,11 @@ export function resolveCouponUse(inp: CouponUseInput): CouponUse {
   const named = name != null;
   if (!name) {
     const r = inp.rule;
-    if (r?.kind === 'percentual' && r.valueNum) name = `${String(r.valueNum).replace('.', ',')}% de desconto`;
-    else if (r?.kind === 'valor_fixo' && r.valueNum) name = `${fmtBRL(Math.round(r.valueNum * 100))} de desconto`;
-    else name = `${fmtBRL(inp.offCents)} de desconto`;
+    // Rótulo explícito e honesto do que a loja mostra: o valor do cupom (nunca um nome inventado), com a categoria da página quando ela a escreve.
+    const valor = r?.kind === 'percentual' && r.valueNum ? `${String(r.valueNum).replace('.', ',')}% de desconto`
+      : r?.kind === 'valor_fixo' && r.valueNum ? `${fmtBRL(Math.round(r.valueNum * 100))} de desconto`
+      : `${fmtBRL(inp.offCents)} de desconto`;
+    name = storeLabel ? `${storeLabel}: ${valor}` : `Cupom de ${valor.replace(/ de desconto$/, '')}`;
   }
   const howTo = howToUse({ net: inp.net, code, name, named, ativacao: inp.ativacao, offCents: inp.offCents });
   return { name, code, named, howTo, activation: stepsText(howTo) };
