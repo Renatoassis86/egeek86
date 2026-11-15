@@ -1,0 +1,6 @@
+{
+  "tabelas_antes": [
+    "affiliate_offers"
+  ],
+  "rollback": "drizzle/migrations/0055_offer_link_item.rollback.sql"
+}

@@ -1,4 +1,6 @@
 import 'server-only';
+import { decidirTrocaDeAnuncio } from '@/lib/messaging/confirmacao-preco';
+import { alinharLinkAoAnuncio } from '../link-do-anuncio';
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, inArray, isNotNull, isNull, lt, or, sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -185,6 +187,8 @@ interface ApplyResult {
   snapshots: number;
   rejectedImplausible: number;
   priced: string[];
+  /** #119: leituras de anúncio irmão mais caro ignoradas (a oferta segue presa ao anúncio já lido). */
+  ignoredSiblings: number;
 }
 
 /** Grava os preços REAIS devolvidos pela API. Oferta nova herda `vertical`; oferta de vendedor existente é corrigida para a vertical do grupo. */
@@ -193,7 +197,7 @@ async function applyVerticalGroup(
   vertical: NonGamesVertical,
   outcome: Extract<VerticalCatalogOutcome, { kind: 'complete' | 'partial' }>
 ): Promise<ApplyResult> {
-  const out: ApplyResult = { created: 0, snapshots: 0, rejectedImplausible: 0, priced: [] };
+  const out: ApplyResult = { created: 0, snapshots: 0, rejectedImplausible: 0, priced: [], ignoredSiblings: 0 };
   const results = collapseBySeller(outcome.items);
   if (results.length === 0) return out;
 
@@ -286,6 +290,14 @@ async function applyVerticalGroup(
       out.created++;
     }
     touched.add(offerId);
+    // #119: anúncio irmão (outro catálogo do mesmo vendedor) mais caro, com o anúncio preso à oferta lido há pouco: não troca preço nem link.
+    if (existing) {
+      const cur = (await db.execute(sql`SELECT external_item_id AS item, current_price_cents AS cents, last_price_confirmed_at AS conf FROM affiliate_offers WHERE id = ${offerId}::uuid`)) as unknown as { item: string | null; cents: number | string; conf: Date | string | null }[];
+      if (cur[0] && decidirTrocaDeAnuncio({ itemAtual: cur[0].item, precoAtualCents: Number(cur[0].cents), confirmadoEm: cur[0].conf ? new Date(cur[0].conf) : null, itemNovo: r.externalItemId, precoNovoCents: r.priceCents, now: new Date() }) === 'ignorar_irmao') {
+        out.ignoredSiblings++;
+        continue;
+      }
+    }
     // Vendas do anuncio (sold_quantity): grava SO se a API entregou o campo neste payload (sem chamada extra; sem campo = nenhum SQL).
     const sold = soldQuantityWrites([r])[0];
     if (sold) await saveOfferSoldQuantity(offerId, sold.soldQuantity);
@@ -308,7 +320,8 @@ async function applyVerticalGroup(
       // "Preco errado" decidido pelo dono na fila: a coleta nao libera a quarentena.
       sql`NOT EXISTS (SELECT 1 FROM identity_decisions d WHERE d.offer_id = ${affiliateOffers.id} AND d.undone_at IS NULL AND d.axis = 'preco' AND d.value = 'preco_errado')`,
     ));
-    if (await recordPriceSnapshot({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api' })) out.snapshots++;
+    if (await recordPriceSnapshot({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api', itemId: r.externalItemId })) out.snapshots++;
+    await alinharLinkAoAnuncio(offerId, r.externalItemId);
     out.priced.push(offerId);
   }
 

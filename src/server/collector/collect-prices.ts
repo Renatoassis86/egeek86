@@ -1,4 +1,5 @@
 import 'server-only';
+import { alinharLinkAoAnuncio } from './link-do-anuncio';
 import { randomUUID } from 'node:crypto';
 import { and, eq, inArray, isNotNull, isNull, or, lt, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -834,10 +835,12 @@ async function applySnapshotsToGroup(
         priceCents: result.priceCents,
         listPriceCents: result.listPriceCents,
         source: 'api',
+        itemId: group.networkSlug === 'mercado-livre' ? result.externalItemId : null,
       })
     ) {
       snapshotsWritten++;
     }
+    if (group.networkSlug === 'mercado-livre') await alinharLinkAoAnuncio(offerId, result.externalItemId);
     pricedOfferIds.push(offerId);
     // sellerId só pode ter mudado na oferta EXISTENTE (buy box trocou de
     // vendedor) — numa recém-criada já foi setado no insert acima, round-trip

@@ -9,6 +9,7 @@
 
 import { RULES, netKind, type NetKind } from '@/lib/messaging/group-rules';
 import type { FetchLike } from '@/lib/messaging/telegram-send';
+import { confirmacaoLigada, mesmoAnuncio } from '@/lib/messaging/confirmacao-preco';
 import { avaliarOscilacao, motivoOscilacao, type PricePoint } from '@/lib/messaging/price-guard';
 
 export interface LiveTarget {
@@ -22,6 +23,8 @@ export interface LiveTarget {
   externalRef: string | null;
   /** id do anúncio (affiliate_offers.external_item_id, ex.: MLB123...). Preferido sobre o id extraído da URL (que pode ser meli.la). */
   externalItemId?: string | null;
+  /** Anúncio para o qual o link afiliado aponta (affiliate_offers.link_item_id, #119). */
+  linkItemId?: string | null;
   /** URL do anúncio (ML: contém o id do item, ex.: produto.mercadolivre.com.br/MLB-123456). */
   affiliateUrl: string | null;
   /** Vendedor da oferta (ML: seller_id) para conferir que o anúncio é o mesmo. */
@@ -100,7 +103,7 @@ async function meliQuote(t: LiveTarget, deps: LiveDeps): Promise<LiveQuote> {
   // Terceiros: /items?ids= devolve 403. O caminho que funciona é o da coleta: /products/{catalog_product_id}/items (vencedores).
   const catalogId = t.externalRef && /^MLB\d+$/.test(t.externalRef) ? t.externalRef : null;
   if (!catalogId) return { ok: false, kind: 'unsupported', reason: 'ml_sem_catalogo' };
-  const itemId = t.externalItemId ?? meliItemIdFromUrl(t.affiliateUrl);
+  const itemId = t.externalItemId ?? t.linkItemId ?? meliItemIdFromUrl(t.affiliateUrl);
   if (!itemId && !t.sellerExternalId) return { ok: false, kind: 'unsupported', reason: 'ml_sem_id_do_anuncio' };
   if (!deps.meliToken) return { ok: false, kind: 'error', reason: 'ml_sem_token' };
   const token = await deps.meliToken();
@@ -207,6 +210,12 @@ export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResu
         log.reason = motivoOscilacao(osc);
         return log;
       }
+    }
+    // #119: o link leva a OUTRO anúncio que o do preço gravado (troca de anúncio do vendedor): o cliente veria outro preço (ou "Anúncio pausado").
+    if (t.role === 'original' && confirmacaoLigada() && t.externalItemId && t.linkItemId && !mesmoAnuncio(t.externalItemId, t.linkItemId)) {
+      log.verdict = 'fail';
+      log.reason = `link_de_outro_anuncio: preço do anúncio ${t.externalItemId}, link do anúncio ${t.linkItemId}`;
+      return log;
     }
     if (!needsLive(t, now, input.humanApproved)) {
       if (t.role === 'original' && asKind(t) === 'amazon') log.reason = 'amazon_segue_a_regra_de_frescor_da_coleta_assistida';

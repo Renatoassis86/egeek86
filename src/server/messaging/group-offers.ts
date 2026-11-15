@@ -1,4 +1,5 @@
 import 'server-only';
+import { confirmacaoLigada } from '@/lib/messaging/confirmacao-preco';
 import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
 import { reguaConfig, reguaDaLoja } from '@/lib/messaging/regua';
 import { sql, type SQL } from 'drizzle-orm';
@@ -503,7 +504,7 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
       FROM affiliate_offers o
       INNER JOIN master_products m ON m.id = o.master_product_id
       WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.affiliate_link_pending = false AND o.current_price_cents > 0
-        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz
+        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz ${confirmacaoLigada() ? sql`AND o.consecutive_miss_count = 0` : sql``}
         AND o.vertical IN (${txtList(o.verticals)}) AND m.vertical IN (${txtList(o.verticals)})
         AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')}
         AND ${masterNoEscopoSql('m')}
@@ -704,7 +705,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
       WHERE o.master_product_id IN (${idList(ids)}) AND o.status = 'active' AND o.current_price_cents > 0
-        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz AND ${eligibleOfferSql('o')}
+        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz AND ${eligibleOfferSql('o')} ${confirmacaoLigada() ? sql`AND o.consecutive_miss_count = 0` : sql``}
     `),
     db.execute<Row>(sql`
       SELECT master_product_id, MIN(at) AS first_at, MIN(min_cents) AS rec_cents

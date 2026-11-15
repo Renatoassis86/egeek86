@@ -10,6 +10,7 @@ import { rotuloBeneficioCartao } from '@/lib/coupons/card-benefit';
 import { linhasFretePrazoPorOferta } from '@/server/shipping/frete-prazo';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
+import { avaliarConfirmacao, confirmacaoLigada, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
 import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
   alvosLigados, INTERVALO_RODADA_MS, MAX_QUEDAS_POR_CICLO, MASTERS_PRIVADO, montarPaineis, secaoDe, textoQuedaSeguro,
@@ -36,7 +37,7 @@ const JOB_LEGADO = (alvo: Alvo) => `painel-impressoras-${alvo}`;
 
 interface ItemTexto { key: string; rede: 'mercado-livre' | 'amazon'; text: string }
 interface QuedaTexto { oferta: string; text: string; url?: string | null; gatilho?: string }
-interface ListaCongelada { inicio: string; listas: ItemTexto[]; quedas: QuedaTexto[]; precos: Record<string, number>; ativosMl: number; ativosAmazon: number; problemas: string[] }
+interface ListaCongelada { inicio: string; listas: ItemTexto[]; quedas: QuedaTexto[]; precos: Record<string, number>; itens?: Record<string, string>; foraPorConfirmacao?: number; ativosMl: number; ativosAmazon: number; problemas: string[] }
 interface Estado { lista: string | null; cursor: number; ids: (string | null)[]; apagar: string[]; aberta: boolean; pausaAte: Date | null }
 
 export interface ResultadoAlvo {
@@ -49,16 +50,24 @@ export interface ResultadoPaineis { ligado: boolean; alvos: ResultadoAlvo[]; ger
 interface RowOferta {
   id: string; master_id: string; master_name: string; title: string | null; rede: string; loja: string | null; price: string; url: string | null; slug: string;
   checked: Date | string; rating: string | null; nivel: string | null;
+  conf: Date | string | null; miss: string | null; item: string | null; link_item: string | null;
 }
 
 const id12 = (id: string) => id.replace(/-/g, '').slice(0, 12);
 
 /** Impressoras (aparelhos) do ML e da Amazon: tipo 'impressoras' do site; sem item miúdo; ativas, <= 24 h, sem quarentena. */
-export async function carregarOfertasImpressoras(now: Date): Promise<(OfertaPainel & { id: string })[]> {
+export type OfertaCarregada = OfertaPainel & { id: string; confQueda?: Veredito; itemId?: string | null };
+
+/** Ofertas fora da LISTA por falta de confirmação fresca (#119): preenchido a cada carregamento, lido por gerarLista. */
+let foraDaLista = 0;
+
+export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarregada[]> {
+  foraDaLista = 0;
   const rows = (await db.execute<RowOferta & Record<string, unknown>>(sql`
     SELECT o.id::text AS id, m.id::text AS master_id, m.name AS master_name, o.title, nn.slug AS rede,
            COALESCE(NULLIF(o.store_name, ''), s.nickname) AS loja, o.current_price_cents::text AS price,
-           o.affiliate_url AS url, o.slug, o.last_checked_at AS checked, s.positive_rating_percent::text AS rating, s.reputation_level AS nivel
+           o.affiliate_url AS url, o.slug, o.last_checked_at AS checked,
+           o.last_price_confirmed_at AS conf, o.consecutive_miss_count::text AS miss, o.external_item_id AS item, o.link_item_id AS link_item, s.positive_rating_percent::text AS rating, s.reputation_level AS nivel
     FROM affiliate_offers o
     JOIN affiliate_networks nn ON nn.id = o.network_id
     JOIN master_products m ON m.id = o.master_product_id
@@ -66,11 +75,19 @@ export async function carregarOfertasImpressoras(now: Date): Promise<(OfertaPain
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
       AND nn.slug IN ('mercado-livre', 'amazon') AND o.last_checked_at > now() - interval '24 hours'
       AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
-  const base = rows
+  const ligada = confirmacaoLigada();
+  const fatos = (r: RowOferta, uso: 'queda' | 'lista') => avaliarConfirmacao({
+    uso, rede: r.rede, status: 'active', quarantined: false, confirmedAt: r.conf ? new Date(r.conf) : null, missCount: r.miss != null ? Number(r.miss) : 0,
+    priceItemId: r.item, linkItemId: r.link_item ?? itemIdDaUrl(r.url), now,
+  }, ligada);
+  // Lista: preço confirmado há <= 6 h e anúncio achado na última coleta; sem isso a oferta NÃO entra na lista (nunca "preço a confirmar" inventado).
+  const aprovadas = rows.filter((r) => { const v = fatos(r, 'lista'); if (!v.ok) foraDaLista++; return v.ok; });
+  const base = aprovadas
     .filter((r) => classificarTipo('impressao3d', r.master_name) === 'impressoras')
     .filter((r) => !ehItemMiudoOuDuvida(r.master_name, Number(r.price), 'general', 'impressao3d'))
     .map((r) => ({
       id: r.id, title: r.title, masterId: r.master_id, masterName: r.master_name, rede: r.rede, loja: r.loja, cents: Number(r.price),
+      confQueda: fatos(r, 'queda'), itemId: r.item,
       url: r.url || (r.slug ? `${GROUP_LINK_BASE}/go/${encodeURIComponent(r.slug)}` : null), checkedAt: new Date(r.checked),
       reputacao: r.rating ? `${Math.round(Number(r.rating))}% de avaliações positivas` : null,
     }));
@@ -91,7 +108,7 @@ export async function carregarOfertasImpressoras(now: Date): Promise<(OfertaPain
       if (r && r.detail.finalCents > 0 && r.detail.finalCents < o.cents) cupons.set(o.id, { final: r.detail.finalCents, nome: r.detail.named ? r.detail.name : null });
     } catch { /* sem cupom */ }
   }));
-  return base.map((o) => {
+  return base.map((o): OfertaCarregada => {
     const bs = ((cartoes.get(o.id) ?? []) as (Parameters<typeof rotuloBeneficioCartao>[0] & { needsConfirm: boolean; kind: string })[])
       .filter((b) => b.kind !== 'parcelas')
       .map((b) => ({ rotulo: rotuloBeneficioCartao(b), needsConfirm: b.needsConfirm }))
@@ -117,7 +134,7 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
   const ofertas = await carregarOfertasImpressoras(now);
   const anterior = await ultimaLista();
   const prev = anterior && now.getTime() - new Date(anterior.inicio).getTime() < 3 * 3600_000 ? anterior.precos : null;
-  const comAnterior: (OfertaPainel & { id: string })[] = ofertas.map((o) => ({ ...o, anteriorCents: prev ? (prev[id12(o.id)] ?? null) : null }));
+  const comAnterior: OfertaCarregada[] = ofertas.map((o) => ({ ...o, anteriorCents: prev ? (prev[id12(o.id)] ?? null) : null }));
   // Frete e prazo (#118): só nos 20 primeiros itens de cada rede (P2S Combo primeiro) para não estourar 4096. Sem leitura fresca: 'Prazo ainda não lido'.
   try {
     for (const rede of ['mercado-livre', 'amazon']) {
@@ -145,9 +162,14 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
   const chavesCartao = new Set<string>();
   for (const o of comAnterior) {
     if (emCooldown.has(o.id)) continue;
+    // #119: card individual (queda, mínimo, cupom, cartão) só sai com preço confirmado há <= 60 min e link no mesmo anúncio do preço.
+    if (o.confQueda && !o.confQueda.ok) { problemas.push(`card ${id12(o.id)} retido: ${o.confQueda.nota}`); continue; }
     const sc = secaoDe(o);
     const base = sc.ordemFixa * 1_000_000;
-    if (o.anteriorCents && o.cents < o.anteriorCents) {
+    // Queda só entre leituras do MESMO anúncio: troca de anúncio do vendedor não é queda (A1 Combo, 15/11).
+    const mesmoItem = quedaDoMesmoAnuncio(anterior?.itens?.[id12(o.id)], o.itemId);
+    if (!mesmoItem) problemas.push(`queda ${id12(o.id)} descartada: troca de anúncio (${anterior?.itens?.[id12(o.id)]} para ${o.itemId})`);
+    if (mesmoItem && o.anteriorCents && o.cents < o.anteriorCents) {
       const atual: MenorPreco = { chave: o.id, rotulo: o.masterName, cents: o.cents, rede: o.rede, loja: o.loja, slug: '' };
       const acao = decidir({ atual, base: { cents: o.anteriorCents, rede: o.rede }, min14: min14.get(o.masterId) ?? null, ultimoAvisoEm: null, now });
       if (acao === 'queda' || acao === 'minimo') { cands.push({ o, gatilho: acao, chave: `${o.id}|q|${o.cents}`, prio: base, queda: o.anteriorCents - o.cents }); continue; }
@@ -185,9 +207,10 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
   }
   const p: SaidaPaineis = montarPaineis({ ofertas: comAnterior, inicio: now, adTag: getAdTag() });
   const precos: Record<string, number> = {};
-  for (const o of ofertas) precos[id12(o.id)] = o.cents;
+  const itens: Record<string, string> = {};
+  for (const o of ofertas) { precos[id12(o.id)] = o.cents; if (o.itemId) itens[id12(o.id)] = o.itemId; }
   const lista: ListaCongelada = {
-    inicio: now.toISOString(), listas: p.paineis.map((x) => ({ key: x.key, rede: x.rede, text: x.text })), quedas, precos,
+    inicio: now.toISOString(), listas: p.paineis.map((x) => ({ key: x.key, rede: x.rede, text: x.text })), quedas, precos, itens, foraPorConfirmacao: foraDaLista,
     ativosMl: p.ativosMl, ativosAmazon: p.ativosAmazon, problemas: [...problemas, ...p.problemas].slice(0, 8),
   };
   if (gravarLista) {

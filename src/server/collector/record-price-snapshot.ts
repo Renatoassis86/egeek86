@@ -9,6 +9,8 @@ export interface RecordSnapshotInput {
   listPriceCents?: number | null;
   couponCode?: string | null;
   source: 'manual' | 'api' | 'scrape';
+  /** Anúncio (ML: MLB...) cujo preço está sendo gravado. Troca de anúncio na mesma oferta zera previous_price (troca não é queda) e relê o link (#119). */
+  itemId?: string | null;
 }
 
 /**
@@ -37,6 +39,7 @@ const HEARTBEAT_MS = 24 * 60 * 60 * 1000;
 /** Devolve true quando uma linha nova entrou em affiliate_price_snapshots (preco mudou ou batimento de 24 h). */
 export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<boolean> {
   let inserted = false;
+  let trocouDeAnuncio = false;
   await db.transaction(async (tx) => {
     // Serializa escritas concorrentes da mesma oferta (ticks do cron que se
     // sobrepõem): o lock vale até o fim da transação, então a segunda
@@ -48,6 +51,12 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<b
       .from(affiliateOffers)
       .where(eq(affiliateOffers.id, input.offerId))
       .limit(1);
+    // Anúncio anterior (coluna fora do schema Drizzle): só lido quando o chamador informa o anúncio atual.
+    if (input.itemId) {
+      const prev = (await tx.execute(sql`SELECT external_item_id AS item FROM affiliate_offers WHERE id = ${input.offerId}::uuid`)) as unknown as { item: string | null }[];
+      const antes = prev[0]?.item ?? null;
+      trocouDeAnuncio = !!antes && antes.replace(/\D/g, '') !== input.itemId.replace(/\D/g, '');
+    }
 
     const priceChanged = current == null || current.currentPriceCents !== input.priceCents;
 
@@ -89,11 +98,20 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<b
       .update(affiliateOffers)
       .set({
         currentPriceCents: input.priceCents,
-        ...(current != null && priceChanged
-          ? { lastPriceChangeAt: new Date(), previousPriceCents: current.currentPriceCents }
-          : {}),
+        ...(trocouDeAnuncio
+          ? { previousPriceCents: null } // troca de anúncio: o preço anterior era de OUTRO anúncio, não há queda a mostrar
+          : current != null && priceChanged
+            ? { lastPriceChangeAt: new Date(), previousPriceCents: current.currentPriceCents }
+            : {}),
       })
       .where(eq(affiliateOffers.id, input.offerId));
+    if (input.itemId) {
+      // Grava o anúncio precificado (índice único parcial por rede: se outro registro já tem esse anúncio, não grava).
+      await tx.execute(sql`
+        UPDATE affiliate_offers SET external_item_id = ${input.itemId}, item_trocado_at = CASE WHEN ${trocouDeAnuncio}::boolean THEN now() ELSE item_trocado_at END
+        WHERE id = ${input.offerId}::uuid AND (external_item_id IS DISTINCT FROM ${input.itemId})
+          AND NOT EXISTS (SELECT 1 FROM affiliate_offers x WHERE x.network_id = affiliate_offers.network_id AND x.external_item_id = ${input.itemId} AND x.id <> affiliate_offers.id)`);
+    }
   });
   // SOMBRA (flag PRICE_DAILY_SHADOW=1, desligada por padrão): cotação nova => atualiza a oferta-dia de hoje e
   // detecta mudança do menor preço do produto (price_min_events). Melhor esforço: NUNCA derruba a coleta.
