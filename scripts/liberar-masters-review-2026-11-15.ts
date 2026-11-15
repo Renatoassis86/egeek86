@@ -25,6 +25,11 @@ const arg = (n: string) => { const i = argv.indexOf(n); return i >= 0 ? argv[i +
 const POR = arg('--por') ?? '';
 const ROLLBACK = arg('--rollback');
 const AMOSTRA = arg('--amostra');
+/** 2026-11-15, decisão 1 do dono: libera também a semeadura Shopee de identidade fraca sem oferta ativa (as demais regras de MANTER seguem). */
+const LIBERAR_FRACA = argv.includes('--liberar-semeadura-fraca');
+/** --excluir-ids arquivo.json: ids que ficam fora mesmo assim (conferência humana de peça/usado/retrô). */
+const EXCLUIR = arg('--excluir-ids') ? new Set<string>(JSON.parse(fs.readFileSync(path.resolve(arg('--excluir-ids')!), 'utf8')) as string[]) : new Set<string>();
+const LISTAR_FRACA = argv.includes('--listar-fraca');
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
 const DIR = path.resolve('docs/backups');
 const LOTE = 100;
@@ -42,6 +47,7 @@ interface Mantido { id: string; nome: string; vertical: string; grupo: string; a
 
 function classificar(r: Row): { liberar: true } | { liberar: false; grupo: string } {
   const g = r.gate;
+  if (EXCLUIR.has(r.id)) return { liberar: false, grupo: 'conferencia_humana_peca_usado_retro' };
   const reason = g?.reason ?? '';
   if (MANTIDOS.test(reason)) return { liberar: false, grupo: `decisao_anterior:${reason}` };
   if ([r.name, ...r.ofertas].some((t) => USADO_RETRO.test(t))) return { liberar: false, grupo: 'usado_ou_retro_no_titulo' };
@@ -54,7 +60,7 @@ function classificar(r: Row): { liberar: true } | { liberar: false; grupo: strin
   if (POWER_BANK.test(r.name)) return { liberar: false, grupo: 'power_bank_fora_R2-16' };
   if (reason === SEMEADURA) {
     if (g?.suggestedReason?.startsWith('lexico_fora_do_escopo')) return { liberar: false, grupo: 'semeadura_lexico_fora_do_escopo' };
-    if (g?.suggested !== 'approved' && r.ativas === 0) return { liberar: false, grupo: 'semeadura_identidade_fraca_sem_oferta_ativa' };
+    if (g?.suggested !== 'approved' && r.ativas === 0 && !LIBERAR_FRACA) return { liberar: false, grupo: 'semeadura_identidade_fraca_sem_oferta_ativa' };
   }
   return { liberar: true };
 }
@@ -82,6 +88,10 @@ async function main() {
       WHERE m.attributes -> 'catalogGate' ->> 'verdict' = 'review'
         AND COALESCE(m.attributes -> 'catalogGate' ->> 'manual', '') = ''
         AND (m.attributes ->> 'mergedInto') IS NULL`;
+    if (LISTAR_FRACA) {
+      for (const r of rows) if (r.gate?.reason === SEMEADURA && r.gate.suggested !== 'approved' && r.ativas === 0 && classificar(r).liberar === false && (classificar(r) as { grupo: string }).grupo === 'semeadura_identidade_fraca_sem_oferta_ativa') console.log(`${r.id}|${r.vertical.slice(0, 5)}|${r.preco ?? '-'}|${r.name.slice(0, 110)}`);
+      return;
+    }
     const alvos: Alvo[] = [];
     const mantidos: Mantido[] = [];
     for (const r of rows) {

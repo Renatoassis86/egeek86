@@ -1,0 +1,44 @@
+{
+  "criadoEm": "2026-11-15T16:20:50.952Z",
+  "por": "Renato (decisao 3, 2026-11-15)",
+  "backup": "consolidar-a1-2026-11-15T16-20-43-051Z.ndjson",
+  "dup": "c928f7c3-5444-4010-a704-01b691e6726e",
+  "canon": "244ff7b2-ed6d-49c6-8a85-247c8dfc5515",
+  "movidas": {
+    "affiliate_offers.master_product_id": [
+      "abf3b67e-69c9-4d28-95ea-a38f3d22b6d5"
+    ]
+  },
+  "nota": [
+    {
+      "offerId": "abf3b67e-69c9-4d28-95ea-a38f3d22b6d5",
+      "ref": "amazon-B0DLY5B351",
+      "loja": "Amazon",
+      "titulo": "Impressora 3D Bambu Lab A1, Bivolt",
+      "tensao": "bivolt",
+      "fonte": "titulo_do_anuncio",
+      "em": "2026-11-15T16:20:47.195Z"
+    },
+    {
+      "offerId": "9c5c2bbc-ba01-4a6b-9e19-bb6c189aba30",
+      "ref": "shopee-58264813541",
+      "loja": "Miranda Computação",
+      "titulo": "Impressora 3D Bambu Lab A1, Bivolt, PF002-A-BRA  BAMBU LAB",
+      "tensao": "bivolt",
+      "fonte": "titulo_do_anuncio",
+      "em": "2026-11-15T16:20:47.195Z"
+    },
+    {
+      "offerId": "b3dd51c1-ae17-484e-ad48-8049c985b36c",
+      "ref": "amazon-B0GV1JBB7J",
+      "loja": "Amazon",
+      "titulo": "Impressora 3D Bambu Lab A1 PF002AEU2 Wi-Fi Auto Nivelamento Impressão Rápida Alta Precisão",
+      "tensao": "nao_informada",
+      "fonte": "titulo_do_anuncio",
+      "em": "2026-11-15T16:20:47.195Z"
+    }
+  ],
+  "ofertasCanonAntes": 115,
+  "ofertasCanonDepois": 116,
+  "rollback": "npx tsx --env-file=.env.local scripts/consolidar-a1-bivolt-2026-11-15.ts --rollback docs/backups/consolidar-a1-log-2026-11-15T16-20-43-051Z.json --apply"
+}

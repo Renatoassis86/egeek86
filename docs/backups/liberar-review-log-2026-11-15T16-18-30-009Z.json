@@ -1,0 +1,3849 @@
+{
+  "criadoEm": "2026-11-15T16:18:30.012Z",
+  "por": "Renato (decisao 1, 2026-11-15)",
+  "backup": "liberar-review-2026-11-15T16-18-30-009Z.ndjson",
+  "gravados": [
+    {
+      "id": "c67ffb37-c9ac-4d03-a8cd-e904a5d1e810",
+      "antes": {
+        "at": "2026-11-15T13:24:45.759Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "53f602bc-4f6c-4162-9f79-dce24cd45a2a",
+      "antes": {
+        "at": "2026-11-15T13:24:47.089Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "9372674e-82a0-4e93-9970-51846c23f6cc",
+      "antes": {
+        "at": "2026-11-15T13:24:46.432Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "caf4369e-307d-4d53-9221-5c7d5797049b",
+      "antes": {
+        "at": "2026-11-15T09:35:21.746Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "6b717eb8-bf8c-4ce5-912f-0d5d57aa3777",
+      "antes": {
+        "at": "2026-11-15T09:35:22.455Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "35bac55b-6b16-4eb1-a00b-c65cf8a5a37c",
+      "antes": {
+        "at": "2026-11-15T09:35:23.288Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "d06e8852-22ef-4f02-b0a8-f03c1442e04c",
+      "antes": {
+        "at": "2026-11-15T08:34:43.863Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "9ddb3e55-8df6-4595-97ed-5faab070e440",
+      "antes": {
+        "at": "2026-11-15T08:34:45.003Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "04aab261-13c9-458d-898c-1cbd7063534f",
+      "antes": {
+        "at": "2026-11-15T07:34:46.214Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "da7a5db3-b54f-4c21-a4d2-297e9dfa3f9d",
+      "antes": {
+        "at": "2026-11-15T07:34:53.031Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "e9f13ad4-f1d8-4126-8949-4c995500319e",
+      "antes": {
+        "at": "2026-11-15T07:34:58.039Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "ee22085f-7c3c-4881-93aa-c849de776538",
+      "antes": {
+        "at": "2026-11-15T08:34:45.600Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "6deaabc0-e700-43b6-b36b-5d5946c180a3",
+      "antes": {
+        "at": "2026-11-15T08:34:46.126Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "66b816d3-2d4e-40f2-9856-06c33b6dd4ed",
+      "antes": {
+        "at": "2026-11-15T08:34:46.691Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "50bea2b8-833f-40c0-80c0-396c80e454d8",
+      "antes": {
+        "at": "2026-11-15T09:35:24.124Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "92b49a9f-c5b3-430e-80b4-d8bec990103b",
+      "antes": {
+        "at": "2026-11-15T03:52:40.960Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "0816895c-4d7d-4b42-9235-45e6a2bc31c8",
+      "antes": {
+        "at": "2026-11-15T03:52:42.182Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "5334d8fc-ffad-4144-a57b-2912e03730c6",
+      "antes": {
+        "at": "2026-11-15T03:52:43.800Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "1010daa0-37ac-4b6b-8d8f-ee5e162ebdc1",
+      "antes": {
+        "at": "2026-11-15T03:52:47.063Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c8c05880-52b8-48df-ae78-9d43a8c9d2df",
+      "antes": {
+        "at": "2026-11-15T03:52:45.517Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "e77afab9-3211-4de3-baf5-933ad5bc9d75",
+      "antes": {
+        "at": "2026-11-15T03:52:48.649Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "5af57f17-788a-48a1-a3fe-816b30f8c32a",
+      "antes": {
+        "at": "2026-11-15T03:52:50.004Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "4bc6e977-284d-4cad-9869-3a18d267547e",
+      "antes": {
+        "at": "2026-11-15T03:52:54.505Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "330d9a5f-7b6b-4907-b9bc-12ebc630e8cc",
+      "antes": {
+        "at": "2026-11-15T03:52:55.825Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "b7844120-a39e-46fc-9b48-cc52a4919a43",
+      "antes": {
+        "at": "2026-11-15T03:52:57.307Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "f4aa469d-5f49-448c-9f72-3e817bc3b64a",
+      "antes": {
+        "at": "2026-11-15T03:52:58.905Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "a9aa261a-4715-4b31-ad0e-04eae822685d",
+      "antes": {
+        "at": "2026-11-15T08:34:47.866Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "1559f0b3-2cac-4cf8-8c69-bbb31c2d80ff",
+      "antes": {
+        "at": "2026-11-15T08:34:48.461Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "e320eb43-753d-4015-bc0d-83cbe8c247ba",
+      "antes": {
+        "at": "2026-11-15T09:35:24.957Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "b6b064fa-0e2c-456d-885a-105c3f266a31",
+      "antes": {
+        "at": "2026-11-15T08:34:49.607Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "166b0069-6bf7-486e-ad3c-2bbf3a02239b",
+      "antes": {
+        "at": "2026-11-15T09:35:25.716Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "0d651b4d-63ae-4626-8cb2-e196ff47a4af",
+      "antes": {
+        "at": "2026-11-15T09:54:51.768Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "879c5d19-b39b-4d7a-a12a-71d78c117952",
+      "antes": {
+        "at": "2026-11-15T09:54:45.345Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "7df0a226-48d5-4631-b20e-e45b92ec2d05",
+      "antes": {
+        "at": "2026-11-15T09:54:45.933Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "09124985-9d14-4043-b459-4ffb92e80651",
+      "antes": {
+        "at": "2026-11-15T09:04:45.977Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "b7fb0a06-aec7-4e41-a83f-9d42e55cfb5e",
+      "antes": {
+        "at": "2026-11-15T09:04:46.940Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "2185deb6-d293-4775-8bfb-ed6421b0f331",
+      "antes": {
+        "at": "2026-11-15T09:04:47.776Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "091442eb-8a49-42f0-bf31-68d21f9fb8ce",
+      "antes": {
+        "at": "2026-11-15T09:04:48.538Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "36ebf476-5f03-4161-922b-65390c8613ff",
+      "antes": {
+        "at": "2026-11-15T09:04:49.469Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "e382c6e9-19ab-458e-b60f-e40c123e707a",
+      "antes": {
+        "at": "2026-11-15T09:04:51.074Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "4da1e8f9-d589-4d07-af1d-51d256c36a74",
+      "antes": {
+        "at": "2026-11-15T09:04:51.960Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "4e677bae-1ba7-425c-a0dd-156244f81d31",
+      "antes": {
+        "at": "2026-11-15T09:04:52.745Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "9d7baa06-ece3-4987-92e3-9ca173cb0017",
+      "antes": {
+        "at": "2026-11-15T09:04:53.740Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "20114bd2-2a10-4d9c-bb8e-a2a4521969fe",
+      "antes": {
+        "at": "2026-11-15T04:52:44.519Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "abc217ff-0fcf-4164-a0df-57256d56126b",
+      "antes": {
+        "at": "2026-11-15T09:54:48.611Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "40de0ec8-dda4-45d0-9de4-cf6d5a2b502c",
+      "antes": {
+        "at": "2026-11-15T04:52:46.208Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "5d08dfe2-69ae-47b1-9b84-bb318ab2884e",
+      "antes": {
+        "at": "2026-11-15T04:52:48.138Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "af7c68c7-ef8e-47e1-bf46-6ac0f392f556",
+      "antes": {
+        "at": "2026-11-15T04:52:47.091Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "18f1ca97-c5ce-4043-a0ca-6f5fdac23709",
+      "antes": {
+        "at": "2026-11-15T04:52:48.983Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "8662d163-606d-47f4-9803-8823529499c8",
+      "antes": {
+        "at": "2026-11-15T04:52:49.913Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "e545da5c-9115-44cb-a861-a08174ffbf86",
+      "antes": {
+        "at": "2026-11-15T04:52:50.737Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "cc3fe14c-c9e2-44f3-9453-65695f44e1f6",
+      "antes": {
+        "at": "2026-11-15T04:52:53.431Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "cf8fa989-2aec-46d1-b440-9f31c3e224ab",
+      "antes": {
+        "at": "2026-11-15T04:52:51.668Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "fe394788-16aa-4af7-a547-08bdbf626968",
+      "antes": {
+        "at": "2026-11-15T04:52:52.497Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "d2def006-0cf8-427e-8929-33b0f08cfe9c",
+      "antes": {
+        "at": "2026-11-15T04:52:54.256Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "54dda915-e634-4378-8ad8-991d09d1d26f",
+      "antes": {
+        "at": "2026-11-15T04:52:55.184Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "e5eb2173-1f94-4825-a6fa-a08e8aae81ed",
+      "antes": {
+        "at": "2026-11-15T09:04:55.672Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "b30fbf67-b223-44ff-9bea-23eb30586ae8",
+      "antes": {
+        "at": "2026-11-15T09:15:09.040Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "2eb88ac2-ee1f-4b07-8b5b-227f0305445c",
+      "antes": {
+        "at": "2026-11-15T09:54:52.308Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "7b41a8e1-38a0-4ab8-bfa3-828c0bbfd90e",
+      "antes": {
+        "at": "2026-11-15T09:54:52.828Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "a96593b3-1377-4295-95d4-3da5d8bf82cb",
+      "antes": {
+        "at": "2026-11-15T11:04:45.919Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c0c2bbac-03a1-4bce-8ab3-02169188f1c2",
+      "antes": {
+        "at": "2026-11-15T11:04:47.076Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "9691a3d0-a4a6-4523-aef5-3f840ed30aa9",
+      "antes": {
+        "at": "2026-11-15T11:04:47.822Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "603027e0-5b75-4178-a992-8d0d94eedf1a",
+      "antes": {
+        "at": "2026-11-15T11:04:51.823Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "19dc6bb1-84a7-4c8e-8ccc-b9ec1b10a667",
+      "antes": {
+        "at": "2026-11-15T11:04:53.136Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "77053b4f-7aff-403d-83fb-0e0f386e8134",
+      "antes": {
+        "at": "2026-11-15T11:04:53.878Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "4980abe0-2f0b-4250-bdaa-d4bdc9bf7258",
+      "antes": {
+        "at": "2026-11-15T13:24:51.416Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "4d56349c-3d38-4182-add3-d97d11922f18",
+      "antes": {
+        "at": "2026-11-15T11:54:45.545Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "f304e885-8e45-4ff3-8a5d-2eef562890dc",
+      "antes": {
+        "at": "2026-11-15T11:54:47.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "1067ba4d-5fe6-450a-b559-b9a88057b5aa",
+      "antes": {
+        "at": "2026-11-15T05:22:49.997Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "a8857552-aa60-47ed-b5f5-37c50d23e6b0",
+      "antes": {
+        "at": "2026-11-15T05:22:50.718Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "317c5bfd-75a7-4074-aa5f-2a2e891e6eb1",
+      "antes": {
+        "at": "2026-11-15T07:54:46.100Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "cd93526d-d940-4172-b9b4-f55d05f91354",
+      "antes": {
+        "at": "2026-11-15T07:54:47.034Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "d253af1d-19a7-490f-b129-3374889664d3",
+      "antes": {
+        "at": "2026-11-15T07:54:48.267Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "0860d494-26c8-47d4-b83c-41e3a37d2410",
+      "antes": {
+        "at": "2026-11-15T07:54:48.685Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "7693e7a5-7f22-45d2-9822-276fef21e3d4",
+      "antes": {
+        "at": "2026-11-15T11:54:49.705Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "3c854756-80d2-4a85-a385-1aeb49d4cd13",
+      "antes": {
+        "at": "2026-11-15T07:54:49.558Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "4916995d-b7db-4118-8166-edc4a3ad52ca",
+      "antes": {
+        "at": "2026-11-15T05:22:52.889Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "78ecd20c-8a40-45b6-87d1-23aa3e281b40",
+      "antes": {
+        "at": "2026-11-15T05:22:53.521Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "8864e064-8356-4f84-8d94-e8e56e028189",
+      "antes": {
+        "at": "2026-11-15T05:22:43.545Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c9820e25-826b-44bb-8c14-f89e3253817d",
+      "antes": {
+        "at": "2026-11-15T05:22:49.428Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "5a88ee11-fabf-4eee-9cc1-66ded77b4597",
+      "antes": {
+        "at": "2026-11-15T05:22:52.208Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "475fe430-d3c7-43bc-a413-13d137883094",
+      "antes": {
+        "at": "2026-11-15T05:22:54.128Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "73242f9b-c78e-4e89-9345-2c918c4498aa",
+      "antes": {
+        "at": "2026-11-15T05:22:54.760Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "5f924d3c-11ed-4271-b57e-f984ad8d6a83",
+      "antes": {
+        "at": "2026-11-15T07:44:51.061Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "27333c9c-ba26-409e-a39d-b11cfbf3bdca",
+      "antes": {
+        "at": "2026-11-15T07:44:52.594Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "413c5b55-9874-440f-b9e6-1a6afe9e39b0",
+      "antes": {
+        "at": "2026-11-15T07:44:52.077Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "896cee00-fed4-49b9-94c4-c94588f463a6",
+      "antes": {
+        "at": "2026-11-15T07:44:53.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "d1c8863c-59aa-46dc-af75-88bc313ca98d",
+      "antes": {
+        "at": "2026-11-15T07:44:54.145Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "2bb634ab-e1d1-4365-a0a8-20d6bcccb994",
+      "antes": {
+        "at": "2026-11-15T07:44:54.679Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "6cb98437-07af-4e3b-be3a-25518743865b",
+      "antes": {
+        "at": "2026-11-15T07:44:55.195Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "889525f0-0a89-48b3-b399-2949f1e69664",
+      "antes": {
+        "at": "2026-11-15T07:44:55.701Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "bf40cc21-1a22-4b30-8299-768d9d72f9c0",
+      "antes": {
+        "at": "2026-11-15T07:44:56.256Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "772fca6a-a1d5-477b-8803-e9ccdaab38f0",
+      "antes": {
+        "at": "2026-11-15T13:34:49.812Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "da1d0692-68e4-4bef-84f7-3c10c8bbc01b",
+      "antes": {
+        "at": "2026-11-15T13:34:54.603Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "2be4ce29-c110-4afd-a301-98b9c7d623b7",
+      "antes": {
+        "at": "2026-11-15T11:54:51.700Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "2e43363c-5503-45b8-bdd4-c99913190c64",
+      "antes": {
+        "at": "2026-11-15T11:54:52.203Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c568a537-118f-4238-84f9-60ba477d45b8",
+      "antes": {
+        "at": "2026-11-15T13:34:50.960Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "5e96a984-906f-462d-b7b1-48e75a9bf78b",
+      "antes": {
+        "at": "2026-11-15T06:55:17.882Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "8ba46b6e-192a-441f-9554-c72da224b7c2",
+      "antes": {
+        "at": "2026-11-15T06:55:19.194Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "e70ea769-30d0-4dd9-9c68-ab72fc7f2439",
+      "antes": {
+        "at": "2026-11-15T06:55:26.473Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c43fb0ac-ed1a-4bee-a1dc-241feb1a1bc0",
+      "antes": {
+        "at": "2026-11-15T06:55:20.642Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "20113d45-b143-4703-bd53-fd0e050f429c",
+      "antes": {
+        "at": "2026-11-15T06:55:21.705Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "8a94a2ea-6c4c-429a-8989-94f02a81155e",
+      "antes": {
+        "at": "2026-11-15T06:55:22.987Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "28acce23-1e6b-4b7e-bb5a-17b10b556da7",
+      "antes": {
+        "at": "2026-11-15T06:55:24.164Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "2c1d1840-3f24-47e9-a6f9-7e6fdc99d8c4",
+      "antes": {
+        "at": "2026-11-15T06:55:25.261Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "78e74841-02f0-4aaf-8faf-9fbdd00e65d3",
+      "antes": {
+        "at": "2026-11-15T06:55:28.822Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "30b00936-74a7-4e7b-84b0-8cd8f4677f35",
+      "antes": {
+        "at": "2026-11-15T13:34:52.649Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "6bec1d32-7b44-41fb-aab2-6a3a9e1098a5",
+      "antes": {
+        "at": "2026-11-15T13:34:55.697Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "8061b222-4fda-4e63-b79d-e74909b7accc",
+      "antes": {
+        "at": "2026-11-15T13:34:56.236Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "faf28c47-766b-434d-9011-3facdc5cda93",
+      "antes": {
+        "at": "2026-11-15T13:34:56.772Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "1c1e8022-bf09-424d-8c46-1f09be2a6e80",
+      "antes": {
+        "at": "2026-11-15T07:24:46.455Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "ab2cdacb-4029-4962-88c0-35fd6833564f",
+      "antes": {
+        "at": "2026-11-15T14:45:42.124Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "6eb3c435-53d8-4448-8699-ad1089bd8af7",
+      "antes": {
+        "at": "2026-11-15T14:45:52.871Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "ed0e56fd-4632-4cd6-8ed7-0abf1e928c26",
+      "antes": {
+        "at": "2026-11-15T14:45:55.269Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "32407ad3-2cdc-4949-bbd6-7c0193b9d749",
+      "antes": {
+        "at": "2026-11-15T14:45:57.841Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "7384c70e-eaa4-418a-891f-aaa9342631ca",
+      "antes": {
+        "at": "2026-11-15T14:46:00.614Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "3bad5564-c879-4aa4-861e-d81de379f9f1",
+      "antes": {
+        "at": "2026-11-15T14:46:06.952Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c2865564-1f30-47c6-a4bf-88005ee9a222",
+      "antes": {
+        "at": "2026-11-15T14:46:08.508Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "85015aee-af53-4067-86a2-d7c411be532a",
+      "antes": {
+        "at": "2026-11-15T14:46:17.883Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "ea577326-e682-457e-90b7-f0d64b1addec",
+      "antes": {
+        "at": "2026-11-15T14:46:11.008Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "69650f95-1e42-4929-a964-f66d87f829dc",
+      "antes": {
+        "at": "2026-11-15T14:46:13.553Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "50579d2a-87bc-4a50-af89-2b7a2e268d00",
+      "antes": {
+        "at": "2026-11-15T09:34:46.110Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "254dc00e-2be9-4714-8ea8-dc163b5185c9",
+      "antes": {
+        "at": "2026-11-15T09:34:47.059Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "b740990d-c9b6-47c8-b9cb-33afdc24024f",
+      "antes": {
+        "at": "2026-11-15T09:35:19.220Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "0c110faf-a08c-4291-b8b5-c31f0afd6ffb",
+      "antes": {
+        "at": "2026-11-15T09:35:20.076Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "a5ed3ad8-d4da-41ac-9b35-22ae2744e981",
+      "antes": {
+        "at": "2026-11-15T07:54:50.397Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "b3a49a70-b5ac-4e50-87b3-31834f3cdc9e",
+      "antes": {
+        "at": "2026-11-15T07:54:47.840Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c659c3db-5dd8-456c-9740-512bba6b3a9e",
+      "antes": {
+        "at": "2026-11-15T07:54:51.224Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "a0a28d09-206e-4c6c-8f90-811b65c5cf4d",
+      "antes": {
+        "at": "2026-11-15T07:54:50.809Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "6ce4e84c-81b2-4194-96b6-0f55c44d3984",
+      "antes": {
+        "at": "2026-11-15T07:54:46.570Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "97e55132-c61e-4fa2-a7a1-4da1eddf34d1",
+      "antes": {
+        "at": "2026-11-15T07:54:49.098Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "503b0805-927f-43f8-b8d5-fbf5bed92a71",
+      "antes": {
+        "at": "2026-11-15T07:54:49.977Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "0916506e-eb7e-4b22-b0a5-58da350fd47d",
+      "antes": {
+        "at": "2026-11-15T14:46:15.736Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "06a00bbb-7d4f-4520-826e-8e1279044000",
+      "antes": {
+        "at": "2026-11-15T09:35:20.972Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "b8cc22d0-2cca-4b8a-afab-44f69f82a8e3",
+      "antes": {
+        "at": "2026-11-15T08:34:44.468Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "d180087d-9d17-4aea-aba6-9a5ae3b00021",
+      "antes": {
+        "at": "2026-11-15T08:34:47.318Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "d73d3879-092f-439e-97fa-94172afb6e9a",
+      "antes": {
+        "at": "2026-11-15T09:34:44.980Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "dac4975c-33a4-4def-9a59-78aaaba62a1a",
+      "antes": {
+        "at": "2026-11-15T09:54:46.454Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "8ca7a325-8d9a-4253-9bbc-a77a3378da59",
+      "antes": {
+        "at": "2026-11-15T09:54:49.699Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "9831919f-daf5-47e9-ad2f-0ae964d77303",
+      "antes": {
+        "at": "2026-11-15T09:54:51.256Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "56b43a9a-c003-42d4-824f-4660107299a9",
+      "antes": {
+        "at": "2026-11-15T11:04:48.488Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "40e54956-6dad-4233-9a4e-c66b479df1cb",
+      "antes": {
+        "at": "2026-11-15T11:04:51.098Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "27113729-43ac-4d36-8573-a0eb0296c0bb",
+      "antes": {
+        "at": "2026-11-15T13:34:49.214Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "fe220f62-de44-450b-b99f-6f01ed307258",
+      "antes": {
+        "at": "2026-11-15T13:24:50.820Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "6c8730c5-8de1-4593-ac97-3aa09602bce2",
+      "antes": {
+        "at": "2026-11-15T13:24:52.047Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "f6bc2a54-74c5-437c-992b-d5cc21273fde",
+      "antes": {
+        "at": "2026-11-15T13:34:50.395Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "09fa42b6-65af-4f4f-b1ff-0c20442871d6",
+      "antes": {
+        "at": "2026-11-15T13:34:51.542Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "7bc6ddd2-b370-4589-b684-f82510da7ece",
+      "antes": {
+        "at": "2026-11-15T15:14:57.504Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "9f973da4-751b-413e-8fd4-b858a69f161b",
+      "antes": {
+        "at": "2026-11-15T15:14:54.239Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "c5ff3c06-e6e8-4f84-a5ee-c2db3b8dd180",
+      "antes": {
+        "at": "2026-11-15T15:14:45.387Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "048b60e5-474a-4ad5-a0e6-c0ed5e7cb531",
+      "antes": {
+        "at": "2026-11-15T15:14:46.442Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "22963993-88ca-453a-aa6a-1c6d06bb6974",
+      "antes": {
+        "at": "2026-11-15T15:14:48.793Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "644a4a3a-3c12-4f2a-912b-ccef0e3d8d8b",
+      "antes": {
+        "at": "2026-11-15T15:14:47.562Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "18e91073-5b88-43b6-8a33-ad41aeb935a0",
+      "antes": {
+        "at": "2026-11-15T15:14:51.050Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "977496d4-8380-4cc1-93af-2e82ac962574",
+      "antes": {
+        "at": "2026-11-15T15:14:52.006Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "949636f5-438c-4c7f-8edf-cb5196eb93af",
+      "antes": {
+        "at": "2026-11-15T15:14:53.153Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "7a122bd0-427b-43b2-8724-864b9375fb32",
+      "antes": {
+        "at": "2026-11-15T15:14:55.342Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "42579185-2dfd-4485-8680-66e5f31cd327",
+      "antes": {
+        "at": "2026-11-15T15:14:59.566Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    },
+    {
+      "id": "73f726da-2479-400d-8063-9f682f0168f3",
+      "antes": {
+        "at": "2026-11-15T15:14:58.420Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "review",
+        "suggestedReason": "chave_fraca_titulo_shopee"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "nao_identificado:semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T16:18:30.012Z",
+        "previousVerdict": "review",
+        "approvedBy": "auto:liberar-review-2026-11-15"
+      },
+      "naoIdentificado": true
+    }
+  ],
+  "ignoradosGuardaOtimista": [],
+  "rollback": "npx tsx --env-file=.env.local scripts/liberar-masters-review-2026-11-15.ts --rollback docs/backups/liberar-review-log-2026-11-15T16-18-30-009Z.json --apply"
+}
