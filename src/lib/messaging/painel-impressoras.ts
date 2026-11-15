@@ -170,7 +170,7 @@ const RESERVA_CABECALHO = 170;
 
 export function cabecalhoParte(rede: 'mercado-livre' | 'amazon', inicio: Date, i: number, n: number): string {
   const nome = rede === 'amazon' ? 'Amazon' : 'Mercado Livre';
-  const l1 = `🖨️ <b>Lista de impressoras 3D · ${nome} · ${horaSP(inicio)} · parte ${i}/${n}</b>`;
+  const l1 = `🖨️ <b>Bambu P2S/P1S Combo · ${rede === 'amazon' ? 'Amazon · ' : ''}${horaSP(inicio)} · parte ${i}/${n}</b>`;
   return rede === 'amazon' ? `${l1}
 Preço na Amazon em ${diaSP(inicio)} às ${horaSP(inicio)}` : l1;
 }
@@ -186,8 +186,9 @@ function empacotar(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: num
     const atual = msgs[msgs.length - 1];
     if (tam(atual) + 1 + tam(bloco) <= max) { atual.push(...bloco); continue; }
     if (tam(bloco) <= max) { msgs.push(bloco); continue; }
-    let cur: string[] = [cabecalhoSecao(s, false)];
-    msgs.push(cur);
+    // Seção maior que uma mensagem: preenche o espaço que sobra na atual e continua nas seguintes.
+    let cur: string[] = atual;
+    cur.push(cabecalhoSecao(s, false));
     for (const l of linhas) {
       if (tam(cur) + 1 + l.length > max) { cur = [cabecalhoSecao(s, true)]; msgs.push(cur); }
       cur.push(l);
@@ -228,51 +229,61 @@ export function montarPaineis(inp: EntradaPaineis): SaidaPaineis {
 }
 
 // ---------------------------------------------------------------------------
-// QUEDA INDIVIDUAL (mensagem com notificação). Só afirma o que foi lido; nunca prazo inventado; "ative" só quando o tipo do cupom é conhecido.
+// QUEDA INDIVIDUAL (mensagem de FOTO com notificação, mesma legenda dos grupos). Só afirma o que foi lido; nunca prazo inventado; "ative" só quando o tipo do cupom é conhecido.
+// Gatilhos: queda >= 2% e >= R$ 50 (decidir do monitor #114), novo mínimo de 14 dias do modelo, cupom novo, cartão novo.
 // ---------------------------------------------------------------------------
 export const MAX_QUEDAS_POR_CICLO = 6;
+/** Sem teto de queda (o dono julga pelo "preço anterior lido"). */
 export const QUEDA_MAX_PLAUSIVEL_PCT = 100;
+/** Os dois modelos do privado (masters). */
+export const MASTERS_PRIVADO = ['2e4a5bd1-27d7-42c6-bc62-dfa1d5eace45', '23bfa05b-053e-46cc-8308-7d4332fadf18'] as const;
+export type GatilhoIndividual = 'queda' | 'minimo' | 'cupom' | 'cartao';
 
 export interface EntradaQueda {
+  gatilho?: GatilhoIndividual;
   rede: string;
   titulo: string;
   loja: string | null;
   /** "98% de avaliações positivas" etc., só quando houver. */
   reputacao?: string | null;
   cents: number;
-  anteriorCents: number;
-  /** Quando o preço anterior foi lido (ciclo anterior da lista). */
+  /** Preço do ciclo anterior (ausente em gatilho de cupom/cartão sem queda). */
+  anteriorCents?: number | null;
+  /** Quando o preço anterior foi lido. */
   anteriorEm?: Date | null;
   minimo14: boolean;
   url: string | null;
   leituraEm: Date;
   cupom?: { nome: string | null; finalCents: number; passo: string | null } | null;
   cartoes?: { rotulo: string; finalCents: number | null; needsConfirm: boolean }[];
-  /** Frete/prazo MEDIDOS até o CEP (quando existirem colunas/dados). Sem isso, a mensagem remete à página da loja. */
+  /** Frete/prazo MEDIDOS (#118), ou "Prazo ainda não lido". */
   fretePrazo?: string | null;
   adTag: string;
 }
 
+const ROTULO_GATILHO: Record<GatilhoIndividual, string> = { queda: '📉 Queda de preço', minimo: '🏷️ Novo mínimo de 14 dias', cupom: '🎟️ Cupom no anúncio', cartao: '💳 Desconto no cartão' };
+
+/** Legenda do card (cabe em 1024 caracteres visíveis; o link vai no botão, como nos grupos). */
 export function textoQueda(q: EntradaQueda): string {
-  const pct = Math.max(1, Math.round(((q.anteriorCents - q.cents) / q.anteriorCents) * 100));
   const amazon = q.rede === 'amazon';
+  const caiu = q.anteriorCents != null && q.anteriorCents > q.cents;
+  const pct = caiu ? Math.max(1, Math.round((((q.anteriorCents as number) - q.cents) / (q.anteriorCents as number)) * 100)) : 0;
   const L: string[] = [];
-  L.push('📉 <b>Queda de preço · impressora 3D</b>');
-  L.push(`<b>${e(q.titulo.length > 140 ? `${q.titulo.slice(0, 139)}…` : q.titulo)}</b>`);
-  L.push(`<b>${brl(q.cents)}</b> (era ${brl(q.anteriorCents)}, queda de ${pct}%)${q.minimo14 ? ' · novo mínimo de 14 dias' : ''}`);
-  if (q.anteriorEm) L.push(`Preço anterior lido: ${brl(q.anteriorCents)} em ${diaSP(q.anteriorEm)} às ${horaSP(q.anteriorEm)}`);
+  L.push(`<b>${ROTULO_GATILHO[q.gatilho ?? 'queda']}</b>`);
+  L.push(`<b>${e(q.titulo.length > 100 ? `${q.titulo.slice(0, 99)}…` : q.titulo)}</b>`);
+  L.push(caiu ? `<b>${brl(q.cents)}</b> (era ${brl(q.anteriorCents as number)}, queda de ${pct}%)${q.minimo14 && q.gatilho !== 'minimo' ? ' · novo mínimo de 14 dias' : ''}` : `<b>${brl(q.cents)}</b>`);
+  if (caiu && q.anteriorEm) L.push(`Preço anterior lido: ${brl(q.anteriorCents as number)} em ${diaSP(q.anteriorEm)} às ${horaSP(q.anteriorEm)}`);
   const onde = [amazon ? 'Amazon' : q.loja ? e(q.loja) : null, q.reputacao ? e(q.reputacao) : null].filter(Boolean).join(' · ');
   if (onde) L.push(`Loja: ${onde}`);
   if (q.cupom) L.push(`🎟️ Cupom${q.cupom.nome ? ` ${e(q.cupom.nome)}` : ''}: <b>${brl(q.cupom.finalCents)}</b> com cupom${q.cupom.passo ? ` · ${e(q.cupom.passo)}` : ''}`);
   for (const c of (q.cartoes ?? []).slice(0, 2)) L.push(`💳 ${e(c.rotulo)}${c.finalCents ? `: ${brl(c.finalCents)}` : ''}${c.needsConfirm ? ' · a confirmar no carrinho' : ''}`);
-  L.push(q.fretePrazo ? `🚚 ${e(q.fretePrazo)}` : 'Frete e prazo: ainda não lidos para este anúncio.');
-  if (q.url) L.push(`<a href="${escapeTelegramAttr(q.url)}">Ver anúncio</a>`);
+  L.push(`🚚 ${e(q.fretePrazo || 'Prazo ainda não lido')}`);
   L.push(amazon ? `Preço na Amazon em ${diaSP(q.leituraEm)} às ${horaSP(q.leituraEm)}` : `Lido às ${horaSP(q.leituraEm)}`);
   if (q.adTag) L.push(e(q.adTag));
   return L.join('\n');
 }
 
-/** Texto da queda passa na barreira; se não passar devolve null (e o motivo). */
+/** Legenda passa na barreira; se não passar devolve null (e o motivo). */
 export function textoQuedaSeguro(q: EntradaQueda): { text: string | null; problemas: string[] } {
   const text = textoQueda(q);
   const problemas = textProblems(text, 'tg');

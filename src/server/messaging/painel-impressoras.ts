@@ -8,11 +8,12 @@ import { ehItemMiudoOuDuvida } from '@/lib/catalog/item-miudo';
 import { beneficiosVivosPorOferta } from '@/server/coupons/card-benefits';
 import { rotuloBeneficioCartao } from '@/lib/coupons/card-benefit';
 import { linhasFretePrazoPorOferta } from '@/server/shipping/frete-prazo';
+import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
-import { decidir, quedaMinimaCents, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
+import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
-  alvosLigados, INTERVALO_RODADA_MS, MAX_QUEDAS_POR_CICLO, montarPaineis, QUEDA_MAX_PLAUSIVEL_PCT, secaoDe, textoQuedaSeguro,
-  type Alvo, type OfertaPainel, type SaidaPaineis,
+  alvosLigados, INTERVALO_RODADA_MS, MAX_QUEDAS_POR_CICLO, MASTERS_PRIVADO, montarPaineis, secaoDe, textoQuedaSeguro,
+  type Alvo, type GatilhoIndividual, type OfertaPainel, type SaidaPaineis,
 } from '@/lib/messaging/painel-impressoras';
 
 /**
@@ -34,14 +35,14 @@ const jobDestino = (alvo: Alvo) => `lista-impressoras-${alvo}`;
 const JOB_LEGADO = (alvo: Alvo) => `painel-impressoras-${alvo}`;
 
 interface ItemTexto { key: string; rede: 'mercado-livre' | 'amazon'; text: string }
-interface QuedaTexto { oferta: string; text: string }
+interface QuedaTexto { oferta: string; text: string; url?: string | null; gatilho?: string }
 interface ListaCongelada { inicio: string; listas: ItemTexto[]; quedas: QuedaTexto[]; precos: Record<string, number>; ativosMl: number; ativosAmazon: number; problemas: string[] }
 interface Estado { lista: string | null; cursor: number; ids: (string | null)[]; apagar: string[]; aberta: boolean; pausaAte: Date | null }
 
 export interface ResultadoAlvo {
   alvo: Alvo;
   acao: 'recente' | 'pausado' | 'sem_destino' | 'sem_lista' | 'em_andamento' | 'concluida' | 'erro';
-  chamadas?: number; enviados?: number; quedas?: number; apagados?: number; erros?: number; partes?: number; cursor?: number; erro?: string;
+  chamadas?: number; enviados?: number; quedas?: number; cards?: number; apagados?: number; erros?: number; partes?: number; cursor?: number; erro?: string;
 }
 export interface ResultadoPaineis { ligado: boolean; alvos: ResultadoAlvo[]; gerada?: boolean; ativosMl?: number; ativosAmazon?: number; quedas?: number; problemas?: string[] }
 
@@ -64,7 +65,7 @@ export async function carregarOfertasImpressoras(now: Date): Promise<(OfertaPain
     LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
       AND nn.slug IN ('mercado-livre', 'amazon') AND o.last_checked_at > now() - interval '24 hours'
-      AND m.name ~* '(impressora|printer|bambu|kobra)'`)) as unknown as RowOferta[];
+      AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
   const base = rows
     .filter((r) => classificarTipo('impressao3d', r.master_name) === 'impressoras')
     .filter((r) => !ehItemMiudoOuDuvida(r.master_name, Number(r.price), 'general', 'impressao3d'))
@@ -110,14 +111,14 @@ async function gravar(job: string, status: 'ok' | 'error', ms: number, meta: Rec
     VALUES (${job}, 'telegram', now(), now(), ${Math.round(ms)}, ${status}, ${JSON.stringify(meta)}::jsonb)`);
 }
 
-/** Gera a lista do ciclo (e as quedas) e a congela em collector_runs. gravar=false = pré-visualização (nada é gravado). */
+/** Gera a lista do ciclo (e os cards individuais) e a congela em collector_runs. gravarLista=false = pré-visualização (nada é gravado). */
 export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCongelada> {
   const t0 = Date.now();
   const ofertas = await carregarOfertasImpressoras(now);
   const anterior = await ultimaLista();
   const prev = anterior && now.getTime() - new Date(anterior.inicio).getTime() < 3 * 3600_000 ? anterior.precos : null;
   const comAnterior: (OfertaPainel & { id: string })[] = ofertas.map((o) => ({ ...o, anteriorCents: prev ? (prev[id12(o.id)] ?? null) : null }));
-  // Frete e prazo (#118): só nos 20 primeiros itens de cada rede (combos P2S/P1S) para não estourar 4096. Sem leitura fresca: 'Prazo ainda não lido'.
+  // Frete e prazo (#118): só nos 20 primeiros itens de cada rede (P2S Combo primeiro) para não estourar 4096. Sem leitura fresca: 'Prazo ainda não lido'.
   try {
     for (const rede of ['mercado-livre', 'amazon']) {
       const ord = comAnterior.filter((o) => o.rede === rede).sort((a, b) => { const x = secaoDe(a), y = secaoDe(b); return x.rank - y.rank || x.ordemFixa - y.ordemFixa || a.cents - b.cents; }).slice(0, 20);
@@ -126,46 +127,61 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
     }
   } catch { /* sem frete: a lista sai sem a linha */ }
 
-  // Quedas: só com base do ciclo anterior. Cooldown de 2 h por oferta (collector_runs). Novo mínimo = abaixo do menor preço do anúncio em 14 dias.
+  // Cards individuais (foto + legenda, com som): queda >= 2% e R$ 50, novo mínimo de 14 dias do modelo, cupom novo, cartão novo.
+  // Cooldown de 2 h por oferta; no máximo 6 por ciclo (P2S Combo primeiro). Estado em collector_runs (JOB_QUEDA: meta.oferta e meta.chave).
   const quedas: QuedaTexto[] = [];
   const problemas: string[] = [];
-  const caiu = comAnterior.filter((o) => o.anteriorCents && o.cents < o.anteriorCents && (o.anteriorCents - o.cents) * 100 / o.anteriorCents <= QUEDA_MAX_PLAUSIVEL_PCT);
-  if (caiu.length) {
-    const recentes = (await db.execute<{ oferta: string }>(sql`SELECT meta->>'oferta' AS oferta FROM collector_runs WHERE job = ${JOB_QUEDA} AND started_at > now() - ${INTERVALO_MIN_MS / 1000}::int * interval '1 second'`)) as unknown as { oferta: string }[];
-    const emCooldown = new Set(recentes.map((r) => r.oferta));
-    const ids = caiu.map((o) => o.id);
-    const mins = (await db.execute<{ id: string; mn: string }>(sql`
-      SELECT offer_id::text AS id, min(price_cents)::text AS mn FROM affiliate_price_snapshots
-      WHERE offer_id::text IN (${sql.join(ids.map((i) => sql`${i}`), sql`, `)}) AND collected_at > now() - (${JANELA_MINIMO_DIAS}::int * interval '1 day') AND collected_at < now() - interval '30 minutes'
-      GROUP BY 1`)) as unknown as { id: string; mn: string }[];
-    const min14 = new Map(mins.map((m) => [m.id, Number(m.mn)]));
-    type Cand = { o: (typeof caiu)[number]; acao: 'queda' | 'minimo'; min: boolean; ordem: number };
-    const cands: Cand[] = [];
-    for (const o of caiu) {
-      if (emCooldown.has(o.id)) continue;
+  const recentes = (await db.execute<{ oferta: string }>(sql`SELECT meta->>'oferta' AS oferta FROM collector_runs WHERE job = ${JOB_QUEDA} AND started_at > now() - ${INTERVALO_MIN_MS / 1000}::int * interval '1 second'`)) as unknown as { oferta: string }[];
+  const emCooldown = new Set(recentes.map((r) => r.oferta));
+  const vistas = new Set(((await db.execute<{ chave: string }>(sql`SELECT meta->>'chave' AS chave FROM collector_runs WHERE job = ${JOB_QUEDA} AND started_at > now() - interval '7 days' AND meta->>'chave' IS NOT NULL`)) as unknown as { chave: string }[]).map((r) => r.chave));
+  const masters = [...new Set(comAnterior.map((o) => o.masterId))];
+  const mins = masters.length ? ((await db.execute<{ mid: string; mn: string }>(sql`
+    SELECT af.master_product_id::text AS mid, min(s.price_cents)::text AS mn FROM affiliate_price_snapshots s JOIN affiliate_offers af ON af.id = s.offer_id
+    WHERE af.master_product_id::text IN (${sql.join(masters.map((i) => sql`${i}`), sql`, `)}) AND s.collected_at > now() - (${JANELA_MINIMO_DIAS}::int * interval '1 day') AND s.collected_at < now() - interval '30 minutes'
+    GROUP BY 1`)) as unknown as { mid: string; mn: string }[]) : [];
+  const min14 = new Map(mins.map((m) => [m.mid, Number(m.mn)]));
+  type Cand = { o: (typeof comAnterior)[number]; gatilho: GatilhoIndividual; chave: string; prio: number; queda: number };
+  const cands: Cand[] = [];
+  const chavesCartao = new Set<string>();
+  for (const o of comAnterior) {
+    if (emCooldown.has(o.id)) continue;
+    const sc = secaoDe(o);
+    const base = sc.ordemFixa * 1_000_000;
+    if (o.anteriorCents && o.cents < o.anteriorCents) {
       const atual: MenorPreco = { chave: o.id, rotulo: o.masterName, cents: o.cents, rede: o.rede, loja: o.loja, slug: '' };
-      const acao = decidir({ atual, base: { cents: o.anteriorCents as number, rede: o.rede }, min14: min14.get(o.id) ?? null, ultimoAvisoEm: null, now });
-      if (acao !== 'queda' && acao !== 'minimo') continue;
-      const sc = secaoDe(o);
-      cands.push({ o, acao, min: min14.has(o.id) && o.cents < (min14.get(o.id) as number), ordem: sc.rank * 100 + sc.ordemFixa });
+      const acao = decidir({ atual, base: { cents: o.anteriorCents, rede: o.rede }, min14: min14.get(o.masterId) ?? null, ultimoAvisoEm: null, now });
+      if (acao === 'queda' || acao === 'minimo') { cands.push({ o, gatilho: acao, chave: `${o.id}|q|${o.cents}`, prio: base, queda: o.anteriorCents - o.cents }); continue; }
     }
-    cands.sort((a, b) => a.ordem - b.ordem || ((b.o.anteriorCents as number) - b.o.cents) - ((a.o.anteriorCents as number) - a.o.cents));
-    for (const c of cands.slice(0, MAX_QUEDAS_POR_CICLO)) {
-      const o = c.o;
-      let cupom: { nome: string | null; finalCents: number; passo: string | null } | null = null;
-      try {
-        const r = await lookupItemCouponDetail(o.id, undefined, now);
-        if (r && r.detail.finalCents > 0 && r.detail.finalCents < o.cents) cupom = { nome: r.detail.named ? r.detail.name : null, finalCents: r.detail.finalCents, passo: r.detail.activation || null };
-      } catch { /* sem cupom */ }
-      const bens = ((await beneficiosVivosPorOferta([o.id]).catch(() => new Map())).get(o.id) ?? []) as (Parameters<typeof rotuloBeneficioCartao>[0] & { needsConfirm: boolean; kind: string; finalPriceCents: number | null })[];
-      const cartoes = bens.filter((b) => b.kind === 'cartao_pct' || b.kind === 'pix_pct').map((b) => ({ rotulo: rotuloBeneficioCartao(b) ?? '', finalCents: b.finalPriceCents, needsConfirm: b.needsConfirm })).filter((b) => b.rotulo);
-      const t = textoQuedaSeguro({
-        rede: o.rede, titulo: o.title || o.masterName, loja: o.loja, reputacao: (o as { reputacao?: string | null }).reputacao ?? null, cents: o.cents, anteriorCents: o.anteriorCents as number, anteriorEm: anterior ? new Date(anterior.inicio) : null,
-        fretePrazo: (await linhasFretePrazoPorOferta([o.id], now).catch(() => new Map<string, string>())).get(o.id) ?? 'Prazo ainda não lido',
-        minimo14: c.min, url: o.url, leituraEm: o.checkedAt, cupom, cartoes, adTag: getAdTag(),
-      });
-      if (t.text) quedas.push({ oferta: o.id, text: t.text }); else problemas.push(`queda ${id12(o.id)}: ${t.problemas.join('; ')}`);
+    if (o.cupomFinalCents != null && o.cupomFinalCents > 0 && o.cupomFinalCents < o.cents) {
+      const chave = `${o.id}|c|${o.cupomNome ?? ''}|${o.cupomFinalCents}`;
+      if (!vistas.has(chave)) { cands.push({ o, gatilho: 'cupom', chave, prio: 100_000_000 + base, queda: 0 }); continue; }
     }
+    const b = (o.beneficios ?? [])[0];
+    if (b) {
+      const chave = `card|${o.masterId}|${o.rede}|${b.rotulo}`;
+      if (!vistas.has(chave) && !chavesCartao.has(chave)) { chavesCartao.add(chave); cands.push({ o, gatilho: 'cartao', chave, prio: 200_000_000 + base, queda: 0 }); }
+    }
+  }
+  cands.sort((a, b) => a.prio - b.prio || b.queda - a.queda);
+  const escolhidas: { oferta: string; chave: string }[] = [];
+  for (const c of cands.slice(0, MAX_QUEDAS_POR_CICLO)) {
+    const o = c.o;
+    let cupom: { nome: string | null; finalCents: number; passo: string | null } | null = null;
+    try {
+      const r = await lookupItemCouponDetail(o.id, undefined, now);
+      if (r && r.detail.finalCents > 0 && r.detail.finalCents < o.cents) cupom = { nome: r.detail.named ? r.detail.name : null, finalCents: r.detail.finalCents, passo: r.detail.activation || null };
+    } catch { /* sem cupom */ }
+    const bens = ((await beneficiosVivosPorOferta([o.id]).catch(() => new Map())).get(o.id) ?? []) as (Parameters<typeof rotuloBeneficioCartao>[0] & { needsConfirm: boolean; kind: string; finalPriceCents: number | null })[];
+    const cartoes = bens.filter((b) => b.kind === 'cartao_pct' || b.kind === 'pix_pct').map((b) => ({ rotulo: rotuloBeneficioCartao(b) ?? '', finalCents: b.finalPriceCents, needsConfirm: b.needsConfirm })).filter((b) => b.rotulo);
+    const minimo14 = min14.has(o.masterId) && o.cents < (min14.get(o.masterId) as number);
+    const t = textoQuedaSeguro({
+      gatilho: c.gatilho, rede: o.rede, titulo: o.title || o.masterName, loja: o.loja, reputacao: (o as { reputacao?: string | null }).reputacao ?? null, cents: o.cents,
+      anteriorCents: c.gatilho === 'queda' || c.gatilho === 'minimo' ? o.anteriorCents : null, anteriorEm: anterior ? new Date(anterior.inicio) : null,
+      minimo14, url: o.url, leituraEm: o.checkedAt, cupom, cartoes, adTag: getAdTag(),
+      fretePrazo: (await linhasFretePrazoPorOferta([o.id], now).catch(() => new Map<string, string>())).get(o.id) ?? 'Prazo ainda não lido',
+    });
+    if (t.text) { quedas.push({ oferta: o.id, text: t.text, url: o.url, gatilho: c.gatilho }); escolhidas.push({ oferta: o.id, chave: c.chave }); }
+    else problemas.push(`card ${id12(o.id)}: ${t.problemas.join('; ')}`);
   }
   const p: SaidaPaineis = montarPaineis({ ofertas: comAnterior, inicio: now, adTag: getAdTag() });
   const precos: Record<string, number> = {};
@@ -176,7 +192,7 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
   };
   if (gravarLista) {
     await gravar(JOB_LISTA, 'ok', Date.now() - t0, lista as unknown as Record<string, unknown>);
-    for (const q of quedas) await gravar(JOB_QUEDA, 'ok', 0, { oferta: q.oferta });
+    for (const q of escolhidas) await gravar(JOB_QUEDA, 'ok', 0, q);
     await db.execute(sql`DELETE FROM collector_runs WHERE job = ${JOB_LISTA} AND started_at < (SELECT min(started_at) FROM (SELECT started_at FROM collector_runs WHERE job = ${JOB_LISTA} ORDER BY started_at DESC LIMIT 3) x)`).catch(() => undefined);
   }
   return lista;
@@ -228,16 +244,30 @@ async function rodarAlvo(alvo: Alvo, L: ListaCongelada, now: Date, deadline: num
   }
   const Q = L.quedas.length;
   const total = Q + L.listas.length;
-  const c = { chamadas: 0, enviados: 0, quedas: 0, apagados: 0, erros: 0 };
+  const c = { chamadas: 0, enviados: 0, quedas: 0, cards: 0, apagados: 0, erros: 0 };
   const erros: string[] = [];
   let pausaAte: string | undefined;
 
   while (cursor < total && deadline - Date.now() >= MIN_CHAMADA_MS) {
     if (c.chamadas > 0) await dormir(ESPACO_MS);
     const ehQueda = cursor < Q;
-    const texto = ehQueda ? L.quedas[cursor].text : L.listas[cursor - Q].text;
-    // Queda com som; lista silenciosa. Sem foto, sem pré-visualização de link.
-    const r = await tg(token, 'sendMessage', { chat_id: chat, text: texto, parse_mode: 'HTML', link_preview_options: { is_disabled: true }, disable_notification: !ehQueda });
+    let r: RespTg;
+    if (ehQueda) {
+      // Card individual: o MESMO gerador dos grupos (loadOfferCardInput + renderOfferCard), foto real + legenda, com som e botão. Sem tempo = próximo minuto.
+      if (deadline - Date.now() < 9000) break;
+      const q = L.quedas[cursor];
+      let png: Uint8Array | null = null;
+      try {
+        const { loadOfferCardInput, renderOfferCard } = await import('@/server/messaging/offer-card');
+        const input = await loadOfferCardInput(q.oferta);
+        png = input ? ((await renderOfferCard(input))?.png ?? null) : null;
+      } catch (err) { console.error('[lista-impressoras] card falhou:', err instanceof Error ? err.message : err); }
+      const sd = await sendTelegramGroupMessage({ token, chatId: chat, text: q.text, photo: png, silent: false, button: q.url ? { text: 'Ver oferta e comprar', url: q.url } : null, maxRetryAfterSec: 5 });
+      r = { ok: sd.ok, status: sd.status ?? 0, desc: sd.error ?? '', messageId: sd.messageId, retryAfter: sd.retryAfterSec };
+      if (sd.ok && sd.photoSent) c.cards++;
+    } else {
+      r = await tg(token, 'sendMessage', { chat_id: chat, text: L.listas[cursor - Q].text, parse_mode: 'HTML', link_preview_options: { is_disabled: true }, disable_notification: true });
+    }
     c.chamadas++;
     if (r.status === 429) { pausaAte = new Date(Date.now() + (r.retryAfter ?? 5) * 1000).toISOString(); break; }
     if (r.ok && r.messageId) {

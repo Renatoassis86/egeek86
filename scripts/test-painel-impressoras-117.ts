@@ -3,9 +3,10 @@
  * --previa: monta com dados reais e imprime resumo + 1o painel de cada rede (nunca envia). --privado | --canal: roda de verdade (rodada com cursor).
  * Uso: npx tsx --conditions=react-server --env-file=.env.local scripts/test-painel-impressoras-117.ts [--previa|--privado|--canal]
  */
-import { alvosLigados, brl, MAX_QUEDAS_POR_CICLO, montarPaineis, ordenar, textoQuedaSeguro, type OfertaPainel } from '../src/lib/messaging/painel-impressoras';
+import { alvosLigados, brl, MASTERS_PRIVADO, MAX_QUEDAS_POR_CICLO, montarPaineis, ordenar, textoQuedaSeguro, type OfertaPainel } from '../src/lib/messaging/painel-impressoras';
 import { decidir, quedaMinimaCents } from '../src/lib/coupons/monitor-preco-impressoras';
 import { textProblems } from '../src/lib/messaging/group-messages';
+import { captionVisibleLength } from '../src/lib/messaging/telegram-send';
 
 let fails = 0;
 function ok(c: boolean, n: string, x?: unknown) { if (!c) { fails++; console.error('FALHOU:', n, x ?? ''); } }
@@ -31,7 +32,7 @@ ok(ordem.every((v, i) => v >= 0 && (i === 0 || v > ordem[i - 1])), 'ordem do don
 ok(t0.indexOf('R$ 8.330,00</a>') < t0.indexOf('R$ 9.000,00</a>'), 'menor ao maior');
 ok(t0.includes('⭐') && t0.includes('MENOR PREÇO'), 'destaque P2S/P1S Combo');
 ok(t0.includes('#publicidade') && t0.includes('/mercado/impressao3d'), 'rodape');
-ok(/Lista de impressoras 3D · Mercado Livre · [0-9]{2}:[0-9]{2} · parte 1[/]1/.test(t0) && !/Bras[ií]lia/i.test(t0), 'hora sem Brasília');
+ok(/Bambu P2S[/]P1S Combo · [0-9]{2}:[0-9]{2} · parte 1[/]1/.test(t0) && !/Bras[ií]lia/i.test(t0), 'hora sem Brasília');
 ok(!/amazon/i.test(t0), 'ML sem Amazon');
 ok(/não é medido por nós/.test(t0) && !/chega em \d|entrega em \d|prazo de \d/i.test(t0), 'prazo não afirmado');
 
@@ -70,7 +71,7 @@ ok(b.ativosMl === 1 && !/Afiliada/.test(b.paineis[0].text), 'loja vetada sai');
 ok(ordenar(of('x', 1), of('x', 2)) < 0, 'ordenar');
 
 // Lista: cabeçalho "Lista de impressoras 3D · HH:MM · parte i/N" em toda mensagem; resumo de 1 linha por item.
-ok(g.paineis.every((p, i) => p.text.includes(`parte ${i + 1}/${g.paineis.length}`) && /Lista de impressoras 3D · Mercado Livre · \d{2}:\d{2}/.test(p.text)), 'cabeçalho com parte i/N');
+ok(g.paineis.every((p, i) => p.text.includes(`parte ${i + 1}/${g.paineis.length}`) && /Bambu P2S[/]P1S Combo · \d{2}:\d{2}/.test(p.text)), 'cabeçalho com parte i/N');
 const rs = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 90000, 'mercado-livre', 'L', 1, { anteriorCents: 100000, minimo14: true, beneficios: [{ rotulo: 'Itaú Mastercard 15%', needsConfirm: true }] })], inicio: now, adTag: '' });
 ok(rs.paineis[0].text.includes('↓ 10% (era R$ 1.000,00)') && rs.paineis[0].text.includes('novo mínimo de 14 dias') && rs.paineis[0].text.includes('(a confirmar no carrinho)'), 'resumo: queda, mínimo, cartão', rs.paineis[0].text);
 const alta = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 110000, 'mercado-livre', 'L', 1, { anteriorCents: 100000 })], inicio: now, adTag: '' });
@@ -84,7 +85,12 @@ const q = textoQuedaSeguro({ rede: 'mercado-livre', titulo: 'Impressora 3D Bambu
 ok(!!q.text && q.text.length < 4096, 'queda cabe', q.problemas);
 ok(q.text!.includes('queda de 4%') && q.text!.includes('R$ 8.330,00') && q.text!.includes('novo mínimo de 14 dias') && q.text!.includes('&lt;FDM&gt;'), 'queda: preços, %, mínimo, escape');
 ok(q.text!.includes('Cupom R$ 20 OFF em LOJA') && q.text!.includes('R$ 6.800,00') && q.text!.includes('a confirmar no carrinho'), 'queda: cupom e cartão');
-ok(q.text!.includes('Frete e prazo: ainda não lidos') && !/chega em \d|entrega em \d/i.test(q.text!), 'queda: sem leitura, prazo não inventado');
+ok(q.text!.includes('🚚 Prazo ainda não lido') && !/chega em \d|entrega em \d/i.test(q.text!), 'queda: sem leitura, prazo não inventado');
+const gat = (g: 'queda' | 'minimo' | 'cupom' | 'cartao') => textoQuedaSeguro({ gatilho: g, rede: 'mercado-livre', titulo: 'Impressora 3d Bambu Lab P1s Combo', loja: 'LOJA X', reputacao: '98% de avaliações positivas', cents: 600000, anteriorCents: g === 'cupom' || g === 'cartao' ? null : 650000, anteriorEm: now, minimo14: g === 'minimo', url: 'https://meli.la/x', leituraEm: now, cupom: g === 'cupom' ? { nome: 'R$ 50 OFF em LOJA X', finalCents: 595000, passo: null } : null, cartoes: g === 'cartao' ? [{ rotulo: 'Itaú Mastercard 15%', finalCents: 510000, needsConfirm: true }] : [], fretePrazo: 'Frete grátis · chega de 26/11 a 27/11 (CEP 58035090)', adTag: '#publicidade' });
+ok(gat('queda').text!.includes('📉 Queda de preço') && gat('minimo').text!.includes('🏷️ Novo mínimo de 14 dias') && gat('cupom').text!.includes('🎟️ Cupom no anúncio') && gat('cartao').text!.includes('💳 Desconto no cartão'), 'rótulos dos 4 gatilhos');
+ok(!gat('cupom').text!.includes('queda de') && gat('cupom').text!.includes('R$ 5.950,00') && gat('cartao').text!.includes('a confirmar no carrinho'), 'cupom/cartão sem queda não inventam queda');
+ok((['queda', 'minimo', 'cupom', 'cartao'] as const).every((x) => captionVisibleLength(gat(x).text!) <= 1024 && !/comiss|afiliad/i.test(gat(x).text!)), 'legenda de card cabe em 1024 e sem aviso de comissão');
+ok(!MASTERS_PRIVADO.some((m) => m.length !== 36) && MASTERS_PRIVADO.length === 2, 'escopo: só os 2 masters (P2S Combo e P1S Combo)');
 const qf = textoQuedaSeguro({ rede: 'mercado-livre', titulo: 'Impressora 3D Bambu Lab A1 Combo', loja: 'L', cents: 480000, anteriorCents: 800000, anteriorEm: new Date('2026-11-15T15:20:00Z'), minimo14: false, url: null, leituraEm: now, fretePrazo: 'Frete grátis · chega de 26/11 a 27/11 (CEP 58035090)', adTag: '' });
 ok(!!qf.text && qf.text.includes('queda de 40%') && qf.text.includes('Preço anterior lido: R$ 8.000,00 em 15/11') && qf.text.includes('🚚 Frete grátis · chega de 26/11 a 27/11 (CEP 58035090)'), 'queda 40% sem teto, com preço anterior lido e prazo medido', qf.problemas);
 const lf = montarPaineis({ ofertas: [of('Impressora 3D Bambu Lab P2S Combo', 833000, 'mercado-livre', 'L', 1, { fretePrazo: 'Prazo ainda não lido' }), of('Impressora 3D Bambu Lab A1', 400000, 'amazon', null, 1, { fretePrazo: 'Frete R$ 20,00 · chega de 24/11 a 26/11 (CEP lido 58035000)' })], inicio: now, adTag: '' });
