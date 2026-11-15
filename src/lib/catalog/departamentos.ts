@@ -31,11 +31,10 @@ export const CACHE_FLAGS_SEGUNDOS = 30;
 /** Cartões por página. */
 export const POR_PAGINA = 24;
 /**
- * Idade máxima do último check de uma oferta clicável de Mercado Livre e Shopee. Dono 2026-11-14 (R2-3): a oferta aparece SEMPRE, com "visto há X"
- * no cartão, até a janela pública de OFFER_FRESHNESS_DAYS (7 dias, regra de indicador existente). Antes era 6 h (ata E.1 item 2). ATENÇÃO: os termos do
- * Mercado Livre pedem atualização a cada 6 h (ata E.1); o dono foi avisado do risco. Reverter = voltar para 6.
+ * Idade máxima do último check de uma oferta clicável de Mercado Livre e Shopee. Dono 2026-11-15 (pergunta 1 do motor): 24 h, igual à Amazon
+ * (meio-termo entre as 6 h dos termos do Mercado Livre e os 7 dias de R2-3). O cartão mostra "visto há X" depois de 6 h. Reverter = voltar para 24 * OFFER_FRESHNESS_DAYS.
  */
-export const OFERTA_CLICAVEL_MAX_HORAS = 24 * OFFER_FRESHNESS_DAYS;
+export const OFERTA_CLICAVEL_MAX_HORAS = 24;
 /** Mediana de preço só com este mínimo de vendedores distintos. */
 export const MIN_VENDEDORES_MEDIANA = 3;
 /** Idade máxima do último check de uma oferta clicável da Amazon. NÃO mudou no R2-3: a licença da Amazon permite guardar preço por até 24 h (risco contratual, alto). */

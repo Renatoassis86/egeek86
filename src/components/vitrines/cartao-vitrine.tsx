@@ -3,8 +3,10 @@ import { ProductImage } from '@/components/ui/product-image';
 import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { VerificadoHa } from '@/components/affiliate/verificado-ha';
-import { VITRINE_REGRAS } from '@/lib/vitrines/regras';
 import type { PlataformaVitrine, PosicaoMedia, VitrineItem } from '@/lib/vitrines/tipos';
+
+/** Espelha VITRINE_REGRAS.LEITURA_VISTO_HA_HORAS (regras.ts puxa o banco; componente de cliente não pode importá-lo). */
+const LEITURA_VISTO_HA_HORAS = 6;
 
 /** Sem 'server-only' nem estado: pode ser renderizado no servidor ou dentro da faixa (cliente). */
 
@@ -73,7 +75,7 @@ export function CartaoVitrine({ item, prioridade = false, className }: { item: V
   const pos = textoPosicao(item.posicao, item.media?.cotacoes ?? null, item.media?.dias ?? null);
   const lido = horaDaLeitura(item.lidoEm);
   // R2-3: oferta com leitura antiga continua aparecendo, com "visto há X" em vez da hora (que ficaria ambígua em dias).
-  const leituraAntiga = lido != null && Date.now() - new Date(item.lidoEm).getTime() > VITRINE_REGRAS.LEITURA_VISTO_HA_HORAS * 3600_000;
+  const leituraAntiga = lido != null && Date.now() - new Date(item.lidoEm).getTime() > LEITURA_VISTO_HA_HORAS * 3600_000;
   const plataforma = rotuloPlataforma(item.plataforma);
   const reg = item.menorRegistrado;
   const promo = item.promoPrime ?? null;
