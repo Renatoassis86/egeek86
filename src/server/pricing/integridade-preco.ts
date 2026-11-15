@@ -63,3 +63,43 @@ export async function preencherAnuncios(opts: { orcamentoMs: number; maxCatalogo
   }
   return out;
 }
+
+export interface MetricasIntegridade {
+  mlAtivas: number;
+  semAnuncioConcreto: number;
+  auditadasOk6h: number;
+  divergentes: number;
+  erroLeitura: number;
+  nuncaAuditadas: number;
+  coberturaPct: number;
+  idadeMediaUltimoVeredito: number | null;
+  mensagens24hSemVeredito: number;
+}
+
+/** Métricas da integridade de preço (painel admin): universo = ofertas ML ativas, com preço, fora da quarentena. */
+export async function metricasIntegridade(): Promise<MetricasIntegridade> {
+  const [r] = (await db.execute(sql`
+    WITH u AS (
+      SELECT o.id, o.external_item_id, o.external_ref,
+        (SELECT verdict FROM offer_link_audit a WHERE a.offer_id = o.id ORDER BY checked_at DESC LIMIT 1) AS v,
+        (SELECT max(checked_at) FROM offer_link_audit a WHERE a.offer_id = o.id) AS ult,
+        (SELECT max(checked_at) FROM offer_link_audit a WHERE a.offer_id = o.id AND verdict = 'ok') AS ok_em
+      FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id AND n.slug = 'mercado-livre'
+      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0)
+    SELECT count(*)::int AS ml, count(*) FILTER (WHERE external_item_id IS NULL OR external_item_id = external_ref)::int AS sem_anuncio,
+      count(*) FILTER (WHERE ok_em > now() - interval '6 hours')::int AS ok6,
+      count(*) FILTER (WHERE v IN ('preco_divergente','item_diferente','pausado','sem_link'))::int AS div,
+      count(*) FILTER (WHERE v = 'erro_leitura')::int AS err,
+      count(*) FILTER (WHERE v IS NULL)::int AS nunca,
+      (extract(epoch FROM avg(now() - ult)) / 60)::int AS idade
+    FROM u`)) as unknown as { ml: number; sem_anuncio: number; ok6: number; div: number; err: number; nunca: number; idade: number | null }[];
+  const [m] = (await db.execute(sql`
+    SELECT count(*)::int AS n FROM group_messages g WHERE g.sent_at > now() - interval '24 hours' AND g.offer_id IS NOT NULL
+      AND NOT EXISTS (SELECT 1 FROM offer_link_audit a WHERE a.offer_id = g.offer_id AND a.verdict = 'ok' AND a.checked_at > g.sent_at - interval '6 hours' AND a.checked_at < g.sent_at + interval '6 hours')`)) as unknown as { n: number }[];
+  const ml = Number(r?.ml ?? 0);
+  return {
+    mlAtivas: ml, semAnuncioConcreto: Number(r?.sem_anuncio ?? 0), auditadasOk6h: Number(r?.ok6 ?? 0), divergentes: Number(r?.div ?? 0),
+    erroLeitura: Number(r?.err ?? 0), nuncaAuditadas: Number(r?.nunca ?? 0), coberturaPct: ml ? Math.round(((ml - Number(r?.nunca ?? 0)) / ml) * 1000) / 10 : 0,
+    idadeMediaUltimoVeredito: r?.idade ?? null, mensagens24hSemVeredito: Number(m?.n ?? 0),
+  };
+}

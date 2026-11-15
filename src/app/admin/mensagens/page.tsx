@@ -12,6 +12,8 @@ import { loadQueuePlan } from '@/server/messaging/group-plan';
 import { getStores } from '@/server/stores';
 import { GroupSendPlan } from '@/components/admin/group-send-plan';
 import { CouponAgulhaPanel } from '@/components/admin/coupon-agulha-panel';
+import { IntegridadePrecoPanel } from '@/components/admin/integridade-preco-panel';
+import { metricasIntegridade } from '@/server/pricing/integridade-preco';
 import { saudeAgulha } from '@/server/coupons/agulha-health';
 
 // Sem searchParams — força dinâmica (ver nota em src/app/admin/page.tsx).
@@ -34,6 +36,7 @@ export default async function AdminMessagesPage() {
   const overview = await loadAutomationOverview();
   const queuePlan = await loadQueuePlan();
   const saudeCupons = await saudeAgulha().catch(() => null);
+  const integridade = await metricasIntegridade().catch(() => null);
   const groupLinks: Record<string, { name: string; url: string }> = {};
   for (const s of await getStores({ fresh: true }).catch(() => [])) {
     if (!s.whatsappGroupUrl) continue;
@@ -52,6 +55,8 @@ export default async function AdminMessagesPage() {
       </div>
 
       {loadError && <Text variant="body-sm">Não foi possível calcular agora: {loadError}</Text>}
+
+      {integridade && <IntegridadePrecoPanel m={integridade} />}
 
       <GroupSendPlan plan={queuePlan} />
 

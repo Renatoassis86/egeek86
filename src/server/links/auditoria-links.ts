@@ -134,6 +134,7 @@ export async function cicloAuditoriaLinks(opts: { budgetMs: number }): Promise<R
   const t0 = Date.now();
   try {
     const res: Record<string, unknown> = {};
+    res.amazonShopee = await veredictosAmazonShopee().catch(() => -1);
     let restante = opts.budgetMs;
     for (const [escopo, ate, lim] of [['privado', 300, 12], ['canal', 300, 12], ['combos', 30, 12], ['impressoras', 360, 12], ['resto', 1440, 12]] as const) {
       if (restante < 5000) break;
@@ -168,4 +169,23 @@ async function alarmeSeDivergirMuito(): Promise<void> {
     body: JSON.stringify({ chat_id: chat, text: `Auditoria de links: ${r.ruins} de ${r.n} leituras das últimas 24 h (${pct}%) divergem do que a oferta diz (preço, anúncio ou pausado). Detalhe em offer_link_audit.`, disable_notification: false }),
   }).catch(() => null);
   if (res?.ok) await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-links-alarme', 'telegram', now(), now(), 0, 'ok', ${JSON.stringify({ n: r.n, ruins: r.ruins })}::jsonb)`);
+}
+
+/**
+ * Amazon e Shopee (#119): a página/API já é a FONTE do preço (loop assistido da Amazon e API da Shopee gravam o preço lido), então não há leitura
+ * nova da página. O veredito registra a idade dessa leitura: `ok` se a confirmação está dentro da janela (Amazon 130 min, Shopee 6 h), senão
+ * `erro_leitura` com a idade. Só ofertas que foram para mensagem nas últimas 24 h e ainda sem veredito recente. Sem rede.
+ */
+export async function veredictosAmazonShopee(limite = 400): Promise<number> {
+  const r = (await db.execute(sql`
+    INSERT INTO offer_link_audit (offer_id, link, offer_price_cents, verdict, note)
+    SELECT o.id, o.affiliate_url, o.current_price_cents,
+      CASE WHEN o.last_price_confirmed_at > now() - (CASE WHEN n.slug = 'amazon' THEN interval '130 minutes' ELSE interval '6 hours' END) THEN 'ok' ELSE 'erro_leitura' END,
+      'fonte=' || CASE WHEN n.slug = 'amazon' THEN 'loop_assistido' ELSE 'api_shopee' END || '; idade_min=' || coalesce((extract(epoch FROM now() - o.last_price_confirmed_at) / 60)::int::text, 'nunca')
+    FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id AND n.slug IN ('amazon', 'shopee')
+    WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0
+      AND o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL)
+      AND NOT EXISTS (SELECT 1 FROM offer_link_audit a WHERE a.offer_id = o.id AND a.checked_at > now() - interval '30 minutes')
+    LIMIT ${limite} RETURNING id`)) as unknown as unknown[];
+  return r.length;
 }
