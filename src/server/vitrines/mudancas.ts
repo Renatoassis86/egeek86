@@ -72,10 +72,6 @@ export function montarMudancas(
       continue;
     }
     const quedaPct = ((ev.antesCentavos - ev.centavos) / ev.antesCentavos) * 100;
-    if (quedaPct > VITRINE_REGRAS.QUEDA_MAX_PCT) {
-      marca('queda_acima_do_teto');
-      continue;
-    }
     // O evento só vale enquanto o preço vigente não passou dele (se subiu depois, o evento ficou velho).
     if (c.precoCentavos > ev.centavos) {
       marca('fora_da_vitrine');

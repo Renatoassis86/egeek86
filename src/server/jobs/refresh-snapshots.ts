@@ -18,6 +18,7 @@ import { DEPARTAMENTOS } from '@/lib/catalog/departamentos';
 import { LOJAS_PLUS } from '@/lib/catalog/plus';
 import { todasAsChaves } from '@/lib/vitrines';
 import { atualizarTodasVitrines } from '@/server/vitrines';
+import { sincronizarVendedorFracoForaDaMedia } from '@/server/pricing/weak-seller-avg';
 
 /**
  * Recalcula o pré-cálculo persistido da vitrine (Fase 2; ata 2026-11-03-fase2-precalculo.md).
@@ -71,6 +72,8 @@ export interface StatsRefreshSummary {
 /** Produtos com estatística ausente ou mais velha que `minAgeMs`, os mais antigos primeiro, até acabar o orçamento de tempo. */
 export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: number; chunkSize?: number; concurrency?: number }): Promise<StatsRefreshSummary> {
   const started = Date.now();
+  // R2-4: vendedor fraco fica fora só da média (marca avg_excluded_at); falha aqui nunca derruba o recálculo.
+  await sincronizarVendedorFracoForaDaMedia({ apply: true }).catch((e) => console.error('[weak-seller-avg]', e instanceof Error ? e.message : e));
   const minAgeSec = Math.round((opts.minAgeMs ?? 10 * 60_000) / 1000);
   const chunkSize = opts.chunkSize ?? 120;
   const concurrency = opts.concurrency ?? 2;

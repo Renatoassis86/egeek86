@@ -1,5 +1,5 @@
 // Sem 'server-only': regras PURAS das vitrines (checklist #7 e #8). Testadas por scripts/test-vitrine-regras.ts e test-vitrine-plataforma.ts.
-import { INLINE_BAND_PERCENT, MIN_HISTORY_DAYS_FOR_VERDICT, MIN_QUOTES_FOR_VERDICT, computeVerdict, sellerTier, type SellerSignals } from '@/lib/affiliate/price-verdict';
+import { INLINE_BAND_PERCENT, MIN_HISTORY_DAYS_FOR_VERDICT, MIN_QUOTES_FOR_VERDICT, OFFER_FRESHNESS_DAYS, computeVerdict, type SellerSignals } from '@/lib/affiliate/price-verdict';
 import { offerTitleFlags } from '@/lib/affiliate/offer-identity';
 import { avaliarConsoleVideoGame, ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
 import { ehItemMiudo } from '@/lib/catalog/item-miudo';
@@ -22,12 +22,17 @@ export const VITRINE_REGRAS = {
   /** Piso do indicador: 5 cotações e 14 dias (mesma definição de `checkEligibility`). */
   PISO_COTACOES: MIN_QUOTES_FOR_VERDICT,
   PISO_DIAS: MIN_HISTORY_DAYS_FOR_VERDICT,
-  /** Queda mínima para valer como "abaixo da média" (fora da faixa "em linha") e máxima antes de virar suspeita. */
+  /** Queda mínima para valer como "abaixo da média" (fora da faixa "em linha"). Dono 2026-11-14 (R2-2): NÃO existe mais teto de queda; toda queda entra na série e no selo. */
   QUEDA_MIN_PCT: INLINE_BAND_PERCENT,
-  QUEDA_MAX_PCT: 50,
-  /** Idade máxima da leitura do preço. Destaques: 6 h; demais vitrines: 24 h. */
+  /**
+   * Idade da leitura (dono 2026-11-14, R2-3): só o DESTAQUE ("agora") exige leitura de até 6 h. As demais vitrines mostram a oferta SEMPRE, com o texto
+   * "visto há X" no cartão, até a janela pública de OFFER_FRESHNESS_DAYS (7 dias, regra de indicador já existente, não mudou). A janela curta de mensagem
+   * (60 min na Amazon) vive em group-rules.ts e não foi tocada.
+   */
   LEITURA_MAX_HORAS_DESTAQUE: 6,
-  LEITURA_MAX_HORAS: 24,
+  LEITURA_MAX_HORAS: 24 * OFFER_FRESHNESS_DAYS,
+  /** Acima disto o cartão passa a dizer "visto há X" em vez do horário fixo da leitura. */
+  LEITURA_VISTO_HA_HORAS: 6,
   /** Menor registrado: régua de 3% sobre o menor registrado e corroboração por 2 vendedores em +-10%. */
   REGUA_REGISTRADO_PCT: 3,
   BANDA_CORROBORACAO_PCT: 10,
@@ -50,11 +55,9 @@ export type MotivoExclusao =
   | 'embalagem_com_nome_de_jogo'
   | 'sem_imagem'
   | 'sem_preco'
-  | 'vendedor_fraco'
   | 'leitura_velha'
   | 'sem_base_de_preco'
   | 'acima_do_normal'
-  | 'queda_acima_do_teto'
   | 'queda_abaixo_do_minimo'
   | 'fora_da_vitrine'
   | 'nao_esta_no_menor_registrado'
@@ -199,9 +202,9 @@ export function horasDesde(iso: string | null, agora: Date): number | null {
 const TIPO_PUBLICO = { game: 'jogo', console: 'console', accessory: 'acessorio' } as const;
 
 export interface OpcoesAvaliacao {
-  /** Exige base de preço (5 cotações e 14 dias), veredito não "acima" e queda até 50%. Padrão true; as mudanças do menor preço dispensam. */
+  /** Exige base de preço (5 cotações e 14 dias) e veredito não "acima". Padrão true; as mudanças do menor preço dispensam. */
   exigirBase?: boolean;
-  /** Presença (dono, 2026-11-13): aceita produto SEM base de preço (sem selo), mas ainda barra 'acima do normal' e queda acima do teto quando há base. */
+  /** Presença (dono, 2026-11-13): aceita produto SEM base de preço (sem selo), mas ainda barra 'acima do normal' quando há base. */
   presenca?: boolean;
 }
 
@@ -239,7 +242,8 @@ export function avaliarCandidato(c: Candidato, ctx: ContextoAvaliacao, opts: Opc
   if (ehEmbalagemAvulsa(c.tituloOferta, tipo)) return { ok: false, motivo: 'embalagem_com_nome_de_jogo' };
 
   if (!c.imagemUrl || !/^https?:\/\//i.test(c.imagemUrl)) return { ok: false, motivo: 'sem_imagem' };
-  if (sellerTier(c.vendedor) === 'low') return { ok: false, motivo: 'vendedor_fraco' };
+  // Vendedor fraco (dono 2026-11-14, R2-4): a oferta é gravada e MOSTRADA. O pool escolhe a menor oferta de vendedor confiável como preço de destaque e a oferta
+  // de vendedor fraco fica fora só da média (avg_excluded_at, ver src/server/pricing/weak-seller-avg.ts); o produto nunca some por isso.
 
   const verdict = c.stats
     ? computeVerdict({ currentCents: c.precoCentavos, avgCents: c.stats.avgCents, quoteCount: c.stats.quoteCount, historyDays: c.stats.historyDays, lowConfidence: c.stats.lowConfidence })
@@ -253,12 +257,10 @@ export function avaliarCandidato(c: Candidato, ctx: ContextoAvaliacao, opts: Opc
   }
   if (!exigirBase && opts.presenca) {
     if (posicao.tipo === 'acima') return { ok: false, motivo: 'acima_do_normal' };
-    if (quedaPct > VITRINE_REGRAS.QUEDA_MAX_PCT) return { ok: false, motivo: 'queda_acima_do_teto' };
   }
   if (exigirBase) {
     if (posicao.tipo === 'sem_base') return { ok: false, motivo: 'sem_base_de_preco' };
     if (posicao.tipo === 'acima') return { ok: false, motivo: 'acima_do_normal' };
-    if (quedaPct > VITRINE_REGRAS.QUEDA_MAX_PCT) return { ok: false, motivo: 'queda_acima_do_teto' };
   }
 
   const st = c.stats;
@@ -319,7 +321,7 @@ function contar(m: Partial<Record<MotivoExclusao, number>>, k: MotivoExclusao) {
  */
 export function chaveDeOrdem(a: Avaliado): number {
   const promo = a.candidato.promoPrime;
-  const p = promo && promo.pct > 0 && promo.pct <= VITRINE_REGRAS.QUEDA_MAX_PCT ? promo.pct : 0;
+  const p = promo && promo.pct > 0 && promo.pct < 100 ? promo.pct : 0;
   return Math.max(a.quedaPct, p);
 }
 

@@ -4,7 +4,7 @@
  * Sai com código 1 se algo FALHAR. O banco só recebe SELECT (sem DATABASE_URL a parte de banco é pulada) e NADA é gravado
  * (a parte de banco usa o calculo direto, nunca o snapshot persistido).
  *
- * (a) puras: destaques (queda de 5% a 50%, acima do normal exclui, vendedor fraco exclui, base curta exclui, leitura de 6 h),
+ * (a) puras: destaques (queda de 5% em diante SEM teto, acima do normal exclui, vendedor fraco aparece, base curta exclui, leitura de 6 h),
  *     1 item por master, vitrine com menos de 4 itens some, quantidades 12/10/6/8, ordem por queda real, menor registrado
  *     corroborado, mudanças do menor preço, Plus sem selo nem média.
  * (b) estáticas: nenhum SELECT em affiliate_price_snapshots nos loaders, SET LOCAL statement_timeout em toda consulta, sem any.
@@ -83,11 +83,9 @@ const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(ch
   const excl: Array<[string, Candidato]> = [
     ['acima do normal', mk({ precoCentavos: 26000 })],
     ['em linha (queda < 5%) fora dos destaques', mk({ precoCentavos: 19500 })],
-    ['queda acima de 50%', mk({ precoCentavos: 9000 })],
     ['base curta (4 cotações)', mk({ stats: comStats({ quoteCount: 4 }) })],
     ['base curta (13 dias)', mk({ stats: comStats({ historyDays: 13 }) })],
     ['sem estatística', mk({ stats: null })],
-    ['vendedor fraco (vermelho)', mk({ vendedor: { reputationLevel: '1_red', powerSellerStatus: null, totalSales: 3 } })],
     ['leitura com mais de 6 h', mk({ lidoEm: horasAtras(7) })],
     ['sem leitura', mk({ lidoEm: null })],
     ['plataforma unknown', mk({ plataformaDb: 'unknown', tituloOferta: 'Jogo Sem Plataforma Midia Fisica', nomeMaster: 'Jogo Sem Plataforma' })],
@@ -107,6 +105,16 @@ const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(ch
   }
   const fraco = mk({ vendedor: { reputationLevel: null, powerSellerStatus: null, totalSales: null } });
   check('vendedor sem dado (Shopee) NÃO é fraco', itensIds('destaques', [...bons, fraco]).has(fraco.masterProductId));
+  // R2-2 (dono, 2026-11-14): não existe teto de queda; queda de 55% entra nos destaques e na faixa.
+  const queda55 = mk({ precoCentavos: 9000 });
+  check('R2-2: queda de 55% entra nos destaques (sem teto)', itensIds('destaques', [...bons, queda55]).has(queda55.masterProductId));
+  check('R2-2: queda de 55% entra na faixa', selecionar('plataforma:ps5:jogos', [...bons, queda55], ctx).itens.some((i) => i.masterProductId === queda55.masterProductId));
+  const queda55Item = selecionar('destaques', [...bons, queda55], ctx).itens.find((i) => i.masterProductId === queda55.masterProductId);
+  check('R2-2: a posição continua "abaixo" com o percentual real', queda55Item?.posicao.tipo === 'abaixo' && queda55Item.posicao.pct > 50, queda55Item?.posicao);
+  // R2-4 (dono, 2026-11-14): vendedor fraco grava e MOSTRA (fica fora só da média, em weak-seller-avg.ts).
+  const fracoVermelho = mk({ vendedor: { reputationLevel: '1_red', powerSellerStatus: null, totalSales: 3 } });
+  check('R2-4: vendedor fraco (vermelho) aparece nos destaques', itensIds('destaques', [...bons, fracoVermelho]).has(fracoVermelho.masterProductId));
+  check('R2-4: vendedor fraco aparece na faixa', selecionar('plataforma:ps5:jogos', [...bons, fracoVermelho], ctx).itens.some((i) => i.masterProductId === fracoVermelho.masterProductId));
   const hide = mk({});
   const ctxOculto: ContextoAvaliacao = { ...ctx, ocultos: new Set([hide.masterProductId]) };
   check('porteiro oculto exclui (contexto)', !selecionar('destaques', [...bons, hide], ctxOculto).itens.some((i) => i.masterProductId === hide.masterProductId));
@@ -149,8 +157,14 @@ const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(ch
   const velhos = quatro(() => mk({ lidoEm: horasAtras(20) }));
   check('faixa aceita leitura de 20 h', selecionar('plataforma:ps5:jogos', velhos, ctx).itens.length === 4);
   check('destaques recusam leitura de 20 h', selecionar('destaques', velhos, ctx).itens.length === 0);
+  // R2-3 (dono, 2026-11-14): a faixa mostra a oferta SEMPRE (com "visto há X") até a janela pública de 7 dias; só passa disso some.
   const velhos2 = quatro(() => mk({ lidoEm: horasAtras(30) }));
-  check('faixa recusa leitura de 30 h', selecionar('plataforma:ps5:jogos', velhos2, ctx).itens.length === 0);
+  check('R2-3: faixa aceita leitura de 30 h (com "visto há X")', selecionar('plataforma:ps5:jogos', velhos2, ctx).itens.length === 4);
+  const velhos3 = quatro(() => mk({ lidoEm: horasAtras(24 * 6) }));
+  check('R2-3: faixa aceita leitura de 6 dias', selecionar('plataforma:ps5:jogos', velhos3, ctx).itens.length === 4);
+  const velhos4 = quatro(() => mk({ lidoEm: horasAtras(24 * 8) }));
+  check('R2-3: faixa recusa leitura de 8 dias (janela pública de 7 dias)', selecionar('plataforma:ps5:jogos', velhos4, ctx).itens.length === 0);
+  check('R2-3: destaques seguem exigindo leitura de 6 h', selecionar('destaques', velhos2, ctx).itens.length === 0);
   const linha = quatro(() => mk({ precoCentavos: 19500 }));
   check('faixa aceita "em linha"', selecionar('plataforma:ps5:jogos', linha, ctx).itens.length === 4 && selecionar('plataforma:ps5:jogos', linha, ctx).itens.every((i) => i.posicao.tipo === 'em_linha'));
   check('faixa exclui "acima do normal"', selecionar('plataforma:ps5:jogos', quatro(() => mk({ precoCentavos: 26000 })), ctx).itens.length === 0);
@@ -195,7 +209,7 @@ const itensIds = (chave: VitrineChave, xs: Candidato[]) => new Set(selecionar(ch
   check('18 chaves de vitrine', chaves.length === 18, chaves.length);
   check('chaves únicas', new Set(chaves).size === chaves.length);
   check('limites: 12/8/10/6/8/6/6', VITRINE_REGRAS.DESTAQUES === 12 && VITRINE_REGRAS.MUDANCAS === 8 && VITRINE_REGRAS.JOGOS_POR_FAIXA === 10 && VITRINE_REGRAS.CONSOLES_POR_FAIXA === 6 && VITRINE_REGRAS.ACESSORIOS === 8 && VITRINE_REGRAS.COLECIONAVEIS === 6 && VITRINE_REGRAS.PLUS_DEPARTAMENTOS === 6);
-  check('pisos: 5 cotações, 14 dias, queda 5% a 50%, mínimo 4 itens', VITRINE_REGRAS.PISO_COTACOES === 5 && VITRINE_REGRAS.PISO_DIAS === 14 && VITRINE_REGRAS.QUEDA_MIN_PCT === 5 && VITRINE_REGRAS.QUEDA_MAX_PCT === 50 && VITRINE_REGRAS.MIN_ITENS === 4);
+  check('pisos: 5 cotações, 14 dias, queda mínima 5% (sem teto), mínimo 4 itens', VITRINE_REGRAS.PISO_COTACOES === 5 && VITRINE_REGRAS.PISO_DIAS === 14 && VITRINE_REGRAS.QUEDA_MIN_PCT === 5 && !('QUEDA_MAX_PCT' in VITRINE_REGRAS) && VITRINE_REGRAS.MIN_ITENS === 4);
 }
 
 // ---------------------------------------------------------------------------
@@ -252,17 +266,17 @@ async function banco() {
       if (r.chave !== 'plus') check(`[${r.chave}] ${i.masterProductId.slice(0, 8)}: plataforma conhecida`, i.plataforma != null);
       if (r.chave === 'plus') check(`[plus] ${i.departamento}: sem selo nem média`, i.media == null && i.menorRegistrado == null && i.posicao.tipo === 'sem_base');
       if (r.chave === 'destaques') {
-        check(`[destaques] ${i.masterProductId.slice(0, 8)}: abaixo da média entre 5% e 50%`, i.posicao.tipo === 'abaixo' && i.posicao.pct >= 5 && i.posicao.pct <= 50, i.posicao);
+        check(`[destaques] ${i.masterProductId.slice(0, 8)}: abaixo da média em 5% ou mais (sem teto)`, i.posicao.tipo === 'abaixo' && i.posicao.pct >= 5, i.posicao);
         check(`[destaques] ${i.masterProductId.slice(0, 8)}: base de 5 cotações e 14 dias`, !!i.media && i.media.cotacoes >= 5 && i.media.dias >= 14, i.media);
         check(`[destaques] ${i.masterProductId.slice(0, 8)}: leitura de até 6 h`, (Date.now() - Date.parse(i.lidoEm)) / 3_600_000 <= 6.1, i.lidoEm);
       } else if (r.chave !== 'plus' && r.chave !== 'mudancas') {
         // Presença (dono, 2026-11-13): faixas e acessórios aceitam produto sem base (sem selo e sem média); menor registrado continua exigindo base.
         const semBaseOk = r.chave !== 'menor-registrado';
         check(`[${r.chave}] ${i.masterProductId.slice(0, 8)}: nunca acima do normal; sem base só sem selo e sem média`, i.posicao.tipo === 'abaixo' || i.posicao.tipo === 'em_linha' || (semBaseOk && i.posicao.tipo === 'sem_base' && i.media == null), i.posicao);
-        check(`[${r.chave}] ${i.masterProductId.slice(0, 8)}: leitura de até 24 h`, (Date.now() - Date.parse(i.lidoEm)) / 3_600_000 <= 24.1, i.lidoEm);
+        check(`[${r.chave}] ${i.masterProductId.slice(0, 8)}: leitura de até 7 dias (R2-3)`, (Date.now() - Date.parse(i.lidoEm)) / 3_600_000 <= 168.1, i.lidoEm);
       }
       if (r.chave === 'mudancas') {
-        check(`[mudancas] ${i.masterProductId.slice(0, 8)}: evento com horário, valor e loja`, !!i.evento && !!i.evento.loja && i.evento.centavos < i.evento.antesCentavos && i.evento.quedaPct >= 5 && i.evento.quedaPct <= 50, i.evento);
+        check(`[mudancas] ${i.masterProductId.slice(0, 8)}: evento com horário, valor e loja`, !!i.evento && !!i.evento.loja && i.evento.centavos < i.evento.antesCentavos && i.evento.quedaPct >= 5, i.evento);
         check(`[mudancas] ${i.masterProductId.slice(0, 8)}: dentro de 24 h`, !!i.evento && (Date.now() - Date.parse(i.evento.em)) / 3_600_000 <= 24.5, i.evento);
       }
       if (r.chave === 'menor-registrado') check(`[menor-registrado] ${i.masterProductId.slice(0, 8)}: no menor e corroborado`, !!i.menorRegistrado?.noMenor && !!i.menorRegistrado?.corroborado, i.menorRegistrado);

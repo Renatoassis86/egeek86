@@ -1,6 +1,7 @@
 // Sem 'server-only': registro e regras PURAS (sem banco, sem rede), importáveis por testes e scripts.
 // A leitura da chave no banco fica em src/server/departamentos.ts.
 import { VERTICALS, type Vertical } from '@/lib/catalog/verticais';
+import { OFFER_FRESHNESS_DAYS } from '@/lib/affiliate/price-verdict';
 
 /**
  * REGISTRO DE DEPARTAMENTOS PÚBLICOS (ata 2026-11-10, emenda; ADR 0008).
@@ -29,11 +30,15 @@ export const MIN_MASTERS_DEPARTAMENTO = 3;
 export const CACHE_FLAGS_SEGUNDOS = 30;
 /** Cartões por página. */
 export const POR_PAGINA = 24;
-/** Idade máxima do último check de uma oferta clicável (ata E.1 item 2: 6 h; termos do ML pedem atualização a cada 6 h). */
-export const OFERTA_CLICAVEL_MAX_HORAS = 6;
+/**
+ * Idade máxima do último check de uma oferta clicável de Mercado Livre e Shopee. Dono 2026-11-14 (R2-3): a oferta aparece SEMPRE, com "visto há X"
+ * no cartão, até a janela pública de OFFER_FRESHNESS_DAYS (7 dias, regra de indicador existente). Antes era 6 h (ata E.1 item 2). ATENÇÃO: os termos do
+ * Mercado Livre pedem atualização a cada 6 h (ata E.1); o dono foi avisado do risco. Reverter = voltar para 6.
+ */
+export const OFERTA_CLICAVEL_MAX_HORAS = 24 * OFFER_FRESHNESS_DAYS;
 /** Mediana de preço só com este mínimo de vendedores distintos. */
 export const MIN_VENDEDORES_MEDIANA = 3;
-/** Idade máxima do último check de uma oferta clicável da Amazon (a licença permite guardar preço por até 24 h; ML e Shopee seguem em 6 h). */
+/** Idade máxima do último check de uma oferta clicável da Amazon. NÃO mudou no R2-3: a licença da Amazon permite guardar preço por até 24 h (risco contratual, alto). */
 export const OFERTA_CLICAVEL_MAX_HORAS_AMAZON = 24;
 /**
  * Redes que podem aparecer em departamento. Amazon entra SÓ como oferta e menor preço (dono, 2026-11-13): nunca na mediana (a mediana

@@ -220,7 +220,9 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
     const todo = [...accepted.slice(0, 2).map((x) => ({ ...x, kind: 'active' as const })), ...drafts.slice(0, 2).map((x) => ({ ...x, kind: 'draft' as const }))];
     for (const a of todo) {
       const low = isImplausiblyLow(a.price, refs), high = isImplausiblyHigh(a.price, refs);
-      if (low || high) { bump(low ? 'preco_baixo_demais' : 'preco_alto_demais'); log.push({ id: row.id, master: name, asin: a.c.a, titulo: a.c.t, preco: a.price, resultado: low ? 'preco_baixo_demais' : 'preco_alto_demais', refs: refs.length }); continue; }
+      // R2-12 (dono, 2026-11-14): preço implausível NÃO é descartado: a oferta é registrada e entra em QUARENTENA (quarantined_at), fora de média, selo e vitrines, para revisão.
+      const quarentena = low || high;
+      if (quarentena) { const mq = low ? 'quarentena_preco_baixo_demais' : 'quarentena_preco_alto_demais'; stats.motivos[mq] = (stats.motivos[mq] ?? 0) + 1; log.push({ id: row.id, master: name, asin: a.c.a, titulo: a.c.t, preco: a.price, resultado: low ? 'preco_baixo_demais_quarentena' : 'preco_alto_demais_quarentena', refs: refs.length }); }
       const ref = `amazon-${a.c.a}`;
       const [existing] = await db.select({ id: affiliateOffers.id, master: affiliateOffers.masterProductId, status: affiliateOffers.status }).from(affiliateOffers).where(and(eq(affiliateOffers.networkId, net.id), eq(affiliateOffers.externalRef, ref))).limit(1);
       if (existing && existing.master !== row.id) { bump('asin_ja_em_outro_master'); log.push({ id: row.id, asin: a.c.a, resultado: 'asin_ja_em_outro_master' }); continue; }
@@ -242,6 +244,7 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
         await recordPriceSnapshot({ offerId: existing.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
         const img = safeAmazonImage(a.c.i);
         await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now(), image_url = COALESCE(${img}, image_url) WHERE id = ${existing.id}`);
+        if (quarentena) await db.execute(sql`UPDATE affiliate_offers SET quarantined_at = COALESCE(quarantined_at, now()), updated_at = now() WHERE id = ${existing.id}`);
         if (existing.status === 'draft') {
           stats.rascunhos_atualizados++;
           if (await enfileirarDuvidaAmazon(db, { offerId: existing.id, masterId: row.id, masterNome: name, vertical: v, asin: a.c.a, titulo: a.c.t, motivo: a.reason, fronteira: Boolean(a.border), score: a.score, covM: a.covM, covC: a.covC })) stats.fila_criados++;
@@ -256,6 +259,7 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
       }).returning({ id: affiliateOffers.id });
       await recordPriceSnapshot({ offerId: o.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
       await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now() WHERE id = ${o.id}`);
+      if (quarentena) await db.execute(sql`UPDATE affiliate_offers SET quarantined_at = now(), updated_at = now() WHERE id = ${o.id}`);
       if (isDraft) {
         stats.rascunhos_novos++;
         if (await enfileirarDuvidaAmazon(db, { offerId: o.id, masterId: row.id, masterNome: name, vertical: v, asin: a.c.a, titulo: a.c.t, motivo: a.reason, fronteira: Boolean(a.border), score: a.score, covM: a.covM, covC: a.covC })) stats.fila_criados++;

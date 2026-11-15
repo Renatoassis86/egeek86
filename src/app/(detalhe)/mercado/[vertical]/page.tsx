@@ -7,8 +7,6 @@ import { CartaoDepartamentoView } from '@/components/mercado/cartao-departamento
 import { exigirDepartamento } from '@/server/departamentos-rotas';
 import { destaquesDepartamento, indiceTiposDepartamento, listarDepartamento, normalizarOrdem } from '@/server/queries/departamento';
 import { ehPrioridade3d, prioridade3dLigada } from '@/lib/messaging/prioridade-3d';
-import { canaisDaLoja } from '@/server/plus';
-import { lojaPlusPorDept } from '@/lib/catalog/plus';
 import { departamentoPorSlug } from '@/lib/catalog/departamentos';
 import { normalizarTipo, rotuloTipo } from '@/lib/catalog/tipos-produto';
 
@@ -54,8 +52,6 @@ export default async function DepartamentoPage({
     : [];
   const rotuloTipoAtivo = tipo ? rotuloTipo(dept.slug, tipo) : null;
   const totalDept = indice.tipos.reduce((a, t) => a + t.n, 0);
-  const loja = lojaPlusPorDept(dept.slug);
-  const canais = loja ? await canaisDaLoja(loja.storeSlug) : { telegramUrl: null, whatsappUrl: null };
 
   const hrefCom = (t: string | null, p: number) => {
     const qs = new URLSearchParams({
@@ -81,17 +77,6 @@ export default async function DepartamentoPage({
         <Text variant="body-md" color="secondary">
           {dept.descricao} Preços do Mercado Livre e da Shopee, só de anúncios com link ativo e verificados nas últimas horas.
         </Text>
-        {canais.telegramUrl || canais.whatsappUrl ? (
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[13px]">
-            <span className="text-[var(--color-text-tertiary)]">Avisos de preço desta loja:</span>
-            {canais.telegramUrl ? (
-              <a href={canais.telegramUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center border border-[var(--color-border-default)] px-3 hover:border-[var(--color-accent-primary)]">Telegram</a>
-            ) : null}
-            {canais.whatsappUrl ? (
-              <a href={canais.whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center border border-[var(--color-border-default)] px-3 hover:border-[var(--color-accent-primary)]">WhatsApp</a>
-            ) : null}
-          </div>
-        ) : null}
       </header>
 
       {indice.tipos.length > 1 ? (
