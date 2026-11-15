@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import fs from 'node:fs';
 import {
-  brlCents, categoriaPelosItens, primeNaFinalizacao, cardEhDaLista, confirmarNoItem, cupomDoItem, departamentoCompativel, verticaisDaCategoria, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, parseValidade, precoCasa, precoComPromocao, type PromoPayload,
+  brlCents, FONTES_PROMO, categoriaPelosItens, primeNaFinalizacao, cardEhDaLista, confirmarNoItem, cupomDoItem, departamentoCompativel, verticaisDaCategoria, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, parseValidade, precoCasa, precoComPromocao, type PromoPayload,
 } from '../src/lib/coupons/amazon-promocoes';
 import { validateCoupon } from '../src/server/coupons/normalize';
 import { evaluateAgulha } from '../src/lib/coupons/agulha';
@@ -135,6 +135,12 @@ async function main() {
   // ---------------- lógica pura do loop ----------------
   check('loop: ids de promoção do HTML (sem repetir)', JSON.stringify(L.idsDePromocao('<a href="/promotion/psp/A2G3U1520PCGB0?ref=x">a</a><a href="https://www.amazon.com.br/promotion/psp/A29MK98EPUD5DV">b</a>/promotion/psp/A2G3U1520PCGB0')) === '["A2G3U1520PCGB0","A29MK98EPUD5DV"]');
   check('loop: título restrito (compre N, em 2 itens, seguir; Prime passa a ser lido, 2026-11-14)', !L.tituloRestrito('Exclusivo Prime: 20% off em Automotivo', '') && L.tituloRestrito('App only: 20% off em 2 Bebidas Alcoólicas', '') && L.tituloRestrito('Compre 3 e ganhe 15% off', '') && L.tituloRestrito('x', 'seguir a loja') && !L.tituloRestrito('Leve 10% off em Livros', ''));
+  {
+    const muitos = Array.from({ length: 70 }, (_, i) => `A2PROMO${String(i).padStart(5, '0')}`);
+    const ord = L.idsParaVarrer(muitos, ['A2B9F6KRH7YF1H', muitos[3]], 60);
+    check('loop: extras (A2B9F6KRH7YF1H) vêm primeiro e nunca caem fora do teto de 60 páginas, sem repetir', ord.length === 60 && ord[0] === 'A2B9F6KRH7YF1H' && ord[1] === muitos[3] && ord.filter((x: string) => x === muitos[3]).length === 1, ord.slice(0, 3));
+  }
+  check('mensagens: a confirmação na página do item (amazon-item-confirmado) é da família promoção da Amazon, como amazon-promocoes', FONTES_PROMO.includes('amazon-item-confirmado') && FONTES_PROMO.includes('amazon-promocoes') && !FONTES_PROMO.includes('item_page_assistida'));
   check('loop: título livre não é restrito', !L.tituloRestrito('Só no app: 20% off em Limpeza', 'Só no app: 20% off em Limpeza De terça-feira') && !L.tituloRestrito('20% de desconto em 1 item(ns)', ''));
   check('loop: preço whole+fraction', L.precoDe('1.234', '56') === '1234,56' && L.precoDe('13', '9') === '13,90' && L.precoDe('', '90') === null);
   check('loop: bloqueios', L.detectarBloqueio({ status: 429 }) === 'http_429' && L.detectarBloqueio({ pathname: '/errors/validateCaptcha' }) === 'captcha' && L.detectarBloqueio({ texto: 'Fazer login', temCards: false }) === 'login' && L.detectarBloqueio({ texto: 'Fazer login', temCards: true }) === null);

@@ -155,6 +155,12 @@ export function primeNaFinalizacao(p: Pick<PromoRead, 'restricao' | 'minItens' |
 
 type Env = Record<string, string | undefined>;
 const processEnv = (): Env => (typeof process !== 'undefined' ? process.env : {});
+/**
+ * Fontes de leitura da FAMÍLIA "promoção da Amazon" em offer_coupon_reads: 'amazon-promocoes' (leitura "sem cupom" da promoção) e 'amazon-item-confirmado'
+ * (confirmação positiva na página do item, gravada por confirmarItens). Rastreio 2026-11-15: a confirmação nascia em 'amazon-item-confirmado' mas o lookup de mensagens
+ * só reconhecia 'amazon-promocoes' como promoção, então a leitura caía como "leitura de item": sem checagem de estado/validade e sem o público Prime (0 mensagens CUPOM da Amazon).
+ */
+export const FONTES_PROMO: readonly string[] = ['amazon-promocoes', 'amazon-item-confirmado'];
 /** PROMO_PRIME_DERIVADA=on liga o registro das promoções Prime (desligada por padrão). */
 export const promoPrimeLigada = (env: Env = processEnv()): boolean => (env.PROMO_PRIME_DERIVADA ?? '').toLowerCase() === 'on';
 /** PROMO_DESCOBERTA=on liga o cadastro dos ASINs novos da página da promoção (games) pelo caminho da vitrine da Amazon (desligada por padrão). */

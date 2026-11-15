@@ -1,6 +1,7 @@
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
+import { FONTES_PROMO } from '@/lib/coupons/amazon-promocoes';
 import { getAdTag, getGroupMessagesMode, isGroupMessagesEnabled } from '@/lib/messaging/group-config';
 import { escapeTelegramHtml } from '@/lib/messaging/group-messages';
 import { sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
@@ -197,10 +198,10 @@ export const dbGuardiaoStore: GuardiaoStore = {
         WHERE offer_id = ${ann.couponRef}::uuid AND price_with_coupon_cents IS NOT NULL ORDER BY read_at DESC LIMIT 1`)) as unknown as { read_at: string | Date; with_c: number; src: string | null }[];
       // Fonte do cupom divulgado: a promoção da Amazon (amazon-promocoes) só é negada pela própria leitura "sem cupom", e a página do item só pela dela
       // (o item sem selo não encerra uma promoção que nunca aparece no selo; mesma regra do lookup).
-      const promo = pos[0]?.src === 'amazon-promocoes';
+      const promo = FONTES_PROMO.includes(String(pos[0]?.src));
       const reads = (await db.execute<{ read_at: string | Date; with_c: number | null }>(sql`
         SELECT read_at, price_with_coupon_cents AS with_c FROM offer_coupon_reads
-        WHERE offer_id = ${ann.couponRef}::uuid AND ((source = 'amazon-promocoes') = ${promo}) ORDER BY read_at DESC LIMIT 1`)) as unknown as { read_at: string | Date; with_c: number | null }[];
+        WHERE offer_id = ${ann.couponRef}::uuid AND ((source IN ('amazon-promocoes', 'amazon-item-confirmado')) = ${promo}) ORDER BY read_at DESC LIMIT 1`)) as unknown as { read_at: string | Date; with_c: number | null }[];
       return {
         kind: 'anuncio',
         offerActive: offer[0]?.status === 'active',

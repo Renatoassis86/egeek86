@@ -595,11 +595,11 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
         -- Duas famílias de leitura (página do item x promoção da Amazon): a mais nova de CADA uma; vale se alguma das duas é positiva.
         SELECT x.read_at, x.pw FROM (
           (SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
-            WHERE r.offer_id = l.id AND r.source <> 'amazon-promocoes' AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
+            WHERE r.offer_id = l.id AND r.source NOT IN ('amazon-promocoes', 'amazon-item-confirmado') AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
             ORDER BY r.read_at DESC LIMIT 1)
           UNION ALL
           (SELECT r.read_at, r.price_with_coupon_cents AS pw FROM offer_coupon_reads r
-            WHERE r.offer_id = l.id AND r.source = 'amazon-promocoes' AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
+            WHERE r.offer_id = l.id AND r.source IN ('amazon-promocoes', 'amazon-item-confirmado') AND r.read_at > ${new Date(o.now.getTime() - AGULHA.ITEM_FRESH_MIN * 60_000).toISOString()}::timestamptz
             ORDER BY r.read_at DESC LIMIT 1)
         ) x WHERE x.pw IS NOT NULL ORDER BY x.read_at DESC LIMIT 1
       ) lr ON true

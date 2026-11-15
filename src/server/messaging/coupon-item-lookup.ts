@@ -7,7 +7,7 @@ import { AGULHA, evaluateAgulha, ITEM_READ_NETWORKS, type AgulhaRule, type MissT
 import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
 import { resolveCouponUse, stepsText } from '@/lib/coupons/coupon-name';
-import { promoPrimeMensagemLigada } from '@/lib/coupons/amazon-promocoes';
+import { FONTES_PROMO, promoPrimeMensagemLigada } from '@/lib/coupons/amazon-promocoes';
 
 /**
  * Cupom POR ANÚNCIO (dono, 2026-11-11): a aba logada lê a página do item e grava o "preço com cupom" (offer_coupon_reads). Vale 2 horas.
@@ -27,7 +27,7 @@ type ReadRow = {
   c_aud: string | null; c_elig: boolean | null; c_scope: string | null; c_cats: string | null; c_raw: string | null; c_title: string | null; c_where: string | null; c_ativ: string | null;
   p_name: string | null; p_code: string | null;
   src: string | null; pc_valid: string | Date | null; pc_state: string | null; pc_title: string | null; pc_app: string | null; pc_termos: string | null;
-  pc_aud: string | null; pc_prime: boolean | null;
+  pc_aud: string | null; pc_prime: boolean | null; pc_vdesc: boolean | null;
 };
 
 /**
@@ -69,7 +69,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
            c.kind AS c_kind, c.value_num::text AS c_value, c.min_order_cents::text AS c_min, c.max_discount_cents::text AS c_cap, c.valid_until AS c_valid,
            c.state AS c_state, c.audience AS c_aud, c.eligible_on_read_account AS c_elig, c.scope_kind AS c_scope, c.scope->'categorias'->>0 AS c_cats, c.conditions_raw AS c_raw, c.title AS c_title, c.onde AS c_where, c.ativ AS c_ativ,
            to_jsonb(r)->>'coupon_name' AS p_name, to_jsonb(r)->>'coupon_code' AS p_code,
-           r.source AS src, pc.valid_until AS pc_valid, pc.state AS pc_state, pc.title AS pc_title, pc.so_app AS pc_app, pc.termos AS pc_termos, pc.aud AS pc_aud, pc.prime AS pc_prime
+           r.source AS src, pc.valid_until AS pc_valid, pc.state AS pc_state, pc.title AS pc_title, pc.so_app AS pc_app, pc.termos AS pc_termos, pc.aud AS pc_aud, pc.prime AS pc_prime, pc.vdesc AS pc_vdesc
     FROM offer_coupon_reads r
     JOIN affiliate_offers o ON o.id = r.offer_id
     JOIN affiliate_networks nn ON nn.id = o.network_id
@@ -83,9 +83,9 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
     -- Promoção da Amazon (amazon-promocoes): validade, estado (2 leituras) e título vêm do cupom gravado em coupon_items (escopo produto da oferta).
     LEFT JOIN LATERAL (
       SELECT ci.valid_until, ci.state, split_part(ci.raw_text, ' | ', 1) AS title, ci.conditions->>'so_app' AS so_app, ci.conditions->>'termos' AS termos,
-             ci.audience AS aud, (ci.conditions->>'prime_checkout' = 'true') AS prime
+             ci.audience AS aud, (ci.conditions->>'prime_checkout' = 'true') AS prime, (ci.conditions->>'validade_desconhecida' = 'true') AS vdesc
       FROM coupon_items ci
-      WHERE r.source = 'amazon-promocoes' AND ci.network_slug = 'amazon' AND ci.conditions->>'promo_id' = r.campaign_id
+      WHERE r.source IN ('amazon-promocoes', 'amazon-item-confirmado') AND ci.network_slug = 'amazon' AND ci.conditions->>'promo_id' = r.campaign_id
         AND ci.scope->'offer_ids' @> to_jsonb(r.offer_id::text)
       ORDER BY ci.last_seen_at DESC LIMIT 1
     ) pc ON true
@@ -100,7 +100,7 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
   // Leitura mais nova SEM cupom: a página deixou de mostrar, então nenhuma leitura positiva anterior a ela vale mais.
   // Promoção da Amazon (amazon-promocoes) e página do item são fontes DIFERENTES: o item sem selo de cupom não apaga a promoção (que não aparece no selo do item)
   // e vice-versa; cada fonte só é negada pela própria leitura "sem cupom".
-  const isPromoRow = (r: ReadRow) => r.src === 'amazon-promocoes';
+  const isPromoRow = (r: ReadRow) => FONTES_PROMO.includes(String(r.src));
   const negAtOf = (promo: boolean) => rows.filter((r) => r.pw == null && isPromoRow(r) === promo).map((r) => new Date(r.read_at).getTime()).reduce((m, t) => Math.max(m, t), -Infinity);
   const negAt = { promo: negAtOf(true), item: negAtOf(false) };
   const positives = rows.filter((r) => r.pw != null && new Date(r.read_at).getTime() > (isPromoRow(r) ? negAt.promo : negAt.item));
@@ -122,14 +122,15 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
           conditionsRaw: r.c_raw,
         }
       : null;
-    const isPromo = r.src === 'amazon-promocoes';
+    const isPromo = isPromoRow(r);
     // Promoção da Amazon: só vale com o cupom da promoção VERIFICADO (2 leituras separadas por 30 min) e com a validade LIDA na página; sem isso, nada sai.
     if (isPromo) {
       if (r.pc_state !== 'verificado') { lastReason = 'estado_nao_verificado'; continue; }
-      if (!r.pc_valid) { lastReason = 'validade_nao_lida'; continue; }
+      // R2-15 (dono, 2026-11-14): promoção SEM prazo lido ('validade_desconhecida', ex.: Prime na finalização) vale pela confirmação na página do item (120 min) e a mensagem manda conferir o prazo.
+      if (!r.pc_valid && r.pc_vdesc !== true) { lastReason = 'validade_nao_lida'; continue; }
       if (!rule) { lastReason = 'tipo_sem_preco_final'; continue; }
     }
-    const rulePromo: AgulhaRule | null = isPromo && rule ? { ...rule, validUntil: new Date(r.pc_valid as string | Date).toISOString() } : rule;
+    const rulePromo: AgulhaRule | null = isPromo && rule && r.pc_valid ? { ...rule, validUntil: new Date(r.pc_valid as string | Date).toISOString() } : rule;
     // Promoção Prime na finalização: só com GROUP_PROMO_PRIME=on E o cupom gravado como `assinantes` + prime_checkout pela leitura da promoção (nunca pelo rótulo).
     const primeOk = isPromo && promoPrimeMensagemLigada() && r.pc_prime === true && r.pc_aud === 'assinantes';
     const readIso = new Date(r.read_at).toISOString();

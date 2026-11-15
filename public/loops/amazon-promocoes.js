@@ -23,7 +23,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = 'promocoes-1.1.0';
+  var VERSAO = 'promocoes-1.2.0';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-amazon-promocoes.ts
@@ -90,6 +90,16 @@
   PURO.politica = function (tipo, seguidos) {
     var rec = RECUO[tipo] || [5, 15, 30];
     return { acao: 'pausar', motivo: String(tipo), min: rec[Math.min(Math.max(1, seguidos | 0), rec.length) - 1] };
+  };
+
+  /**
+   * Ordem da varredura: os IDs extras do operador (ex.: A2B9F6KRH7YF1H, a promoção Prime dos jogos) vêm PRIMEIRO e nunca são cortados pelo teto maxPaginas
+   * (rastreio 2026-11-15: com 60+ promoções descobertas, os extras ficavam no fim e caíam fora de slice(0, maxPaginas)). Sem repetição.
+   */
+  PURO.idsParaVarrer = function (descobertos, extras, max) {
+    var out = [], visto = {};
+    (extras || []).concat(descobertos || []).forEach(function (x) { if (!visto[x]) { visto[x] = 1; out.push(x); } });
+    return out.slice(0, Math.max(1, max | 0));
   };
 
   PURO.pausaEntre = function (faixa, rnd, piso) {
@@ -338,8 +348,7 @@
       } catch (e) { erro('descobrir ' + p + ': ' + e.message); }
       await sleep(1500);
     }
-    CFG.extras.forEach(add);
-    return { ids: ids, bloqueio: bloqueio };
+    return { ids: PURO.idsParaVarrer(ids, CFG.extras, 1000), bloqueio: bloqueio };
   }
 
   // ----- ciclo -----
@@ -385,7 +394,7 @@
     if (d.bloqueio) return pausarOuParar(d.bloqueio, 'descoberta das promoções');
     S.ids = d.ids;
     if (!d.ids.length) { c.descartadas++; await batimento('ok', 'sem_promocoes_descobertas'); S.ciclos = c.n; S.ultimoCiclo = c; S.ciclo = null; return agendar(CFG.cicloMs); }
-    var lista = d.ids.slice(0, CFG.maxPaginas);
+    var lista = PURO.idsParaVarrer(d.ids, CFG.extras, CFG.maxPaginas);
     for (var i = 0; i < lista.length && !parado; i++) {
       var res;
       try { res = await lerPromocao(lista[i]); }
