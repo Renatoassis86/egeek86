@@ -45,7 +45,7 @@ Um item só fecha quando TODOS os elos existirem e estiverem verificados em prod
 | 6 | **Bambu na Shopee e na Amazon** (P2S, P1S Combo) | #59 | Cron novo da Shopee ainda sem ciclo. **Amazon: codigo no ar (141012b, 2026-11-15)**: titulo P2SC/P1SC/+AMS normalizado, cabeca prioritaria na fila (combo primeiro), ate 4 ofertas por busca; falta o proximo ciclo do loop gravar (B0GP9LBGY7) e a prova por SELECT | Não |
 | 7 | **Amazon fresca: `amazon-vitrine` parado ~22 h** e frescor | #81, #26 | Religar e medir | Não |
 | 8 | **Foto com mão em oferta nova** (classificador automático) e origem de 101 anúncios do ML com foto da Shopee | #99 | Classificação ainda manual | Não |
-| 9 | **Linhas `running` presas (reaper) e orçamentos de tempo; segundo disparador do `collect-prices`; `?key=`** | #72, #73 | 106 linhas presas; disparador não achado; flag off só depois de 48 h | Parcial (achar o disparador) |
+| 9 | **Linhas `running` presas (reaper) e orçamentos de tempo; segundo disparador do `collect-prices`; `?key=`** | #72, #73 | Reaper no ar e 110 presas fechadas (0 acima do teto); disparador achado: `pg_net` do Supabase (job `geek-deals-collect-prices`), falta o dono desligar no painel (ou `CRON_BLOQUEIA_PG_NET=1`); flag `?key=` off só depois de 48 h limpas (a partir de 2026-11-17) | Sim (painel Supabase) |
 | 10 | **Atualizar Next, sharp e zod** (aviso crítico) | #77 | Pacotes e testes | Não |
 | 11 | **Receita real e cliques válidos** (importar conversões; excluir bots) | #78, #79 | Tabela de conversões vazia | Sim (credenciais) |
 | 12 | **WhatsApp: 0 envios em 7 dias** e captação de inscritos | #100, #80 | Diagnóstico e plano | Sim (canal) |

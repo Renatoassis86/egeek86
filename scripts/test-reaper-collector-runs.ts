@@ -38,6 +38,12 @@ async function main() {
   const mk = (ua: string) => new NextRequest('https://x.test/api/cron/collect-prices', { headers: { authorization: `Bearer ${S}`, 'user-agent': ua, 'x-forwarded-for': '198.51.100.7' } });
   check('Bearer + vercel-cron: autoriza sem log de origem', rejectUnlessCronAuthorized(mk('vercel-cron/1.0')) === null && logs.length === 0);
   check('Bearer + curl: autoriza e registra disparo externo (sem segredo)', rejectUnlessCronAuthorized(mk('curl/8')) === null && logs.length === 1 && logs[0]!.includes('ip=198.51.100.7') && !logs[0]!.includes(S));
+  const pg = new NextRequest('https://x.test/api/cron/collect-prices', { headers: { authorization: `Bearer ${S}`, 'user-agent': 'pg_net/0.20.3' } });
+  check('pg_net passa por padrao (flag desligada)', rejectUnlessCronAuthorized(pg) === null);
+  process.env.CRON_BLOQUEIA_PG_NET = '1';
+  check('com CRON_BLOQUEIA_PG_NET=1, pg_net recebe 410', rejectUnlessCronAuthorized(pg)?.status === 410);
+  check('com a flag, vercel-cron continua passando', rejectUnlessCronAuthorized(mk('vercel-cron/1.0')) === null);
+  delete process.env.CRON_BLOQUEIA_PG_NET;
   console.warn = w; if (orig === undefined) delete process.env.CRON_SECRET; else process.env.CRON_SECRET = orig;
 
   // health usa a regra unica

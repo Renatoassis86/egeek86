@@ -23,6 +23,11 @@ export function origemDoDisparo(headers: Pick<Headers, 'get'>): { vercelCron: bo
   return { vercelCron: ua.toLowerCase().startsWith('vercel-cron'), ua, ip };
 }
 
+/** CRON_BLOQUEIA_PG_NET=1: recusa (410) chamadas do pg_net do Supabase (UA `pg_net/x`), o 2o disparador achado em 2026-11-15. Padrao: desligado. */
+export function bloqueiaPgNet(headers: Pick<Headers, 'get'>, env: Record<string, string | undefined> = process.env): boolean {
+  return env.CRON_BLOQUEIA_PG_NET === '1' && (headers.get('user-agent') ?? '').toLowerCase().startsWith('pg_net');
+}
+
 function registraOrigem(request: NextRequest, via: 'bearer'): void {
   const o = origemDoDisparo(request.headers);
   if (!o.vercelCron) console.warn('[cron-auth] disparo externo:', request.nextUrl.pathname, `via=${via}`, `ua="${o.ua}"`, `ip=${o.ip}`, `host=${request.headers.get('host') ?? ''}`);
@@ -42,7 +47,14 @@ export function rejectUnlessCronAuthorized(request: NextRequest): NextResponse |
     return NextResponse.json({ error: 'cron_secret_not_configured' }, { status: 500 });
   }
   const bearer = request.headers.get('authorization');
-  if (iguais(bearer, `Bearer ${secret}`)) { registraOrigem(request, 'bearer'); return null; }
+  if (iguais(bearer, `Bearer ${secret}`)) {
+    if (bloqueiaPgNet(request.headers)) {
+      console.warn('[cron-auth] pg_net recusado (CRON_BLOQUEIA_PG_NET=1):', request.nextUrl.pathname);
+      return NextResponse.json({ error: 'disparador_pg_net_desligado' }, { status: 410 });
+    }
+    registraOrigem(request, 'bearer');
+    return null;
+  }
   // ?key= na URL e LEGADO (o segredo vaza em logs). R2-9 (dono, 2026-11-14): cada uso e REGISTRADO (so a rota, nunca o segredo) para achar o disparador externo
   // (o banco nao tem pg_cron/pg_net); com CRON_ACEITA_KEY_NA_URL=off a URL deixa de valer. Remover so depois de zero usos no log.
   if (keyNaUrlAceita() && iguais(request.nextUrl.searchParams.get('key'), secret)) {
