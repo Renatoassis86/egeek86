@@ -4,35 +4,50 @@ import { db } from '@/lib/db';
 import { toleranciaCents, type Cartao, type ResultadoAuditoria } from '@/lib/links/polycard';
 import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-auth';
 import { itemIdDaUrl } from '@/lib/messaging/confirmacao-preco';
+import { bloquear, ESTADO_ZERO, metaParaGravar, reservar, RITMO_CFG, sanearMeta, type EstadoRitmo } from '@/lib/links/ritmo';
 
 // ---------------------------------------------------------------------------
 // Ritmo GLOBAL das leituras de página (cron + todos os scripts/fatias somam): no máximo 1 requisição a cada 2 s; captcha/429 abre recuo de 15 min.
 // Estado em UMA linha de collector_runs (job 'auditoria-ritmo'), protegida por lock consultivo. O revisor levou captcha com 21 leituras a 1,5 s.
 // ---------------------------------------------------------------------------
-export const RITMO = { INTERVALO_MS: 2000, RECUO_MS: 15 * 60_000 } as const;
+export { RITMO_CFG as RITMO } from '@/lib/links/ritmo';
 
-export type Slot = { ok: true; esperaMs: number } | { ok: false; ateMs: number };
+export type Slot = { ok: true; esperaMs: number } | { ok: false; ateMs: number; motivo: string };
+
+/** Lê o estado SEM carregar meta gigante (pg_column_size) e sempre saneado; grava só as 6 chaves numéricas, nunca o meta lido. */
+async function lerEstado(tx: Pick<typeof db, 'execute'>): Promise<{ id: string | number | null; estado: EstadoRitmo }> {
+  const rows = (await tx.execute(sql`SELECT id, CASE WHEN pg_column_size(meta) > ${RITMO_CFG.META_MAX_CHARS} THEN NULL ELSE meta::text END AS txt FROM collector_runs WHERE job = 'auditoria-ritmo' ORDER BY started_at DESC LIMIT 1`)) as unknown as { id: string | number; txt: string | null }[];
+  const r = rows[0];
+  if (!r) return { id: null, estado: { ...ESTADO_ZERO } };
+  return { id: r.id, estado: r.txt == null ? { ...ESTADO_ZERO } : sanearMeta(r.txt) };
+}
+
+async function gravarEstado(tx: Pick<typeof db, 'execute'>, id: string | number | null, e: EstadoRitmo): Promise<void> {
+  const json = JSON.stringify(metaParaGravar(e));
+  if (id != null) await tx.execute(sql`UPDATE collector_runs SET meta = ${json}::jsonb, finished_at = now() WHERE id = ${id}`);
+  else await tx.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-ritmo', 'mercado-livre', now(), now(), 0, 'ok', ${json}::jsonb)`);
+}
 
 export async function reservarSlot(): Promise<Slot> {
   return db.transaction(async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('auditoria-ritmo'))`);
-    const rows = (await tx.execute(sql`SELECT id, meta FROM collector_runs WHERE job = 'auditoria-ritmo' ORDER BY started_at DESC LIMIT 1`)) as unknown as { id: string | number; meta: { prox?: number; bloqueado_ate?: number } | null }[];
-    const agora = Date.now();
-    const m = rows[0]?.meta ?? {};
-    if ((m.bloqueado_ate ?? 0) > agora) return { ok: false as const, ateMs: m.bloqueado_ate! };
-    const prox = Math.max(m.prox ?? 0, agora);
-    const novo = { ...m, prox: prox + RITMO.INTERVALO_MS };
-    if (rows[0]) await tx.execute(sql`UPDATE collector_runs SET meta = ${JSON.stringify(novo)}::jsonb, finished_at = now() WHERE id = ${rows[0].id}`);
-    else await tx.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-ritmo', 'mercado-livre', now(), now(), 0, 'ok', ${JSON.stringify(novo)}::jsonb)`);
-    return { ok: true as const, esperaMs: prox - agora };
+    const { id, estado } = await lerEstado(tx);
+    const r = reservar(estado, Date.now());
+    if (!r.ok) return { ok: false as const, ateMs: r.ateMs, motivo: r.motivo };
+    await gravarEstado(tx, id, r.estado);
+    return { ok: true as const, esperaMs: r.esperaMs };
   });
 }
 
-/** Captcha/429: bloqueia todas as leituras por 15 min e registra o motivo (collector_runs job 'auditoria-links-bloqueio'). */
+/** Captcha/429: recuo crescente (15, 30, 60 min) para todos e registro (collector_runs job 'auditoria-links-bloqueio'). */
 export async function registrarBloqueio(nota: string): Promise<void> {
   try {
-    await db.execute(sql`UPDATE collector_runs SET meta = jsonb_set(coalesce(meta, '{}'::jsonb), '{bloqueado_ate}', to_jsonb(${Date.now() + RITMO.RECUO_MS}::bigint)) WHERE job = 'auditoria-ritmo'`);
-    await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-links-bloqueio', 'mercado-livre', now(), now(), 0, 'error', ${JSON.stringify({ nota })}::jsonb)`);
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('auditoria-ritmo'))`);
+      const { id, estado } = await lerEstado(tx);
+      await gravarEstado(tx, id, bloquear(estado, Date.now()));
+    });
+    await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-links-bloqueio', 'mercado-livre', now(), now(), 0, 'error', ${JSON.stringify({ nota: nota.slice(0, 100) })}::jsonb)`);
   } catch { /* melhor esforço */ }
 }
 
