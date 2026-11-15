@@ -18,7 +18,8 @@ import { getValidAccessToken } from '@/server/collector/sources/mercado-livre-au
  *   3  oferta numa mensagem em proposta/retida;
  *   4  oferta de departamento que uma lista declara com cupom de categoria (candidata: só o anúncio confirma);
  *   5  oferta que já saiu em mensagem nas últimas 3 h;
- *   6  as demais elegíveis (o mais barato de cada produto, link oficial, departamento aprovado).
+ *   6  as demais elegíveis (o mais barato de cada produto, link oficial, departamento aprovado; decisão do dono 2026-11-15: nos produtos de
+ *      ticket alto, ofertas 2 a 5 também, quando a oferta é impressora 3D a partir de R$ 1.000 ou qualquer oferta a partir de R$ 1.500).
  * Devida: prioridades 0 a 3 com última leitura há mais de REREAD_TARGET_MIN (45 min); as demais, REREAD_BASE_MIN (90 min).
  */
 export const PRIORIDADE_MOTIVO: Record<number, string> = {
@@ -92,7 +93,7 @@ export async function listarFilaRevalidacao(n: number, rede: string = 'mercado-l
     cand AS (
       SELECT ml.*, (a.oid IS NOT NULL) AS announced, q.offer_id IS NOT NULL AS queued, COALESCE(q.ready, false) AS ready, sent.offer_id IS NOT NULL AS was_sent
       FROM ml LEFT JOIN ann a ON a.oid = ml.id::text LEFT JOIN q ON q.offer_id = ml.id LEFT JOIN sent ON sent.offer_id = ml.id
-      WHERE a.oid IS NOT NULL OR q.offer_id IS NOT NULL OR (ml.rn = 1 AND ml.gate AND ml.linked)
+      WHERE a.oid IS NOT NULL OR q.offer_id IS NOT NULL OR (ml.gate AND ml.linked AND (ml.rn = 1 OR (ml.rn <= 5 AND ((ml.vertical = 'impressao3d' AND ml.price >= 100000) OR ml.price >= 150000))))
     ),
     scored AS (
       SELECT c.*, lr.last_read, lp.last_pos,
