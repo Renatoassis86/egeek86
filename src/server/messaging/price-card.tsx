@@ -17,6 +17,8 @@ import {
   type PeriodDay,
 } from '@/lib/pricing/daily-state';
 import { readPlatform } from '@/lib/catalog/platform';
+import { cardV2On } from '@/lib/pricing/card-v2-model';
+import { loadFontsV2 } from '@/server/messaging/card-v2';
 import {
   CALLOUT_H,
   CALLOUT_W,
@@ -128,12 +130,13 @@ export async function loadCardInput(masterProductId: string, now: Date): Promise
 
 const abs = (left: number, top: number, extra: Record<string, string | number> = {}) => ({ position: 'absolute' as const, display: 'flex' as const, left, top, ...extra });
 
-function CardView({ m, L }: { m: CardModel; L: CardLayout }) {
+function CardView({ m, L, v2 = false }: { m: CardModel; L: CardLayout; v2?: boolean }) {
+  const fw = (n: 400 | 600 | 800): Record<string, string | number> => (v2 ? { fontWeight: n, fontFamily: 'Inter' } : {});
   const stamp = `Atualizado em ${formatStamp(m.current.confirmedAt)} (Brasília)`;
   const note = `Traço: menor preço de cada dia entre as lojas${amazonScope() === 'include' ? '' : ', sem a Amazon'}. Eixo de valores não parte do zero.${m.hasPartial ? ' Traço claro: dia com 1 a 2 ofertas.' : ''}`;
   const subtitle = `Histórico de ${formatDayShort(m.firstDay)} a ${formatDayShort(m.lastDay)} (${m.nDays} dias medidos)`;
   return (
-    <div style={{ width: CARD_W, height: CARD_H, display: 'flex', position: 'relative', background: C.canvas, color: C.text }}>
+    <div style={{ width: CARD_W, height: CARD_H, display: 'flex', position: 'relative', background: v2 ? `linear-gradient(180deg, #17120D 0%, ${C.canvas} 100%)` : C.canvas, color: C.text, ...fw(400) }}>
       <svg width={CARD_W} height={CARD_H} viewBox={`0 0 ${CARD_W} ${CARD_H}`} style={{ position: 'absolute', left: 0, top: 0 }}>
         <rect x={0} y={0} width={CARD_W} height={CARD_H} fill={C.canvas} />
         <rect x={PLOT.l} y={PLOT.t} width={PLOT.r - PLOT.l} height={PLOT.b - PLOT.t} fill={C.surface} />
@@ -160,7 +163,7 @@ function CardView({ m, L }: { m: CardModel; L: CardLayout }) {
         <rect x={L.current.x - 8} y={L.current.y - 8} width={16} height={16} fill={C.orange} stroke={C.canvas} strokeWidth={2} />
       </svg>
 
-      <div style={abs(48, 30, { fontSize: 34, color: C.text, width: 1104 })}>{m.title}</div>
+      <div style={abs(48, 30, { fontSize: 34, color: C.text, width: 1104, ...fw(800) })}>{m.title}</div>
       <div style={abs(48, 84, { alignItems: 'center', fontSize: 18, color: C.secondary })}>
         {m.platformLabel ? (
           <div style={{ display: 'flex', border: `1px solid ${C.gold}`, color: C.gold, padding: '3px 10px', marginRight: 14, fontSize: 16 }}>{m.platformLabel}</div>
@@ -188,7 +191,7 @@ function CardView({ m, L }: { m: CardModel; L: CardLayout }) {
       ))}
 
       <div style={abs(48, 606, { fontSize: 14, color: C.secondary, width: 1104 })}>{note}</div>
-      <div style={abs(48, 632, { fontSize: 18, color: C.text })}>{stamp}</div>
+      <div style={abs(48, 632, { fontSize: 18, color: C.text, ...fw(600) })}>{stamp}</div>
       <div style={abs(900, 633, { width: 252, justifyContent: 'flex-end', fontSize: 16, color: C.secondary })}>egeek86.com</div>
     </div>
   );
@@ -196,7 +199,8 @@ function CardView({ m, L }: { m: CardModel; L: CardLayout }) {
 
 /** Desenha o PNG a partir do modelo já decidido. */
 export async function drawHistoryCard(m: CardModel): Promise<Buffer> {
-  const res = new ImageResponse(<CardView m={m} L={layoutCard(m)} />, { width: CARD_W, height: CARD_H });
+  const v2 = cardV2On(); // fila #58: GROUP_CARD_V2=on troca só a tipografia (Inter) e o fundo; o gráfico e os números não mudam
+  const res = new ImageResponse(<CardView m={m} L={layoutCard(m)} v2={v2} />, { width: CARD_W, height: CARD_H, ...(v2 ? { fonts: await loadFontsV2() } : {}) });
   return Buffer.from(await res.arrayBuffer());
 }
 

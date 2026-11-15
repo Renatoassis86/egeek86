@@ -49,7 +49,13 @@ const nextConfig: NextConfig = {
     return { beforeFiles: [], afterFiles: [{ source: '/images/:path*.png', destination: '/images/:path*.webp' }], fallback: [] };
   },
   // /admin/fluxo le a fila viva de execucao (docs/fila-de-execucao.md) no servidor; sem isto o arquivo nao vai no bundle da Vercel.
-  outputFileTracingIncludes: { '/admin/fluxo': ['./docs/fila-de-execucao.md'], '/api/admin/fluxo': ['./docs/fila-de-execucao.md'] },
+  outputFileTracingIncludes: {
+    '/admin/fluxo': ['./docs/fila-de-execucao.md'],
+    '/api/admin/fluxo': ['./docs/fila-de-execucao.md'],
+    // Cards v2 (#58): fontes Inter lidas do disco na renderizacao.
+    '/api/cron/group-messages': ['./src/server/messaging/fonts/*.woff'],
+    '/api/admin/card/[offerId]': ['./src/server/messaging/fonts/*.woff'],
+  },
   distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
     unoptimized: true,

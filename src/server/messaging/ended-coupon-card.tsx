@@ -2,6 +2,8 @@ import 'server-only';
 import { ImageResponse } from 'next/og';
 import { OFFER_CARD_COLORS as C } from '@/lib/pricing/offer-card-model';
 import { STORE_PROFILES, loadLogo } from '@/server/messaging/store-profile-card';
+import { cardV2On } from '@/lib/pricing/card-v2-model';
+import { drawEndedCouponCardV2 } from '@/server/messaging/card-v2';
 
 /**
  * Card "CUPOM ENCERRADO" (Agente de Cupons). 1080x1080, cantos quadrados, cor da loja como no cartão de perfil.
@@ -16,6 +18,7 @@ export interface EndedCouponCardInput {
 }
 
 export async function renderEndedCouponCard(input: EndedCouponCardInput): Promise<Buffer | null> {
+  if (cardV2On()) return drawEndedCouponCardV2(input); // fila #58: GROUP_CARD_V2=on
   const p = STORE_PROFILES[input.storeSlug] ?? STORE_PROFILES.comunidade;
   const logo = await loadLogo();
   const size = 1080;

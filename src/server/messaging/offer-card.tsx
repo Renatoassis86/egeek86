@@ -29,6 +29,8 @@ import {
   type OfferCardStats,
 } from '@/lib/pricing/offer-card-model';
 import { fundoDaLoja } from '@/lib/pricing/cor-loja';
+import { cardV2On } from '@/lib/pricing/card-v2-model';
+import { drawOfferCardV2, prepareCoverV2 } from '@/server/messaging/card-v2';
 import { CARD_MAX_DAYS, platformLabel } from '@/lib/pricing/price-card-model';
 import { OFFER_ACTIVE_DAYS, PRICE_DAILY_REGIME_START, addDays, computeDayState, computePeriodMetrics, spDay, type PeriodDay } from '@/lib/pricing/daily-state';
 
@@ -282,6 +284,11 @@ async function draw(input: OfferCardInput, cover: string | null, logo: string | 
 export async function renderOfferCard(input: OfferCardInput): Promise<{ png: Buffer; alt: string } | null> {
   if (!(input.priceCents > 0) || !input.title.trim()) return null;
   const insight = fitInsight(chooseInsight(input)?.text ?? null);
+  // GROUP_CARD_V2=on (fila #58): layout premium 4:5; padrão OFF = card antigo abaixo, intocado.
+  if (cardV2On()) {
+    const cover2 = await prepareCoverV2(input.imageUrl);
+    return { png: await drawOfferCardV2(input, cover2, insight), alt: buildOfferAlt(input, insight) };
+  }
   const [logo, cover] = await Promise.all([loadLogo(), fetchCover(input.imageUrl)]);
   let png: Buffer;
   try {

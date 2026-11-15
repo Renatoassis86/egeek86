@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import { OFFER_CARD_COLORS as C } from '@/lib/pricing/offer-card-model';
+import { cardV2On } from '@/lib/pricing/card-v2-model';
 
 /**
  * Imagem de PERFIL de cada loja (canal do Telegram / grupo do WhatsApp). 1024x1024, identidade do site (fundo escuro, ouro, cantos
@@ -43,9 +44,11 @@ export async function renderStoreProfileCard(slug: string): Promise<Buffer | nul
   const longest = Math.max(...lines.map((l) => l.length));
   // Tudo dentro do círculo inscrito (a foto de grupo do WhatsApp é redonda; a da comunidade é quadrado arredondado): bloco de no máx. ~640 px de largura.
   const font = Math.min(170, Math.floor(620 / (longest * 0.68)));
+  const v2 = cardV2On(); // fila #58: GROUP_CARD_V2=on aplica fundo em degradê da cor da loja e tipografia Inter
+  const fonts = v2 ? await (await import('@/server/messaging/card-v2')).loadFontsV2() : undefined;
   const res = new ImageResponse(
     (
-      <div style={{ width: size, height: size, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: p.bg, color: C.text }}>
+      <div style={{ width: size, height: size, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: v2 ? `linear-gradient(180deg, ${p.bg} 0%, #0B0908 100%)` : p.bg, color: C.text, ...(v2 ? { fontFamily: 'Inter' } : {}) }}>
         {logo ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={logo} width={560} height={208} alt="" style={{ width: 560, height: 208 }} />
@@ -60,7 +63,7 @@ export async function renderStoreProfileCard(slug: string): Promise<Buffer | nul
         ))}
       </div>
     ),
-    { width: size, height: size }
+    { width: size, height: size, ...(fonts ? { fonts } : {}) }
   );
   return Buffer.from(await res.arrayBuffer());
 }
