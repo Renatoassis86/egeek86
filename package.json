@@ -16,6 +16,7 @@
     "test:collector": "tsx --test src/lib/collector-runs/collector-runs.test.ts",
     "test:coleta": "tsx scripts/test-collector-multicatalog.ts && tsx scripts/test-catalog-placeholder.ts && tsx --test src/lib/collector-runs/collector-runs.test.ts",
     "test:gate": "tsx scripts/test-gate.ts",
+    "test:quarentena-preco": "tsx scripts/test-quarentena-preco-risco.ts",
     "test:console-regra": "tsx scripts/test-console-regra.ts",
     "test:item-miudo": "tsx scripts/test-item-miudo.ts",
     "test:amazon": "tsx scripts/test-amazon-identidade.ts && tsx scripts/test-amazon-flex.ts",

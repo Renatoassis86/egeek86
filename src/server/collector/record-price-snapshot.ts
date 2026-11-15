@@ -105,5 +105,11 @@ export async function recordPriceSnapshot(input: RecordSnapshotInput): Promise<b
       console.error('[price-daily] gancho da coleta falhou (ignorado):', err instanceof Error ? err.message : err);
     }
   }
+  // Quarentena de preço implausível por tipo (dono, 2026-11-15, decisão 3): a leitura JÁ foi gravada acima; aqui só se marca/solta a quarentena.
+  // Flag QUARENTENA_PRECO_TIPO=0 desliga. Melhor esforço: nunca derruba a coleta.
+  if (inserted) {
+    const { avaliarEQuarentenarPreco } = await import('./quarentena-preco-tipo');
+    await avaliarEQuarentenarPreco(input.offerId, input.priceCents);
+  }
   return inserted;
 }

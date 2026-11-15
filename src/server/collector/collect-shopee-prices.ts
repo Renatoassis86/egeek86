@@ -8,6 +8,7 @@ import { recordPriceSnapshot } from './record-price-snapshot';
 import { ShopeeApiError, generateShopeeAffiliateLink, isShopeeAffiliateConfigured } from './sources/shopee-auth';
 import { createShopeePacer, SHOPEE_RATE_LIMIT_WAIT_MS } from './shopee-pacing';
 import { lookupShopeeItem, shopeeItemIdFromRef, shopeePublicUrl } from './sources/shopee';
+import { marcarQuarentenaPreco, quarentenaPrecoTipoLigada } from './quarentena-preco-tipo';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 import { collectorRunsEnabled, startCollectorRun } from './collector-runs';
 import { classifyShopeeKind } from '@/lib/collector-runs/classify-error';
@@ -194,12 +195,19 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
 
       let validPrice: { priceCents: number; listPriceCents: number | null } | null = null;
       let node = lookup.status === 'ok' ? lookup.node : null;
+      let quarentenaMotivo: string | null = null;
 
       if (node) {
         const refs = await getMasterReferencePrices(offer.masterProductId, offer.id);
         if (isImplausiblyLow(node.priceCents, refs) || isImplausiblyHigh(node.priceCents, refs)) {
           summary.rejectedImplausible++;
-          node = null; // trata como sem preço válido: não grava, não reativa
+          if (quarentenaPrecoTipoLigada()) {
+            // Decisão 3 do dono (2026-11-15): a leitura NÃO é descartada; grava o preço e põe a oferta em quarentena (fora de vitrine/médias).
+            quarentenaMotivo = isImplausiblyLow(node.priceCents, refs) ? 'preco_abaixo_de_35pct_da_mediana' : 'preco_acima_de_300pct_da_mediana';
+            validPrice = { priceCents: node.priceCents, listPriceCents: node.listPriceCents };
+          } else {
+            node = null; // trata como sem preço válido: não grava, não reativa
+          }
         } else {
           validPrice = { priceCents: node.priceCents, listPriceCents: node.listPriceCents };
         }
@@ -235,6 +243,7 @@ export async function collectShopeePrices(opts: { budgetMs?: number; maxOffers?:
       ) {
         run.counters.snapshotsWritten++;
       }
+      if (quarentenaMotivo) await marcarQuarentenaPreco(offer.id, quarentenaMotivo).catch(() => undefined);
       // last_price_confirmed_at: so aqui, onde a API devolveu preco valido (gravado em lote no finish).
       run.queueConfirm(offer.id);
 

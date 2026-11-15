@@ -16,6 +16,7 @@ import { startCollectorRun, collectorRunsEnabled } from '../collector-runs';
 import { recordPriceSnapshot } from '../record-price-snapshot';
 import { soldQuantityWrites } from '@/lib/affiliate/sold-quantity';
 import { saveOfferSoldQuantity } from './sold-quantity-store';
+import { quarentenaPrecoTipoLigada } from '../quarentena-preco-tipo';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from '../price-plausibility';
 import { getValidAccessToken } from '../sources/mercado-livre-auth';
 import { upsertSellerFromOffer } from '../sources/mercado-livre-seller';
@@ -293,12 +294,17 @@ async function applyVerticalGroup(
     const refs = await getMasterReferencePrices(group.masterProductId, offerId);
     if (isImplausiblyLow(r.priceCents, refs) || isImplausiblyHigh(r.priceCents, refs)) {
       await db.update(affiliateOffers).set({ quarantinedAt: new Date() }).where(eq(affiliateOffers.id, offerId));
+      // Decisão 3 do dono (2026-11-15): a leitura NÃO é descartada; o preço fica guardado e só a oferta sai da vitrine/médias.
+      if (quarentenaPrecoTipoLigada() && (await recordPriceSnapshot({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api' }))) out.snapshots++;
+      await db.execute(sql`UPDATE affiliate_offers SET quarantine_reason = COALESCE(quarantine_reason, 'preco_fora_da_faixa_do_master') WHERE id = ${offerId}::uuid`).catch(() => undefined);
       out.rejectedImplausible++;
       continue;
     }
     await db.update(affiliateOffers).set({ quarantinedAt: null }).where(and(
       eq(affiliateOffers.id, offerId),
       sql`${affiliateOffers.vertical} <> 'games'`,
+      // Quarentena com motivo gravado (lote de 2026-11-15 ou gancho de preço por tipo) só sai por regra própria, não por esta liberação genérica.
+      sql`NOT EXISTS (SELECT 1 FROM affiliate_offers q WHERE q.id = ${affiliateOffers.id} AND q.quarantine_reason IS NOT NULL AND q.quarantine_reason <> 'preco_fora_da_faixa_do_master')`,
       // "Preco errado" decidido pelo dono na fila: a coleta nao libera a quarentena.
       sql`NOT EXISTS (SELECT 1 FROM identity_decisions d WHERE d.offer_id = ${affiliateOffers.id} AND d.undone_at IS NULL AND d.axis = 'preco' AND d.value = 'preco_errado')`,
     ));

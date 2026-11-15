@@ -14,6 +14,7 @@ import { parseBrl, type AmzCand } from '@/lib/affiliate/amazon-identity';
 import { ingestAmazonRows, safeAmazonImage, type AmzRow, type AmzStats } from './amazon-assisted';
 import { enfileirarDuvidaAmazon } from './amazon-fila';
 import { recordPriceSnapshot } from './record-price-snapshot';
+import { marcarQuarentenaPreco, quarentenaPrecoTipoLigada } from './quarentena-preco-tipo';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 import { foldTitle } from '@/lib/catalog/dimensions';
 import { casarJogo } from './cobertura-shopee';
@@ -214,9 +215,13 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
           // ASIN conhecido: só atualiza o preço (identidade já julgada). Preço absurdo vs referências fica de fora, como no resto da coleta.
           if (ex.status === 'archived') { bump(s, 'asin_arquivado'); continue; }
           const refs = await getMasterReferencePrices(ex.master, '00000000-0000-0000-0000-000000000000');
-          if (isImplausiblyLow(price, refs) || isImplausiblyHigh(price, refs)) { bump(s, 'preco_implausivel'); continue; }
+          const baixo = isImplausiblyLow(price, refs), alto = isImplausiblyHigh(price, refs);
+          // Decisão 3 do dono (2026-11-15): com a flag ligada a leitura NÃO é descartada; grava o preço e a oferta vai para quarentena com motivo.
+          if ((baixo || alto) && !quarentenaPrecoTipoLigada()) { bump(s, 'preco_implausivel'); continue; }
+          if ((baixo || alto)) bump(s, 'preco_implausivel_em_quarentena');
           if (!opts.apply) { s.atualizados++; continue; }
           await recordPriceSnapshot({ offerId: ex.id, priceCents: price, listPriceCents: parseBrl(c.l), source: 'scrape' });
+          if (baixo || alto) await marcarQuarentenaPreco(ex.id, baixo ? 'preco_abaixo_de_35pct_da_mediana' : 'preco_acima_de_300pct_da_mediana').catch(() => undefined);
           const img = safeAmazonImage(c.i);
           await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now(), image_url = COALESCE(${img}, image_url) WHERE id = ${ex.id}`);
           s.atualizados++;
