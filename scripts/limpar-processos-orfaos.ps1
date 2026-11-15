@@ -1,9 +1,10 @@
-# Encerra processos node de 'next build' órfãos (pai morto) com mais de 60 minutos.
-# Uso: powershell -File scripts/limpar-processos-orfaos.ps1 [-Apply]
-# Por padrão só lista (dry-run). Nunca mexe em processos do projeto 'wemake' nem em processos com pai vivo.
-param([switch]$Apply, [int]$IdadeMinMin = 60)
+﻿# Encerra processos orfaos (pai morto) de builds/testes dos agentes: node de 'next build', tsx e playwright (qa.*.cjs) com mais de N minutos.
+# Uso: powershell -File scripts/limpar-processos-orfaos.ps1 [-Apply] [-IdadeMinMin 10]
+# Por padrao so lista (dry-run). Nunca mexe no projeto 'wemake', no Antigravity, no Chrome do usuario nem em processos com pai vivo.
+param([switch]$Apply, [int]$IdadeMinMin = 10)
 $alvo = Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object {
-  $_.CommandLine -match 'next' -and $_.CommandLine -match 'build' -and $_.CommandLine -notmatch 'wemake' -and
+  $c = $_.CommandLine; $c -and $c -notmatch 'wemake' -and $c -notmatch 'antigravity|extensions\\' -and
+  ($c -match 'next' -and $c -match 'build' -or $c -match 'tsx' -or $c -match 'playwright|qa\.cjs|scratchpad') -and
   -not (Get-Process -Id $_.ParentProcessId -ErrorAction SilentlyContinue) -and
   ((Get-Date) - $_.CreationDate).TotalMinutes -gt $IdadeMinMin }
 $mb = [int](($alvo | Measure-Object WorkingSetSize -Sum).Sum / 1MB)

@@ -43,3 +43,15 @@ Observações: as lacunas de ~18-20 min do batimento e as de ~58 min da `amazon-
 - Encerrar processos: só órfãos com pai morto; reversível (nenhum dado).
 - Perfil dedicado e extensão: reversíveis (remover a extensão e voltar ao perfil atual).
 - Energia do Wi-Fi: reversível (marcar de volta).
+
+## 5. Execução (2026-11-15, tarde): o que foi feito de forma definitiva
+| Causa | Correção aplicada | Prova |
+|---|---|---|
+| C1 memória por processos órfãos (voltou: 665 `node`, 291 MB livres, e a sessão do Claude Code chegou a cair duas vezes) | Limpeza feita e **tarefa agendada do Windows `EG86-LimparNodeOrfaos` a cada 10 min** (script `scripts/limpar-processos-orfaos.ps1`, agora cobre `next build`, `tsx` e Playwright órfãos com pai morto, nunca o wemake, o Antigravity nem o Chrome) | RAM livre 291 MB -> 2.761 MB; `node` 665 -> 10 |
+| C2 Economia de memória do Chrome | **Desligada no `Local State`** (`high_efficiency_mode.state = 0`, backup `Local State.bak-2026-11-15`), com o Chrome fechado e reaberto | Valor 0 confirmado após o reinício |
+| C3 Wi-Fi | Modo de economia do adaptador em **desempenho máximo** (tomada e bateria) no plano de energia ativo | `powercfg` mostra 0x00000000 nos dois |
+| C4/C5 loops frágeis e sem alarme | Dead-man dos 3 loops no ar (commit e410c4e, cron existente de 30 min); extensão local de auto-injeção pronta em `tools/chrome-loops-extension` | Testes 6/6. A extensão só carrega pela tela de extensões (Chrome 157 bloqueia `--load-extension`): **3 cliques do dono** |
+| C7 pontes | Registro da ponte do Claude Desktop renomeado; uma só sessão do Claude Code | `claude-mcp-browser-bridge` único |
+
+### Remote Control
+A sessão do IDE tem uma ponte de Remote Control (`bridgeSessionId`) e roda com `--no-chrome`; a ponte do Chrome é outro processo (`chrome-native-host`). Não há atividade de spawn do Remote Control desde 17/10 e nenhum registro que ligue o Remote Control às quedas. As quedas medidas coincidem com falta de memória, e é isso que foi corrigido. Se as quedas continuarem depois desta correção, o próximo passo é medir com o Remote Control desligado (`/remote-control`), o que também desliga o acompanhamento pelo celular.
