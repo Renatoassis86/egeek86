@@ -49,3 +49,16 @@ Por que a EGGHOME aparecia a R$ 19.899,10 (investigado): o vendedor tem anúncio
 - **Auditoria de URL direta** `produto.mercadolivre.com.br/MLB-...`: **não é possível sem navegador**: do servidor/IP desta máquina a página cai em `gz/account-verification` (verificação de conta). A saída é o gerador de links produzir o `meli.la` (fila `ml-links`). Essas ofertas ficam fora do privado.
 - **Amazon e Shopee**: veredito de IDADE da leitura (a página/API já é a fonte do preço), gravado na mesma tabela (`ok` dentro da janela, senão `erro_leitura`). Não há comparação página x oferta nova.
 - **Prevenção**: ciclo recorrente no cron (privado, ofertas de mensagem, combos 30 min, impressoras 6 h, resto 24 h); alarme no Telegram do dono acima de 0,5% de divergentes em 24 h; painel em `/admin/mensagens` (divergentes, sem leitura, cobertura, idade do último veredito, mensagens sem veredito); testes `scripts/test-integridade-preco-119.ts`, `scripts/test-auditoria-links-119.ts` (HTML real em `scripts/fixtures/`). Fixture de página de item: indisponível (captcha).
+
+## Rodada 1 do revisor (tratamento) - 2026-11-15
+| Achado | Tratamento |
+|---|---|
+| 8 captcha / fatias paralelas | **Ritmo global** (`src/server/links/ritmo-e-api.ts`): 1 leitura de página a cada 2 s somando cron e scripts (linha única em `collector_runs` `auditoria-ritmo`, lock consultivo); captcha/429 abre recuo de 15 min para todos e grava `auditoria-links-bloqueio`. As fatias paralelas que eu havia disparado foram **encerradas**. |
+| 3 ok obsoleto | `avaliarAuditoria`: no estrito, veredito ok anterior a `last_price_change_at` ou `item_trocado_at` = `veredito_obsoleto`; os escopos privado e canal reauditam nesse caso. |
+| 4 live-recheck | Deixou de passar `confirmedAt: now`; usa só a parte de auditoria (`avaliarAuditoria`) com os fatos reais. A frescura do preço continua sendo tratada pela reconferência ao vivo da própria fase. |
+| 1 fail-open | Flag `CONFIRMACAO_ESTRITA_CANAL` (padrão **desligada**) estende o modo estrito a grupos/canal; a auditoria agora ordena por **frequência de mensagem** nas últimas 24 h. |
+| 2 link direto | Auditado pela **API oficial do catálogo** (anúncio na lista + preço na tolerância = `ok`, fonte registrada). Fora da lista = `erro_leitura` (não `pausado`, o anúncio pode estar em outro catálogo). `/p/MLB` (catálogo) segue sem leitura. |
+| 5 Amazon no estrito | Estrito exige veredito de página só do ML; Amazon e Shopee valem pela janela de confirmação (Amazon 130 min). |
+| 6 tolerância | Maior entre R$ 1,00 e 0,1% (era 0,5%): R$ 30 em R$ 7,7 mil agora é divergência. |
+| 7 testes | `scripts/test-auditoria-links-119.ts`: ok obsoleto, estrito Amazon, caminho de envio de grupos (fail-open padrão, estrito por flag, bloqueante, obsoleto, sem anúncio). |
+| Backups | Nenhum foi apagado; o commit acidental foi desfeito em 8c0b519 (arquivos alheios só saíram do índice). Arquivos de trabalho temporários não são adicionados. |
