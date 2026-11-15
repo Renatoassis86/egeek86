@@ -9,6 +9,9 @@
  *   # REVERTER (restaura o catalogGate anterior só de quem ainda tem a marca deste lote)
  *   npx tsx --env-file=.env.local scripts/aplicar-foto-com-mao.ts --rollback docs/backups/foto-com-mao-log-<ts>.json [--apply]
  *
+ * DESCONTINUADO PARA APLICAR (dono, 2026-11-15): foto com mão passa a valer por OFERTA e só MÃO REAL conta (mão ilustrada na arte da caixa oficial não conta).
+ * Use scripts/reclassificar-foto-mao-por-oferta.ts. Este script só aplica com --legado-master.
+ *
  * Grava só master_products.attributes.catalogGate = rejected (out_of_scope, motivo foto_com_mao). Nunca apaga master, oferta ou histórico.
  * Não mexe em master com decisão humana (catalogGate.manual) nem em quem já está 'rejected'. Guarda otimista: só grava se o gate ainda é o lido.
  */
@@ -41,6 +44,7 @@ async function main() {
       }
       return void console.log('ROLLBACK aplicado.');
     }
+    if (APPLY && !argv.includes('--legado-master') && rbIdx < 0) throw new Error('rejeição de master por foto com mão foi substituída: use scripts/reclassificar-foto-mao-por-oferta.ts (por oferta; só mão real)');
     const files = argv.filter((a, i) => a.endsWith('.json') && argv[i - 1] !== '--rollback');
     const SO_USO = argv.includes('--uso-visivel'); // trata usado_visivel=true como alvo (classe ignorada)
     const ids = new Set<string>();

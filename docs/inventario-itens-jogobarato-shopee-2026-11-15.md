@@ -40,3 +40,18 @@ Os três preços batem ao centavo com: `preço no 12x = preço Shopee × 0,95` (
 ## Causa geral e proposta (não aplicada)
 
 `foto_com_mao` é gravado no MASTER, mas a foto é de UMA oferta; um master agrega vários vendedores. Hoje: 85 masters rejeitados por foto com mão (3 consoles, 82 jogos), com 260 ofertas ativas escondidas (inclui as 168 de jogos e 12 de consoles da Shopee). A classificação visual confunde arte impressa da caixa oficial com mão real (conferido em `b0996ccb` e em `9045adf9`, Switch Lite 32GB com 3 ofertas Shopee, que continua rejeitado). Proposta: (1) aplicar `foto_com_mao` por oferta (quarentena da oferta cuja própria imagem tem mão), nunca no master com 2+ vendedores; (2) o classificador deve ignorar mão ilustrada na caixa. Isso afrouxa, não cria barreira, mas desfaz decisão de lote do dono em 85 masters; por isso espera o aval dele. Também sugerido: gravar `approved` explícito em `criarMasterGame` para fechar os NULL (opcional, sem efeito visível).
+
+## Atualização 2026-11-15: causa geral aplicada (autorizada pelo dono)
+
+Foto com mão passou a valer por OFERTA, e só mão REAL conta (mão ilustrada ou impressa na caixa oficial não conta). Isso substitui a seção "Causa geral e proposta (não aplicada)" acima.
+
+- **Classificação visual:** 198 fotos distintas (as dos 84 masters rejeitados por `foto_com_mao` e as de suas 260 ofertas ativas), abertas em tamanho cheio por 6 classificadores em paralelo, com amostra conferida por mim: 98 `mao_real`, 100 `sem_mao_real`. Mapa por URL: `docs/backups/foto-mao-real-por-url-2026-11-15.json`. Oferta sem imagem própria herda a classe da foto do master.
+- **Script:** `scripts/reclassificar-foto-mao-por-oferta.ts` (dry-run, `--apply --por`, backup NDJSON, log, `--rollback`, guarda otimista, lotes de 50). Backup `docs/backups/foto-mao-oferta-2026-11-15T06-42-09-729Z.ndjson`, log `docs/backups/foto-mao-oferta-log-2026-11-15T06-42-09-729Z.json`.
+- **Resultado (conferido por SELECT antes/depois):**
+  - masters rejeitados por foto: 84 -> 0 (o 85º, `b0996ccb`, já tinha sido liberado antes);
+  - ofertas ativas nesses masters: 260; 99 foram para quarentena por mão real (motivo `foto_com_mao`, gravado no log e no backup, pois a tabela de ofertas não tem coluna de motivo);
+  - 64 masters voltaram a visíveis, com 161 ofertas ativas liberadas;
+  - 20 masters continuam barrados porque o veredito anterior deles já era `review`/`rejected` por outro motivo (19 pelo `catalogGateAnterior` do backup, 1 pelo porteiro: `4498f7f6`, `porta_cartao_organizador`). Usado/retrô continuam barrando; `catalogGate.manual` seria respeitado (nenhum caso).
+  - confirmação: a oferta `469067d8` (Switch Lite turquesa, Webfones) está visível, master `approved`.
+- **Fluxo futuro:** a regra mora em `scripts/reclassificar-foto-mao-por-oferta.ts` (cabeçalho documenta o critério). Para fotos novas: classificar por URL no mesmo formato de mapa e rodar sem `--liberar-masters`, o que só põe em quarentena as ofertas ativas cuja imagem é `mao_real` e nunca mexe no veredito do master. `scripts/aplicar-foto-com-mao.ts` (rejeição de master) só aplica com `--legado-master`. Não há classificador automático no código: a classificação visual continua sendo etapa manual/assistida.
+- **Duplicados `4704eddc`, `374675ec`, `4013d841`** (todos Switch 2 + Mario Kart World, consoles aprovados, com ofertas Shopee/ML/Amazon): consolidação NÃO feita, aguarda autorização.

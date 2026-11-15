@@ -1,0 +1,798 @@
+{
+ "criadoEm": "2026-11-15T06:41:23.691Z",
+ "criterio": "mao_real = mao/pessoa real segurando ou tocando o produto (foto de ambiente); arte impressa/ilustrada na caixa oficial NAO conta",
+ "classes": {
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-minfjxl65l3674": {
+   "classe": "mao_real",
+   "obs": "mao tatuada segurando jogo Switch"
+  },
+  "https://http2.mlstatic.com/D_NQ_NP_839951-MLA99983830551_112025-F.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "arte oficial Mario Kart 8, estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mgpv6b6af0u848": {
+   "classe": "mao_real",
+   "obs": "mao segurando porta-cartuchos 3D"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mh9lkx75pqmc38": {
+   "classe": "mao_real",
+   "obs": "mao real segurando caixa danificada"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7qukw-liyg4rpurak5f9": {
+   "classe": "sem_mao_real",
+   "obs": "caixa Switch Lite com maos impressas na arte"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-22110-z5tg3ux5gejva1": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-mak4qyix4djj7b": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfisagbtmsqo00": {
+   "classe": "mao_real",
+   "obs": "mao com relogio laranja segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820mg-msio5nemyg3r17": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m4-msg2c13vkf0m0e": {
+   "classe": "mao_real",
+   "obs": "dedos segurando brinquedo Yoshi"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfit0yazepkwdc": {
+   "classe": "mao_real",
+   "obs": "mao segurando 4 jogos"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj2342srfev6e6": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mg1mnlb7n6kkde": {
+   "classe": "mao_real",
+   "obs": "mao segurando estojo aberto com disco"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mihg1ozpv2ma27": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mirs2b0tga2r48": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mirqc0xl2ccm15": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-m75wwnkc7cc0a7": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfit0yazn4zkd7": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfj0bqxaqzggb4": {
+   "classe": "mao_real",
+   "obs": "mao segurando portal Skylanders"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-minfjxl5yk8y82": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min2ibsemlfn5f": {
+   "classe": "mao_real",
+   "obs": "mao segurando 5 jogos"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lv-moo8l3x7babnea": {
+   "classe": "mao_real",
+   "obs": "mao segurando manual"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-miawz2ild7ghca": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min3k0y1zytdc5": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mjerp3bb29ky5f": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min2ibseo0032f": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhi3gwr8j85fc5": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mizz3s7o5j46cb": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfin1j0c5nuv76": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mirqc0xpbg8x57": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfk0syb251c48f": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mirnccdsr5dyc4": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mkelxo2iufib98": {
+   "classe": "mao_real",
+   "obs": "mao segurando jogo PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-m5i2f9d5k02813": {
+   "classe": "mao_real",
+   "obs": "mao segurando Xbox One"
+  },
+  "https://down-br.img.susercontent.com/file/br-11134207-81z1k-mfit0yazhipsfc": {
+   "classe": "mao_real",
+   "obs": "mao com varios Zelda"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mjnhzo3ies5df6": {
+   "classe": "mao_real",
+   "obs": "mao segurando Xbox One"
+  },
+  "https://cf.shopee.com.br/file/br-11134201-820m8-mujr39x1b56re5": {
+   "classe": "mao_real",
+   "obs": "mao esquerda PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-mbom48anrlif2b": {
+   "classe": "mao_real",
+   "obs": "dedos segurando Switch lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhgoo8f61lab9e": {
+   "classe": "mao_real",
+   "obs": "mao com 2 PS5"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mjltmjbzbm6af2": {
+   "classe": "mao_real",
+   "obs": "mao segurando PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-mbom48anx7s71b": {
+   "classe": "mao_real",
+   "obs": "mao segurando Switch"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mirs2b143r463a": {
+   "classe": "mao_real",
+   "obs": "mao Xbox One"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mg1mnlb7kdfoc0": {
+   "classe": "mao_real",
+   "obs": "mao Xbox"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj04x1cyq68618": {
+   "classe": "mao_real",
+   "obs": "mao Xbox One"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lc-mluwxpq5n1fq15": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj2342sjjo5fe7": {
+   "classe": "mao_real",
+   "obs": "mao Xbox One"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mjltmjbsary986": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-m3qajahizq6003": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://http2.mlstatic.com/D_NQ_NP_940267-MLA113725916027_062026-F.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem de catalogo Knack"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min2ibsez8jn4a": {
+   "classe": "mao_real",
+   "obs": "mao com tatuagem Switch"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-mduu1ajuqtxc32": {
+   "classe": "sem_mao_real",
+   "obs": "caixa apoiada na parede"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-micarrc0fapv8e": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7qukw-lij1bf5tb2bja9": {
+   "classe": "sem_mao_real",
+   "obs": "imagem de estudio FIFA19"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhgz0lqa5a0xd5": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820md-mmhsw1311ywwcf": {
+   "classe": "sem_mao_real",
+   "obs": "caixa sobre bancada"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhi3gwr8dlvnf8": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj94b8fkdgcja0": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-m8xvryecvsqhf2": {
+   "classe": "mao_real",
+   "obs": "mao PS4 lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-misy7nbghv5yee": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mdw6y6343sow25": {
+   "classe": "sem_mao_real",
+   "obs": "caixa lacrada na parede"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min3k0y3od8i84": {
+   "classe": "mao_real",
+   "obs": "mao Switch"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m9-msj46leym9l332": {
+   "classe": "mao_real",
+   "obs": "mao PS5"
+  },
+  "https://http2.mlstatic.com/D_NQ_NP_874077-MLA96180627459_102025-F.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "capa FIFA16 render"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min0ufb2vabm3d": {
+   "classe": "mao_real",
+   "obs": "dedos na borda esquerda"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhhrqpju8b2993": {
+   "classe": "mao_real",
+   "obs": "mao com 2 PS5"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-miaxq57ir8xufe": {
+   "classe": "mao_real",
+   "obs": "mao PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-mbom48anymcn98": {
+   "classe": "mao_real",
+   "obs": "mao no canto esq"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-meu75ozt9a0z09": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mkfjgeh90ttsdc": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mkelxo2ivu2r9b": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhhrqpjqraiqba": {
+   "classe": "mao_real",
+   "obs": "mao segurando 2 caixas"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj39t0c2ktfqda": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min2ibsetm9vb1": {
+   "classe": "mao_real",
+   "obs": "mao+relogio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj6b2ou7oflt21": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj7gsxr6kwld71": {
+   "classe": "mao_real",
+   "obs": "mao+braco tatuado segurando steelbook"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820ls-mljq0ccb3qit8a": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://http2.mlstatic.com/D_NQ_NP_793821-MLA99982891211_112025-F.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mkfjgehmaewy9f": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mirs2b13zjeuc6": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-md8297wqwzr587": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mjyc7i6ewzy9dc": {
+   "classe": "mao_real",
+   "obs": "mao segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-min3k0y246ipf3": {
+   "classe": "mao_real",
+   "obs": "mao+relogio"
+  },
+  "https://m.media-amazon.com/images/I/81OmWdOTD7L._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lh-moa171vxkhs7f3": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-821et-mgi1dyw4vswd2b": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/87dcd83ee01e1aa8850d07f6fecbd91b": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-m1q7yoz4e5zl7c": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-7qvfo-lf0f98qf4fvcf9": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-22100-pz2l4o6ovxiv09": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-mcshufk1sav5f3": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820me-muecwv1maoeaa2": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m8-mmrqsnvy7htw19": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://m.media-amazon.com/images/I/71jZAGKRAQL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://m.media-amazon.com/images/I/61UFnW4XewL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://http2.mlstatic.com/D_NQ_NP_868547-MLA99454752588_112025-F.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m8-mrtc1phhdiis69": {
+   "classe": "mao_real",
+   "obs": "mao segurando Switch Lite"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m2-mt145wst51jb5b": {
+   "classe": "mao_real",
+   "obs": "mao segurando Switch Lite"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lt-ms5ud6h1kw0612": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820mg-moml340xlfr9d0": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao real"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-825a8-mrsxe6s8o3k458": {
+   "classe": "sem_mao_real",
+   "obs": "estudio RE2"
+  },
+  "https://cf.shopee.com.br/file/br-11134201-820m6-mt8ca4w23itd0f": {
+   "classe": "sem_mao_real",
+   "obs": "estudio RE2"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-8260p-mkd1rnlwtts437": {
+   "classe": "sem_mao_real",
+   "obs": "estudio RE2"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820me-mu0ufyechpmqbc": {
+   "classe": "mao_real",
+   "obs": "mao segurando RE2 lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lq-mu9k914dmfb782": {
+   "classe": "sem_mao_real",
+   "obs": "RE2 lacrado fundo branco"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m4-msb8e1si4hl3e0": {
+   "classe": "mao_real",
+   "obs": "dedo na base, RE2 usado"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-82585-ms34dy3ceb5uab": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820ls-mtzx666nkt8j01": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-8258f-mrsxer0vwr2aaa": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://m.media-amazon.com/images/I/71ymXI4hEeL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "estudio pequeno"
+  },
+  "https://m.media-amazon.com/images/I/81w7DlVxvDL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "estudio pequeno"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m2-mshshxgye58n06": {
+   "classe": "sem_mao_real",
+   "obs": "estudio com selo legendado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m6-moacof5i0s1x29": {
+   "classe": "sem_mao_real",
+   "obs": "estudio SH2"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lb-mt77lwajelmtf4": {
+   "classe": "mao_real",
+   "obs": "mao segurando SH2"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-miqq37w203k124": {
+   "classe": "sem_mao_real",
+   "obs": "SH2 lacrado sobre tecido"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-82593-mu25qebbm1hge9": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-825bb-msxb26khosndef": {
+   "classe": "sem_mao_real",
+   "obs": "duas copias lacradas na parede"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820mf-msule9g8dl3aea": {
+   "classe": "sem_mao_real",
+   "obs": "SHf usado sobre fundo, sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lz-mp8bg3zpj7yef9": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820ln-mobvxd50m4g6da": {
+   "classe": "sem_mao_real",
+   "obs": "SHf usado em prateleira, sem mao"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-825a9-mfwfgzhldouh23": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-821de-mgo9h7b07ea542": {
+   "classe": "sem_mao_real",
+   "obs": "duas copias lacradas"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820l8-mndetx4o1gxs94": {
+   "classe": "sem_mao_real",
+   "obs": "estudio com selo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lb-ms5ud6h1xj4644": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfiyeicaww0770": {
+   "classe": "sem_mao_real",
+   "obs": "caixa sobre fundo ilustrado"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-7rdyj-lzj369smwjs830": {
+   "classe": "sem_mao_real",
+   "obs": "estudio"
+  },
+  "https://m.media-amazon.com/images/I/71E3B-85r1L._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "estudio pequeno"
+  },
+  "https://cf.shopee.com.br/file/br-11134201-820lz-mtdb6t5xnitc4d": {
+   "classe": "mao_real",
+   "obs": "mao segurando SH2"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mingdqlv1o92da": {
+   "classe": "mao_real",
+   "obs": "mao e braco segurando Fate"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfit0yazhipsfc": {
+   "classe": "mao_real",
+   "obs": "mao segurando varias copias Zelda"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820l6-mtd6no4br37kef": {
+   "classe": "sem_mao_real",
+   "obs": "PS4 usado em prateleira, sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhi261cca51eda": {
+   "classe": "mao_real",
+   "obs": "mao segurando PS4"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mjerp3bbaozme9": {
+   "classe": "mao_real",
+   "obs": "mao segurando Knack"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhp3i4zlc4qp1e": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mj1ajc14irk631": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://m.media-amazon.com/images/I/616ggmjS9OL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://m.media-amazon.com/images/I/81-nnyy0zGL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mf1kqlfke2h113": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mhh0c0pzb7ye5c": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-miw4olxlr6rmed": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m6-mub5li62g7i90b": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-8258w-mrrsey24j2mcb7": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mjcpb0jku80311": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://m.media-amazon.com/images/I/7187hyQ4S+L._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820ll-mplkg75c15vlf9": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lf-ms2nvatavyth2c": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134201-820lb-muktd0i7xh4z87": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820ln-mts5e2r755vm42": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://m.media-amazon.com/images/I/71EhjGhCmBL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-821fo-mgi5axhbkjrf17": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://m.media-amazon.com/images/I/81uYlbYnxWL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://m.media-amazon.com/images/I/716uDsNPpgL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mkelxo2ic64h60": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-7rbmg-lo6v23m2qna52c": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lx-mohr09y8x7gj0d": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820ma-mpqnvvvo658g8e": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820mf-mt8jzjk7qhvkef": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lf-mqjmujjs7shva9": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lu-mswut5kcjsp0b6": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lm-mqkxtdklut4y13": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820ld-muk1wuvnru2p4a": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://m.media-amazon.com/images/I/81T+Q9fgZhL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134201-820mg-mtdxtmjol81u04": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820la-ms2on5yn9f5we7": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lu-mr7zwcel8jyc01": {
+   "classe": "sem_mao_real",
+   "obs": "sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820la-mrlmkryhi22s27": {
+   "classe": "mao_real",
+   "obs": "mao real segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m1-mspwobymj9c401": {
+   "classe": "sem_mao_real",
+   "obs": "jogo na prateleira, sem mao"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-825ac-ms5ncbpnt9fq8a": {
+   "classe": "sem_mao_real",
+   "obs": "lacrado fundo claro"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lw-mmvwt23yk4xu3f": {
+   "classe": "mao_real",
+   "obs": "mao segurando o jogo"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820lj-mri3rvzom6ti4b": {
+   "classe": "sem_mao_real",
+   "obs": "lacrado sobre madeira"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-mkgyz9zrlhqad2": {
+   "classe": "sem_mao_real",
+   "obs": "sobre mesa, sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mewsqssufe9u96": {
+   "classe": "sem_mao_real",
+   "obs": "capa alternativa em pe"
+  },
+  "https://m.media-amazon.com/images/I/81ORTcoAWPL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m6-mrlmk2ppphxg81": {
+   "classe": "mao_real",
+   "obs": "mao segurando lacrado"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7qukw-li3tm91e6bgfa4": {
+   "classe": "sem_mao_real",
+   "obs": "imagem estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m5-mrag09d5l0qu5c": {
+   "classe": "sem_mao_real",
+   "obs": "imagem estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134201-820ln-mttm2pgqodfm85": {
+   "classe": "mao_real",
+   "obs": "dedos com unha vermelha segurando"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-825aj-mrre7cdqf75t54": {
+   "classe": "sem_mao_real",
+   "obs": "imagem estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mfftrcd64sn939": {
+   "classe": "sem_mao_real",
+   "obs": "render"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-824gg-mf48p5dif76079": {
+   "classe": "sem_mao_real",
+   "obs": "dois lacrados na parede"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m5-mserooyv5yboba": {
+   "classe": "sem_mao_real",
+   "obs": "FIFA16 sobre mesa, sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81ztc-miw4olxlslc281": {
+   "classe": "mao_real",
+   "obs": "mao segurando FIFA16"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-m3qe0baihpsr1b": {
+   "classe": "mao_real",
+   "obs": "mao segurando FIFA16"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-loqpez4fk51h94": {
+   "classe": "sem_mao_real",
+   "obs": "FIFA16 sobre superficie"
+  },
+  "https://m.media-amazon.com/images/I/714wGwPL3FL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem loja"
+  },
+  "https://m.media-amazon.com/images/I/81eYM2RP0rL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem loja"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mihhad40v3lye6": {
+   "classe": "mao_real",
+   "obs": "mao segurando For Honor"
+  },
+  "https://http2.mlstatic.com/D_NQ_NP_734592-MLA99536186350_122025-F.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem estudio"
+  },
+  "https://m.media-amazon.com/images/I/81p0x4gzRyL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem loja"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-7rbmb-lo5fglz0bmh634": {
+   "classe": "sem_mao_real",
+   "obs": "lacrados em pe"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-lqknlfqdfg2va5": {
+   "classe": "sem_mao_real",
+   "obs": "dois lacrados na parede"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-81z1k-mflf28i9xgqsb1": {
+   "classe": "sem_mao_real",
+   "obs": "lacrado em suporte"
+  },
+  "https://m.media-amazon.com/images/I/51f-P2csABL._AC_UL320_AIweblab1378949,T1_.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem loja"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-7r98o-mcryi9c7nos285": {
+   "classe": "mao_real",
+   "obs": "mao com unha segurando"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m5-mnlml9ga7yf5ae": {
+   "classe": "sem_mao_real",
+   "obs": "imagem estudio"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820m3-mqzlrzcrr9jbd6": {
+   "classe": "sem_mao_real",
+   "obs": "na prateleira sem mao"
+  },
+  "https://cf.shopee.com.br/file/br-11134207-820mf-mptx2wcm70g3d9": {
+   "classe": "sem_mao_real",
+   "obs": "em suporte sem mao"
+  },
+  "https://http2.mlstatic.com/D_NQ_NP_737267-MLA99948555145_112025-F.jpg": {
+   "classe": "sem_mao_real",
+   "obs": "imagem loja"
+  },
+  "https://cf.shopee.com.br/file/sg-11134201-7rd4z-m6rimsl0r5rm25": {
+   "classe": "sem_mao_real",
+   "obs": "imagem estudio"
+  }
+ }
+}
