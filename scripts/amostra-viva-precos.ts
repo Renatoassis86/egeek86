@@ -22,17 +22,24 @@ async function reservar(sql: ReturnType<typeof connect>): Promise<{ ok: true; es
     await tx`SELECT pg_advisory_xact_lock(hashtext('auditoria-ritmo'))`;
     const rows = await tx<{ id: string; meta: { prox?: number; bloqueado_ate?: number } | null }[]>`SELECT id::text id, meta FROM collector_runs WHERE job='auditoria-ritmo' ORDER BY started_at DESC LIMIT 1`;
     const agora = Date.now();
-    const m = rows[0]?.meta ?? {};
-    if ((m.bloqueado_ate ?? 0) > agora) return { ok: false as const, ateMs: m.bloqueado_ate! };
-    const prox = Math.max(m.prox ?? 0, agora);
-    const novo = JSON.stringify({ prox: prox + 2000, ...(m.bloqueado_ate ? { bloqueado_ate: m.bloqueado_ate } : {}) });
+    // Mesmo formato saneado de src/lib/links/ritmo.ts: 6 chaves numéricas; lê string jsonb se vier assim; nunca espalha o meta.
+    let raw: unknown = rows[0]?.meta ?? {};
+    if (typeof raw === 'string') { try { raw = raw.length < 2000 ? JSON.parse(raw) : {}; } catch { raw = {}; } }
+    const o = (raw && typeof raw === 'object' && !Array.isArray(raw) && Object.keys(raw as object).length <= 50 ? raw : {}) as Record<string, unknown>;
+    const n6 = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v < 1e14 ? Math.floor(v) : 0);
+    const m = { prox: n6(o.prox), bloqueado_ate: n6(o.bloqueado_ate), janela_ini: n6(o.janela_ini), janela_n: n6(o.janela_n), recuos: n6(o.recuos), ultimo_bloqueio: n6(o.ultimo_bloqueio) };
+    if (m.bloqueado_ate > agora) return { ok: false as const, ateMs: m.bloqueado_ate };
+    const nova = agora - m.janela_ini >= 10 * 60_000;
+    if (!nova && m.janela_n >= 120) return { ok: false as const, ateMs: m.janela_ini + 10 * 60_000 };
+    const prox = Math.max(m.prox, agora);
+    const novo = JSON.stringify({ ...m, prox: prox + 4000, janela_ini: nova ? agora : m.janela_ini, janela_n: nova ? 1 : m.janela_n + 1 });
     if (rows[0]) await tx`UPDATE collector_runs SET meta = ${novo}::text::jsonb, finished_at = now() WHERE id = ${rows[0].id}::bigint`;
     else await tx`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-ritmo','mercado-livre',now(),now(),0,'ok',${novo}::text::jsonb)`;
     return { ok: true as const, esperaMs: prox - agora };
   });
 }
 async function bloquear(sql: ReturnType<typeof connect>, nota: string) {
-  await sql`UPDATE collector_runs SET meta = jsonb_set(coalesce(meta,'{}'::jsonb),'{bloqueado_ate}',to_jsonb(${Date.now() + 15 * 60_000}::bigint)) WHERE job='auditoria-ritmo'`;
+  await sql`UPDATE collector_runs SET meta = jsonb_set(jsonb_set(coalesce(meta,'{}'::jsonb),'{bloqueado_ate}',to_jsonb(${Date.now() + 30 * 60_000}::bigint)),'{ultimo_bloqueio}',to_jsonb(${Date.now()}::bigint)) WHERE job='auditoria-ritmo' AND jsonb_typeof(meta)='object'`;
   await sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('auditoria-links-bloqueio','mercado-livre',now(),now(),0,'error',${JSON.stringify({ nota, origem: 'amostra-viva-revisor' })}::jsonb)`;
 }
 const dormir = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
