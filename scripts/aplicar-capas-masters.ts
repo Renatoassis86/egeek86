@@ -8,7 +8,7 @@
  *   # DRY-RUN (padrão): lista os alvos e o que seria gravado
  *   npx tsx --conditions=react-server --env-file=.env.local scripts/aplicar-capas-masters.ts [--horas 72] [--top 300]
  *   # APLICAR (backup NDJSON + log em docs/backups/)
- *   npx tsx --conditions=react-server --env-file=.env.local scripts/aplicar-capas-masters.ts --apply --por "Nome"
+ *   npx tsx --conditions=react-server --env-file=.env.local scripts/aplicar-capas-masters.ts --apply --por "Nome" [--so-sem-foto = pula a varredura de rede (b), ~12 min]
  *   # REVERTER (restaura default_images anterior só de quem ainda tem o valor gravado por este lote)
  *   npx tsx --conditions=react-server --env-file=.env.local scripts/aplicar-capas-masters.ts --rollback docs/backups/capas-masters-log-<ts>.json [--apply]
  *
@@ -71,7 +71,7 @@ async function main() {
     console.log(`(a) sem foto em oferta ativa: ${semFoto.length}`);
 
     // (b) masters das mensagens recentes + top por ofertas ativas, com a busca real de capa
-    const pool = await sql<{ id: string; name: string; vertical: string; ativas: number }[]>`
+    const pool = argv.includes('--so-sem-foto') ? [] : await sql<{ id: string; name: string; vertical: string; ativas: number }[]>`
       SELECT id, name, vertical, ativas FROM (
         SELECT mp.id::text AS id, mp.name, mp.vertical, (SELECT count(*)::int FROM affiliate_offers o WHERE o.master_product_id = mp.id AND o.status = 'active') AS ativas
         FROM master_products mp WHERE mp.id IN (SELECT master_product_id FROM group_messages WHERE status = 'enviada' AND sent_at > now() - make_interval(hours => ${HORAS}))
