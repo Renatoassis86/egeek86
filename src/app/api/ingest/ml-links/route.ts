@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
   for (const r of rows) {
     // Atualiza só oferta ativa do ML que ainda não tem meli.la; devolve o link antigo para o registro de reversão.
     const res = await db.execute<{ old: string }>(sql`
-      UPDATE affiliate_offers o SET affiliate_url = ${r.link}, affiliate_link_pending = false, updated_at = now(),
+      UPDATE affiliate_offers o SET affiliate_url = ${r.link}, affiliate_link_pending = false, updated_at = now(), link_verificado_em = NULL, -- link novo/regerado: a página é lida de novo (uma vez)
         -- #119: o meli.la nasce para o anúncio da URL de entrada (a que a fila entregou): guarda qual é, para conferir contra o anúncio precificado.
         link_item_id = CASE WHEN prev.affiliate_url ~* 'meli[.]la|/p/MLB' THEN o.link_item_id ELSE COALESCE('MLB' || substring(prev.affiliate_url from '/MLB-?([0-9]{6,})'), o.link_item_id) END
       FROM affiliate_offers prev, affiliate_networks nn

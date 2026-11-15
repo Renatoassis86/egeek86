@@ -98,7 +98,7 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
   const auditoriaLinks = sobraAudMs >= 8_000 ? await cicloAuditoriaLinks({ budgetMs: Math.min(14_000, sobraAudMs) }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   // Invariante 1 (#119): preenche o anúncio concreto das ofertas ML (um catálogo por minuto, 429 respeitado). ANUNCIOS_PREENCHER=0 desliga.
   const sobraAncMs = maxDuration * 1000 - (Date.now() - startedAt) - 12_000;
-  const anuncios = !/^(0|off|false)$/i.test(process.env.ANUNCIOS_PREENCHER ?? '') && sobraAncMs >= 8_000 ? await preencherAnuncios({ orcamentoMs: Math.min(12_000, sobraAncMs), maxCatalogos: 1 }).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
+  const anuncios = !/^(0|off|false)$/i.test(process.env.ANUNCIOS_PREENCHER ?? '') && sobraAncMs >= 8_000 ? await preencherAnuncios({ orcamentoMs: Math.min(12_000, sobraAncMs), maxCatalogos: 3 }).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
   // Shopee (#119): renova pela API o preço das impressoras Bambu/combos sem confirmação há mais de 60 min (last_checked_at não é confirmação).
   const shopeeRenov = !/^(0|off|false)$/i.test(process.env.SHOPEE_RENOVAR ?? '') && maxDuration * 1000 - (Date.now() - startedAt) > 20_000 ? await renovarShopee({ limite: 6 }).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
   // Painéis vivos das impressoras 3D (#117; PAINEL_IMPRESSORAS, padrão desligada): mensagens fixas editadas, rodada a cada 10 min com cursor; usa só o tempo que sobra.

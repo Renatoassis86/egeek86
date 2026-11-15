@@ -123,13 +123,22 @@ export async function renovarShopee(opts: { limite?: number } = {}): Promise<{ l
       const itemId = /^shopee-(\d{1,19})$/.exec(r.ref ?? '')?.[1];
       if (!itemId) continue;
       out.lidas++;
-      const q = await lookupShopeeItem(itemId);
+      let q: Awaited<ReturnType<typeof lookupShopeeItem>>;
+      try { q = await lookupShopeeItem(itemId); } catch { continue; } // erro de rede/429/API: NÃO conta como falta
       if (q.status === 'ok') {
         await recordPriceSnapshot({ offerId: r.id, priceCents: q.node.priceCents, source: 'api' });
         await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now(), last_checked_at = now(), consecutive_miss_count = 0 WHERE id = ${r.id}::uuid`);
+        await db.execute(sql`DELETE FROM collector_runs WHERE job = 'shopee-falta' AND meta->>'oferta' = ${r.id}`);
         out.renovadas++;
       } else {
-        await db.execute(sql`UPDATE affiliate_offers SET consecutive_miss_count = consecutive_miss_count + 1, status = CASE WHEN consecutive_miss_count + 1 >= 3 THEN 'expired'::affiliate_offer_status ELSE status END, updated_at = now() WHERE id = ${r.id}::uuid`);
+        // Falta só conta em CICLOS DISTINTOS separados por >= 30 min; expira com 3 faltas (rodada 3, achado 24).
+        const hist = (await db.execute(sql`SELECT started_at FROM collector_runs WHERE job = 'shopee-falta' AND meta->>'oferta' = ${r.id} AND started_at > now() - interval '24 hours' ORDER BY started_at DESC`)) as unknown as { started_at: Date | string }[];
+        const ultima = hist[0] ? new Date(hist[0].started_at).getTime() : 0;
+        if (Date.now() - ultima >= 30 * 60_000) {
+          await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, meta) VALUES ('shopee-falta', 'shopee', now(), now(), 0, 'ok', ${JSON.stringify({ oferta: r.id, motivo: q.reason ?? 'unavailable' })}::jsonb)`);
+          const faltas = hist.length + 1;
+          await db.execute(sql`UPDATE affiliate_offers SET consecutive_miss_count = ${faltas}, status = CASE WHEN ${faltas} >= 3 THEN 'expired'::affiliate_offer_status ELSE status END, updated_at = now() WHERE id = ${r.id}::uuid`);
+        }
         out.indisponiveis++;
       }
     }

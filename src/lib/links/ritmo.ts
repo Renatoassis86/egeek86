@@ -6,9 +6,9 @@
 export const RITMO_CFG = {
   /** Intervalo global entre leituras de página (rodada 2 do revisor: 2 s ainda levou captcha na 22ª leitura). */
   INTERVALO_MS: 4000,
-  /** Teto de leituras por janela de 10 min (todas as fontes somadas). */
+  /** Teto de leituras de PÁGINA por janela de 10 min (todas as fontes somadas). O captcha vem por volume (rodada 3: ~11 leituras); o preço vai pela API. */
   JANELA_MS: 10 * 60_000,
-  JANELA_MAX: 120,
+  JANELA_MAX: 8,
   /** Recuo em captcha/429: 15 -> 30 -> 60 min (cresce a cada bloqueio dentro de 6 h do anterior; reinicia depois). */
   RECUOS_MIN: [15, 30, 60],
   REINICIA_RECUO_MS: 6 * 3_600_000,

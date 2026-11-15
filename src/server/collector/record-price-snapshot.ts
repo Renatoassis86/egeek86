@@ -2,6 +2,7 @@ import 'server-only';
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { deveIgnorarAnuncioIrmao, ehIdDeCatalogo } from '@/lib/messaging/confirmacao-preco';
+import { anuncioDoLinkVivo } from './link-do-anuncio';
 import { affiliateOffers, affiliatePriceSnapshots } from '@/db/schema';
 
 export interface RecordSnapshotInput {
@@ -48,6 +49,16 @@ export async function recordPriceSnapshotDetalhado(inputOriginal: RecordSnapshot
   let inserted = false;
   let trocouDeAnuncio = false;
   let ignoradoIrmao = false;
+  // Antes de um anúncio irmão ASSUMIR (do link sem leitura há > 3 h), confere pela API se o do link ainda está vivo (fora da transação: chamada de rede).
+  let linkVivo: boolean | null = null;
+  if (input.itemId) {
+    const pre = (await db.execute(sql`SELECT link_item_id AS link, external_ref AS ref, last_price_confirmed_at AS conf FROM affiliate_offers WHERE id = ${input.offerId}::uuid`).catch(() => [])) as unknown as { link: string | null; ref: string | null; conf: Date | string | null }[];
+    const p0 = pre[0];
+    if (p0?.link && !ehIdDeCatalogo(input.itemId, p0.ref) && !deveIgnorarAnuncioIrmao({ linkItemId: p0.link, itemNovo: input.itemId, confirmadoEm: p0.conf ? new Date(p0.conf) : null, now: new Date() })
+        && p0.link.replace(/\D/g, '') !== input.itemId.replace(/\D/g, '')) {
+      linkVivo = await anuncioDoLinkVivo(p0.ref, p0.link);
+    }
+  }
   await db.transaction(async (tx) => {
     // Serializa escritas concorrentes da mesma oferta (ticks do cron que se
     // sobrepõem): o lock vale até o fim da transação, então a segunda
@@ -66,7 +77,8 @@ export async function recordPriceSnapshotDetalhado(inputOriginal: RecordSnapshot
       // Guarda (#119): id de catálogo nunca é anúncio; ignora o informado.
       if (ehIdDeCatalogo(input.itemId, prev[0]?.ref)) input = { ...input, itemId: null };
       // Anúncio irmão com o do link lido há pouco: não troca preço nem anúncio (preço = o do anúncio do link).
-      else if (deveIgnorarAnuncioIrmao({ linkItemId: prev[0]?.link ?? null, itemNovo: input.itemId, confirmadoEm: prev[0]?.conf ? new Date(prev[0].conf) : null, now: new Date() })) { ignoradoIrmao = true; return; }
+      // Anúncio irmão: ignora se o do link foi lido há < 3 h OU se a API diz que o do link ainda está vivo; só assume com o do link morto (false) ou indeterminado após 3 h sem leitura.
+      else if (linkVivo === true || deveIgnorarAnuncioIrmao({ linkItemId: prev[0]?.link ?? null, itemNovo: input.itemId, confirmadoEm: prev[0]?.conf ? new Date(prev[0].conf) : null, now: new Date() })) { ignoradoIrmao = true; return; }
       trocouDeAnuncio = !!antes && !!input.itemId && antes.replace(/\D/g, '') !== input.itemId.replace(/\D/g, '');
     }
 

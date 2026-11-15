@@ -32,6 +32,8 @@ export async function resolverLinkMl(url: string, fetchImpl: typeof fetch = fetc
 
 /** Versão da regra de comparação gravada em cada veredito: 2 = tolerância maior entre R$ 1,00 e 0,1% (1 = 0,5%, reauditar). */
 export const REGRA_VERSAO = 2;
+/** Fração das ofertas com link já verificado que ainda passa pela página (auditoria amostral de 1 em 20). */
+export const AMOSTRA_PAGINA = 0.05;
 
 export interface AlvoAuditoria {
   offerId: string;
@@ -39,6 +41,9 @@ export interface AlvoAuditoria {
   itemEsperado: string | null;
   catalogo: string | null;
   precoCents: number;
+  /** Anúncio do link e quando a PÁGINA do link o confirmou (o alvo de um meli.la é estável: depois disso o preço vai pela API). */
+  linkItemId?: string | null;
+  linkVerificadoEm?: Date | null;
 }
 
 export type Escopo = 'privado' | 'bambu' | 'canal' | 'combos' | 'impressoras' | 'resto';
@@ -57,7 +62,7 @@ export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: numb
     : escopo === 'impressoras' ? sql`o.vertical = 'impressao3d' AND NOT (m.name ~* ${COMBO})`
     : sql`o.vertical <> 'impressao3d'`;
   const rows = (await db.execute(sql`
-    SELECT o.id::text AS id, o.affiliate_url AS link, COALESCE(o.link_item_id, o.external_item_id) AS item, o.external_ref AS cat, o.current_price_cents::int AS cents
+    SELECT o.id::text AS id, o.affiliate_url AS link, COALESCE(o.link_item_id, o.external_item_id) AS item, o.external_ref AS cat, o.current_price_cents::int AS cents, o.link_item_id AS lk, o.link_verificado_em AS lv
     FROM affiliate_offers o
     JOIN affiliate_networks n ON n.id = o.network_id AND n.slug = 'mercado-livre'
     JOIN master_products m ON m.id = o.master_product_id
@@ -66,15 +71,15 @@ export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: numb
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND ${filtro}
       AND (${escopo === 'privado' || escopo === 'canal' || escopo === 'bambu' ? sql`true` : sql`au.ult IS NULL OR au.ult < now() - make_interval(mins => ${ateMin})`}) ${frag}
     ORDER BY coalesce(fr.c, 0) DESC, au.ult ASC NULLS FIRST, o.current_price_cents DESC
-    LIMIT ${limite}`)) as unknown as { id: string; link: string | null; item: string | null; cat: string | null; cents: number }[];
-  return rows.map((r) => ({ offerId: r.id, link: r.link, itemEsperado: r.item, catalogo: r.cat && /^MLB\d+$/.test(r.cat) ? r.cat : null, precoCents: Number(r.cents) }));
+    LIMIT ${limite}`)) as unknown as { id: string; link: string | null; item: string | null; cat: string | null; cents: number; lk: string | null; lv: Date | string | null }[];
+  return rows.map((r) => ({ offerId: r.id, link: r.link, itemEsperado: r.item, catalogo: r.cat && /^MLB\d+$/.test(r.cat) ? r.cat : null, precoCents: Number(r.cents), linkItemId: r.lk, linkVerificadoEm: r.lv ? new Date(r.lv) : null }));
 }
 
-export interface ResultadoLote { lidas: number; porVeredito: Record<string, number>; parou: string | null; linhas: { alvo: AlvoAuditoria; r: ResultadoAuditoria }[] }
+export interface ResultadoLote { lidas: number; viaApi: number; porVeredito: Record<string, number>; parou: string | null; linhas: { alvo: AlvoAuditoria; r: ResultadoAuditoria }[] }
 
 /** Audita até `limite` alvos dentro de `orcamentoMs`. Grava cada veredito. Para em 429/captcha. Nunca lança. */
 export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, opts: { gravar?: boolean; fetchImpl?: typeof fetch } = {}): Promise<ResultadoLote> {
-  const out: ResultadoLote = { lidas: 0, porVeredito: {}, parou: null, linhas: [] };
+  const out: ResultadoLote = { lidas: 0, viaApi: 0, porVeredito: {}, parou: null, linhas: [] };
   const fim = Date.now() + orcamentoMs;
   const cache = new Map<string, Leitura>();
   const listas = new Map<string, ListaCatalogo>();
@@ -84,8 +89,17 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
     if (!a.link || !/^https?:\/\//.test(a.link)) r = { verdict: 'sem_link', cartao: null, diffPct: null, nota: 'oferta sem link' };
     else if (!/meli\.la\//i.test(a.link)) r = await auditarPorApi(a, listas).catch((e) => ({ verdict: 'erro_leitura' as const, cartao: null, diffPct: null, nota: `api: ${e instanceof Error ? e.message.slice(0, 60) : 'erro'}` }));
     else {
-      let leitura = cache.get(a.link);
-      if (!leitura) {
+      // PREÇO pela API, LINK pela página (rodada 3): o alvo de um meli.la é estável, então a página é lida UMA vez por link (grava link_item_id e
+      // link_verificado_em); depois o preço do anúncio do link vem do catálogo (API, sem captcha). Página só para link novo/regerado, troca de
+      // anúncio (link_verificado_em zerado) ou amostra de 1 em 20; anúncio fora da lista da API também cai na página (pode estar pausado).
+      let viaApi = false;
+      let rApi: ResultadoAuditoria | null = null;
+      if (a.linkVerificadoEm && a.linkItemId && a.catalogo && Math.random() >= AMOSTRA_PAGINA) {
+        rApi = await auditarPorApi({ ...a, link: null, itemEsperado: a.linkItemId }, listas).catch(() => null);
+        if (rApi && (rApi.verdict === 'ok' || rApi.verdict === 'preco_divergente')) { viaApi = true; out.viaApi++; }
+      }
+      let leitura = viaApi ? undefined : cache.get(a.link);
+      if (!viaApi && !leitura) {
         const slot = await reservarSlot().catch(async () => { await dormir(400); return reservarSlot(); });
         if (!slot.ok) { out.parou = 'recuo_global (captcha/429 recente)'; break; }
         if (slot.esperaMs > Math.max(0, fim - Date.now() - 3000)) { out.parou = 'sem_orcamento_para_o_ritmo'; break; }
@@ -94,11 +108,14 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
         cache.set(a.link, leitura);
         out.lidas++;
       }
-      if (!leitura.ok) {
-        if (leitura.parar) { out.parou = leitura.nota; await registrarBloqueio(leitura.nota); break; }
-        r = { verdict: 'erro_leitura', cartao: null, diffPct: null, nota: leitura.nota };
+      if (viaApi && rApi) r = { ...rApi, nota: `${rApi.nota}; link verificado pela página` };
+      else if (!leitura || !leitura.ok) {
+        if (leitura && leitura.parar) { out.parou = leitura.nota; await registrarBloqueio(leitura.nota); break; }
+        r = { verdict: 'erro_leitura', cartao: null, diffPct: null, nota: leitura?.ok === false ? leitura.nota : 'sem leitura' };
       } else {
         r = auditarCartoes(lerCartoes(leitura.html), { itemId: a.itemEsperado, productId: a.catalogo, precoCents: a.precoCents });
+        // A página mostra o anúncio REAL do link: grava (link_item_id) e marca como verificado.
+        if (r.cartao?.itemId && opts.gravar !== false) await db.execute(sql`UPDATE affiliate_offers SET link_item_id = ${r.cartao.itemId}, link_verificado_em = now() WHERE id = ${a.offerId}::uuid`).catch(() => undefined);
       }
     }
     out.porVeredito[r.verdict] = (out.porVeredito[r.verdict] ?? 0) + 1;
@@ -148,12 +165,13 @@ export async function cicloAuditoriaLinks(opts: { budgetMs: number }): Promise<R
     const res: Record<string, unknown> = {};
     res.amazonShopee = await veredictosAmazonShopee().catch(() => -1);
     let restante = opts.budgetMs;
-    for (const [escopo, ate, lim] of [['privado', 300, 12], ['bambu', 300, 12], ['canal', 300, 12], ['combos', 30, 12], ['impressoras', 360, 12], ['resto', 1440, 12]] as const) {
+    const min5 = new Date().getMinutes() % 5 === 0; // escopo canal a cada 5 min (consulta de ~0,8 s)
+    for (const [escopo, ate, lim] of [['privado', 300, 30], ['bambu', 300, 30], ...(min5 ? [['canal', 300, 30] as const] : []), ['combos', 30, 12], ['impressoras', 360, 12], ['resto', 1440, 12]] as const) {
       if (restante < 5000) break;
       const alvos = await carregarAlvos(escopo, lim, ate);
       if (!alvos.length) continue;
       const r = await auditarLote(alvos, restante);
-      res[escopo] = { lidas: r.lidas, porVeredito: r.porVeredito, parou: r.parou };
+      res[escopo] = { lidas: r.lidas, viaApi: r.viaApi, porVeredito: r.porVeredito, parou: r.parou };
       restante = opts.budgetMs - (Date.now() - t0);
       if (r.parou) break;
       if (r.lidas > 0) break; // uma faixa por minuto: respeita o ritmo de 1 requisição a cada 1 a 2 s
