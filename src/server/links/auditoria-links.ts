@@ -127,7 +127,7 @@ export function auditoriaLigada(): boolean {
 /**
  * Ciclo do cron (a cada minuto, com o tempo que sobra): combos Bambu reauditados a cada 30 min, depois as demais impressoras (a cada 6 h) e o resto
  * em rodízio (a cada 24 h). Só LÊ e grava veredito (nenhuma oferta é alterada aqui: a correção é o script com backup). Alarme no Telegram do dono
- * (1 vez a cada 6 h) se mais de 2% das leituras das últimas 24 h divergirem. Nunca lança.
+ * (1 vez a cada 6 h) se mais de 0,5% das leituras das últimas 24 h divergirem. Nunca lança.
  */
 export async function cicloAuditoriaLinks(opts: { budgetMs: number }): Promise<Record<string, unknown>> {
   if (!auditoriaLigada()) return { ligado: false };
@@ -156,7 +156,7 @@ export async function cicloAuditoriaLinks(opts: { budgetMs: number }): Promise<R
 
 async function alarmeSeDivergirMuito(): Promise<void> {
   const [r] = (await db.execute(sql`SELECT count(*)::int n, count(*) FILTER (WHERE verdict IN ('preco_divergente','item_diferente','pausado'))::int ruins FROM offer_link_audit WHERE checked_at > now() - interval '24 hours' AND verdict <> 'erro_leitura'`)) as unknown as { n: number; ruins: number }[];
-  if (!r || r.n < 50 || r.ruins / r.n <= 0.02) return;
+  if (!r || r.n < 50 || r.ruins / r.n <= 0.005) return;
   const ja = (await db.execute(sql`SELECT 1 FROM collector_runs WHERE job = 'auditoria-links-alarme' AND started_at > now() - interval '6 hours' LIMIT 1`)) as unknown as unknown[];
   if (ja.length) return;
   const token = process.env.TELEGRAM_BOT_TOKEN;

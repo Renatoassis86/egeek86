@@ -27,7 +27,8 @@ export type MotivoConfirmacao =
   | 'link_de_outro_anuncio'
   | 'troca_de_anuncio'
   | 'link_divergente'
-  | 'sem_veredito_ok';
+  | 'sem_veredito_ok'
+  | 'sem_anuncio_concreto';
 
 export function confirmacaoLigada(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.CONFIRMACAO_PRECO_MENSAGEM ?? '').trim());
@@ -54,6 +55,8 @@ export interface FatosConfirmacao {
   missCount?: number | null;
   /** Anúncio cujo preço está gravado (external_item_id). */
   priceItemId?: string | null;
+  /** external_ref (catálogo): o anúncio concreto não pode ser igual a ele. */
+  catalogoRef?: string | null;
   /** Anúncio para o qual o link afiliado aponta (link_item_id, ou o id da URL). */
   linkItemId?: string | null;
   now: Date;
@@ -73,6 +76,7 @@ const NOTA: Record<MotivoConfirmacao, string> = {
   sem_confirmacao: 'preço nunca confirmado na API',
   confirmacao_velha: 'preço sem confirmação recente',
   link_de_outro_anuncio: 'o link leva a outro anúncio, não ao que tem o preço lido',
+  sem_anuncio_concreto: 'oferta sem anúncio concreto gravado (só o catálogo é conhecido)',
   sem_veredito_ok: 'sem veredito ok da auditoria do link nas últimas 6 h (fica na fila para auditar)',
   link_divergente: 'a página do link mostra outro anúncio, outro preço ou anúncio pausado (auditoria de links)',
   troca_de_anuncio: 'o preço lido é de outro anúncio do vendedor (troca de anúncio, não queda)',
@@ -109,6 +113,7 @@ export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito
   const idadeMin = (f.now.getTime() - f.confirmedAt.getTime()) / 60_000;
   if (idadeMin > limite) return falha('confirmacao_velha');
   if (f.auditoria && (VEREDITOS_BLOQUEANTES as readonly string[]).includes(f.auditoria.verdict) && (f.now.getTime() - f.auditoria.checkedAt.getTime()) / 60_000 <= AUDITORIA_VALE_MIN) return falha('link_divergente');
+  if (f.estrito && /mercado/i.test(f.rede) && !(/^MLB\d{6,}$/.test((f.priceItemId ?? '').trim()) && (f.priceItemId ?? '').trim() !== (f.catalogoRef ?? '').trim())) return falha('sem_anuncio_concreto');
   if (f.estrito) {
     const okEm = f.auditoria?.verdict === 'ok' ? f.auditoria.checkedAt : f.auditoria?.okEm ?? null;
     if (!okEm || (f.now.getTime() - okEm.getTime()) / 60_000 > AUDITORIA_VALE_MIN) return falha('sem_veredito_ok');

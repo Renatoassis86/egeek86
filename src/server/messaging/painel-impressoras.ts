@@ -51,7 +51,7 @@ export interface ResultadoPaineis { ligado: boolean; alvos: ResultadoAlvo[]; ger
 interface RowOferta {
   id: string; master_id: string; master_name: string; title: string | null; rede: string; loja: string | null; price: string; url: string | null; slug: string;
   checked: Date | string; rating: string | null; nivel: string | null;
-  conf: Date | string | null; miss: string | null; item: string | null; link_item: string | null;
+  conf: Date | string | null; miss: string | null; item: string | null; link_item: string | null; cat: string | null;
 }
 
 const id12 = (id: string) => id.replace(/-/g, '').slice(0, 12);
@@ -68,7 +68,7 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
     SELECT o.id::text AS id, m.id::text AS master_id, m.name AS master_name, o.title, nn.slug AS rede,
            COALESCE(NULLIF(o.store_name, ''), s.nickname) AS loja, o.current_price_cents::text AS price,
            o.affiliate_url AS url, o.slug, o.last_checked_at AS checked,
-           o.last_price_confirmed_at AS conf, o.consecutive_miss_count::text AS miss, o.external_item_id AS item, o.link_item_id AS link_item, s.positive_rating_percent::text AS rating, s.reputation_level AS nivel
+           o.last_price_confirmed_at AS conf, o.consecutive_miss_count::text AS miss, o.external_item_id AS item, o.link_item_id AS link_item, o.external_ref AS cat, s.positive_rating_percent::text AS rating, s.reputation_level AS nivel
     FROM affiliate_offers o
     JOIN affiliate_networks nn ON nn.id = o.network_id
     JOIN master_products m ON m.id = o.master_product_id
@@ -80,7 +80,7 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
   const audit = ligada ? await ultimosVereditos(rows.map((r) => r.id)) : new Map<string, { verdict: string; checkedAt: Date; okEm: Date | null }>();
   const fatos = (r: RowOferta, uso: 'queda' | 'lista') => avaliarConfirmacao({
     uso, rede: r.rede, status: 'active', quarantined: false, confirmedAt: r.conf ? new Date(r.conf) : null, missCount: r.miss != null ? Number(r.miss) : 0,
-    priceItemId: r.item, linkItemId: r.link_item ?? itemIdDaUrl(r.url), auditoria: audit.get(r.id) ?? null, estrito: ligada && rigidoPrivadoLigado(), now,
+    priceItemId: r.item, catalogoRef: r.cat, linkItemId: r.link_item ?? itemIdDaUrl(r.url), auditoria: audit.get(r.id) ?? null, estrito: ligada && rigidoPrivadoLigado(), now,
   }, ligada);
   // Lista: preço confirmado há <= 6 h e anúncio achado na última coleta; sem isso a oferta NÃO entra na lista (nunca "preço a confirmar" inventado).
   const aprovadas = rows.filter((r) => { const v = fatos(r, 'lista'); if (!v.ok) foraDaLista++; return v.ok; });
