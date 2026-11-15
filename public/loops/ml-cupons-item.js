@@ -22,7 +22,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.1.0';
+  var VERSAO = '1.2.0';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-ml-links-ui.ts
@@ -154,6 +154,20 @@
     return out;
   };
 
+  /** 2ª captcha seguida no MESMO item => bloquear o item por 24 h. */
+  PURO.deveBloquear = function (n) { return n >= 2; };
+  PURO.bloqueado = function (mapa, id, agoraMs) { return !!(mapa && mapa[id] && agoraMs < mapa[id]); };
+  /** Espera antes da próxima consulta ao modal: 6 a 10 s desde a anterior (0 se já passou). */
+  PURO.esperaModal = function (ultimoMs, agoraMs, rnd) {
+    var alvo = 6000 + Math.round((rnd == null ? Math.random() : rnd) * 4000);
+    return Math.max(0, alvo - (agoraMs - (ultimoMs || 0)));
+  };
+  /** Nome em cache por campanha (12 h). Devolve o objeto { name, acao, seguir } ou null. */
+  PURO.nomeEmCache = function (cache, campaignId, agoraMs) {
+    var e = cache && cache[campaignId];
+    return e && agoraMs - e.t < 12 * 3600 * 1000 ? e.d : null;
+  };
+
   PURO.extrairCupons = function (html) {
     var texto = PURO.textoDoHtml(html);
     var vistos = {}, cupons = [];
@@ -275,6 +289,8 @@
     return { ok: true, cfg: { api: api, enviar: c.enviar === true, lote: Math.min(40, Math.max(5, +c.lote || 20)), pausaMs: faixa, idleMs: Math.max(1, +c.idleMin || 3) * 60000 }, token: c.token };
   };
 
+  var MODAL_POR_CICLO = 8;                    // consultas ao modal /cupons/pdp por ciclo (o restante usa o cache ou fica sem nome até o próximo ciclo)
+  var BLOQUEIO_MS = 24 * 3600 * 1000;         // item com captcha repetido: não relê por 24 h (nesta sessão)
   var PISO_PAUSA_MS = 3000;
   var REL_MIN_SESSAO = 40; // não relê na mesma sessão antes de 40 min (a meta do servidor é 45)
 
@@ -295,11 +311,12 @@
 
   var S = {
     versao: VERSAO, rodando: true, enviar: CFG.enviar, iniciadoEm: new Date().toISOString(), pausa: null, parou: null, relogio: 'setTimeout', seguidos: {},
-    ciclos: 0, ultimoCiclo: null, totais: { fila: 0, lidos: 0, enviados: 0, comCupom: 0, ambiguos: 0, naoConfere: 0, naoEncontrada: 0, erros: 0 },
-    pausasLongas: 0, erros: [], linhas: [],
+    ciclos: 0, ultimoCiclo: null, totais: { fila: 0, lidos: 0, enviados: 0, comCupom: 0, ambiguos: 0, naoConfere: 0, naoEncontrada: 0, bloqueados: 0, erros: 0 },
+    pausasLongas: 0, erros: [], linhas: [], captchaItem: {},
   };
   var parado = false;
   var lidosEm = {};
+  var bloqueadoAte = {}, nomesCache = {}, modaisNoCiclo = 0, ultimoModalEm = 0;
 
   function agora() { return new Date().toISOString(); }
   function erro(msg) { S.totais.erros++; S.erros.push({ t: agora(), msg: String(msg).slice(0, 200) }); if (S.erros.length > 20) S.erros.shift(); }
@@ -401,18 +418,25 @@
     var x = PURO.extrairCupons(html);
     if (x.cupons.some(function (c) { return c.campaign_id; })) {
       // nome real do cupom: modal "Ver cupons disponíveis" (/cupons/pdp). Falha aqui NUNCA derruba a leitura (o cupom segue sem nome); só 429/403 vira pausa.
-      var mu = PURO.urlModalCupons(html, id);
+      // O nome é da CAMPANHA (não muda entre leituras): cache por campaign_id (12 h) evita refazer a consulta do modal; só consulta o que falta, no máx.
+      // MODAL_POR_CICLO por ciclo e com 6 a 10 s entre consultas (captcha real do ML).
+      var faltam = x.cupons.filter(function (c) { return c.campaign_id && !PURO.nomeEmCache(nomesCache, c.campaign_id, Date.now()); });
+      var mu = faltam.length && modaisNoCiclo < MODAL_POR_CICLO ? PURO.urlModalCupons(html, id) : null;
       if (mu) {
-        await dormir(1500);
+        var espera = PURO.esperaModal(ultimoModalEm, Date.now(), Math.random());
+        if (espera > 0) await dormir(espera);
+        modaisNoCiclo++; ultimoModalEm = Date.now();
         try {
           var rm = await fetch(mu, { credentials: 'include', redirect: 'follow' });
           if (rm.status === 429 || rm.status === 403) return { problema: 'http_429', detalhe: 'modal de cupons ' + rm.status };
+          if (/captcha|account-verification|\/security/i.test(String(rm.url))) return { problema: 'captcha', detalhe: 'item ' + id + ' modal de cupons em página de verificação' };
           if (rm.status === 200 && /\/cupons\/pdp/.test(rm.url)) {
             var md = PURO.cuponsDoModal(await rm.text());
-            x.cupons.forEach(function (c) { var d = c.campaign_id && md[c.campaign_id]; if (d) { c.name = d.name; c.acao = d.acao; c.seguir = d.seguir; } });
+            Object.keys(md).forEach(function (k) { nomesCache[k] = { d: md[k], t: Date.now() }; });
           }
         } catch (e) { /* sem nome nesta leitura */ }
       }
+      x.cupons.forEach(function (c) { var d = c.campaign_id && PURO.nomeEmCache(nomesCache, c.campaign_id, Date.now()); if (d) { c.name = d.name; c.acao = d.acao; c.seguir = d.seguir; } });
     }
     if (x.ambiguo) { S.totais.ambiguos++; return { descarte: 'ambiguo_mencao_a_cupom_sem_preco' }; }
     if (x.cupons.length) S.totais.comCupom++;
@@ -426,7 +450,8 @@
     var items = await buscarFila();
     if (items === null) return 'fim';
     var c = { n: S.ciclos + 1, inicio: agora(), fila: 0, lidos: 0, enviados: 0, descartados: 0 };
-    var novos = PURO.filtrarFila(items, lidosEm, Date.now(), REL_MIN_SESSAO);
+    modaisNoCiclo = 0;
+    var novos = PURO.filtrarFila(items, lidosEm, Date.now(), REL_MIN_SESSAO).filter(function (i) { return !PURO.bloqueado(bloqueadoAte, i.id, Date.now()); });
     c.fila = novos.length; S.totais.fila += novos.length;
     if (!novos.length) {
       S.ultimoCiclo = c; S.ciclos = c.n;
@@ -440,10 +465,18 @@
       try { res = await lerItem(it); } catch (e) { res = { problema: 'rede', detalhe: e.message }; }
       if (res.problema) {
         await enviar(rows, c); rows = [];
+        // CAPTCHA REAL (a página final é /captcha/wall/...; confirmado em 2026-11-15, não é falso positivo): o ciclo pausa (insistir agrava), mas o MESMO item
+        // não volta para o início da fila sem fim: na 2ª vez seguida vira 'bloqueado' por 24 h nesta sessão e o ciclo segue com os demais depois da pausa.
+        var pulou = false;
+        if (res.problema === 'captcha') {
+          S.captchaItem[it.id] = (S.captchaItem[it.id] || 0) + 1;
+          if (PURO.deveBloquear(S.captchaItem[it.id])) { bloqueadoAte[it.id] = Date.now() + BLOQUEIO_MS; S.totais.bloqueados++; pulou = true; linha({ id: it.id, bloqueado: 'captcha_repetido_24h' }); }
+        }
         if (await problema(res.problema, res.detalhe)) return 'fim';
-        i--; // refaz o MESMO item depois da pausa
+        if (!pulou) i--; // refaz o MESMO item depois da pausa
         continue;
       }
+      delete S.captchaItem[it.id];
       sucesso();
       lidosEm[it.id] = Date.now(); S.totais.lidos++; c.lidos++;
       if (res.row) { rows.push(res.row); linha({ id: it.id, prio: it.prioridade, cartao: res.row.beneficios_cartao || [], cupons: res.row.coupons.map(function (x) { return x.label + (x.campaign_id ? ' #' + x.campaign_id : '') + (x.name ? ' [nome: ' + x.name + (x.acao ? ' | ' + x.acao : '') + (x.seguir ? ' | seguir loja' : '') + ']' : ''); }) }); }

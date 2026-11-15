@@ -104,6 +104,10 @@ const modalHtml = '{"groupings":[{"title":"Cupons de lojas","key":"seller","coup
 check('#115 modal /cupons/pdp: nome = titulo + " em " + loja; tipo e seguir', (() => { const m = C.cuponsDoModal(modalHtml)['14640102']; return !!m && m.name === 'R$ 20 OFF em GHOX' && m.acao === 'apply' && m.seguir === true && m.minimo === 'Compra mínima R$ 250' && m.limite === 'Limite de R$ 20'; })(), C.cuponsDoModal(modalHtml));
 check('#115 modal: token assinado "code" nunca vira codigo digitavel', JSON.stringify(C.cuponsDoModal(modalHtml)).indexOf('tok') < 0);
 check('#115 url do modal: preco inteiro e nivel lidos da pagina', C.urlModalCupons('"loyalty_level":6,"base_price":{"value":139.9,"currency":"BRL"}', 'MLB1234567890') === '/cupons/pdp?item_id=MLB1234567890&unit_price=140&quantity=1&loyalty=6' && C.urlModalCupons('sem preco', 'MLB1') === null);
+check('#115 captcha real (/captcha/wall/logged, status 200) e captcha', C.tipoPagina({ status: 200, finalUrl: 'https://www.mercadolivre.com.br/captcha/wall/logged?go_url=x', texto: '' }) === 'captcha');
+check('#115 2a captcha seguida no mesmo item bloqueia por 24 h; 1a nao', C.deveBloquear(1) === false && C.deveBloquear(2) === true && C.bloqueado({ a: 2000 }, 'a', 1000) === true && C.bloqueado({ a: 2000 }, 'a', 2001) === false && C.bloqueado({}, 'b', 1) === false);
+check('#115 modal: 6 a 10 s entre consultas', C.esperaModal(1000, 1000, 0) === 6000 && C.esperaModal(1000, 1000, 1) === 10000 && C.esperaModal(1000, 8000, 0) === 0 && C.esperaModal(0, 50000, 0.5) === 0);
+check('#115 cache de nome por campanha (12 h)', (() => { const k = { '9': { d: { name: 'x' }, t: 0 } }; return C.nomeEmCache(k, '9', 1000).name === 'x' && C.nomeEmCache(k, '9', 13 * 3600 * 1000) === null && C.nomeEmCache(k, '8', 1) === null; })());
 check('codigo digitavel so quando a pagina escreve', C.codigoDaCampanha('{"id":"9","code":"beni200"}', '9', '') === 'BENI200' && C.codigoDaCampanha('', '9', 'Digite o cupom BENI200 no checkout') === 'BENI200' && C.codigoDaCampanha('', '9', 'use o cupom da loja') === null && C.codigoDaCampanha('{"id":"9"}', '9', '') === null);
 
 console.log(`\n${total - fails}/${total} ok`);
