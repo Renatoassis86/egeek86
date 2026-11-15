@@ -6,7 +6,6 @@ import { Text } from '@/components/ui/text';
 import { Button } from '@/components/ui/button';
 import { ProductImage } from '@/components/ui/product-image';
 import { VerificadoHa } from '@/components/affiliate/verificado-ha';
-import { CommissionNotice } from '@/components/legal/commission-notice';
 import { LinhaIdentidadeView, PrecoDepartamentoView } from '@/components/mercado/cartao-departamento';
 import { exigirDepartamento } from '@/server/departamentos-rotas';
 import { detalheDepartamento } from '@/server/queries/departamento';
@@ -53,7 +52,6 @@ export default async function ProdutoDepartamentoPage({ params }: { params: Prom
             </li>
           ))}
         </ul>
-        <CommissionNotice />
       </div>
 
       {d.vendedoresLista.length > 1 ? (

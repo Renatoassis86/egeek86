@@ -1,5 +1,4 @@
 import { formatBRL, formatBrasiliaStamp } from '@/lib/format';
-import { CommissionNotice } from '@/components/legal/commission-notice';
 import type { ProductStoreRow } from '@/server/queries/product-stores';
 
 /** "há 3 h", "há 2 dias" a partir de um ISO; vazio se inválido. */
@@ -97,7 +96,6 @@ export function ProductStoresTable({
           Os preços e a disponibilidade dos produtos da Amazon estão corretos na data e no horário indicados e poderão sofrer alterações.
         </p>
       )}
-      <CommissionNotice className="px-4 pb-4" />
     </section>
   );
 }
