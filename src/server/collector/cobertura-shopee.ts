@@ -24,7 +24,7 @@ import { slugify } from '@/lib/slugify';
 import { masterFromRow } from '@/server/collector/amazon-assisted';
 import { filtroAnuncio, LINK_OFICIAL, sinalVendas } from '@/lib/affiliate/shopee-identity';
 import {
-  avancarCursor, casarItem, COBERTURA_LIMITES, criarIndice, destinoDoCasamento, fonteMaisProximaDeVoltar, fontesDe, lerConfigCobertura, paradaPorErro, proximaFonte, resumirCategorias,
+  avancarCursor, casarItem, COBERTURA_LIMITES, coletaNormalEmCurso, criarIndice, destinoDoCasamento, fonteMaisProximaDeVoltar, fontesDe, lerConfigCobertura, paradaPorErro, proximaFonte, resumirCategorias,
   type CursorMapa, type IndiceMasters, type LojaCobertura, type MotivoParada, type ResumoCategoria,
 } from '@/lib/affiliate/shopee-cobertura';
 import { decidirMasterNovo, ehLojaPlus, type DecisaoMasterNovo, type IndiceDedup, type MarcasConhecidas, type PropostaMaster } from '@/lib/affiliate/shopee-master-novo';
@@ -50,7 +50,7 @@ const MAX_FONTES_COM_10000 = 8;
 const aprovacaoAutoLigada = () => (process.env.APROVACAO_AUTO ?? '').trim().toLowerCase() !== 'off';
 
 export const CHAVE_PAUSA_COBERTURA = 'cobertura_shopee_pausa_ate';
-const PAUSA_APOS_RATE_LIMIT_MIN = 45;
+const PAUSA_APOS_RATE_LIMIT_MIN = 20; // R2-7: com rodadas espaçadas (8 chamadas a cada 10 min) 45 min de pausa desperdiçava a cota própria
 
 const money = (c: number | null) => (c == null ? 'n/d' : `R$ ${(c / 100).toFixed(2)}`);
 
@@ -94,7 +94,7 @@ const novoStats = (): StatsLoja => ({ lidos: 0, jaCadastrados: 0, descartes: {},
 export interface ResultadoCobertura {
   modo: 'dry-run' | 'apply';
   runId: string | null;
-  parou: MotivoParada | 'erro_interno' | 'orcamento_horario_esgotado' | 'pausa_apos_rate_limit';
+  parou: MotivoParada | 'erro_interno' | 'orcamento_horario_esgotado' | 'pausa_apos_rate_limit' | 'aguardando_coleta';
   erroApi: { kind: string; code: number | null; message: string } | null;
   chamadas: { usadas: number; teto: number; ultimaHora: number; erros: number };
   fontes: Array<{ chave: string; loja: string; paginaLida: number | null; itens: number; temProxima: boolean }>;
@@ -181,6 +181,15 @@ export async function coberturaShopee(sql: Sql, o: OpcoesCobertura): Promise<Res
     if (Number.isFinite(ate) && ate > Date.now()) {
       res.parou = 'pausa_apos_rate_limit';
       res.avisos.push(`pausa_ate:${new Date(ate).toISOString()}`);
+      return res;
+    }
+  }
+  // R2-7: cota propria e espacada. So roda na janela livre: collect-shopee (normal) em andamento => espera a proxima rodada (sem API, sem cursor, sem linha de run).
+  if (o.apply) {
+    const rodando = await sql<{ t: Date }[]>`select started_at as t from collector_runs where job = 'collect-shopee' and status = 'running' and finished_at is null and started_at > now() - interval '6 minutes'`.catch(() => []);
+    if (coletaNormalEmCurso(rodando.map((r) => new Date(r.t).getTime()), Date.now())) {
+      res.parou = 'aguardando_coleta';
+      res.avisos.push('collect-shopee em andamento: a cobertura espera a janela livre (cota propria e espacada)');
       return res;
     }
   }
@@ -532,7 +541,7 @@ export async function casarJogo(sql: Sql, titulo: string, priceCents: number, op
   const { classifyFromAttributes } = await import('@/server/collector/sources/mercado-livre-classify');
   const { findExistingMasterProduct } = await import('@/lib/affiliate/dedup');
   const { rejectionOf } = await import('@/lib/catalog/vertical/identity');
-  const { entryGateAttributes } = await import('@/lib/catalog/gate');
+  const { entryGateAttributes, liberarDuvidaComoNaoIdentificado } = await import('@/lib/catalog/gate');
   if (isNonProductAccessory(titulo) || isUsedCondition(titulo)) return { motivo: 'condicao_ou_acessorio' };
   if (rejectionOf({ id: 'x', name: titulo })) return { motivo: 'fora_de_linha_ou_condicao' };
   const productType = await resolveProductTypeFromTitle(titulo, priceCents);
@@ -552,7 +561,8 @@ export async function casarJogo(sql: Sql, titulo: string, priceCents: number, op
     return { masterId: String(existente.id), aprovado };
   }
   // Sem master equivalente: cria, se o porteiro gamer não rejeita.
-  const gateAttributes = entryGateAttributes(titulo, productType);
+  // R2-6 (dono, 2026-11-14): dúvida de identidade não bloqueia; o master (grupo próprio) nasce aprovado como 'não identificado'. Rejeitado continua sem nascer.
+  const gateAttributes = liberarDuvidaComoNaoIdentificado(entryGateAttributes(titulo, productType));
   const verdict = (gateAttributes as { catalogGate?: { verdict?: string } }).catalogGate?.verdict ?? 'approved';
   if (verdict === 'rejected') return { motivo: 'games_porteiro_rejeitou' };
   return { novo: { titulo, productType, classified: { ...cls, gamePlatformGen: plataforma, gameFormat: formato }, gateAttributes, aprovado: verdict === 'approved' } };

@@ -64,7 +64,8 @@ const cases: C[] = [
   { name: 'Console Xbox 360 Super Slim Microsoft de 4 GB Com Controle e HDMI', db: 'console', expect: 'rejected' },
   { name: 'Console PlayStation PlayStation Fat Standard 1995', db: 'console', expect: 'rejected' },
   { name: 'Console Nintendo Switch Lite 32gb Amarelo', db: 'console', expect: 'approved' },
-  { name: 'Console PlayStation 4 Slim 1TB Preto', db: 'console', expect: 'approved' },
+  // Dono, 2026-11-14: o APARELHO PS4 saiu de linha (jogos de PS4 seguem).
+  { name: 'Console PlayStation 4 Slim 1TB Preto', db: 'console', expect: 'rejected' },
   { name: 'Console Microsoft Xbox One S 1 TB Branco', db: 'console', expect: 'rejected' }, // Xbox One saiu de linha: só produto novo e em linha (dono, 2026-11-11)
   { name: 'Console PlayStation 5 Slim Digital', db: 'console', expect: 'approved' },
   { name: 'Console Nintendo Switch 2 + Mario Kart World Bundle', db: 'console', expect: 'approved' },

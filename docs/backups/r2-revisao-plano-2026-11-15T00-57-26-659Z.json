@@ -1,0 +1,401 @@
+{
+  "criadoEm": "2026-11-15T00:57:26.662Z",
+  "fase": "revisao",
+  "alvos": 1489,
+  "pulados": [
+    {
+      "id": "884124c6-03bf-4fa9-bd41-31cb1667f872",
+      "nome": "Controle Gamer Joystick Para Pc Ou Ps3 Com Fio Usb Fr-218a",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "01d87d54-8ffb-4152-8c08-5a2e837a7be1",
+      "nome": "Volante De Vibração Gamer Pro Kp-5815a P/ Xbox360 Pc Ps2 Ps3 Cor Preto",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "31a43f42-af35-49d7-a29a-adb0dfdd146e",
+      "nome": "Volante Para Nintendo Wii E Wii U Preto",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "8e91b8ab-379a-45fa-bef6-0e57ce2bd938",
+      "nome": "Porta jogo nintendo switch caixa super mario",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "3ae5a64f-572e-4eb2-9f88-5802d62aefb4",
+      "nome": "[O MAIS BARATO+ENVIO RÁPIDO!] Porta Cartão de Jogo / Jogos - SD - Nintendo Switch 1/2 - Cogumelo do Mário - 3D",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "ad684dac-bbd2-4731-ad5a-bdeede3a575d",
+      "nome": "Wii Logitech Volante Speed Force Wireless",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "422574bf-dbd4-4341-90e4-e9fa2ed0205b",
+      "nome": "Volante Para Nintendo Wii Preto Kart Corrida Alta Qualidade Preto",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "94d3999b-6df5-4592-a958-69fa291bf0ec",
+      "nome": "Fonte Cabo Adaptador Ps2 Playstation 2 Slim 8,5V 5.65A - Bivolt",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "3aaf5f57-3e18-4507-8dc8-daee34488b23",
+      "nome": "Volante Turbo Racing Wii - Maxprint",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "c15e0526-796e-43ba-9e46-1184c9cbb9ce",
+      "nome": "Volante Direção Corrida Racing Nintendo Wii Cor Branco",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "1cf0e5fa-0b65-42a4-87d5-e0974299d6da",
+      "nome": "Joystick Pc Playstation Ps2 Ps3 Inalambrico Bateria De Litio",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "008f2224-5aa8-4639-9536-736297d5ce5d",
+      "nome": "Resident Evil Origins Deluxe 0 e 1 Jogo Xbox Series e One",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "16a12530-1331-40f7-aa00-f479c6b11f7f",
+      "nome": "Call Of Duty Vanguard Xbox One Xbox Series",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "39660aaa-e312-474c-af1d-87010b66acf8",
+      "nome": "Battlefield 4 Xbox One Xbox Series",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "e343b400-a4e9-4488-b702-2abf8a68cad7",
+      "nome": "Jogo Cuphead Xbox One Series S X",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "b4748bdd-f905-4db5-9a1f-c69735a62552",
+      "nome": "Far Cry 6 Xbox One Xbox Series",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "ee2e13b2-4303-44bc-ab72-4560a259aadb",
+      "nome": "Porta Cartão Nintendo Switch Mario Organizador para 12 Jogos Impressão 3D",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "04433f11-f3c8-4bcf-9181-4cb30fa0f77a",
+      "nome": "Call Of Duty Black Ops Cold War Xbox One Xbox Series",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "994f9cfc-3fee-4e6e-9b41-0c0fef533b3e",
+      "nome": "Porta Jogos Nintendo Switch 3D 12 Jogos",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "e0c2812a-84b7-4493-82dd-07c0088bef21",
+      "nome": "Volante gamer OEM Wii",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "044b8429-2552-4e15-a333-fb0d5c4d919e",
+      "nome": "Playstation 2 + Memory Card + 2 Controles + 5 Jogos + Nota Fiscal",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "03b3541b-4536-4723-af52-a059a00d816e",
+      "nome": "2 Porta Jogos Nintendo Switch Capacidade Para 4 Jogos Cada Edição Zelda Breath of The wild",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "11b4adfe-68df-47ce-a29b-c9548068acf3",
+      "nome": "Controle Joystick Pc Gaming Usb Para Pc Windows Ps3 Tv Box Cor Preto",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "1712b028-7e9e-421a-971c-59c250c2f20c",
+      "nome": "Controle Joystick Pc Ou Ps3 Com Fio Dualshock B-max",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "8f3c313c-87aa-4ff0-90a4-da4fdce6d1d7",
+      "nome": "Porta jogos console nintendo switch zelda breath of the wild",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "17714715-9a66-427e-8d45-84274a06dd60",
+      "nome": "Spongebob Squarepants - A Patrick Star - Xbox S X/xbox One",
+      "motivo": "porteiro_rejeita:jogo_plataforma_retro_fora_do_escopo"
+    },
+    {
+      "id": "5b31f65c-8a35-4f11-a58a-b45c7154f847",
+      "nome": "Porta Cartão Cartuchos de Jogos (6 Em 1) Bloco Mario para Nintendo Switch Fitas",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "66cbf71c-1dcc-49b3-9c75-4a536252ec8d",
+      "nome": "Joystick Pc Ps3 Android Usb Ds Orochi Black Double Vibration",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "6d5c0283-4e55-48b1-a17b-f497bc0c4548",
+      "nome": "Controle joystick B-Max Joystick Pc Ps3 Dualshock",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "df101c5e-3baa-4656-94bb-5170ec2eefcb",
+      "nome": "Jogo Silent Hill Shattered Memories para Sony em Formato Físico",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "ebd4692e-cebc-40bd-8db2-f6536900259d",
+      "nome": "Porta Cartão de memória Super Mario Bross Porta Cartão SD Porta Jogo Nintendo Switch Cartão",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "f13fd507-6189-4b6b-bcf0-216c3cefb9b1",
+      "nome": "porta jogos do Nintendo switch",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "2bc47af7-87ac-4cf7-ab1f-2ee6e7558046",
+      "nome": "Joystick Hotas X Thrustmaster Pc Ps3",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "9be633e4-4549-4e22-b309-5e4d948428dc",
+      "nome": "God of War Playstation Hits",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "49f8bf82-4c42-4253-b47a-653be7c364be",
+      "nome": "Volante Gamer + Pedais Playstation Ps2 Ps3 e Pc Vibration",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "148bcc17-e238-4553-a291-99da9eb22071",
+      "nome": "Porta Jogos Nintendo Switch – Versão 2 com Encaixe por Atrito | Armazena até 16 Cartuchos",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "80eecda0-e08b-434b-bd66-f0a88a26f813",
+      "nome": "Kit 2 Controle Ps2 Sem Fio Joystick Play2 - 1 ou 2 Unidades",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "ec56d9c1-8379-45f9-b601-4ea2a4764db3",
+      "nome": "controle de gamepad sem fio PS2",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "e18ddbaa-24a9-4dc1-b0bc-27c5f3f65452",
+      "nome": "Porta cartão nintendo switch pedra do mario",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "ec23fa5b-5f8a-4d09-b784-801499f3528f",
+      "nome": "Porta jogos para PS3/PS4/PS5/Xbox One/S e X Resident Evil",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "962b32dd-7f22-49ab-96f8-9a63c5177077",
+      "nome": "Assassins Creed Mirage Xbox Série X | Xbox One Mídia Física",
+      "motivo": "porteiro_rejeita:jogo_plataforma_retro_fora_do_escopo"
+    },
+    {
+      "id": "d752a909-c7e4-4cb5-a369-01d7b6cfcead",
+      "nome": "Jogos xbox one xbox series",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "e2f9e392-eac3-478d-a74b-915690aed2e6",
+      "nome": "Porta-Jogos Zelda - Baú Bokoblin (Nintendo Switch)",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "c0ecf544-dfb8-4124-8ff0-a2dc07b62b78",
+      "nome": "Porta Jogos Nintendo Switch Tema Zelda",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "0e009e64-a0d2-49bc-b9d4-82bb62019ab9",
+      "nome": "Resident Evil Requiem",
+      "motivo": "porteiro_rejeita:papelaria"
+    },
+    {
+      "id": "519d7393-f2ba-4f53-b525-c5ca6f92143f",
+      "nome": "🕹️ Porta Cartão de Memória - Formato Cartucho Nintendo Switch 🎮",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "d5ff4517-2720-464c-ab0e-78f0b70bb736",
+      "nome": "Porta jogos nintendo switch cubo mário",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "398c4a14-b257-4a6e-ba01-87317be28f21",
+      "nome": "Porta Jogos de Nintendo Switch - Cubo Charada do Mario",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "9fd7c2ce-88db-430b-9903-ac59bf3b81cf",
+      "nome": "Porta Jogos Nintendo Switch e Cartão SD Cubo Interrogação Mario",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "4f9d1015-b430-453c-a824-38bf47f49e7b",
+      "nome": "Porta Cartão De Jogo Bloco Mario para Nintendo Switch",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "1d8c2eab-ec19-48fd-86d7-d0e05fe8cd92",
+      "nome": "Organizador de jogos  Nintendo Switch",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "12f51b41-3d4a-4d8a-8de9-18e5930d91d8",
+      "nome": "Porta Cartão De Jogo (6 Em 1) Pedra Mario para Nintendo Switch",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "d362d3d8-0123-4c27-892e-e6bfb956d4f9",
+      "nome": "Porta Jogos X Box e PS4",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "6c7748b3-8601-4dd6-9cc4-0588cec9d038",
+      "nome": "Organizador Cartuchos Switch Zelda porta jogos Nintendo caixa porta games nintendo",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "e30b7449-1b29-4882-9103-5b9e4d8ae9f2",
+      "nome": "Organizador de Jogos Playstation PS5",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "22a4acc1-f714-4cc7-84be-9449bf77a5cb",
+      "nome": "Organizador de Jogos Playstation XBOX Nintendo PS3 PS4 PS5 XBOX360 ONE X S Switch",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "4b90dfa7-2b0a-4170-ae7e-1b03496fc579",
+      "nome": "Porta Jogos Resident Evil PS3/PS4/PS5 ( Capacidade Para 66 Jogos )",
+      "motivo": "mantido_em_revisao:porta_cartao_organizador"
+    },
+    {
+      "id": "233211ab-7eb4-4401-a604-392e5b623f01",
+      "nome": "Controle Joystick Para Ps2 Black com fio",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "8488a6cf-89b1-439c-8c78-11cdecd776ed",
+      "nome": "Controle  Playstation 2 Joystick PS2 Com Fio Colorido transparente",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "3924942e-ffbd-4746-84ef-3ad08029030c",
+      "nome": "Kit Ps2 Controle Joystick + Cabos AV RCA + Cabo Força Kit Acessórios para Consoles Playstation 2 Manete",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "acfc1d67-25c5-407e-a354-9edbb9cad798",
+      "nome": "KIT 10 UNIDADES Controle ps2 com fio Cor Preto capo 1.5metro Atacado",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "184bf34d-b6b1-41cd-a54c-f9759c07ea26",
+      "nome": "Controle ps2 com fio Cor Preto",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "87978bff-3422-4bf8-b724-beac0a8ad1f2",
+      "nome": "Nintendo Switch Oled Plus Pokémon Go+ cor preta",
+      "motivo": "porteiro_rejeita:console_nao_e_aparelho:acessorio_logo_apos_aparelho"
+    },
+    {
+      "id": "626de42d-a6a1-4b94-9c93-fa9d77d68416",
+      "nome": "Controle Ps3 Playstation 3 Dual Shock Wirelless Sem Fio Joystick",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "89aae431-692e-417c-8e2d-8baf27f3c178",
+      "nome": "Controle  Com Fio para  PS2 Fio Cor Preto",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "fc2fc435-fb01-4660-ad7f-ddfce914912d",
+      "nome": "Auspiciosorui01  Controle De Jogo Sem Fio De 2.4Ghz Gamepad Para Ps3 Pc Tv",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "57c08bcc-93b9-4f76-8ec7-615600f81ef0",
+      "nome": "Kit 2 Controle Ps3 Com Cabo Carregador Dual Shock Wirelless Sem Fio bluetooth",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "a1263d0f-e81e-4494-9f82-379f3f2212ca",
+      "nome": "Necessaire organizadora bolsa portatil celular cabos fios armanazamento-luna_hyq",
+      "motivo": "item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "ea000724-4969-46af-bb1c-04aba59d00ea",
+      "nome": "Bolsa Organizadora de Celular, Cabos e Fios - Necessaire Portátil para Viagem e Dia a Dia",
+      "motivo": "item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "3c519e46-567c-46ce-927e-5dbb0a5338fb",
+      "nome": "Controle Ps3 Playstation 3 Dual Shock Wirelless Sem Fio",
+      "motivo": "mantido_em_revisao:acessorio_plataforma_legada"
+    },
+    {
+      "id": "0fae9b09-1e6c-40e9-abab-51df7ac5e83a",
+      "nome": "Jogo Cuphead Xbox One Series S X",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "11f53de8-43c5-494c-829e-be548d4c3317",
+      "nome": "Disco Bd-j ps5",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "5b5ab7f2-885f-4edf-95ca-28b4ef730976",
+      "nome": "Assassin's Creed Valhalla Xbox One Xbox Series X|S",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "652297ba-7904-463e-b499-e8c848fb30fc",
+      "nome": "(Encarte Reimpresso) NBA 2k14 Ps4 Mídia Física",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "a7a7e59f-00b8-46cd-a093-79a670e2eaeb",
+      "nome": "Cubo 3d Mário Dobrável Para Jogos Nintendo Switch 13 Jogos",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    },
+    {
+      "id": "e73ac044-2d18-4c15-82ba-de89c5007d17",
+      "nome": "Jogos xbox one xbox series S/X Baixe diretamente no seu videogame",
+      "motivo": "mantido_em_revisao:fisico_abaixo_do_piso"
+    }
+  ],
+  "porMotivo": {
+    "semeadura_vertical_aguardando_conferencia": 807,
+    "jogo_sem_plataforma_nem_formato_fisico": 180,
+    "acessorio_generico_sem_marca": 13,
+    "acessorio_marca_sem_plataforma": 41,
+    "headset_sem_plataforma": 120,
+    "geracao_ambigua": 257,
+    "descoberta_duvida:tipo_por_classificador_estatistico": 18,
+    "descoberta_duvida:plataforma_desconhecida": 13,
+    "descoberta_duvida:tipo_pelo_termo_de_busca": 22,
+    "descoberta_duvida:formato_desconhecido": 12,
+    "descoberta_duvida:tipo_pelo_termo_de_busca+plataforma_pelo_termo_de_busca": 3,
+    "descoberta_duvida:tipo_por_classificador_estatistico+formato_desconhecido": 3
+  }
+}

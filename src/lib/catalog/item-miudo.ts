@@ -90,13 +90,13 @@ const CABECA_FORTE = MIL(
     'controle remoto|filtro de linha|extensao|tomada|fita led) ',
 );
 
-/** Cabeça "fraca": acessório menor que só é miúdo abaixo do piso da família. */
+/** Cabeça "fraca": acessório menor que só é miúdo abaixo do piso da família. R2-16 (dono, 2026-11-14): caneleira, tornozeleira e munhequeira (esporte, vendidas novas) NÃO são miúdo: entram em Esporte; power bank segue como acessório menor. */
 const CABECA_FRACA: Partial<Record<FamiliaMiudo, RegExp>> = {
   tecnologia: MIL(' (mouse pad|mousepad|mousepads|pen drive|pendrive|flash drive|cartao de memoria|cartao sd|micro ?sd|microsd|tapete|apoio de pulso|limpador) '),
   eletroeletronicos: MIL(' (power bank|powerbank|bateria externa|pilha|pilhas|bateria|baterias|lampada|lampadas|antena|controle universal|smart plug|tomada inteligente|pen drive|pendrive|cartao de memoria|micro ?sd|microsd) '),
   eletrodomesticos: MIL(' (filtro|jarra|copo|cesto|forma|assadeira|grelha|tabua|utensilio|utensilios|escova|esponja|saco|sacos) '),
   esporte: MIL(
-    ' (garrafa|squeeze|corda de pular|corda pular|corda|luva|luvas|caneleira|caneleiras|tornozeleira|munhequeira|meia|meias|faixa|elastico|' +
+    ' (garrafa|squeeze|corda de pular|corda pular|corda|luva|luvas|meia|meias|faixa|elastico|' +
       'protetor|rolo|balanca|oculos de natacao|touca|toalha|bomba|apito|cone|cones|sache|saches|gel|capsulas|vitamina|vitaminas) ',
   ),
   games_acessorio: MIL(' (cartao de memoria|micro ?sd|microsd|sd express|cartao|memory card|pen drive|pendrive) '),

@@ -285,7 +285,10 @@
       });
       var box = doc.querySelector('#corePriceDisplay_desktop_feature_div .a-price') || doc.querySelector('#corePrice_feature_div .a-price') || doc.querySelector('.a-price');
       var w = box && box.querySelector('.a-price-whole'), fr = box && box.querySelector('.a-price-fraction');
-      return { ok: true, psp: psp, blocos: limpa(blocos).slice(0, 600), preco: PURO.precoDe(w && w.textContent, fr && fr.textContent) };
+      // R2-13 (dono, 2026-11-14): texto do BOX DE COMPRA e do vendedor (não a página inteira): se o box ativo é de usado (Usado - Como novo, Amazon Quase Novo...), o servidor pausa a oferta.
+      var condicao = '';
+      ['#buybox', '#qualifiedBuybox', '#desktop_buybox', '#merchant-info', '#tabular-buybox'].forEach(function (sel) { var el = doc.querySelector(sel); if (el) condicao += ' ' + limpa(el.innerText); });
+      return { ok: true, psp: psp, blocos: limpa(blocos).slice(0, 600), preco: PURO.precoDe(w && w.textContent, fr && fr.textContent), condicao: limpa(condicao).slice(0, 700) };
     } finally { fecharFrame(f); }
   }
 
@@ -302,7 +305,7 @@
       var it = fila[i], lido;
       try { lido = await lerItem(it.asin); } catch (e) { c.erros++; erro('item ' + it.asin + ': ' + e.message); lido = null; }
       if (lido && lido.bloqueio) { await pausarOuParar(lido.bloqueio, 'item ' + it.asin); return 'parar'; }
-      if (lido && lido.ok) lote.push({ asin: it.asin, promo_id: it.promo_id, psp: lido.psp, blocos: lido.blocos, preco: lido.preco });
+      if (lido && lido.ok) lote.push({ asin: it.asin, promo_id: it.promo_id, psp: lido.psp, blocos: lido.blocos, preco: lido.preco, condicao: lido.condicao });
       if (lote.length >= 10 || (i === fila.length - 1 && lote.length)) {
         try {
           var rr = await api('/api/ingest/amazon-promocoes', { method: 'POST', body: JSON.stringify({ lidos_em: agora(), confirmacoes: lote }) });

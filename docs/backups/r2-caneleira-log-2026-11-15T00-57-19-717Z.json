@@ -1,0 +1,286 @@
+{
+  "criadoEm": "2026-11-15T00:57:19.719Z",
+  "fase": "caneleira",
+  "por": "Renato (R2-16, 2026-11-14)",
+  "backup": "r2-caneleira-2026-11-15T00-57-19-717Z.ndjson",
+  "gravados": [
+    {
+      "id": "0143a019-f7dc-452c-a8f8-9af9e77bccf0",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "07ad70ae-27c8-402a-a3c8-c2d554ba5647",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "0b643e2e-9788-4d46-90e4-794dc9873502",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "luva",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "luva",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "20538bef-7492-49cf-a25d-179a88978eb2",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "23d90b14-c38d-49dd-afab-4f0daed20abe",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "286e630d-b4de-4aeb-97dc-afc134120bdb",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "84d44336-b1db-4cb2-bb10-ba0c4e7682a2",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "b144d2b8-de6d-4270-81ad-9a98d0fe1395",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "bf1fc85f-5a8a-40d0-b6fa-92b845a416fb",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "d180f6df-e2a2-438d-82fc-9552a937ca5d",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "tornozeleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "tornozeleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "dfe1bf48-6857-43ca-859a-7bb88d1ab306",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    },
+    {
+      "id": "f8453bc1-1a1c-4c66-b2f4-a98e055a1461",
+      "antes": {
+        "at": "2026-11-14T17:34:46.374Z",
+        "reason": "item_miudo_ambiguo_fora:acessorio_menor_abaixo_do_piso",
+        "matched": "caneleira",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope",
+        "approvedBy": "bloco:c10:2026-11-14"
+      },
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "liberado_r2_16:caneleira_esporte",
+        "matched": "caneleira",
+        "version": 1,
+        "at": "2026-11-15T00:57:19.719Z",
+        "previousVerdict": "rejected",
+        "approvedBy": "auto:r2-16"
+      },
+      "naoIdentificado": false
+    }
+  ],
+  "ignoradosGuardaOtimista": [],
+  "rollback": "npx tsx --env-file=.env.local scripts/aplicar-r2-liberacoes-2026-11-14.ts --rollback docs/backups/r2-caneleira-log-2026-11-15T00-57-19-717Z.json --apply"
+}

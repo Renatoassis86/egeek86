@@ -31,7 +31,7 @@ export async function carregarIndiceDedup(sql: Sql, vertical: string): Promise<I
 export async function criarMasterPlus(
   sql: Sql,
   p: PropostaMaster,
-  o: { imageUrl: string | null; itemId: string; sugestao: 'approved' | 'review'; motivo: string; runId: string | null; aprovarAuto?: boolean }
+  o: { imageUrl: string | null; itemId: string; sugestao: 'approved' | 'review'; motivo: string; runId: string | null; aprovarAuto?: boolean; naoIdentificado?: boolean }
 ): Promise<string> {
   const now = new Date().toISOString();
   const gateRevisao = reviewGateFor(
@@ -45,9 +45,13 @@ export async function criarMasterPlus(
   // oferta. Reversivel: `previousVerdict`/`approvedBy` identificam o lote; a reversao do run (desfazerCobertura) apaga o master sem oferta. Chave fraca nunca chega aqui.
   const catalogGate = o.aprovarAuto && o.sugestao === 'approved'
     ? { ...gateRevisao, verdict: 'approved', category: 'ok', reason: 'aprovado_automatico:produto_unico_chave_forte', approvedBy: 'auto:shopee-cobertura', approvedAt: now, previousVerdict: 'review' }
-    : gateRevisao;
+    : o.naoIdentificado && o.sugestao === 'review'
+      // R2-6 (dono, 2026-11-14): chave fraca/dúvida não bloqueia; o master (grupo próprio, chave = título exato) nasce aprovado como 'não identificado'.
+      ? { ...gateRevisao, verdict: 'approved', category: 'ok', reason: 'nao_identificado:chave_fraca_titulo', previousVerdict: 'review', approvedBy: 'auto:r2-6' }
+      : gateRevisao;
   const attributes = {
     catalogGate,
+    ...(o.naoIdentificado && o.sugestao === 'review' ? { identidade: { estado: 'nao_identificado', motivo: o.motivo, desde: now } } : {}),
     vertical: {
       segment: p.segmento, identityKey: p.chave, keyKind: p.keyKind, domainId: null, parentId: null, gtins: p.gtin ? [p.gtin] : [], source: 'cobertura-shopee',
       titleDerived: true, seededAt: now, catalogAttributes: p.catalogAttributes,

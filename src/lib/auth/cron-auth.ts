@@ -8,6 +8,11 @@ function iguais(a: string | null, b: string): boolean {
   return x.length === y.length && timingSafeEqual(x, y);
 }
 
+/** CRON_ACEITA_KEY_NA_URL=off desliga o ?key= (padrao: aceita, ate confirmar que nenhum disparador externo ainda usa). */
+export function keyNaUrlAceita(env: Record<string, string | undefined> = process.env): boolean {
+  return (env.CRON_ACEITA_KEY_NA_URL ?? '').toLowerCase() !== 'off';
+}
+
 /**
  * Autorização de rotas /api/cron/*. Falha FECHADA: sem CRON_SECRET configurado
  * a rota recusa tudo (antes, sem a variável, a coleta ficava aberta ao mundo e
@@ -23,7 +28,12 @@ export function rejectUnlessCronAuthorized(request: NextRequest): NextResponse |
   }
   const bearer = request.headers.get('authorization');
   if (iguais(bearer, `Bearer ${secret}`)) return null;
-  if (iguais(request.nextUrl.searchParams.get('key'), secret)) return null;
+  // ?key= na URL e LEGADO (o segredo vaza em logs). R2-9 (dono, 2026-11-14): cada uso e REGISTRADO (so a rota, nunca o segredo) para achar o disparador externo
+  // (o banco nao tem pg_cron/pg_net); com CRON_ACEITA_KEY_NA_URL=off a URL deixa de valer. Remover so depois de zero usos no log.
+  if (keyNaUrlAceita() && iguais(request.nextUrl.searchParams.get('key'), secret)) {
+    console.warn('[cron-auth] autorizado por ?key= (legado):', request.nextUrl.pathname);
+    return null;
+  }
   return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 }
 

@@ -379,3 +379,14 @@ export function resumirCategorias(nodes: Array<{ productCatIds?: unknown; produc
   }
   return [...mapa.values()].sort((a, b) => b.itens - a.itens);
 }
+
+/**
+ * COTA PRÓPRIA E ESPAÇADA (dono, 2026-11-14, R2-7): a coleta normal da Shopee (`collect-shopee`) ocupa ~4 dos 5 minutos de cada tick e já
+ * consome o limite por minuto (não documentado) da API; a cobertura levava 10030 com 8 a 16 chamadas. A cobertura só roda na JANELA LIVRE:
+ * se houver `collect-shopee` em andamento (linha 'running' iniciada há menos de `janelaMs`), ela espera a próxima rodada, sem chamar a API
+ * e sem tocar no cursor. `iniciosEmAndamento` = started_at (ms) das linhas 'running' do collect-shopee.
+ */
+export const JANELA_COLETA_SHOPEE_MS = 6 * 60_000;
+export function coletaNormalEmCurso(iniciosEmAndamento: number[], agoraMs: number, janelaMs: number = JANELA_COLETA_SHOPEE_MS): boolean {
+  return iniciosEmAndamento.some((t) => Number.isFinite(t) && agoraMs - t >= 0 && agoraMs - t < janelaMs);
+}

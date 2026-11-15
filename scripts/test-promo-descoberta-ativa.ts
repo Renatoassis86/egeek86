@@ -26,10 +26,13 @@ async function main() {
   ok(Object.values(st.descartados).reduce((a, b) => a + b, 0) === 3, 'usado, retrô (Xbox 360) e acessório: os 3 são barrados e nenhum vira master', st.descartados);
   ok(st.erros === 0, 'sem erros', st.erros);
 
-  // Caminho geral da vitrine NÃO muda: sem a opção, o mesmo card segue em rascunho.
+  // R2-1 (dono, 2026-11-14): o caminho geral da vitrine também deixa de manter master novo 'sempre em revisão': sem a opção o padrão é ATIVAR.
+  // Só `ativarNovoAprovado: false` volta ao comportamento antigo (rascunho).
   const { ingestAmazonVitrine, PROMO_DESCOBERTA_QUERY, linhaDaPromocao } = await import('../src/server/collector/amazon-vitrine');
   const geral = await ingestAmazonVitrine([linhaDaPromocao([novoOk])], { tag, apply: false, consultaFixa: PROMO_DESCOBERTA_QUERY });
-  ok((geral.stats.novos_ativos ?? 0) === 0 && geral.stats.rascunhos_novos === 1, 'sem ativarNovoAprovado o master novo continua em rascunho (vitrine geral intacta)', geral.stats);
+  ok((geral.stats.novos_ativos ?? 0) === 1 && geral.stats.rascunhos_novos === 0, 'R2-1: sem a opção o master novo aprovado também segue para oferta ativa', geral.stats);
+  const antigo = await ingestAmazonVitrine([linhaDaPromocao([novoOk])], { tag, apply: false, consultaFixa: PROMO_DESCOBERTA_QUERY, ativarNovoAprovado: false });
+  ok((antigo.stats.novos_ativos ?? 0) === 0 && antigo.stats.rascunhos_novos === 1, 'ativarNovoAprovado:false volta ao rascunho (comportamento antigo)', antigo.stats);
   if (falhas) { console.log(`\n${falhas} falha(s)`); process.exit(1); }
   console.log('\ntudo ok');
   process.exit(0);

@@ -1,0 +1,1883 @@
+{
+  "criadoEm": "2026-11-15T00:56:25.846Z",
+  "fase": "revisao",
+  "alvos": 445,
+  "pulados": [
+    {
+      "id": "6eb234be-63d1-41df-969e-4158fca553dc",
+      "nome": "Projetor LED LG Ph30jg 250 lúmens Ansi Dlp 720p HDMI//VC",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "8a3cb249-e855-49a5-aaca-1ecffac37c89",
+      "nome": "Projetor Mini LG miniBeam PH450U 450lm cinza",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "045114e2-8344-424d-b17a-425ef57795ab",
+      "nome": "Sistema de alto-falantes de home theater 4k de 5.1 canais Yamaha YHT-4950UBL",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "98a34757-a272-4989-b732-51b742ff0892",
+      "nome": "Soundbar Gamer 2.0 Multilaser Sp953 15w Rms Cor Preto Frequência 160 HZ . 20KHZ",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "8f632864-d46b-44de-b760-5beb62d733b0",
+      "nome": "Power Bank Portátil 20000mAh Rápido Carregador USB Para Huawei Samsung",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "d5af203e-9a2b-4ad8-827a-047978d6872e",
+      "nome": "Smart TV Philco 43\" Full HD Roku TV HDR10 Dolby",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "4dc5f68e-bcaf-4b33-a5ab-77f7a99af26e",
+      "nome": "Smart Tv 43 Philco Led Roku Tv Dolby Audio Ptv43va4regb",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "8e5e5584-23dd-4a4f-af81-6e9b664d6749",
+      "nome": "Smart Tv 43 Philco Ptv43g7er2cpblf Led Dolby Audio",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "05c0dc40-570b-4486-b73d-d6795a644168",
+      "nome": "Smart Tv 43 Philco Borderless Dolby Audio P43eab",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "22e78977-cf8b-4b67-9a60-ee76085151ff",
+      "nome": "Smart TV 50” Philco PTV50VA4REGB Roku TV LED Dolby Audio",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "4f401127-9744-47f2-8930-6d3d91220ee0",
+      "nome": "Smart Tv 50 Philco Qled Uhd Roku P50cra",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "d009b7ec-1142-4aca-aaae-5f3b6e342df2",
+      "nome": "Smart Tv Philco 50'' Roku Tv 4k Led Processador Quad Core P50crb",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "de000a50-b61d-4180-ae6d-003c6f2cf224",
+      "nome": "Smart TV Philco de 32\" LED HD Android TV",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "be85af07-1cd3-4c35-9632-c0ceb5aadfbb",
+      "nome": "Smart Tv 32 Philco Roku Tv Led Dolby Áudio",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "bf9b1490-7bee-4206-9212-999a9eb90150",
+      "nome": "Microfone dinâmico Xlr Usb para PC Fifine Black",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "dee7c6e0-6c5d-478c-bebf-51bb0fafaa37",
+      "nome": "Microfone Dinâmico Fifine K688, Usb, Xlr, Gravação, Podcast",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "fefe3351-be9a-4d9e-86a8-a81044bb8639",
+      "nome": "Microfone Dinâmico Fifine T658 Com Luzes Led Rgb Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8b1f57b9-c65a-41e0-a576-2b2cad1d0402",
+      "nome": "Microfone Dinâmico Fifine T688 Usb/xlr Com Braço Articulado Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f778a6d1-dd18-4ab8-8397-6ba32b53c6f8",
+      "nome": "Câmera Filmadora Ação Capacete Esporte Mergulho",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8692f4ec-453b-4024-b1a0-6f137b392ebd",
+      "nome": "Microfone Dinâmico Fifine K688 - P/ Gravação, Podcast, Pc Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1b25999b-59f4-4c7d-ae8c-2d3e2cd7904b",
+      "nome": "Microfone Dinâmico Fifine K658 USB-C Cardioide RGB Gamer",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b9023a22-80ea-4213-8386-49ae1aaffbc0",
+      "nome": "Câmera de ação Dji Osmo Nano Standard Package 64g",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7d634db9-ea42-434b-a07e-e6f93bbe344e",
+      "nome": "Microfone Dinâmico Fifine AMPLIGAME AM8W XLR USB-C Cardioide Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b67cb292-fa68-49f7-b1b6-619b4c81b735",
+      "nome": "Microfone Dinâmico Fifine AM8W XLR USB Cardioide Rosa RGB Gamer",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c4ea1ce9-d52f-44cd-9141-f4800d282278",
+      "nome": "Microfone Dinâmico Gamer Fifine Tank 1 Cardioide Mesa Som XLR Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "226007a8-a40a-4b2c-aab9-b01173dfad43",
+      "nome": "Microfone Dinâmico Fifine K688 Podcast USB/XLR Com Braço Articulado",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "da43a7f7-750d-48cf-801d-f52bf0363ec7",
+      "nome": "Microfone Usb Maono Dgm20 Preto Com Braço Articulado",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "da2e3d34-7ca6-42ec-b775-f8c7570d9105",
+      "nome": "Chuteira Puma Future 9 Infantil",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "60cc6e62-e97a-43bd-a81b-6accc36e49d6",
+      "nome": "Kit Microfone Usb E Braço Articulado Maono Au-a04 Preto",
+      "motivo": "porteiro_rejeita:kit_sem_plataforma"
+    },
+    {
+      "id": "66afb257-96e3-4db4-884d-216918880f6e",
+      "nome": "Microfone Usb Maono Au-902 - Vocal Youtuber Gamer Gravação Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "676c4ecb-a407-4dea-945f-c4e694ea6810",
+      "nome": "Kit Microfone Usb Maono Au-pm421 - Podcast/youtuber/gamer Cor Padrão",
+      "motivo": "porteiro_rejeita:kit_sem_plataforma"
+    },
+    {
+      "id": "28afe8dc-0d21-4128-a286-2b747d1b9994",
+      "nome": "Microfone Condensador Maono 903 Podcast Streamer (",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5ab4f536-12cd-4edd-99ea-b83b06728d19",
+      "nome": "Smart Tv Box Android Izy Play FULL HD Intelbras Preto De Voz",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "ea7f0624-a801-4f49-bd28-00b997778688",
+      "nome": "Onkyo Tx-nr797 Receiver 9.2 Ch Wifi Bluetooth Zona 2 Video",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f91adc86-085a-40de-ac52-12c42ddf26d5",
+      "nome": "Microfone Condensador Gamer Maono Dm30 Rgb Preto - Dm30rgb",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "56133c85-6d32-4e3f-b66b-e7b0b3d2faaa",
+      "nome": "Carregador Portátil 25000mah Power Bank Pd 145w Cinza Ugreen",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "76a166dc-af2e-4772-8d30-961aa46841ba",
+      "nome": "Receiver Onkyo Tx-rz30 9.2 Canais Imax 8k Dolby Bluetooth 110",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "0b867159-e3e3-4a39-96a0-90c46c1f9aa6",
+      "nome": "Microfone Condensador Usb Au-gm10 Maono Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "68d7a4c2-3ef2-4b00-8692-a1375e1a5a23",
+      "nome": "Microfone Condensador Maono PM461 Cardioide USB Preto para Estúdio",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ee2615bb-5706-4c6c-a56e-9cc49bccc94c",
+      "nome": "Onkyo TX-RZ50 receiver 9.2 canais 8k 3 zonas thx certificado",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "51edc163-fcd5-4682-b933-a7fc69ade169",
+      "nome": "Onkyo Tx-nr6100 receiver 7.2 canais zona 2 audio/video 8k",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c68a2fde-90a8-48f4-a2dc-b50ee17635db",
+      "nome": "Toca Disco Denon Dp-300f Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "3f411b59-df61-442c-84fc-0ef511831b6b",
+      "nome": "Segurança Completa: Câmera Segurança Wifi Hd 1080p Chamada",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "34aeae3f-df3c-484b-a57e-809958ab12c8",
+      "nome": "Toca-discos Denon Dp400 Preto Hi-fi Pré-amp Phono Integrado",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "240cf6bc-a81c-432e-a96d-ea2e3ca9e773",
+      "nome": "Toca-discos Denon DP-450USB Preto Correia USB 33/45/78 RPM",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7a50471e-4450-4c44-9fd4-c17eed4089e8",
+      "nome": "Toca Disco Denon Dp-29f Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7bb029ea-0f6e-4085-a801-5f5ddd5ba2b6",
+      "nome": "Soundbar Bose Solo 2 Preto 50/60 Hz",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "75282998-b355-40f4-9e49-a053a9618588",
+      "nome": "Soundbar Bose Solo Series Ii Black Bluetooth - Home Theater Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "a45331fe-4740-4a90-89dc-9374f5d4fdca",
+      "nome": "Barra de som Bose Smart Soundbar, cor: preto e preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "0ab9c2fd-14a7-4ba8-9191-0ba966973399",
+      "nome": "Barra de som Bose Lifestyle Ultra Black Soundbar preta preta",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "d88e7d36-b4d9-40c3-b21b-3d28437b2150",
+      "nome": "Barra de som Bose Solo Soundbar Ii Bluetooth Best Sound Black Color Sound Bar",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "7d2f5388-af48-430f-8114-ebbe3b75604f",
+      "nome": "Câmera De Ação Insta360 One Rs Twin Edition 4k Preto/vermelh Preto/vermelho",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b3e97e24-4a21-465e-90e5-539cf123c146",
+      "nome": "E-Reader Kindle Paperwhite 12 Generacion 16GB kindle black plus capa preta com tela de 7\" 300ppp",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "94d3999b-6df5-4592-a958-69fa291bf0ec",
+      "nome": "Fonte Cabo Adaptador Ps2 Playstation 2 Slim 8,5V 5.65A - Bivolt",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "77984c7b-2ebe-496a-9ff4-19564b33ba22",
+      "nome": "Câmera Compacta Kodak Pixpro FZ55 16 Mpx Full HD com Zoom Óptico 5x Azul",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b503dbcc-13b4-4367-b36b-3f43b7e9756c",
+      "nome": "Câmera Compacta Kodak Pixpro WPZ2 À Prova D'Água e Com Wi-Fi Vermelha",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b26e693c-69d5-4c85-90df-4fedb066a6d6",
+      "nome": "Smart Tv Aoc Led 50\" 4k Wi-fi Roku Tv 50U7045/78G",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "e5d6141a-e142-4963-a5bd-941d91ba4b0b",
+      "nome": "Caixa De Som Anker Soundcore 2 Bluetooth Portátil Cor Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "d2f6938e-9e15-40c1-bc7e-9e23d65863c8",
+      "nome": "Caixa de Som Anker SoundCore Icon Portátil com Bluetooth e à Prova D'água",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "a1a54f2c-a3fe-40fb-a055-46f24cc2b890",
+      "nome": "Smart Tv 43'' Full Hd Com Roku Tv 43s5135/78g Aoc Cor Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "f071c834-5e36-43cc-9d79-5e1aadc35eda",
+      "nome": "Smart Tv 43'' Led Full Hd Roku Wifi Hdmi 43s5195 Aoc",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "9fa828bd-aef2-41b6-92fb-4c526c4c2b6e",
+      "nome": "Smart Tv Philips 32 Hd 32phg6909/78 Google Tv Comando Voz",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "4887fe06-1952-4b11-9ff4-34f828db59f6",
+      "nome": "Smart Tv Philips 32 Hd 32phg6910/78 Wi-fi",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "b4d9bfcb-9025-43f2-bccc-00acab67a6c7",
+      "nome": "Smart TV Cce Led 32 HD Android Tv",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "1891b884-78a8-4200-bbe9-7d0039e38ac1",
+      "nome": "Smart TV AOC 43\" FHD LED 43S5155",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "c7635d5a-92b0-44a6-a19a-ae1eb0d75889",
+      "nome": "Smart TV AOC 43S5305 LED Smart UI Full HD 43\"",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "1fd0f6d3-cdeb-48e9-8e48-0a0e4c6402d8",
+      "nome": "Smart TV AOC 43\" Full HD Com Wi-Fi e HDR",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "7d01f819-a3b3-48e7-9c8b-b1793cb4f7e5",
+      "nome": "Smart TV Aiwa 43\" Qled Google TV AW43b4q",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "23bbf057-bfde-4e62-a7c6-88c27f793739",
+      "nome": "Smart TV 43\" FULL HD AOC Roku TV 43S5045/78G HDMI 1 USB Wifi",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "15369e98-1ba5-4544-b696-5586d60c4c5a",
+      "nome": "Smart Tv 32 polegadas Hd Roku Tv 32s5135/78g Preta Aoc",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "69534c6b-d95f-4b1c-9c0e-cebce3aedc2c",
+      "nome": "Smart TV AOC 50U6125 50'' 4K LED",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "4b8867cb-59f1-41ea-8797-08a701d0717b",
+      "nome": "Smart Tv Aoc Roku Tv 40 Full Hd 40s5166/78g",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "ee2e13b2-4303-44bc-ab72-4560a259aadb",
+      "nome": "Porta Cartão Nintendo Switch Mario Organizador para 12 Jogos Impressão 3D",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "fa866146-b625-4b02-893b-8de55bbeeb2c",
+      "nome": "Câmera Segurança Ezviz Cs-eb3sp 4g 2k Bateria+painel Solar",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "67a16f28-53d5-410c-9912-0e47650a7ec8",
+      "nome": "Câmera Segurança Ezviz Cb8 2k Wifi 360° Painel Solar Bateria",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "fa8ec25e-48ac-48d7-97b3-d18e89ff5423",
+      "nome": "Câmera Segurança Hikvision Ds-2de2c200iwg 4g Painel Solar",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "3d92ae44-3101-4275-9bf5-bfca352de1ac",
+      "nome": "Câmera Segurança Wifi Smart Ip66 Solar Energia Full Hd",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "47a5132c-170d-4fd4-a112-30f8b158fcdc",
+      "nome": "Drone Fpv Brushless Betafpv Pavo20 Pro Ii 3s O4 Pro Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "e92f4606-c197-4ae3-a8b3-da8539e0cca2",
+      "nome": "Gt8 Drone Profissional Camera Mini Drones Fpv Com Tela E Bag Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "2a4edde5-5efe-44e0-bc74-f573d01ba891",
+      "nome": "Smart TV Box Proeletronic SmartPLUS+ 4K com Android",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "24194c56-6397-4099-8ce1-ecf50e327c6b",
+      "nome": "TV Box Proeletronic SmartPLUS+ 4K com Android 10 e 16GB",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "37f6695d-c9eb-4ed9-bbd1-9bf675aca02e",
+      "nome": "Smart Tv Box Android Smartpro Full 4k 2gb Ram - Proeletronic",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "48431607-e230-44c9-9f65-8fb42423395c",
+      "nome": "Tv box Proeletronic Smart tv BOX 4K PROSB-2000 PROSB-2000/2GB 5.ª geração padrão 4K 8GB preto com 2GB de memória RAM",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "66e08734-6d1e-40d4-a77f-4fedc03cf0b8",
+      "nome": "TV Box Proeletronic Smart Pro 4K Android 10 com Wi-Fi e 2GB RAM",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5d8ac6c1-4f2e-478e-b291-e75de6e506b3",
+      "nome": "Tv Box Proeletronic SmartPro 4k, com Android 10 E 16gb Smart Box PROSB-3000/16GB",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ca98c3ce-ebf2-48f6-8a3d-6f8896913980",
+      "nome": "Câmera Compacta AIDA HD-100A Full HD HDMI",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "834d9e44-3728-4c51-865d-7ee8c2f8cea2",
+      "nome": "Câmera Compacta Avançada Fujifilm S2800HD de 14 Mpx com Zoom Óptico 18x",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ffcb9035-cbad-43d7-b848-4dceb389013c",
+      "nome": "Câmera Panasonic Lumix Gh7 Mirrorless (corpo) Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "6a5de0a4-a4d7-46d2-9859-8a27107d58e7",
+      "nome": "Câmera De Ação Videolog M11 2k Wi-fi E Led Noturno Camera De Ação",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c2492977-53ad-4862-96ce-ebcc9548a2a0",
+      "nome": "Microfone Condensador Razer Seiren X Supercardioide Para Streaming Gamer",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "e32d2846-0801-4f68-b875-a477efd0cbb7",
+      "nome": "Microfone Gamer Razer Seiren V2 X USB Streaming Preto Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5ce0f1f5-85e4-4171-b2a9-e0576f92bd51",
+      "nome": "Microfone dinâmico Shure Beta 57a",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "251ace9d-f0f6-4f95-8c6b-d666c9584513",
+      "nome": "Microfone Dinâmico Samson Q4 Cardioide, Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ff54c3b8-118c-4a75-8c86-20136e4be692",
+      "nome": "Microfone Dinamico Cardioide Kadosh K4 Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "bd5b2877-1a92-49df-becb-600001a52e88",
+      "nome": "Microfone USB Condensador Gamer Fifine K690 Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1421e9e5-797c-4bd1-9f83-ee11d1729b15",
+      "nome": "Microfone USB Gamer Fifine AM6T Com Braço Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8e4cb41e-cbaf-4330-987f-78e7e388c14c",
+      "nome": "Soundbar Caixa De Som 760w 2 Subwoofer Desmontável Home Theater Bluetooth 5.3 Gaonas com Dolby Atmos e Controle Remoto, para TV e PC，Entradas tela LED/Aux/HDMI(ARC)/USB/Óptica/Coaxial/FM",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "234ba288-e448-4bbe-90f5-113bc516906d",
+      "nome": "Microfone USB Gamer Fifine Ampligame Condensador RGB Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5ad31c16-f99d-4058-95cb-6d67dcf8e9ca",
+      "nome": "Microfone Usb Fifine A2 Rgb Condensador C/ Tripé - Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "e08f35c1-916c-4aa0-8a5d-3ef73c44e752",
+      "nome": "Microfone USB Gamer Fifine Ampligame A8 Rosa Cardioide para Streaming",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "009d301d-d2b7-4edc-8be6-64a9ad491d25",
+      "nome": "Microfone USB Fifine K670 Condensador Cardioide para Gravação e Streaming",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "20827dc0-2b0a-4a0e-a1a1-0f56b2ba427e",
+      "nome": "Drone DJI Mavic 3M com 1 bateria",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "0b831712-4226-4364-a097-34866321dd83",
+      "nome": "Microfone USB Condensador Fifine K690 Gamer para PC e Streaming",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "aef14516-53d5-478e-966e-f1b5db2bc931",
+      "nome": "Smart TV AOC 32\" LED HD Com Wi-Fi",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "cdb040f6-2a42-4823-9b06-a123a9251bdb",
+      "nome": "Smart TV Hisense 75\" Qled Q6 4k",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "6ab7310e-2bea-46f2-8d93-9b60e34eb1ba",
+      "nome": "Smart Tv 32 Hd Aoc Tv 32s5045/78g Hdmi 1 Usb Wifi Roku",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "65f37610-598e-4b3b-95fa-5dbb01224917",
+      "nome": "Smart Tv Aoc Dled 32 Wi-fi Roku Tv Quad Core 32s5155/78g",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "a491af89-d7de-463a-b420-74d3db4ccb73",
+      "nome": "Smart TV de 32\" AOC 32S5295 com tela LED HD - preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "5676b910-1144-4a2a-b93f-b7a6c0c573ae",
+      "nome": "Soundbar E Subwoofer Polk Audio Magnifi Mini Ax Dolby Wifi Cor Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "ebd4692e-cebc-40bd-8db2-f6536900259d",
+      "nome": "Porta Cartão de memória Super Mario Bross Porta Cartão SD Porta Jogo Nintendo Switch Cartão",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "557091b6-5929-45de-ae00-d8f3f2b184d1",
+      "nome": "Smart TV AOC 32\" HD LED com Wi-Fi e Netflix",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "d180d887-97f0-4798-81c6-e28ee988ecce",
+      "nome": "Drone DJI Mavic 3 Classic 4K de Câmera Hasselblad",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "a4363bc7-7971-424c-bbe9-00c359b0845e",
+      "nome": "Drone Dji Mavic 3 Multispectral Com Kit Baterias Br Cinza",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "8089fd89-b644-4719-a2c5-1942033ea5b0",
+      "nome": "Drone DJI Mavic 3 Classic (DJI RC) com dual câmera 5.1K cinza 1 bateria",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "ca2f2bf0-a54f-4d4e-a613-b478733c653d",
+      "nome": "Câmera Segurança Hikvision Ds-2ce16d0t-itpfs 2mp + Bnc E P4",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1fdf66ca-03f8-46dc-ad4c-e9e95dbc487d",
+      "nome": "Camera Segurança Ip 2mp 30m Ds-2cd1021go-i(2.8mm) Hikvision",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8cfee7b0-f1c6-44d0-8ded-ebd68b0f600f",
+      "nome": "Camera Segurança Ip 30mt 2mp Hikvision 2,8mm Infra Full DS-2CD2121G0-I",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f8712e5b-f49a-49ee-95b7-c85a943af124",
+      "nome": "Camera Segurança Hikvision Bullet 2mp Ds-2ce18d0t-lfs Áudio Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b11b93fa-6903-407c-915d-f45d424bdc3c",
+      "nome": "Câmera Segurança Hikvision Hybrid Light 3k Ds-2ce76k0t-lpfs Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "69caa30a-ca6e-49a7-886f-a716200d46cc",
+      "nome": "Câmera Segurança Thc-t129-p Full Hd Visão Noturna Hikvision Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7157583d-45ac-4f4a-8370-856a9fb63c3b",
+      "nome": "Caixa Som Amplificada Portátil Bluetooth Microfone Vermelha Vermelho",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c2b26dc6-7cae-47db-8b9f-c6e262e8c15f",
+      "nome": "Drone Dji Mavic 4 Pro Standard (com Tela) Br Dji062",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "39bdeb77-f31f-4e2f-aedd-f2724cd7ff41",
+      "nome": "Drone DJI Mavic 2 Zoom com câmera 4K gray 1 bateria",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "5ade352f-88ec-4191-9c4c-858694b73a2b",
+      "nome": "Mini drone DJI Mavic 2 Pro com câmera 4K gray 1 bateria",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "254229ce-916a-4750-bfb1-3da6f9737f80",
+      "nome": "Mini Caixa Som Bluetooth Portátil Prova D'água Ventosa Preta",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "bd8408e8-04ed-4087-adef-a6f76dd3f9ab",
+      "nome": "Câmera Segurança Xiaomi Mi 360° 1080p C/ Wifi E Zoom Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "88e90683-3d9f-4aa5-a1bb-d3e42e1ad821",
+      "nome": "Caixa Som Banheiro Prova D'água Bluetooth Smartphone Top Cor Rosa",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "cb7c9b9a-0a82-45e9-ad07-2defb4196753",
+      "nome": "Caixa Som Bluetooth Portátil Auto-falante 30w Prova D'água Preto-laranja",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "aa21292d-2cda-4bd2-9a95-754d4fb470e8",
+      "nome": "Caixa Som Amplificada Portátil Bluetooth 2 Em 1 Prova D'água",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9fe2cefd-220b-470c-ad57-1bbb999c9427",
+      "nome": "Placa De Video Galax RTX 5060 8GB GDDR7",
+      "motivo": "porteiro_rejeita:periferico_pc"
+    },
+    {
+      "id": "099fd370-e805-4262-b250-5baf5dabaafb",
+      "nome": "Placa De Vídeo Nvidia Zotac Geforce Rtx Geforce Rtx 5060 Ti",
+      "motivo": "porteiro_rejeita:periferico_pc"
+    },
+    {
+      "id": "addb4b0e-cbc6-4bc0-bec6-4eb8679df209",
+      "nome": "Placa Vídeo Palit Geforce Rtx 3060 Dual, 12gb Gddr6, 192",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "23e4c18e-ea56-4ee3-98e0-4e6045706e1d",
+      "nome": "Placa Vídeo Powercolor Radeon Rx 580 Red Devil Dual 8gb",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5ab242bf-8f5c-465d-bbe0-cc1381d02828",
+      "nome": "Placa De Vídeo Powercolor Radeon Rx 7600 8Gb Gddr6 128Bits",
+      "motivo": "porteiro_rejeita:periferico_pc"
+    },
+    {
+      "id": "fb0d4c2b-5f37-46ca-bd23-86c0089d1e21",
+      "nome": "Impressora multifuncional Epson Ecotank L4360",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "2906be2a-b8c6-4157-bedd-31f3169de6e7",
+      "nome": "Impressora Multifuncional HP Smart Tank Bivolt - 581",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f8b427e9-50e1-48de-a87a-ddd8a27b05cc",
+      "nome": "Câmera Segurança IP Beetz 637JBU 1080p WiFi Detecção Movimento",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "69f00159-8845-4ace-ac1e-9e70de82474d",
+      "nome": "Smart TV LG 4k",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "5fa879d6-3d62-40f3-aa50-17b0c37e077e",
+      "nome": "Power Bank 20000mah 1hora Bateria Portátil Gar117b Branco",
+      "motivo": "porteiro_rejeita:bateria_reposicao_console"
+    },
+    {
+      "id": "83d39704-5991-4fc0-ad2e-9b2c878740e3",
+      "nome": "Manga",
+      "motivo": "porteiro_rejeita:livro_artbook"
+    },
+    {
+      "id": "519d7393-f2ba-4f53-b525-c5ca6f92143f",
+      "nome": "🕹️ Porta Cartão de Memória - Formato Cartucho Nintendo Switch 🎮",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "1d8c2eab-ec19-48fd-86d7-d0e05fe8cd92",
+      "nome": "Organizador de jogos  Nintendo Switch",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "6c7748b3-8601-4dd6-9cc4-0588cec9d038",
+      "nome": "Organizador Cartuchos Switch Zelda porta jogos Nintendo caixa porta games nintendo",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "e30b7449-1b29-4882-9103-5b9e4d8ae9f2",
+      "nome": "Organizador de Jogos Playstation PS5",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "22a4acc1-f714-4cc7-84be-9449bf77a5cb",
+      "nome": "Organizador de Jogos Playstation XBOX Nintendo PS3 PS4 PS5 XBOX360 ONE X S Switch",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "ba84f219-514c-439c-b6be-d2d6c99ddc15",
+      "nome": "Câmera Compacta GE Docol Dourado",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "e3dbc74a-67c3-4249-a96f-05f1765d8522",
+      "nome": "Câmera Compacta Avançada GE Power Pro Series X500",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "93260df8-8320-407a-b14c-d228267e7965",
+      "nome": "Mini Câmera Segurança Xd Espiã Micro Escondida Filma Audio Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "26fc234b-0981-4b93-813c-2d05236b350a",
+      "nome": "Câmera Segurança Wifi Inteligente Aplicativo Alexa E Google",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "715f6973-f696-46b1-b4c5-277445cc3e0d",
+      "nome": "Câmera Segurança HD PLUS DOME 2MP IP67 Interna Externa infravermelho Prova D’Água Positivo Seg",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8a8633d5-4364-4b72-965c-8956c149ce5a",
+      "nome": "2 Câmera Segurança Lâmpada Inteligente Visão Noturna Icsee",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "58eeb9af-4292-41f1-a6a2-f4e4a32812c7",
+      "nome": "Câmera Segurança Rotativa Wifi Audio Rastreio Movimento",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5c9529e3-4fa3-4fdb-8c8a-4c85e43cf800",
+      "nome": "Carregador Portátil Power Bank 20000mah Turbo Beexcellent Preto",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "5b8e043a-eb6f-46bd-a27b-999eedf236bc",
+      "nome": "Power Bank Usb A/c Ugreen Nexode 20000mah 130w Cinza Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "98a50e13-a5b4-4a1a-b46d-4e2584398f46",
+      "nome": "Power Bank 30000mah 100w Para Starlink E Notebook Preto",
+      "motivo": "porteiro_rejeita:periferico_pc"
+    },
+    {
+      "id": "9a92fafb-b5e8-4d87-8f6c-b365d7c2c363",
+      "nome": "Power Bank Sem Fio OEX 10.000mAh 10W Preto Carga Rápida",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "20607f9e-7339-447d-9e86-69b3e37d4eda",
+      "nome": "Camera Seguranca Externa Full Hd Bullet Wifi 2mp Weg",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c455d194-bcac-4278-99b5-6386f54df0b3",
+      "nome": "Power Bank Magsafe Hrebos 10000mAh Titanium para iPhone e Samsung",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7f3174d0-c071-48dc-b4a6-ea8f700040af",
+      "nome": "Power Bank Hrebos 5000mAh Dourado Carga Rápida Tipo C USB iPhone Samsung",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "49c4a9be-d39d-4287-bfd5-f05b1f13d96c",
+      "nome": "Câmera Compacta Infantil Dauz Rosa com Tela Tátil",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "47488a0b-ea33-44b5-9e7b-d17c53220d52",
+      "nome": "Power Bank Carregador Portátil Slim 5000 Mah",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "2d9f0310-c007-4339-a2e4-4db70d8a97d6",
+      "nome": "Câmera Segurança Teto Segurança Ip Lâmpada Monitura Idoso",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "2a2e73e2-9371-457c-9f83-94629458208b",
+      "nome": "Smart Living, Smart Security: Câmera Segurança Smart Ip",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "80bf9248-4238-4dd2-8bb3-0d1a8fb41ed2",
+      "nome": "Microfone Condensador Fifine USB K050 Cardioide Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b42712be-9032-4f92-84dd-c3db8867f343",
+      "nome": "Microfone Condensador Fifine AmpGame USB para Gamer Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "dcfa3f2b-b3ef-48c8-ae0c-286630c5e539",
+      "nome": "Câmera Segurança Dome 4x1 Full Hd 2mp Citrox Cx3020d",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ca04df75-06b2-4746-86cc-046681eee54f",
+      "nome": "Câmera Segurança Dome 1080p 24 Leds 3.6mm Se170 Multilaser",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "6a8f5d7f-a7ba-4c57-acaf-b3efc037d6f0",
+      "nome": "Câmera Segurança Ip Rotativa Wifi Auto Tracking Dome Jortan",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5561c043-2cca-46fe-82f7-1c3063392b10",
+      "nome": "Kit Câmera Segurança 1mp Fonte Conector Cabo Vbox Intelbras",
+      "motivo": "porteiro_rejeita:kit_sem_plataforma"
+    },
+    {
+      "id": "01a6b40a-73b2-47a1-ba61-55e220463213",
+      "nome": "Camera Segurança Dome Full Hd 1080p 2.0 Mega Ahd 2.8mm",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9b1a568c-2c45-422d-8b2e-199c6313fa30",
+      "nome": "Câmera Segurança Dome Analógica Weg Wcam 1mp 2,8mm Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1f10b6b2-61fa-4c73-907a-e83f07f3ce1e",
+      "nome": "Microfone Fifine T683 Kit Streaming Podcast Profissional Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "d3449a0d-a570-4aef-9a87-584c9c5e3eaf",
+      "nome": "Soundbar Com Subwoofer Sem Fio Polk Audio Magnifi Max Ax Sr Cor Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "e4445996-b974-4467-b448-02c38e10d2bb",
+      "nome": "Home Theater Soundbar 2.1 Bluetooth Barra De Som Subwoofer Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "54457485-8ca8-4c4c-9fb8-81251e5ddb07",
+      "nome": "Filamento Hf Bambu Lab 1kg 1,75 C Carretel",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ef640a4a-b02f-49ae-bade-9b02c46b9503",
+      "nome": "Soundbar 2.1 Tomate MTS-2023 Subwoofer 130W Bluetooth Óptica",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "3a61a198-ecb0-4229-9826-f2f613df00cc",
+      "nome": "Soundbar 2.1 LED Bluetooth 5.3 Subwoofer 5.25 polegadas HDMI ARC AUX USB Hi Fi Extra Bass 3D EQ Controle Remoto Display LED Caixa de Som TV PC Projetor Gamer Home Theater 2.1 Bivolt ANATEL KIMISO",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "cddaf64d-a9aa-4826-a27d-ae1f54ea337b",
+      "nome": "Câmera Ação Action 4K Wi-Fi à Prova D'Água Esportes Radicais 16MP",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5b830467-0835-490d-83a6-b3eb007d321e",
+      "nome": "Câmera Ação 4K Click SPORT Wi-Fi Lente 170º Prova d'Água 30m Microfone",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "61ef520b-481f-4b2c-87a6-c1d8d1696d5f",
+      "nome": "Go Plus Cam 4K Ultra HD Câmera Ação Esportiva WiFi à Prova d'Água",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1a207f31-b1da-44f6-932a-a2e901935324",
+      "nome": "Tv Stick Wi-fi Smart Tv Android Hdmi Tv Box",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "f059d143-f794-4a25-bcee-a53576e3685b",
+      "nome": "Câmera Ação Tomate MT-1091K 4K Wi-Fi Preto À Prova D'água com Controle Remoto",
+      "motivo": "porteiro_rejeita:acessorio_sem_plataforma"
+    },
+    {
+      "id": "6237c773-76d1-40a4-9594-80aea3c1f011",
+      "nome": "Microfone Sem Fio Profissional Lapela Duplo Tipo-c iPhone Cor Microfone Lapela Ios",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b733f65b-5fb2-436c-b1cd-079702fe28e5",
+      "nome": "Cabeçote De Som Amplificador Som 250w Bluetooth Usb Datrel Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "cc0e14dc-641c-4971-bb07-3f98d8907e2b",
+      "nome": "Bola Futebol De Salão Futsal Penalty C/ Bomba Inflar Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9eb101ac-34b5-48ff-91a2-bb7cbf5f71a0",
+      "nome": "Amplificador Som Ambiente Mf-9000 4 Canais 500w Bluetooth",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c1a740aa-9b3e-49c7-bd0e-0a3ccebc8f79",
+      "nome": "800w Amplificador Som Carro Bluetooth Stereo Completo Hifi iBoa",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f762d62a-a26f-4f5d-bca1-145a779dd318",
+      "nome": "Mini Amplificador Som Audio Bluetooth Usb Para Casa Carro Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f213987a-209b-4b53-949f-316adf6f7c67",
+      "nome": "Amplificador Som Ambiente Frahm Slim 4100 300w Bluetooth",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a5f273c6-0e1e-4555-a673-668dcce3cb43",
+      "nome": "Taramps Ts 400x4 400w Rms Módulo Amplificador Som Digital Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9bfc654c-213d-4887-ba50-be6b988fc155",
+      "nome": "Chicote Amplificador Som Automotivo 160W 3 Canais Falcon Stetsom Buster",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9eeed71e-232d-49f0-b718-5de875326347",
+      "nome": "Amplificador Som Ambiente Oneal Om-2000 Ec Bluetooth Rádio",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9901e6e6-7ab0-4174-9b24-bda5846024b8",
+      "nome": "Amplificador Som Ambiente Usb Bluetooth Receiver Lelong 707 Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "cec08cca-727b-4507-84d4-bec7cda206f4",
+      "nome": "800w Amplificador Som Carro Bluetooth Stereo Completo Hifi",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1ee81cfc-f2b4-4f95-947b-294cf040f208",
+      "nome": "Chrsco Amplificador Som Carro Bluetooth Stereo Completo Hifi Iboa",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1cefcf40-52ed-4fdb-b16c-708e75b0ac4e",
+      "nome": "Kindle Tela Colorida! Signature 16gb Colorsoft Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "75b7a995-4b3c-41c6-ba55-de6387fabdf5",
+      "nome": "Brinquedo Infantil Geladeira Duplex Da Princesa Zuca Toys",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "16b05eef-2c86-49a0-86bc-51aae2e849ac",
+      "nome": "Xiaomi Power Bank 20000mah Pb2020mi 22.5w Com Cabo",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "a0cb8cec-a2ea-459c-b501-87c234c67606",
+      "nome": "Smart TV PTV65G3BGTSSBL QLED 4K 65\" Philco",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "25929d22-95bb-43a4-8103-3d7b18fc0fd6",
+      "nome": "Smart TV Philco 75\" P75CGA QLED 4K Google TV Dolby Vision WiFi Bluetooth HDR10",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "a63fffb4-e4ac-4172-96d3-ad502311c71c",
+      "nome": "Smart Tv 32'' Hd Led Roku Tv Hdmi Ptv32g70rch Philco",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "0b1970f5-6b5c-4c45-b6dd-1b13fe9b42de",
+      "nome": "Smart Tv 32 Philco Led Ptv32d10n5skh Dolby Audio",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "fde2f8c1-3ed2-4bcc-9b4d-ab705d94b4e4",
+      "nome": "Smart Tv 32 Philco Led Roku Tv Hd Dolby Audio P32cra",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "dc0272aa-5d07-4f8b-a308-3134493cfc13",
+      "nome": "Smart TV Philco 32 Polegadas LED HD PLD3226HI",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "d57c53bd-f5d5-4b5a-84e6-bc73b16c6ef3",
+      "nome": "Samsung The Freestyle 2nd Gen Projetor Smart Portátil Cor Branco",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "b73cdd92-7634-4669-a6ba-9234b1b8e198",
+      "nome": "Projetor LED branco Hocosit HY300",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "21f8abc6-f1de-403f-84ef-51ae6b5f1515",
+      "nome": "Projetor Mini Unic Mini Projetor UC68 1800lm preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "0c724455-4a20-424c-944b-a25abdefc8a7",
+      "nome": "Smart Tv Ptv32g7pr2cgb 32 Polegadas Led Roku Cinza Philco",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "26633c75-dd44-4eef-b002-ecd6e7548b0b",
+      "nome": "Carregador Portátil Indução 10000mAh Power Bank Anker MagGo Magnético MagSafe para Apple iPhone 18/17/16/15/14/13/12 Series, Bateria Externa Sem Fio Carga Rápida 15W, Ultra Slim Cor Verde",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "f7ff8eb4-f7bc-44f4-8964-c52bb80fcfb7",
+      "nome": "Power Bank Baseus Esazi 2a Quick Charge 20000mah Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "d8fcd233-f878-40f5-b6fe-4bf99b3cac88",
+      "nome": "Chuteira Penalty Storm Masculino",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "fbbdb6e2-40a4-483d-ab0f-bccf5ddbde95",
+      "nome": "Carregador Portátil Indução 10000mAh Power Bank Anker MagGo Qi2 Magnético MagSafe para Apple iPhone 18/17/16/15/14/13/12 Series, Bateria Externa Sem Fio Carga Rápida 15W, Ultra Slim Preto",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "2a5635b3-e30b-4dd2-9e4c-d4acc22cbe16",
+      "nome": "Orion Audio Som Ambiente Receiver Bluetooth - Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a8359d89-483b-4d9d-b30a-952fe1d96d9a",
+      "nome": "Microfone Condensador Blue Snowball Ice Cardioide USB Branco para Gravação e Streaming",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a67d6bb5-88d3-4bcf-81ce-d61efe5ddb5c",
+      "nome": "Microfone Lapela Redondo Sem Fio",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5b73a47f-9004-4a99-839d-de759661e704",
+      "nome": "Microfone Lapela Sem Fio Pei-mkf04",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ce7ef318-0e20-4c83-99c3-388c4677f7d2",
+      "nome": "Microfone Lapela Onistek Sem Fio Omnidirecional Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f1357824-6c69-4561-856b-be9519fe8f68",
+      "nome": "Microfone Lapela ONEX Sem Fio Bluetooth Omnidirecional Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "752d1a34-ee93-4dfd-bc76-6924c3798982",
+      "nome": "Dexin Microfone Lapela Sem Fio Preto Friburgo Lightning",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "4f39ab08-e8f0-49ed-8ada-4c5e8a6b9f44",
+      "nome": "Power Bank Tomate 10000mAh Preto Display Digital Carga Rápida",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9d1fb3d5-b97c-4ee3-9300-11c958e05bb7",
+      "nome": "Microfone Lapela Sem Fio Blx Shure Blx14/cvl",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "99b30002-d14d-4800-a93c-7a869f394e24",
+      "nome": "Microfone Lapela Condensador Sem Fio K9 Omnidirecional Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7501066d-aa13-43fc-b13b-ee601fcef13a",
+      "nome": "Microfone Lapela Mymotors Preto Sem Fio Tipo C",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "4d9ce62e-e897-4498-8e9e-dc6b03c20684",
+      "nome": "Microfone Lapela P2 Condensador Android Cabo 1.5m Omnidirecional",
+      "motivo": "porteiro_rejeita:acessorio_sem_plataforma"
+    },
+    {
+      "id": "87978bff-3422-4bf8-b724-beac0a8ad1f2",
+      "nome": "Nintendo Switch Oled Plus Pokémon Go+ cor preta",
+      "motivo": "porteiro_rejeita:console_nao_e_aparelho:acessorio_logo_apos_aparelho"
+    },
+    {
+      "id": "8ebd21a5-6ea0-46da-96c2-553a1aa1a9c3",
+      "nome": "2 Microfones Lapela Duplo Sem Fio Tipo Light Profissional Microfone Lapela Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "268ec7d8-8fff-49d1-a2b9-5886c9d0d389",
+      "nome": "Mochila Academia Camping Trilha Resistente Impermeável",
+      "motivo": "porteiro_rejeita:brinde_diverso"
+    },
+    {
+      "id": "65e98be3-6f1c-4e18-a306-91e68ca68b6d",
+      "nome": "Mochila Academia Camping Trilha Resistente Impermeável",
+      "motivo": "porteiro_rejeita:brinde_diverso"
+    },
+    {
+      "id": "8e30774c-a836-4cb7-815b-03458e194dd3",
+      "nome": "Microfone Lapela Wireless Sem Fio Para Ios Lightning",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c63d167c-1547-4518-a27a-0ffbe5c8ba24",
+      "nome": "Microfone Lapela H'maston Sem Fio Preto Cancelamento Ruído iPhone",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "765eef8c-172e-40de-ac98-140ef66e8438",
+      "nome": "Osram - Luminaria Airzing Uv Compact Purificador Ar Portátil Cinza",
+      "motivo": "porteiro_rejeita:decoracao"
+    },
+    {
+      "id": "4b3cca6d-5bf3-443a-b399-528f0fa493f6",
+      "nome": "Aspirador de pó robô Aspirador robótico poderoso cor preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "263bd9e5-76d8-4250-8424-6ce8821cc641",
+      "nome": "Robô Aspirador Robô Aspirador E Esfregão Aspirador Intel Cor Blanco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c35ec525-a16e-418e-90dc-c3ba7f939d54",
+      "nome": "Um robô, aspirador e esfregão, robô, aspirador e esfregão, cor preta",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5fa6175b-7f93-4f07-98a2-858ecdece250",
+      "nome": "Livro: Hormônios Sistêmicos E Estruturas Bucomaxilofaciais",
+      "motivo": "porteiro_rejeita:livro_artbook"
+    },
+    {
+      "id": "5009bb37-5dc1-4f7e-98e2-9c9eaf9f8fb1",
+      "nome": "Livro Introdução Á Dinâmica Das Estruturas",
+      "motivo": "porteiro_rejeita:livro_artbook"
+    },
+    {
+      "id": "4699f048-27b8-4b36-99c6-7f862cce51e5",
+      "nome": "Cafeteira Expresso NH Automática Borossilicato 200ml",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "3a89692e-785b-41b2-b5fe-d89c8fd91944",
+      "nome": "Tablet iPad Air 11 violeta 128 Gb",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "39ee7656-b14e-4db7-8c3e-4f59022cb1af",
+      "nome": "Soundbar Waveone Atlantic Ocean 5.1 Bluetooth HDMI ARC 300W Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "f414f80d-5d21-4401-82f9-e6cefbf10dae",
+      "nome": "Basike Carregador Portátil Power Bank Turbo Carga Rápida Preto",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "4982f7d3-8741-48a7-97b4-a1fc7ec9ede0",
+      "nome": "Soundbar Com Subwoofer Desmontável 420W 5.1 Canais Home Theater Subwoofer Maizhelun Som Imersivo Conectividade Aux/HDMI (ARC)/USB/Óptico/Coaxial/Antena FM Bluetooth 5.3 Display LED E Controle Remoto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "22d41d29-2e98-4ad0-a425-2b7d806f28a0",
+      "nome": "Power Bank 20000mah Carregador Portátil Carga Rápida 22.5w Preto",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "c52aa9da-1b6b-4b11-897a-22540d006392",
+      "nome": "Câmera Digital Kodak Pixpro Fz45 (branca) Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a6ca57e9-f888-4886-af94-09ba2eb79449",
+      "nome": "Drone Profissional Cemseries 4k Tela No Controle 2 Baterias Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "31f006c0-ddf4-4070-8d40-0b3a799d49ee",
+      "nome": "Drone Profissional Zd012 Com Camera Hd Ajuste Eétrico Gps Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "7cc10e61-3a8d-4d16-9285-229cd5a4bb55",
+      "nome": "Soundbar Caixa De Som 280w 5.1 Canais Bluetooth 5.3 Home Theater Desmontável Gaonas Barra de Som E Controle Remoto Som Imersivo Conectividade Aux/HDMI (ARC)/USB/Óptico/Coaxial/Antena FM Display LED",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "ce9f1aae-9d94-4746-b288-30b9c5b7531e",
+      "nome": "Câmera digital Kodak EasyShare M532 Preta.",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ad3f962b-21c9-4d64-b353-e2b2daf40119",
+      "nome": "Câmera Digital Kodak Pixpro Az528 (preta) Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "3dbf5573-3143-422b-89b2-31b091da48f1",
+      "nome": "Câmera digital impermeável Kodak Pixpro WPZ2 16MP",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9208ce27-8d8b-422e-8589-a9c2bf634292",
+      "nome": "Câmera digital Kodak EasyShare M532 em preto.",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "4d8e01b0-4da6-4932-a5cb-14840efb628b",
+      "nome": "Câmera Segurança Reolink P324 Para Exterior/casa Branca",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "e1035add-53e8-459b-8a65-4d1277cace34",
+      "nome": "Newpet Robo Câmera Pet Com Interativo Voz Visão Smart Wifi 1080P Câmera Segurança Inteligente Retorno Automático",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f44667af-e3f9-428e-b786-1239616ae312",
+      "nome": "Chuteira Umbro Neo Unissex",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "77653530-a8ca-4d50-bec2-234618ebf266",
+      "nome": "Chuteira Umbro Pro 5 Masculino",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "bd8b0d59-66b0-457b-863d-80be86d64d18",
+      "nome": "Câmera de Segurança Wi-Fi Positivo Casa Inteligente Full HD Interna/Externa com Bateria",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "f82c0d69-162d-46f5-b4f6-e7de90435168",
+      "nome": "Power Bank Turbo 30000mah 100w Para Macbook iPhone Notebook",
+      "motivo": "porteiro_rejeita:periferico_pc"
+    },
+    {
+      "id": "880a1eb6-8f79-47e3-b308-ce3eadc1a28c",
+      "nome": "Câmera Segurança Wifi Solar Externa Inteligente NovaDigital CS-SAFE Bateria Painel Solar 4MP Visão Noturna Alexa Google IP65 Branca",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "f853137b-d808-41cb-aa64-ce8a8934efd4",
+      "nome": "Chuteira Umbro Speed Masculino",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ecfd49ac-0a10-4695-8f45-0e1e4cf86fbd",
+      "nome": "Chuteira Umbro Class Infantil",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "0234a04e-dc97-4630-9f7f-178eb2e1d9e1",
+      "nome": "Xiaomi Redmi Watch 5 Smartwatch GPS Preto Tela 2.07\" AMOLED Resistente Água",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "849c3425-0c6d-4962-8b9c-bca25295f194",
+      "nome": "Microfone Usb/ios Samson Satellite",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b6639e9e-4fc2-49d4-a9ed-caf3304e2d7a",
+      "nome": "Microfone Condensador Gamer HyperX QuadCast USB",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a8aa9c8d-3d6d-4847-98a6-0210cf52b61c",
+      "nome": "Microfone Condensador Mt-020",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "85de4efb-e2eb-47b0-bf09-c16021116e47",
+      "nome": "Microfone condensador multipadrão Hyperx Quadcast S preto e vermelho",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "20fb2e4d-e104-4055-8716-3f0e34c505d4",
+      "nome": "Drone Dji Mini 3 1 Ano De Dji038 Cinza",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "2304c987-b3f1-4212-b4e7-06462eefca41",
+      "nome": "Drone Dji Mini 4 Pro Dji Rc-n2 (sem Tela) (br) - DJI041",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "a607f56e-a07d-4b63-85e1-06132c2173d5",
+      "nome": "Mini Drone 4k Câmera Dupla E99 Pro2 Professional",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "e4007647-3532-4424-9df6-3cf83168d82f",
+      "nome": "Mini Drone 4k com câmera dupla E99 Pro2 Professional",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "efacd2c4-044e-4c2c-92c6-ed645943c6ee",
+      "nome": "Amazon Echo Pop Assistente Virtual Alexa Cor Purple",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "2cb7f336-25c3-496d-a123-a7119c642e6a",
+      "nome": "Amazon Echo Pop Assistente Virtual Alexa Cor Cinza",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "3e0ebeaa-9dd3-468e-bbbc-2df6ab44d00d",
+      "nome": "Alto Falante inteligente JBL Link Portable com assistente virtual Google Assistant - black",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "97a6770f-82b1-492c-b6e4-cbbeca7028ba",
+      "nome": "Microfone Condensador Omnidirecional Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "76ef96da-515c-4e11-92ed-177d1082b4ff",
+      "nome": "Tablet Xiaomi Redmi Pad 2 11 4gb/128gb/wifi - Grafite",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "3da200fd-6b1d-4a86-aaba-eb7ba9925d10",
+      "nome": "Toca-discos Portátil Audio-technica Atsb727 Bluetooth Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "70736cf4-ed7e-4c8a-9f93-f2e1cceac916",
+      "nome": "Smart Tv 32'' Hd Assistentes Integrados 32lq620 LG Bivolt",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "b36eaa75-93f9-43c2-872b-ba7cc408f5c2",
+      "nome": "Fonte Carregador Turbo Rápido Ugreen 20w Usb-c",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "61cf35f2-6e57-4304-a4b8-53902628a6eb",
+      "nome": "Microfone Condensador Usb Blue Yeti - Preto Cor Blackout",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "6d3f8062-ae51-4f5b-8ce8-ce0117abe34a",
+      "nome": "Bluetooth Para Carro P2 Bt-receiver",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5fc2eea8-6e2d-464d-a3b7-86c61801667f",
+      "nome": "E-Reader Bigme B6 de 6\" Colorido com 64 GB e Android",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f0d9c705-af2d-4f5f-bbb4-46be3c5467e9",
+      "nome": "Microfone condensador cardioide Blue Yeti, cor azul",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a0247404-6be2-4895-a5be-870dbacdd571",
+      "nome": "E-Reader Kobo Clara Colour de 16 GB com Tela de 6\" e Capa Preta",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1daf62ac-799c-4b82-8c20-becfbc26162f",
+      "nome": "Kobo Libra Colour Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "de8e557a-1c9e-4cde-8e79-004b4a07f689",
+      "nome": "Microfone Condensador Usb Blue Yeti Nano - Cinza Cor Shadow grey",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7df9af51-1b27-49e9-b6e9-ce1e21d03c03",
+      "nome": "Microfone Condensador Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "61743f08-0b19-4af6-b1e5-00e1d037a821",
+      "nome": "Boox Go 10.3 Epaper 4g 64g 300 Ppi B/w Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "ea356663-35b9-4e30-93b0-c44a693c7f16",
+      "nome": "Chuteira Penalty Storm 4 Infantil",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "eb86112a-ee99-48cb-98da-95faaa8a991e",
+      "nome": "Toca-discos Portátil Audio-technica Sb727 Bluetooth Amarelo",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a999306f-39f5-4662-84a6-aab05f9b6305",
+      "nome": "Kit Microfone Lapela Sem Fio Maono Wave T5 Versão Usb Tipo-c Preto",
+      "motivo": "porteiro_rejeita:kit_sem_plataforma"
+    },
+    {
+      "id": "c8c3d066-52cc-4399-8a74-a8adc1dbbc7b",
+      "nome": "Microfone Estúdio Dinâmico Maono PD100 XLR para Gravação e Streaming",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "e4f88815-8444-4847-9e8e-bf76939d4a66",
+      "nome": "Microfone sem fio USB Maono para jogadores, microfone dinâmico para streaming com redução de ruído, botão mudo, RGB personalizado, fone de ouvido de 3,5 mm, preto PD100w",
+      "motivo": "porteiro_rejeita:botao_gatilho"
+    },
+    {
+      "id": "8e265c56-f77c-47e9-96d1-4c5082720bce",
+      "nome": "Tablet Tela Grande Xiaomi Poco Pad 256gb 8gb 5g Pegar Chip Cor Azul-marinho",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "4595a762-0521-4ab9-9b33-de8a0312c7f6",
+      "nome": "Toca Discos JBLSPINNERBTGLDBR Spinner Bluetooth Cor Preto/Dourado 12V",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "2bc12415-e19d-4cd8-a471-80a568256394",
+      "nome": "Amazon Alexa Echo Spot Alto-falante Assistente Virtual Branco",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "7d2232e3-1037-4581-a915-90965885ed00",
+      "nome": "Smartwatch Infantil Interativo Condor Jogos Câmera Princess",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5460662d-fc2e-48ec-bec3-dc583baf7312",
+      "nome": "Smartwatch Infantil D20 Troca Tela 1.3 Silicone Resistente à água",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "c6e851b9-f29b-41b9-813a-2cea73f48f49",
+      "nome": "Tênis Umbro Pro 5 Infantil",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "65d1f70e-3228-4d13-a56e-eb7f34df608a",
+      "nome": "Chuteira Umbro Pro 5 Infantil",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "0bb1634f-a3da-460f-86c0-a5f3f8e5c11f",
+      "nome": "Chuteira Umbro Pro 5 Unissex",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "d6b7489e-c1d6-4b87-a484-a2b706f79be0",
+      "nome": "Caixa Som Bluetooth Mini Caixa Potente Amplificada Littlefun Cor Verde-claro",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b0f6f683-009b-4884-9c70-dc7206003dae",
+      "nome": "Caixa Som Banheiro Prova Dágua Bluetooth Smartphone Asus",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "6f9b1a20-cc03-4f74-92b8-1a17a7c5e811",
+      "nome": "Caixa Som Xiaomi Sound Party 50w Tws Ip67 Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "bfeb28e1-41ac-46de-add4-5df43f27654a",
+      "nome": "Chinelo, slide e sandália Olympikus Corre Masculino",
+      "motivo": "porteiro_rejeita:vestuario"
+    },
+    {
+      "id": "286a1727-2df3-4709-aa5d-21417eb854ab",
+      "nome": "Caixa Som Banheiro A Prova Dágua Bluetooth + Mergulho Cor Amarelo",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "d534056f-7203-4aa0-ba68-7ef481912f1c",
+      "nome": "Microfone Condensador Saramonic SmartMic",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "eb7642f6-0683-49db-b257-d829ef8d24f4",
+      "nome": "Drone Com Camera Drone Profissional 8k Hd Câmeras 2 Baterias Cinza",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "e3c503ec-e726-493c-a50f-2d609e8b4f06",
+      "nome": "Câmera Canon Eos R10 Mirrorless Corpo",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1426cc05-563a-4f49-8169-492fafefe736",
+      "nome": "Câmera DSLR ZXHZAQ Profissional com Autofoco e Gravação de Vídeo",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1ad0c9d6-ec22-4594-8344-06de7ded653f",
+      "nome": "Tênis Fila Recovery Masculino",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "cce881e6-4558-4656-9639-7231fe08a089",
+      "nome": "Câmera Mirrorless Nikon Z5 com Adaptador FTZ II, 24.3 Mpx e Vídeo 4K",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "63c50620-178b-4c4c-b106-85302026207f",
+      "nome": "Chuteira Mizuno Morelia Masculino",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "9f3db00a-ea2c-480e-91bf-06963bd2acc3",
+      "nome": "Google Home Mini com assistente virtual Google Assistant - aqua",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "083b0b9e-0335-4ca5-bf3e-74eb6d9a00f2",
+      "nome": "Câmera instantânea Kodak Printomatic - Impressora portátil verde",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "be3342c2-7e8d-42b7-877e-27fa6954ab64",
+      "nome": "Caixa De Som Bluetooth Jbl Go Essential A Prova D'água Cor Azul",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "fff1cd94-50ad-41a4-8250-3412907eaf77",
+      "nome": "Dji Matrice 4e Drone Profissional - 3 Baterias",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "111a1f7e-773f-4d13-975e-b4ab55166df4",
+      "nome": "Ligenai Drone Profissional Xt606 Dual Cam 720p 2 Baterias Brushless Wifi Mini Controle Remoto Drone Quadricóptero Profissional Drone Fpv",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "ab692c0e-1774-4c14-a245-a32ee2c89f9a",
+      "nome": "Câmera De Ação Sjcam C400 4k Estabilizador Bateria Longa Preto",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "61697177-ffdd-4676-8ed6-41c6d2787f29",
+      "nome": "Câmera de ação esportiva de tela dupla SJCAM Sj4000 Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "927e70c2-4748-4ac5-b9e0-4c9860620518",
+      "nome": "Mini Drone 4k com controle remoto dobrável e 2 baterias - preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "7ad1ec36-86dc-46b7-8032-e9b0f50eb15d",
+      "nome": "E88 Pro Drone 4k Com Câmera Alta Definição Dobrável Drone Cor Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "bf812573-dcdf-41dc-89ab-667f36144f1b",
+      "nome": "Drone 4K Câmera Dupla Evitação Obstáculos 360° Controle Tela",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "675f53cf-9fa8-486b-bc8c-ac49d2ecec19",
+      "nome": "Caixa Som Led Bluetooth Portátil Grande Potente",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "336d11e2-054f-4922-8cb9-c1fa19a4c12d",
+      "nome": "Drone Profissional Xt105 Brushless Câmera Hd 2 Baterias",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "0cc8417e-6fa5-4ff6-bdb7-71954817c50c",
+      "nome": "Caixa Som Bluetooth Mini Caixa Potente Amplificada Littlefun Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "aafd5431-4fb5-48b4-9c4b-5418fefed3c1",
+      "nome": "E99 Pro Drone 4k Wifi Com Hd Camera Mini Sem Escovas Cor Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "db926d52-914c-4783-9866-86f141ff1053",
+      "nome": "Caixa Som Bluetooth Portátil Auto-falante 30w Prova D'água Cor Preto-laranja",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "99296f22-b1f0-47b5-a7c1-3172250e6f71",
+      "nome": "AXNEN Mini drone com câmera dupla, mini drone dobrável, motor sem escovas, mini drone de 2,4 GHz",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "4eebf1e0-0798-4254-8864-3439cc80c224",
+      "nome": "Câmera instantânea Kodak Printomatic - Impressora portátil azul",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a767306f-fa12-4d12-bd2e-87da98510dc2",
+      "nome": "Microfone Lapela Omnidirecional Profissional Preto Sem Fio Type-c",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7fc633c8-0849-4e6b-bbcf-01e0ffcc0dc6",
+      "nome": "Câmera de ação Insta360 One Rs Twin Edition 48mp",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "a0202d44-c8dd-4f0f-adff-e54c5b6c9dfb",
+      "nome": "Camera De Acão Insta360 Go 4k Ultra Lifestyle Bundle Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "02d98e35-97df-45a9-8514-2b3e374c7beb",
+      "nome": "Câmera de ação preta 4K Insta360 Go Ultra Creator Bundle",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "4b65f2d2-c612-4273-a05b-2a150ba58fdd",
+      "nome": "Câmera de Segurança Tapo C410 KIT Wi-Fi 2K com Bateria e Painel Solar Externa TP-link",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_por_cabeca"
+    },
+    {
+      "id": "c2d0bfba-a3ea-46e9-9955-508e5390fec8",
+      "nome": "Câmera instantânea Kodak Printomatic - Impressora portátil cinza",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "58130ddb-79fc-45c4-8904-c269175d40c5",
+      "nome": "Smartwatch Infantil Condor Incrível Hulk com Câmera e Jogos",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8a2910a1-0e2b-49a9-b12c-5efe06cd5915",
+      "nome": "Relógio Smartwatch Xiaomi Amazfit Gts 4 Mini Preto",
+      "motivo": "porteiro_rejeita:brinde_diverso"
+    },
+    {
+      "id": "ee3bb0cd-690b-4122-8036-a5aa262b9cd9",
+      "nome": "Smartwatch Xiaomi Band 10 Pro Gps Bluetooth Global Preto Mesh",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f4612d7c-c98d-4ac9-b200-5b370fe015b8",
+      "nome": "Microfone Lapela Condensador Sem Fio Duplo p/ iPhone Lightning",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "1bbb188d-a41a-4bf6-9550-83af79d8cbe6",
+      "nome": "Microfone Lapela Sem Fio Smartmic Compatível iPhone Lightning Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "0a6b1d57-75a7-4186-8b9f-c4a2f19005ea",
+      "nome": "Microfone Lapela Sem Fio iOS Gravação Streaming Preto Bluetooth",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "88690f0f-8850-4668-a954-570dda25f53f",
+      "nome": "Smartwatch Xiaomi Redmi Watch 5 Lite 1.96 Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "88c6b466-cedd-4c30-85af-1dc1f002a558",
+      "nome": "Relógio Smartwatch Xiaomi Mi Band 10 Tela 1.72 Esportivo Gps",
+      "motivo": "porteiro_rejeita:brinde_diverso"
+    },
+    {
+      "id": "e2ff8e3a-19f1-430f-a222-5d41ff7bd457",
+      "nome": "Carregador Portátil Indução 10000mAh Power Bank Anker MagGo Magnético MagSafe para Apple iPhone 18/17/16/15/14/13/12 Series, Bateria Externa Sem Fio Carga Rápida 15W, Ultra Slim Cor Rosa",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "fb66b621-f83a-4c50-b9d5-a9f9363c8727",
+      "nome": "Basike 100w Caixa De Som Bluetooth 20Hz - 20kHz Boombox Tws Bass Boost 10000mah Ipx6 Caixa Som Portátil EQ Estéreo Alta Hifi Boombox Potente Festa Com RGB Luzes LED",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "3cb6a3fa-6059-45c9-9350-b835787b7019",
+      "nome": "Microfone Yamaha Ag01 Live Streaming Black",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "3dc4ec41-1a86-4e78-8b89-6d0f831e276a",
+      "nome": "Microfone de streaming móvel Razer Seiren Bt - preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7aae9128-c021-4650-b405-e596f1c337c6",
+      "nome": "Microfone Multimidia Profissional Streaming Condensador Mesa Cor Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "6d6d0bea-48b7-4815-bca6-23707f3d89c0",
+      "nome": "Basike Caixa De Som Bluetooth 300w Boombox TWS 40hz - 20khz Bass Boost 30000mah Ipx6 Caixa Som Portátil EQ Estéreo Alta Hifi Boombox Potente Festa Com RGB Luzes LED",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "08638227-4e62-414c-8e91-c1ce42ffab4f",
+      "nome": "Carregador Portátil Power Bank Turbo 20000mah Carga Rápida Universal Compatível Com iPhone Samsung Apple Motorlola Xiaomi Notebook Relógios Android Mac IOS 22.5w Com Display Digital - Preto Davely",
+      "motivo": "porteiro_rejeita:item_miudo:item_miudo_na_abertura"
+    },
+    {
+      "id": "785ceb39-ef43-48b5-a927-ce390003f2a9",
+      "nome": "Caixa de Som JBL Boombox Portátil Bluetooth 60W, à Prova D'Água",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "3b875fc4-e091-423d-ad27-58528ab4428b",
+      "nome": "Caixa de Som JBL Boombox Portátil Bluetooth 60W RMS à Prova d'Água",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "da64952a-ad1f-403a-8556-c0c966d67d97",
+      "nome": "Câmera Segurança Cftv Analógica Varifocal Full Hd Ip67 Dome Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "258ab69b-6d25-4d8b-9e6d-a655143a467f",
+      "nome": "Vitrola Raveo Turner Bt Toca-discos Cd Radio K7 Bivolt",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "7ddf2ae3-c3be-4dea-9bbe-0befe313a3d1",
+      "nome": "Vitrola Raveo Volare Toca-discos Marrom Bluetooth USB Gravação Bivolt",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "6a3c8008-b999-4d67-a34b-011cdadbf32a",
+      "nome": "Smart TV TCL de 32\" Full HD com Google TV",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "2a6ee72d-7908-4c6d-8763-ae29ac0c9f57",
+      "nome": "Câmera De Ação Akaso 360 pro 5.7k,72mp Com Microsd 128g,2.29pol Preto",
+      "motivo": "porteiro_rejeita:acessorio_sem_plataforma"
+    },
+    {
+      "id": "6f8076df-037f-4a69-afb9-c7a41b2af1d7",
+      "nome": "Câmera de segurança Inova Cases kit camera seguranca Monitorando a câmera com resolução Resolução Full HD 1080p - icsee",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "d81a83f4-fb49-4dbb-8b21-b2defc56d2b2",
+      "nome": "Câmera Segurança Wifi Ip66 Energia Solar Full Hd Cor Branco",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8d5a1efd-77fc-4d6b-be1c-e9f81f99c7f5",
+      "nome": "Câmera Segurança Icsee Wifi Com Placa Solar Prova D'água",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "591c5f22-8fa6-4bc0-923c-a23d34d5f02b",
+      "nome": "Câmera Segurança Externa Energia Solar Q8 Placa Solar Wifi Full Hd G.Eye",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "09f636a0-28dd-4c01-9be6-3560225f719b",
+      "nome": "Samsung The Freestyle Projetor Smart Portátil, 30 A 100 Cor Branco",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "f53c4d49-eee8-42c6-9674-955b06a2139e",
+      "nome": "Power Bank Baseus Esazi 2a Quick Charge 20000mah Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "0904f8ae-096c-4dab-9038-f41a27c059d9",
+      "nome": "Samsung Galaxy Fold 512 GB prata espacial 12 GB RAM",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "23319a77-0944-41bf-afd7-db486dbc868f",
+      "nome": "Samsung Galaxy Fold 512 GB cosmos black 12 GB RAM",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "e1ee4916-39d4-41f2-9380-4e2b88461b48",
+      "nome": "Smart Tv Box Full Hd Intelbras Cor Preto",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "3b779c28-246f-48a2-9708-23c4b15c4842",
+      "nome": "Smart Tv Box Izy Play Full Hd Intelbras Homologada Preto Padrão",
+      "motivo": "porteiro_rejeita:audio_video_foto"
+    },
+    {
+      "id": "14253bcb-0d30-4568-8c7f-f6807568f3f1",
+      "nome": "Microfone Lapela Onistek Sem Fio Profissional Para Celular Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "842de019-ba29-4967-bee0-d3493927c85a",
+      "nome": "Tablet WiFi 23073RPBFL 11\" 256 GB, cor verde, 8 GB de RAM",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "f34bc9b7-4f32-4811-9bd2-650e3240062b",
+      "nome": "Assista Smartwatch Amazfit Gtr 42mm Sport com Gps",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "8dbfe6b0-b0f8-44f7-80bc-f458da3b4d02",
+      "nome": "Amazon Kindle Scribe (16gb) 2024 Cor Tungsten",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "15b100f6-3a3b-425b-9a2b-4b5c3052b55b",
+      "nome": "E-ReaderAmazon Kindle Scribe 16GB cinza com tela de 10.2\"",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "5d020314-775e-4163-bcaf-d73fdc8b02a7",
+      "nome": "Boox Tab X C: Tablet E-reader Colorido De 13,3 Com Android Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    },
+    {
+      "id": "b6a1bb69-204f-47eb-8a48-b670f7752997",
+      "nome": "E-reader Kobo Libra Colour 7pol 32gb Preto",
+      "motivo": "porteiro_rejeita:fora_da_cartela"
+    }
+  ],
+  "porMotivo": {
+    "jogo_sem_plataforma_nem_formato_fisico": 34,
+    "acessorio_marca_sem_plataforma": 15,
+    "geracao_ambigua": 208,
+    "porta_cartao_organizador": 18,
+    "headset_sem_plataforma": 65,
+    "descoberta_duvida:tipo_por_classificador_estatistico": 17,
+    "descoberta_duvida:plataforma_desconhecida": 12,
+    "fisico_abaixo_do_piso": 15,
+    "descoberta_duvida:tipo_pelo_termo_de_busca": 16,
+    "semeadura_vertical_aguardando_conferencia": 32,
+    "acessorio_plataforma_legada": 1,
+    "descoberta_duvida:formato_desconhecido": 8,
+    "descoberta_duvida:tipo_pelo_termo_de_busca+plataforma_pelo_termo_de_busca": 1,
+    "descoberta_duvida:tipo_por_classificador_estatistico+formato_desconhecido": 3
+  }
+}

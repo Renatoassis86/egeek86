@@ -1,0 +1,201 @@
+{
+  "criadoEm": "2026-11-15T00:58:47.359Z",
+  "job": "refresh-snapshots:stats",
+  "motivo": "timeout_antigo",
+  "backup": "limpeza-running-presos-2026-11-15T00-58-38-648Z.ndjson",
+  "alterados": [
+    {
+      "id": "13889",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-12 19:00:41.76648+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "14239",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-12 20:00:33.288936+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "14960",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-12 22:00:32.568406+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "15142",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-12 22:30:32.338063+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "15323",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-12 23:00:32.118046+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "15469",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-12 23:30:47.901327+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "15833",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-13 00:30:32.350412+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "16035",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-13 01:00:32.440996+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "19155",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-13 12:00:32.418194+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "21087",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-13 21:00:33.349247+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "21305",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-13 22:00:32.244843+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "21569",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-13 23:00:46.715625+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "22096",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 01:00:33.16993+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "22396",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 02:00:32.278852+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "22753",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 03:00:39.406942+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "23137",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 04:00:32.829529+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "23400",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 05:00:32.619114+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "23651",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 06:00:32.287452+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "24537",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 09:30:32.705114+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "24933",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 11:30:32.464233+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "25116",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 12:30:32.47682+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "25549",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 15:00:32.280043+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "25685",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 15:30:32.312184+00",
+      "finished_at": null,
+      "stopped_because": null
+    },
+    {
+      "id": "25898",
+      "job": "refresh-snapshots:stats",
+      "status": "running",
+      "started_at": "2026-11-14 16:30:33.268659+00",
+      "finished_at": null,
+      "stopped_because": null
+    }
+  ],
+  "rollback": "npx tsx --env-file=.env.local scripts/aplicar-limpeza-running-presos-2026-11-14.ts --rollback docs/backups/limpeza-running-presos-log-2026-11-15T00-58-38-648Z.json --apply"
+}

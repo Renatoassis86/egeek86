@@ -4,7 +4,7 @@
  * Uso: npx tsx scripts/test-shopee-cobertura.ts
  */
 import {
-  avancarCursor, casarItem, coberturaLigada, criarIndice, fontesDe, lerConfigCobertura, PAGINAS_MAX_POR_FONTE, paradaPorErro, parseParametrosCobertura,
+  avancarCursor, casarItem, coberturaLigada, coletaNormalEmCurso, JANELA_COLETA_SHOPEE_MS, criarIndice, fontesDe, lerConfigCobertura, PAGINAS_MAX_POR_FONTE, paradaPorErro, parseParametrosCobertura,
   descansoMs, emDescanso, fonteMaisProximaDeVoltar, proximaFonte, resumirCategorias, type CursorMapa,
 } from '../src/lib/affiliate/shopee-cobertura';
 import type { MasterIdentity } from '../src/lib/affiliate/amazon-identity';
@@ -128,6 +128,16 @@ check('Anuncio sem relacao: sem candidato', casarItem(idx, item('Capa de celular
     { productName: 'E' },
   ]);
   check('probe: agrega por caminho, ignora zeros e vazios, ordena por frequencia', r.length === 2 && r[0].caminho === '100012>100068>100259' && r[0].itens === 2 && r[1].caminho === '100012>100068' && r[0].nivelFinal === '100259', r);
+}
+
+// R2-7: janela livre (cota propria e espacada)
+{
+  const agora = Date.UTC(2026, 10, 14, 20, 24, 0);
+  check('janela: sem collect-shopee em andamento => roda', !coletaNormalEmCurso([], agora));
+  check('janela: collect-shopee iniciado ha 2 min => espera', coletaNormalEmCurso([agora - 2 * 60_000], agora));
+  check('janela: linha running antiga (>6 min, presa) nao trava a cobertura', !coletaNormalEmCurso([agora - JANELA_COLETA_SHOPEE_MS - 1], agora));
+  check('janela: um recente entre antigos => espera', coletaNormalEmCurso([agora - 60 * 60_000, agora - 30_000], agora));
+  check('janela: inicio no futuro/NaN e ignorado', !coletaNormalEmCurso([agora + 5000, Number.NaN], agora));
 }
 
 console.log(`${total - fails}/${total} ok`);

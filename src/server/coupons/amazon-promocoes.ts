@@ -8,6 +8,7 @@ import {
   type PromoCard, type PromoPayload, precoCasa, verticaisDaCategoria,
 } from '@/lib/coupons/amazon-promocoes';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
+import { pausarUsadoLidoNaPagina } from '@/server/collector/amazon-usado-lido';
 
 /**
  * Ingestão das PROMOÇÕES DA AMAZON lidas pela aba logada do dono (loop public/loops/amazon-promocoes.js), SÓ LEITURA.
@@ -244,6 +245,9 @@ export async function confirmarItens(body: unknown, now: Date = new Date()): Pro
     const asin = String(it.asin ?? '').toUpperCase();
     const promoId = String(it.promo_id ?? '');
     if (!/^[A-Z0-9]{10}$/.test(asin) || !/^[A-Z0-9]{8,20}$/.test(promoId)) { out.recusados.push({ asin, motivo: 'identificacao_invalida' }); continue; }
+    // R2-13 (dono, 2026-11-14): box de compra ativo de USADO na página do item (Usado - Como novo, Amazon Quase Novo, Warehouse): pausa a oferta e não confirma o cupom.
+    const usado = await pausarUsadoLidoNaPagina(asin, (it as { condicao?: unknown }).condicao, 'amazon-promocoes:confirmar-item').catch(() => null);
+    if (usado?.usado) { out.recusados.push({ asin, motivo: 'usado_lido_na_pagina' }); continue; }
     const rows = (await db.execute<Row>(sql`
       SELECT ci.value_num::float AS pct, ci.scope->'offer_ids'->>0 AS offer, o.current_price_cents::text AS price, ci.raw_text AS raw, (ci.conditions->>'prime_checkout' = 'true') AS prime
       FROM coupon_items ci JOIN affiliate_offers o ON o.id = (ci.scope->'offer_ids'->>0)::uuid AND o.status = 'active'

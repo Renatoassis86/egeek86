@@ -392,12 +392,28 @@ export interface PersistedGate {
   at: string;
   /** Decisão humana; vence o automático (exceto não-original determinístico). */
   manual?: GateVerdict;
+  /** Liberação automática (R2-6/R2-11, 2026-11-14): veredito anterior e autor do lote. */
+  previousVerdict?: GateVerdict;
+  approvedBy?: string;
 }
 
 export function toPersistedGate(r: GateResult, at: string, manual?: GateVerdict | null): PersistedGate {
   const out: PersistedGate = { verdict: r.verdict, category: r.category, reason: r.reason, matched: r.matched, version: r.version, at };
   if (manual) out.manual = manual;
   return out;
+}
+
+
+/**
+ * R2-6 (dono, 2026-11-14): "a única restrição é usado e retrô". Dúvida de identidade do porteiro (geração ambígua, descoberta com dúvida, acessório sem plataforma)
+ * NÃO bloqueia a entrada nem o preço: o master (que já é um grupo PRÓPRIO, criado do título exato) nasce APROVADO e marcado `identidade.estado = nao_identificado`,
+ * para uma fusão posterior por chave forte (scripts/juntar-por-chave-forte.ts). Rejeitado (usado/retrô/peça/não original) nunca passa por aqui.
+ */
+export function liberarDuvidaComoNaoIdentificado(attrs: Record<string, unknown>, por = 'auto:r2-6', now: string = new Date().toISOString()): Record<string, unknown> {
+  const g = attrs.catalogGate as PersistedGate | undefined;
+  if (!g || g.verdict !== 'review') return attrs;
+  const liberado: PersistedGate = { ...g, verdict: 'approved', category: 'ok', reason: `nao_identificado:${g.reason}`, previousVerdict: 'review', approvedBy: por, at: now };
+  return { ...attrs, catalogGate: liberado, identidade: { estado: 'nao_identificado', motivo: g.reason, desde: now } };
 }
 
 // ---------------------------------------------------------------------------

@@ -188,6 +188,9 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
   const delegar: AmzRow[] = [];
   const vistos = new Set<string>();
   const limite = Date.now() + (opts.deadlineMs ?? 50_000);
+  // R2-1 (dono, 2026-11-14): master novo NÃO fica mais 'sempre em revisão'. Entra aprovado e a oferta segue para o julgamento (ativa x rascunho) quando o porteiro não barra
+  // (usado/retrô/peça/não original barram); dúvida de identidade vira grupo próprio 'não identificado' (R2-6). `ativarNovoAprovado: false` volta ao comportamento antigo.
+  const ativar = opts.ativarNovoAprovado !== false;
 
   for (const row of rows) {
     const consulta = vitrineQueryById(row.id) ?? (opts.consultaFixa && opts.consultaFixa.id === row.id ? opts.consultaFixa : undefined);
@@ -235,7 +238,7 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
           if (!masterId && 'novo' in m) {
             if (!opts.apply) {
               s.masters_novos++;
-              if (opts.ativarNovoAprovado && m.novo.aprovado) { s.novos_ativos = (s.novos_ativos ?? 0) + 1; s.previstos.push({ asin: c.a, titulo: c.t.slice(0, 80), destino: 'ativa (julgamento da Amazon decide)' }); }
+              if (ativar && m.novo.aprovado) { s.novos_ativos = (s.novos_ativos ?? 0) + 1; s.previstos.push({ asin: c.a, titulo: c.t.slice(0, 80), destino: 'ativa (julgamento da Amazon decide)' }); }
               else { s.rascunhos_novos++; s.previstos.push({ asin: c.a, titulo: c.t.slice(0, 80), destino: m.novo.aprovado ? 'rascunho' : 'revisao' }); }
               continue;
             }
@@ -250,17 +253,17 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
           if (dec.acao === 'descartar') { bump(s, `novo:${dec.motivo}`); continue; }
           if (dec.acao === 'anexar') { masterId = dec.masterId; podeAtivar = dec.oferta === 'ativa'; }
           else {
-            if (!opts.apply) { s.masters_novos++; s.rascunhos_novos++; continue; }
-            masterId = await criarMasterPlus(client, dec.proposta, { imageUrl: safeAmazonImage(c.i), itemId: c.a, sugestao: dec.sugestaoPorteiro, motivo: dec.motivo, runId: null });
+            if (!opts.apply) { s.masters_novos++; if (ativar) s.novos_ativos = (s.novos_ativos ?? 0) + 1; else s.rascunhos_novos++; continue; }
+            masterId = await criarMasterPlus(client, dec.proposta, { imageUrl: safeAmazonImage(c.i), itemId: c.a, sugestao: dec.sugestaoPorteiro, motivo: dec.motivo, runId: null, aprovarAuto: ativar && dec.oferta === 'ativa', naoIdentificado: ativar });
             indice.adicionar(dec.proposta, masterId);
             await marcarOrigemAmazon(masterId, c.a, runTag);
-            podeAtivar = false; novo = true; // master novo: sempre em revisão; a oferta fica em rascunho
+            podeAtivar = ativar; novo = true; // R2-1/R2-6: master novo aprovado (identidade forte) ou 'não identificado' (dúvida); o julgamento da Amazon decide ativa x rascunho
           }
         }
         if (!masterId) continue;
         if (novo) { s.masters_novos++; s.criados.masters.push(masterId); }
         // Master aprovado e identidade forte: o julgamento da Amazon (mesmas réguas da busca por master) decide ativa x rascunho.
-        const novoLiberado = novo && opts.ativarNovoAprovado === true && consulta.vertical === 'games'; // master NOVO aprovado pelo porteiro, só na descoberta por promoção
+        const novoLiberado = novo && ativar; // master NOVO aprovado pelo porteiro (R2-1: regra geral da entrada da Amazon, 2026-11-14)
         if (podeAtivar && (!novo || novoLiberado) && (consulta.vertical === 'games' || (await masterAprovado(masterId).catch(() => false)))) { // games: o veredito do porteiro gamer já veio de casarJogo (sem veredito = aprovado)
           delegar.push({ id: masterId, q: consulta.q, r: [c as AmzCand] });
           s.delegados++;

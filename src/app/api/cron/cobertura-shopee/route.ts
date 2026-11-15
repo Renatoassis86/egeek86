@@ -20,7 +20,7 @@ export const maxDuration = 300;
  *   Diretriz do dono (2026-11-12): variação de preço e poucas vendas NÃO descartam; produto sem master equivalente é CRIADO (review + dedup + porteiro); preço fora de 0,35x-3x entra quarentenado.
  *   ?probe=cat                   medição somente leitura: productCatIds devolvidos pela API para os masters de cada loja (<= 24 chamadas)
  *   ?rollback=<run_id>&apply=1   apaga só as ofertas/rascunhos/perguntas criadas por aquele run (sem apply só conta)
- * Para o PRIMEIRO 10030. Teto de 800 chamadas por hora deste job. NÃO está no vercel.json: agendar é decisão do dono.
+ * Para o PRIMEIRO 10030. Teto de 800 chamadas por hora deste job. Agendada em vercel.json a cada 10 min (minutos 4,14,...,54) com maxCalls=8 (R2-7, 2026-11-14): cota propria e espacada, na janela livre depois do collect-shopee; se ele ainda estiver rodando, a rodada espera (parou='aguardando_coleta', sem API e sem cursor).
  */
 export async function GET(request: NextRequest) {
   const denied = rejectUnlessCronOrTestKeyDryRun(request);
