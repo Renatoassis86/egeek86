@@ -37,7 +37,7 @@ Um item só fecha quando TODOS os elos existirem e estiverem verificados em prod
 |---|---|---|---|---|
 | 1 | **Promoção Prime 25% do Jogo Barato e cupons, ponta a ponta** | #66, #82, #37 | Elos: loop `amazon-promocoes` na aba -> `coupon_items` -> agulha -> mensagem CUPOM/Prime -> card no site. Auditoria: 0 promoção Prime no banco; `amazon-promocoes` sem execução registrada; 37 mensagens CUPOM/24 h, mas nenhuma Prime confirmada | Não (eu opero a aba) |
 | 2 | **Loja de Impressão 3D em 3 seções** (Impressoras, Filamentos, Demais itens) | #63 | Nada feito | Não |
-| 2b | **Guia dedicada às impressoras 3D prioritárias no Plus, com o menor preço sempre** (Bambu A1/A1 Mini/P1S/P2S e Kobra; ML e Amazon) | #111 | Nada feito; junta com o item 2 (#63) e depende da cobertura Bambu (#59) | Não |
+| 2b | **Guia dedicada às impressoras 3D prioritárias no Plus, com o menor preço sempre** (ML e Amazon). **Ordem do dono: 1º P2S, 2º P1S, 3º as demais (A1, A1 Mini, combos, Kobra)**, valendo para guia, front, mensagens e cobertura | #111 | Nada feito; junta com o item 2 (#63) e depende da cobertura Bambu (#59) | Não |
 | 3 | **Cupons: ML por anúncio (CUPOMPRAHOME) e cupom da Shopee** | #7, #8 | Leitura ML ampliada (+1.500 ofertas) sem confirmar envio; Shopee: 0 leituras no banco, sem loop | Não |
 | 4 | **275 masters em `review` (política "só usado/retrô barra")** e barreiras de entrada | #83, #55 | Regra permanente de liberação não aplicada | Aval do dono para nova barreira |
 | 5 | **Ciência e tecnologia: 10 segmentos restantes + decisão 5** (departamento Ferramentas, exceções de item miúdo, linha Fluke/Testo, anúncio livre, equipamento médico fora, R2-11 nos próximos lotes) | #60 | Rodar 10 segmentos; confirmar `SEMEADURA_LOJAS` | **Sim** (decisão 5) |
