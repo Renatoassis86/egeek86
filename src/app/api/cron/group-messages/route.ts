@@ -1,3 +1,4 @@
+import { capturarFreteMl } from '@/server/shipping/frete-prazo';
 import { DEGRAUS, faixaTexto } from '@/lib/messaging/regua';
 import { NextResponse, type NextRequest } from 'next/server';
 import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
@@ -93,5 +94,8 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
   // Painéis vivos das impressoras 3D (#117; PAINEL_IMPRESSORAS, padrão desligada): mensagens fixas editadas, rodada a cada 10 min com cursor; usa só o tempo que sobra.
   const sobraMs = maxDuration * 1000 - (Date.now() - startedAt) - 4_000;
   const paineis = sobraMs >= 6_000 ? await atualizarPaineisImpressoras(new Date(), { budgetMs: sobraMs - 1_500 }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
-  return NextResponse.json({ ...summary, agenteCupons: agente, paineisImpressoras: paineis, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
+  // Frete e prazo das impressoras até o CEP do dono (#118; FRETE_PRAZO_IMPRESSORAS, padrão desligada): API oficial do ML, lote pequeno com orçamento do que sobra.
+  const sobra2Ms = maxDuration * 1000 - (Date.now() - startedAt) - 4_000;
+  const fretePrazo = sobra2Ms >= 6_000 ? await capturarFreteMl(new Date(), { budgetMs: Math.min(15_000, sobra2Ms - 2_500) }).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  return NextResponse.json({ ...summary, agenteCupons: agente, paineisImpressoras: paineis, fretePrazo, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
 }

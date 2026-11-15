@@ -4,6 +4,7 @@ import { listarFilaRevalidacao, listasDeCupons, resolverUrlsLeitura, resolverUrl
 import { ingestPageReads } from '@/server/coupons/page-reads';
 import { PAGE_NETWORKS, type PageNetwork } from '@/lib/coupons/page-read';
 import { AGULHA } from '@/lib/coupons/agulha';
+import { gravarEntregasAmazon } from '@/server/shipping/frete-prazo';
 import { adapterFor } from '@/lib/coupons/network-adapters';
 
 export const dynamic = 'force-dynamic';
@@ -70,5 +71,7 @@ export async function POST(request: NextRequest) {
   const rows = (Array.isArray(body?.rows) ? body.rows : []).slice(0, 40).filter((r: unknown) => r && typeof r === 'object' && /^[0-9a-f-]{36}$/i.test(String((r as { id?: unknown }).id)));
   if (!rows.length) return NextResponse.json({ error: 'sem_linhas_validas' }, { status: 400, headers });
   const stats = await ingestPageReads(rede as PageNetwork, rows as Parameters<typeof ingestPageReads>[1]);
-  return NextResponse.json({ ok: true, rede, ...stats }, { headers });
+  // Entrega lida na mesma página do produto (#118): só Amazon, sem requisição extra; falha aqui nunca derruba a leitura de cupom.
+  const entrega = rede === 'amazon' ? await gravarEntregasAmazon(rows as Array<{ id?: unknown; entrega?: unknown }>).catch(() => undefined) : undefined;
+  return NextResponse.json({ ok: true, rede, ...stats, ...(entrega ? { entrega } : {}) }, { headers });
 }

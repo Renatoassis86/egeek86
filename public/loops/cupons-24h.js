@@ -25,7 +25,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.0.0';
+  var VERSAO = '1.1.0';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-cupons-24h.ts
@@ -333,6 +333,15 @@
     return out;
   }
 
+  /** ENTREGA (#118): só leitura do texto que a própria página mostra para o CEP da conta ("Entrega GRÁTIS Sábado, 21 de Novembro", "Entrega R$201 24 - 26 de Novembro") + CEP exibido e vendedor. Sem requisição extra; o servidor interpreta e valida. */
+  function entregaDoc(doc) {
+    try {
+      var texto = txt(doc.querySelector('#mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE_LARGE')) || txt(doc.querySelector('#deliveryBlockMessage'));
+      if (!texto) return undefined;
+      return { texto: texto.slice(0, 300), cep: txt(doc.querySelector('#glow-ingress-block')).slice(0, 80), vendido: txt(doc.querySelector('#merchantInfoFeature_feature_div, #merchant-info, #tabular-buybox')).slice(0, 120) };
+    } catch (e) { return undefined; }
+  }
+
   /** Produto da Amazon renderizado (iframe oculto de mesma origem). Devolve { ok, asin, seen, selos } | { bloqueio } | { descarte }. */
   async function lerAmazonProduto(item) {
     var f = novoFrame('/dp/' + encodeURIComponent(item.ref));
@@ -355,7 +364,7 @@
           if ((selos.length && espera >= 1500) || espera >= 5000) {
             var a = (doc.querySelector('#ASIN, input[name="ASIN"]') || {}).value || (/\/dp\/([A-Z0-9]{10})/.exec(win.location.pathname) || [])[1];
             if (String(a || '').toUpperCase() !== String(item.ref).toUpperCase()) return { descarte: 'asin_diferente:' + a };
-            return { ok: true, asin: a, seen: seen, selos: selos, fonte: 'produto', cartao: beneficiosCartaoDoc(doc) };
+            return { ok: true, asin: a, seen: seen, selos: selos, fonte: 'produto', cartao: beneficiosCartaoDoc(doc), entrega: entregaDoc(doc) };
           }
         }
       }
@@ -495,7 +504,7 @@
         var selos = res.selos;
         var fonte = res.fonte;
         if (REDE === 'amazon' && !selos.length && S.cuponsAsins[item.ref]) { selos = [S.cuponsAsins[item.ref]]; fonte = 'lista-oficial'; }
-        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, beneficios_cartao: res.cartao && res.cartao.length ? res.cartao : undefined, coupons: res.cupons || selos.map(function (label) { var c = { label: label }, cod = PURO.codigoDoTexto(label); if (cod) c.code = cod; return c; }) });
+        rows.push({ id: item.id, ref: res.asin, price_seen_cents: res.seen, beneficios_cartao: res.cartao && res.cartao.length ? res.cartao : undefined, entrega: res.entrega, coupons: res.cupons || selos.map(function (label) { var c = { label: label }, cod = PURO.codigoDoTexto(label); if (cod) c.code = cod; return c; }) });
         linha({ ref: item.ref, seen: res.seen, selos: selos, fonte: fonte, codigos: rows[rows.length - 1].coupons.map(function (c) { return c.code || null; }) });
       } else if (res) {
         c.descartadas++;
