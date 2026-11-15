@@ -180,6 +180,21 @@ export function quedaDoMesmoAnuncio(anteriorItemId: string | null | undefined, a
   return mesmoAnuncio(anteriorItemId, atualItemId);
 }
 
+/**
+ * Precedência página x coletor (rodada 4, achado 30): a API de catálogo do ML pode demorar horas para refletir o preço que a página já mostra
+ * (2d875e9b: página R$ 9.399 às 22:21, API ainda R$ 9.230 às 23:00; hoje a API diz 9.399). Depois de uma correção pela página, o valor ANTIGO
+ * que ela substituiu não pode ser regravado pelo coletor por 2 h. A nota do veredito de correção é `corrigido de <veredito>; antes <centavos>`.
+ */
+export const REJEICAO_JANELA_MIN = 120;
+export function precoRejeitadoDaNota(nota: string | null | undefined): number | null {
+  const m = /^corrigido de [a-z_]+; antes (\d{3,9})$/.exec((nota ?? '').trim());
+  return m ? Number(m[1]) : null;
+}
+export function deveIgnorarPrecoRejeitado(e: { nota: string | null | undefined; priceCents: number }): boolean {
+  const r = precoRejeitadoDaNota(e.nota);
+  return r != null && r === e.priceCents;
+}
+
 export interface PlanoLink {
   affiliateUrl: string;
   linkItemId: string;

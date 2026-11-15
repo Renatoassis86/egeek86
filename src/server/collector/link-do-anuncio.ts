@@ -33,13 +33,22 @@ export async function alinharLinkAoAnuncio(offerId: string, itemId: string | nul
  * completa e ele não está (provável pausado/encerrado); null = não deu para saber (erro, 429, lista incompleta). Usado ANTES de um anúncio irmão assumir
  * a oferta (rodada 3, achado 25). Nunca lança.
  */
+/** Limite de chamadas do catálogo por instância e minuto (anúncio do link vivo): 60. Estourou = indeterminado (null). */
+let janelaCat = { ini: 0, n: 0 };
+function podeChamarCatalogo(): boolean {
+  const agora = Date.now();
+  if (agora - janelaCat.ini > 60_000) janelaCat = { ini: agora, n: 0 };
+  return ++janelaCat.n <= 60;
+}
+
 export async function anuncioDoLinkVivo(catalogoRef: string | null, itemId: string | null): Promise<boolean | null> {
   if (!catalogoRef || !itemId || !/^MLB\d+$/.test(catalogoRef)) return null;
   try {
     const { getValidAccessToken } = await import('@/server/collector/sources/mercado-livre-auth');
     const token = await getValidAccessToken();
     const alvo = itemId.replace(/\D/g, '');
-    for (let off = 0; off < 300; off += 100) {
+    for (let off = 0; off < 2000; off += 100) { // até 20 páginas; acima disso é indeterminado (null) e o irmão NÃO assume
+      if (!podeChamarCatalogo()) return null;
       const res = await fetch(`https://api.mercadolibre.com/products/${catalogoRef}/items?limit=100&offset=${off}`, { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 404 && off === 0) return false;
       if (res.status !== 200) return null;
@@ -47,7 +56,7 @@ export async function anuncioDoLinkVivo(catalogoRef: string | null, itemId: stri
       if ((d.results ?? []).some((x) => x.item_id.replace(/\D/g, '') === alvo)) return true;
       if (off + 100 >= (d.paging?.total ?? 0)) return false;
     }
-    return null; // catálogo grande demais para decidir com 3 páginas
+    return null; // catálogo grande demais para decidir
   } catch {
     return null;
   }

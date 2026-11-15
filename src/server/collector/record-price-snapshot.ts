@@ -1,7 +1,7 @@
 import 'server-only';
 import { desc, eq, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { deveIgnorarAnuncioIrmao, ehIdDeCatalogo } from '@/lib/messaging/confirmacao-preco';
+import { deveIgnorarAnuncioIrmao, deveIgnorarPrecoRejeitado, ehIdDeCatalogo } from '@/lib/messaging/confirmacao-preco';
 import { anuncioDoLinkVivo } from './link-do-anuncio';
 import { affiliateOffers, affiliatePriceSnapshots } from '@/db/schema';
 
@@ -72,13 +72,15 @@ export async function recordPriceSnapshotDetalhado(inputOriginal: RecordSnapshot
       .limit(1);
     // Anúncio anterior (coluna fora do schema Drizzle): só lido quando o chamador informa o anúncio atual.
     if (input.itemId) {
-      const prev = (await tx.execute(sql`SELECT external_item_id AS item, link_item_id AS link, external_ref AS ref, last_price_confirmed_at AS conf FROM affiliate_offers WHERE id = ${input.offerId}::uuid`)) as unknown as { item: string | null; link: string | null; ref: string | null; conf: Date | string | null }[];
+      const prev = (await tx.execute(sql`SELECT external_item_id AS item, link_item_id AS link, external_ref AS ref, last_price_confirmed_at AS conf, (SELECT a.note FROM offer_link_audit a WHERE a.offer_id = affiliate_offers.id AND a.verdict = 'ok' AND a.note LIKE 'corrigido de%' AND a.checked_at > now() - interval '120 minutes' ORDER BY a.checked_at DESC LIMIT 1) AS corr FROM affiliate_offers WHERE id = ${input.offerId}::uuid`)) as unknown as { item: string | null; link: string | null; ref: string | null; conf: Date | string | null; corr: string | null }[];
       const antes = prev[0]?.item ?? null;
       // Guarda (#119): id de catálogo nunca é anúncio; ignora o informado.
       if (ehIdDeCatalogo(input.itemId, prev[0]?.ref)) input = { ...input, itemId: null };
+      // Precedência da página: o valor que a página acabou de corrigir (últimas 2 h) não volta pelo coletor (a API do catálogo pode estar atrasada).
+      else if (deveIgnorarPrecoRejeitado({ nota: prev[0]?.corr, priceCents: input.priceCents })) { ignoradoIrmao = true; return; }
       // Anúncio irmão com o do link lido há pouco: não troca preço nem anúncio (preço = o do anúncio do link).
       // Anúncio irmão: ignora se o do link foi lido há < 3 h OU se a API diz que o do link ainda está vivo; só assume com o do link morto (false) ou indeterminado após 3 h sem leitura.
-      else if (linkVivo === true || deveIgnorarAnuncioIrmao({ linkItemId: prev[0]?.link ?? null, itemNovo: input.itemId, confirmadoEm: prev[0]?.conf ? new Date(prev[0].conf) : null, now: new Date() })) { ignoradoIrmao = true; return; }
+      else if (prev[0]?.link && prev[0].link.replace(/\D/g, '') !== input.itemId.replace(/\D/g, '') && (deveIgnorarAnuncioIrmao({ linkItemId: prev[0].link, itemNovo: input.itemId, confirmadoEm: prev[0]?.conf ? new Date(prev[0].conf) : null, now: new Date() }) || linkVivo !== false)) { ignoradoIrmao = true; return; } // irmão só assume com o anúncio do link comprovadamente fora do catálogo (false); indeterminado (null) não deixa assumir
       trocouDeAnuncio = !!antes && !!input.itemId && antes.replace(/\D/g, '') !== input.itemId.replace(/\D/g, '');
     }
 

@@ -100,3 +100,16 @@ Medido em `collector_runs` job `group-messages-fases` (nova linha por invocaçã
 | renovação da Shopee | pulada | 0,03 s |
 
 Conclusão: o que mais consumia tempo era o próprio ciclo de envio (carga do banco e fila de 11 mil mensagens) somado ao frete/prazo; as fases novas da integridade eram pequenas, mas só rodavam depois delas e morriam de fome. Mudanças: (1) integridade em invocação própria `?fase=integridade` (mesma rota, entrada própria em `vercel.json`, trava `group-messages:integridade`, orçamento ~42 s); (2) teto total de 40 s na invocação de envio, ordem fixa e mínimo por fase; (3) frete/prazo limitado a 8 s.
+
+## Rodada 4 do revisor (tratamento) - 2026-11-15
+| Achado | Tratamento |
+|---|---|
+| 30 (2d875e9b) | **Causa**: a API de catálogo do ML atrasa horas em relação à página (9.230 na API até 23:00; página 9.399 às 22:21; hoje a API também diz 9.399). Regra: depois de uma correção pela página, o valor ANTIGO que ela substituiu não pode ser regravado pelo coletor por 2 h (`deveIgnorarPrecoRejeitado`; a nota do veredito `corrigido de ...; antes N` guarda o valor). Outro valor (inclusive queda real) passa. |
+| 31 (93607216) | **Causa**: é um PLACEHOLDER de catálogo (sem vendedor): guarda o MENOR preço do catálogo (R$ 8.749) e o link é de UM anúncio de outro vendedor (TECPRINTRP10, R$ 9.978); preço e link divergem por desenho e `external_item_id` nunca é gravado (o anúncio já pertence à oferta do vendedor). Placeholder ML saiu da lista/cards do privado. O medidor do revisor precisa tratá-lo como não elegível ao estrito. Filler: ofertas do privado e Bambu têm prioridade 0 e catálogo tentado de novo após 30 min. |
+| 32 | Não regrava linha idêntica (só renova `checked_at`); reaudita não-ok a cada 10 min. |
+| 33 | Rótulos separados: `recuo_global (captcha/429 recente)` x `teto_de_leituras_da_janela (8 por 10 min)`. |
+| 34 | `anuncioDoLinkVivo` pagina até 20 páginas; limite de 60 chamadas/min por instância; indeterminado NÃO deixa o irmão assumir (só `false` comprovado). |
+| 35 | `not_returned` só vira falta se a API respondeu ok para outra oferta no mesmo ciclo; mantém 3 ciclos separados por 30 min. |
+| 36 | **Causa-raiz do envio lento**: o pré-filtro da fila (`NOT EXISTS` por master entre as já enviadas) rodava 908 vezes varrendo ~7 mil linhas: **19,1 s** (10,8 s na segunda medição). Índice parcial `group_messages_enviadas_master_idx` (migration 0059, criado em 1,4 s): **23 ms** no EXPLAIN ANALYZE. Fases opcionais: com `ciclo_envio` > 20 s o frete/prazo é pulado e o agente de cupons fica em 5 s. `q_all` (product-price-stats) e as consultas `live_networks` NÃO foram tocadas (módulos de outra frente). |
+| 37 | `vercel.json` tem 25 crons; a entrada `?fase=integridade` a cada minuto exige plano Pro (limite 40 crons); no Hobby seria recusada. |
+| 38 | Não é minha: a contenção da Amazon só pode sair com snapshot <= 130 min comprovado nas 5 ofertas do estrito (leitor novo do agente #120). |

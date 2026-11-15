@@ -20,14 +20,21 @@ export interface ResultadoPreenchimento { catalogos: number; ofertas: number; pr
 export async function preencherAnuncios(opts: { orcamentoMs: number; maxCatalogos?: number; gravar?: boolean }): Promise<ResultadoPreenchimento> {
   const out: ResultadoPreenchimento = { catalogos: 0, ofertas: 0, preenchidas: 0, ausentes: 0, parou: null };
   const fim = Date.now() + opts.orcamentoMs;
+  // Prioridade: 0 = ofertas do privado (P2S/P1S Combo) e Bambu Lab; 1 = ofertas que saíram em mensagem nas últimas 24 h; 2 = impressoras 3D; 3 = resto.
+  // Catálogo de prioridade 0 volta a ser tentado depois de 30 min; os demais, depois de 6 h.
   const catalogos = (await db.execute(sql`
-    SELECT o.external_ref AS ref,
-           min(CASE WHEN o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL) THEN 0
-                    WHEN o.vertical = 'impressao3d' THEN 1 ELSE 2 END) AS prio
-    FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id AND n.slug = 'mercado-livre'
-    WHERE o.status = 'active' AND o.external_item_id IS NULL AND o.seller_id IS NOT NULL AND o.external_ref ~ '^MLB[0-9]+$' AND o.current_price_cents > 0
-      AND o.external_ref NOT IN (SELECT meta->>'ref' FROM collector_runs WHERE job = 'preencher-anuncios' AND started_at > now() - interval '6 hours' AND meta->>'ref' IS NOT NULL)
-    GROUP BY 1 ORDER BY 2, count(*) DESC LIMIT ${opts.maxCatalogos ?? 5}`)) as unknown as { ref: string }[];
+    WITH c AS (
+      SELECT o.external_ref AS ref, count(*) AS n,
+             min(CASE WHEN o.master_product_id::text IN ('2e4a5bd1-27d7-42c6-bc62-dfa1d5eace45', '23bfa05b-053e-46cc-8308-7d4332fadf18') OR m.name ~* 'bambu' THEN 0
+                      WHEN o.id IN (SELECT offer_id FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL) THEN 1
+                      WHEN o.vertical = 'impressao3d' THEN 2 ELSE 3 END) AS prio
+      FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id AND nn.slug = 'mercado-livre' JOIN master_products m ON m.id = o.master_product_id
+      WHERE o.status = 'active' AND o.external_item_id IS NULL AND o.seller_id IS NOT NULL AND o.external_ref ~ '^MLB[0-9]+$' AND o.current_price_cents > 0
+      GROUP BY 1)
+    SELECT c.ref FROM c
+    WHERE NOT EXISTS (SELECT 1 FROM collector_runs r WHERE r.job = 'preencher-anuncios' AND r.meta->>'ref' = c.ref
+                        AND r.started_at > now() - (CASE WHEN c.prio = 0 THEN interval '30 minutes' ELSE interval '6 hours' END))
+    ORDER BY c.prio, c.n DESC LIMIT ${opts.maxCatalogos ?? 5}`)) as unknown as { ref: string }[];
   const token = await getValidAccessToken();
   for (const { ref } of catalogos) {
     if (Date.now() > fim - 4000) break;
@@ -131,6 +138,8 @@ export async function renovarShopee(opts: { limite?: number } = {}): Promise<{ l
         await db.execute(sql`DELETE FROM collector_runs WHERE job = 'shopee-falta' AND meta->>'oferta' = ${r.id}`);
         out.renovadas++;
       } else {
+        // `not_returned` (resposta vazia da API) só vira falta se a API respondeu OK para outra oferta neste mesmo ciclo (senão pode ser falha geral da API).
+        if (q.reason === 'not_returned' && out.renovadas === 0) { out.indisponiveis++; continue; }
         // Falta só conta em CICLOS DISTINTOS separados por >= 30 min; expira com 3 faltas (rodada 3, achado 24).
         const hist = (await db.execute(sql`SELECT started_at FROM collector_runs WHERE job = 'shopee-falta' AND meta->>'oferta' = ${r.id} AND started_at > now() - interval '24 hours' ORDER BY started_at DESC`)) as unknown as { started_at: Date | string }[];
         const ultima = hist[0] ? new Date(hist[0].started_at).getTime() : 0;

@@ -74,7 +74,7 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
     JOIN master_products m ON m.id = o.master_product_id
     LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
-      AND nn.slug IN ('mercado-livre', 'amazon') ${amazonForaDasMensagens() ? sql`AND nn.slug <> 'amazon'` : sql``} AND o.last_checked_at > now() - interval '24 hours'
+      AND (nn.slug <> 'mercado-livre' OR o.seller_id IS NOT NULL) /* placeholder ML (sem vendedor) guarda o MENOR preço do catálogo e tem link de UM anúncio: preço e link divergem por desenho (93607216) */ AND nn.slug IN ('mercado-livre', 'amazon') ${amazonForaDasMensagens() ? sql`AND nn.slug <> 'amazon'` : sql``} AND o.last_checked_at > now() - interval '24 hours'
       AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
   const ligada = confirmacaoLigada();
   const audit = ligada ? await ultimosVereditos(rows.map((r) => r.id)) : new Map<string, { verdict: string; checkedAt: Date; okEm: Date | null }>();

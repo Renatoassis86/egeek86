@@ -1,6 +1,6 @@
 /** #119: invariantes do módulo integridade-preco (puro). */
 import { anuncioConcreto, escolherAnuncio, textoPrecoComVariacao, violacoes } from '../src/lib/pricing/integridade-preco';
-import { avaliarConfirmacao, deveIgnorarAnuncioIrmao, ehIdDeCatalogo } from '../src/lib/messaging/confirmacao-preco';
+import { avaliarConfirmacao, deveIgnorarAnuncioIrmao, deveIgnorarPrecoRejeitado, ehIdDeCatalogo, precoRejeitadoDaNota } from '../src/lib/messaging/confirmacao-preco';
 process.env.AMAZON_FORA_DAS_MENSAGENS = '0'; // contencao #120 (Amazon fora das mensagens) e de outra frente: estes testes cobrem as regras de confirmacao em si
 let fails = 0;
 function ok(c: boolean, n: string, x?: unknown) { if (!c) { fails++; console.error('FALHOU:', n, x ?? ''); } }
@@ -32,5 +32,9 @@ ok(!deveIgnorarAnuncioIrmao({ linkItemId: 'MLB5245600573', itemNovo: 'MLB4000000
 ok(!deveIgnorarAnuncioIrmao({ linkItemId: 'MLB5245600573', itemNovo: 'MLB-5245600573', confirmadoEm: ha(5), now: now2 }), 'mesmo anúncio: grava');
 ok(!deveIgnorarAnuncioIrmao({ linkItemId: null, itemNovo: 'MLB4000000001', confirmadoEm: ha(5), now: now2 }), 'sem link conhecido: grava');
 ok(ehIdDeCatalogo('MLB53254557', 'MLB53254557') && !ehIdDeCatalogo('MLB5563781513', 'MLB53254557') && !ehIdDeCatalogo(null, 'MLB1'), 'guarda de id de catálogo');
+// Precedência da página sobre o coletor (achado 30)
+ok(precoRejeitadoDaNota('corrigido de preco_divergente; antes 923000') === 923000 && precoRejeitadoDaNota('confere') === null && precoRejeitadoDaNota(null) === null, 'nota de correção: preço rejeitado');
+ok(deveIgnorarPrecoRejeitado({ nota: 'corrigido de preco_divergente; antes 923000', priceCents: 923000 }), 'coletor regravando o valor rejeitado: ignora');
+ok(!deveIgnorarPrecoRejeitado({ nota: 'corrigido de preco_divergente; antes 923000', priceCents: 939900 }) && !deveIgnorarPrecoRejeitado({ nota: 'corrigido de preco_divergente; antes 923000', priceCents: 910000 }), 'outro valor (inclusive queda real) passa');
 console.log(fails ? `${fails} falha(s)` : 'OK: integridade-preco #119');
 process.exit(fails ? 1 : 0);

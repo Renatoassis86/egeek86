@@ -133,13 +133,13 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
   // cada fase sai se o tempo que resta até o teto é menor que o seu mínimo. Medido: envio 21-24 s, frete/prazo ~13 s, agente até 7 s.
   const TETO_MS = 40_000;
   const restanteMs = TETO_MS - (Date.now() - startedAt);
-  const agente = restanteMs >= 6_000 ? await fase(fases, 'agente_cupons', () => cicloAgenteCupons({ budgetMs: Math.min(10_000, restanteMs - 1_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  const agente = restanteMs >= 6_000 ? await fase(fases, 'agente_cupons', () => cicloAgenteCupons({ budgetMs: Math.min(fases.ciclo_envio > 20_000 ? 5_000 : 10_000, restanteMs - 1_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   // Painéis vivos das impressoras 3D (#117; PAINEL_IMPRESSORAS, padrão desligada): mensagens fixas editadas, rodada a cada 10 min com cursor; usa só o tempo que sobra.
   const sobraMs = TETO_MS - (Date.now() - startedAt);
   const paineis = sobraMs >= 6_000 ? await fase(fases, 'painel_privado', () => atualizarPaineisImpressoras(new Date(), { budgetMs: sobraMs - 1_500 })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   // Frete e prazo das impressoras até o CEP do dono (#118; FRETE_PRAZO_IMPRESSORAS, padrão desligada): API oficial do ML, lote pequeno com orçamento do que sobra.
   const sobra2Ms = TETO_MS - (Date.now() - startedAt);
-  const fretePrazo = sobra2Ms >= 7_000 ? await fase(fases, 'frete_prazo', () => capturarFreteMl(new Date(), { budgetMs: Math.min(8_000, sobra2Ms - 2_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  const fretePrazo = sobra2Ms >= 7_000 && fases.ciclo_envio <= 20_000 ? await fase(fases, 'frete_prazo', () => capturarFreteMl(new Date(), { budgetMs: Math.min(8_000, sobra2Ms - 2_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   await registrarFases('envio', { ...fases, pick: ((summary as { timing?: Record<string, number> }).timing?.pick) ?? 0, facts: ((summary as { timing?: Record<string, number> }).timing?.facts) ?? 0, detect: ((summary as { timing?: Record<string, number> }).timing?.detectMs) ?? 0 }, Date.now() - startedAt);
   return NextResponse.json({ ...summary, agenteCupons: agente, paineisImpressoras: paineis, fretePrazo, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
 }

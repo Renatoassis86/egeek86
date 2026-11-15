@@ -69,7 +69,7 @@ export async function carregarAlvos(escopo: Escopo, limite: number, ateMin: numb
     LEFT JOIN LATERAL (SELECT max(checked_at) AS ult FROM offer_link_audit a WHERE a.offer_id = o.id) au ON true
     LEFT JOIN (SELECT offer_id, count(*) AS c FROM group_messages WHERE created_at > now() - interval '24 hours' AND offer_id IS NOT NULL GROUP BY 1) fr ON fr.offer_id = o.id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0 AND ${filtro}
-      AND (${escopo === 'privado' || escopo === 'canal' || escopo === 'bambu' ? sql`true` : sql`au.ult IS NULL OR au.ult < now() - make_interval(mins => ${ateMin})`}) ${frag}
+      AND (${escopo === 'privado' || escopo === 'canal' || escopo === 'bambu' ? sql`au.ult IS NULL OR au.ult < now() - interval '10 minutes'` : sql`au.ult IS NULL OR au.ult < now() - make_interval(mins => ${ateMin})`}) ${frag}
     ORDER BY coalesce(fr.c, 0) DESC, au.ult ASC NULLS FIRST, o.current_price_cents DESC
     LIMIT ${limite}`)) as unknown as { id: string; link: string | null; item: string | null; cat: string | null; cents: number; lk: string | null; lv: Date | string | null }[];
   return rows.map((r) => ({ offerId: r.id, link: r.link, itemEsperado: r.item, catalogo: r.cat && /^MLB\d+$/.test(r.cat) ? r.cat : null, precoCents: Number(r.cents), linkItemId: r.lk, linkVerificadoEm: r.lv ? new Date(r.lv) : null }));
@@ -101,7 +101,7 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
       let leitura = viaApi ? undefined : cache.get(a.link);
       if (!viaApi && !leitura) {
         const slot = await reservarSlot().catch(async () => { await dormir(400); return reservarSlot(); });
-        if (!slot.ok) { out.parou = 'recuo_global (captcha/429 recente)'; break; }
+        if (!slot.ok) { out.parou = slot.motivo === 'recuo' ? 'recuo_global (captcha/429 recente)' : 'teto_de_leituras_da_janela (8 por 10 min)'; break; }
         if (slot.esperaMs > Math.max(0, fim - Date.now() - 3000)) { out.parou = 'sem_orcamento_para_o_ritmo'; break; }
         if (slot.esperaMs > 0) await dormir(slot.esperaMs);
         leitura = await resolverLinkMl(a.link, opts.fetchImpl);
@@ -122,7 +122,12 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
     out.linhas.push({ alvo: a, r });
     if (opts.gravar !== false) {
       // A conexão do pooler fecha por ociosidade durante a espera do ritmo (2 s) e das chamadas à API: uma nova tentativa reabre a conexão.
-      for (let t = 0; ; t++) try { await db.execute(sql`
+      // Dedupe (achado 32): se o último veredito da oferta é idêntico (veredito, preços, regra e nota), só renova checked_at em vez de gravar linha nova.
+      for (let t = 0; ; t++) try {
+        const igual = (await db.execute(sql`UPDATE offer_link_audit SET checked_at = now() WHERE id = (SELECT id FROM offer_link_audit WHERE offer_id = ${a.offerId}::uuid ORDER BY checked_at DESC LIMIT 1)
+          AND verdict = ${r.verdict} AND offer_price_cents = ${a.precoCents} AND price_link_cents IS NOT DISTINCT FROM ${r.cartao?.precoCents ?? null} AND regra_versao = ${REGRA_VERSAO} AND note = ${r.nota.slice(0, 200)} RETURNING id`)) as unknown as unknown[];
+        if (igual.length) break;
+        await db.execute(sql`
         INSERT INTO offer_link_audit (offer_id, link, item_id_link, product_id_link, price_link_cents, status_link, offer_price_cents, diff_pct, verdict, note, regra_versao)
         VALUES (${a.offerId}::uuid, ${a.link}, ${r.cartao?.itemId ?? null}, ${r.cartao?.productId ?? null}, ${r.cartao?.precoCents ?? null}, ${r.cartao ? (r.cartao.pausado ? 'pausado' : 'ativo') : null},
                 ${a.precoCents}, ${r.diffPct}, ${r.verdict}, ${r.nota.slice(0, 200)}, ${REGRA_VERSAO})`); break; } catch (e) { if (t >= 2) throw e; await dormir(400); }
