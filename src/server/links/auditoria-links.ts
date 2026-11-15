@@ -82,7 +82,7 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
     else {
       let leitura = cache.get(a.link);
       if (!leitura) {
-        const slot = await reservarSlot();
+        const slot = await reservarSlot().catch(async () => { await dormir(400); return reservarSlot(); });
         if (!slot.ok) { out.parou = 'recuo_global (captcha/429 recente)'; break; }
         if (slot.esperaMs > Math.max(0, fim - Date.now() - 3000)) { out.parou = 'sem_orcamento_para_o_ritmo'; break; }
         if (slot.esperaMs > 0) await dormir(slot.esperaMs);
@@ -100,10 +100,11 @@ export async function auditarLote(alvos: AlvoAuditoria[], orcamentoMs: number, o
     out.porVeredito[r.verdict] = (out.porVeredito[r.verdict] ?? 0) + 1;
     out.linhas.push({ alvo: a, r });
     if (opts.gravar !== false) {
-      await db.execute(sql`
+      // A conexão do pooler fecha por ociosidade durante a espera do ritmo (2 s) e das chamadas à API: uma nova tentativa reabre a conexão.
+      for (let t = 0; ; t++) try { await db.execute(sql`
         INSERT INTO offer_link_audit (offer_id, link, item_id_link, product_id_link, price_link_cents, status_link, offer_price_cents, diff_pct, verdict, note)
         VALUES (${a.offerId}::uuid, ${a.link}, ${r.cartao?.itemId ?? null}, ${r.cartao?.productId ?? null}, ${r.cartao?.precoCents ?? null}, ${r.cartao ? (r.cartao.pausado ? 'pausado' : 'ativo') : null},
-                ${a.precoCents}, ${r.diffPct}, ${r.verdict}, ${r.nota.slice(0, 200)})`);
+                ${a.precoCents}, ${r.diffPct}, ${r.verdict}, ${r.nota.slice(0, 200)})`); break; } catch (e) { if (t >= 2) throw e; await dormir(400); }
     }
   }
   return out;
