@@ -1,0 +1,108 @@
+{
+  "criadoEm": "2026-11-15T06:33:48.572Z",
+  "por": "Claude (inventario Jogo Barato 2026-11-15)",
+  "backup": "itens-jogobarato-2026-11-15T06-33-48-570Z.ndjson",
+  "retipados": [
+    {
+      "id": "4704eddc-a50d-4935-bcb0-c635cc090daa",
+      "antes": "game",
+      "depois": "console"
+    }
+  ],
+  "restaurados": [
+    {
+      "id": "b0996ccb-ca0b-447c-95d2-7db9bd3d973f",
+      "antes": {
+        "at": "2026-11-14T11:53:54.277Z",
+        "reason": "foto_com_mao",
+        "matched": "foto_com_mao",
+        "verdict": "rejected",
+        "version": 1,
+        "category": "out_of_scope"
+      },
+      "depois": {
+        "at": "2026-11-15T06:33:48.572Z",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "verdict": "approved",
+        "version": 1,
+        "category": "ok",
+        "approvedBy": "bloco:q4q5:2026-11-13"
+      }
+    }
+  ],
+  "quarentenados": [
+    {
+      "id": "95ea41a5-66c7-4047-8f0d-29d05f461772",
+      "antes": null
+    }
+  ],
+  "porteiro": [
+    {
+      "id": "89177877-8c72-4d32-ae78-502640964610",
+      "antes": null,
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T06:33:48.572Z",
+        "approvedBy": "porteiro:jogobarato-2026-11-15"
+      }
+    },
+    {
+      "id": "613b1201-22a6-4c34-a642-0bfbff30d3e4",
+      "antes": null,
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T06:33:48.572Z",
+        "approvedBy": "porteiro:jogobarato-2026-11-15"
+      }
+    },
+    {
+      "id": "f9502f26-bff1-4d11-85cd-e43dd82431fe",
+      "antes": null,
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T06:33:48.572Z",
+        "approvedBy": "porteiro:jogobarato-2026-11-15"
+      }
+    },
+    {
+      "id": "20980d7b-c816-481c-9468-00da02e2a214",
+      "antes": null,
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T06:33:48.572Z",
+        "approvedBy": "porteiro:jogobarato-2026-11-15"
+      }
+    },
+    {
+      "id": "96b98a87-f630-4b27-ba1d-e1e32c0b55cb",
+      "antes": null,
+      "depois": {
+        "verdict": "approved",
+        "category": "ok",
+        "reason": "sem_sinal_de_risco",
+        "matched": null,
+        "version": 1,
+        "at": "2026-11-15T06:33:48.572Z",
+        "approvedBy": "porteiro:jogobarato-2026-11-15"
+      }
+    }
+  ],
+  "rollback": "npx tsx --conditions react-server --env-file=.env.local scripts/corrigir-itens-jogobarato-2026-11-15.ts --rollback docs/backups/itens-jogobarato-log-2026-11-15T06-33-48-570Z.json --apply"
+}
