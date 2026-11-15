@@ -103,6 +103,20 @@ export interface CouponUse {
   activation: string;
 }
 
+/**
+ * Chamada curta no formato do mercado (#116), para a primeira linha de posts e para conferência: com código = "Cupom: CODIGO"; Amazon sem código =
+ * "Ative o cupom de 25% na página do produto"; Shopee/outros sem código = "Cupom de 5% no carrinho". Com nome lido, o nome vem antes ("Cupom: NOME").
+ * `valor` é o texto do valor já formatado ("25%" ou "R$ 20,00"). Nunca inventa nome nem código.
+ */
+export function couponHeadline(i: { net: CouponNet; name?: string | null; code?: string | null; valor: string }): string {
+  const code = sanitizeCouponCode(i.code);
+  if (code) return `Cupom: ${code}`;
+  const nome = sanitizeCouponName(i.name);
+  if (nome) return `Cupom: ${nome}`;
+  if (i.net === 'amazon') return `Ative o cupom de ${i.valor} na página do produto`;
+  return `Cupom de ${i.valor} no carrinho`;
+}
+
 export function stepsText(steps: string[]): string {
   return steps.map((s, i) => `${i + 1}. ${s}`).join('; ') + '.';
 }
@@ -115,8 +129,8 @@ function lowerFirst(s: string): string {
 export function howToUse(i: { net: CouponNet; code: string | null; name: string; named: boolean; ativacao?: string | null; offCents: number }): string[] {
   const valor = fmtBRL(i.offCents);
   if (i.code) return ['Abra o anúncio e adicione ao carrinho', `No campo de cupom do carrinho ou do pagamento, digite o código ${i.code}`, 'Finalize a compra'];
-  if (i.net === 'amazon') return ['Abra o anúncio', `Clique em Aplicar o cupom de ${valor}, abaixo do preço`, 'Finalize a compra'];
-  if (i.net === 'shopee') return ['Abra o anúncio', `Aplique o voucher${i.named ? ` ${i.name}` : ` de ${valor}`} no carrinho`, 'Finalize a compra'];
+  if (i.net === 'amazon') return ['Abra o anúncio', `Ative o cupom de ${valor} na página do produto (botão Aplicar cupom, abaixo do preço)`, 'Finalize a compra'];
+  if (i.net === 'shopee') return ['Abra o anúncio', i.named ? `Aplique o cupom ${i.name} no carrinho` : `Cupom de ${valor} no carrinho: aplique o voucher antes de pagar`, 'Finalize a compra'];
   // Mercado Livre. O TIPO só é conhecido pela lista de cupons (ativacao): EU_QUERO = ativa com um clique em Cupons; AUTOMATIC = aplicado sozinho.
   // Sem tipo conhecido (a página do anúncio não o diz) NÃO se afirma "ative": só o que a página mostrou (#115, 2026-11-15: havia cupom de código digitado
   // no checkout e a mensagem mandava ativar em Cupons, porque o texto caía em "ativar com clique" sempre que não havia nome lido).

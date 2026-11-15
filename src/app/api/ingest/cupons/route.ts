@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
-import { listActiveCoupons, ingestCouponBatch, isMissingCouponTable, recordCouponRun } from '@/server/coupons/store';
-import { isNetwork, validateBatch } from '@/server/coupons/normalize';
+import { listActiveCoupons, ingestCouponBatch, closeSweep, isMissingCouponTable, recordCouponRun } from '@/server/coupons/store';
+import { isNetwork, validateBatch, validateSweepClose } from '@/server/coupons/normalize';
 import type { CouponNetwork } from '@/server/coupons/types';
 
 export const dynamic = 'force-dynamic';
@@ -90,6 +90,21 @@ export async function POST(request: NextRequest) {
   if (Buffer.byteLength(text, 'utf8') > MAX_BODY_BYTES) return NextResponse.json({ error: 'corpo_grande_demais' }, { status: 413, headers });
   let body: unknown;
   try { body = JSON.parse(text); } catch { return NextResponse.json({ error: 'json_invalido' }, { status: 400, headers }); }
+
+  // Fechamento de varredura do portal (#116): lotes por pagina ja foram gravados; aqui o que a varredura nao tocou vira vencido (com travas).
+  if (body && typeof body === 'object' && !Array.isArray(body) && 'fechar_varredura' in body) {
+    const sc = validateSweepClose(body, new Date());
+    if (!sc.ok) return NextResponse.json({ error: sc.error }, { status: 400, headers });
+    if (sc.req.network !== originNet) return NextResponse.json({ error: 'rede_diferente_da_origem' }, { status: 400, headers });
+    try {
+      const out = await closeSweep(sc.req);
+      return NextResponse.json({ ok: true, ...out }, { headers });
+    } catch (e) {
+      if (isMissingCouponTable(e)) return NextResponse.json({ error: 'migration_0029_nao_aplicada' }, { status: 503, headers });
+      console.error('[cupons] fechar_varredura falhou', e);
+      return NextResponse.json({ error: 'erro_interno' }, { status: 500, headers });
+    }
+  }
 
   const v = validateBatch(body, new Date());
   if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400, headers });

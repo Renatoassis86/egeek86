@@ -338,3 +338,43 @@ export function validateBatch(body: unknown, now: Date, maxCoupons = 150): Batch
   });
   return { ok: true, context, complete: b.leitura_completa === true, coupons, rejected };
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// FECHAMENTO DE VARREDURA (#116): a lista do portal do ML tem milhares de cupons em dezenas de paginas (cada pagina e um lote), entao
+// "sumiu da releitura completa" nao cabe em UM lote. A aba manda os lotes normais e, ao chegar ao fim da lista sem erro de pagina,
+// um pedido de fechamento: o que a varredura nao tocou (last_seen anterior ao inicio dela) e vencido. Validacao PURA aqui; a decisao
+// de seguranca (queda brusca) em decideSweepClose (vigencia.ts); o UPDATE em store.closeSweep.
+// ---------------------------------------------------------------------------------------------------------------------
+export interface SweepCloseRequest {
+  network: CouponNetwork;
+  startedAt: string; // ISO UTC
+  readAt: string; // ISO UTC
+  sourcePrefix: string;
+  couponsRead: number;
+  pagesRead: number;
+  endReached: boolean;
+  pageErrors: number;
+}
+
+export function validateSweepClose(body: unknown, now: Date): { ok: true; req: SweepCloseRequest } | { ok: false; error: string } {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return { ok: false, error: 'corpo_invalido' };
+  const b = body as Record<string, unknown>;
+  if (!isNetwork(b.rede)) return { ok: false, error: 'rede_invalida' };
+  const f = b.fechar_varredura;
+  if (!f || typeof f !== 'object' || Array.isArray(f)) return { ok: false, error: 'fechar_varredura_invalido' };
+  const s = f as Record<string, unknown>;
+  const readAt = parseIsoStrict(b.lidos_em);
+  if (!readAt) return { ok: false, error: 'lidos_em_invalido' };
+  if (Math.abs(now.getTime() - Date.parse(readAt)) > 30 * 60_000) return { ok: false, error: 'lidos_em_fora_da_janela' };
+  const startedAt = parseIsoStrict(s.inicio_em);
+  if (!startedAt) return { ok: false, error: 'inicio_em_invalido' };
+  const age = Date.parse(readAt) - Date.parse(startedAt);
+  if (age < 0 || age > 12 * 3_600_000) return { ok: false, error: 'varredura_longa_demais_ou_futura' };
+  const prefix = typeof s.fonte_prefixo === 'string' ? s.fonte_prefixo.trim() : '';
+  if (!prefix || prefix.length > 300 || !hostAllowedForNetwork(prefix, b.rede)) return { ok: false, error: 'fonte_prefixo_invalido' };
+  const int = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= 1_000_000 ? v : null);
+  const couponsRead = int(s.cupons_lidos), pagesRead = int(s.paginas_lidas), pageErrors = int(s.paginas_com_erro);
+  if (couponsRead === null || pagesRead === null || pageErrors === null) return { ok: false, error: 'contagens_invalidas' };
+  if (s.fim_da_lista !== true && s.fim_da_lista !== false) return { ok: false, error: 'fim_da_lista_invalido' };
+  return { ok: true, req: { network: b.rede, startedAt, readAt, sourcePrefix: prefix, couponsRead, pagesRead, endReached: s.fim_da_lista === true, pageErrors } };
+}

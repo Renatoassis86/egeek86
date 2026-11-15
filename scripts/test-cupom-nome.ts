@@ -2,7 +2,7 @@
  * Teste do NOME DO CUPOM na mensagem (ordem do dono, 2026-11-12). Funcoes puras: SEM banco, SEM rede. Fixtures marcadas como tais.
  * Uso: npx tsx --conditions=react-server scripts/test-cupom-nome.ts
  */
-import { cleanCouponText, resolveCouponUse, sanitizeCouponCode, sanitizeCouponName } from '../src/lib/coupons/coupon-name';
+import { cleanCouponText, couponHeadline, resolveCouponUse, sanitizeCouponCode, sanitizeCouponName } from '../src/lib/coupons/coupon-name';
 import { normalizePageRow } from '../src/lib/coupons/page-read';
 import { buildGroupMessages, textProblems, withCouponBlock, type CouponInfo } from '../src/lib/messaging/group-messages';
 
@@ -36,7 +36,7 @@ ok(a4.name === '5% de desconto', 'escopo "selecionados" nao entra no nome', a4);
 const b1 = resolveCouponUse({ net: 'mercado-livre', offCents: 10000, pct: 8, ativacao: 'EU_QUERO' });
 ok(!b1.named && b1.name === 'Cupom de R$ 100,00' && b1.howTo.length === 3 && b1.howTo[1] === 'Em Cupons, ative o cupom de R$ 100,00', 'ML sem nome, tipo ativar (EU_QUERO): rotulo do valor e passo a passo', b1);
 const b2 = resolveCouponUse({ net: 'amazon', offCents: 2000, pct: 10 });
-ok(!b2.named && b2.howTo[1].startsWith('Clique em Aplicar o cupom de R$ 20,00') && b2.activation.startsWith('1. Abra o anúncio; 2.'), 'Amazon sem nome: Aplicar cupom abaixo do preco', b2);
+ok(!b2.named && b2.howTo[1].startsWith('Ative o cupom de R$ 20,00 na página do produto') && b2.activation.startsWith('1. Abra o anúncio; 2.'), 'Amazon sem nome: Aplicar cupom abaixo do preco', b2);
 const b3 = resolveCouponUse({ net: 'mercado-livre', offCents: 1000, pct: 5, ativacao: 'AUTOMATIC' });
 ok(b3.howTo[1].includes('sozinho'), 'ML AUTOMATIC: nao precisa ativar', b3);
 const b4 = resolveCouponUse({ net: 'mercado-livre', offCents: 1000, pct: 10, rule: { kind: 'percentual', valueNum: 10 } });
@@ -87,6 +87,15 @@ ok(m2.problems.length === 0 && m2.telegram.includes('Cupom:') && m2.telegram.inc
 const m3 = cm({ name: 'PRIMEBLACK20', code: 'PRIMEBLACK20', named: true, howTo: ['Abra o anúncio e adicione ao carrinho', 'No campo de cupom, digite o código PRIMEBLACK20', 'Finalize a compra'] });
 ok(m3.telegram.includes('<code>PRIMEBLACK20</code>') && /Código:[*]? PRIMEBLACK20/.test(m3.whatsapp), 'mensagem (a) codigo: Codigo em monospace', m3.telegram);
 ok(!/afiliad|% OFF/i.test(m1.telegram + m2.telegram + m3.telegram + m1.whatsapp), 'sem "afiliado" e sem "% OFF"');
+
+// #116: chamadas no formato do mercado
+ok(couponHeadline({ net: 'mercado-livre', code: 'DESCONTAOMELI', valor: '10%' }) === 'Cupom: DESCONTAOMELI', 'headline com codigo = Cupom: CODIGO');
+ok(couponHeadline({ net: 'amazon', valor: '25%' }) === 'Ative o cupom de 25% na página do produto', 'headline Amazon sem codigo');
+ok(couponHeadline({ net: 'shopee', valor: '5%' }) === 'Cupom de 5% no carrinho', 'headline Shopee sem codigo');
+ok(couponHeadline({ net: 'mercado-livre', name: 'R$ 20 OFF em GHOX', valor: 'R$ 20' }) === 'Cupom: R$ 20 OFF em GHOX', 'headline com nome lido = Cupom: NOME');
+ok(couponHeadline({ net: 'amazon', code: 'CUPOM', valor: '25%' }) === 'Ative o cupom de 25% na página do produto', 'palavra generica nao vira codigo');
+const sh = resolveCouponUse({ net: 'shopee', offCents: 1500, pct: 5 });
+ok(!sh.named && sh.howTo[1].startsWith('Cupom de R$ 15,00 no carrinho'), 'Shopee sem nome: Cupom de X no carrinho', sh);
 
 console.log(fails ? `${fails} FALHA(S) de ${total}` : `${total}/${total} ok`);
 process.exit(fails ? 1 : 0);

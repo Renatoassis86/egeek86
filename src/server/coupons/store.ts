@@ -1,8 +1,9 @@
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { sha256 } from './normalize';
+import type { SweepCloseRequest } from './normalize';
 import type { BatchValidation } from './normalize';
-import { DEFAULT_MAX_AGE_MINUTES, VERIFIED_BY, decideState, isUsableForMessage, matchesScope, meetsMinimum, type ScopeTarget } from './vigencia';
+import { DEFAULT_MAX_AGE_MINUTES, VERIFIED_BY, decideState, decideSweepClose, isUsableForMessage, matchesScope, meetsMinimum, type ScopeTarget } from './vigencia';
 import type { CouponNetwork, CouponScopeRef, NormalizedCoupon, StoredCoupon } from './types';
 
 /**
@@ -239,4 +240,43 @@ export async function recordCouponRun(network: CouponNetwork, startedAtMs: numbe
   } catch (e) {
     console.error('[cupons] falha ao registrar collector_runs', e);
   }
+}
+
+export interface SweepCloseSummary { fechado: boolean; motivo: string; vencidos: number; vistos_recentes_sumidos: number; dry_run?: boolean }
+
+/**
+ * Fecha uma varredura completa (#116): cupons `portal_listagem` da rede, cuja fonte comeca com o prefixo e que a varredura nao tocou
+ * (last_seen_at anterior ao inicio dela), viram `vencido` (ausencia nao prova validade). Nada e apagado; cada fechamento deixa uma linha
+ * 'ausente' em coupon_reads e o rollback e o UPDATE inverso por state_reason 'sumiu_da_varredura_completa'.
+ */
+export async function closeSweep(req: SweepCloseRequest, opts: { dryRun?: boolean } = {}): Promise<SweepCloseSummary> {
+  const since = new Date(Date.parse(req.startedAt) - 72 * 3_600_000).toISOString();
+  const recent = (await db.execute<{ n: string }>(sql`
+    SELECT count(*)::text AS n FROM coupon_items
+    WHERE network_slug = ${req.network} AND source_kind = 'portal_listagem' AND starts_with(source_url, ${req.sourcePrefix})
+      AND state IN ('nao_verificado', 'verificado') AND last_seen_at < ${req.startedAt}::timestamptz AND last_seen_at >= ${since}::timestamptz`)) as unknown as { n: string }[];
+  const recentGone = Number(recent[0]?.n ?? 0);
+  const d = decideSweepClose({ couponsRead: req.couponsRead, pagesRead: req.pagesRead, endReached: req.endReached, pageErrors: req.pageErrors, recentGone });
+  if (!d.close) return { fechado: false, motivo: d.reason, vencidos: 0, vistos_recentes_sumidos: recentGone };
+  if (opts.dryRun) {
+    const c = (await db.execute<{ n: string }>(sql`
+      SELECT count(*)::text AS n FROM coupon_items
+      WHERE network_slug = ${req.network} AND source_kind = 'portal_listagem' AND starts_with(source_url, ${req.sourcePrefix})
+        AND state IN ('nao_verificado', 'verificado') AND last_seen_at < ${req.startedAt}::timestamptz`)) as unknown as { n: string }[];
+    return { fechado: false, dry_run: true, motivo: 'dry_run', vencidos: Number(c[0]?.n ?? 0), vistos_recentes_sumidos: recentGone };
+  }
+  const evidence = sha256(`${req.sourcePrefix}|${req.startedAt}|${req.couponsRead}`);
+  const gone = (await db.execute<{ n: string }>(sql`
+    WITH gone AS (
+      UPDATE coupon_items SET state = 'vencido', state_reason = 'sumiu_da_varredura_completa', verified_at = NULL, updated_at = now()
+      WHERE network_slug = ${req.network} AND source_kind = 'portal_listagem' AND starts_with(source_url, ${req.sourcePrefix})
+        AND state IN ('nao_verificado', 'verificado') AND last_seen_at < ${req.startedAt}::timestamptz
+      RETURNING id, source_url
+    ), ins AS (
+      INSERT INTO coupon_reads (coupon_id, read_at, source_url, state_seen, evidence_hash, page_price_cents, state_after)
+      SELECT id, ${req.readAt}::timestamptz, source_url, 'ausente', ${evidence}, NULL, 'vencido' FROM gone
+      RETURNING 1
+    )
+    SELECT count(*)::text AS n FROM gone`)) as unknown as { n: string }[];
+  return { fechado: true, motivo: 'ok', vencidos: Number(gone[0]?.n ?? 0), vistos_recentes_sumidos: recentGone };
 }

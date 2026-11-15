@@ -126,3 +126,20 @@ export function meetsMinimum(c: Pick<StoredCoupon, 'minOrderCents'>, priceCents:
   if (c.minOrderCents === null) return true;
   return priceCents !== undefined && priceCents >= c.minOrderCents;
 }
+
+/**
+ * Seguranca do FECHAMENTO DE VARREDURA (#116). Ausencia numa varredura so vale como "vencido" se a varredura foi completa e sadia:
+ * chegou ao fim da lista, sem pagina com erro, leu bastante, e nao faz sumir de uma vez a maior parte do que era visto ate 72 h antes
+ * (queda brusca = leitura ruim, nao fim de campanha). Linhas sem leitura ha mais de 72 h nao entram na conta (ja estao paradas).
+ */
+export const SWEEP_MIN_COUPONS = 50;
+export const SWEEP_MIN_PAGES = 2;
+export const SWEEP_MAX_DROP = 0.6;
+export function decideSweepClose(i: { couponsRead: number; pagesRead: number; endReached: boolean; pageErrors: number; recentGone: number }): { close: boolean; reason: string } {
+  if (!i.endReached) return { close: false, reason: 'varredura_sem_chegar_ao_fim' };
+  if (i.pageErrors > 0) return { close: false, reason: 'varredura_com_pagina_com_erro' };
+  if (i.pagesRead < SWEEP_MIN_PAGES || i.couponsRead < SWEEP_MIN_COUPONS) return { close: false, reason: 'varredura_curta_demais' };
+  const universo = i.couponsRead + i.recentGone;
+  if (i.recentGone > universo * SWEEP_MAX_DROP) return { close: false, reason: 'queda_brusca_leitura_suspeita' };
+  return { close: true, reason: 'ok' };
+}
