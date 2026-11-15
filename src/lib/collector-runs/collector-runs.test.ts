@@ -39,9 +39,9 @@ test('classifica erros do Mercado Livre', () => {
 });
 
 test('dead-man: silencio acima do limite alerta; execucao recente nao', () => {
-  const ok = [run({ startedAgoMin: 6 }), run({ job: 'collect-shopee', network: 'shopee', startedAgoMin: 12 })];
+  const ok = [run({ startedAgoMin: 6 }), run({ job: 'collect-shopee', network: 'shopee', startedAgoMin: 12 }), run({ job: 'amazon-assistida', network: 'amazon', startedAgoMin: 30 })];
   assert.equal(evalDeadMan({ ...base, runs: ok }).length, 0);
-  const old = [run({ startedAgoMin: 40 }), run({ job: 'collect-shopee', network: 'shopee', startedAgoMin: 12 })];
+  const old = [run({ startedAgoMin: 40 }), run({ job: 'collect-shopee', network: 'shopee', startedAgoMin: 12 }), run({ job: 'amazon-assistida', network: 'amazon', startedAgoMin: 30 })];
   const a = evalDeadMan({ ...base, runs: old });
   assert.equal(a.length, 1);
   assert.equal(a[0].key, 'dead_man:mercado-livre');
@@ -52,14 +52,15 @@ test('dead-man: execucao abandonada (running) nao conta como viva', () => {
     run({ startedAgoMin: 8, finishedAt: null, status: 'running' }),
     run({ startedAgoMin: 30 }),
     run({ job: 'collect-shopee', network: 'shopee', startedAgoMin: 5 }),
+    run({ job: 'amazon-assistida', network: 'amazon', startedAgoMin: 30 }),
   ];
   const a = evalDeadMan({ ...base, runs });
   assert.equal(a.length, 1);
   assert.match(a[0].detail, /abandonada/);
 });
 
-test('dead-man: sem nenhuma execucao alerta as duas redes', () => {
-  assert.equal(evalDeadMan({ ...base, runs: [] }).length, 2);
+test('dead-man: sem nenhuma execucao alerta as tres redes (ML, Shopee, Amazon)', () => {
+  assert.equal(evalDeadMan({ ...base, runs: [] }).length, 3);
 });
 
 test('idade da oferta devida mais velha > 6 h', () => {

@@ -132,6 +132,12 @@ const EXCEPTIONS: Record<string, string> = {
   'src/server/queries/product-stores.ts': '(D) JOIN affiliate_offers por p.id de public_offers (publicOffersCtes(GAMES))',
   'src/server/queries/public-metrics.ts': '(D) JOIN por po.id de public_offers (publicOffersCtes(GAMES)); contagem de cotações filtra vertical via verticalSql',
   'src/server/queries/search-products.ts': '(D) ofertas ligadas a public_offers (publicOffersCtes(GAMES)); as duas leituras de master_products também filtram vertical via verticalSql',
+  'src/app/(detalhe)/monitoramento/comparar/[masterProductId]/page.tsx': "(D) a leitura nova só resolve attributes.mergedInto do próprio id para redirecionar (master fundido); a página segue lendo o resumo/ofertas pelos helpers que filtram vertical",
+  'src/server/queries/master-vendas.ts': '(D) leitura por lista de ids de master recebida do chamador; hoje SEM consumidor em página pública (nenhum import em src); quem passar a usar deve entregar ids já filtrados por vertical',
+  'src/server/pricing/grafico-dados.ts': '(D) contrato de dados do gráfico V2 por masterProductId; hoje SEM consumidor (só scripts/test-grafico-dados.ts); a futura rota deve usar produtoExiste(id, GAMES) como a /api/produtos/[id]/grafico',
+  'src/server/pricing/weak-seller-avg.ts': '(A) sincroniza avg_excluded_at (vendedor fraco fora só da média) para TODAS as verticais; chamado só por src/server/jobs/refresh-snapshots.ts (cron), sem saída pública',
+  'src/app/api/ingest/cupons-item/route.ts': '(A) ingestão autenticada por segredo (agente de cupons), lê a oferta por id do ML; não é página pública nem lista produtos',
+
 };
 // Nenhuma exceção pode ficar "órfã": se o arquivo sumiu ou passou a declarar `vertical`, a entrada é lixo e reprova.
 function checkStaleExceptions(seen: Set<string>) {

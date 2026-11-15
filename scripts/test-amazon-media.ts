@@ -180,7 +180,7 @@ function prod(over: Partial<ProductFacts> = {}): ProductFacts {
   return {
     masterProductId: 'p1', masterName: 'Tomba! Edição Especial', vertical: 'games', productType: 'game', platformLabel: 'Switch', format: 'physical', catalogGate: 'approved',
     offers: [amzF(), offerF({ offerId: 'b', priceCents: 11000 }), offerF({ offerId: 'c', priceCents: 12000 }), offerF({ offerId: 'd', priceCents: 12500 })],
-    avg: { cents: 11500, distinctOffers: 4, offerDays: 43, spanDays: 17, eligible: true },
+    avg: { cents: 11500, distinctOffers: 5, offerDays: 43, spanDays: 17, eligible: true },
     minEvent: null,
     record: { since: new Date('2026-11-03T15:00:00Z'), minCents: 10000 },
     series: flat(8, 10500),
@@ -217,9 +217,9 @@ r = evaluateProductV2(prod({ offers: [amzF({ priceCents: 10800 }), offerF({ offe
 az = amzCand(r);
 ok(!az || !az.sendable, 'on: Amazon só 6% abaixo da média continua bloqueada pela régua de 10%', az?.belowAvgPct);
 // Amazon 9% x 10%: fronteira
-r = evaluateProductV2(prod({ avg: { cents: 10000, distinctOffers: 4, offerDays: 43, spanDays: 17, eligible: true }, offers: [amzF({ priceCents: 9000 }), offerF({ offerId: 'b', priceCents: 11000 }), offerF({ offerId: 'c', priceCents: 12000 }), offerF({ offerId: 'd', priceCents: 12500 })], amazonSeries: flat(8, 10000) }), onCtx);
+r = evaluateProductV2(prod({ avg: { cents: 10000, distinctOffers: 5, offerDays: 43, spanDays: 17, eligible: true }, offers: [amzF({ priceCents: 9000 }), offerF({ offerId: 'b', priceCents: 11000 }), offerF({ offerId: 'c', priceCents: 12000 }), offerF({ offerId: 'd', priceCents: 12500 })], amazonSeries: flat(8, 10000) }), onCtx);
 ok(!!amzCand(r)?.sendable, 'on: exatamente 10,0% abaixo da média passa');
-r = evaluateProductV2(prod({ avg: { cents: 10000, distinctOffers: 4, offerDays: 43, spanDays: 17, eligible: true }, offers: [amzF({ priceCents: 9001 }), offerF({ offerId: 'b', priceCents: 11000 }), offerF({ offerId: 'c', priceCents: 12000 }), offerF({ offerId: 'd', priceCents: 12500 })], amazonSeries: flat(8, 10000) }), onCtx);
+r = evaluateProductV2(prod({ avg: { cents: 10000, distinctOffers: 5, offerDays: 43, spanDays: 17, eligible: true }, offers: [amzF({ priceCents: 9001 }), offerF({ offerId: 'b', priceCents: 11000 }), offerF({ offerId: 'c', priceCents: 12000 }), offerF({ offerId: 'd', priceCents: 12500 })], amazonSeries: flat(8, 10000) }), onCtx);
 ok(!amzCand(r)?.sendable, 'on: 9,99% abaixo da média não passa');
 // Fora de games: nada muda
 ok(amazonReference({ vertical: 'livros', amazonOnly: false }, { ownMedian14: null }, { cents: 11500, distinctOffers: 4 }, 'on') !== null, 'on em livros: a Amazon compara com a média do mercado');
@@ -246,7 +246,7 @@ ok(!amzCand(r)?.sendable && r.blocked.some((b) => b.reasons.some((x) => x.starts
 // Amazon-only com 3+ ASIN: média na Amazon
 const trio = prod({
   offers: [amzF({ offerId: 'amz1', priceCents: 9000 }), amzF({ offerId: 'amz2', priceCents: 11000 }), amzF({ offerId: 'amz3', priceCents: 12000 })],
-  avg: { cents: 11000, distinctOffers: 3, offerDays: 20, spanDays: 8, eligible: true }, series: [], amazonSeries: flat(8, 10000), amazonOnly: true,
+  avg: { cents: 11000, distinctOffers: 5, offerDays: 20, spanDays: 8, eligible: true }, series: [], amazonSeries: flat(8, 10000), amazonOnly: true,
 });
 r = evaluateProductV2(trio, onCtx);
 az = r.candidates.find((c) => c.offerIds[0] === 'amz1');
@@ -264,7 +264,7 @@ if (process.env.AMAZON_TEST_VERBOSE) {
 // 3d) Cartão de oferta: o insight da Amazon só compara com a média no modo on
 const card = (over: Partial<OfferCardInput>): OfferCardInput => ({
   title: 'Jogo X', platformLabel: 'PS5', store: 'Amazon', isAmazon: true, priceCents: 8000, checkedAt: NOW, imageUrl: null, today: TODAY,
-  stats: { recordCents: null, seriesFirstDay: null, measuredDays: 0, avgCents: 10000, distinctOffers: 4, prev: null }, ...over,
+  stats: { recordCents: null, seriesFirstDay: null, measuredDays: 0, avgCents: 10000, distinctOffers: 5, prev: null }, ...over,
 });
 ok(chooseInsight(card({})) === null, 'cartão off: Amazon sem insight de média');
 ok(chooseInsight(card({ amazonAvg: 'market' }))?.text === 'R$ 20 abaixo da média do mercado', 'cartão on: "abaixo da média do mercado"', chooseInsight(card({ amazonAvg: 'market' })));
@@ -284,6 +284,7 @@ async function dbPart() {
   const { loadOffers } = await import('../src/server/pricing/price-daily');
   const { loadLiveOffers } = await import('../src/server/pricing/price-metrics-v2');
   const { eligibleOfferSql } = await import('../src/server/pricing/eligibility-sql');
+  const { avgExcludedFlagSql } = await import('../src/server/queries/public-offers');
   const { PRICE_DAILY_REGIME_START, addDays, OFFER_ACTIVE_DAYS, spDay } = await import('../src/lib/pricing/daily-state');
   type R = Record<string, unknown>;
   const now = new Date();
@@ -294,7 +295,7 @@ async function dbPart() {
   const origOffers = async (ids: string[]): Promise<Map<string, OfferInput[]>> => {
     const list = sql.join(ids.map((i) => sql`${i}`), sql`, `);
     const rows = await db.execute<R>(sql`
-      SELECT o.master_product_id, o.id AS offer_id, o.status = 'active' AS active, o.network_id, o.seller_id, n.slug AS net_slug,
+      SELECT o.master_product_id, o.id AS offer_id, o.status = 'active' AS active, ${avgExcludedFlagSql('o')} AS avg_excluded, o.network_id, o.seller_id, n.slug AS net_slug,
              COALESCE(o.seller_id::text, 'rede:' || o.network_id::text) AS store_key,
              d.day::text AS day, d.median_cents, d.last_cents, d.min_cents, d.max_cents, d.n_collected, d.last_observed_at
       FROM affiliate_offers o
@@ -308,7 +309,7 @@ async function dbPart() {
       const oid = String(r.offer_id);
       let o = by.get(oid);
       if (!o) {
-        o = { offerId: oid, storeKey: String(r.store_key), networkId: (r.network_id as string) ?? null, sellerId: (r.seller_id as string) ?? null, active: r.active === true, rows: [], amazon: String(r.net_slug) === 'amazon' };
+        o = { offerId: oid, storeKey: String(r.store_key), networkId: (r.network_id as string) ?? null, sellerId: (r.seller_id as string) ?? null, active: r.active === true, avgExcluded: r.avg_excluded === true, rows: [], amazon: String(r.net_slug) === 'amazon' };
         by.set(oid, o);
         const arr = out.get(String(r.master_product_id)) ?? [];
         arr.push(o);
@@ -400,10 +401,13 @@ async function dbPart() {
     ok(liveBad === 0, `preço agora (${Math.min(120, amzProds.length)} produtos): off sem Amazon; on com Amazon (teto 24 h) e demais ofertas iguais`, { liveBad });
 
     // Informativo: dias fechados já gravados com membros Amazon (corrigir com scripts/reprocess-amazon-state.ts)
-    const contam = await db.execute<R>(sql`
+    // Informativo e barato: ids das ofertas Amazon primeiro, depois operador ?| (a versao com jsonb_object_keys+JOIN estourava o teto de 30 s do socket)
+    const amzOfferIds = (await db.execute<R>(sql`SELECT o.id::text AS id FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id WHERE n.slug = 'amazon'`)).map((r) => String(r.id));
+    const contam = amzOfferIds.length
+      ? await db.execute<R>(sql`
       SELECT count(*)::int AS n FROM price_daily_state s
-      WHERE s.day >= ${PRICE_DAILY_REGIME_START}::date AND s.quality IN ('complete','partial') AND EXISTS (
-        SELECT 1 FROM jsonb_object_keys(s.members) k JOIN affiliate_offers o ON o.id::text = k JOIN affiliate_networks n ON n.id = o.network_id WHERE n.slug = 'amazon')`);
+      WHERE s.day >= ${PRICE_DAILY_REGIME_START}::date AND s.quality IN ('complete','partial') AND s.members ?| ARRAY[${sql.join(amzOfferIds.map((i) => sql`${i}`), sql`, `)}]::text[]`)
+      : [{ n: 0 }];
     console.log(`informativo: ${contam[0]?.n} linhas de price_daily_state já gravadas COM membros Amazon (o modo off as corrige no reprocesso)`);
   } finally {
     if (prevMode === undefined) delete process.env.PRICE_AMAZON_MODE;
