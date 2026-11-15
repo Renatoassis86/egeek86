@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { ingestCouponBatch, recordCouponRun, isMissingCouponTable, type IngestSummary } from '@/server/coupons/store';
 import { parseIsoStrict, validateBatch } from '@/server/coupons/normalize';
 import {
-  confirmarNoItem, cupomDoItem, departamentoCompativel, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, primeNaFinalizacao, promoDescobertaLigada, promoPrimeLigada,
+  categoriaPelosItens, confirmarNoItem, cupomDoItem, departamentoCompativel, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, primeNaFinalizacao, promoDescobertaLigada, promoPrimeLigada,
   type PromoCard, type PromoPayload, precoCasa, verticaisDaCategoria,
 } from '@/lib/coupons/amazon-promocoes';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
@@ -38,6 +38,10 @@ export interface PromoIngestResult {
   total_asins_novos: number;
   resumo: IngestSummary | null;
   fechados: number;
+  /** Categoria da promoção deduzida dos ASINs casados (título/banner sem departamento). */
+  categoria_inferida?: { categoria: string; vertical: string; share: number; casados: number };
+  /** true = nenhuma validade lida: registrada como 'validade desconhecida' (R2-15), só divulga com confirmação na página do item. */
+  validade_desconhecida?: boolean;
   /** Ofertas com cupom verificado que ganharam leitura por anúncio (alimenta o gatilho CUPOM). */
   leituras_item?: number;
   /** Resultado da descoberta de lançamentos (flag PROMO_DESCOBERTA): quantos masters/rascunhos novos nasceram dos ASINs da promoção. */
@@ -87,7 +91,21 @@ export async function ingestPromocaoAmazon(body: unknown, now: Date = new Date()
     if (pid && (parsed.reason === 'sem_percentual' || parsed.reason === 'promocao_encerrada')) fechados = await fechar(pid, `promocao_${parsed.reason}`).catch(() => 0);
     return vazio({ promo_id: pid, motivo: parsed.reason, fechados });
   }
-  const p = parsed.promo;
+  let p = parsed.promo;
+  // CATEGORIA PELOS ITENS (dono, 2026-11-14): promoção Prime sem departamento no título/banner ("25% de desconto em 1 item(ns)") é reconhecida pelos ASINs casados
+  // com ofertas nossas: 80%+ de uma vertical (mínimo 5 casados). Só com a flag PROMO_PRIME_DERIVADA e só para Prime sem quantidade; o departamento por item segue conferido adiante.
+  let categoriaInferida: { categoria: string; vertical: string; share: number; casados: number } | null = null;
+  if (promoPrimeLigada() && p.restricao === 'prime' && !(p.minItens != null && p.minItens >= 2) && !p.categoria) {
+    const cs = parsePromoCards(b.itens);
+    if (cs.length) {
+      const rs = (await db.execute<{ vertical: string | null }>(sql`
+        SELECT COALESCE(o.vertical, mp.vertical) AS vertical
+        FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id LEFT JOIN master_products mp ON mp.id = o.master_product_id
+        WHERE nn.slug = 'amazon' AND o.status = 'active' AND o.external_ref IN (${sql.join(cs.map((c) => sql`${`amazon-${c.asin}`}`), sql`, `)})`)) as unknown as { vertical: string | null }[];
+      categoriaInferida = categoriaPelosItens(rs.map((r) => r.vertical));
+      if (categoriaInferida) p = { ...p, categoria: categoriaInferida.categoria };
+    }
+  }
   // Promoção Prime NA FINALIZAÇÃO (dono, 2026-11-14): com a flag PROMO_PRIME_DERIVADA liga os cupons de público `assinantes` (preço derivado da regra escrita);
   // sem a flag (padrão) segue a regra antiga (restrita = descartada).
   const primeCheckout = promoPrimeLigada() && primeNaFinalizacao(p);
@@ -97,7 +115,7 @@ export async function ingestPromocaoAmazon(body: unknown, now: Date = new Date()
   }
 
   const cards: PromoCard[] = parsePromoCards(b.itens);
-  const result = vazio({ ok: true, promo_id: p.id, itens_lidos: cards.length });
+  const result = vazio({ ok: true, promo_id: p.id, itens_lidos: cards.length, ...(categoriaInferida ? { categoria_inferida: categoriaInferida } : {}), ...(p.validadeDesconhecida ? { validade_desconhecida: true } : {}) });
   if (!cards.length) return { ...result, motivo: 'sem_itens_lidos' };
 
   const refs = cards.map((c) => `amazon-${c.asin}`);
@@ -201,7 +219,7 @@ export async function pendentesDeConfirmacao(limite = 20): Promise<PendenteConfi
       (SELECT max(r.read_at)::text FROM offer_coupon_reads r WHERE r.offer_id = o.id AND r.campaign_id = ci.conditions->>'promo_id' AND r.source = ${FONTE_CONFIRMACAO}) AS confirmado_em
     FROM coupon_items ci JOIN affiliate_offers o ON o.id = (ci.scope->'offer_ids'->>0)::uuid AND o.status = 'active'
     WHERE ci.network_slug = 'amazon' AND ci.source_kind <> 'manual_dono' AND ci.state IN ('nao_verificado', 'verificado') AND ci.conditions->>'promo_id' IS NOT NULL
-      AND ci.valid_until > now() + interval '15 minutes' AND (ci.valid_from IS NULL OR ci.valid_from <= now())
+      AND (ci.valid_until IS NULL OR ci.valid_until > now() + interval '15 minutes') AND (ci.valid_from IS NULL OR ci.valid_from <= now())
       AND NOT EXISTS (SELECT 1 FROM offer_coupon_reads r WHERE r.offer_id = o.id AND r.campaign_id = ci.conditions->>'promo_id' AND r.source = ${FONTE_CONFIRMACAO}
         AND r.read_at > now() - interval '60 minutes')
     ORDER BY 6 NULLS FIRST, ci.created_at LIMIT ${lim}`)) as unknown as PendenteConfirmacao[];
@@ -230,7 +248,7 @@ export async function confirmarItens(body: unknown, now: Date = new Date()): Pro
       SELECT ci.value_num::float AS pct, ci.scope->'offer_ids'->>0 AS offer, o.current_price_cents::text AS price, ci.raw_text AS raw, (ci.conditions->>'prime_checkout' = 'true') AS prime
       FROM coupon_items ci JOIN affiliate_offers o ON o.id = (ci.scope->'offer_ids'->>0)::uuid AND o.status = 'active'
       WHERE ci.network_slug = 'amazon' AND ci.source_kind <> 'manual_dono' AND ci.state IN ('nao_verificado', 'verificado') AND ci.conditions->>'promo_id' = ${promoId}
-        AND ci.scope->'item_ids'->>0 = ${asin} AND ci.valid_until > ${now.toISOString()}::timestamptz LIMIT 1`)) as unknown as Row[];
+        AND ci.scope->'item_ids'->>0 = ${asin} AND (ci.valid_until IS NULL OR ci.valid_until > ${now.toISOString()}::timestamptz) LIMIT 1`)) as unknown as Row[];
     const c = rows[0];
     if (!c) { out.recusados.push({ asin, motivo: 'cupom_nao_aberto' }); continue; }
     const conf = confirmarNoItem(it, { asin, promoId, percentual: Number(c.pct) }, Number(c.price));

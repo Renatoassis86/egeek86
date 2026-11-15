@@ -108,7 +108,10 @@ export async function listarFilaRevalidacao(n: number, rede: string = 'mercado-l
     FROM scored
     WHERE last_read IS NULL
        OR last_read < now() - make_interval(mins => (CASE WHEN prio <= 3 THEN ${sql.raw(String(AGULHA.REREAD_TARGET_MIN))} ELSE ${sql.raw(String(AGULHA.REREAD_BASE_MIN))} END)::int)
-    ORDER BY prio ASC, last_read ASC NULLS FIRST
+    ORDER BY prio ASC,
+             -- C7: dentro da mesma prioridade, ticket alto e impressão 3D (Bambu/Kobra) são lidos primeiro: cupom de % limitado pesa mais no preço final.
+             ((vertical = 'impressao3d' AND price >= 100000) OR price >= 150000) DESC,
+             last_read ASC NULLS FIRST
     LIMIT ${Math.min(Math.max(1, n), 60)}`)) as unknown as { id: string; ref: string; item: string | null; seller: string | null; price: string; prio: number; age_min: string | null; aurl: string | null }[];
   return rows.map((r) => ({
     id: r.id, ref: r.ref, item: r.item, seller: r.seller, price: r.price, prioridade: Number(r.prio),

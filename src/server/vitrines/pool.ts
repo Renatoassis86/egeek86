@@ -105,14 +105,14 @@ export async function carregarPromosPrime(ofertas: ReadonlyArray<{ offerId: stri
       JOIN offer_coupon_reads r ON r.offer_id = (ci.scope->'offer_ids'->>0)::uuid AND r.campaign_id = ci.conditions->>'promo_id'
         AND r.source = 'amazon-item-confirmado' AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - interval '120 minutes'
       WHERE ci.network_slug = 'amazon' AND ci.state = 'verificado' AND ci.audience = 'assinantes' AND ci.conditions->>'prime_checkout' = 'true'
-        AND ci.valid_until > now() AND (ci.valid_from IS NULL OR ci.valid_from <= now())
+        AND (ci.valid_until IS NULL OR ci.valid_until > now()) AND (ci.valid_from IS NULL OR ci.valid_from <= now())
         AND ci.scope->'offer_ids'->>0 = ANY(string_to_array(${ids}, ','))
       GROUP BY 1`));
     const preco = new Map(ofertas.map((o) => [o.offerId, o.precoCentavos]));
     for (const r of rows) {
       const p = preco.get(str(r.oid));
       const pct = num(r.pct);
-      if (!p || !(pct > 0 && pct <= VITRINE_REGRAS.QUEDA_MAX_PCT)) continue;
+      if (!p || !(pct > 0 && pct < 100)) continue;
       out.set(str(r.oid), { pct, finalCentavos: precoComPromocao(p, pct), validaAte: r.valid_until ? new Date(r.valid_until as string | Date).toISOString() : null, confirmadoEm: new Date(r.conf as string | Date).toISOString() });
     }
   } catch (e) {

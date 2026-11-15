@@ -59,7 +59,7 @@ ok(recusa('Exclusivo Prime: Compre 4 Livros e leve 10% off', `[Exclusivo para me
 ok(recusa('Exclusivo Prime: 20% off em Moda', `[Exclusivo para membros Prime] Exclusivo Prime: 20% off em Moda ${DATA}`) === false, 'Prime em departamento não mapeado: recusada');
 ok(recusa('Só no app: 15% off em Suplementos', `Só no app: 15% off em Suplementos ${DATA}`) === false, 'não é Prime: a regra Prime não se aplica');
 ok(recusa('Seguir a loja: 10% off em Livros', `Seguir a loja: 10% off em Livros ${DATA}`) === false, 'seguir a loja: recusada');
-ok(recusa(TITULO, '[Exclusivo para membros Prime] ' + TITULO) === 'nao_leu', 'sem validade lida: nada é lido');
+ok(recusa(TITULO, '[Exclusivo para membros Prime] ' + TITULO) === true, 'sem validade lida (R2-15, dono 14/11): a promoção é registrada como validade desconhecida; só divulga com confirmação na página do item');
 ok(recusa('Jogos de Nintendo Switch com 25% OFF', `[Exclusivo para membros Prime] Jogos de Nintendo Switch com 25% OFF De 1 de outubro de 2026 até 5 de novembro de 2026 às 23:59`) === 'nao_leu', 'promoção encerrada: nada é lido');
 // "Relógios": a trava de departamento antiga continua valendo
 const rel = parsePromoPage({ id: 'ZZZZZZZZZZ02', titulo: 'Só no app: 20% off em Relógios', banner: `Só no app: 20% off em Relógios ${DATA}` }, NOW);

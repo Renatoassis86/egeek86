@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { ProductImage } from '@/components/ui/product-image';
 import { formatBRL } from '@/lib/format';
 import { cn } from '@/lib/cn';
+import { VerificadoHa } from '@/components/affiliate/verificado-ha';
+import { VITRINE_REGRAS } from '@/lib/vitrines/regras';
 import type { PlataformaVitrine, PosicaoMedia, VitrineItem } from '@/lib/vitrines/tipos';
 
 /** Sem 'server-only' nem estado: pode ser renderizado no servidor ou dentro da faixa (cliente). */
@@ -70,6 +72,8 @@ function textoOfertas(item: VitrineItem): string {
 export function CartaoVitrine({ item, prioridade = false, className }: { item: VitrineItem; prioridade?: boolean; className?: string }) {
   const pos = textoPosicao(item.posicao, item.media?.cotacoes ?? null, item.media?.dias ?? null);
   const lido = horaDaLeitura(item.lidoEm);
+  // R2-3: oferta com leitura antiga continua aparecendo, com "visto há X" em vez da hora (que ficaria ambígua em dias).
+  const leituraAntiga = lido != null && Date.now() - new Date(item.lidoEm).getTime() > VITRINE_REGRAS.LEITURA_VISTO_HA_HORAS * 3600_000;
   const plataforma = rotuloPlataforma(item.plataforma);
   const reg = item.menorRegistrado;
   const promo = item.promoPrime ?? null;
@@ -113,7 +117,7 @@ export function CartaoVitrine({ item, prioridade = false, className }: { item: V
         </p>
         <p className={cn('h-4 truncate text-xs leading-4', promo || reg?.noMenor ? 'font-semibold text-[var(--color-accent-primary)]' : 'text-[var(--color-text-secondary)]')}>
           {promo
-            ? 'Exclusivo Prime'
+            ? promo.validaAte ? 'Exclusivo Prime' : 'Prime · confira o prazo na Amazon'
             : reg?.noMenor
             ? 'No menor preço registrado'
             : reg?.corroborado
@@ -124,7 +128,18 @@ export function CartaoVitrine({ item, prioridade = false, className }: { item: V
 
         <p className="mt-auto line-clamp-2 text-xs leading-4 text-[var(--color-text-tertiary)]">
           {item.loja}
-          {lido ? ` · preço lido às ${lido}` : ''}
+          {lido ? (
+            leituraAntiga ? (
+              <>
+                {' · '}
+                <VerificadoHa iso={item.lidoEm} />
+              </>
+            ) : (
+              ` · preço lido às ${lido}`
+            )
+          ) : (
+            ''
+          )}
         </p>
       </Link>
     </article>

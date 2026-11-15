@@ -52,13 +52,16 @@ export interface PromoRead {
   /** Itens exigidos pela promoção (1 = desconto por item). */
   minItens: number | null;
   validFrom: string | null;
-  validUntil: string;
+  /** Prazo LIDO (banner/termos). null = validade desconhecida (dono, 2026-11-14, R2-15): registra, mas só divulga com confirmação na página do item. */
+  validUntil: string | null;
   validityRaw: string;
+  /** true quando nenhuma validade foi lida (nunca se inventa prazo). */
+  validadeDesconhecida: boolean;
   /** Frases dos termos que importam ao cliente (vendido pela Amazon; só produto físico). */
   termosCurtos: string[];
 }
 
-export type PromoParse = { ok: true; promo: PromoRead } | { ok: false; reason: 'sem_titulo' | 'sem_percentual' | 'sem_validade_lida' | 'promocao_encerrada' | 'id_invalido' };
+export type PromoParse = { ok: true; promo: PromoRead } | { ok: false; reason: 'sem_titulo' | 'sem_percentual' | 'promocao_encerrada' | 'id_invalido' };
 
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const clean = (s: unknown) => String(s ?? '').replace(/\s+/g, ' ').trim();
@@ -106,8 +109,8 @@ export function parsePromoPage(p: PromoPayload, now: Date): PromoParse {
   const percentual = pct ? Number(pct[1].replace(',', '.')) : 0;
   if (!(percentual > 0 && percentual <= 70)) return { ok: false, reason: 'sem_percentual' };
   const v = parseValidade(banner, p.termos ?? '');
-  if (!v.until) return { ok: false, reason: 'sem_validade_lida' };
-  if (Date.parse(v.until) <= now.getTime()) return { ok: false, reason: 'promocao_encerrada' };
+  // Sem validade lida (R2-15, dono 2026-11-14): NÃO descarta; registra como 'validade desconhecida' (nunca inventa prazo). Prazo lido e vencido segue encerrando.
+  if (v.until && Date.parse(v.until) <= now.getTime()) return { ok: false, reason: 'promocao_encerrada' };
 
   const n = norm(alvo + ' ' + banner.slice(0, 120));
   const soApp = /\b(so no app|app only|no aplicativo|exclusivo no app)\b/.test(n);
@@ -123,7 +126,8 @@ export function parsePromoPage(p: PromoPayload, now: Date): PromoParse {
 
   const cat = /\boff\s+em\s+(?!\d)(.{2,40}?)\s*$/i.exec(titulo) ?? /\bdesconto\s+em\s+(?!\d)(.{2,40}?)\s*$/i.exec(titulo);
   // "Jogos de Nintendo Switch e Nintendo Switch 2 com 25% OFF": o departamento vem no INÍCIO do título (sem "off em <categoria>"). Só games é reconhecido aqui.
-  const catInicio = !cat && /^(jogos?|games?|video ?games?)\b/.test(norm(titulo)) ? 'Games' : null;
+  // 2026-11-14: o banner também pode citar o departamento ("[Exclusivo para membros Prime] Jogos de Nintendo Switch ... 25% OFF"). Quando nem título nem banner dizem, o servidor infere pelos ASINs casados (categoriaPelosItens).
+  const catInicio = !cat && (/^(jogos?|games?|video ?games?)\b/.test(norm(titulo)) || /\b(jogos?|video ?games?)\s+(de|para)\s+(nintendo|playstation|xbox|switch|ps ?[45])\b/.test(norm(banner.slice(0, 220)))) ? 'Games' : null;
   const termosCurtos: string[] = [];
   const tn = norm(p.termos ?? '');
   if (/apenas para produtos vendidos pela amazon/.test(tn)) termosCurtos.push('vale só para itens vendidos pela Amazon.com.br (não por vendedores parceiros)');
@@ -131,7 +135,7 @@ export function parsePromoPage(p: PromoPayload, now: Date): PromoParse {
 
   return {
     ok: true,
-    promo: { id: p.id, titulo, percentual, categoria: cat ? clean(cat[1]) : catInicio, soApp, restricao, minItens, validFrom: v.from, validUntil: v.until, validityRaw: v.raw.slice(0, 200), termosCurtos },
+    promo: { id: p.id, titulo, percentual, categoria: cat ? clean(cat[1]) : catInicio, soApp, restricao, minItens, validFrom: v.from, validUntil: v.until, validityRaw: v.raw.slice(0, 200), validadeDesconhecida: !v.until, termosCurtos },
   };
 }
 
@@ -141,11 +145,11 @@ export function parsePromoPage(p: PromoPayload, now: Date): PromoParse {
  * há percentual e validade lidos e o departamento do título é mapeado (trava de departamento). O preço final é DERIVADO da regra escrita (como o de toda
  * promoção) e a oferta só vale depois da confirmação na página do próprio ASIN.
  */
-export function primeNaFinalizacao(p: Pick<PromoRead, 'restricao' | 'minItens' | 'percentual' | 'categoria' | 'validUntil'>): boolean {
+export function primeNaFinalizacao(p: Pick<PromoRead, 'restricao' | 'minItens' | 'percentual' | 'categoria'> & { validUntil?: string | null }): boolean {
   if (p.restricao !== 'prime') return false;
   if (p.minItens != null && p.minItens >= 2) return false;
   if (!(p.percentual > 0 && p.percentual <= 70)) return false;
-  if (!p.validUntil) return false;
+  // Validade desconhecida (R2-15) é aceita: o cupom nasce nao_verificado e só vale/divulga depois da confirmação na página do item (120 min).
   return verticaisDaCategoria(p.categoria).length > 0;
 }
 
@@ -219,11 +223,12 @@ export function cupomDoItem(promo: PromoRead, item: { asin: string; offerId: str
     ...(opts.primeCheckout ? { publico_texto: PUBLICO_PRIME_TEXTO } : {}),
     texto_bruto: `${promo.titulo} | Amazon.com.br${promo.categoria ? ` | ${promo.categoria}` : ''}`.slice(0, 3900),
     condicoes_texto: condicoes.slice(0, 1400),
-    condicoes: { promo_id: promo.id, ativacao: promo.soApp ? 'app' : 'automatica', so_app: promo.soApp, preco_derivado_da_regra: true, ...(opts.primeCheckout ? { prime_checkout: true } : {}), termos: promo.termosCurtos.join('; ').slice(0, 190) || null },
+    condicoes: { promo_id: promo.id, ativacao: promo.soApp ? 'app' : 'automatica', so_app: promo.soApp, preco_derivado_da_regra: true, ...(opts.primeCheckout ? { prime_checkout: true } : {}), ...(promo.validadeDesconhecida ? { validade_desconhecida: true, aviso: 'confira o prazo na Amazon' } : {}), termos: promo.termosCurtos.join('; ').slice(0, 190) || null },
     validade_inicio: promo.validFrom ?? undefined,
-    validade_fim: promo.validUntil,
-    validade_origem: 'texto_da_pagina',
-    validade_texto: promo.validityRaw,
+    // Validade desconhecida (R2-15): contrato 'ausente' (sem fim, sem texto, nada inventado). Só vale/divulga depois da confirmação na página do item.
+    ...(promo.validUntil
+      ? { validade_fim: promo.validUntil, validade_origem: 'texto_da_pagina', validade_texto: promo.validityRaw }
+      : { validade_origem: 'ausente' }),
     fonte_tipo: 'portal_listagem',
     fonte_url: fonte,
   };
@@ -314,4 +319,21 @@ export function confirmarNoItem(item: ItemLido, esperado: { asin: string; promoI
   const final = brlCents(item.precoFinal);
   if (final != null && Math.abs(final - derivado) > Math.max(derivado * 0.03, 100)) return { ok: false, motivo: 'preco_final_incoerente' };
   return { ok: true, evidencia, priceCents: price, finalCents: final ?? derivado, finalLido: final != null };
+}
+
+/**
+ * Categoria inferida pelos ASINs casados (dono, 2026-11-14): o título da promoção pode vir sem o departamento ("25% de desconto em 1 item(ns)") e o banner
+ * pode não citá-lo. Se a MAIORIA absoluta dos cards já casados com ofertas nossas é de UMA vertical (mínimo de 5 casados e 80%), a promoção é dessa vertical.
+ * Só vale para promoção Prime na finalização; o departamento por item continua sendo conferido depois (departamentoCompativel), então o que não for da
+ * vertical dominante é descartado. Devolve o rótulo de categoria mapeado (ex.: 'Games') ou null.
+ */
+export function categoriaPelosItens(verticais: ReadonlyArray<string | null | undefined>): { categoria: string; vertical: Vertical; share: number; casados: number } | null {
+  const conta = new Map<string, number>();
+  let total = 0;
+  for (const v of verticais) { const k = String(v ?? '').toLowerCase(); if (!k) continue; total++; conta.set(k, (conta.get(k) ?? 0) + 1); }
+  if (total < 5) return null;
+  const [top, n] = [...conta.entries()].sort((a, b) => b[1] - a[1])[0] ?? ['', 0];
+  const rotulos: Record<string, string> = { games: 'Games', esporte: 'Esportes', livros: 'Livros', tecnologia: 'Tecnologia', eletrodomesticos: 'Casa', eletroeletronicos: 'Eletrônicos', impressao3d: 'Impressão 3D' };
+  if (!rotulos[top] || n / total < 0.8) return null;
+  return { categoria: rotulos[top], vertical: top as Vertical, share: n / total, casados: total };
 }

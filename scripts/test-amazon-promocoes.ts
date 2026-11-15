@@ -8,7 +8,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import fs from 'node:fs';
 import {
-  brlCents, cardEhDaLista, confirmarNoItem, cupomDoItem, departamentoCompativel, verticaisDaCategoria, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, parseValidade, precoCasa, precoComPromocao, type PromoPayload,
+  brlCents, categoriaPelosItens, primeNaFinalizacao, cardEhDaLista, confirmarNoItem, cupomDoItem, departamentoCompativel, verticaisDaCategoria, fonteUrl, nomeDaPromocao, parsePromoCards, parsePromoPage, parseValidade, precoCasa, precoComPromocao, type PromoPayload,
 } from '../src/lib/coupons/amazon-promocoes';
 import { validateCoupon } from '../src/server/coupons/normalize';
 import { evaluateAgulha } from '../src/lib/coupons/agulha';
@@ -48,7 +48,31 @@ async function main() {
   check('Compre 4 livros Prime: restrita, 4 itens', pl.ok && pl.promo.restricao === 'prime' && pl.promo.minItens === 4, pl);
   const depois = parsePromoPage(sup.promo, new Date('2026-12-01T03:00:00Z'));
   check('Promoção vencida pela validade lida = recusada', !depois.ok && depois.reason === 'promocao_encerrada', depois);
-  check('Sem validade lida = recusada (nunca inferida)', (() => { const x = parsePromoPage({ id: 'A2G3U1520PCGB0', titulo: 'Só no app: 10% off em Panelas', banner: 'Só no app: 10% off em Panelas', termos: '' }, NOW); return !x.ok && x.reason === 'sem_validade_lida'; })());
+  check('Sem validade lida = registrada como validade DESCONHECIDA (R2-15), nunca inferida', (() => { const x = parsePromoPage({ id: 'A2G3U1520PCGB0', titulo: 'Só no app: 10% off em Panelas', banner: 'Só no app: 10% off em Panelas', termos: '' }, NOW); return x.ok && x.promo.validadeDesconhecida === true && x.promo.validUntil === null && x.promo.validityRaw === ''; })());
+  check('Validade lida e vencida continua encerrando a promoção', (() => { const x = parsePromoPage({ id: 'A2G3U1520PCGB0', titulo: 'Só no app: 10% off em Panelas', banner: 'Só no app: 10% off em Panelas De 1 de novembro de 2026 às 00:00 até 5 de novembro de 2026 às 23:59', termos: '' }, NOW); return !x.ok && x.reason === 'promocao_encerrada'; })());
+  check('Cupom de validade desconhecida: contrato aceita (origem ausente, sem fim), com aviso e sem prazo inventado', (() => {
+    const x = parsePromoPage({ id: 'A2G3U1520PCGB0', titulo: 'Só no app: 10% off em Panelas', banner: 'Só no app: 10% off em Panelas', termos: '' }, NOW);
+    if (!x.ok) return false;
+    const c = cupomDoItem(x.promo, { asin: 'B0ABCDEFGH', offerId: '00000000-0000-4000-8000-000000000001' }, fonteUrl(x.promo.id)) as Record<string, unknown>;
+    const cond = c.condicoes as Record<string, unknown>;
+    return c.validade_fim === undefined && c.validade_origem === 'ausente' && c.validade_texto === undefined && cond.validade_desconhecida === true && cond.aviso === 'confira o prazo na Amazon';
+  })());
+  check('Prime sem validade lida, com categoria Games, vale como Prime na finalização (confirmação no item decide)', (() => {
+    const x = parsePromoPage({ id: 'A2B9F6KRH7YF1H', titulo: '25% de desconto em 1 item(ns)', banner: '[Exclusivo para membros Prime] Jogos de Nintendo Switch e Nintendo Switch 2 com 25% OFF', termos: '' }, NOW);
+    return x.ok && x.promo.restricao === 'prime' && x.promo.categoria === 'Games' && x.promo.validadeDesconhecida && primeNaFinalizacao(x.promo);
+  })());
+  check('Prime sem categoria no título nem no banner NAO vale por si só (precisa da inferência pelos itens)', (() => {
+    const x = parsePromoPage({ id: 'A2B9F6KRH7YF1H', titulo: '25% de desconto em 1 item(ns)', banner: '[Exclusivo para membros Prime] 25% de desconto em 1 item(ns)', termos: '' }, NOW);
+    return x.ok && x.promo.categoria === null && !primeNaFinalizacao(x.promo);
+  })());
+  check('Categoria pelos itens: 5+ casados e 80%+ games => Games; mistura ou poucos itens => nada', (() => {
+    const a = categoriaPelosItens(['games', 'games', 'games', 'games', 'games', 'games', 'tecnologia']);
+    const b = categoriaPelosItens(['games', 'games', 'games', 'tecnologia', 'tecnologia', 'games']);
+    const c = categoriaPelosItens(['games', 'games', 'games']);
+    const d = categoriaPelosItens([null, undefined, '', 'games', 'games', 'games', 'games', 'games']);
+    return !!a && a.categoria === 'Games' && a.vertical === 'games' && b === null && c === null && !!d && d.casados === 5;
+  })());
+  check('Preço derivado Prime 25% (prateleira x 0,75) bate com o anunciado pelo concorrente: 169,90->127,42; 159,90->119,92; 299,90->224,92', precoComPromocao(16990, 25) === 12742 && precoComPromocao(15990, 25) === 11992 && precoComPromocao(29990, 25) === 22492);
   check('Título sem % = recusado', (() => { const x = parsePromoPage({ id: 'A2G3U1520PCGB0', titulo: 'Leve 3 pague 2 em Livros', banner: 'De terça-feira 3 de novembro de 2026 às 09:00 BRT até segunda-feira 30 de novembro de 2026', termos: '' }, NOW); return !x.ok && x.reason === 'sem_percentual'; })());
 
   // classificação dos títulos reais
