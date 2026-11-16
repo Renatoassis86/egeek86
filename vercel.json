@@ -99,6 +99,10 @@
     {
       "path": "/api/cron/ampliar-amostra-shopee?vertical=impressao3d&nome=bambu+impressora&limitMasters=20&maxCalls=60&apply=1",
       "schedule": "33 * * * *"
+    },
+    {
+      "path": "/api/cron/precos-fontes",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

@@ -14,6 +14,8 @@ import { auditarUrlsDeMensagem, resumoViolacoes } from '@/lib/affiliate/link-afi
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
 import { amazonForaDasMensagens, amazonFrescorMin, amazonNoPrivado, avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
 import { ultimosVereditos } from '@/server/links/auditoria-links';
+import { asinDaUrl, decidirPrecoAmazon } from '@/lib/precos-fontes/resolver';
+import { leiturasExternasPorAsin } from '@/server/precos-fontes/leituras';
 import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
   alvosLigados, TOP_POR_MODELO, INTERVALO_RODADA_MS, MAX_QUEDAS_POR_CICLO, MASTERS_PRIVADO, montarPaineis, secaoDe, textoQuedaSeguro,
@@ -86,6 +88,18 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND ${linkPublicavelFilter('o')} AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
       AND (nn.slug <> 'mercado-livre' OR o.seller_id IS NOT NULL) /* placeholder ML (sem vendedor) guarda o MENOR preço do catálogo e tem link de UM anúncio: preço e link divergem por desenho (93607216) */ AND nn.slug IN ('mercado-livre', 'amazon') ${amazonForaDasMensagens() && !amazonNoPrivado() ? sql`AND nn.slug <> 'amazon'` : sql``} AND o.last_checked_at > now() - interval '24 hours'
       AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
+  // R-82 (camadas de fonte): leitura externa fresca (oficial/Keepa) CONFIRMA o par conhecido (estende o frescor, mesmo com o Chrome parado) ou VETA (divergente).
+  try {
+    const externas = await leiturasExternasPorAsin(rows.filter((r) => r.rede === 'amazon').map((r) => asinDaUrl(r.url) ?? ''));
+    for (const r of rows) {
+      if (r.rede !== 'amazon') continue;
+      const ext = externas.get(asinDaUrl(r.url) ?? '') ?? [];
+      if (!ext.length) continue;
+      const d = decidirPrecoAmazon({ precoCents: Number(r.price), pixCents: r.pix != null ? Number(r.pix) : null, lidoEm: r.conf ? new Date(r.conf) : null }, ext, now);
+      if (d.ok) r.conf = d.validoEm;
+      else if (d.motivo === 'divergente' || d.motivo === 'indisponivel_na_fonte') r.conf = null;
+    }
+  } catch { /* sem camada externa: vale o Chrome (R-81) */ }
   const ligada = confirmacaoLigada();
   const audit = ligada ? await ultimosVereditos(rows.map((r) => r.id)) : new Map<string, { verdict: string; checkedAt: Date; okEm: Date | null }>();
   const fatos = (r: RowOferta, uso: 'queda' | 'lista') => avaliarConfirmacao({
@@ -143,9 +157,24 @@ async function mudouDesdeCongelamento(L: ListaCongelada): Promise<number> {
     SELECT count(*)::int AS n FROM affiliate_offers
     WHERE id IN (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})
       AND (last_price_change_at > ${L.inicio}::timestamptz OR item_trocado_at > ${L.inicio}::timestamptz OR status <> 'active' OR consecutive_miss_count > 0 OR quarantined_at IS NOT NULL
-           /* R-81: preço de Amazon velho no momento do envio (a lista é entregue em partes) obriga a regenerar; Amazon sem leitura fresca sai da lista */
-           OR (network_id IN (SELECT id FROM affiliate_networks WHERE slug = 'amazon') AND (last_price_confirmed_at IS NULL OR last_price_confirmed_at < now() - ${amazonFrescorMin() + 15} * interval '1 minute')))`)) as unknown as { n: number }[];
-  return Number(rows[0]?.n ?? 0);
+    )`)) as unknown as { n: number }[];
+  let mudou = Number(rows[0]?.n ?? 0);
+  // R-81/R-82: a lista e entregue em partes; preco de Amazon que perdeu a validade (45 min do Chrome, ou confirmacao externa vencida/divergente) obriga a regenerar.
+  try {
+    const amz = (await db.execute(sql`
+      SELECT o.affiliate_url AS url, o.current_price_cents::text AS price, o.pix_cents::text AS pix, o.last_price_confirmed_at AS conf
+      FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id
+      WHERE n.slug = 'amazon' AND o.id IN (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})`)) as unknown as { url: string | null; price: string; pix: string | null; conf: Date | string | null }[];
+    if (amz.length) {
+      const ext = await leiturasExternasPorAsin(amz.map((a) => asinDaUrl(a.url) ?? ''));
+      const agora = new Date();
+      for (const a of amz) {
+        const d = decidirPrecoAmazon({ precoCents: Number(a.price), pixCents: a.pix != null ? Number(a.pix) : null, lidoEm: a.conf ? new Date(a.conf) : null }, ext.get(asinDaUrl(a.url) ?? '') ?? [], new Date(agora.getTime() - 15 * 60_000));
+        if (!d.ok) mudou++;
+      }
+    }
+  } catch { /* sem checagem de Amazon: o carregamento seguinte ja aplica a regra */ }
+  return mudou;
 }
 
 async function ultimaLista(): Promise<ListaCongelada | null> {
