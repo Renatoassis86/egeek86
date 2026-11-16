@@ -8,6 +8,8 @@ import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
 import { resolveCouponUse, stepsText } from '@/lib/coupons/coupon-name';
 import { FONTES_PROMO, promoPrimeMensagemLigada } from '@/lib/coupons/amazon-promocoes';
+import { cofreLigado, provasDeSimulacao, registrarDecisao } from '@/server/coupons/cofre';
+import { podeDivulgar, provaDoCupomAmazon, provaDoCupomMl, type Prova } from '@/lib/coupons/cofre';
 import { cupomMlExigeProva, cupomMlFrescorMin, provaCupomMl, type MotivoSemProva } from '@/lib/coupons/prova-cupom';
 
 /**
@@ -151,6 +153,18 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
       permitirPrimeNaFinalizacao: primeOk,
     });
     if (!verdict.ok) { lastReason = verdict.reason; continue; }
+    // COFRE (R-64): `podeDivulgar` é o ÚNICO caminho para o cupom virar mensagem, card, lista, site, alerta privado ou preço final. Padrão negado: rede sem validador = bloqueado.
+    if (cofreLigado()) {
+      const readAt = new Date(r.read_at);
+      const refCupom = r.campaign ?? 'sem_campanha';
+      let provas: Prova[] = r.net === 'mercado-livre' ? provaDoCupomMl({ campaignId: r.campaign, status: r.status, readAt, nome: r.p_name })
+        : r.net === 'amazon' ? provaDoCupomAmazon({ verificado: isPromo ? r.pc_state === 'verificado' : /^(amazon-pagina|amazon-item-confirmado)$/.test(String(r.src)), readAt, nome: r.p_name })
+        : r.net === 'shopee' ? provaDoCupomAmazon({ verificado: /^shopee-pagina$/.test(String(r.src)), readAt, nome: r.p_name }) : [];
+      let dec = podeDivulgar({ rede: r.net, tipoItem: 'cupom', uso: 'mensagem', provas, now });
+      if (!dec.ok) { provas = [...provas, ...(await provasDeSimulacao(offerId, refCupom))]; dec = podeDivulgar({ rede: r.net, tipoItem: 'cupom', uso: 'mensagem', provas, now }); }
+      void registrarDecisao({ offerId, couponRef: refCupom, tipoItem: 'cupom', rede: r.net, uso: 'mensagem', decisao: dec, nome: r.p_name, valorFinalCents: Number(r.pw) });
+      if (!dec.ok) { lastReason = `cofre_${dec.motivo}`; continue; }
+    }
     const parts: string[] = [];
     // Quanto ele dá: diferença real entre o preço da oferta e o preço com cupom lido na página.
     const off = current - Number(r.pw);
