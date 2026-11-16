@@ -17,6 +17,7 @@
     "test:coleta": "tsx scripts/test-collector-multicatalog.ts && tsx scripts/test-catalog-placeholder.ts && tsx --test src/lib/collector-runs/collector-runs.test.ts",
     "test:gate": "tsx scripts/test-gate.ts",
     "test:quarentena-preco": "tsx scripts/test-quarentena-preco-risco.ts",
+    "test:preco-isca": "tsx scripts/test-preco-isca.ts",
     "test:console-regra": "tsx scripts/test-console-regra.ts",
     "test:item-miudo": "tsx scripts/test-item-miudo.ts",
     "test:cupons-impressoras": "tsx scripts/test-fila-impressoras-112.ts && tsx scripts/test-card-benefit-112.ts && tsx scripts/test-aviso-impressoras-112.ts",

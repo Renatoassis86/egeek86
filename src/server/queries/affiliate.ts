@@ -51,6 +51,7 @@ import {
   type ProductType,
 } from '@/db/schema';
 import { GAMES, verticalSql } from '@/lib/catalog/verticais';
+import { snapshotNaoIscaSql } from '@/server/pricing/preco-isca-sql';
 
 type MasterProductPick = Pick<
   MasterProduct,
@@ -727,20 +728,20 @@ export async function getOfferMetrics(offerId: string): Promise<OfferMetrics | n
     -- final, sem afetar mínimo/contagem.
     WITH raw_avg_30d AS (
       SELECT AVG(price_cents) AS raw_avg
-      FROM affiliate_price_snapshots
-      WHERE offer_id = ${offerId} AND collected_at >= now() - interval '30 days'
+      FROM affiliate_price_snapshots s
+      WHERE s.offer_id = ${offerId} AND s.collected_at >= now() - interval '30 days' AND ${snapshotNaoIscaSql('s')}
     )
     SELECT
       MIN(s.price_cents) FILTER (WHERE s.price_cents > 0)::bigint AS lowest_price_cents,
-      (SELECT collected_at FROM affiliate_price_snapshots
-        WHERE offer_id = ${offerId} AND price_cents > 0 ORDER BY price_cents ASC, collected_at ASC LIMIT 1) AS lowest_price_at,
+      (SELECT collected_at FROM affiliate_price_snapshots ss
+        WHERE ss.offer_id = ${offerId} AND ss.price_cents > 0 AND ${snapshotNaoIscaSql('ss')} ORDER BY price_cents ASC, collected_at ASC LIMIT 1) AS lowest_price_at,
       AVG(s.price_cents) FILTER (
         WHERE s.collected_at >= now() - interval '30 days'
           AND s.price_cents <= (SELECT raw_avg FROM raw_avg_30d) * 2
       )::numeric AS avg_price_30d,
       COUNT(*)::int AS snapshot_count
     FROM affiliate_price_snapshots s
-    WHERE s.offer_id = ${offerId}
+    WHERE s.offer_id = ${offerId} AND ${snapshotNaoIscaSql('s')}
   `);
   const agg = aggRows[0];
   if (!agg || Number(agg.snapshot_count) === 0 || !agg.lowest_price_cents) return null;

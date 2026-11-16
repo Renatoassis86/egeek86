@@ -1,6 +1,6 @@
 /**
  * REVISOR/QA (#119): mede a integridade de preço/anúncio/link das ofertas e das mensagens. SOMENTE LEITURA.
- *   npx tsx --env-file=.env.local scripts/medir-integridade-preco.ts [--json] [--registrar]
+ *   npx tsx --conditions=react-server --env-file=.env.local scripts/medir-integridade-preco.ts [--json] [--registrar]
  * --registrar: anexa um achado por indicador em FALHA a docs/revisao-integridade-preco-2026-11-15.md.
  * Saída 0 só se TODOS os indicadores do ESCOPO ESTRITO (P2S Combo e P1S Combo) estiverem OK. Nunca imprime segredo.
  *
@@ -105,6 +105,27 @@ function add(id: string, nome: string, esc: Esc, n: number, valor: string, ids: 
         const velhas = R.filter((o) => idade(o.conf) > lim);
         add('i', `${rede}: ${R.length} elegíveis; confirmação mediana ${p(0.5)} p90 ${p(0.9)} máx ${p(1)}; > ${lim} min`, e, velhas.length, `${velhas.length}/${R.length}`, velhas.map((o) => o.id), 'Preço confirmado dentro da janela da rede', velhas.length === 0);
       }
+    }
+
+    // (m) GATILHO DE PRECO-ISCA (R-61): nenhuma cotacao-isca vigente pode estar nas metricas. (m.1) oferta ativa e elegivel cujo preco atual seria isca e nao esta
+    // em quarentena; (m.2) linha oferta-dia dos ultimos 16 dias cujo menor preco e de cotacao marcada e sem cotacao limpa igual no dia.
+    const { varrerIsca } = await import('../src/server/pricing/preco-isca');
+    const vis = await varrerIsca(false);
+    for (const e of ESCS) {
+      const idsE = vis.idsNovasIscas.filter((id) => { const o = porId.get(id); return o ? noEsc(o, e) : e === 'geral'; });
+      add('m.1', `preco-isca vigente fora da quarentena (gatilho ${vis.ligado ? 'ligado' : 'DESLIGADO'}; ${vis.avaliadas} ofertas julgadas)`, e, idsE.length, String(idsE.length), idsE, 'Oferta cujo preco e isca (< 50% da mediana de >= 3 vendedores do mesmo produto) nao define minimo, media, card nem mensagem');
+    }
+    const orf = await sql<{ id: string; mid: string }[]>`
+      SELECT d.offer_id::text id, d.master_product_id::text mid FROM price_daily_offer d
+      WHERE d.day >= current_date - 16 AND EXISTS (
+        SELECT 1 FROM preco_isca_marcas k JOIN affiliate_price_snapshots s ON s.id = k.snapshot_id
+        WHERE k.offer_id = d.offer_id AND k.liberado_em IS NULL AND s.price_cents = d.min_cents AND (s.collected_at AT TIME ZONE 'America/Sao_Paulo')::date = d.day)
+      AND NOT EXISTS (
+        SELECT 1 FROM affiliate_price_snapshots s2 WHERE s2.offer_id = d.offer_id AND s2.price_cents = d.min_cents AND (s2.collected_at AT TIME ZONE 'America/Sao_Paulo')::date = d.day
+          AND NOT EXISTS (SELECT 1 FROM preco_isca_marcas k2 WHERE k2.snapshot_id = s2.id AND k2.liberado_em IS NULL))`;
+    for (const e of ESCS) {
+      const sel = orf.filter((r) => e === 'geral' || (e === 'estrito' && PRIVADO.includes(r.mid)) || (e === 'amplo' && (porId.get(r.id) ? noEsc(porId.get(r.id)!, 'amplo') : false)));
+      add('m.2', 'oferta-dia (16 dias) com menor preco = cotacao-isca marcada (isca ainda nas metricas)', e, sel.length, String(sel.length), sel.map((r) => r.id), 'Cotacao marcada como isca nao entra em price_daily_offer');
     }
 
     // (i) divergência de snapshot x oferta (Amazon/Shopee), uma vez, geral

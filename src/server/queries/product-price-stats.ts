@@ -18,6 +18,7 @@ import {
   type LowBadgeBlockReason,
   type SellerTier,
 } from '@/lib/affiliate/price-verdict';
+import { snapshotNaoIscaSql } from '@/server/pricing/preco-isca-sql';
 
 /**
  * FONTE ÚNICA de estatística de preço por `master_product` (ADR 0001).
@@ -74,7 +75,7 @@ export function priceQuotesCtes(scope: SQL, vertical: Vertical): SQL {
       FROM affiliate_offers o
       INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
       LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-      WHERE (${scope}) AND s.price_cents > 0
+      WHERE (${scope}) AND s.price_cents > 0 AND ${snapshotNaoIscaSql('s')}
         AND ${verticalSql('o', vertical)}
         AND ${catalogGateVisibleSql('o.master_product_id')}
         AND ${offerIdentityVisibleSql('o.id')}

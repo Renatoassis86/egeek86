@@ -50,6 +50,14 @@ export async function GET(request: NextRequest) {
       out.showcase = await refreshShowcase({ budgetMs: Math.max(20_000, BUDGET_MS - (Date.now() - started)), force });
     }
     if (part === 'daily') {
+      // Gatilho de preco-isca (R-61): varredura de seguranca ANTES de recalcular o dia (marca o que o gancho da coleta nao viu, solta o que nao se sustenta). Melhor esforco.
+      try {
+        const { varrerIsca } = await import('@/server/pricing/preco-isca');
+        const v = await varrerIsca(true, { budgetMs: 60_000 });
+        out.isca = { ligado: v.ligado, avaliadas: v.avaliadas, novas: v.novasIscas, soltas: v.quarentenasSoltas, exemplos: v.exemplos.slice(0, 5) };
+      } catch (err) {
+        out.isca = { erro: err instanceof Error ? err.message.slice(0, 120) : 'erro' };
+      }
       out.daily = priceDailyShadowEnabled()
         ? await refreshPriceDaily({ budgetMs: Math.max(20_000, BUDGET_MS - (Date.now() - started)) })
         : { skipped: 'PRICE_DAILY_SHADOW desligada' };

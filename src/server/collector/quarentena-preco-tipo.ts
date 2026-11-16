@@ -39,7 +39,8 @@ export async function avaliarEQuarentenarPreco(offerId: string, priceCents: numb
       return motivoNovo;
     }
     const razao = r.quarantine_reason == null ? '' : String(r.quarantine_reason);
-    if (emQuarentena && razao.startsWith('preco_') && !relativo) {
+    // preco_isca_* e do gatilho R-61: so ele solta
+    if (emQuarentena && razao.startsWith('preco_') && !razao.startsWith('preco_isca') && !relativo) {
       await db.execute(sql`UPDATE affiliate_offers SET quarantined_at = NULL, quarantine_reason = NULL, updated_at = now() WHERE id = ${offerId}::uuid AND quarantine_reason = ${razao}`);
     }
     return null;

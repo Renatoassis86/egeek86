@@ -18,6 +18,7 @@ import {
   type ReconOffer,
 } from '@/lib/pricing/daily-state';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
+import { snapshotNaoIscaSql } from '@/server/pricing/preco-isca-sql';
 import { avgExcludedFlagSql } from '@/server/queries/public-offers';
 import { AMAZON_FRESH_MAX_AGE_MS, amazonScope, getAmazonMode, isAmazonSlug, type AmazonMode, type AmazonScope } from '@/lib/pricing/amazon-mode';
 import { amazonScopeSql } from '@/server/pricing/amazon-scope-sql';
@@ -60,6 +61,7 @@ export async function upsertOfferDays(exec: Exec, fromDay: string, toDay: string
     WHERE s.collected_at >= (${fromDay}::date)::timestamp AT TIME ZONE 'America/Sao_Paulo'
       AND s.collected_at <  (${toDay}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo'
       AND s.price_cents > 0
+      AND ${snapshotNaoIscaSql('s')}
       ${offerId ? sql`AND s.offer_id = ${offerId}` : sql``}
     GROUP BY s.offer_id, o.master_product_id, d.day
     ON CONFLICT (offer_id, day) DO UPDATE SET
@@ -341,6 +343,7 @@ export async function loadReconOffers(exec: Exec, productIds: string[], fromAtIs
     INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
     WHERE o.master_product_id IN (${ids(productIds)}) AND ${eligibleOfferSql('o')} AND ${amazonScopeSql(amazonScope(), 'o')}
       AND s.price_cents > 0 AND s.collected_at >= ${fromAtIso}::timestamptz - interval '48 hours'
+      AND ${snapshotNaoIscaSql('s')}
     ORDER BY o.master_product_id, o.id, s.collected_at, s.id
   `);
   const by = new Map<string, ReconOffer>();

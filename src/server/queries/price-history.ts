@@ -5,6 +5,7 @@ import { offerIdentityVisibleSql, notQuarantinedSql, avgExcludedFlagSql } from '
 import { catalogHiddenFilter } from '@/server/queries/catalog-dimensions';
 import { GAMES, verticalSql } from '@/lib/catalog/verticais';
 import { affiliateOffers, affiliateNetworks, affiliateSellers, masterProducts } from '@/db/schema';
+import { snapshotNaoIscaSql } from '@/server/pricing/preco-isca-sql';
 
 export type PriceHistoryTimeframe = '1D' | '1S' | '1M' | '3M' | '6M' | '1A' | 'Tudo';
 
@@ -236,7 +237,7 @@ export async function getMasterProductPriceHistory(
           FROM affiliate_price_snapshots s
           INNER JOIN affiliate_offers o ON o.id = s.offer_id
           WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
-            AND s.collected_at < now() - (${interval})::interval
+            AND s.collected_at < now() - (${interval})::interval AND ${snapshotNaoIscaSql('s')}
           ORDER BY s.offer_id, s.collected_at DESC
         `)
       : Promise.resolve([] as { offer_id: string; price_cents: string }[]),
@@ -249,6 +250,7 @@ export async function getMasterProductPriceHistory(
         FROM affiliate_price_snapshots s
         INNER JOIN affiliate_offers o ON o.id = s.offer_id
         WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
+          AND ${snapshotNaoIscaSql('s')}
           ${windowFilter}
       ),
       st AS (
@@ -313,7 +315,7 @@ export async function getMasterProductPriceHistory(
       SELECT MAX(s.price_cents)::bigint AS max_price
       FROM affiliate_price_snapshots s
       INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')} AND ${snapshotNaoIscaSql('s')}
     `),
 
     db.execute<{ total: string }>(sql`
@@ -531,7 +533,7 @@ export async function getMasterProductChangePercent(
       CROSS JOIN LATERAL (
         SELECT s.price_cents
         FROM affiliate_price_snapshots s
-        WHERE s.offer_id = ao.offer_id AND s.collected_at <= now() - (${interval})::interval
+        WHERE s.offer_id = ao.offer_id AND s.collected_at <= now() - (${interval})::interval AND ${snapshotNaoIscaSql('s')}
         ORDER BY s.collected_at DESC
         LIMIT 1
       ) b
@@ -617,7 +619,7 @@ export async function getTopMovers({
       CROSS JOIN LATERAL (
         SELECT s.price_cents
         FROM affiliate_price_snapshots s
-        WHERE s.offer_id = ao.offer_id AND s.collected_at <= now() - (${interval})::interval
+        WHERE s.offer_id = ao.offer_id AND s.collected_at <= now() - (${interval})::interval AND ${snapshotNaoIscaSql('s')}
         ORDER BY s.collected_at DESC
         LIMIT 1
       ) b

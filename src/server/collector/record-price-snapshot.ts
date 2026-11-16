@@ -140,6 +140,12 @@ export async function recordPriceSnapshotDetalhado(inputOriginal: RecordSnapshot
     }
   });
   if (ignoradoIrmao) return { inserted: false, ignorado: true };
+  // GATILHO DE PRECO-ISCA (Fluxo Mestre R-61, dono 2026-11-16): TODA cotacao de TODA rede e item e julgada contra os outros anuncios do mesmo produto
+  // ANTES do gancho da oferta-dia. Isca = marcada em preco_isca_marcas (nunca apagada) e oferta em quarentena. Flag GATILHO_PRECO_ISCA=0 desliga. Melhor esforco.
+  if (inserted) {
+    const { avaliarEMarcarIsca } = await import('@/server/pricing/preco-isca');
+    await avaliarEMarcarIsca(input.offerId, input.priceCents);
+  }
   // SOMBRA (flag PRICE_DAILY_SHADOW=1, desligada por padrão): cotação nova => atualiza a oferta-dia de hoje e
   // detecta mudança do menor preço do produto (price_min_events). Melhor esforço: NUNCA derruba a coleta.
   if (inserted && process.env.PRICE_DAILY_SHADOW === '1') {

@@ -1,0 +1,6 @@
+{
+  "tabelas_antes": [
+    "affiliate_offers"
+  ],
+  "rollback": "drizzle/migrations/0060_preco_isca_marcas.rollback.sql"
+}
