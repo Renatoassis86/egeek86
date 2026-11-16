@@ -18,6 +18,7 @@ import {
 import { getStoreByVertical, chatForStore } from '@/server/stores';
 import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import { captionVisibleLength, sendTelegramGroupMessage, type FetchLike } from '@/lib/messaging/telegram-send';
+import { porteiroDeEnvio } from '@/server/messaging/porteiro-links';
 import { setAutomationState } from '@/server/messaging/group-automation-store';
 import { detectGroupCandidates, groupMessagesOnda2Ready, groupMessagesShortCodeReady, groupMessagesTableExists, groupMessagesV2Ready, loadSentHistory, type DetectionResult } from '@/server/messaging/group-offers';
 import { gerarCodigoCurto, linkCurto } from '@/lib/messaging/short-code';
@@ -638,13 +639,21 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       await expire(`sem_grupo_do_departamento_${match.vertical}`);
       return { ok: false, outcome: 'expired', reason: `sem grupo do departamento ${match.vertical}` };
     }
+    // R-70 / L4: porteiro de links (texto + legenda + URL do botão + /go das ofertas). Link fora do padrão de afiliado do dono = mensagem BARRADA,
+    // registrada em link_afiliado_bloqueios e alertada ao dono; NÃO pausa a automação (não é falha do Telegram).
+    const botaoCompra = match.cls === 'plataforma' ? null : buyButton(match, row.messageKey);
+    const gateLinks = await porteiroDeEnvio({ origem: 'telegram_grupo', texto: text, botoes: [botaoCompra?.url], groupMessageId: id, offerId: match.offerIds[0] });
+    if (!gateLinks.ok) {
+      await db.execute(sql`UPDATE group_messages SET status = 'erro', claimed_at = NULL, updated_at = now(), attempts = attempts + 1, error = ${(gateLinks.motivo ?? 'link_bloqueado').slice(0, 300)}, candidate = jsonb_set(candidate, '{botaoUrl}', to_jsonb(${botaoCompra?.url ?? ''}::text), true) WHERE id = ${id}::uuid`);
+      return { ok: false, outcome: 'failed', reason: gateLinks.motivo };
+    }
     const sent = await sendTelegramGroupMessage({
       token: env.TELEGRAM_BOT_TOKEN,
       chatId: targetChat,
       text,
       silent: !plan.nextSound,
       photo,
-      button: match.cls === 'plataforma' ? null : buyButton(match, row.messageKey),
+      button: botaoCompra,
       fetchImpl: deps.fetchImpl,
       maxRetryAfterSec: 8, // 429: espera até 8 s dentro da execução; acima disso devolve a linha à fila (não perde, não duplica)
     });
@@ -655,7 +664,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
       await db.execute(sql`
         UPDATE group_messages SET status = 'enviada', sent_at = now(), updated_at = now(), claimed_at = NULL, error = NULL, attempts = attempts + 1,
           provider_message_id = ${sent.messageId ?? null}, text_body = ${text}, price_cents_detected = ${match.priceCents}::bigint,
-          candidate = ${JSON.stringify(match)}::jsonb, msg_class = ${match.cls}, is_sound = ${plan.nextSound}, has_card = ${withCard},
+          candidate = ${JSON.stringify({ ...match, botaoUrl: botaoCompra?.url ?? null })}::jsonb, msg_class = ${match.cls}, is_sound = ${plan.nextSound}, has_card = ${withCard},
           recheck_due_at = ${recheckAt}::timestamptz
         WHERE id = ${id}::uuid
       `);

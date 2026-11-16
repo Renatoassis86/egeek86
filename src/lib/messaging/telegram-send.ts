@@ -3,6 +3,7 @@
 // 401/403/404/"chat not found" não tentam de novo; sem token ou sem chat id nunca chama a rede.
 
 import { TELEGRAM_MAX_CHARS } from '@/lib/messaging/group-messages';
+import { auditarUrlsDeMensagem, resumoViolacoes, type ViolacaoLink } from '@/lib/affiliate/link-afiliado';
 
 export type FetchLike = (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string | FormData }) => Promise<{
   status: number;
@@ -45,6 +46,9 @@ export interface SendTelegramGroupResult {
   /** Nada foi enviado porque faltou configuração. */
   skipped?: boolean;
   usedPlainText?: boolean;
+  /** R-70: o envio foi BARRADO antes da rede porque alguma URL de produto não é link de afiliado do dono (nada foi enviado). */
+  blocked?: boolean;
+  violations?: ViolacaoLink[];
   /** Saiu como foto (sendPhoto) com a legenda. */
   photoSent?: boolean;
   /** A foto veio mas não foi usada (ex.: legenda maior que 1024); a mensagem saiu só em texto. */
@@ -95,6 +99,10 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
   if (!chatId) return { ok: false, skipped: true, error: 'TELEGRAM_GROUP_CHAT_ID ausente', retryable: false };
   if (!input.text.trim()) return { ok: false, error: 'texto vazio', retryable: false };
   if (input.text.length > TELEGRAM_MAX_CHARS) return { ok: false, error: `texto acima de ${TELEGRAM_MAX_CHARS} caracteres`, retryable: false };
+
+  // R-70 / L4 (última linha de defesa, padrão NEGADO): texto, texto simples e URL do botão passam pelo porteiro ANTES de qualquer chamada de rede.
+  const violations = auditarUrlsDeMensagem({ texto: input.text, textoSimples: input.plainText, botoes: [input.button?.url] });
+  if (violations.length) return { ok: false, blocked: true, violations, error: `link_fora_do_padrao_afiliado: ${resumoViolacoes(violations)}`, retryable: false };
 
   const doFetch = input.fetchImpl ?? defaultFetch;
   const sleep = input.sleep ?? defaultSleep;

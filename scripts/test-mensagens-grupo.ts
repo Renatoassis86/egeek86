@@ -519,8 +519,8 @@ async function tgTests() {
     { status: 400, body: { ok: false, error_code: 400, description: "Bad Request: can't parse entities: Unsupported start tag" } },
     { status: 200, body: { ok: true, result: { message_id: 5 } } },
   ]);
-  r = await sendTelegramGroupMessage({ ...base, text: '<b>oi</b> https://x.com/a?b=1', plainText: 'oi https://x.com/a?b=1', fetchImpl: h.f });
-  ok(r.ok && h.calls.length === 2 && !('parse_mode' in h.calls[1].body) && h.calls[1].body.text === 'oi https://x.com/a?b=1', '400 de parse: reenvia em texto simples', { r, calls: h.calls.length });
+  r = await sendTelegramGroupMessage({ ...base, text: '<b>oi</b> https://www.egeek86.com/a?b=1', plainText: 'oi https://www.egeek86.com/a?b=1', fetchImpl: h.f });
+  ok(r.ok && h.calls.length === 2 && !('parse_mode' in h.calls[1].body) && h.calls[1].body.text === 'oi https://www.egeek86.com/a?b=1', '400 de parse: reenvia em texto simples', { r, calls: h.calls.length });
 
   h = fakeFetch([{ status: 403, body: { ok: false, error_code: 403, description: 'Forbidden: bot was kicked from the supergroup chat' } }]);
   r = await sendTelegramGroupMessage({ ...base, text: 'x', fetchImpl: h.f });

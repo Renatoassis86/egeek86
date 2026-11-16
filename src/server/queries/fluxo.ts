@@ -106,11 +106,14 @@ async function montar(): Promise<FluxoSnapshot> {
              count(*) FILTER (WHERE o.status = 'active') AS ativas,
              count(*) FILTER (WHERE o.status = 'active' AND n.slug = 'mercado-livre' AND COALESCE(o.affiliate_url, '') NOT LIKE 'https://meli.la/%') AS ml_pend,
              count(*) FILTER (WHERE o.status = 'active' AND n.slug = 'amazon' AND o.last_price_confirmed_at > now() - interval '40 minutes') AS az_fresca,
-             max(o.last_price_confirmed_at) FILTER (WHERE n.slug = 'amazon') AS az_ultima
+             max(o.last_price_confirmed_at) FILTER (WHERE n.slug = 'amazon') AS az_ultima,
+             count(*) FILTER (WHERE o.status = 'active' AND NOT o.affiliate_link_pending AND NOT affiliate_link_valido(o.affiliate_url, n.slug)) AS sem_marca
         FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id
        WHERE o.status IN ('draft','active') GROUP BY n.slug`)) as unknown as Raw[];
     const por = (slug: string): Raw => rows.find((r) => String(r.rede) === slug) ?? {};
+    const bloq = ((await db.execute(sql`SELECT count(*) AS n FROM link_afiliado_bloqueios WHERE criado_em > now() - interval '24 hours'`).catch(() => [{ n: 0 }])) as unknown as Raw[])[0] ?? {};
     return {
+      linksSemMarcaVisiveis: rows.reduce((a, r) => a + int(r.sem_marca), 0), linksBloqueados24h: int(bloq.n),
       mlLinksPendentes: int(por('mercado-livre').ml_pend), mlAtivas: int(por('mercado-livre').ativas),
       rascunhos: rows.reduce((a, r) => a + int(r.rascunhos), 0),
       amazonAtivas: int(por('amazon').ativas), amazonFrescas40: int(por('amazon').az_fresca),

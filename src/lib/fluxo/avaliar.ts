@@ -158,6 +158,8 @@ export function montarAlertas(s: FluxoSnapshot, jobs: JobAvaliado[], agora: numb
   const o = s.ofertas.dados;
   if (o) {
     if (o.amazonAtivas > 0 && o.amazonFrescas40 === 0) a.push({ id: 'amazon-fresca', severidade: 'atencao', titulo: 'Nenhuma oferta Amazon com preço confirmado nos últimos 40 min', detalhe: 'A aba assistida pode estar parada (o loop roda em janelas de ~85 min a cada 2 h).' });
+    if (o.linksSemMarcaVisiveis > 0) a.push({ id: 'link-sem-marca', severidade: 'critico', titulo: `${o.linksSemMarcaVisiveis.toLocaleString('pt-BR')} ofertas ativas publicáveis SEM link de afiliado válido`, detalhe: 'R-70: invariante = 0. Rode scripts/medir-links-afiliado.ts; o trigger da 0063 deveria impedir isto.' });
+    if (o.linksBloqueados24h > 0) a.push({ id: 'link-bloqueado', severidade: 'atencao', titulo: `${o.linksBloqueados24h.toLocaleString('pt-BR')} mensagem(ns)/clique(s) barrado(s) pelo porteiro de links nas últimas 24 h`, detalhe: 'R-70: veja a tabela link_afiliado_bloqueios (origem, motivo, URL).' });
     if (o.mlLinksPendentes > 0) a.push({ id: 'ml-links', severidade: 'info', titulo: `${o.mlLinksPendentes.toLocaleString('pt-BR')} ofertas ML ativas sem link meli.la`, detalhe: 'Item 8 da fila: o loop resolve até zerar.' });
   }
   const c = s.classificacao.dados;

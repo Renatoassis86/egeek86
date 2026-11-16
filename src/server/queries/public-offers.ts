@@ -1,4 +1,5 @@
 import 'server-only';
+import { linkPublicavelSql } from '@/lib/affiliate/link-afiliado';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { offerExcludedTitleSql } from '@/lib/affiliate/offer-identity-sql';
@@ -81,6 +82,14 @@ export function offerIdentityVisibleSql(offerIdCol: string, options: { activeOnl
  */
 export function notQuarantinedSql(alias: string): SQL {
   return sql`${sql.raw(alias.replace(/[^a-z0-9_]/gi, ''))}.quarantined_at IS NULL`;
+}
+
+/**
+ * R-70 / L3: oferta com LINK DE AFILIADO publicável (sem pendência e com a marca do dono). Predicado ÚNICO reutilizado por site, mensagens,
+ * painel privado, vitrines e sitemap. `alias` = alias de affiliate_offers na consulta (ou o próprio nome da tabela em consultas Drizzle).
+ */
+export function linkPublicavelFilter(alias: string): SQL {
+  return sql.raw(linkPublicavelSql(alias));
 }
 
 /**

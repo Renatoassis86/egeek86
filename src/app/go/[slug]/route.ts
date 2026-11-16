@@ -1,7 +1,9 @@
 import { NextResponse, after, type NextRequest } from 'next/server';
 import { and, eq, isNull } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { affiliateOffers, analyticsEvents } from '@/db/schema';
+import { affiliateNetworks, affiliateOffers, analyticsEvents } from '@/db/schema';
+import { configAfiliado, ehLinkAfiliadoValido, normalizarLinkAfiliado } from '@/lib/affiliate/link-afiliado';
+import { registrarBloqueioLink } from '@/server/messaging/porteiro-links';
 import { GAMES } from '@/lib/catalog/verticais';
 import { departamentoLiberadoParaGo } from '@/server/departamentos';
 import { parseOrigemClique } from '@/lib/analytics/origem-clique';
@@ -96,6 +98,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   if (!destinationUrl) {
     // URL ausente ou inválida: nunca redireciona para fora, volta à página da oferta.
     return NextResponse.redirect(new URL(`/ofertas/${slug}`, request.url), 302);
+  }
+
+  // R-70 / L5: o destino é REVALIDADO contra o padrão de afiliado do dono (padrão negado). Amazon sem a tag é reescrita com a tag;
+  // qualquer outra URL sem marca (ML cru, rede sem padrão, tag de outra pessoa) NÃO redireciona: registra e manda para /link-em-ativacao.
+  const [rede] = await db.select({ slug: affiliateNetworks.slug }).from(affiliateNetworks).where(eq(affiliateNetworks.id, offer.networkId)).limit(1);
+  const cfg = configAfiliado();
+  if (!ehLinkAfiliadoValido(destinationUrl, rede?.slug, cfg)) {
+    const reescrito = normalizarLinkAfiliado(destinationUrl, rede?.slug, cfg);
+    if (reescrito) {
+      destinationUrl = reescrito;
+    } else {
+      gravar('affiliate_click_blocked', { motivo: 'link_fora_do_padrao_afiliado' });
+      after(() => registrarBloqueioLink({ origem: 'go', motivo: 'link_fora_do_padrao_afiliado', detalhe: `rede=${rede?.slug ?? '?'} slug=${slug}`, url: destinationUrl, offerId: offer.id }));
+      return NextResponse.redirect(new URL('/link-em-ativacao', request.url), 302);
+    }
   }
 
   gravar('affiliate_click', {});

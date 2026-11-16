@@ -116,6 +116,8 @@ export interface FluxoSnapshot {
   classificacao: Bloco<{ pendentes: number; adiadas: number; maisAntigaEm: string | null }>;
   ofertas: Bloco<{
     mlLinksPendentes: number; mlAtivas: number; rascunhos: number;
+    /** R-70: ativas e publicáveis SEM link de afiliado válido (invariante = 0) e mensagens barradas pelo porteiro nas últimas 24 h. */
+    linksSemMarcaVisiveis: number; linksBloqueados24h: number;
     amazonAtivas: number; amazonFrescas40: number; amazonUltimaConfirmacaoEm: string | null;
   }>;
   idleTx: Bloco<{ n: number; maisLongaS: number | null }>;

@@ -9,6 +9,8 @@ import { beneficiosVivosPorOferta } from '@/server/coupons/card-benefits';
 import { rotuloBeneficioCartao } from '@/lib/coupons/card-benefit';
 import { linhasFretePrazoPorOferta } from '@/server/shipping/frete-prazo';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
+import { linkPublicavelFilter } from '@/server/queries/public-offers';
+import { auditarUrlsDeMensagem, resumoViolacoes } from '@/lib/affiliate/link-afiliado';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
 import { amazonForaDasMensagens, amazonNoPrivado, avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
 import { ultimosVereditos } from '@/server/links/auditoria-links';
@@ -80,7 +82,7 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
     JOIN affiliate_networks nn ON nn.id = o.network_id
     JOIN master_products m ON m.id = o.master_product_id
     LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
-    WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
+    WHERE o.status = 'active' AND o.quarantined_at IS NULL AND ${linkPublicavelFilter('o')} AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
       AND (nn.slug <> 'mercado-livre' OR o.seller_id IS NOT NULL) /* placeholder ML (sem vendedor) guarda o MENOR preço do catálogo e tem link de UM anúncio: preço e link divergem por desenho (93607216) */ AND nn.slug IN ('mercado-livre', 'amazon') ${amazonForaDasMensagens() && !amazonNoPrivado() ? sql`AND nn.slug <> 'amazon'` : sql``} AND o.last_checked_at > now() - interval '24 hours'
       AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
   const ligada = confirmacaoLigada();
@@ -254,6 +256,12 @@ function scrub(s: string, token: string): string { return s.split(token).join('*
 
 interface RespTg { ok: boolean; status: number; desc: string; messageId?: string; retryAfter?: number }
 async function tg(token: string, metodo: string, payload: Record<string, unknown>): Promise<RespTg> {
+  // R-70 / L4: nenhuma lista/painel sai com URL de loja que não seja link de afiliado do dono (padrão negado).
+  if (metodo === 'sendMessage' || metodo === 'sendPhoto') {
+    const botoes = ((payload.reply_markup as { inline_keyboard?: { url?: string }[][] } | undefined)?.inline_keyboard ?? []).flat().map((b) => b.url);
+    const v = auditarUrlsDeMensagem({ texto: String(payload.text ?? payload.caption ?? ''), botoes });
+    if (v.length) return { ok: false, status: 0, desc: `link_fora_do_padrao_afiliado: ${resumoViolacoes(v)}` };
+  }
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/${metodo}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const b = ((await res.json().catch(() => ({}))) ?? {}) as { ok?: boolean; description?: string; result?: { message_id?: number }; parameters?: { retry_after?: number } };

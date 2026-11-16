@@ -1,3 +1,4 @@
+import { linkPublicavelFilter } from '@/server/queries/public-offers';
 import type { MetadataRoute } from 'next';
 import { getDimensionOverrides } from '@/server/queries/catalog-dimensions';
 import { and, desc, eq, gt, isNotNull, isNull, ne, sql } from 'drizzle-orm';
@@ -44,6 +45,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         eq(affiliateOffers.status, 'active'),
         gt(affiliateOffers.currentPriceCents, 0),
         isNull(affiliateOffers.quarantinedAt), // preço absurdo em quarentena (migration 0023)
+        linkPublicavelFilter('affiliate_offers'), // R-70: só oferta com link de afiliado
         isNotNull(affiliateOffers.imageUrl),
         ne(affiliateOffers.imageUrl, ''),
         sql`NOT (${masterProducts.attributes} ? 'mergedInto')`,

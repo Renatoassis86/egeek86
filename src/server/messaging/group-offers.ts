@@ -5,7 +5,7 @@ import { reguaConfig, reguaDaLoja } from '@/lib/messaging/regua';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
-import { avgExcludedFlagSql, inAverageSql } from '@/server/queries/public-offers';
+import { avgExcludedFlagSql, inAverageSql, linkPublicavelFilter } from '@/server/queries/public-offers';
 import { masterNoEscopoSql } from '@/server/queries/escopo-vitrine';
 import { loadOffers, loadPeriodDaysMany } from '@/server/pricing/price-daily';
 import { addDays, computePeriodMetrics, ownSeriesMedian, spDay, PRICE_DAILY_REGIME_START } from '@/lib/pricing/daily-state';
@@ -240,7 +240,7 @@ async function loadTipoStats(now: Date): Promise<Map<string, { median: number; n
     FROM master_products m
     INNER JOIN affiliate_offers o ON o.master_product_id = m.id
     INNER JOIN affiliate_networks n ON n.id = o.network_id
-    WHERE m.vertical IN (${txtList(plus)}) AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0
+    WHERE m.vertical IN (${txtList(plus)}) AND o.status = 'active' AND o.quarantined_at IS NULL AND ${linkPublicavelFilter('o')} AND o.current_price_cents > 0
       AND o.last_price_confirmed_at >= ${since}::timestamptz AND n.slug <> 'amazon'
       AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')} AND ${masterNoEscopoSql('m')}
     GROUP BY m.id, m.name, m.vertical
@@ -260,7 +260,7 @@ async function loadPlatStats(now: Date): Promise<Map<string, { median: number; n
     FROM master_products m
     INNER JOIN affiliate_offers o ON o.master_product_id = m.id
     INNER JOIN affiliate_networks n ON n.id = o.network_id
-    WHERE m.vertical = 'games' AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0
+    WHERE m.vertical = 'games' AND o.status = 'active' AND o.quarantined_at IS NULL AND ${linkPublicavelFilter('o')} AND o.current_price_cents > 0
       AND o.last_price_confirmed_at >= ${since}::timestamptz AND n.slug <> 'amazon'
       AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')} AND ${masterNoEscopoSql('m')}
     GROUP BY m.id, m.game_platform_gen
@@ -503,7 +503,7 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
       SELECT o.id, o.master_product_id AS mid, m.vertical AS v, o.network_id, o.current_price_cents AS p
       FROM affiliate_offers o
       INNER JOIN master_products m ON m.id = o.master_product_id
-      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.affiliate_link_pending = false AND o.current_price_cents > 0
+      WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.affiliate_link_pending = false AND ${linkPublicavelFilter('o')} AND o.current_price_cents > 0
         AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz ${confirmacaoLigada() ? sql`AND o.consecutive_miss_count = 0` : sql``} ${amazonForaDasMensagens() ? sql`AND o.network_id NOT IN (SELECT id FROM affiliate_networks WHERE slug ILIKE '%amazon%')` : sql``}
         AND o.vertical IN (${txtList(o.verticals)}) AND m.vertical IN (${txtList(o.verticals)})
         AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')}

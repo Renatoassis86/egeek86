@@ -17,7 +17,7 @@ import {
   priceQuotesCtes,
   type MasterProductPriceStats,
 } from '@/server/queries/product-price-stats';
-import { publicOffersCtes } from '@/server/queries/public-offers';
+import { publicOffersCtes, linkPublicavelFilter } from '@/server/queries/public-offers';
 import { catalogDimensionFilter, catalogHiddenFilter } from '@/server/queries/catalog-dimensions';
 import {
   checkEligibility,
@@ -181,7 +181,7 @@ export const getOfferBySlug = cache(async (slug: string): Promise<OfferWithRelat
   const [row] = await withTimeout(
     baseOfferQuery()
       // Allow-list (ADR 0008): oferta de outro departamento não tem detalhe na superfície gamer (cai em 404).
-      .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.vertical, GAMES), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
+      .where(and(eq(affiliateOffers.slug, slug), eq(affiliateOffers.vertical, GAMES), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt), linkPublicavelFilter('affiliate_offers')))
       .limit(1),
     8_000,
     'getOfferBySlug'
@@ -277,7 +277,7 @@ export async function listRankedOffers(filter: RankedOffersFilter = {}): Promise
   if (ids.length === 0) return [];
   // status 'active' relido ao vivo: oferta que saiu do ar depois do ranking em cache não aparece.
   const rows = await readOfferRowsLive(
-    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, ids), eq(affiliateOffers.vertical, GAMES), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt))),
+    () => baseOfferQuery().where(and(inArray(affiliateOffers.id, ids), eq(affiliateOffers.vertical, GAMES), eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt), linkPublicavelFilter('affiliate_offers'))),
     ids,
     'listRankedOffers (linhas)'
   );
@@ -318,6 +318,7 @@ async function rankOfferIds(filter: RankedOffersFilter): Promise<RankedRow[]> {
   const conditions: SQL[] = [
     eq(affiliateOffers.status, 'active'),
     isNull(affiliateOffers.quarantinedAt),
+    linkPublicavelFilter('affiliate_offers'), // R-70
     // current_price_cents = 0 é "ainda não coletado" (placeholder da
     // descoberta automática) — nunca um preço real. Sem isso, esses itens
     // sempre "vencem" qualquer ordenação por menor preço (0 é sempre o
@@ -497,7 +498,7 @@ export async function searchOffersForAdmin(query: string, limit = 8): Promise<Ad
     .from(affiliateOffers)
     .innerJoin(masterProducts, eq(affiliateOffers.masterProductId, masterProducts.id))
     .innerJoin(affiliateNetworks, eq(affiliateOffers.networkId, affiliateNetworks.id))
-    .where(and(fuzzy, eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt)))
+    .where(and(fuzzy, eq(affiliateOffers.status, 'active'), isNull(affiliateOffers.quarantinedAt), linkPublicavelFilter('affiliate_offers')))
     .orderBy(asc(affiliateOffers.currentPriceCents))
     .limit(limit);
 
@@ -1263,6 +1264,7 @@ async function rankFeaturedOfferIds(filter: RankedOffersFilter, limit: number): 
   const conditions: SQL[] = [
     sql`o.status = 'active'`,
     sql`o.quarantined_at IS NULL`,
+    linkPublicavelFilter('o'), // R-70
     sql`o.current_price_cents > 0`
   ];
 

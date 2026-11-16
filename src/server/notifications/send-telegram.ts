@@ -1,4 +1,5 @@
 import 'server-only';
+import { auditarUrlsDeMensagem, resumoViolacoes } from '@/lib/affiliate/link-afiliado';
 
 export interface SendTelegramResult {
   ok: boolean;
@@ -16,6 +17,10 @@ export async function sendTelegramMessage(chatId: string, text: string): Promise
   if (!token) {
     return { ok: false, description: 'TELEGRAM_BOT_TOKEN não configurado' };
   }
+
+  // R-70 / L4: toda URL de loja precisa ser link de afiliado do dono (aviso privado, resumo diário, alertas); padrão negado.
+  const violacoes = auditarUrlsDeMensagem({ texto: text });
+  if (violacoes.length) return { ok: false, description: `link_fora_do_padrao_afiliado: ${resumoViolacoes(violacoes)}` };
 
   const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST',
