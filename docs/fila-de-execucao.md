@@ -187,3 +187,7 @@ Quando a tarefa avança, trocar o estado aqui no mesmo commit da mudança. Taref
 | AUD-20/21 | P2 | CEP Amazon 58035000 (48); crachá "-51%" sob "Queda confirmada" | front/coleta | Aberto | I-13 |
 | AUD-06/07/08/09/13/17/18/22 | P3 | Baixas (14x15 dias, sem live check, textos antigos, composição Amazon, 172 sem foto, reputação velha, contadores) | diversos | Aberto | ver ciclos |
 | AUD-99 | P1 | Continuar a auditoria: páginas dos 6 departamentos não-games, selo recomputado, painel de impressoras | auditor | Aberto | 2 ciclos seguidos sem achado médio/alto |
+| AUD-25 | P1 | Card "Degrau N de 5 pela queda" com rebaixe de cautela não dito (8/77 em /ofertas, 15/68 em /black-friday) | front | Aberto | texto diz o rebaixe ou degrau = tabela |
+| AUD-26 | P1 | Texto do painel/lista privada de impressoras não é guardado; sem auditoria possível | mensagens | Aberto | guardar corpo ou hash em collector_runs.meta |
+| AUD-27 | P1 | 5 item_diferente e 126 preco_divergente ativos e visíveis; 111 mensagens (7 d) de ofertas hoje reprovadas | agente de links | Aberto, confirmar depois | oferta reprovada sai de card e mensagem |
+| AUD-24/28 | P3 | Mediana do dia = inferior com 2 cotações; página de esporte sem bloco de preços | preço/front | Aberto | documentar ou corrigir |

@@ -1,6 +1,8 @@
 # Auditoria independente de informação: resumo (2026-11-16)
 
-Auditor: agente independente, somente leitura (SELECT em transação READ ONLY), 6 ciclos, 23 achados (AUD-01 a AUD-23). **Condição de parada NÃO atingida**: os ciclos 03, 04, 05 e o adversarial 06 ainda acharam itens médios/altos; a cobertura do catálogo é parcial (ver abaixo). Recomendo mais ciclos antes de dar a informação por limpa.
+Auditor: agente independente, somente leitura (SELECT em transação READ ONLY), 10 ciclos, 28 achados (AUD-01 a AUD-28).
+
+**Atualização (ciclos 07 a 10)**: os ciclos 07 e 08 acharam 3 itens médios (AUD-25, 26, 27) e 2 baixos; os ciclos 09 (modelagem) e 10 (adversarial final) não acharam item novo médio ou alto. Condição de parada atingida (2 ciclos seguidos limpos), com cobertura quase total (lacunas na seção de cobertura). Isso NÃO significa informação limpa: os 5 achados altos seguem abertos; significa que os testes que sei fazer pararam de achar coisa nova.
 
 ## Achados por severidade
 **ALTA (5)**
@@ -10,12 +12,12 @@ Auditor: agente independente, somente leitura (SELECT em transação READ ONLY),
 - AUD-11 Dias fechados de `price_daily_state` guardam mínimo de isca (24 masters/128 dias) e mínimo de vendedor fraco (12% dos dias): média e mínimo vêm de conjuntos diferentes.
 - AUD-14 Open Box, vitrine e Outlet aprovados e visíveis (10 ofertas Shopee; 1 em mensagem P2 enviada). Obs.: na 2ª leitura só 1 ainda aparecia sem quarentena (outro agente pode ter agido); reconferir.
 
-**MÉDIA (9)**: AUD-03 "Novo no monitoramento" repetido (48%), AUD-04 "%" com menos de 5 ofertas (249), AUD-05 "25687 mil vendas" (22), AUD-12 Amazon sem frescor (86% > 24 h), AUD-15 retrô/clone aprovado (2), AUD-16 itens miúdos aprovados (~8), AUD-19 link nunca verificado (~32.700), AUD-20 CEP Amazon 58035000 (48), AUD-21 crachá "-51%" em seção "queda confirmada".
+**MÉDIA (12)**: AUD-25 degrau "pela queda" que não é pela queda (8/77 e 15/68 cards), AUD-26 painel privado sem texto guardado, AUD-27 links com item diferente/preço divergente ainda ativos (5 + 126; 111 mensagens); AUD-03 "Novo no monitoramento" repetido (48%), AUD-04 "%" com menos de 5 ofertas (249), AUD-05 "25687 mil vendas" (22), AUD-12 Amazon sem frescor (86% > 24 h), AUD-15 retrô/clone aprovado (2), AUD-16 itens miúdos aprovados (~8), AUD-19 link nunca verificado (~32.700), AUD-20 CEP Amazon 58035000 (48), AUD-21 crachá "-51%" em seção "queda confirmada".
 
-**BAIXA (9)**: AUD-06, 07, 08, 09, 13, 17, 18, 22, 23.
+**BAIXA (11)**: AUD-06, 07, 08, 09, 13, 17, 18, 22, 23, 24 (mediana inferior do dia), 28 (página de esporte sem bloco).
 
 ## Cobertura do catálogo (Fase 0)
-Cobertas com teste: C01, C02, C04, C05, C06, C08 (parcial), C11, C12, C14 a C21, C23, C24, C25, C26, C27, C29. Parciais: C09/C22 (contadores não reproduzíveis, inconclusivo), C10 e C28 (só games e 1 página real; as rotas de produto dos outros 6 departamentos não foram lidas), C03/C30 (cupons e painel de impressoras são de outros agentes, só cruzei saída), C07 (selo não recomputado), C13 (nenhum uso). Lacunas para o próximo ciclo: páginas dos outros departamentos, selo/régua recomputado, painel privado de impressoras, `price_min_events` x ofertas, e-mails transacionais.
+Cobertas com teste: C01, C02, C04, C05, C06, C08 (parcial), C11, C12, C14 a C21, C23, C24, C25, C26, C27, C29. Parciais: C09/C22 (contadores não reproduzíveis, inconclusivo), C10 e C28 (só games e 1 página real; as rotas de produto dos outros 6 departamentos não foram lidas), C03/C30 (cupons e painel de impressoras são de outros agentes, só cruzei saída), C07 (selo não recomputado), C13 (nenhum uso). Fechado nos ciclos 07 a 10: páginas de TODOS os departamentos (rota `/mercado/<dept>/<slug>`, 60 masters, 0 divergências de preço), selo/régua recomputado (mensagens e cards), contadores (definição documentada), Pix/cartão da Amazon e cupons (confirmados, sem duplicar), links (a confirmar com o agente de links). Lacunas restantes: texto real do painel privado (não é guardado, AUD-26), `price_min_events` x ofertas, e-mails transacionais; estoque nenhuma superfície afirma.
 
 ## Invariantes novos propostos
 I-01 a I-14 (nos ciclos). Resumo: série e "hoje" na mesma base de redes; zero mensagem com preço em `preco_isca_marcas`; "Novo" uma vez por oferta/grupo; "%" só com >= 5 ofertas; `min_cents` e média do mesmo conjunto; toda oferta visível >= 0,50 x mediana ou quarentena (sem depender de `seller_id`); Amazon em "Menor preço agora" só com confirmação <= 24 h; título com open box/vitrine/outlet/retrô/desbloqueado nunca ativo; contrato diário "Menor preço agora" da página = consulta (5 masters por departamento).

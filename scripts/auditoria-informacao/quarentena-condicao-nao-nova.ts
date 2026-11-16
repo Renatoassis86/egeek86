@@ -15,7 +15,7 @@ async function main() {
       await sql.begin(async (tx) => { await tx`SET LOCAL lock_timeout='5s'`; for (const r of rows) await tx`update affiliate_offers set quarantined_at=${r.quarantined_at}, quarantine_reason=${r.quarantine_reason} where id=${r.id} and quarantine_reason=${MOTIVO}`; });
       console.log('restaurado', rows.length); return;
     }
-    const rows = await sql`select id, title, quarantined_at, quarantine_reason from affiliate_offers where status='active' and quarantined_at is null and title ~* '(open ?box|\mvitrine\M|mostru[aá]rio)'`;
+    const rows = await sql`select id, title, quarantined_at, quarantine_reason from affiliate_offers where status='active' and quarantined_at is null and title ~* '(open ?box|(^|[^a-z])vitrine([^a-z]|$)|mostru[aá]rio)'`;
     console.log(a.includes('--apply') ? 'APPLY' : 'DRY-RUN', rows.length, 'ofertas'); for (const r of rows) console.log(' ', r.id, String(r.title).slice(0, 70));
     if (!a.includes('--apply') || !rows.length) return;
     const f = `docs/backups/aud-14-quarentena-condicao-${new Date().toISOString().slice(0, 10)}.ndjson`;
