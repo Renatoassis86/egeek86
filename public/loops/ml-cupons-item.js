@@ -22,7 +22,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.3.0';
+  var VERSAO = '1.3.1';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-ml-links-ui.ts
@@ -151,6 +151,22 @@
         minimo: mn ? un(mn[1]) : null, limite: cp ? un(cp[1]) : null,
       };
     }
+    return out;
+  };
+
+  /**
+   * PROVA NO ITEM (R-63/R-68): dos cupons lidos na página, só entram os que têm campaign_id E que o modal /cupons/pdp do MESMO item confirma (mapa campanha -> dados).
+   * `mapa` null = modal não consultado/inconclusivo (nada é confirmado). Cupom do carrossel de relacionados (outro produto) nunca está no modal do item => cai aqui.
+   * Devolve { confirmados, semCampanha, naoConfirmados }.
+   */
+  PURO.filtrarConfirmados = function (cupons, mapa) {
+    var out = { confirmados: [], semCampanha: 0, naoConfirmados: 0 };
+    (cupons || []).forEach(function (c) {
+      if (!c.campaign_id) { out.semCampanha++; return; }
+      var d = mapa && mapa[c.campaign_id];
+      if (d) { c.name = d.name; c.acao = d.acao; c.seguir = d.seguir; c.status = 'confirmado_modal'; out.confirmados.push(c); }
+      else out.naoConfirmados++;
+    });
     return out;
   };
 
@@ -439,11 +455,9 @@
           }
         } catch (e) { /* inconclusivo: sem confirmação nesta leitura */ }
       }
-      comCamp.forEach(function (c) {
-        var d = mapa && mapa[c.campaign_id];
-        if (d) { c.name = d.name; c.acao = d.acao; c.seguir = d.seguir; c.status = 'confirmado_modal'; confirmados.push(c); }
-        else S.totais.cupomNaoConfirmado = (S.totais.cupomNaoConfirmado || 0) + 1;
-      });
+      var f = PURO.filtrarConfirmados(comCamp, mapa);
+      confirmados = f.confirmados;
+      S.totais.cupomNaoConfirmado = (S.totais.cupomNaoConfirmado || 0) + f.naoConfirmados;
     }
     x.cupons = confirmados;
     if (x.ambiguo) { S.totais.ambiguos++; return { descarte: 'ambiguo_mencao_a_cupom_sem_preco' }; }

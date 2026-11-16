@@ -6,7 +6,7 @@ import { isGenericCouponName } from '@/lib/coupons/coupon-name';
 export const ANN_KINDS = ['anuncio', 'campanha', 'loja', 'categoria'] as const;
 export type AnnKind = (typeof ANN_KINDS)[number];
 
-export const END_REASONS = ['sumiu_da_pagina', 'venceu', 'cancelado_pelo_dono', 'sem_leitura_recente', 'oferta_inativa'] as const;
+export const END_REASONS = ['sumiu_da_pagina', 'venceu', 'cancelado_pelo_dono', 'sem_leitura_recente', 'oferta_inativa', 'sem_prova_no_cofre', 'nunca_provado'] as const;
 export type EndReason = (typeof END_REASONS)[number];
 
 /** Janela de validade de uma leitura de cupom de anúncio (a aba relê a cada ~2 h). */

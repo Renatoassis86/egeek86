@@ -1,4 +1,5 @@
 import 'server-only';
+import { motivoDeFim } from '@/lib/coupons/prova-cupom';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { FONTES_PROMO } from '@/lib/coupons/amazon-promocoes';
@@ -225,6 +226,11 @@ export const dbGuardiaoStore: GuardiaoStore = {
   },
 
   async end(id, reason, now) {
+    // R-68: cupom de ANÚNCIO que nunca teve prova no cofre fecha em silêncio ('nunca_provado': sem card de "Cupom encerrado") e entra no relatório de correção.
+    const info = (await db.execute(sql`
+      SELECT a.kind, EXISTS (SELECT 1 FROM coupon_validations v WHERE v.offer_id = a.offer_id AND v.validated_at IS NOT NULL AND v.proof_type IS NOT NULL) AS prova
+      FROM coupon_announcements a WHERE a.id = ${id}::uuid`).catch(() => [])) as unknown as { kind: string; prova: boolean }[];
+    if (info[0]) reason = motivoDeFim(reason, info[0].kind, !!info[0].prova) as typeof reason;
     const r = (await db.execute<{ id: string }>(sql`
       UPDATE coupon_announcements SET ended_at = ${now.toISOString()}::timestamptz, end_reason = ${reason}, last_checked_at = ${now.toISOString()}::timestamptz
       WHERE id = ${id}::uuid AND ended_at IS NULL RETURNING id::text AS id`)) as unknown as { id: string }[];
@@ -237,6 +243,8 @@ export const dbGuardiaoStore: GuardiaoStore = {
       FROM coupon_announcements
       WHERE ended_at IS NOT NULL AND end_notified_at IS NULL AND ended_at > ${now.toISOString()}::timestamptz - make_interval(mins => ${ENDED_CARD_STALE_MIN}::int)
         AND (end_reason IN ('sumiu_da_pagina', 'cancelado_pelo_dono') OR (end_reason = 'venceu' AND kind <> 'anuncio'))
+        -- R-68: segunda trava no envio do card: aviso de anúncio só gera "Cupom encerrado" se o cupom teve prova no cofre (os já fechados como 'nunca_provado' nem entram acima)
+        AND (kind <> 'anuncio' OR EXISTS (SELECT 1 FROM coupon_validations v WHERE v.offer_id = coupon_announcements.offer_id AND v.validated_at IS NOT NULL AND v.proof_type IS NOT NULL))
       ORDER BY ended_at LIMIT ${limit}`)) as unknown as AnnRow[];
     return rows.map((r) => ({ ...mapAnn(r), endedAt: new Date(r.ended_at as string | Date), reason: r.end_reason as EndReason }));
   },

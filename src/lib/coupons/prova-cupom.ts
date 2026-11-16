@@ -38,6 +38,17 @@ export function provaCupomMl(f: FatosProvaCupom, ligada = true, maxAgeMin = CUPO
   return { ok: true };
 }
 
+/**
+ * R-68 (2026-11-16): "CUPOM ENCERRADO" só é publicado para cupom que TEVE prova vigente no cofre antes (provado e depois sumiu). Cupom NUNCA provado fecha em silêncio
+ * (`nunca_provado`: sem card, sem mensagem; vai para o relatório de correção): anunciar o fim do que nunca existiu é uma segunda notícia falsa em cima da primeira.
+ * Vale para aviso de ANÚNCIO (por item); campanha/loja seguem o fluxo próprio.
+ */
+export function motivoDeFim<T extends string>(motivo: T, kind: string, teveProvaNoCofre: boolean): T | 'nunca_provado' {
+  if (kind !== 'anuncio') return motivo;
+  if (motivo === 'sumiu_da_pagina' || motivo === 'venceu') return teveProvaNoCofre ? motivo : 'nunca_provado';
+  return motivo;
+}
+
 /** Na gravação (ingest): só leitura positiva com prova fica positiva; o resto é gravado como leitura SEM cupom. */
 export function leituraPositivaGravavel(c: { campaign: string | null; status: string }, ligada = true): boolean {
   if (!ligada) return true;
