@@ -41,12 +41,20 @@ ok(escolherItemMl(rows, { sellerExternalId: '30' }) === null && escolherItemMl(r
 // linha da mensagem
 const q = (p: Partial<Cotacao> = {}): Cotacao => ({ zip: '58035090', costCents: 0, free: true, etaFrom: '2026-11-20', etaTo: '2026-11-20', carrier: null, logistic: 'fulfillment', soldBy: null, source: 'ml_api', readAt: new Date(now.getTime() - 3600_000), ...p });
 ok(linhaFretePrazo(q(), now) === 'Frete grátis · chega até sex, 20/11 (CEP 58035090)', 'linha gratis', linhaFretePrazo(q(), now));
-ok(linhaFretePrazo(q({ free: false, costCents: 20100, etaFrom: '2026-11-24', etaTo: '2026-11-26', zip: '58035000', source: 'amazon_pagina' }), now) === 'Frete R$ 201,00 · chega de 24/11 a 26/11 (CEP lido 58035000)', 'linha cobrada, CEP diferente');
+ok(linhaFretePrazo(q({ free: false, costCents: 20100, etaFrom: '2026-11-24', etaTo: '2026-11-26', zip: '58035000', source: 'amazon_pagina', readAt: new Date(now.getTime() - 10 * 60_000) }), now) === 'Frete R$ 201,00 · chega de 24/11 a 26/11 (CEP lido 58035000)', 'linha cobrada, CEP diferente');
 ok(linhaFretePrazo(null, now) === 'Prazo ainda não lido' && linhaFretePrazo(undefined, now) === 'Prazo ainda não lido', 'sem leitura');
 ok(linhaFretePrazo(q({ readAt: new Date(now.getTime() - 12.1 * 3600_000) }), now) === 'Prazo ainda não lido', 'mais de 12 h = ausente');
 ok(cotacaoValida(q({ readAt: new Date(now.getTime() - 11.9 * 3600_000) }), now), '11,9 h vale');
 ok(linhaFretePrazo(q({ readAt: new Date(now.getTime() + 3600_000) }), now) === 'Prazo ainda não lido', 'leitura do futuro = ausente');
-ok(detalhesEntrega(q(), now) === 'Full' && detalhesEntrega(q({ source: 'amazon_pagina', soldBy: 'Loja', logistic: null }), now) === 'vendido e enviado por Loja' && detalhesEntrega(q({ logistic: null }), now) === null, 'detalhes');
+// R-88 (2026-11-16, caso P2S Combo): a estimativa de entrega da Amazon muda ao longo do dia (15:37 dizia 25/11, a pagina hoje diz 20/11). Entrega da Amazon vale o mesmo que o preco (R-81, 45 min); ML segue 12 h (API, data do anuncio).
+const am = (min: number) => q({ source: 'amazon_pagina', logistic: null, readAt: new Date(now.getTime() - min * 60_000) });
+ok(cotacaoValida(am(40), now), 'R-88: Amazon lida ha 40 min vale');
+ok(!cotacaoValida(am(46), now) && linhaFretePrazo(am(46), now) === 'Prazo ainda não lido', 'R-88: Amazon lida ha 46 min NAO vale (linha diz Prazo ainda não lido)');
+ok(linhaFretePrazo(am(190), now) === 'Prazo ainda não lido', 'R-88: Amazon lida ha 3 h (caso real, 25/11 x 20/11) NAO vale');
+ok(cotacaoValida(q({ source: 'ml_api', readAt: new Date(now.getTime() - 3 * 3600_000) }), now), 'R-88: ML lido ha 3 h segue valendo (12 h)');
+ok(detalhesEntrega(am(190), now) === null, 'R-88: detalhes da Amazon velha tambem somem');
+ok(cotacaoValida(am(100), now, { AMAZON_FRESCOR_MIN: '120' } as never), 'R-88: usa o mesmo AMAZON_FRESCOR_MIN do R-81');
+ok(detalhesEntrega(q(), now) === 'Full' && detalhesEntrega(q({ source: 'amazon_pagina', soldBy: 'Loja', logistic: null, readAt: new Date(now.getTime() - 10 * 60_000) }), now) === 'vendido e enviado por Loja' && detalhesEntrega(q({ logistic: null }), now) === null, 'detalhes');
 ok(melhorCotacao([q({ zip: '58035000', readAt: new Date(now.getTime() - 100) }), q()])?.zip === '58035090', 'prefere CEP-alvo');
 ok(melhorCotacao([q({ zip: '58035000' })])?.zip === '58035000' && melhorCotacao([q({ zip: '01001000' })]) === null, 'prefixo aceito, outra regiao nao');
 

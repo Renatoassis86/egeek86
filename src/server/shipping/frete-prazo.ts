@@ -75,6 +75,21 @@ export async function gravarEntregasAmazon(rows: Array<{ id?: unknown; entrega?:
   return { gravadas, recusadas };
 }
 
+/**
+ * R-88: entrega lida na PÁGINA pelo loop rápido da Amazon (candidato pg=1 com `ent`). A linha do loop rápido traz o MASTER; a oferta é a ativa da Amazon com o mesmo
+ * ASIN (external_ref 'amazon-<ASIN>'). Melhor esforço: erro aqui nunca derruba a ingestão do preço. Devolve quantas entregas gravou/recusou.
+ */
+export async function gravarEntregasPorAsin(networkId: string, masterId: string, cands: Array<{ a: string; pg?: number; ent?: { t: string; z?: string } }>, now = new Date()): Promise<{ gravadas: number; recusadas: number }> {
+  const rows: Array<{ id: string; entrega: { texto: string; cep_lido?: string } }> = [];
+  for (const c of cands) {
+    if (c.pg !== 1 || !c.ent || typeof c.ent.t !== 'string' || !/^[A-Z0-9]{10}$/.test(c.a)) continue;
+    const of = (await db.execute(sql`SELECT o.id::text AS id FROM affiliate_offers o WHERE o.network_id = ${networkId} AND o.master_product_id = ${masterId}::uuid AND o.status = 'active' AND o.external_ref = ${'amazon-' + c.a}`)) as unknown as Array<{ id: string }>;
+    for (const o of of) rows.push({ id: o.id, entrega: { texto: c.ent.t, ...(c.ent.z && /^\d{8}$/.test(c.ent.z) ? { cep_lido: c.ent.z } : {}) } });
+  }
+  if (!rows.length) return { gravadas: 0, recusadas: 0 };
+  return gravarEntregasAmazon(rows, now);
+}
+
 interface Alvo { id: string; ref: string; itemId: string | null; sellerExt: string | null; priceCents: number; masterName: string; ultima: Date | null }
 const dormir = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 

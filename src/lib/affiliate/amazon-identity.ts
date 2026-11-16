@@ -37,6 +37,8 @@ export interface AmzCand {
   pl?: string;
   /** R-69 (leitor v1.1.0): 1 = o preço em destaque `p` é o "à vista no Pix" (e `l`, o preço cheio); 0 = `p` é o preço cheio/de venda. Ausente = leitor antigo. */
   px?: number;
+  /** R-88 (leitor v1.3.0): entrega que a PÁGINA do produto mostra para o CEP da conta (texto do bloco de entrega + CEP de 8 dígitos). Só com pg=1. O servidor interpreta e valida. */
+  ent?: { t: string; z?: string };
 }
 
 /**

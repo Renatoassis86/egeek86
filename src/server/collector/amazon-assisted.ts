@@ -15,6 +15,7 @@ import { posicaoPrioridade3d } from '@/lib/messaging/prioridade-3d';
 import { recordPriceSnapshot } from './record-price-snapshot';
 import { decidirPrecoAmazon } from './amazon-tipo-preco';
 import { enfileirarDuvidaAmazon } from './amazon-fila';
+import { gravarEntregasPorAsin } from '@/server/shipping/frete-prazo';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 
 /**
@@ -226,6 +227,8 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
     const pv = (stats.por_vertical[v] ??= { ...zero(), buscas: 0 });
     pv.buscas++;
     const name = master.name;
+    // R-88: entrega lida na página do produto (leitor 1.3.0). Melhor esforço; nunca derruba a ingestão do preço.
+    if (opts.apply) await gravarEntregasPorAsin(net.id, row.id, (row.r ?? []).slice(0, 10)).catch((e) => console.error('[amazon-assistida] entrega falhou:', e instanceof Error ? e.message : e));
 
     // ASINs das ofertas ATIVAS da Amazon neste master: identidade já comprovada (usado só para aceitar o resultado patrocinado lido na página).
     const knownAsins = new Set((await db.execute<{ r: string }>(sql`

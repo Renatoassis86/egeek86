@@ -18,7 +18,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.2.0'; // 1.2.0 (R-81): passada rápida da cabeça prioritária (impressoras do privado) a cada ~20 min, para o preço da Amazon nunca passar de 45 min. 1.1.0 (R-69): marca px (preço em destaque é "à vista no Pix") e lista sem parcela
+  var VERSAO = '1.3.0'; // 1.3.0 (R-88): lê a ENTREGA (e o CEP da conta) da página do produto junto com o preço, para o prazo da lista do privado nunca passar de 45 min. 1.2.0 (R-81): passada rápida da cabeça prioritária (impressoras do privado) a cada ~20 min, para o preço da Amazon nunca passar de 45 min. 1.1.0 (R-69): marca px (preço em destaque é "à vista no Pix") e lista sem parcela
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-amazon-assistida.ts
@@ -109,6 +109,26 @@
   };
 
   /**
+   * R-88 (2026-11-16): ENTREGA que a página mostra para o CEP da conta (a estimativa muda ao longo do dia: a lista do privado dizia 25/11 e a página 20/11).
+   * Lê o texto do bloco "mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE*" do trecho recebido e o CEP de "glow-ingress-block". Sem bloco ou sem texto de
+   * entrega: undefined (nunca inventa). O servidor interpreta o texto (parseEntregaAmazon) e só grava com valor/gratuidade + data + CEP.
+   */
+  PURO.entregaDoHtml = function (trecho, htmlCompleto) {
+    trecho = String(trecho || '');
+    var i = trecho.indexOf('mir-layout-DELIVERY_BLOCK-slot-PRIMARY_DELIVERY_MESSAGE');
+    if (i < 0) return undefined;
+    var j = trecho.indexOf('>', i);
+    if (j < 0) return undefined;
+    var t = trecho.slice(j + 1, j + 1 + 1200).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+    if (!/entrega|frete/i.test(t)) return undefined;
+    var g = String(htmlCompleto || trecho), k = g.indexOf('id="glow-ingress-block"');
+    var mc = k >= 0 ? /(?:^|\D)(\d{5})[-‑‐\s]?(\d{3})(?!\d)/.exec(g.slice(k, k + 600).replace(/<[^>]*>/g, ' ').replace(/&zwnj;|&nbsp;/g, ' ')) : null;
+    var out = { t: t };
+    if (mc) out.z = mc[1] + mc[2];
+    return out;
+  };
+
+  /**
    * HTML da página /dp/ASIN -> { ok, p, l, pl } | { ok:false, motivo }. O preço vem SÓ do bloco de preço do produto (nunca de recomendados).
    * #120: na página nova com sanfona "Formas de comprar" (id="buyBoxAccordion") valem SÓ a linha ativa "Oferta em destaque" (a que o botão de compra
    * cobra); "Parcelas sem juros" (outro vendedor/preço) nunca. Sanfona sem linha destaque ativa = motivo 'ambiguo' (não grava). `pl` = rótulo do preço
@@ -123,15 +143,17 @@
     var ac = html.indexOf('id="buyBoxAccordion"');
     if (ac >= 0) {
       // linhas da sanfona: cada uma abre com <div ... class="a-box ..."> filha direta; a ativa traz a-accordion-active e o rótulo "Oferta em destaque"
-      var corpo = html.slice(ac, ac + 60000), partes = corpo.split(/<div[^>]*\bclass="a-box\b/).slice(1), dest = [], outras = 0;
+      var corpo = html.slice(ac, ac + 60000), partes = corpo.split(/<div[^>]*\bclass="a-box\b/).slice(1), dest = [], outras = 0, destTexto = '';
       partes.forEach(function (pt) {
         var cab = pt.slice(0, 200), ativa = /^[^"]*\ba-accordion-active\b/.test(cab) || /\ba-accordion-active\b/.test(cab.split('>')[0]);
         var rot = /Oferta em destaque/i.test(pt.slice(0, 1500));
         var pr = PURO.precosDe(pt.slice(0, 6000));
-        if (ativa && rot && pr.p) { pr.px = PURO.pixNoTexto(pt.slice(0, 6000)); if (pr.px && pr.lde) pr.l = null; dest.push(pr); } else outras++;
+        if (ativa && rot && pr.p) { pr.px = PURO.pixNoTexto(pt.slice(0, 6000)); if (pr.px && pr.lde) pr.l = null; dest.push(pr); destTexto = pt.slice(0, 9000); } else outras++;
       });
       if (dest.length !== 1) return { ok: false, motivo: 'ambiguo' };
-      return { ok: true, p: dest[0].p, l: dest[0].l, px: dest[0].px ? 1 : 0, pl: 'oferta_em_destaque' };
+      var rs = { ok: true, p: dest[0].p, l: dest[0].l, px: dest[0].px ? 1 : 0, pl: 'oferta_em_destaque' };
+      var ed = PURO.entregaDoHtml(destTexto, html); if (ed) rs.ent = ed; // R-88: só a entrega da linha "Oferta em destaque"
+      return rs;
     }
     var ini = -1, ids = ['id="corePrice_feature_div"', 'id="corePriceDisplay_desktop_feature_div"', 'id="apex_desktop"'];
     for (var i = 0; i < ids.length; i++) { var k = html.indexOf(ids[i]); if (k >= 0 && (ini < 0 || k < ini)) ini = k; }
@@ -143,7 +165,9 @@
     // R-69: o "à vista no Pix" fica no bloco de pagamento logo depois do preço (id apex_desktop), até o primeiro carrossel/recomendados.
     var jan = html.slice(ini, ini + 7000), cort = jan.search(/id="[^"]*(?:similar|sims|sp_detail|carousel)[^"]*"/i);
     var pxp = PURO.pixNoTexto(cort >= 0 ? jan.slice(0, cort) : jan) ? 1 : 0;
-    return { ok: true, p: pr.p, l: pxp && pr.lde ? null : pr.l, px: pxp, pl: 'preco_a_pagar' };
+    var r1 = { ok: true, p: pr.p, l: pxp && pr.lde ? null : pr.l, px: pxp, pl: 'preco_a_pagar' };
+    var e1 = PURO.entregaDoHtml(html, html); if (e1) r1.ent = e1; // R-88
+    return r1;
   };
 
   /** Candidato reenviado após a página: { a,t,p,l,s:1,pg:1,i } (contrato AmzCand). */
@@ -151,6 +175,7 @@
     var c = { a: cand.a, t: cand.t, p: pagina.p, l: pagina.l || null, s: 1, pg: 1 };
     if (pagina.px === 0 || pagina.px === 1) c.px = pagina.px;
     if (pagina.pl) c.pl = pagina.pl;
+    if (pagina.ent) c.ent = pagina.ent; // R-88: entrega lida na página
     if (cand.i) c.i = cand.i;
     return c;
   };
@@ -180,6 +205,7 @@
         if (pg) o.pg = 1;
         if (pg && (c.pl === 'oferta_em_destaque' || c.pl === 'preco_a_pagar')) o.pl = c.pl;
         if (c.px === 1 || c.px === 0) o.px = c.px; // R-69: tipo do preço em destaque (1 = à vista no Pix)
+        if (pg && c.ent && typeof c.ent.t === 'string' && c.ent.t.trim()) { o.ent = { t: c.ent.t.trim().slice(0, 300) }; if (typeof c.ent.z === 'string' && /^\d{8}$/.test(c.ent.z)) o.ent.z = c.ent.z; } // R-88: entrega lida na PÁGINA
         if (typeof c.i === 'string' && AMZ_IMG_RE.test(c.i)) o.i = c.i;
         cs.push(o);
       });

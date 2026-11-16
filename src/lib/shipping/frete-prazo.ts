@@ -2,6 +2,8 @@
  * Frete e prazo das impressoras 3D até o CEP do dono (#118). Módulo PURO (sem banco, sem rede): interpreta as duas fontes e monta a linha da mensagem.
  * Nunca inventa: sem leitura, ou leitura com mais de 12 h, a linha diz "Prazo ainda não lido". Contrato em docs/frete-prazo-impressoras-2026-11-15.md.
  */
+import { amazonFrescorMin } from '../messaging/confirmacao-preco';
+
 export const CEP_ALVO = '58035090';
 export const IDADE_MAX_MS = 12 * 3600_000;
 export type FonteFrete = 'ml_api' | 'amazon_pagina';
@@ -119,11 +121,16 @@ const dm = (d: string) => `${d.slice(8, 10)}/${d.slice(5, 7)}`;
 const dsem = (d: string) => SEM[new Date(`${d}T12:00:00Z`).getUTCDay()];
 export function brlCents(c: number): string { return `R$ ${(c / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`; }
 
-/** Cotação com leitura de até 12 h; mais velha (ou sem valor/gratuidade) = ausente. */
-export function cotacaoValida(q: Cotacao | null | undefined, now: Date): q is Cotacao {
+/**
+ * Cotação com leitura de até 12 h (ML: API, data do anúncio); mais velha (ou sem valor/gratuidade) = ausente.
+ * R-88 (2026-11-16, P2S Combo: a mensagem dizia 25/11 e a página 20/11): a entrega da AMAZON é volátil (mudou de 19/11 para 25/11 para 20/11 em 26 h) e vale o mesmo
+ * que o preço da Amazon (R-81, AMAZON_FRESCOR_MIN, padrão 45 min); mais velha vira "Prazo ainda não lido".
+ */
+export function cotacaoValida(q: Cotacao | null | undefined, now: Date, env: Record<string, string | undefined> = process.env): q is Cotacao {
   if (!q || !(q.readAt instanceof Date) || isNaN(q.readAt.getTime())) return false;
   const idade = now.getTime() - q.readAt.getTime();
-  if (idade < -5 * 60_000 || idade > IDADE_MAX_MS) return false;
+  const limite = q.source === 'amazon_pagina' ? amazonFrescorMin(env) * 60_000 : IDADE_MAX_MS;
+  if (idade < -5 * 60_000 || idade > limite) return false;
   return q.free || (q.costCents != null && q.costCents >= 0);
 }
 
