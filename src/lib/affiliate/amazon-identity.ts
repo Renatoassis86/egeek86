@@ -35,6 +35,8 @@ export interface AmzCand {
   pg?: number;
   /** #120: rótulo do preço lido na página (`oferta_em_destaque` | `preco_a_pagar`). Com pg=1 e rótulo presente fora dessa lista, a leitura é recusada (ex.: Parcelas sem juros). */
   pl?: string;
+  /** R-69 (leitor v1.1.0): 1 = o preço em destaque `p` é o "à vista no Pix" (e `l`, o preço cheio); 0 = `p` é o preço cheio/de venda. Ausente = leitor antigo. */
+  px?: number;
 }
 
 /**

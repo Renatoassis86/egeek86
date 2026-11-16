@@ -20,6 +20,7 @@
     "test:preco-isca": "tsx scripts/test-preco-isca.ts",
     "test:link-afiliado": "tsx scripts/test-link-afiliado-r70.ts",
     "medir:links-afiliado": "tsx --env-file=.env.local scripts/medir-links-afiliado.ts",
+    "test:tipo-preco": "tsx scripts/test-tipo-preco-amazon-124.ts",
     "test:console-regra": "tsx scripts/test-console-regra.ts",
     "test:item-miudo": "tsx scripts/test-item-miudo.ts",
     "test:cupons-impressoras": "tsx scripts/test-fila-impressoras-112.ts && tsx scripts/test-card-benefit-112.ts && tsx scripts/test-aviso-impressoras-112.ts",

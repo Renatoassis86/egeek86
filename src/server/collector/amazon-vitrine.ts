@@ -14,6 +14,7 @@ import { parseBrl, type AmzCand } from '@/lib/affiliate/amazon-identity';
 import { ingestAmazonRows, safeAmazonImage, type AmzRow, type AmzStats } from './amazon-assisted';
 import { enfileirarDuvidaAmazon } from './amazon-fila';
 import { recordPriceSnapshot } from './record-price-snapshot';
+import { decidirPrecoAmazon, type DecisaoPrecoAmazon } from './amazon-tipo-preco';
 import { marcarQuarentenaPreco, quarentenaPrecoTipoLigada } from './quarentena-preco-tipo';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 import { foldTitle } from '@/lib/catalog/dimensions';
@@ -160,14 +161,14 @@ async function marcarOrigemAmazon(masterId: string, asin: string, runTag: string
   await db.execute(sql`UPDATE master_products SET attributes = (attributes - 'shopeeCriacao') || jsonb_build_object('amazonCriacao', jsonb_build_object('asin', ${asin}::text, 'run', ${runTag}::text, 'em', now()::text)) WHERE id = ${masterId}::uuid`);
 }
 
-async function criarRascunho(netId: string, masterId: string, vertical: Vertical, c: AmzCand, price: number, tag: string): Promise<string> {
+async function criarRascunho(netId: string, masterId: string, vertical: Vertical, c: AmzCand, price: number, tag: string, dec?: Extract<DecisaoPrecoAmazon, { ok: true }>): Promise<string> {
   const [o] = await db.insert(affiliateOffers).values({
     masterProductId: masterId, vertical, networkId: netId, title: String(c.t).slice(0, 200),
     slug: slugify(`${c.t}-amazon-${randomUUID().slice(0, 6)}`), affiliateUrl: `https://www.amazon.com.br/dp/${c.a}?tag=${tag}`, affiliateLinkPending: false,
     imageUrl: safeAmazonImage(c.i), storeName: 'Amazon', externalRef: `amazon-${c.a}`, currentPriceCents: 0,
     status: 'draft', publishedAt: null, lastCheckedAt: new Date(),
   }).returning({ id: affiliateOffers.id });
-  await recordPriceSnapshot({ offerId: o.id, priceCents: price, listPriceCents: parseBrl(c.l), source: 'scrape' });
+  await recordPriceSnapshot({ offerId: o.id, priceCents: price, listPriceCents: dec ? dec.listCents : parseBrl(c.l), source: 'scrape', pixCents: dec?.pixCents });
   await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now() WHERE id = ${o.id}`);
   return o.id;
 }
@@ -203,8 +204,11 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
       if (!c || typeof c.a !== 'string') { bump(s, 'cartao_invalido'); continue; }
       s.cartoes++;
       if (c.s) { bump(s, 'patrocinado'); continue; }
-      const price = parseBrl(c.p);
-      if (!price || price <= 0) { bump(s, 'sem_preco'); continue; }
+      if (!parseBrl(c.p)) { bump(s, 'sem_preco'); continue; }
+      // R-69: preco da serie = CHEIO; "a vista no Pix" e atributo. Pix sem cheio legivel nao e gravado.
+      const dec0 = await decidirPrecoAmazon(`amazon-${c.a}`, c);
+      if (!dec0.ok) { bump(s, `preco_${dec0.motivo}`); continue; }
+      const price = dec0.priceCents;
       if (vistos.has(c.a)) { bump(s, 'asin_repetido_no_lote'); continue; }
       vistos.add(c.a);
       try {
@@ -220,7 +224,7 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
           if ((baixo || alto) && !quarentenaPrecoTipoLigada()) { bump(s, 'preco_implausivel'); continue; }
           if ((baixo || alto)) bump(s, 'preco_implausivel_em_quarentena');
           if (!opts.apply) { s.atualizados++; continue; }
-          await recordPriceSnapshot({ offerId: ex.id, priceCents: price, listPriceCents: parseBrl(c.l), source: 'scrape' });
+          await recordPriceSnapshot({ offerId: ex.id, priceCents: price, listPriceCents: dec0.listCents, source: 'scrape', pixCents: dec0.pixCents });
           if (baixo || alto) await marcarQuarentenaPreco(ex.id, baixo ? 'preco_abaixo_de_35pct_da_mediana' : 'preco_acima_de_300pct_da_mediana').catch(() => undefined);
           const img = safeAmazonImage(c.i);
           await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now(), image_url = COALESCE(${img}, image_url) WHERE id = ${ex.id}`);
@@ -275,7 +279,7 @@ export async function ingestAmazonVitrine(rows: AmzRow[], opts: { tag: string; a
           continue;
         }
         if (!opts.apply) { s.rascunhos_novos++; continue; }
-        const offerId = await criarRascunho(net.id, masterId, consulta.vertical, c as AmzCand, price, opts.tag);
+        const offerId = await criarRascunho(net.id, masterId, consulta.vertical, c as AmzCand, price, opts.tag, dec0);
         s.rascunhos_novos++; s.criados.ofertas.push(offerId);
         if (!novo) {
           await enfileirarDuvidaAmazon(db, { offerId, masterId, masterNome: c.t.slice(0, 160), vertical: consulta.vertical, asin: c.a, titulo: c.t, motivo: 'vitrine:master_em_revisao_ou_chave_fraca', fronteira: false, score: 0.5 }).catch(() => false);

@@ -128,6 +128,29 @@ function add(id: string, nome: string, esc: Esc, n: number, valor: string, ids: 
       add('m.2', 'oferta-dia (16 dias) com menor preco = cotacao-isca marcada (isca ainda nas metricas)', e, sel.length, String(sel.length), sel.map((r) => r.id), 'Cotacao marcada como isca nao entra em price_daily_offer');
     }
 
+    // (n) TIPO DE PRECO DA AMAZON (R-69): a serie e SEMPRE cheio (Pix e atributo). (n.1) troca Pix x cheio (razao 0,95 ou 0,90) entre cotacoes consecutivas das
+    // ultimas 48 h em que alguma e SEM tipo = serie que ainda pode gerar queda/alta falsa; (n.2) cotacao da Amazon gravada SEM tipo depois da implantacao
+    // (TIPO_PRECO_DESDE) = o gancho da definicao unica nao esta no ar.
+    const nTroca = await sql<{ id: string }[]>`
+      WITH s AS (
+        SELECT s.offer_id, s.price_cents p, s.price_type t, lag(s.price_cents) OVER w pp, lag(s.price_type) OVER w pt
+        FROM affiliate_price_snapshots s JOIN affiliate_offers o ON o.id = s.offer_id JOIN affiliate_networks n ON n.id = o.network_id AND n.slug = 'amazon'
+        WHERE s.collected_at > now() - interval '48 hours' WINDOW w AS (PARTITION BY s.offer_id ORDER BY s.collected_at, s.id))
+      SELECT DISTINCT offer_id::text id FROM s
+      WHERE pp IS NOT NULL AND (t IS NULL OR pt IS NULL) AND pp > 0 AND p > 0
+        AND least(p, pp)::float8 / greatest(p, pp) BETWEEN 0.74 AND 0.9995
+        AND (abs(least(p, pp)::float8 / greatest(p, pp) - 0.95) <= 0.003 OR abs(least(p, pp)::float8 / greatest(p, pp) - 0.90) <= 0.003)`;
+    for (const e of ESCS) {
+      const sel = nTroca.filter((r) => { const o = porId.get(r.id); return o ? noEsc(o, e) : e === 'geral'; });
+      add('n.1', 'Amazon: troca de tipo de preco (Pix x cheio) com cotacao sem tipo nas ultimas 48 h (queda/alta falsa possivel)', e, sel.length, String(sel.length), sel.map((r) => r.id), 'Queda/alta so existe entre leituras do mesmo tipo de preco; serie da Amazon e sempre cheio (R-69)');
+    }
+    const DESDE_TIPO = process.env.TIPO_PRECO_DESDE ?? '2026-11-16T02:20:00Z';
+    const [semTipo] = await sql<{ n: string; ids: string[] }[]>`
+      SELECT count(*)::text n, coalesce((array_agg(DISTINCT s.offer_id::text))[1:8], '{}') ids
+      FROM affiliate_price_snapshots s JOIN affiliate_offers o ON o.id = s.offer_id JOIN affiliate_networks n ON n.id = o.network_id AND n.slug = 'amazon'
+      WHERE s.collected_at > ${DESDE_TIPO}::timestamptz AND s.price_type IS NULL AND s.source = 'scrape'`;
+    add('n.2', `Amazon: cotacoes SEM tipo gravadas depois de ${DESDE_TIPO} (definicao unica fora do ar)`, 'geral', Number(semTipo.n), semTipo.n, semTipo.ids, 'Toda cotacao nova da Amazon sai com price_type = cheio');
+
     // (i) divergência de snapshot x oferta (Amazon/Shopee), uma vez, geral
     const dv = await sql<{ id: string; rede: string; price: string; snap: string; at: Date }[]>`
       SELECT o.id::text id, n.slug rede, o.current_price_cents::text price, s.price_cents::text snap, s.collected_at at

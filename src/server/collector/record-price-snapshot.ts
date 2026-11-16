@@ -13,6 +13,11 @@ export interface RecordSnapshotInput {
   source: 'manual' | 'api' | 'scrape';
   /** Anúncio (ML: MLB...) cujo preço está sendo gravado. Troca de anúncio na mesma oferta zera previous_price (troca não é queda) e relê o link (#119). */
   itemId?: string | null;
+  /**
+   * R-69 (Amazon): `priceCents` e SEMPRE o preco cheio. `pixCents` = preco "a vista no Pix" lido junto (atributo): numero grava, null limpa
+   * (a leitura de agora nao mostra Pix), indefinido nao mexe (redes que nao tem esse conceito).
+   */
+  pixCents?: number | null;
 }
 
 /**
@@ -117,7 +122,14 @@ export async function recordPriceSnapshotDetalhado(inputOriginal: RecordSnapshot
         source: input.source,
         // Tipo de registro (migração 0038): primeira cotação, mudança de preço ou batimento de 24 h (mesmo preço).
         recordKind: lastSnap == null ? 'primeira' : lastSnap.priceCents !== input.priceCents ? 'mudanca' : 'batimento',
+        ...(input.pixCents !== undefined ? { priceType: 'cheio', pixCents: input.pixCents } : {}),
       });
+    }
+    // R-69: o Pix de agora e atributo da oferta (cache de leitura); nunca entra no preco da serie.
+    if (input.pixCents !== undefined) {
+      await tx.execute(input.pixCents != null
+        ? sql`UPDATE affiliate_offers SET pix_cents = ${input.pixCents}, pix_visto_em = now() WHERE id = ${input.offerId}::uuid`
+        : sql`UPDATE affiliate_offers SET pix_cents = NULL WHERE id = ${input.offerId}::uuid AND pix_cents IS NOT NULL`);
     }
 
     await tx

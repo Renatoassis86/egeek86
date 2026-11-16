@@ -18,7 +18,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.0.0';
+  var VERSAO = '1.1.0'; // 1.1.0 (R-69): marca px (preço em destaque é "à vista no Pix") e lista sem parcela
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-amazon-assistida.ts
@@ -51,13 +51,23 @@
 
   /** Pares (classe, texto) dos <span class="a-price ..."><span class="a-offscreen">R$ ..</span>: preço atual (sem a-text-price) e preço de lista (a-text-price). */
   PURO.precosDe = function (html) {
-    var re = /<span[^>]*\bclass="(a-price(?:\s[^"]*)?)"[^>]*>\s*<span[^>]*\bclass="a-offscreen"[^>]*>([^<]*)<\/span>/g, m, p = null, l = null;
+    var re = /<span[^>]*\bclass="(a-price(?:\s[^"]*)?)"[^>]*>\s*<span[^>]*\bclass="a-offscreen"[^>]*>([^<]*)<\/span>/g, m, p = null, l = null, lde = false;
     while ((m = re.exec(html))) {
       var preco = PURO.normalizarPreco(m[2]);
       if (!preco) continue;
-      if (/\ba-text-price\b/.test(m[1])) { if (!l) l = preco; } else if (!p) p = preco;
+      if (/\ba-text-price\b/.test(m[1])) {
+        // R-69: a PARCELA ("em até 12x de R$ 793,32") também é a-text-price e NÃO é preço de lista; o texto logo antes dela termina em "Nx de".
+        var antes = PURO.textoDe(String(html).slice(Math.max(0, m.index - 300), m.index));
+        if (/\d\s*x\s*de\s*$/i.test(antes)) continue;
+        if (!l) { l = preco; lde = /(?:^|\s)de:?\s*$/i.test(antes) || /^\s*de:/i.test(PURO.decodificar(m[2])); } // "De: R$ X" = preço antigo da promoção, NÃO o cheio do Pix
+      } else if (!p) p = preco;
     }
-    return { p: p, l: l };
+    return { p: p, l: l, lde: lde };
+  };
+
+  /** R-69: o texto do card/bloco diz que o preço em destaque é "à vista no Pix" (ou NuPay). Com isto o destaque NÃO é o preço cheio e a lista é o cheio. */
+  PURO.pixNoTexto = function (htmlOuTexto) {
+    return /(?:^|\s)[àa] vista no (?:pix|nupay)\b/i.test(PURO.textoDe(htmlOuTexto));
   };
 
   var NENHUM_RESULTADO = /nenhum resultado para|n[aã]o encontr(?:amos|ou) nenhum resultado|did not match any products|sua pesquisa.{0,40}n[aã]o corresponde/i;
@@ -88,6 +98,7 @@
       var img = im && AMZ_IMG_RE.test(PURO.decodificar(im[1])) ? PURO.decodificar(im[1]) : null;
       vistos[am[1]] = 1;
       var c = { a: am[1], t: titulo.slice(0, 300), p: patro ? null : pr.p, l: patro ? null : pr.l, s: patro ? 1 : 0 };
+      if (!patro) { c.px = PURO.pixNoTexto(chunk) ? 1 : 0; if (c.px && pr.lde) c.l = null; } // R-69: tipo do preço em destaque (1 = à vista no Pix; 0 = preço cheio/de venda)
       if (img) c.i = img;
       out.push(c);
       if (out.length >= MAX_CANDS) break;
@@ -117,10 +128,10 @@
         var cab = pt.slice(0, 200), ativa = /^[^"]*\ba-accordion-active\b/.test(cab) || /\ba-accordion-active\b/.test(cab.split('>')[0]);
         var rot = /Oferta em destaque/i.test(pt.slice(0, 1500));
         var pr = PURO.precosDe(pt.slice(0, 6000));
-        if (ativa && rot && pr.p) dest.push(pr); else outras++;
+        if (ativa && rot && pr.p) { pr.px = PURO.pixNoTexto(pt.slice(0, 6000)); if (pr.px && pr.lde) pr.l = null; dest.push(pr); } else outras++;
       });
       if (dest.length !== 1) return { ok: false, motivo: 'ambiguo' };
-      return { ok: true, p: dest[0].p, l: dest[0].l, pl: 'oferta_em_destaque' };
+      return { ok: true, p: dest[0].p, l: dest[0].l, px: dest[0].px ? 1 : 0, pl: 'oferta_em_destaque' };
     }
     var ini = -1, ids = ['id="corePrice_feature_div"', 'id="corePriceDisplay_desktop_feature_div"', 'id="apex_desktop"'];
     for (var i = 0; i < ids.length; i++) { var k = html.indexOf(ids[i]); if (k >= 0 && (ini < 0 || k < ini)) ini = k; }
@@ -129,12 +140,16 @@
     var resto = html.slice(ini + 10, ini + 4000), fim = resto.search(/id="[^"]*(?:_feature_div|similar|sims|sp_detail|carousel)[^"]*"/i);
     var pr = PURO.precosDe(html.slice(ini, fim >= 0 ? ini + 10 + fim : ini + 4000));
     if (!pr.p) return { ok: false, motivo: 'sem_preco' };
-    return { ok: true, p: pr.p, l: pr.l, pl: 'preco_a_pagar' };
+    // R-69: o "à vista no Pix" fica no bloco de pagamento logo depois do preço (id apex_desktop), até o primeiro carrossel/recomendados.
+    var jan = html.slice(ini, ini + 7000), cort = jan.search(/id="[^"]*(?:similar|sims|sp_detail|carousel)[^"]*"/i);
+    var pxp = PURO.pixNoTexto(cort >= 0 ? jan.slice(0, cort) : jan) ? 1 : 0;
+    return { ok: true, p: pr.p, l: pxp && pr.lde ? null : pr.l, px: pxp, pl: 'preco_a_pagar' };
   };
 
   /** Candidato reenviado após a página: { a,t,p,l,s:1,pg:1,i } (contrato AmzCand). */
   PURO.candidatoDePagina = function (cand, pagina) {
     var c = { a: cand.a, t: cand.t, p: pagina.p, l: pagina.l || null, s: 1, pg: 1 };
+    if (pagina.px === 0 || pagina.px === 1) c.px = pagina.px;
     if (pagina.pl) c.pl = pagina.pl;
     if (cand.i) c.i = cand.i;
     return c;
@@ -164,6 +179,7 @@
         var o = { a: c.a, t: t, p: p, l: typeof c.l === 'string' && PURO.parseBrl(c.l) ? c.l : null, s: s };
         if (pg) o.pg = 1;
         if (pg && (c.pl === 'oferta_em_destaque' || c.pl === 'preco_a_pagar')) o.pl = c.pl;
+        if (c.px === 1 || c.px === 0) o.px = c.px; // R-69: tipo do preço em destaque (1 = à vista no Pix)
         if (typeof c.i === 'string' && AMZ_IMG_RE.test(c.i)) o.i = c.i;
         cs.push(o);
       });

@@ -13,6 +13,7 @@ import {
 } from '@/lib/affiliate/amazon-identity';
 import { posicaoPrioridade3d } from '@/lib/messaging/prioridade-3d';
 import { recordPriceSnapshot } from './record-price-snapshot';
+import { decidirPrecoAmazon } from './amazon-tipo-preco';
 import { enfileirarDuvidaAmazon } from './amazon-fila';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
 
@@ -261,6 +262,11 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
     const maxAceitos = v === 'impressao3d' ? 4 : 2; // impressora 3D: o mesmo modelo tem várias variantes de tensão/vendedor na Amazon (P2S Combo 110 V, 220 V...)
     const todo = [...accepted.slice(0, maxAceitos).map((x) => ({ ...x, kind: 'active' as const })), ...drafts.slice(0, 2).map((x) => ({ ...x, kind: 'draft' as const }))];
     for (const a of todo) {
+      // R-69: o preco da serie e o CHEIO; "a vista no Pix" e atributo. Pix sem cheio legivel NAO e gravado (nunca inventa valor).
+      const dec = await decidirPrecoAmazon(`amazon-${a.c.a}`, a.c);
+      if (!dec.ok) { bump(`preco_${dec.motivo}`); log.push({ id: row.id, asin: a.c.a, resultado: `preco_${dec.motivo}` }); continue; }
+      a.price = dec.priceCents;
+      const pixAttr = dec.pixCents;
       const low = isImplausiblyLow(a.price, refs), high = isImplausiblyHigh(a.price, refs);
       // R2-12 (dono, 2026-11-14): preço implausível NÃO é descartado: a oferta é registrada e entra em QUARENTENA (quarantined_at), fora de média, selo e vitrines, para revisão.
       const quarentena = low || high;
@@ -277,13 +283,13 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
         if (stats.amostra_draft.length < 25) stats.amostra_draft.push({ master: name.slice(0, 80), asin: a.c.a, motivo: a.reason });
         scanResult = scanResult === 'aceito' ? 'aceito' : 'draft';
       } else { stats.aceitos++; stats.contadores.aceito++; pv.aceito++; scanResult = 'aceito'; }
-      const listCents = parseBrl(a.c.l);
+      const listCents = dec.listCents;
       log.push({ id: row.id, master: name, asin: a.c.a, titulo: a.c.t, preco: a.price, score: Number(a.score.toFixed(2)), resultado: (existing ? 'atualizar' : 'criar') + (isDraft ? '_draft' : ''), motivo: a.reason, refs: refs.length });
       if (!opts.apply) { if (isDraft) { existing ? stats.rascunhos_atualizados++ : stats.rascunhos_novos++; } else if (existing) stats.atualizados++; else stats.novos++; continue; }
       // Oferta existente: atualiza preço/checagem, mas NUNCA muda o status (draft só sai por promoção humana; ativa com dúvida fica como está).
       if (existing) {
         if (isDraft && existing.status === 'active') { stats.motivos['ativa_com_duvida_nova'] = (stats.motivos['ativa_com_duvida_nova'] ?? 0) + 1; continue; }
-        await recordPriceSnapshot({ offerId: existing.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
+        await recordPriceSnapshot({ offerId: existing.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape', pixCents: pixAttr });
         const img = safeAmazonImage(a.c.i);
         await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now(), image_url = COALESCE(${img}, image_url) WHERE id = ${existing.id}`);
         if (quarentena) await db.execute(sql`UPDATE affiliate_offers SET quarantined_at = COALESCE(quarantined_at, now()), updated_at = now() WHERE id = ${existing.id}`);
@@ -299,7 +305,7 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
         imageUrl: safeAmazonImage(a.c.i), storeName: 'Amazon', externalRef: ref, currentPriceCents: 0,
         status: isDraft ? 'draft' : 'active', publishedAt: isDraft ? null : new Date(), lastCheckedAt: new Date(),
       }).returning({ id: affiliateOffers.id });
-      await recordPriceSnapshot({ offerId: o.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape' });
+      await recordPriceSnapshot({ offerId: o.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape', pixCents: pixAttr });
       await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now() WHERE id = ${o.id}`);
       if (quarentena) await db.execute(sql`UPDATE affiliate_offers SET quarantined_at = now(), updated_at = now() WHERE id = ${o.id}`);
       if (isDraft) {

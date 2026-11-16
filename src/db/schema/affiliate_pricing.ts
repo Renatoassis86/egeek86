@@ -36,6 +36,10 @@ export const affiliatePriceSnapshots = pgTable(
     collectedAt: timestamp('collected_at', { withTimezone: true }).notNull().defaultNow(),
     /** 'primeira' | 'mudanca' | 'batimento' (mesmo preço, a cada 24 h) | 'manual' (migração 0038). */
     recordKind: text('record_kind'),
+    /** R-69 (0062): tipo do preco da cotacao. Amazon: sempre 'cheio' (o preco a vista no Pix fica em pix_cents). Nulo = cotacao sem tipo (outras redes ou legada). */
+    priceType: text('price_type'),
+    /** R-69 (0062): preco "a vista no Pix" lido junto desta cotacao (atributo; nunca e o preco da serie). */
+    pixCents: bigint('pix_cents', { mode: 'number' }),
   },
   (t) => [
     index('affiliate_price_snapshots_offer_collected_idx').on(t.offerId, t.collectedAt),
