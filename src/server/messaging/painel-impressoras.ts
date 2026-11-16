@@ -10,7 +10,7 @@ import { rotuloBeneficioCartao } from '@/lib/coupons/card-benefit';
 import { linhasFretePrazoPorOferta } from '@/server/shipping/frete-prazo';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
-import { amazonForaDasMensagens, avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
+import { amazonForaDasMensagens, amazonNoPrivado, avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
 import { ultimosVereditos } from '@/server/links/auditoria-links';
 import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
@@ -74,13 +74,13 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
     JOIN master_products m ON m.id = o.master_product_id
     LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
     WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.vertical = 'impressao3d' AND o.current_price_cents > 0
-      AND (nn.slug <> 'mercado-livre' OR o.seller_id IS NOT NULL) /* placeholder ML (sem vendedor) guarda o MENOR preço do catálogo e tem link de UM anúncio: preço e link divergem por desenho (93607216) */ AND nn.slug IN ('mercado-livre', 'amazon') ${amazonForaDasMensagens() ? sql`AND nn.slug <> 'amazon'` : sql``} AND o.last_checked_at > now() - interval '24 hours'
+      AND (nn.slug <> 'mercado-livre' OR o.seller_id IS NOT NULL) /* placeholder ML (sem vendedor) guarda o MENOR preço do catálogo e tem link de UM anúncio: preço e link divergem por desenho (93607216) */ AND nn.slug IN ('mercado-livre', 'amazon') ${amazonForaDasMensagens() && !amazonNoPrivado() ? sql`AND nn.slug <> 'amazon'` : sql``} AND o.last_checked_at > now() - interval '24 hours'
       AND m.id::text IN (${sql.join(MASTERS_PRIVADO.map((i) => sql`${i}`), sql`, `)})`)) as unknown as RowOferta[];
   const ligada = confirmacaoLigada();
   const audit = ligada ? await ultimosVereditos(rows.map((r) => r.id)) : new Map<string, { verdict: string; checkedAt: Date; okEm: Date | null }>();
   const fatos = (r: RowOferta, uso: 'queda' | 'lista') => avaliarConfirmacao({
     uso, rede: r.rede, status: 'active', quarantined: false, confirmedAt: r.conf ? new Date(r.conf) : null, missCount: r.miss != null ? Number(r.miss) : 0,
-    priceItemId: r.item, catalogoRef: r.cat, linkItemId: r.link_item ?? itemIdDaUrl(r.url), auditoria: audit.get(r.id) ?? null, estrito: ligada && rigidoPrivadoLigado(), precoMudouEm: r.pchg ? new Date(r.pchg) : null, itemTrocadoEm: r.itroca ? new Date(r.itroca) : null, now,
+    priceItemId: r.item, catalogoRef: r.cat, linkItemId: r.link_item ?? itemIdDaUrl(r.url), auditoria: audit.get(r.id) ?? null, estrito: ligada && rigidoPrivadoLigado(), liberaAmazon: amazonNoPrivado(), precoMudouEm: r.pchg ? new Date(r.pchg) : null, itemTrocadoEm: r.itroca ? new Date(r.itroca) : null, now,
   }, ligada);
   // Lista: preço confirmado há <= 6 h e anúncio achado na última coleta; sem isso a oferta NÃO entra na lista (nunca "preço a confirmar" inventado).
   const aprovadas = rows.filter((r) => { const v = fatos(r, 'lista'); if (!v.ok) foraDaLista++; return v.ok; });

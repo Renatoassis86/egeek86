@@ -45,6 +45,10 @@ export function confirmacaoLigada(env: Record<string, string | undefined> = proc
 export function amazonForaDasMensagens(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.AMAZON_FORA_DAS_MENSAGENS ?? '').trim());
 }
+/** Flag AMAZON_PRIVADO (padrão LIGADA): a Amazon volta ao privado das impressoras mesmo com a contenção geral (AMAZON_FORA_DAS_MENSAGENS) ligada; '0'|'off'|'false'|'nao' desliga. */
+export function amazonNoPrivado(env: Record<string, string | undefined> = process.env): boolean {
+  return !/^(0|off|false|nao|não)$/i.test((env.AMAZON_PRIVADO ?? '').trim());
+}
 export function redeForaDasMensagens(rede: string | null | undefined, env: Record<string, string | undefined> = process.env): boolean {
   return /amazon/i.test(rede ?? '') && amazonForaDasMensagens(env);
 }
@@ -58,6 +62,8 @@ export interface FatosConfirmacao {
   auditoria?: { verdict: string; checkedAt: Date; okEm?: Date | null } | null;
   /** REGRA RÍGIDA (privado do dono, #119): exige veredito `ok` da auditoria nas últimas 6 h; sem veredito ou só erro_leitura = não sai. */
   estrito?: boolean;
+  /** Liberação da contenção #120 SÓ para o privado do dono (P2S/P1S Combo): Amazon vale pela confirmação fresca (<= 5 min na queda, 6 h na lista) e leitor da oferta em destaque. */
+  liberaAmazon?: boolean;
   uso: UsoPreco;
   /** 'mercado-livre' | 'amazon' | 'shopee' | outra (slug da rede). */
   rede: string;
@@ -156,7 +162,7 @@ export function estritoCanalPara(ehBambu: boolean | undefined, env: Record<strin
  * Desligada pela flag: sempre ok (comportamento antigo).
  */
 export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito {
-  if (redeForaDasMensagens(f.rede)) return falha('amazon_fora_das_mensagens');
+  if (redeForaDasMensagens(f.rede) && !f.liberaAmazon) return falha('amazon_fora_das_mensagens');
   if (!ligada) return { ok: true };
   if (f.status !== 'active') return falha('oferta_inativa');
   if (f.quarantined) return falha('em_quarentena');
