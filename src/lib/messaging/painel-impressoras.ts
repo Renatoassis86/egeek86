@@ -45,6 +45,10 @@ export interface OfertaPainel {
   minimo14?: boolean;
   /** Frete e prazo MEDIDOS (#118), só nos primeiros itens da lista; ausente = não mostra. */
   fretePrazo?: string | null;
+  /** O preço de destaque da página é "à vista no Pix/NuPay" (qualificador lido do bloco de pagamento do próprio item). */
+  aVista?: string | null;
+  /** Parcelado que a PRÓPRIA página mostra ("12x de R$ 731,61 sem juros"); nunca calculado. */
+  parcelado?: string | null;
 }
 
 export interface EntradaPaineis { ofertas: OfertaPainel[]; inicio: Date; adTag: string; guiaUrl?: string }
@@ -128,7 +132,8 @@ function linhaOferta(i: number, o: OfertaPainel, rede: string): string {
   const loja = rede === 'amazon' ? '' : nomeLoja(o.loja);
   const medalha = MEDALHA[i - 1] ?? `${i}.`;
   const preco = o.url ? `<a href="${escapeTelegramAttr(o.url)}"><b>${brl(o.cents)}</b></a>` : `<b>${brl(o.cents)}</b>`;
-  const L = [`${medalha} ${preco}${loja}`];
+  const L = [`${medalha} ${preco}${o.aVista ? ` ${e(o.aVista)}` : ''}${loja}`];
+  if (o.parcelado) L.push(`      💳 ou ${e(o.parcelado)}`);
   if (o.fretePrazo) L.push(`      🚚 ${e(o.fretePrazo)}`);
   const v: string[] = [];
   if (o.anteriorCents && o.anteriorCents !== o.cents) {
@@ -270,6 +275,9 @@ export interface EntradaQueda {
   leituraEm: Date;
   cupom?: { nome: string | null; finalCents: number; passo: string | null } | null;
   cartoes?: { rotulo: string; finalCents: number | null; needsConfirm: boolean }[];
+  /** Mesmos campos da lista: "à vista no Pix" e o parcelado que a página mostra. */
+  aVista?: string | null;
+  parcelado?: string | null;
   /** Frete/prazo MEDIDOS (#118), ou "Prazo ainda não lido". */
   fretePrazo?: string | null;
   adTag: string;
@@ -286,12 +294,13 @@ export function textoQueda(q: EntradaQueda): string {
   L.push(`<b>${ROTULO_GATILHO[q.gatilho ?? 'queda']}</b>`);
   L.push(`<b>${e(q.titulo.length > 100 ? `${q.titulo.slice(0, 99)}…` : q.titulo)}</b>`);
   L.push('');
-  L.push(`💰 <b>${brl(q.cents)}</b>${caiu ? `  (era ${brl(q.anteriorCents as number)} · queda de ${pct}%)` : ''}`);
+  L.push(`💰 <b>${brl(q.cents)}</b>${q.aVista ? ` ${e(q.aVista)}` : ''}${caiu ? `  (era ${brl(q.anteriorCents as number)} · queda de ${pct}%)` : ''}`);
   if (q.minimo14 && q.gatilho !== 'minimo') L.push('🏷️ Novo mínimo de 14 dias');
   if (caiu && q.anteriorEm) L.push(`🕘 Preço anterior lido: ${brl(q.anteriorCents as number)} em ${diaSP(q.anteriorEm)} às ${horaSP(q.anteriorEm)}`);
   const onde = [amazon ? 'Amazon' : q.loja ? e(q.loja) : null, q.reputacao ? e(q.reputacao) : null].filter(Boolean).join(' · ');
   if (onde) L.push(`🏪 ${onde}`);
   if (q.cupom) L.push(`🎟️ Cupom${q.cupom.nome ? ` ${e(q.cupom.nome)}` : ''}: <b>${brl(q.cupom.finalCents)}</b> com cupom${q.cupom.passo ? ` · ${e(q.cupom.passo)}` : ''}`);
+  if (q.parcelado) L.push(`💳 ou ${e(q.parcelado)}`);
   for (const c of (q.cartoes ?? []).slice(0, 2)) L.push(`💳 ${e(c.rotulo)}${c.finalCents ? `: <b>${brl(c.finalCents)}</b>` : ''}${c.needsConfirm ? ' · a confirmar no carrinho' : ''}`);
   L.push(`🚚 ${e(q.fretePrazo || 'Prazo ainda não lido')}`);
   L.push(amazon ? `🕒 Preço na Amazon em ${diaSP(q.leituraEm)} às ${horaSP(q.leituraEm)}` : `🕒 Lido às ${horaSP(q.leituraEm)}`);

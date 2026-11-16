@@ -9,7 +9,7 @@
 import { brlToCents } from './page-read';
 import { AGULHA } from './agulha';
 
-export type CardBenefitKind = 'cartao_pct' | 'pix_pct' | 'parcelas' | 'cashback';
+export type CardBenefitKind = 'cartao_pct' | 'pix_pct' | 'parcelas' | 'cashback' | 'preco_a_vista';
 
 export interface CardBenefit {
   kind: CardBenefitKind;
@@ -51,12 +51,13 @@ function emissora(raw: string | undefined): string | null {
 function base(kind: CardBenefitKind, rawText: string): Parcial {
   return { kind, issuer: null, pct: null, capCents: null, minOrderCents: null, installments: null, installmentCents: null, noInterest: false, cashbackCents: null, finalPriceCents: null, needsConfirm: false, rawText };
 }
-function derivar(pct: number | null, seen: number | null, cap: number | null): number | null {
-  if (pct == null || seen == null || !(seen > 0)) return null;
-  let desc = Math.round((seen * pct) / 100);
-  if (cap != null && desc > cap) desc = cap;
-  const f = seen - desc;
-  return f > 0 && f < seen ? f : null;
+/**
+ * NUNCA deriva preço final (rodada de 2026-11-16, "Itaú Mastercard 15%" da Amazon): o preço lido na página da Amazon JÁ é o de destaque ("10% off à vista no Pix"),
+ * e formas de pagamento são excludentes; aplicar o % do cartão sobre ele empilhava descontos que não existem (R$ 7.901,18 -> R$ 6.716,00). Só se mostra valor final
+ * se a PRÓPRIA página o mostrar (hoje o leitor não lê nenhum), então o preço final derivado é sempre nulo.
+ */
+function derivar(_pct: number | null, _seen: number | null, _cap: number | null): number | null {
+  return null;
 }
 function chave(b: Parcial): string {
   return [b.kind, (b.issuer ?? '').toLowerCase(), b.pct ?? '', b.installments ?? '', b.installmentCents ?? '', b.cashbackCents ?? ''].join('|');
@@ -77,6 +78,14 @@ export function parseCardBenefit(texto: string, seenCents: number | null): CardB
       b.issuer = emissora(m[1]);
       b.pct = pct;
       b.needsConfirm = true;
+    }
+  } else if ((m = new RegExp(String.raw`${PCT}\s*(?:off|de desconto)\s+[àa]\s+vista\s+(?:no|via|com)\s+(?:o\s+)?(pix|nupay)`, 'i').exec(t))) {
+    // "10% off à vista no Pix e NuPay": é o QUALIFICADOR do preço de destaque que a página mostra (o preço lido já é esse), não um desconto a mais.
+    const pct = pctNum(m[1]);
+    if (pct != null) {
+      b = base('preco_a_vista', t);
+      b.pct = pct;
+      b.issuer = m[2].toLowerCase() === 'pix' ? 'Pix' : 'NuPay';
     }
   } else if ((m = new RegExp(String.raw`${PCT}\s*(?:off|de desconto)?\s+(?:no|via|com)\s+(?:o\s+)?pix`, 'i').exec(t)) || (m = new RegExp(String.raw`pix[^%\d]{0,25}${PCT}`, 'i').exec(t))) {
     const pct = pctNum(m[1]);
@@ -110,6 +119,21 @@ export function parseCardBenefit(texto: string, seenCents: number | null): CardB
   return { ...b, dedupKey: chave(b) };
 }
 
+/**
+ * GATILHO ANTI-ISCA (permanente, todas as redes): benefício derivado de texto genérico ou sem prova no item NÃO vira mensagem, lista, card nem alerta.
+ * Verificado por padrão = só o que a página imprime junto do preço do próprio item: parcelas ("12x de R$ 731,61 sem juros") e o qualificador do preço de
+ * destaque ("à vista no Pix"). Desconto de cartão (%), Pix % e cashback ficam "não verificados" (a regra completa fica atrás do "Saiba mais" e o texto pode
+ * vir de banner de campanha) e só saem se CARD_BENEFITS_TIPOS os liberar explicitamente.
+ */
+export const TIPOS_VERIFICADOS_PADRAO: CardBenefitKind[] = ['parcelas', 'preco_a_vista'];
+export function beneficioVerificado(b: Pick<CardBenefit, 'kind'>, tipos: readonly string[] = TIPOS_VERIFICADOS_PADRAO): boolean {
+  return tipos.includes(b.kind);
+}
+export function tiposLiberados(env: Record<string, string | undefined> = process.env): string[] {
+  const v = (env.CARD_BENEFITS_TIPOS ?? '').split(',').map((x) => x.trim()).filter(Boolean);
+  return v.length ? v : [...TIPOS_VERIFICADOS_PADRAO];
+}
+
 /** Vários textos -> benefícios únicos (até 8). */
 export function parseCardBenefits(textos: unknown, seenCents: number | null): CardBenefit[] {
   const out = new Map<string, CardBenefit>();
@@ -129,6 +153,7 @@ const pctTxt = (v: number) => `${String(v).replace('.', ',')}%`;
 export function rotuloBeneficioCartao(b: Rotulavel): string | null {
   if (b.kind === 'cartao_pct' && b.pct != null) return `${b.issuer ?? 'Cartão'} ${pctTxt(b.pct)}`;
   if (b.kind === 'pix_pct' && b.pct != null) return `Pix ${pctTxt(b.pct)}`;
+  if (b.kind === 'preco_a_vista') return b.issuer === 'NuPay' ? 'à vista no NuPay' : 'à vista no Pix';
   if (b.kind === 'cashback' && b.cashbackCents != null) return `Cashback ${reais(b.cashbackCents)}${b.issuer ? ` (${b.issuer})` : ''}`;
   if (b.kind === 'parcelas' && b.installments != null && b.installmentCents != null) {
     return `${b.installments}x de ${reais(b.installmentCents)}${b.noInterest ? ' sem juros' : b.issuer ? ` no cartão ${b.issuer}` : ''}`;
@@ -143,5 +168,6 @@ export function textoFrontBeneficio(b: Rotulavel & Pick<CardBenefit, 'needsConfi
   const conf = b.needsConfirm ? ' (a confirmar no carrinho)' : '';
   if (b.kind === 'cartao_pct') return `Desconto no cartão: ${r}${conf}`;
   if (b.kind === 'pix_pct') return `Desconto no Pix: ${r.replace('Pix ', '')}${conf}`;
+  if (b.kind === 'preco_a_vista') return `Preço ${r}`;
   return `Pagamento: ${r}`;
 }

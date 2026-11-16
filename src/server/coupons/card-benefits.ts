@@ -1,7 +1,7 @@
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
-import { parseCardBenefits, type CardBenefit } from '@/lib/coupons/card-benefit';
+import { beneficioVerificado, parseCardBenefits, tiposLiberados, type CardBenefit } from '@/lib/coupons/card-benefit';
 
 /** Um benefício de cartão só vale na tela enquanto a última leitura o viu há menos que isto (a fila relê as impressoras a cada 30 min). */
 export const BENEFICIO_VIVO_HORAS = 3;
@@ -47,12 +47,14 @@ export async function beneficiosVivosPorOferta(offerIds: string[]): Promise<Map<
       FROM offer_card_benefits
       WHERE offer_id::text IN (${sql.join(offerIds.map((i) => sql`${i}`), sql`, `)}) AND last_seen_at > now() - make_interval(hours => ${BENEFICIO_VIVO_HORAS})
       ORDER BY pct DESC NULLS LAST, last_seen_at DESC`)) as unknown as Record<string, unknown>[];
+    const tipos = tiposLiberados();
     for (const r of rows) {
+      if (!beneficioVerificado({ kind: r.kind as CardBenefit['kind'] }, tipos)) continue; // anti-isca: não verificado não sai em tela, mensagem, lista, card nem alerta
       const b: BeneficioVivo = {
         offerId: String(r.offer_id), dedupKey: String(r.dedup_key), kind: r.kind as CardBenefit['kind'], issuer: (r.issuer as string) ?? null, pct: r.pct == null ? null : Number(r.pct),
         capCents: (r.cap_cents as number) ?? null, minOrderCents: (r.min_order_cents as number) ?? null, installments: (r.installments as number) ?? null,
         installmentCents: (r.installment_cents as number) ?? null, noInterest: Boolean(r.no_interest), cashbackCents: (r.cashback_cents as number) ?? null,
-        finalPriceCents: (r.final_price_cents as number) ?? null, needsConfirm: Boolean(r.needs_confirm), rawText: String(r.raw_text),
+        finalPriceCents: null /* nunca valor derivado (ver derivar() em card-benefit.ts) */, needsConfirm: Boolean(r.needs_confirm), rawText: String(r.raw_text),
         lastSeenAt: new Date(String(r.last_seen_at)).toISOString(), baseCents: (r.base_price_cents as number) ?? null,
       };
       const l = out.get(b.offerId) ?? [];

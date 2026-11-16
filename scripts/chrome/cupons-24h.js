@@ -25,7 +25,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.0.0';
+  var VERSAO = '1.0.1';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-cupons-24h.ts
@@ -320,11 +320,15 @@
 
   /** DESCONTO POR CARTÃO (#112): textos do bloco de compra que falam de cartão/Pix/parcelas/cashback ("Use seu cartão Itaú Mastercard e ganhe 15% off!", "em até 10x de R$ 845,91 sem juros"). Só texto; o servidor interpreta. Até 6, 200 caracteres. NÃO VALIDADO em produção: conferir em status().linhas antes de enviar:true. */
   function beneficiosCartaoDoc(doc) {
+    // ESCOPO (2026-11-16, "Itaú Mastercard 15%"): só o bloco de PAGAMENTO do próprio item (preço, Pix/à vista, parcelas). Fora: #rightCol e #buybox inteiros e
+    // qualquer [id*="promo"] da página (pegavam banner de campanha); dentro do bloco, o widget de marketing (<marketing-widget-url>, banner de cartão com "Saiba mais")
+    // também fica de fora: é texto de campanha, não condição do item. O servidor ainda trata desconto % de cartão como NÃO VERIFICADO.
     var out = [], vistos = {};
-    var alvo = doc.querySelectorAll('#buybox *, #desktop_buybox *, #rightCol *, #corePrice_feature_div *, #apex_desktop *, #installmentCalculator_feature_div *, [id*="promo"] *');
+    var alvo = doc.querySelectorAll('#apex_desktop *, #corePrice_feature_div *, #installmentCalculator_feature_div *, #installmentCalculatorCentral_feature_div *');
     for (var i = 0; i < alvo.length && out.length < 6; i++) {
       var el = alvo[i];
       if (el.children && el.children.length) continue;
+      if (el.closest && el.closest('marketing-widget-url, [id*="promo"], [class*="promo"], [id*="sponsored"], [class*="sponsored"]')) continue;
       var t = txt(el);
       if (t.length < 12 || t.length > 200) continue;
       if (!(/cart[ãa]o.*\d\s*%|\d\s*x\s+(?:de\s+)?R\$.*sem juros|\d{1,2}\s*%.*pix|cashback/i.test(t))) continue;

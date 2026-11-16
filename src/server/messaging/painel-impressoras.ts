@@ -54,6 +54,13 @@ interface RowOferta {
   conf: Date | string | null; miss: string | null; item: string | null; link_item: string | null; cat: string | null; pchg: Date | string | null; itroca: Date | string | null;
 }
 
+/** Qualificador do preço de destaque ("à vista no Pix") e parcelado, SÓ do que a página do item mostrou (benefícios verificados). */
+function rotulosDePagamento(bs: (Parameters<typeof rotuloBeneficioCartao>[0] & { kind: string })[]): { aVista: string | null; parcelado: string | null } {
+  const v = bs.find((b) => b.kind === 'preco_a_vista');
+  const p = bs.find((b) => b.kind === 'parcelas' && b.noInterest);
+  return { aVista: v ? rotuloBeneficioCartao(v) : null, parcelado: p ? rotuloBeneficioCartao(p) : null };
+}
+
 const id12 = (id: string) => id.replace(/-/g, '').slice(0, 12);
 
 /** Impressoras (aparelhos) do ML e da Amazon: tipo 'impressoras' do site; sem item miúdo; ativas, <= 24 h, sem quarentena. */
@@ -112,11 +119,13 @@ export async function carregarOfertasImpressoras(now: Date): Promise<OfertaCarre
   }));
   return base.map((o): OfertaCarregada => {
     const bs = ((cartoes.get(o.id) ?? []) as (Parameters<typeof rotuloBeneficioCartao>[0] & { needsConfirm: boolean; kind: string })[])
-      .filter((b) => b.kind !== 'parcelas')
+      .filter((b) => b.kind !== 'parcelas' && b.kind !== 'preco_a_vista')
       .map((b) => ({ rotulo: rotuloBeneficioCartao(b), needsConfirm: b.needsConfirm }))
       .filter((b): b is { rotulo: string; needsConfirm: boolean } => !!b.rotulo);
     const c = cupons.get(o.id);
-    return { ...o, cupomFinalCents: c?.final ?? null, cupomNome: c?.nome ?? null, beneficios: bs };
+    const todos = (cartoes.get(o.id) ?? []) as (Parameters<typeof rotuloBeneficioCartao>[0] & { kind: string })[];
+    const { aVista, parcelado } = rotulosDePagamento(todos);
+    return { ...o, cupomFinalCents: c?.final ?? null, cupomNome: c?.nome ?? null, beneficios: bs, aVista, parcelado };
   });
 }
 
@@ -211,12 +220,13 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
       if (r && r.detail.finalCents > 0 && r.detail.finalCents < o.cents) cupom = { nome: r.detail.named ? r.detail.name : null, finalCents: r.detail.finalCents, passo: r.detail.activation || null };
     } catch { /* sem cupom */ }
     const bens = ((await beneficiosVivosPorOferta([o.id]).catch(() => new Map())).get(o.id) ?? []) as (Parameters<typeof rotuloBeneficioCartao>[0] & { needsConfirm: boolean; kind: string; finalPriceCents: number | null })[];
+    const pagto = rotulosDePagamento(bens);
     const cartoes = bens.filter((b) => b.kind === 'cartao_pct' || b.kind === 'pix_pct').map((b) => ({ rotulo: rotuloBeneficioCartao(b) ?? '', finalCents: b.finalPriceCents, needsConfirm: b.needsConfirm })).filter((b) => b.rotulo);
     const minimo14 = min14.has(o.masterId) && o.cents < (min14.get(o.masterId) as number);
     const t = textoQuedaSeguro({
       gatilho: c.gatilho, rede: o.rede, titulo: o.title || o.masterName, loja: o.loja, reputacao: (o as { reputacao?: string | null }).reputacao ?? null, cents: o.cents,
       anteriorCents: c.gatilho === 'queda' || c.gatilho === 'minimo' ? o.anteriorCents : null, anteriorEm: anterior ? new Date(anterior.inicio) : null,
-      minimo14, url: o.url, leituraEm: o.checkedAt, cupom, cartoes, adTag: getAdTag(),
+      minimo14, url: o.url, leituraEm: o.checkedAt, cupom, cartoes, aVista: pagto.aVista, parcelado: pagto.parcelado, adTag: getAdTag(),
       fretePrazo: (await linhasFretePrazoPorOferta([o.id], now).catch(() => new Map<string, string>())).get(o.id) ?? 'Prazo ainda não lido',
     });
     if (t.text) { quedas.push({ oferta: o.id, text: t.text, url: o.url, gatilho: c.gatilho }); escolhidas.push({ oferta: o.id, chave: c.chave }); }
