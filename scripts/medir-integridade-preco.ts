@@ -20,11 +20,12 @@ const dig = (s: string | null) => (s ?? '').replace(/\D/g, '');
 type Esc = 'estrito' | 'amplo' | 'geral';
 const ESCS: Esc[] = ['estrito', 'amplo', 'geral'];
 interface Off {
-  id: string; rede: string; master: string; vert: string | null; price: number; ext: string | null; cat: string | null; metaCat: string | null;
+  id: string; rede: string; master: string; seller: string | null; vert: string | null; price: number; ext: string | null; cat: string | null; metaCat: string | null;
   link: string | null; linkItem: string | null; trocado: Date | null; pchg: Date | null; vmin: number | null; vmax: number | null; pending: boolean | null; miss: number; conf: Date | null; checked: Date;
   aV: string | null; aAt: Date | null; aPrice: number | null; okAt: Date | null; aDiff: number | null;
 }
-const noEsc = (o: Off, e: Esc) => e === 'geral' || (e === 'amplo' ? o.vert === 'impressao3d' && o.rede !== 'shopee' : PRIVADO.includes(o.master));
+const placeholder = (o: Off) => o.rede === 'mercado-livre' && !o.seller; // placeholder ML (sem vendedor): preço e link divergem por desenho; fora do estrito
+const noEsc = (o: Off, e: Esc) => e === 'geral' || (e === 'amplo' ? o.vert === 'impressao3d' && o.rede !== 'shopee' : PRIVADO.includes(o.master) && !placeholder(o));
 
 interface Ind { id: string; nome: string; esc: Esc; valor: string; n: number; ok: boolean; info?: boolean; ids: string[]; invariante: string }
 const inds: Ind[] = [];
@@ -37,7 +38,7 @@ function add(id: string, nome: string, esc: Esc, n: number, valor: string, ids: 
   const agora = new Date();
   try {
     const rows = await sql<any[]>`
-      SELECT o.id::text id, n.slug rede, o.master_product_id::text master, o.vertical vert, o.current_price_cents::bigint price,
+      SELECT o.id::text id, n.slug rede, o.master_product_id::text master, o.seller_id::text seller, o.vertical vert, o.current_price_cents::bigint price,
              o.external_item_id ext, o.external_ref cat, m.meli_catalog_id meta_cat, o.affiliate_url link, o.link_item_id link_item,
              o.item_trocado_at trocado, o.last_price_change_at pchg, o.variant_min_cents vmin, o.variant_max_cents vmax, o.affiliate_link_pending pending, o.consecutive_miss_count miss, o.last_price_confirmed_at conf, o.last_checked_at checked,
              a.verdict a_v, a.checked_at a_at, a.price_link_cents a_price, a.diff_pct a_diff, ok.ok_at
@@ -48,7 +49,7 @@ function add(id: string, nome: string, esc: Esc, n: number, valor: string, ids: 
       LEFT JOIN LATERAL (SELECT max(checked_at) ok_at FROM offer_link_audit x WHERE x.offer_id = o.id AND x.verdict = 'ok') ok ON true
       WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.last_checked_at > now() - interval '24 hours'`;
     const ofs: Off[] = rows.map((r) => ({
-      id: r.id, rede: r.rede, master: r.master, vert: r.vert, price: Number(r.price), ext: r.ext, cat: r.cat, metaCat: r.meta_cat, link: r.link, linkItem: r.link_item,
+      id: r.id, rede: r.rede, master: r.master, seller: r.seller, vert: r.vert, price: Number(r.price), ext: r.ext, cat: r.cat, metaCat: r.meta_cat, link: r.link, linkItem: r.link_item,
       trocado: r.trocado, pchg: r.pchg, vmin: r.vmin == null ? null : Number(r.vmin), vmax: r.vmax == null ? null : Number(r.vmax), pending: r.pending, miss: Number(r.miss ?? 0), conf: r.conf, checked: r.checked, aV: r.a_v, aAt: r.a_at, aPrice: r.a_price == null ? null : Number(r.a_price),
       okAt: r.ok_at, aDiff: r.a_diff == null ? null : Number(r.a_diff),
     }));
@@ -59,6 +60,7 @@ function add(id: string, nome: string, esc: Esc, n: number, valor: string, ids: 
     const [pri] = await sql<{ t: Date | null }[]>`SELECT min(checked_at) t FROM offer_link_audit`;
     const inicioAud = pri?.t ?? agora;
 
+    add('ph', `info: placeholders ML (sem vendedor) fora do estrito: ${ofs.filter((o) => PRIVADO.includes(o.master) && placeholder(o)).length} (ids: ${ofs.filter((o) => PRIVADO.includes(o.master) && placeholder(o)).map((o) => o.id.slice(0, 8)).join(',')})`, 'estrito', 0, '-', [], '', true, true);
     for (const e of ESCS) {
       const E = ofs.filter((o) => noEsc(o, e));
       const EM = E.filter(ml);
