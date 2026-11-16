@@ -85,7 +85,7 @@ async function runIntegridade() {
   const paineis = restante() >= 8_000 ? await fase(fases, 'painel_privado', () => atualizarPaineisImpressoras(new Date(), { budgetMs: Math.min(16_000, restante() - 2_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   const agente = restante() >= 6_000 ? await fase(fases, 'agente_cupons', () => cicloAgenteCupons({ budgetMs: Math.min(9_000, restante() - 1_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   // Cofre (R-64): revoga automaticamente o que passou do TTL da prova (a trilha e o relatório entram em collector_runs 'cofre-cupons').
-  const cofre = await fase(fases, 'cofre', () => revogarVencidos()).catch(() => ({ revogados: -1 }));
+  const cofre = await fase(fases, 'cofre', async () => ({ ...(await revogarVencidos()), avisos: await retirarAvisosSemProva() })).catch(() => ({ revogados: -1 }));
   const auditoriaLinks = restante() >= 10_000 ? await fase(fases, 'auditoria', () => cicloAuditoriaLinks({ budgetMs: Math.min(18_000, restante() - 8_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   const fretePrazo = restante() >= 9_000 ? await fase(fases, 'frete_prazo', () => capturarFreteMl(new Date(), { budgetMs: Math.min(8_000, restante() - 2_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
   const anuncios = !nao(process.env.ANUNCIOS_PREENCHER) && restante() >= 8_000 ? await fase(fases, 'anuncios', () => preencherAnuncios({ orcamentoMs: Math.min(12_000, restante() - 3_000), maxCatalogos: 2 })).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };

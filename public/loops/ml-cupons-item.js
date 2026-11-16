@@ -22,7 +22,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.3.1';
+  var VERSAO = '1.3.2';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-ml-links-ui.ts
@@ -455,10 +455,14 @@
           }
         } catch (e) { /* inconclusivo: sem confirmação nesta leitura */ }
       }
+      // QA F8: modal não consultado (cota do ciclo), com exceção ou inconclusivo => DESCARTA a leitura (volta à fila); NUNCA vira "sem cupom" (derrubaria cupom real e anunciaria "encerrado").
+      if (mapa === null) { S.totais.modalInconclusivo = (S.totais.modalInconclusivo || 0) + 1; return { descarte: 'modal_inconclusivo' }; }
       var f = PURO.filtrarConfirmados(comCamp, mapa);
       confirmados = f.confirmados;
       S.totais.cupomNaoConfirmado = (S.totais.cupomNaoConfirmado || 0) + f.naoConfirmados;
     }
+    // Rótulo sem campaign_id e nada confirmado: leitura ambígua (pode ser cupom real sem id no estado ou card de outro produto): não afirmar "sem cupom".
+    if (x.cupons.length > 0 && confirmados.length === 0 && comCamp.length === 0) return { descarte: 'cupom_sem_campanha' };
     x.cupons = confirmados;
     if (x.ambiguo) { S.totais.ambiguos++; return { descarte: 'ambiguo_mencao_a_cupom_sem_preco' }; }
     if (x.cupons.length) S.totais.comCupom++;

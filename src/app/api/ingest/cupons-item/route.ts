@@ -6,7 +6,7 @@ import { listarFilaRevalidacao, resolverUrlsLeitura } from '@/server/coupons/rev
 import { sanitizeCouponCode, sanitizeCouponName } from '@/lib/coupons/coupon-name';
 import { gravarBeneficiosCartao } from '@/server/coupons/card-benefits';
 import { nomeColunasLigadas } from '@/server/coupons/nome-colunas';
-import { cupomMlExigeProva, leituraPositivaGravavel } from '@/lib/coupons/prova-cupom';
+import { cupomMlExigeProva, descontoConfereComModal, leituraPositivaGravavel } from '@/lib/coupons/prova-cupom';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       .filter((c) => c.cents != null && c.cents > 0 && c.cents < price && /cupom/i.test(c.label));
     // PROVA NO ITEM (R-63): só entra como positiva a leitura com campaign_id e confirmação do modal do mesmo item (status `confirmado_modal`); o resto é gravado como
     // leitura SEM cupom (`sem_prova`), que também derruba qualquer positiva anterior (leitura divergente = sem cupom).
-    const provados = valid.filter((c) => leituraPositivaGravavel({ campaign: c.campaign, status: c.status }, cupomMlExigeProva()));
+    const provados = valid.filter((c) => leituraPositivaGravavel({ campaign: c.campaign, status: c.status }, cupomMlExigeProva()) && (!cupomMlExigeProva() || descontoConfereComModal({ nome: typeof c.name === 'string' ? c.name : null }, price, c.cents as number).ok));
     if (!provados.length) {
       await db.execute(sql`INSERT INTO offer_coupon_reads (offer_id, status, price_seen_cents) VALUES (${r.id}::uuid, ${valid.length ? 'sem_prova' : 'sem_cupom'}, ${price}::int)`);
       lidas++;

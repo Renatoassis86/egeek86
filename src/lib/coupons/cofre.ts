@@ -42,7 +42,8 @@ export interface Validador {
  * Shopee: sem validador (bloqueada por padrão) até a etapa 2.
  */
 export const VALIDADORES: readonly Validador[] = [
-  { rede: 'mercado-livre', leitor: 'public/loops/ml-cupons-item.js', aceita: { cupom: ['modal_oficial_do_item', 'simulacao_de_checkout'], beneficio: ['bloco_de_compra_escopado', 'valor_final_impresso_pela_pagina', 'simulacao_de_checkout'] } },
+  // Benefício do ML SEM validador (QA R-67 F10): o leitor do ML lê parcelas/"à vista" do TEXTO INTEIRO da página (não só do bloco de compra); só volta com leitor escopado.
+  { rede: 'mercado-livre', leitor: 'public/loops/ml-cupons-item.js', aceita: { cupom: ['modal_oficial_do_item', 'simulacao_de_checkout'] } },
   { rede: 'amazon', leitor: 'public/loops/cupons-24h.js', aceita: { cupom: ['bloco_de_compra_escopado', 'simulacao_de_checkout'], beneficio: ['bloco_de_compra_escopado', 'valor_final_impresso_pela_pagina', 'simulacao_de_checkout'] } },
   // PROVISÓRIO (etapa 2 audita o leitor da Shopee): cupom lido do bloco do item; benefício de cartão da Shopee não tem validador = bloqueado.
   { rede: 'shopee', leitor: 'loop Shopee (provisório até a etapa 2)', aceita: { cupom: ['bloco_de_compra_escopado', 'simulacao_de_checkout'] } },
@@ -85,6 +86,7 @@ export type MotivoCofre =
   | 'prova_de_tipo_nao_aceito_pela_rede'
   | 'prova_vencida'
   | 'prova_revogada'
+  | 'simulacao_nao_aplicou'
   | 'preco_final_sem_prova_de_valor'
   | 'valor_dito_diverge_do_provado';
 
@@ -109,6 +111,9 @@ export function podeDivulgar(p: PedidoDivulgacao): Decisao {
   const aceitos = v.aceita[p.tipoItem];
   if (!aceitos || !aceitos.length) return { ok: false, estado: 'lido', motivo: 'tipo_sem_validador' };
   if (!p.provas.length) return { ok: false, estado: 'lido', motivo: 'sem_prova' };
+  // VETO (QA F4/F6): simulação de checkout que provou que o cupom NÃO aplica, dentro do TTL, barra qualquer outra prova (inclusive campaign_id + modal).
+  const veto = p.provas.find((x) => x.tipo === 'simulacao_de_checkout' && x.revogada && idadeMin(x, p.now) <= TTL_PROVA_MIN.simulacao_de_checkout);
+  if (veto) return { ok: false, estado: 'revogado', motivo: 'simulacao_nao_aplicou', prova: veto };
   const doTipo = p.provas.filter((x) => aceitos.includes(x.tipo));
   if (!doTipo.length) return { ok: false, estado: 'lido', motivo: 'prova_de_tipo_nao_aceito_pela_rede' };
   const vivas = doTipo.filter((x) => !x.revogada);
@@ -146,4 +151,31 @@ export function provaDoCupomAmazon(r: { verificado: boolean; readAt: Date; valor
 export function provaDoBeneficio(b: { kind: string; lastSeenAt: Date }): Prova[] {
   if (b.kind !== 'parcelas' && b.kind !== 'preco_a_vista') return [];
   return [{ tipo: 'bloco_de_compra_escopado', validadaEm: b.lastSeenAt }];
+}
+
+export interface CupomLido {
+  net: string;
+  campaignId: string | null;
+  status: string | null;
+  src: string | null;
+  isPromo: boolean;
+  promoVerificada: boolean;
+  readAt: Date;
+  nome?: string | null;
+  now: Date;
+  /** Provas de simulação de checkout da oferta/cupom (aplicadas ou revogadas). */
+  simulacoes?: readonly Prova[];
+}
+
+/**
+ * Decisão do cofre para UM cupom lido do anúncio (usada por `lookupItemCouponDetail`; o teste de guarda exige que o lookup chame esta função e dê `continue` quando barra).
+ * ML: base = campaign_id + `confirmado_modal`; simulação APLICADA só SOMA a uma base existente (campaign_id presente), nunca substitui a prova do modal; simulação NÃO APLICADA veta.
+ * Amazon/Shopee: bloco de compra escopado (selo/promo verificada) e simulação.
+ */
+export function decidirCupomLido(c: CupomLido): Decisao {
+  const base: Prova[] = c.net === 'mercado-livre' ? provaDoCupomMl({ campaignId: c.campaignId, status: c.status, readAt: c.readAt, nome: c.nome })
+    : c.net === 'amazon' ? provaDoCupomAmazon({ verificado: c.isPromo ? c.promoVerificada : /^(amazon-pagina|amazon-item-confirmado)$/.test(String(c.src)), readAt: c.readAt, nome: c.nome })
+    : c.net === 'shopee' ? provaDoCupomAmazon({ verificado: /^shopee-pagina$/.test(String(c.src)), readAt: c.readAt, nome: c.nome }) : [];
+  const sims = (c.simulacoes ?? []).filter((s) => s.revogada || c.net !== 'mercado-livre' || !!c.campaignId);
+  return podeDivulgar({ rede: c.net, tipoItem: 'cupom', uso: 'mensagem', provas: [...base, ...sims], now: c.now });
 }

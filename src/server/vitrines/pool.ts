@@ -1,4 +1,6 @@
 import 'server-only';
+import { cofreLigado, provasDeValorFinalDaOferta } from '@/server/coupons/cofre';
+import { podeDivulgar } from '@/lib/coupons/cofre';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { GAMES } from '@/lib/catalog/verticais';
@@ -113,6 +115,11 @@ export async function carregarPromosPrime(ofertas: ReadonlyArray<{ offerId: stri
       const p = preco.get(str(r.oid));
       const pct = num(r.pct);
       if (!p || !(pct > 0 && pct < 100)) continue;
+      // COFRE (R-64/R-66, QA F1): preço final DERIVADO (prateleira x (1 - pct)) só com prova de valor final vigente (simulação de checkout aplicada); o selo do bloco de compra não basta.
+      if (cofreLigado()) {
+        const dec = podeDivulgar({ rede: 'amazon', tipoItem: 'cupom', uso: 'preco_final', provas: [{ tipo: 'bloco_de_compra_escopado', validadaEm: new Date(r.conf as string | Date) }, ...(await provasDeValorFinalDaOferta(str(r.oid)))], now: new Date() });
+        if (!dec.ok) continue;
+      }
       out.set(str(r.oid), { pct, finalCentavos: precoComPromocao(p, pct), validaAte: r.valid_until ? new Date(r.valid_until as string | Date).toISOString() : null, confirmadoEm: new Date(r.conf as string | Date).toISOString() });
     }
   } catch (e) {

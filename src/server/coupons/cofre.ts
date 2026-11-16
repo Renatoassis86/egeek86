@@ -51,13 +51,25 @@ export async function registrarDecisao(r: Registro): Promise<void> {
   }
 }
 
-/** Provas de SIMULAÇÃO de checkout (até antes de pagar) gravadas pela aba para (oferta, cupom). Vigentes são filtradas por `podeDivulgar`. */
+/**
+ * Provas de SIMULAÇÃO de checkout (até antes de pagar) gravadas pela aba para (oferta, cupom): as APLICADAS viram prova; a que provou que NÃO aplica volta como prova `revogada`,
+ * que VETA qualquer outra prova do cupom dentro do TTL da simulação (QA F4/F6). `podeDivulgar` filtra o que está vigente.
+ */
 export async function provasDeSimulacao(offerId: string, couponRef: string): Promise<Prova[]> {
   try {
     const rows = (await db.execute(sql`
-      SELECT validated_at, proved FROM coupon_validations
-      WHERE offer_id = ${offerId}::uuid AND coupon_ref = ${'sim:' + couponRef} AND proof_type = 'simulacao_de_checkout' AND state <> 'revogado' AND validated_at IS NOT NULL`)) as unknown as { validated_at: Date | string; proved: { nome?: string | null; valorFinalCents?: number | null; minimoCents?: number | null } | null }[];
-    return rows.map((x) => ({ tipo: 'simulacao_de_checkout' as TipoProva, validadaEm: new Date(x.validated_at), nome: x.proved?.nome ?? null, valorFinalCents: x.proved?.valorFinalCents ?? null, minimoCents: x.proved?.minimoCents ?? null }));
+      SELECT state, validated_at, proved FROM coupon_validations
+      WHERE offer_id = ${offerId}::uuid AND coupon_ref = ${'sim:' + couponRef} AND proof_type = 'simulacao_de_checkout' AND validated_at IS NOT NULL`)) as unknown as { state: string; validated_at: Date | string; proved: { nome?: string | null; valorFinalCents?: number | null; minimoCents?: number | null } | null }[];
+    return rows.map((x) => ({ tipo: 'simulacao_de_checkout' as TipoProva, validadaEm: new Date(x.validated_at), nome: x.proved?.nome ?? null, valorFinalCents: x.proved?.valorFinalCents ?? null, minimoCents: x.proved?.minimoCents ?? null, revogada: x.state === 'revogado' }));
+  } catch { return []; }
+}
+
+/** Simulações aplicadas da oferta (qualquer cupom): único tipo de prova que sustenta PREÇO FINAL de promoção derivada (vitrine). */
+export async function provasDeValorFinalDaOferta(offerId: string): Promise<Prova[]> {
+  try {
+    const rows = (await db.execute(sql`
+      SELECT validated_at, proved FROM coupon_validations WHERE offer_id = ${offerId}::uuid AND proof_type = 'simulacao_de_checkout' AND state <> 'revogado' AND validated_at IS NOT NULL`)) as unknown as { validated_at: Date | string; proved: { nome?: string | null; valorFinalCents?: number | null } | null }[];
+    return rows.map((x) => ({ tipo: 'simulacao_de_checkout' as TipoProva, validadaEm: new Date(x.validated_at), nome: x.proved?.nome ?? null, valorFinalCents: x.proved?.valorFinalCents ?? null }));
   } catch { return []; }
 }
 

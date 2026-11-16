@@ -54,3 +54,25 @@ export function leituraPositivaGravavel(c: { campaign: string | null; status: st
   if (!ligada) return true;
   return !!c.campaign && c.status === STATUS_CONFIRMADO_MODAL;
 }
+
+/**
+ * QA F9: o desconto do rótulo ("R$ 5.799 com Cupom" sobre R$ 5.999 = R$ 200) tem de bater com o que o MODAL do mesmo item diz do cupom ("R$ 200 OFF em ...", "10% OFF ...").
+ * `nome` é o título lido do modal. Sem valor legível no nome (só texto) não há como conferir: aceita. Valor em reais: diferença <= R$ 1,00. Percentual: desconto <= pct x preço (+1%) e
+ * >= metade dele (teto/mínimo do cupom podem reduzir). Divergência = leitura divergente = sem cupom.
+ */
+export function descontoConfereComModal(modal: { nome: string | null | undefined }, precoCents: number, comCupomCents: number): { ok: true } | { ok: false; motivo: 'valor_do_rotulo_diverge_do_modal' } {
+  const desc = precoCents - comCupomCents;
+  const nome = String(modal.nome ?? '');
+  const reais = /R\$\s*(\d{1,3}(?:\.\d{3})*|\d+)(?:,(\d{1,2}))?\s*(?:OFF|de desconto|de cupom)/i.exec(nome);
+  if (reais) {
+    const v = Number(reais[1].replace(/\./g, '')) * 100 + (reais[2] ? Number(reais[2].padEnd(2, '0')) : 0);
+    return Math.abs(v - desc) <= 100 ? { ok: true } : { ok: false, motivo: 'valor_do_rotulo_diverge_do_modal' };
+  }
+  const pct = /(\d{1,2}(?:[.,]\d{1,2})?)\s*%\s*(?:OFF|de desconto)/i.exec(nome);
+  if (pct) {
+    const p = Number(pct[1].replace(',', '.')) / 100;
+    const teto = precoCents * p * 1.01 + 100;
+    return desc <= teto && desc >= (precoCents * p) / 2 - 100 ? { ok: true } : { ok: false, motivo: 'valor_do_rotulo_diverge_do_modal' };
+  }
+  return { ok: true };
+}

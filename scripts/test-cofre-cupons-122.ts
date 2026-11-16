@@ -2,7 +2,9 @@
  * COFRE DE VALIDAÇÃO OBRIGATÓRIA (R-64 a R-67). Puro; com --db também falha se existir rede ATIVA sem validador registrado.
  * Uso: npx tsx --env-file=.env.local scripts/test-cofre-cupons-122.ts [--db]
  */
-import { podeDivulgar, provaDoBeneficio, provaDoCupomAmazon, provaDoCupomMl, redesSemValidador, TTL_PROVA_MIN, VALIDADORES, type Prova } from '../src/lib/coupons/cofre';
+import fs from 'node:fs';
+import { descontoConfereComModal } from '../src/lib/coupons/prova-cupom';
+import { decidirCupomLido, podeDivulgar, provaDoBeneficio, provaDoCupomAmazon, provaDoCupomMl, redesSemValidador, TTL_PROVA_MIN, VALIDADORES, type Prova } from '../src/lib/coupons/cofre';
 
 let fails = 0;
 function ok(c: boolean, n: string, x?: unknown) { if (!c) { fails++; console.error('FALHOU:', n, x ?? ''); } }
@@ -51,6 +53,40 @@ ok(podeDivulgar(ped({ provas: [{ tipo: 'simulacao_de_checkout', validadaEm: min(
 // Registro: toda rede com validador tem leitor; cobertura
 ok(VALIDADORES.every((v) => v.leitor.length > 3 && Object.values(v.aceita).every((a) => !a || a.length > 0)), 'todo validador registrado tem leitor e tipos aceitos');
 ok(redesSemValidador(['mercado-livre', 'amazon', 'shopee']).length === 0 && redesSemValidador(['mercado-livre', 'rede-x']).join() === 'rede-x', 'redesSemValidador aponta a rede sem registro');
+
+// ---- QA (R-67): mutações sobreviventes M3 e M6
+ok(podeDivulgar({ rede: 'amazon', tipoItem: 'beneficio', uso: 'preco_final', provas: [{ tipo: 'bloco_de_compra_escopado', validadaEm: min(1), valorFinalCents: 671600 }], now }).motivo === 'preco_final_sem_prova_de_valor', 'M3: bloco de compra COM valorFinalCents preenchido continua sem sustentar preço final');
+const lido = (over: Partial<Parameters<typeof decidirCupomLido>[0]>) => decidirCupomLido({ net: 'mercado-livre', campaignId: '12345', status: 'confirmado_modal', src: 'item_page_assistida', isPromo: false, promoVerificada: false, readAt: min(2), now, ...over });
+ok(lido({}).ok, 'ML campanha + confirmado_modal: divulgável');
+ok(!lido({ status: 'lido_na_pagina' }).ok, 'M6: campanha válida com status lido_na_pagina = sem prova (provaDoCupomMl exige confirmado_modal)');
+ok(!lido({ campaignId: null }).ok, 'ML sem campaign_id: barrado');
+// Revogação real e simulação (QA F4/F6/F13)
+const simNao: Prova = { tipo: 'simulacao_de_checkout', validadaEm: min(5), revogada: true };
+const vet = lido({ simulacoes: [simNao] });
+ok(!vet.ok && vet.motivo === 'simulacao_nao_aplicou', 'simulação NÃO aplicada VETA cupom ML com campaign_id + modal', vet);
+ok(lido({ simulacoes: [{ ...simNao, validadaEm: min(31) }] }).ok, 'veto da simulação vence com o TTL (30 min)');
+ok(!lido({ campaignId: null, status: 'lido_na_pagina', simulacoes: [{ tipo: 'simulacao_de_checkout', validadaEm: min(3), valorFinalCents: 570000 }] }).ok, 'simulação APLICADA não libera cupom ML sem campaign_id');
+ok(lido({ status: 'lido_na_pagina', simulacoes: [{ tipo: 'simulacao_de_checkout', validadaEm: min(3), valorFinalCents: 570000 }] }).ok, 'simulação aplicada soma a cupom ML COM campaign_id');
+ok(decidirCupomLido({ net: 'amazon', campaignId: null, status: null, src: 'amazon-pagina', isPromo: false, promoVerificada: false, readAt: min(10), now }).ok, 'Amazon: selo do bloco de compra');
+ok(!decidirCupomLido({ net: 'amazon', campaignId: null, status: null, src: 'amazon-pagina', isPromo: false, promoVerificada: false, readAt: min(10), now, simulacoes: [simNao] }).ok, 'Amazon: simulação não aplicada veta');
+ok(!decidirCupomLido({ net: 'rede-nova', campaignId: '1', status: 'confirmado_modal', src: 'x', isPromo: false, promoVerificada: false, readAt: min(1), now }).ok, 'rede nova: bloqueada');
+// ML: benefício sem validador (leitor lê o texto inteiro)
+ok(podeDivulgar({ rede: 'mercado-livre', tipoItem: 'beneficio', uso: 'card', provas: provaDoBeneficio({ kind: 'parcelas', lastSeenAt: min(1) }), now }).motivo === 'tipo_sem_validador', 'ML: benefício bloqueado (sem leitor escopado ao bloco de compra)');
+// F9: desconto do rótulo x modal
+ok(descontoConfereComModal({ nome: 'R$ 200 OFF em Impressoras 3D' }, 599900, 579900).ok, 'rótulo de R$ 200 bate com "R$ 200 OFF"');
+ok(!descontoConfereComModal({ nome: 'R$ 50 OFF em Casa' }, 229900, 170900).ok, 'rótulo de R$ 590 NÃO bate com "R$ 50 OFF"');
+ok(descontoConfereComModal({ nome: '10% OFF em Informática' }, 100000, 90000).ok && !descontoConfereComModal({ nome: '10% OFF em Informática' }, 100000, 50000).ok, 'percentual: 10% confere, 50% não');
+ok(descontoConfereComModal({ nome: 'Cupom especial' }, 100000, 90000).ok, 'nome sem valor legível: não há o que conferir');
+
+// ---- GUARDAS DE INTEGRAÇÃO (QA F-testes): quebram se as travas saírem dos pontos de aplicação
+const lerSrc = (f: string) => fs.readFileSync(f, 'utf8');
+const lookup = lerSrc('src/server/messaging/coupon-item-lookup.ts');
+ok(/decidirCupomLido\(/.test(lookup) && /if \(!dec\.ok\) \{ lastReason = `cofre_\$\{dec\.motivo\}`; continue; \}/.test(lookup) && /cofreLigado\(\)/.test(lookup), 'GUARDA: coupon-item-lookup.ts chama decidirCupomLido e dá continue quando o cofre barra');
+ok(/podeDivulgar\(/.test(lerSrc('src/server/coupons/card-benefits.ts')) && /cofreLigado\(\) && !podeDivulgar\(/.test(lerSrc('src/server/coupons/card-benefits.ts')), 'GUARDA: card-benefits.ts barra benefício sem prova (podeDivulgar)');
+ok(/retirarAvisosSemProva\(\)/.test(lerSrc('src/app/api/cron/group-messages/route.ts')) && /revogarVencidos\(\)/.test(lerSrc('src/app/api/cron/group-messages/route.ts')), 'GUARDA: o cron chama retirarAvisosSemProva e revogarVencidos (nada de import morto)');
+ok(/podeDivulgar\(/.test(lerSrc('src/server/vitrines/pool.ts')) && /uso: 'preco_final'/.test(lerSrc('src/server/vitrines/pool.ts')), "GUARDA: preço final derivado da vitrine passa por podeDivulgar (uso 'preco_final')");
+ok(/motivoDeFim\(/.test(lerSrc('src/server/messaging/guardiao-cupons.ts')), 'GUARDA: o guardião usa motivoDeFim (encerrado só com prova)');
+ok(/modal_inconclusivo/.test(lerSrc('public/loops/ml-cupons-item.js')) && /filtrarConfirmados/.test(lerSrc('public/loops/ml-cupons-item.js')), 'GUARDA: o leitor ML descarta modal inconclusivo e filtra pelo modal do item');
 
 (async () => {
   if (process.argv.includes('--db')) {
