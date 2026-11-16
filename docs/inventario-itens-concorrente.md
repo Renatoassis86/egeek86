@@ -63,3 +63,7 @@ Amazon antes -> depois (ofertas ativas Amazon por modelo; "depois" preenchido ap
 ## Jogo Barato (Shopee): Switch 2 + Mario Kart World, Switch Lite e OLED (2026-11-15)
 
 Os três itens já estavam rastreados (preço do pix = preço cheio × 0,95 × 0,92); o Switch Lite estava escondido por rejeição de master por foto com mão, corrigida por oferta (84 masters liberados/reavaliados, 99 ofertas em quarentena por mão real). Masters duplicados do Switch 2 + Mario Kart World consolidados em `4704eddc` (44 ofertas ativas). Detalhes, contagens e rollback: `docs/inventario-itens-jogobarato-shopee-2026-11-15.md`.
+
+## Itens do dono na loja Casa (2026-11-16): aspirador Electrolux PTEC101 e cadeirinha Safety 1st Orbital 360
+
+Ambos ausentes. Causa geral: sem segmento para cadeirinha infantil de auto (e a aprovação da Casa exigia voltagem) e termos de aspirador só "tipo + marca" (modelo atual escondido atrás de catálogos mortos). Corrigido com segmento `cadeirinha-auto`, termos por modelo, `--termo` no semeador e ingestão de ASIN pelo caminho oficial. Detalhe, ids, backups e rollback: `docs/auditoria-cobertura-itens-dono-2026-11-16.md`.

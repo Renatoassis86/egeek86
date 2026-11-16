@@ -64,6 +64,7 @@ const CASA: TipoDef[] = [
   { slug: 'fogao-cooktop', rotulo: 'Fogão e cooktop', re: r(' (fogao|cooktop|coifa|depurador|exaustor) ') },
   { slug: 'micro-ondas', rotulo: 'Micro-ondas', re: r(' (micro ondas|microondas) ') },
   { slug: 'forno', rotulo: 'Fornos', re: r(' (forno|fornos) (?!.*(air fryer|airfryer|fryer))') },
+  { slug: 'cadeirinha-auto', rotulo: 'Cadeirinhas infantis para auto', re: r(' (cadeirinha|cadeirinhas|bebe conforto|assento de elevacao|cadeira (infantil )?para (auto|carro)) ') },
   { slug: 'aspirador', rotulo: 'Aspiradores', re: r(' (aspirador|aspiradora|robo aspirador|vassoura eletrica) ') },
   { slug: 'ventilador', rotulo: 'Ventiladores', re: r(' (ventilador|circulador|ventiladores) ') },
   { slug: 'purificador', rotulo: 'Purificadores de ar', re: r(' (purificador|purificadores|ozonizador|ionizador|umidificador|umidificadores|desumidificador|desumidificadores) (?!de agua)') },

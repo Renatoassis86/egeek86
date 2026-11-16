@@ -37,6 +37,7 @@ export const LEX_TIPOS: Record<string, SegmentLexiconData> = {
   'secador-filamento': lex(['secador', 'estufa', 'dry box', 'drybox', 'filadryer', 'edry', 'polybox'], ['filamento', 'carretel', 'suporte', 'porta', 'bolsa', 'sache', 'sílica', 'silica', 'capa', 'cabo', 'resistencia', 'ventoinha']),
   'lavadora-curadora-resina': lex(['lavadora', 'curadora', 'wash', 'cure', 'estacao', 'estufa uv'], ['resina', 'cesta', 'recipiente', 'alcool', 'isopropilico', 'luva', 'luvas', 'tampa', 'filtro', 'suporte', 'cabo', 'lampada', 'led', 'plataforma']),
   // ---- casa ----
+  'cadeirinha-auto': lex(['cadeirinha', 'cadeira para auto', 'cadeira infantil', 'bebe conforto', 'assento de elevacao', 'booster', 'cadeira i size'], ['capa', 'protetor', 'espelho', 'cinto', 'adaptador', 'base avulsa', 'organizador', 'almofada', 'trocador', 'suporte', 'redutor', 'forro', 'sombrinha', 'peca', 'pecas', 'reposicao', 'refil', 'carrinho avulso']),
   coifa: lex(['coifa', 'coifas', 'depurador', 'depuradores', 'exaustor de cozinha'], ['filtro', 'filtros', 'duto', 'tubo', 'curva', 'chamine', 'motor', 'lampada', 'capa', 'tampa', 'grelha', 'registro', 'saida', 'adaptador', 'peca', 'pecas', 'reposicao', 'carvao', 'refil']),
   'bebedouro-purificador-agua': lex(['bebedouro', 'purificador', 'filtro de agua', 'filtro purificador'], ['refil', 'refis', 'vela', 'cartucho', 'torneira', 'mangueira', 'suporte', 'galao', 'conector', 'peca', 'pecas', 'reposicao', 'capa', 'tampa', 'copo', 'bandeja', 'carvao', 'elemento filtrante', 'registro', 'valvula']),
   'umidificador-desumidificador': lex(['umidificador', 'desumidificador'], ['filtro', 'filtros', 'essencia', 'oleo', 'cartucho', 'capa', 'tampa', 'pastilha', 'sal', 'refil', 'peca', 'pecas', 'reposicao', 'adaptador', 'bateria', 'tanque']),
@@ -104,6 +105,7 @@ export const NICHO_TIPOS: Record<string, { require?: RegExp; forbid?: RegExp }> 
   'scanner-de-documentos': { forbid: /\b(scanner automotivo|scanner obd|obd2|scanner de rede|scanner 3d|laser scanner de carro|diagnostico veicular)\b/ },
   'secador-filamento': { require: /\b(filamento|3d|filadryer|edry|polybox|dry box|drybox)\b/ },
   'lavadora-curadora-resina': { require: /\b(resina|3d|uv|wash|cure)\b/ },
+  'cadeirinha-auto': { forbid: /\b(cadeira de alimentacao|cadeira de papinha|cadeira de balanco|cadeira de escritorio|cadeira gamer|cadeira de jantar|cadeira de praia|cadeira de descanso|cadeira de banho|andador|banheira|cadeirinha de bicicleta|bicicleta|moto)\b/ },
   coifa: { forbid: /\b(coifa de fogao a lenha|churrasqueira|duto avulso|kit duto)\b/ },
   'bebedouro-purificador-agua': { forbid: /\b(bebedouro de animal|bebedouro para pet|bebedouro de passarinho|bebedouro de galinha|cachorro|gato|aves|garrafa|squeeze)\b/ },
   'umidificador-desumidificador': { forbid: /\b(umidificador de cigarro|umidificador de charuto|charuteira|higrometro avulso)\b/ },

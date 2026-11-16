@@ -77,6 +77,8 @@ const OFFSET = Number(opt('--offset') ?? 0);
 const TERMS = opt('--terms') ? Number(opt('--terms')) : undefined;
 const TERMS_FROM = Number(opt('--terms-from') ?? 0);
 const DAILY_CAP = Math.min(DAILY_CALL_CAP, Math.max(0, Number(opt('--daily-cap') ?? DAILY_CALL_CAP)));
+/** --termo "a|b": busca so estes termos exatos (cobertura por produto do dono, #57); vence --terms/--terms-from. */
+const TERMO = opt('--termo') ? String(opt('--termo')).split('|').map((x) => x.trim()).filter(Boolean) : undefined;
 const USE_DOMAIN = !flag('--sem-dominio');
 let interrupted = false;
 const stamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -348,7 +350,7 @@ async function main() {
         pageLimit: PAGE_LIMIT,
         offset: win ? win.offset : OFFSET,
         pages: PAGES,
-        ...(win ? { terms: win.terms, segmentCalls: job.calls } : { termsLimit: TERMS, termsFrom: TERMS_FROM }),
+        ...(win ? { terms: win.terms, segmentCalls: job.calls } : TERMO ? { terms: TERMO } : { termsLimit: TERMS, termsFrom: TERMS_FROM }),
         maxCreate: MAX_CREATE,
         useSearchDomain: USE_DOMAIN && !seg.domainUnconfirmed,
         isKnownNotFound: (id) => isKnownNotFound(notFoundState, id, new Date()),

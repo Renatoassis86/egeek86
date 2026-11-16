@@ -45,6 +45,8 @@ const USADO = /\b(sebo|modelo antigo|geracao anterior|fora de linha|descontinuad
 const UNISSEX_USO = /\b(manguito|caneleira|joelheira|cotoveleira|munhequeira|tornozeleira|protetor bucal|faixa|corda|bandagem)\b/i;
 const VOLT_RE = /\b(110|127|220)\s?v\b|bivolt/gi;
 const SEGMENTOS_A_GAS = new Set(['fogao', 'cooktop']);
+/** Segmentos de Casa que NAO sao eletricos (cadeirinha infantil para auto, pedido do dono 2026-11-16): voltagem nao se aplica. */
+const SEGMENTOS_SEM_ENERGIA = new Set(['cadeirinha-auto']);
 const ELETRICO = /\b(inducao|indução|eletric[oa]|elétric[oa]|vitroceramic[oa])\b/i;
 /** Guarda de segurança (vale com a flag ligada ou não): brinquedo/miniatura nunca é produto de loja Plus (o veredito sugerido gravado na semeadura pode ser anterior ao léxico). */
 const BRINQUEDO = /\b(brinquedos?|miniaturas?|toys?|de mentirinha)\b/i;
@@ -174,7 +176,7 @@ export function avaliarCandidato(c: CandidatoMaster, opts: { relaxado?: boolean;
   // Tênis/chuteira/camisa: marca+modelo+gênero (gênero no atributo ou no nome).
   if (c.segment && SEGMENTOS_COM_GENERO.has(c.segment) && !attrs?.GENDER && !GENERO_NO_NOME.test(c.name) && !(relaxado && UNISSEX_USO.test(c.name))) motivos.push('genero_ausente');
   // Eletrodoméstico: voltagem separa produto; sem ela no atributo nem no nome, fica em revisão.
-  if (c.vertical === 'eletrodomesticos' && !c.catalogAttributes?.VOLTAGE && !/\b(110|127|220)\s?v\b|bivolt/i.test(c.name)) {
+  if (c.vertical === 'eletrodomesticos' && !(c.segment && SEGMENTOS_SEM_ENERGIA.has(c.segment)) && !c.catalogAttributes?.VOLTAGE && !/\b(110|127|220)\s?v\b|bivolt/i.test(c.name)) {
     if (!relaxado) motivos.push('voltagem_ausente');
     else if (c.segment && SEGMENTOS_A_GAS.has(c.segment) && !ELETRICO.test(c.name) && !c.titulosOfertas.some((t) => ELETRICO.test(t))) avisos.push('voltagem_nao_se_aplica_a_gas');
     else {

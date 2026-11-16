@@ -217,6 +217,8 @@ const I3D: SegmentConfig[] = [
 // ---------------------------------------------------------------------------------------------------------------------
 const MARCAS_CASA = ['electrolux', 'brastemp', 'consul', 'philco', 'mondial', 'britania', 'oster', 'philips walita', 'arno', 'cadence', 'midea', 'tramontina', 'black decker', 'fischer', 'suggar', 'agratto'];
 
+const MARCAS_CADEIRINHA = ['safety 1st', 'chicco', 'burigotto', 'galzerano', 'tutti baby', 'cosco', 'maxi-cosi', 'graco', 'kiddo', 'joie', 'infanti', 'cybex'];
+
 const CASA: SegmentConfig[] = [
   seg({
     key: 'coifa', vertical: 'eletrodomesticos', label: 'Coifa e depurador', rank: 140, profile: GTIN_P(EL_VOLT), domains: [/RANGE_HOODS|COOKER_HOODS|KITCHEN_HOODS|EXTRACTORS|PURIFIERS_FOR_KITCHEN/],
@@ -271,6 +273,19 @@ const CASA: SegmentConfig[] = [
     key: 'aquecedor-de-agua', vertical: 'eletrodomesticos', label: 'Aquecedor de água (a gás, elétrico e solar)', rank: 184, profile: GTIN_P(EL_VOLT), domains: [/WATER_HEATERS|GAS_WATER_HEATERS|ELECTRIC_WATER_HEATERS|STORAGE_WATER_HEATERS|TANKLESS|BOILERS_FOR_WATER/],
     terms: combineTerms('aquecedor de agua', ['', 'a gas', 'gn', 'glp', 'eletrico 50 litros', 'de passagem', 'eletrico', 'solar', 'boiler', 'digital'], ['rinnai', 'komeco', 'lorenzetti', 'bosch', 'orbis', 'cumulus', 'soprano', 'rheem', 'mondial', 'springer', 'electrolux', 'ariston']),
     note: 'Aprovado pelo dono em 2026-11-12. Convive com o tipo "aquecedor" (ambiente): o nicho de lá já barra "aquecedor de água".',
+  }),
+  // Cobertura por produto do dono (2026-11-16, #57): cadeirinha infantil para auto (Safety 1st Orbital 360, MLB62322005) nao tinha segmento.
+  // Dono pediu na loja Casa. Dominio MLB-BABY_CAR_SEATS medido ao vivo em 2026-11-16 (/products/MLB62322005). Sem voltagem (nao e eletrico).
+  seg({
+      key: 'cadeirinha-auto', vertical: 'eletrodomesticos', label: 'Cadeirinha infantil para auto e bebê conforto', rank: 216,
+      profile: GTIN_P(['ALPHANUMERIC_MODEL']), domains: [/^MLB-BABY_CAR_SEATS$/],
+      terms: [
+        ...combineTerms('cadeirinha para carro', ['', 'isofix', 'reclinavel', '0 a 36 kg', '9 a 36 kg', 'giratoria 360'], MARCAS_CADEIRINHA),
+        ...combineTerms('bebe conforto', ['', 'isofix', 'travel system', 'com base'], MARCAS_CADEIRINHA),
+        ...combineTerms('assento de elevacao', ['', 'isofix', 'booster'], ['burigotto', 'galzerano', 'tutti baby', 'safety 1st', 'chicco', 'cosco', 'kiddo']),
+        'cadeira infantil para auto', 'cadeira para auto orbital 360', 'safety 1st orbital 360', 'cadeirinha i-size', 'cadeira para auto grupo 0+ 1 2 3',
+      ],
+      note: 'Pedido do dono 2026-11-16 (loja Casa). Dominio MLB-BABY_CAR_SEATS confirmado ao vivo. Voltagem nao se aplica (SEGMENTOS_SEM_ENERGIA em aprovacao-nicho).',
   }),
 ];
 

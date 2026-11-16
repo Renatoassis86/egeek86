@@ -78,6 +78,7 @@ export const TIPOS_ESPERADOS: TipoEsperado[] = [
   t(C, 'Secadora de roupas', 'secadora-de-roupas'),
   t(C, 'Aspirador de pó', 'aspirador-de-po'),
   t(C, 'Robô aspirador', 'robo-aspirador'),
+  t(C, 'Cadeirinha infantil para auto e bebê conforto', 'cadeirinha-auto', undefined, 'pedido do dono 2026-11-16 (#57)'),
   t(C, 'Ar-condicionado', 'ar-condicionado'),
   t(C, 'Ventilador e circulador', 'ventilador'),
   t(C, 'Aquecedor', 'aquecedor'),
