@@ -58,6 +58,14 @@ export async function GET(request: NextRequest) {
       } catch (err) {
         out.isca = { erro: err instanceof Error ? err.message.slice(0, 120) : 'erro' };
       }
+      // Condição não nova (R-75): Open Box/vitrine/mostruário em quarentena reversível. Melhor esforço.
+      try {
+        const { varrerCondicaoNaoNova } = await import('@/server/pricing/condicao-nao-nova');
+        const c = await varrerCondicaoNaoNova(true);
+        out.condicao = { ligado: c.ligado, novas: c.novas, soltas: c.soltas };
+      } catch (err) {
+        out.condicao = { erro: err instanceof Error ? err.message.slice(0, 120) : 'erro' };
+      }
       out.daily = priceDailyShadowEnabled()
         ? await refreshPriceDaily({ budgetMs: Math.max(20_000, BUDGET_MS - (Date.now() - started)) })
         : { skipped: 'PRICE_DAILY_SHADOW desligada' };

@@ -610,6 +610,13 @@ ok(!nearP2 || (nearP2.offerIds.length === 2 && Math.abs(18490 - 17990) >= 2000) 
 ok(buildPlatformCandidates([sonic], platCtx).find((c) => c.trigger === 'P2') === undefined, 'P2: diferença de R$ 5,00 (menos de R$ 20) não gera mensagem');
 const onlyMl = product({ ...zelda, offers: zelda.offers.filter((o) => o.networkSlug !== 'shopee') });
 ok(buildPlatformCandidates([onlyMl], platCtx).find((c) => c.trigger === 'P2') === undefined, 'P2: sem as duas lojas não existe');
+// R-71 (AUD-01): oferta Amazon elegível e fresca MAIS BARATA que o "hoje" da mensagem = o site mostraria outro "Menor preço agora": nenhuma mensagem de histórico sai.
+const comAmazonMaisBarata = product({ ...zelda, amazonForaDaBaseMinCents: 4997 });
+ok(buildPlatformCandidates([comAmazonMaisBarata], platCtx).length === 0, 'R-71: Amazon fresca mais barata que o "hoje" bloqueia P1/P2/P3/P4 do produto');
+const amazonMaisCara = product({ ...zelda, amazonForaDaBaseMinCents: 39990 });
+ok(buildPlatformCandidates([amazonMaisCara], platCtx).length > 0, 'R-71: Amazon mais cara que o "hoje" não bloqueia');
+const semAmazon = product({ ...zelda, amazonForaDaBaseMinCents: null });
+ok(buildPlatformCandidates([semAmazon], platCtx).length > 0, 'R-71: sem oferta Amazon fora da base não bloqueia');
 // P3, P4, P5
 const p3 = byKind('P3') as Candidate;
 ok(p3.texts.telegram.includes('Como acompanhar o preço deste produto') && p3.texts.telegram.includes('4 ofertas ativas') && !/avis/i.test(p3.texts.telegram), 'P3: explica como acompanhar com o produto do dia e sem prometer aviso que o site não faz', p3.texts.telegram);

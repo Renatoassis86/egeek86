@@ -246,9 +246,11 @@ eq('com degrau 2 esperando, o degrau 1 acima de 1/3 espera e o 2 sai', [d1ComFor
 eq('Achado por hora: padrao 6', achadoPorHora({}), 6);
 eq('Achado por hora configuravel', achadoPorHora({ GROUP_AC_POR_HORA: '10' }), 10);
 eq('Achado por hora invalido = 6', achadoPorHora({ GROUP_AC_POR_HORA: 'x' }), 6);
-const acTxt = formatAchadoMessage({ model: 'achado', name: 'Panela X', offer: { slug: 'panela-x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 19900, confirmedAt: HOJE }, offersCount: 8, isLowest: true, vertical: 'eletrodomesticos', messageKey: 'ac-261112-abc123', adTag: '#publicidade' } as never, 'tg');
+const acTxt = formatAchadoMessage({ model: 'achado', name: 'Panela X', offer: { slug: 'panela-x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 19900, confirmedAt: HOJE }, offersCount: 8, isLowest: true, novo: true, vertical: 'eletrodomesticos', messageKey: 'ac-261112-abc123', adTag: '#publicidade' } as never, 'tg');
 yes('Achado: "Novo no monitoramento", sem comparacao, sem %', /Novo no monitoramento/.test(acTxt) && !/%|abaixo|média|menor preço/i.test(acTxt));
 eq('Achado: sem termo banido', textProblems(acTxt, 'tg'), []);
+const acVelho = formatAchadoMessage({ model: 'achado', name: 'Panela X', offer: { slug: 'panela-x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 19900, confirmedAt: HOJE }, offersCount: 8, isLowest: true, novo: false, vertical: 'eletrodomesticos', messageKey: 'ac-261112-abc124', adTag: '#publicidade' } as never, 'tg');
+yes('Achado de oferta antiga NAO diz "Novo no monitoramento" (R-72)', !/Novo no monitoramento/.test(acVelho) && /Em monitoramento/.test(acVelho));
 
 console.log(`${ok}/${ok + bad} verificações ok (régua de destaque)`);
 process.exit(bad ? 1 : 0);

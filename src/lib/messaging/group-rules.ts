@@ -285,6 +285,8 @@ export interface OfferFact {
   confirmedAt: Date | null;
   /** last_price_change_at (ou created_at): quando o preço atual apareceu. */
   priceSince: Date | null;
+  /** affiliate_offers.created_at: quando a oferta entrou no monitoramento (R-72: "Novo no monitoramento" só para oferta realmente nova). */
+  createdAt?: Date | null;
   affiliateLinkPending: boolean;
   /** Link oficial de afiliado (meli.la) já gravado: o programa só gera link para vendedor amarelo ou melhor, então vale como reputação mínima. */
   officialLink?: boolean;
@@ -341,6 +343,10 @@ export interface ProductFacts {
   series?: DayPoint[];
   /** Série diária só das ofertas Amazon (a Amazon só se compara com o histórico dela mesma). */
   amazonSeries?: DayPoint[];
+  /** R-71: menor preço de oferta Amazon elegível, confirmada em até 24 h, que a base da mensagem deixou de fora (contenção #120). null = nenhuma. */
+  amazonForaDaBaseMinCents?: number | null;
+  /** R-72: primeira vez que o PRODUTO (master) foi visto no monitoramento (menor created_at entre TODAS as suas ofertas, ativas ou não). "Novo" exige produto novo, não só oferta nova (troca de anúncio/vendedor não é novidade). */
+  primeiraVezDoProdutoAt?: Date | null;
   /** PRICE_AMAZON_MODE=on: o produto não tem NENHUMA oferta ativa e elegível fora da Amazon (qualquer frescor). Só então vale a régua do próprio ASIN. */
   amazonOnly?: boolean;
   /** Tipo do produto na loja (classificarTipo, derivado do titulo). Ausente em games. */
@@ -549,6 +555,14 @@ export function judgeOffer(o: OfferFact, p: Pick<ProductFacts, 'masterName'>, no
 /** Lojas distintas (rede + vendedor; oferta sem vendedor conta como uma loja própria). */
 export function countStores(offers: OfferFact[]): number {
   return new Set(offers.map((o) => `${netKind(o)}:${o.sellerId ?? o.offerId}`)).size;
+}
+
+/** R-72: "Novo no monitoramento" só para oferta que entrou há no máximo ACHADO_NOVO_MAX_HORAS (sem data = não afirma). */
+export const ACHADO_NOVO_MAX_HORAS = 24;
+export function ofertaNovaNoMonitoramento(createdAt: Date | null | undefined, now: Date): boolean {
+  if (!createdAt) return false;
+  const ageMs = now.getTime() - createdAt.getTime();
+  return ageMs >= 0 && ageMs <= ACHADO_NOVO_MAX_HORAS * 3_600_000;
 }
 
 export function medianOf(values: number[]): number | null {
@@ -1562,6 +1576,7 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
           offer: toMsgOffer(o),
           offersCount: comparable.length,
           isLowest,
+          novo: ofertaNovaNoMonitoramento(o.createdAt, ctx.now) && ofertaNovaNoMonitoramento(p.primeiraVezDoProdutoAt, ctx.now),
         };
         candidates.push(
           finish(p, 'AC', input, {

@@ -13,3 +13,14 @@ export function snapshotNaoIscaSql(alias = 's'): SQL {
   const a = alias.replace(/[^a-z0-9_]/gi, '');
   return sql`NOT EXISTS (SELECT 1 FROM preco_isca_marcas pik WHERE pik.snapshot_id = ${sql.raw(`${a}.id`)} AND pik.liberado_em IS NULL)`;
 }
+
+/**
+ * R-73 (AUD-10): identidade de vendedor por oferta, SEM depender de `seller_id`. Rede que não cadastra vendedor (Shopee, Amazon) vota pela
+ * LOJA (`network:store_name`); a Amazon, com uma só loja, vale um voto. Oferta sem vendedor e sem loja (placeholder de catálogo do ML) continua
+ * sem identidade: é julgada, mas nunca serve de referência. `o` = alias de affiliate_offers, `n` = alias de affiliate_networks.
+ */
+export function identidadeVendedorSql(o = 'o', n = 'n'): SQL {
+  const a = o.replace(/[^a-z0-9_]/gi, '');
+  const b = n.replace(/[^a-z0-9_]/gi, '');
+  return sql.raw(`COALESCE(${a}.seller_id::text, CASE WHEN NULLIF(btrim(${a}.store_name), '') IS NOT NULL THEN 'loja:' || ${b}.slug || ':' || lower(btrim(${a}.store_name)) END)`);
+}

@@ -1,5 +1,6 @@
 import 'server-only';
 import { amazonForaDasMensagens, confirmacaoLigada } from '@/lib/messaging/confirmacao-preco';
+import { baseIncluiAmazon } from '@/lib/messaging/base-comparacao';
 import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
 import { reguaConfig, reguaDaLoja } from '@/lib/messaging/regua';
 import { sql, type SQL } from 'drizzle-orm';
@@ -667,7 +668,8 @@ async function loadSeries(ids: string[], today: string, mode: AmazonMode): Promi
     const pt: { day: string; minCents: number; maxCents?: number } = { day: String(r.day).slice(0, 10), minCents: Number(r.mn), ...(mxN > 0 ? { maxCents: mxN } : {}) };
     (r.amz === true ? e.amazon : e.main).push(pt);
     // PRICE_AMAZON_MODE=on (games): o menor preço do dia do produto também considera a Amazon (mesma base do estado diário); a série própria dela segue à parte.
-    if (r.amz === true && scope === 'include') e.main.push(pt);
+    // R-71: com a Amazon fora das mensagens (#120) a série da mensagem também a exclui (mesma base do "hoje").
+    if (r.amz === true && scope === 'include' && baseIncluiAmazon(amazonForaDasMensagens())) e.main.push(pt);
   }
   // Menor entre ML e Shopee por dia (as linhas já agrupam por rede, não por tipo): consolida o mínimo de cada dia.
   for (const e of out.values()) {
@@ -696,7 +698,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
     db.execute<Row>(sql`
       SELECT o.id, o.master_product_id, o.slug, o.title, n.slug AS net_slug, n.name AS net_name, o.seller_id,
              s.reputation_level, s.total_sales, COALESCE(NULLIF(o.store_name, ''), s.nickname) AS store_label, o.current_price_cents, o.last_price_confirmed_at,
-             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.quarantined_at, ${avgExcludedFlagSql('o')} AS avg_excluded,
+             COALESCE(o.last_price_change_at, o.created_at) AS price_since, o.created_at AS offer_created_at, o.quarantined_at, ${avgExcludedFlagSql('o')} AS avg_excluded,
              -- ML só sai em mensagem com o link OFICIAL de afiliado (meli.la); sem ele a oferta fica de fora do envio (dono, 2026-11-11)
              (o.affiliate_link_pending OR (n.slug = 'mercado-livre' AND COALESCE(o.affiliate_url, '') NOT LIKE 'https://meli.la/%')) AS affiliate_link_pending,
              (COALESCE(o.affiliate_url, '') LIKE 'https://meli.la/%') AS official_link, o.affiliate_url,
@@ -785,6 +787,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       priceCents: Number(r.current_price_cents),
       confirmedAt: r.last_price_confirmed_at ? new Date(r.last_price_confirmed_at as string | Date) : null,
       priceSince: r.price_since ? new Date(r.price_since as string | Date) : null,
+      createdAt: r.offer_created_at ? new Date(r.offer_created_at as string | Date) : null,
       affiliateLinkPending: r.affiliate_link_pending === true,
       officialLink: r.official_link === true,
       affiliateUrl: (r.affiliate_url as string | null) ?? null,
@@ -824,6 +827,20 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
   const today = spDay(o.now);
   const from = addDays(today, -29);
   const seriesBy = await loadSeries(ids, today, o.amazonMode);
+  // R-71: menor oferta Amazon elegível e fresca (24 h) que a base da mensagem deixou de fora; o site a mostra como "Menor preço agora".
+  const primeiraBy = new Map<string, Date>();
+  for (const r of await db.execute<Row>(sql`SELECT master_product_id AS mid, min(created_at) AS first_at FROM affiliate_offers WHERE master_product_id IN (${idList(ids)}) GROUP BY master_product_id`)) primeiraBy.set(String(r.mid), new Date(r.first_at as string | Date));
+  const amazonForaBy = new Map<string, number>();
+  if (!baseIncluiAmazon(amazonForaDasMensagens())) {
+    const amzRows = await db.execute<Row>(sql`
+      SELECT o.master_product_id AS mid, min(o.current_price_cents) AS mn
+      FROM affiliate_offers o INNER JOIN affiliate_networks n ON n.id = o.network_id
+      WHERE o.master_product_id IN (${idList(ids)}) AND o.status = 'active' AND o.current_price_cents > 0 AND n.slug ILIKE '%amazon%'
+        AND o.last_price_confirmed_at >= ${new Date(o.now.getTime() - 24 * 3_600_000).toISOString()}::timestamptz AND ${eligibleOfferSql('o')}
+      GROUP BY o.master_product_id
+    `);
+    for (const r of amzRows) amazonForaBy.set(String(r.mid), Number(r.mn));
+  }
   const stateAvgRows = await db.execute<Row>(sql`
     SELECT DISTINCT ON (master_product_id) master_product_id AS mid, avg_cents FROM price_daily_state
     WHERE master_product_id IN (${idList(ids)}) AND day >= ${addDays(today, -3)}::date AND avg_cents IS NOT NULL
@@ -904,6 +921,8 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       baseline: null,
       series: seriesBy.get(id)?.main ?? [],
       amazonSeries: seriesBy.get(id)?.amazon ?? [],
+      amazonForaDaBaseMinCents: amazonForaBy.get(id) ?? null,
+      primeiraVezDoProdutoAt: primeiraBy.get(id) ?? null,
       amazonOnly: amazonCountsIn(o.amazonMode, String(p.vertical)) ? (amazonOnlyBy.get(id) ?? false) : false,
       coupons: couponsBy.get(id),
       couponMisses: missesBy.get(id),

@@ -26,7 +26,7 @@ export const gatilhoIscaLigado = (env: Record<string, string | undefined> = proc
 
 export interface ReferenciaIsca {
   priceCents: number;
-  /** Vendedor do anuncio de referencia; null = placeholder de catalogo (ignorado). */
+  /** Identidade do vendedor do anuncio de referencia: seller_id ou, em rede sem vendedor cadastrado, 'loja:<rede>:<nome>' (R-73); null = placeholder de catalogo (ignorado). */
   sellerId: string | null;
 }
 

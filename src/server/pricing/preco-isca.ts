@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { ISCA_JANELA_REF_DIAS, ISCA_MOTIVO, ISCA_RAZAO_MAX, avaliarIsca, gatilhoIscaLigado, type ReferenciaIsca, type VereditoIsca } from '@/lib/pricing/preco-isca';
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { upsertOfferDays } from '@/server/pricing/price-daily';
+import { identidadeVendedorSql } from '@/server/pricing/preco-isca-sql';
 
 /**
  * GATILHO PERMANENTE DE PRECO-ISCA (Fluxo Mestre R-61), parte de banco. Regra pura em `src/lib/pricing/preco-isca.ts`; filtro SQL em
@@ -23,9 +24,9 @@ type Row = Record<string, unknown>;
 /** Referencias (outros anuncios com vendedor, ativos, elegiveis, vistos nos ultimos dias) de um master, exceto a oferta julgada. */
 async function carregarReferencias(masterId: string, offerId: string): Promise<ReferenciaIsca[]> {
   const rows = await db.execute<Row>(sql`
-    SELECT o.seller_id::text AS sid, o.current_price_cents::bigint AS p
-    FROM affiliate_offers o
-    WHERE o.master_product_id = ${masterId}::uuid AND o.id <> ${offerId}::uuid AND o.seller_id IS NOT NULL AND o.status = 'active'
+    SELECT ${identidadeVendedorSql('o', 'n')} AS sid, o.current_price_cents::bigint AS p
+    FROM affiliate_offers o INNER JOIN affiliate_networks n ON n.id = o.network_id
+    WHERE o.master_product_id = ${masterId}::uuid AND o.id <> ${offerId}::uuid AND ${identidadeVendedorSql('o', 'n')} IS NOT NULL AND o.status = 'active'
       AND o.current_price_cents > 0 AND o.last_checked_at > now() - (${ISCA_JANELA_REF_DIAS}::int * interval '1 day') AND ${eligibleOfferSql('o')}`);
   return rows.map((r) => ({ sellerId: String(r.sid), priceCents: Number(r.p) }));
 }
@@ -117,8 +118,8 @@ export async function varrerIsca(apply: boolean, opts: { budgetMs?: number } = {
     return res;
   }
   const rows = await db.execute<Row>(sql`
-    SELECT o.id::text AS id, o.master_product_id::text AS mid, o.seller_id::text AS sid, o.current_price_cents::bigint AS p, o.quarantined_at, o.quarantine_reason
-    FROM affiliate_offers o
+    SELECT o.id::text AS id, o.master_product_id::text AS mid, ${identidadeVendedorSql('o', 'n')} AS sid, o.current_price_cents::bigint AS p, o.quarantined_at, o.quarantine_reason
+    FROM affiliate_offers o INNER JOIN affiliate_networks n ON n.id = o.network_id
     WHERE o.status = 'active' AND o.current_price_cents > 0 AND o.last_checked_at > now() - (${ISCA_JANELA_REF_DIAS}::int * interval '1 day')
       AND (${eligibleOfferSql('o')} OR o.quarantine_reason = ${MOTIVO_QUARENTENA})`);
   const porMaster = new Map<string, Row[]>();

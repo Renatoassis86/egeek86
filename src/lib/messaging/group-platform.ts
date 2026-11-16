@@ -22,6 +22,7 @@ import {
   type ProductFacts,
   type Trigger,
 } from '@/lib/messaging/group-rules';
+import { hojeContradizBase } from '@/lib/messaging/base-comparacao';
 import { fmtBRL, makeMessageKey, type GroupMessageInput, type PlatformData, type PlatformKind } from '@/lib/messaging/group-messages';
 
 const SHOPEE_REASON = 'shopee_so_com_aprovacao_humana';
@@ -69,6 +70,8 @@ export function buildPlatformCandidates(facts: ProductFacts[], ctx: EvalContext)
     if (!offers.length) continue;
     const med = medianOf(p.offers.filter((o) => netKind(o) !== 'amazon').map((o) => o.priceCents));
     const cheapest = offers[0].o;
+    // R-71: o site mostraria outro "Menor preço agora" (Amazon fresca mais barata que o "hoje" da mensagem): não sai mensagem de histórico.
+    if (hojeContradizBase(cheapest.priceCents, p.amazonForaDaBaseMinCents)) continue;
     if (med && (cheapest.priceCents < med * RULES.REVIEW_BELOW_MEDIAN_RATIO || cheapest.priceCents > med * RULES.REVIEW_ABOVE_MEDIAN_RATIO)) continue;
     pool.push({ p, offers, cheapest, seriesDays: (p.series?.length ?? 0) + 1 });
   }

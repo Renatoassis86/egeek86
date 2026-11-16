@@ -87,7 +87,8 @@ export function OfferCard({
               )}
               title={verdictLabel(verdict.kind).label}
             >
-              {verdict.kind === 'above' ? `+${Math.round(verdict.deltaPercent)}%` : `${Math.round(verdict.deltaPercent)}%`}
+              {/* R-72 (AUD-21): o crachá é a distância para a MÉDIA do produto, nunca queda do preço; o texto diz isso. */}
+              {verdict.kind === 'above' ? `+${Math.round(verdict.deltaPercent)}% vs média` : `${Math.round(verdict.deltaPercent)}% vs média`}
             </span>
           )}
         </ProductImage>
@@ -130,6 +131,12 @@ export function OfferCard({
                 >
                   {formatBRL(offer.currentPriceCents)}
                 </Text>
+
+                {metrics?.priceDrop ? (
+                  <Text variant="caption" color="success" className="whitespace-nowrap">
+                    Caiu {metrics.priceDrop.percent.toLocaleString('pt-BR')}% (de {formatBRL(metrics.priceDrop.fromCents)})
+                  </Text>
+                ) : null}
 
                 {regua?.veredito ? (
                   <ReguaEtiqueta regua={regua} />

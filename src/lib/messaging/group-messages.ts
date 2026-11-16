@@ -390,6 +390,8 @@ export type GroupMessageInput = Common &
         offersCount: number;
         /** A oferta citada é a de menor preço entre as ativas e válidas? Só então o texto diz "menor preço". */
         isLowest: boolean;
+        /** R-72: a oferta entrou no monitoramento há no máximo ACHADO_NOVO_MAX_HORAS. Só então o rótulo diz "Novo no monitoramento"; ausente/false = "Em monitoramento". */
+        novo?: boolean;
         title?: string;
         meta?: string | null;
       }
@@ -737,7 +739,8 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   // Dono (2026-11-12): Achado sem veredito de queda, sem comparação e sem prescrição de compra: só "Novo no monitoramento".
   void n;
   const reading: string | null = null;
-  const novo = channel === 'tg' ? '<b>Novo no monitoramento</b>' : '*Novo no monitoramento*';
+  const rotulo = input.novo === true ? 'Novo no monitoramento' : 'Em monitoramento';
+  const novo = channel === 'tg' ? `<b>${rotulo}</b>` : `*${rotulo}*`;
   const topics: string[] = [];
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
@@ -921,6 +924,21 @@ function seloLines(o: MsgOffer, f: Fmt): string[] {
   return out;
 }
 
+/**
+ * R-72 (AUD-05): total de vendas legível. Nunca "mais de 25687 mil": milhão vira "milhão/milhões", acima de 10 milhões o dado é
+ * implausível para um vendedor (provável total errado/loja oficial) e a frase some (sem número duvidoso).
+ */
+export function vendasTexto(n: number): string | null {
+  if (!Number.isFinite(n) || n < 100) return null;
+  if (n >= 10_000_000) return null;
+  if (n >= 1_000_000) {
+    const m = Math.floor(n / 100_000) / 10;
+    return `mais de ${String(m).replace('.', ',')} ${m >= 2 ? 'milhões' : 'milhão'} de vendas`;
+  }
+  if (n >= 1000) return `mais de ${Math.floor(n / 1000)} mil vendas`;
+  return `mais de ${Math.floor(n / 100) * 100} vendas`;
+}
+
 /** Linha do vendedor, só Mercado Livre e só com reputação lida. Nunca inventa nível (sem reputação lida, sem linha). */
 export function sellerLine(o: MsgOffer): string | null {
   if (!/mercado-?livre/i.test(o.networkSlug) || !o.seller?.reputation) return null;
@@ -928,7 +946,7 @@ export function sellerLine(o: MsgOffer): string | null {
   const nome = rep === '5_green' ? 'verde (nível máximo)' : rep === '4_light_green' ? 'verde-clara' : rep === '3_yellow' ? 'amarela (intermediária)' : null;
   if (!nome) return null;
   const n = o.seller.totalSales ?? 0;
-  const vendas = n >= 1000 ? `mais de ${Math.floor(n / 1000)} mil vendas` : n >= 100 ? `mais de ${Math.floor(n / 100) * 100} vendas` : null;
+  const vendas = vendasTexto(n);
   return `reputação ${nome}${vendas ? `, ${vendas}` : ''}`;
 }
 
