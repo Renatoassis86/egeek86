@@ -1,0 +1,738 @@
+{
+  "geradoEm": "2026-11-16T02:40:42.401Z",
+  "modo": "somente leitura",
+  "areas": {
+    "games": {
+      "rotulo": "Games",
+      "ofertasAtivas": {
+        "ml": 9040,
+        "amazon": 1017,
+        "shopee": 4106
+      },
+      "masters": {
+        "aprovados": 4288,
+        "emRevisao": 78,
+        "rejeitados": 2477
+      },
+      "mastersSemOfertaAtiva": 2412,
+      "segmentosDefinidos": 0,
+      "segmentosRasos": {
+        "limiteAprovados": 30,
+        "quantos": 0,
+        "lista": []
+      },
+      "mastersCriadosUltimos7Dias": [],
+      "destaquesML": {
+        "categorias": [
+          "Video Games",
+          "Consoles",
+          "Fliperamas e Arcade"
+        ],
+        "total": 36,
+        "noBanco": 13,
+        "semVendedorConhecido": 0,
+        "faltam": 23,
+        "cobertura": 0.3611111111111111,
+        "alerta": true,
+        "meta": 0.8
+      }
+    },
+    "eletrodomesticos": {
+      "rotulo": "Casa",
+      "ofertasAtivas": {
+        "ml": 1755,
+        "amazon": 415,
+        "shopee": 13
+      },
+      "masters": {
+        "aprovados": 827,
+        "emRevisao": 12,
+        "rejeitados": 2
+      },
+      "mastersSemOfertaAtiva": 263,
+      "segmentosDefinidos": 34,
+      "segmentosRasos": {
+        "limiteAprovados": 30,
+        "quantos": 33,
+        "lista": [
+          {
+            "segmento": "maquina-de-lavar",
+            "aprovados": 0
+          },
+          {
+            "segmento": "coifa",
+            "aprovados": 0
+          },
+          {
+            "segmento": "bebedouro-purificador-agua",
+            "aprovados": 0
+          },
+          {
+            "segmento": "umidificador-desumidificador",
+            "aprovados": 0
+          },
+          {
+            "segmento": "aquecedor",
+            "aprovados": 0
+          },
+          {
+            "segmento": "chaleira-eletrica",
+            "aprovados": 0
+          },
+          {
+            "segmento": "sanduicheira-grill",
+            "aprovados": 0
+          },
+          {
+            "segmento": "torradeira",
+            "aprovados": 0
+          },
+          {
+            "segmento": "processador-de-alimentos",
+            "aprovados": 0
+          },
+          {
+            "segmento": "espremedor",
+            "aprovados": 0
+          },
+          {
+            "segmento": "lavadora-alta-pressao",
+            "aprovados": 0
+          },
+          {
+            "segmento": "maquina-de-costura",
+            "aprovados": 0
+          },
+          {
+            "segmento": "chuveiro-eletrico",
+            "aprovados": 0
+          },
+          {
+            "segmento": "aquecedor-de-agua",
+            "aprovados": 0
+          },
+          {
+            "segmento": "aspirador-de-po",
+            "aprovados": 2
+          },
+          {
+            "segmento": "cafeteira",
+            "aprovados": 5
+          },
+          {
+            "segmento": "liquidificador",
+            "aprovados": 5
+          },
+          {
+            "segmento": "forno-eletrico",
+            "aprovados": 5
+          },
+          {
+            "segmento": "purificador-de-ar",
+            "aprovados": 6
+          },
+          {
+            "segmento": "ferro-de-passar",
+            "aprovados": 6
+          },
+          {
+            "segmento": "micro-ondas",
+            "aprovados": 7
+          },
+          {
+            "segmento": "lava-loucas",
+            "aprovados": 8
+          },
+          {
+            "segmento": "ar-condicionado",
+            "aprovados": 8
+          },
+          {
+            "segmento": "freezer",
+            "aprovados": 9
+          },
+          {
+            "segmento": "batedeira",
+            "aprovados": 10
+          }
+        ]
+      },
+      "mastersCriadosUltimos7Dias": [
+        [
+          "2026-11-11",
+          288
+        ],
+        [
+          "2026-11-12",
+          242
+        ],
+        [
+          "2026-11-13",
+          156
+        ],
+        [
+          "2026-11-14",
+          38
+        ],
+        [
+          "2026-11-15",
+          112
+        ]
+      ],
+      "destaquesML": {
+        "categorias": [
+          "Pequenos Eletrodomésticos",
+          "Ar e Ventilação",
+          "Refrigeração"
+        ],
+        "total": 56,
+        "noBanco": 0,
+        "semVendedorConhecido": 0,
+        "faltam": 56,
+        "cobertura": 0,
+        "alerta": true,
+        "meta": 0.6
+      }
+    },
+    "eletroeletronicos": {
+      "rotulo": "Eletrônicos",
+      "ofertasAtivas": {
+        "ml": 7613,
+        "amazon": 377,
+        "shopee": 1
+      },
+      "masters": {
+        "aprovados": 1398,
+        "emRevisao": 18,
+        "rejeitados": 196
+      },
+      "mastersSemOfertaAtiva": 98,
+      "segmentosDefinidos": 18,
+      "segmentosRasos": {
+        "limiteAprovados": 30,
+        "quantos": 5,
+        "lista": [
+          {
+            "segmento": "cabo-e-adaptador",
+            "aprovados": 0
+          },
+          {
+            "segmento": "hub-usb",
+            "aprovados": 0
+          },
+          {
+            "segmento": "carregador",
+            "aprovados": 5
+          },
+          {
+            "segmento": "tv-box",
+            "aprovados": 17
+          },
+          {
+            "segmento": "casa-inteligente",
+            "aprovados": 24
+          }
+        ]
+      },
+      "mastersCriadosUltimos7Dias": [
+        [
+          "2026-11-11",
+          156
+        ],
+        [
+          "2026-11-12",
+          604
+        ],
+        [
+          "2026-11-13",
+          366
+        ],
+        [
+          "2026-11-14",
+          218
+        ],
+        [
+          "2026-11-15",
+          262
+        ]
+      ],
+      "destaquesML": {
+        "categorias": [
+          "Componentes Eletrônicos",
+          "Áudio",
+          "Controles Remotos"
+        ],
+        "total": 44,
+        "noBanco": 1,
+        "semVendedorConhecido": 0,
+        "faltam": 43,
+        "cobertura": 0.022727272727272728,
+        "alerta": true,
+        "meta": 0.6
+      }
+    },
+    "tecnologia": {
+      "rotulo": "Tecnologia",
+      "ofertasAtivas": {
+        "ml": 2734,
+        "amazon": 399,
+        "shopee": 0
+      },
+      "masters": {
+        "aprovados": 962,
+        "emRevisao": 2,
+        "rejeitados": 3
+      },
+      "mastersSemOfertaAtiva": 111,
+      "segmentosDefinidos": 51,
+      "segmentosRasos": {
+        "limiteAprovados": 30,
+        "quantos": 41,
+        "lista": [
+          {
+            "segmento": "notebook",
+            "aprovados": 0
+          },
+          {
+            "segmento": "monitor",
+            "aprovados": 0
+          },
+          {
+            "segmento": "cadeira-gamer",
+            "aprovados": 0
+          },
+          {
+            "segmento": "memoria-ram",
+            "aprovados": 0
+          },
+          {
+            "segmento": "processador",
+            "aprovados": 0
+          },
+          {
+            "segmento": "placa-mae",
+            "aprovados": 0
+          },
+          {
+            "segmento": "gabinete-pc",
+            "aprovados": 0
+          },
+          {
+            "segmento": "fonte-pc",
+            "aprovados": 0
+          },
+          {
+            "segmento": "cooler-pc",
+            "aprovados": 0
+          },
+          {
+            "segmento": "roteador",
+            "aprovados": 0
+          },
+          {
+            "segmento": "repetidor-mesh",
+            "aprovados": 0
+          },
+          {
+            "segmento": "switch-rede",
+            "aprovados": 0
+          },
+          {
+            "segmento": "adaptador-wifi",
+            "aprovados": 0
+          },
+          {
+            "segmento": "webcam",
+            "aprovados": 0
+          },
+          {
+            "segmento": "pendrive",
+            "aprovados": 0
+          },
+          {
+            "segmento": "cartao-de-memoria",
+            "aprovados": 0
+          },
+          {
+            "segmento": "hd-ssd-externo",
+            "aprovados": 0
+          },
+          {
+            "segmento": "nobreak",
+            "aprovados": 0
+          },
+          {
+            "segmento": "mousepad",
+            "aprovados": 0
+          },
+          {
+            "segmento": "mesa-digitalizadora",
+            "aprovados": 0
+          },
+          {
+            "segmento": "computador-desktop",
+            "aprovados": 0
+          },
+          {
+            "segmento": "placa-de-captura",
+            "aprovados": 0
+          },
+          {
+            "segmento": "mesa-gamer",
+            "aprovados": 0
+          },
+          {
+            "segmento": "rack-gamer",
+            "aprovados": 0
+          },
+          {
+            "segmento": "scanner-de-documentos",
+            "aprovados": 0
+          }
+        ]
+      },
+      "mastersCriadosUltimos7Dias": [
+        [
+          "2026-11-11",
+          131
+        ],
+        [
+          "2026-11-12",
+          305
+        ],
+        [
+          "2026-11-13",
+          177
+        ],
+        [
+          "2026-11-14",
+          9
+        ],
+        [
+          "2026-11-15",
+          331
+        ]
+      ],
+      "destaquesML": {
+        "categorias": [
+          "Impressão",
+          "Periféricos para PC",
+          "Conectividade e Redes"
+        ],
+        "total": 50,
+        "noBanco": 0,
+        "semVendedorConhecido": 0,
+        "faltam": 50,
+        "cobertura": 0,
+        "alerta": true,
+        "meta": 0.6
+      }
+    },
+    "esporte": {
+      "rotulo": "Esporte",
+      "ofertasAtivas": {
+        "ml": 1205,
+        "amazon": 336,
+        "shopee": 153
+      },
+      "masters": {
+        "aprovados": 894,
+        "emRevisao": 16,
+        "rejeitados": 26
+      },
+      "mastersSemOfertaAtiva": 349,
+      "segmentosDefinidos": 46,
+      "segmentosRasos": {
+        "limiteAprovados": 30,
+        "quantos": 43,
+        "lista": [
+          {
+            "segmento": "camisa-de-time",
+            "aprovados": 0
+          },
+          {
+            "segmento": "roupa-de-ciclismo",
+            "aprovados": 0
+          },
+          {
+            "segmento": "bicicleta",
+            "aprovados": 0
+          },
+          {
+            "segmento": "patins",
+            "aprovados": 0
+          },
+          {
+            "segmento": "skate",
+            "aprovados": 0
+          },
+          {
+            "segmento": "patinete",
+            "aprovados": 0
+          },
+          {
+            "segmento": "banco-de-musculacao",
+            "aprovados": 0
+          },
+          {
+            "segmento": "estacao-de-musculacao",
+            "aprovados": 0
+          },
+          {
+            "segmento": "barra-e-anilha",
+            "aprovados": 0
+          },
+          {
+            "segmento": "luva-de-boxe",
+            "aprovados": 0
+          },
+          {
+            "segmento": "saco-de-pancada",
+            "aprovados": 0
+          },
+          {
+            "segmento": "oculos-de-natacao",
+            "aprovados": 0
+          },
+          {
+            "segmento": "foam-roller",
+            "aprovados": 0
+          },
+          {
+            "segmento": "bola-de-pilates",
+            "aprovados": 0
+          },
+          {
+            "segmento": "capacete-de-ciclismo",
+            "aprovados": 0
+          },
+          {
+            "segmento": "tenis-de-mesa",
+            "aprovados": 0
+          },
+          {
+            "segmento": "suplemento",
+            "aprovados": 0
+          },
+          {
+            "segmento": "camping",
+            "aprovados": 0
+          },
+          {
+            "segmento": "pesca",
+            "aprovados": 0
+          },
+          {
+            "segmento": "trilha",
+            "aprovados": 0
+          },
+          {
+            "segmento": "kettlebell",
+            "aprovados": 2
+          },
+          {
+            "segmento": "corda-de-pular",
+            "aprovados": 2
+          },
+          {
+            "segmento": "roupa-de-compressao",
+            "aprovados": 2
+          },
+          {
+            "segmento": "luva-de-academia",
+            "aprovados": 3
+          },
+          {
+            "segmento": "eliptico",
+            "aprovados": 3
+          }
+        ]
+      },
+      "mastersCriadosUltimos7Dias": [
+        [
+          "2026-11-11",
+          339
+        ],
+        [
+          "2026-11-12",
+          207
+        ],
+        [
+          "2026-11-13",
+          114
+        ],
+        [
+          "2026-11-14",
+          99
+        ],
+        [
+          "2026-11-15",
+          177
+        ]
+      ],
+      "destaquesML": {
+        "categorias": [
+          "Camping, Caça e Pesca",
+          "Ciclismo",
+          "Futebol"
+        ],
+        "total": 36,
+        "noBanco": 0,
+        "semVendedorConhecido": 0,
+        "faltam": 36,
+        "cobertura": 0,
+        "alerta": true,
+        "meta": 0.5
+      }
+    },
+    "livros": {
+      "rotulo": "Livros",
+      "ofertasAtivas": {
+        "ml": 2591,
+        "amazon": 157,
+        "shopee": 0
+      },
+      "masters": {
+        "aprovados": 252,
+        "emRevisao": 0,
+        "rejeitados": 0
+      },
+      "mastersSemOfertaAtiva": 3,
+      "segmentosDefinidos": 1,
+      "segmentosRasos": {
+        "limiteAprovados": 30,
+        "quantos": 0,
+        "lista": []
+      },
+      "mastersCriadosUltimos7Dias": [
+        [
+          "2026-11-10",
+          17
+        ],
+        [
+          "2026-11-11",
+          221
+        ],
+        [
+          "2026-11-12",
+          5
+        ],
+        [
+          "2026-11-13",
+          2
+        ]
+      ],
+      "destaquesML": {
+        "categorias": [],
+        "total": 0,
+        "noBanco": 0,
+        "semVendedorConhecido": 0,
+        "faltam": 0,
+        "cobertura": 1,
+        "alerta": false,
+        "meta": 0.5
+      }
+    },
+    "impressao3d": {
+      "rotulo": "Impressão 3D",
+      "ofertasAtivas": {
+        "ml": 1598,
+        "amazon": 194,
+        "shopee": 27
+      },
+      "masters": {
+        "aprovados": 171,
+        "emRevisao": 0,
+        "rejeitados": 0
+      },
+      "mastersSemOfertaAtiva": 3,
+      "segmentosDefinidos": 7,
+      "segmentosRasos": {
+        "limiteAprovados": 30,
+        "quantos": 5,
+        "lista": [
+          {
+            "segmento": "peca-impressora-3d",
+            "aprovados": 0
+          },
+          {
+            "segmento": "secador-filamento",
+            "aprovados": 0
+          },
+          {
+            "segmento": "lavadora-curadora-resina",
+            "aprovados": 0
+          },
+          {
+            "segmento": "ferramenta-impressao-3d",
+            "aprovados": 0
+          },
+          {
+            "segmento": "resina-3d",
+            "aprovados": 5
+          }
+        ]
+      },
+      "mastersCriadosUltimos7Dias": [
+        [
+          "2026-11-11",
+          114
+        ],
+        [
+          "2026-11-12",
+          48
+        ],
+        [
+          "2026-11-13",
+          3
+        ],
+        [
+          "2026-11-14",
+          2
+        ],
+        [
+          "2026-11-15",
+          1
+        ]
+      ]
+    }
+  },
+  "alertas": [
+    "eletrodomesticos: 33 de 34 tipos com menos de 30 masters aprovados",
+    "tecnologia: 41 de 51 tipos com menos de 30 masters aprovados",
+    "esporte: 43 de 46 tipos com menos de 30 masters aprovados",
+    "impressao3d: 5 de 7 tipos com menos de 30 masters aprovados",
+    "eletrodomesticos: nenhuma execução da semeadura de servidor nas últimas 72 h",
+    "tecnologia: nenhuma execução da semeadura de servidor nas últimas 72 h",
+    "esporte: nenhuma execução da semeadura de servidor nas últimas 72 h",
+    "livros: nenhuma execução da semeadura de servidor nas últimas 72 h",
+    "games: só 36.1% dos mais vendidos do ML estão no banco (meta 80%)",
+    "eletrodomesticos: só 0.0% dos mais vendidos do ML estão no banco (meta 60%)",
+    "eletroeletronicos: só 2.3% dos mais vendidos do ML estão no banco (meta 60%)",
+    "tecnologia: só 0.0% dos mais vendidos do ML estão no banco (meta 60%)",
+    "esporte: só 0.0% dos mais vendidos do ML estão no banco (meta 50%)"
+  ],
+  "semeadura": [
+    {
+      "job": "amazon-assistida",
+      "execucoes72h": 2242,
+      "ultimo": "2026-11-16T02:39:31.083Z"
+    },
+    {
+      "job": "semear-vertical:eletroeletronicos",
+      "execucoes72h": 212,
+      "ultimo": "2026-11-16T02:27:49.459Z"
+    },
+    {
+      "job": "cobertura-shopee",
+      "execucoes72h": 168,
+      "ultimo": "2026-11-16T02:34:39.269Z"
+    },
+    {
+      "job": "discover-products",
+      "execucoes72h": 210,
+      "ultimo": "2026-11-16T02:30:00.419Z"
+    }
+  ],
+  "chamadasML": 22
+}

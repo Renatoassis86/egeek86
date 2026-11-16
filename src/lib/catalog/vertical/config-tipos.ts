@@ -237,7 +237,7 @@ const CASA: SegmentConfig[] = [
     terms: combineTerms('aquecedor', ['eletrico', 'a oleo', 'de ambiente', 'ceramico', 'halogeneo', 'portatil'], ['cadence', 'mondial', 'britania', 'arno', 'philco', 'ventisol', 'electrolux', 'lenoxx', 'wap', 'agratto']),
   }),
   seg({
-    key: 'chaleira-eletrica', vertical: 'eletrodomesticos', label: 'Chaleira elétrica', rank: 144, profile: GTIN_P(EL_VOLT), domains: [/ELECTRIC_KETTLES|WATER_KETTLES/],
+    key: 'chaleira-eletrica', vertical: 'eletrodomesticos', label: 'Chaleira elétrica', rank: 144, profile: GTIN_P(EL_VOLT), domains: [/ELECTRIC_KETTLES|WATER_KETTLES|ELECTRIC_JUGS/],
     terms: combineTerms('chaleira eletrica', ['', 'inox', '1,7l', 'vidro', 'digital controle de temperatura'], MARCAS_CASA),
   }),
   seg({

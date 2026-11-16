@@ -44,6 +44,15 @@ export interface SeedOptions {
    * porteiro, a identidade, a duplicata e o orçamento de chamadas, não um número de masters.
    */
   maxCreate?: number;
+  /**
+   * FONTE POR ÁRVORE DE CATEGORIA / CATÁLOGO (cobertura total, 2026-11-16): candidatos já obtidos fora da busca por termo (ex.: mais vendidos de uma
+   * categoria do ML). Com esta lista a busca por termo NÃO roda; cada candidato passa pelo MESMO funil (item miúdo, identidade, duplicata, 404,
+   * /items, porteiro). `candidatesLabel` entra em `term` do plano.
+   */
+  candidates?: MlCatalogPayload[];
+  candidatesLabel?: string;
+  /** Os candidatos já trazem o detalhe completo de /products/{id} (atributos): pula a 2ª chamada de detalhe do funil. */
+  candidatesPrefetched?: boolean;
   log?: (msg: string) => void;
 }
 
@@ -254,12 +263,15 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
         }
 
         // 4) Detalhe do catálogo (1 chamada): atributos completos; reavalia identidade e domínio.
-        const dt = await client.get(`/products/${searchPayload.id}`);
         let detail: MlCatalogPayload | null = null;
-        if (dt.status === 200 && dt.json?.id) detail = dt.json as MlCatalogPayload;
+        if (opts.candidatesPrefetched) detail = searchPayload;
         else {
-          report.errors.push(`detalhe ${searchPayload.id} HTTP ${dt.status}`);
-          bump(report.counts, 'erro_detalhe');
+          const dt = await client.get(`/products/${searchPayload.id}`);
+          if (dt.status === 200 && dt.json?.id) detail = dt.json as MlCatalogPayload;
+          else {
+            report.errors.push(`detalhe ${searchPayload.id} HTTP ${dt.status}`);
+            bump(report.counts, 'erro_detalhe');
+          }
         }
         const merged = mergeDetail(searchPayload, detail);
         const identity = evaluateIdentity(merged, seg);
@@ -340,6 +352,22 @@ export async function planSeed(client: MlClient, seg: SegmentConfig, lookup: Exi
   };
 
   try {
+    if (opts.candidates) {
+      // Fonte por árvore/catálogo: sem busca por termo; mesmo funil por candidato.
+      const label = opts.candidatesLabel ?? 'arvore';
+      report.termsTouched.push(label);
+      report.searchResults += opts.candidates.length;
+      for (const c of opts.candidates) {
+        if (opts.shouldStop?.()) {
+          report.stoppedBecause = 'interrompido';
+          break;
+        }
+        if (await processCandidate(c, label)) break;
+      }
+      report.callsUsed = client.used();
+      report.callsSpent = client.used() - startUsed;
+      return report;
+    }
     const pages = Math.max(1, opts.pages ?? 1);
     const active = new Set(terms);
     const baseOffset = opts.offset ?? 0;

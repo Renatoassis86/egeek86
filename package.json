@@ -40,6 +40,7 @@
     "test:vertical-identity": "tsx scripts/test-vertical-identity.ts",
     "test:plus-reconfirmacao": "tsx scripts/test-plus-reconfirmacao.ts",
     "test:cobertura-tipos": "tsx scripts/test-cobertura-tipos.ts",
+    "test:cobertura-total": "tsx --conditions=react-server scripts/test-cobertura-total.ts",
     "test:semeadura-servidor": "tsx scripts/test-semeadura-servidor.ts",
     "simular:semeadura-plus": "tsx scripts/simular-semeadura-plus.ts",
     "test:tipos": "tsx scripts/test-tipos-produto.ts",

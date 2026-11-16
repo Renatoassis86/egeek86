@@ -1,0 +1,834 @@
+{
+  "vertical": "eletrodomesticos",
+  "geradoEm": "2026-11-16T02:40:29.503Z",
+  "modo": "dry-run (nada gravado)",
+  "chamadasUsadas": 254,
+  "categorias": [
+    {
+      "id": "MLB438284",
+      "nome": "Eletrodomésticos > Pequenos Eletrodomésticos",
+      "anuncios": 1615023
+    },
+    {
+      "id": "MLB252358",
+      "nome": "Eletrodomésticos > Ar e Ventilação",
+      "anuncios": 911092
+    },
+    {
+      "id": "MLB438287",
+      "nome": "Eletrodomésticos > Pequenos Eletrodomésticos > Para a Cozinha",
+      "anuncios": 654363
+    },
+    {
+      "id": "MLB1576",
+      "nome": "Eletrodomésticos > Refrigeração",
+      "anuncios": 578029
+    },
+    {
+      "id": "MLB438282",
+      "nome": "Eletrodomésticos > Lavadores",
+      "anuncios": 496373
+    },
+    {
+      "id": "MLB1580",
+      "nome": "Eletrodomésticos > Fornos e Fogões",
+      "anuncios": 486384
+    },
+    {
+      "id": "MLB438286",
+      "nome": "Eletrodomésticos > Pequenos Eletrodomésticos > Para a Casa",
+      "anuncios": 458807
+    },
+    {
+      "id": "MLB21171",
+      "nome": "Eletrodomésticos > Bebedouros e Purificadores",
+      "anuncios": 255720
+    },
+    {
+      "id": "MLB1645",
+      "nome": "Eletrodomésticos > Ar e Ventilação > Ventiladores",
+      "anuncios": 129266
+    },
+    {
+      "id": "MLB439347",
+      "nome": "Eletrodomésticos > Cuidado Pessoal",
+      "anuncios": 61380
+    },
+    {
+      "id": "MLB457530",
+      "nome": "Eletrodomésticos > Ar e Ventilação > Ventiladores Portáteis",
+      "anuncios": 57450
+    },
+    {
+      "id": "MLB72503",
+      "nome": "Eletrodomésticos > Ar e Ventilação > Climatizador Portátil",
+      "anuncios": 25482
+    },
+    {
+      "id": "MLB439349",
+      "nome": "Eletrodomésticos > Cuidado Pessoal > Artefatos para Cabelo",
+      "anuncios": 23704
+    },
+    {
+      "id": "MLB385176",
+      "nome": "Eletrodomésticos > Ar e Ventilação > Aquecedores de Água",
+      "anuncios": 21712
+    },
+    {
+      "id": "MLB120316",
+      "nome": "Eletrodomésticos > Fornos e Fogões > Cooktop",
+      "anuncios": 21002
+    },
+    {
+      "id": "MLB73052",
+      "nome": "Eletrodomésticos > Bebedouros e Purificadores > Dispensadores de Água",
+      "anuncios": 19865
+    },
+    {
+      "id": "MLB133297",
+      "nome": "Eletrodomésticos > Ar e Ventilação > Aquecedores de Ar",
+      "anuncios": 19755
+    },
+    {
+      "id": "MLB180081",
+      "nome": "Eletrodomésticos > Ar e Ventilação > Desumidificador",
+      "anuncios": 16853
+    },
+    {
+      "id": "MLB120315",
+      "nome": "Eletrodomésticos > Fornos e Fogões > Fogões",
+      "anuncios": 16091
+    },
+    {
+      "id": "MLB50495",
+      "nome": "Eletrodomésticos > Fornos e Fogões > Coifas e Depuradores",
+      "anuncios": 12922
+    },
+    {
+      "id": "MLB1646",
+      "nome": "Eletrodomésticos > Ar e Ventilação > Ares Condicionados",
+      "anuncios": 12498
+    },
+    {
+      "id": "MLB120314",
+      "nome": "Eletrodomésticos > Fornos e Fogões > Fornos",
+      "anuncios": 11021
+    },
+    {
+      "id": "MLB73057",
+      "nome": "Eletrodomésticos > Fornos e Fogões > Micro-ondas",
+      "anuncios": 9867
+    },
+    {
+      "id": "MLB181294",
+      "nome": "Eletrodomésticos > Refrigeração > Geladeiras",
+      "anuncios": 8913
+    },
+    {
+      "id": "MLB21168",
+      "nome": "Eletrodomésticos > Lavadores > Máquinas de Lavar",
+      "anuncios": 7715
+    },
+    {
+      "id": "MLB73046",
+      "nome": "Eletrodomésticos > Lavadores > Lava-Louças",
+      "anuncios": 6403
+    },
+    {
+      "id": "MLB432109",
+      "nome": "Eletrodomésticos > Bebedouros e Purificadores > Aparelhos de Osmoses Reversa",
+      "anuncios": 5667
+    },
+    {
+      "id": "MLB431200",
+      "nome": "Eletrodomésticos > Lavadores > Máquinas de Secar",
+      "anuncios": 5576
+    },
+    {
+      "id": "MLB7072",
+      "nome": "Eletrodomésticos > Refrigeração > Freezers",
+      "anuncios": 4475
+    },
+    {
+      "id": "MLB458272",
+      "nome": "Eletrodomésticos > Lavadores > Mini Máquinas de Lavar",
+      "anuncios": 4116
+    }
+  ],
+  "destaquesUnicos": 412,
+  "cobertura": {
+    "total": 412,
+    "noBanco": 2,
+    "semVendedorConhecido": 0,
+    "faltam": 410,
+    "cobertura": 0.0048543689320388345,
+    "alerta": true
+  },
+  "detalhados": 121,
+  "naoDetalhados": 289,
+  "tiposSemSemente": {
+    "MLB-ELECTRIC_JUGS": [
+      "Chaleira Eletrica Atacama 1,8l - Unitermi",
+      "Chaleira Elétrica 1,8l Ferve Água Rápido Inox Café Chá Inox",
+      "Chaleira Elétrica Luxena de Inox 1.8 Litros com Desligamento Automátic"
+    ],
+    "MLB-ELECTRIC_FOOD_STEAMERS": [
+      "Cozedor de Ovos Elétrico Micgeek a Vapor para 7 Ovos com Desligamento ",
+      "Cozedor De Ovos Elétrico Portatil Branco 110v Cozinhar A Vapor Legumes"
+    ],
+    "MLB-COOKING_SCALES": [
+      "Balança Digital Davely Cook para Cozinha Com Função Tara e 10 kg de Ca"
+    ],
+    "MLB-PORTABLE_EVAPORATIVE_AIR_COOLERS": [
+      "Climatizador de Ar Ventisol Clin-16 16L Evaporativo Cinza/Branco"
+    ],
+    "MLB-HOME_APPLIANCE_CONTACTORS_AND_RELAYS": [
+      "Relé E Protetor Térmico Ptc Universal P/ Geladeira Consul Brastemp Ele"
+    ],
+    "MLB-LIGHT_BULBS": [
+      "Kit 10 Lâmpadas Bulbo LED Elgin 15W, Luz Branco-Frio 6500K",
+      "Lampada Led Pera Smart Inteligente Wi Fi 10w 2700K/6500K E27 110v/220v"
+    ],
+    "MLB-WINE_CELLARS": [
+      "Adega De Vinhos Brastemp Para 12 Garrafas Com Painel Touch BZC12BE Pre"
+    ],
+    "MLB-WASHING_MACHINE_AGITATORS": [
+      "Chave T 10mm Canhão Longa Remover Parafuso Agitador Universal Lm08 Lm0"
+    ],
+    "MLB-WASHING_MACHINE_HOSES": [
+      "Mangueira Entrada Água Máquina Lavar 2,00 Metros Universal",
+      "Mangueira Saída de Máquina 1,40 Metros Boca Curva 28mm com Suporte"
+    ],
+    "MLB-WATER_PURIFIER_FILTERS_REPLACEMENTS": [
+      "Kit 2 Refil De Água Acqua Pure Electrolux Pe12a Pe12b Pe12g PC01X, Cor",
+      "Refil Filtro W11199342 (CIX06AX) Purificador De Água Consul Cpc30af, C",
+      "Refil Para Purificador De Água CPB33AF Cinza Consul",
+      "Refil Filtro IBBL Protection CZ+7 para Purificador Due e FR600 com 7 E",
+      "Refil Tripla Filtragem Girou Trocou C+3 Ibbl"
+    ]
+  },
+  "novosPlanejados": 95,
+  "motivosDoFunil": {
+    "planejado_criar": 95,
+    "titulo_duplicado_conferir": 3,
+    "ja_planejado_titulo_conferir": 1,
+    "ja_planejado_chave_identidade": 2,
+    "descartado_item_miudo": 1,
+    "item_miudo": 1
+  },
+  "novosPorSegmento": {
+    "air-fryer": [
+      {
+        "id": "MLB50376945",
+        "nome": "Fritadeira Elétrica Air Fryer Quad Fry Elgin 4,2 L, 1400w",
+        "vendedoresNovos": 9,
+        "menorPreco": 145
+      },
+      {
+        "id": "MLB52052995",
+        "nome": "Air Fryer Philco 6,5l Visor Glass E Redstone 1700w Paf65a Preto 127v.",
+        "vendedoresNovos": 69,
+        "menorPreco": 287.5
+      },
+      {
+        "id": "MLB44117615",
+        "nome": "Fritadeira Elétrica AFON-12L-BG Forno Oven 12 Litros Preto Mondial",
+        "vendedoresNovos": 7,
+        "menorPreco": 454.93
+      }
+    ],
+    "geladeira": [
+      {
+        "id": "MLB63996396",
+        "nome": "Geladeira Brastemp Frost Free 385 Litros Duplex Branca - BRM46MB",
+        "vendedoresNovos": 34,
+        "menorPreco": 2650.98
+      },
+      {
+        "id": "MLB57348431",
+        "nome": "Geladeira Electrolux Frost Free 320L Duplex Inox Look (TF38S)",
+        "vendedoresNovos": 7,
+        "menorPreco": 1758.99
+      },
+      {
+        "id": "MLB65312129",
+        "nome": "Geladeira Brastemp Frost Free Inverse 500 Litros Branca - BRE66A",
+        "vendedoresNovos": 24,
+        "menorPreco": 4192.94
+      },
+      {
+        "id": "MLB65568637",
+        "nome": "Geladeira Brastemp Inteligente 512L Bivolt - BRM62A",
+        "vendedoresNovos": 34,
+        "menorPreco": 3199
+      },
+      {
+        "id": "MLB59352070",
+        "nome": "Frigobar 67 Litros Black Edition Inverter Bivolt Midea Preto",
+        "vendedoresNovos": 1,
+        "menorPreco": 999
+      },
+      {
+        "id": "MLB52435146",
+        "nome": "Geladeira Consul Frost Free 377 Litros Duplex Branca - CRM44MB",
+        "vendedoresNovos": 32,
+        "menorPreco": 2200
+      },
+      {
+        "id": "MLB68919870",
+        "nome": "Consul Cervejeira Titanium CZD12MT 83L 127V Cinza Escuro com porta de vidro",
+        "vendedoresNovos": 11,
+        "menorPreco": 1662.26
+      },
+      {
+        "id": "MLB65066499",
+        "nome": "Geladeira Consul Cycle Defrost 332 Litros Duplex - CRD37MB",
+        "vendedoresNovos": 21,
+        "menorPreco": 1939
+      },
+      {
+        "id": "MLB24044937",
+        "nome": "Philco geladeira inverter frost free PRF535I inox com freezer 437l",
+        "vendedoresNovos": 1,
+        "menorPreco": 3599.99
+      },
+      {
+        "id": "MLB43990036",
+        "nome": "Geladeira Electrolux Frost Free com AutoSense 480L Efficient Duplex Cor Inox Loo",
+        "vendedoresNovos": 14,
+        "menorPreco": 3149.53
+      },
+      {
+        "id": "MLB59799660",
+        "nome": "Geladeira Consul Frost Free 333 Litros Duplex Branca - CRM40MB",
+        "vendedoresNovos": 31,
+        "menorPreco": 2249
+      },
+      {
+        "id": "MLB39202003",
+        "nome": "Geladeira Electrolux Frost Free IM7 Inverter 480L Efficient AutoSense 3 Portas B",
+        "vendedoresNovos": 9,
+        "menorPreco": 2700
+      },
+      {
+        "id": "MLB40760004",
+        "nome": "Frigobar Hisense 45 Litros Branco 1 Porta RR58NW",
+        "vendedoresNovos": 2,
+        "menorPreco": 689
+      }
+    ],
+    "maquina-de-lavar": [
+      {
+        "id": "MLB19055866",
+        "nome": "Lava E Seca Samsung Wd11m Com Digital Inverter Inox 11kg Cor Inox look",
+        "vendedoresNovos": 1,
+        "menorPreco": 3382.99
+      },
+      {
+        "id": "MLB59322248",
+        "nome": "Máquina De Lavar Branca Consul 12kg Com Dosagem Econômica E Cor Branco 110v",
+        "vendedoresNovos": 8,
+        "menorPreco": 1099.48
+      },
+      {
+        "id": "MLB35339892",
+        "nome": "Tanquinho de Lavar Roupa 10Kg Britânia Semiautomático BLR03",
+        "vendedoresNovos": 13,
+        "menorPreco": 449.99
+      },
+      {
+        "id": "MLB50374755",
+        "nome": "Máquina De Lavar Electrolux 14,5kg Cesto Inox Lep15 Preto",
+        "vendedoresNovos": 5,
+        "menorPreco": 1879
+      },
+      {
+        "id": "MLB36579268",
+        "nome": "Máquina de Lavar 15kg Electrolux Premium Care com Cesto Inox, Jet&Clean e Time C",
+        "vendedoresNovos": 13,
+        "menorPreco": 1859
+      },
+      {
+        "id": "MLB18925148",
+        "nome": "Lavadora De Roupas Semiautomática Lcs 20 20kg Colormaq Branco",
+        "vendedoresNovos": 21,
+        "menorPreco": 554.99
+      },
+      {
+        "id": "MLB66132984",
+        "nome": "Máquina De Lavar Brastemp 13kg Branca Com Ciclo Tira Manchas Branco",
+        "vendedoresNovos": 2,
+        "menorPreco": 1729
+      },
+      {
+        "id": "MLB25676946",
+        "nome": "Tanquinho Colormaq 15kg Branco",
+        "vendedoresNovos": 15,
+        "menorPreco": 509.99
+      },
+      {
+        "id": "MLB19037310",
+        "nome": "Máquina de Lavar Electrolux 15kg Branca Essential Care com Cesto Inox e Jet&Clea",
+        "vendedoresNovos": 5,
+        "menorPreco": 1574.74
+      },
+      {
+        "id": "MLB14815387",
+        "nome": "Lavadora Semiautomática Lcs 10kg Branca Colormaq 110v Branco",
+        "vendedoresNovos": 30,
+        "menorPreco": 439.92
+      },
+      {
+        "id": "MLB61372818",
+        "nome": "Máquina de Lavar Brastemp 14Kg Branca Smart Sensor- BWJ14AB",
+        "vendedoresNovos": 6,
+        "menorPreco": 1759.9
+      },
+      {
+        "id": "MLB66484708",
+        "nome": "Máquina de Lavar Consul 14Kg Branca com Modo Eco - CWN14AB",
+        "vendedoresNovos": 16,
+        "menorPreco": 1785.48
+      },
+      {
+        "id": "MLB39204995",
+        "nome": "Lavadora Digital Inverter Samsung WW11T Inox 11kg",
+        "vendedoresNovos": 3,
+        "menorPreco": 2630.99
+      }
+    ],
+    "robo-aspirador": [
+      {
+        "id": "MLB19731776",
+        "nome": "Robô aspirador Robot W90 varre aspira e passa pano 30w Wap cor preto",
+        "vendedoresNovos": 31,
+        "menorPreco": 349.9
+      }
+    ],
+    "cooktop": [
+      {
+        "id": "MLB22305960",
+        "nome": "Fogão Cooktop Elétrico Elgin 2 Bocas Preto",
+        "vendedoresNovos": 41,
+        "menorPreco": 98.99
+      },
+      {
+        "id": "MLB47366628",
+        "nome": "Fogão de Mesa Elétrico INMA de 2 Bocas para Camping e Viagem, em Inox",
+        "vendedoresNovos": 2,
+        "menorPreco": 97.89
+      },
+      {
+        "id": "MLB46671029",
+        "nome": "Cooktop 4 Bocas Atlas Agile Up Mesa Vidro Mega Chama Bivolt",
+        "vendedoresNovos": 11,
+        "menorPreco": 299.9
+      },
+      {
+        "id": "MLB50374350",
+        "nome": "Cooktop 5 Bocas a Gás Electrolux Mesa de Vidro Efficient Grade de Aço Fosco (KE5",
+        "vendedoresNovos": 18,
+        "menorPreco": 499
+      },
+      {
+        "id": "MLB50829128",
+        "nome": "Cooktop 5 Bocas A Gás Atlas Agile Up Mega Chama Preto",
+        "vendedoresNovos": 5,
+        "menorPreco": 398.99
+      }
+    ],
+    "micro-ondas": [
+      {
+        "id": "MLB19617676",
+        "nome": "Micro-ondas ME23S 23L Efficient Com Descongelamento Assistido Cor Inox Electrolu",
+        "vendedoresNovos": 36,
+        "menorPreco": 539.25
+      },
+      {
+        "id": "MLB19750516",
+        "nome": "Micro-ondas Electrolux 36L cor Inox Efficient com Descongelamento Assistido ME36",
+        "vendedoresNovos": 34,
+        "menorPreco": 729
+      },
+      {
+        "id": "MLB19104021",
+        "nome": "Micro-ondas MO-01-21-W 1200W Mondial",
+        "vendedoresNovos": 29,
+        "menorPreco": 449
+      },
+      {
+        "id": "MLB53767899",
+        "nome": "Micro-ondas 20l Branco Mastercook Midea",
+        "vendedoresNovos": 18,
+        "menorPreco": 430
+      },
+      {
+        "id": "MLB56461322",
+        "nome": "Micro-ondas 20L Preto MasterCook Midea MHP20P2",
+        "vendedoresNovos": 3,
+        "menorPreco": 472.39
+      },
+      {
+        "id": "MLB69351361",
+        "nome": "Micro-ondas Consul 23 Litros Função Marmita - CMS23A",
+        "vendedoresNovos": 10,
+        "menorPreco": 469.9
+      },
+      {
+        "id": "MLB19119107",
+        "nome": "Micro-ondas Brastemp 32L Branco com Menu Gourmet - BMS46AB",
+        "vendedoresNovos": 8,
+        "menorPreco": 647
+      },
+      {
+        "id": "MLB75879865",
+        "nome": "Micro-ondas Philco 20L 1100W Limpa Fácil Tira Odor PMO24E",
+        "vendedoresNovos": 1,
+        "menorPreco": 499
+      },
+      {
+        "id": "MLB19310683",
+        "nome": "Micro-ondas Consul 32L Prata com Menu Fácil - CMS46AR 220v",
+        "vendedoresNovos": 24,
+        "menorPreco": 699.34
+      }
+    ],
+    "lava-loucas": [
+      {
+        "id": "MLB49503931",
+        "nome": "Lava-louça Electrolux Inox Com Programa Lava E Seca LS08E Cinza",
+        "vendedoresNovos": 14,
+        "menorPreco": 1849
+      }
+    ],
+    "aspirador-de-po": [
+      {
+        "id": "MLB18238727",
+        "nome": "Aspirador de Pó Vertical Electrolux 1450W STK15 com Fio Portátil de Mão 2 em 1 e",
+        "vendedoresNovos": 28,
+        "menorPreco": 189.9
+      },
+      {
+        "id": "MLB22511808",
+        "nome": "Aspirador de Pó Vertical e Portátil WAP High Speed Plus 1350W 3 em 1",
+        "vendedoresNovos": 31,
+        "menorPreco": 137.3
+      },
+      {
+        "id": "MLB21672188",
+        "nome": "Aspirador Pó E Água Soprador Wap Gtw 10 Maré 1400w Cor Cinza",
+        "vendedoresNovos": 20,
+        "menorPreco": 235
+      },
+      {
+        "id": "MLB40340936",
+        "nome": "Aspirador de Pó Turbo Cycle, Mondial, 1500W - AP-40-B",
+        "vendedoresNovos": 9,
+        "menorPreco": 155.01
+      },
+      {
+        "id": "MLB34001157",
+        "nome": "Aspirador de Pó e Água Electrolux Compacto Potente Função Sopro 1400W 12L total ",
+        "vendedoresNovos": 3,
+        "menorPreco": 449.99
+      },
+      {
+        "id": "MLB62021470",
+        "nome": "Aspirador Vertical WAP POWER SPEED MAX CI10 3 EM 1 1600W 220V",
+        "vendedoresNovos": 8,
+        "menorPreco": 215
+      },
+      {
+        "id": "MLB65973789",
+        "nome": "Aspirador Portátil 3 Em 1 Com Soprador e Filtro HEPA Para Carro e Teclado USB",
+        "vendedoresNovos": 8,
+        "menorPreco": 23.72
+      },
+      {
+        "id": "MLB54472324",
+        "nome": "Aspirador de Pó Vertical Midea, 1350W, 2 em 1, cabo de 5M, Preto e Azul",
+        "vendedoresNovos": 4,
+        "menorPreco": 127.8
+      },
+      {
+        "id": "MLB15977315",
+        "nome": "Philco PAS4000V aspirador de pó cor preto 127 V",
+        "vendedoresNovos": 66,
+        "menorPreco": 279.7
+      },
+      {
+        "id": "MLB18781058",
+        "nome": "Aspirador de Pó Vertical Electrolux 1.100W STK12 cabo de 5m portátil de mão 2 em",
+        "vendedoresNovos": 37,
+        "menorPreco": 154.3
+      },
+      {
+        "id": "MLB18361812",
+        "nome": "Electrolux STK14B aspirador de pó vertical com fio 1450W 2 em 1 filtro HEPA bran",
+        "vendedoresNovos": 11,
+        "menorPreco": 169.9
+      }
+    ],
+    "liquidificador": [
+      {
+        "id": "MLB15578948",
+        "nome": "Liquidificador Turbo Power Mondial 550W - L-99 FB",
+        "vendedoresNovos": 100,
+        "menorPreco": 70
+      },
+      {
+        "id": "MLB37700507",
+        "nome": "Liquidificador Pratic Turbo, Mondial, 550W - L-98-B",
+        "vendedoresNovos": 15,
+        "menorPreco": 83.9
+      },
+      {
+        "id": "MLB15578941",
+        "nome": "Liquidificador Philco 1200W 3L 12 Velocidades Preto PH900",
+        "vendedoresNovos": 58,
+        "menorPreco": 96.51
+      },
+      {
+        "id": "MLB16602518",
+        "nome": "Liquidificador Oster OLIQ610 1400w Full 3,2L Cor Preto",
+        "vendedoresNovos": 82,
+        "menorPreco": 139.9
+      }
+    ],
+    "batedeira": [
+      {
+        "id": "MLB16016316",
+        "nome": "Batedeira Prática Mondial 400W - B-44-B",
+        "vendedoresNovos": 62,
+        "menorPreco": 71.76
+      },
+      {
+        "id": "MLB49822923",
+        "nome": "Batedeira Planetária Philco 900W 5L Preta 12 Velocidades Turbo PBP90A",
+        "vendedoresNovos": 35,
+        "menorPreco": 272.69
+      }
+    ],
+    "ventilador": [
+      {
+        "id": "MLB18932156",
+        "nome": "Ventilador de Mesa 30cm Super Power Mondial 60W VSP-30-B",
+        "vendedoresNovos": 100,
+        "menorPreco": 126.32
+      },
+      {
+        "id": "MLB27341794",
+        "nome": "Ventilador de Coluna 40cm Super Power VSP40C 6 Pás 3 Velocidades Mondial",
+        "vendedoresNovos": 37,
+        "menorPreco": 194
+      },
+      {
+        "id": "MLB66128181",
+        "nome": "Ventilador de Teto 60W Silencioso Lâmpada Forte com LED, Controle e 6 Pás Soquet",
+        "vendedoresNovos": 2,
+        "menorPreco": 54.72
+      },
+      {
+        "id": "MLB35556218",
+        "nome": "Ventilador De Teto C/ Controle 6 Vel. Fenix Ventisol",
+        "vendedoresNovos": 9,
+        "menorPreco": 299
+      },
+      {
+        "id": "MLB80140889",
+        "nome": "Ventlador Bivolt 100W 6 Pás E27 3 Velocidades LED 3 Tons de Luz Silencioso",
+        "vendedoresNovos": 3,
+        "menorPreco": 39
+      },
+      {
+        "id": "MLB27291667",
+        "nome": "Ventilador Bvt400 Maxx Force 2 Em 1 150w Preto Britânia",
+        "vendedoresNovos": 99,
+        "menorPreco": 114.99
+      },
+      {
+        "id": "MLB18623660",
+        "nome": "Ventilador de Mesa Mondial Super Power 40cm 6 Pás VSP-40-B 127V Preto/Cinza",
+        "vendedoresNovos": 99,
+        "menorPreco": 119.9
+      },
+      {
+        "id": "MLB68225720",
+        "nome": "Ventlador de Teto 120W Silencioso Forte com LED, Controle e 6 Pás",
+        "vendedoresNovos": 1,
+        "menorPreco": 67.9
+      },
+      {
+        "id": "MLB14896780",
+        "nome": "Ventilador oscilante de parede ventisol Steel 6 pás 50cm preto",
+        "vendedoresNovos": 100,
+        "menorPreco": 260.95
+      },
+      {
+        "id": "MLB28365895",
+        "nome": "Ventilador de Mesa 40cm Arno X-TREME 7 - 7 PÁS, 150W VE70",
+        "vendedoresNovos": 16,
+        "menorPreco": 284.05
+      },
+      {
+        "id": "MLB18607536",
+        "nome": "Ventilador Parede 50cm 6Pás Monta Fácil Preto Ventisol",
+        "vendedoresNovos": 69,
+        "menorPreco": 183.01
+      },
+      {
+        "id": "MLB64641216",
+        "nome": "Ventilador de Coluna Britânia 6 Pás de 40cm 160W BVC41A",
+        "vendedoresNovos": 31,
+        "menorPreco": 189
+      },
+      {
+        "id": "MLB77843015",
+        "nome": "Wap Ventiladores Flow Turbo Coluna De pé - 50 cm - 60 - Preto Cinza - Plástico -",
+        "vendedoresNovos": 23,
+        "menorPreco": 289.9
+      },
+      {
+        "id": "MLB57685924",
+        "nome": "Ventilador De Mesa 40cm Turbo NVT-40-BL MONDIAL",
+        "vendedoresNovos": 1,
+        "menorPreco": 195.31
+      },
+      {
+        "id": "MLB34233590",
+        "nome": "Ventilador Arno X-treme 9 Mesa 40cm Ve90",
+        "vendedoresNovos": 8,
+        "menorPreco": 284.05
+      }
+    ],
+    "ferro-de-passar": [
+      {
+        "id": "MLB19723843",
+        "nome": "Ferro de Passar a Vapor e a Seco Electrolux ESI10 com Base Antiaderente",
+        "vendedoresNovos": 72,
+        "menorPreco": 88.42
+      },
+      {
+        "id": "MLB19569419",
+        "nome": "Ferro a Vapor, Mondial, 1200W - FVN-01-BL",
+        "vendedoresNovos": 8,
+        "menorPreco": 99.9
+      },
+      {
+        "id": "MLB15553602",
+        "nome": "Ferro A Seco Black+decker cor preto prateado Vfa1110tm2",
+        "vendedoresNovos": 100,
+        "menorPreco": 111.9
+      },
+      {
+        "id": "MLB19590006",
+        "nome": "Ferro de Passar a Seco Mondial 1200W - FSN-55-B",
+        "vendedoresNovos": 34,
+        "menorPreco": 58.93
+      },
+      {
+        "id": "MLB22598240",
+        "nome": "Ferro de Passar a Vapor Philips Walita Série 5000 com Base Cerâmica SteamGlide P",
+        "vendedoresNovos": 15,
+        "menorPreco": 297
+      }
+    ],
+    "freezer": [
+      {
+        "id": "MLB65348994",
+        "nome": "Freezer Horizontal 142l Inverter Bivolt Branco Midea",
+        "vendedoresNovos": 20,
+        "menorPreco": 1695
+      }
+    ],
+    "forno-eletrico": [
+      {
+        "id": "MLB28529446",
+        "nome": "Forno Elétrico Philco 50L Dupla Resistência PFE52P",
+        "vendedoresNovos": 9,
+        "menorPreco": 359.99
+      },
+      {
+        "id": "MLB26043644",
+        "nome": "Forno Elétrico Philco 44L Preto Dupla Resistência PFE44P",
+        "vendedoresNovos": 12,
+        "menorPreco": 359.9
+      }
+    ],
+    "coifa": [
+      {
+        "id": "MLB16079798",
+        "nome": "Depurador de Ar Suggar Slim com Manta 60 cm Cor Preto",
+        "vendedoresNovos": 3,
+        "menorPreco": 399
+      }
+    ],
+    "bebedouro-purificador-agua": [
+      {
+        "id": "MLB23390033",
+        "nome": "Bebedouro Bbe12p Aquaplus Para 10l Ou 20l Britânia Cor Preto",
+        "vendedoresNovos": 36,
+        "menorPreco": 329.89
+      },
+      {
+        "id": "MLB24804661",
+        "nome": "Purificador de Água Gelada Fria e Natural Elétrico Compacto Eletrônico placa Fil",
+        "vendedoresNovos": 84,
+        "menorPreco": 616.97
+      },
+      {
+        "id": "MLB26981065",
+        "nome": "Purificador De Água Electrolux Gelada/fria/natural Pe11x Bivolt Prateado",
+        "vendedoresNovos": 20,
+        "menorPreco": 549.9
+      },
+      {
+        "id": "MLB46943735",
+        "nome": "Purificador de Água Gelada Fria e Natural Eletrônico Placa Compacto Electrolux P",
+        "vendedoresNovos": 9,
+        "menorPreco": 589
+      }
+    ],
+    "sanduicheira-grill": [
+      {
+        "id": "MLB35276826",
+        "nome": "Sanduicheira Grill 2 Em 1 Kian Preta Elétrica 750w Cor Preto,Seu Mixto Quente Ul",
+        "vendedoresNovos": 74,
+        "menorPreco": 43.59
+      },
+      {
+        "id": "MLB25741527",
+        "nome": "Sanduicheira Elétrica Cadence SAN400 Preta",
+        "vendedoresNovos": 100,
+        "menorPreco": 80.99
+      }
+    ],
+    "processador-de-alimentos": [
+      {
+        "id": "MLB14523112",
+        "nome": "Multiprocessador Philco 1700W 9 em 1 Preto PMP1600P",
+        "vendedoresNovos": 51,
+        "menorPreco": 372.16
+      },
+      {
+        "id": "MLB80559379",
+        "nome": "Mini Mixer Elétrico Recarregável USB 3 Velocidades – Espumador de Leite Profissi",
+        "vendedoresNovos": 1,
+        "menorPreco": 19.99
+      }
+    ],
+    "maquina-de-costura": [
+      {
+        "id": "MLB15052632",
+        "nome": "Máquina De Costura Genius Plus Jx-4035 Elgin Cor Branco",
+        "vendedoresNovos": 29,
+        "menorPreco": 388
+      }
+    ]
+  },
+  "tendencias": {},
+  "estimativaPorTodasAsCategorias": {
+    "taxaNovosPorDetalhado": 0.785,
+    "nota": "extrapolação simples: novos/detalhados; calibrar com mais amostra"
+  }
+}
