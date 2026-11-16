@@ -81,6 +81,8 @@ const PUBLICOS = [
 ];
 const LEGAL_OK = new Set(['app/(shop)/sobre/page.tsx', 'app/(shop)/termos/page.tsx', 'app/go/[slug]/route.ts', 'lib/affiliate/message-template.ts']);
 const TERMO = /comiss|commission/i;
+/** Tira comentários (// e /* *​/) antes de procurar o termo: um comentário "sem aviso de comissão" não expõe nada; código e texto exibido continuam sendo flagrados. */
+const semComentarios = (t: string) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:\w'"`])\/\/.*$/gm, '$1');
 const IMPORT_ADMIN = /admin-gestao|admin-comissao|comissao-celula|taxas-comissao/;
 
 function parteB() {
@@ -93,8 +95,8 @@ function parteB() {
     const r = rel(f);
     const txt = fs.readFileSync(f, 'utf8');
     if (!isAdmin(r) && IMPORT_ADMIN.test(txt)) vazamentoImport.push(r);
-    if (!isAdmin(r) && TERMO.test(txt) && !BASELINE.has(r)) novos.push(r);
-    if (PUBLICOS.some((re) => re.test(r)) && TERMO.test(txt) && !LEGAL_OK.has(r)) publicosComTermo.push(r);
+    if (!isAdmin(r) && TERMO.test(semComentarios(txt)) && !BASELINE.has(r)) novos.push(r);
+    if (PUBLICOS.some((re) => re.test(r)) && TERMO.test(semComentarios(txt)) && !LEGAL_OK.has(r)) publicosComTermo.push(r);
   }
   check('nenhum módulo fora do admin importa a métrica de comissão prevista', vazamentoImport.length === 0, vazamentoImport);
   check("nenhum arquivo novo fora do admin contém 'comissao'/'commission'", novos.length === 0, novos);

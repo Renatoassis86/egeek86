@@ -1,1 +1,7 @@
-{ "timeoutS": 120, "ignorar": {} }
+{
+  "timeoutS": 120,
+  "ignorar": {
+    "orfao:test-cofre-integracao-123.ts": "grava e apaga linhas reais em coupon_announcements/coupon_validations no banco de producao: rodar so sob supervisao (nao automatico). Fila #134.",
+    "orfao:test-reaper-collector-runs.ts": "insere e apaga uma linha 'teste-reaper' em collector_runs no banco de producao: rodar so sob supervisao (nao automatico). Fila #134."
+  }
+}

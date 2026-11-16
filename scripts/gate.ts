@@ -52,6 +52,30 @@ for (const [id, cmd] of Object.entries(pkg.scripts)) {
   linhas.push({ id, resultado: r.ok ? 'PASSOU' : r.tempo ? 'TEMPO' : 'FALHOU', seg: r.seg, fim: r.ok ? undefined : r.fim });
 }
 
+// ÓRFÃOS (fila #134): todo scripts/test-*.ts que não está ligado a um `test:*` do package.json também roda no portão, por descoberta de arquivo.
+// Teste que toca o banco (heurística no código) só roda no --completo, com --env-file. Vermelho conhecido fica em gate.json > ignorar ("orfao:<arquivo>") COM motivo.
+const ligados = Object.values(pkg.scripts).join(' ');
+const orfaos = fs.readdirSync(path.join(raiz, 'scripts')).filter((f) => /^test-.*\.ts$/.test(f) && !ligados.includes(`scripts/${f}`)).sort();
+const tocaBanco = (f: string) => /_dup-shared|DATABASE_URL|from '(\.\.\/)+src\/db|@\/lib\/db|postgres\(/.test(fs.readFileSync(path.join(raiz, 'scripts', f), 'utf8'));
+for (const f of orfaos) {
+  const id = `orfao:${f}`;
+  if (so && !f.includes(so)) continue;
+  if (cfg.ignorar?.[id]) { linhas.push({ id, resultado: 'IGNORADO', seg: 0, motivo: cfg.ignorar[id] }); continue; }
+  const banco = tocaBanco(f);
+  if (banco && !completo) { linhas.push({ id, resultado: 'PULADO', seg: 0, motivo: 'toca o banco (use --completo)' }); continue; }
+  const t0 = Date.now();
+  const r = spawnSync('npx', ['tsx', '--conditions=react-server', ...(banco ? ['--env-file=.env.local'] : []), `scripts/${f}`], { cwd: raiz, shell: true, encoding: 'utf8', timeout: timeoutMs, maxBuffer: 20 * 1024 * 1024 });
+  const seg = Math.round((Date.now() - t0) / 100) / 10;
+  const tempo = r.error != null && /ETIMEDOUT/.test(String((r.error as NodeJS.ErrnoException).code ?? r.error));
+  const fim = `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split(/\r?\n/).filter(Boolean).slice(-3).join(' | ').slice(0, 220);
+  const ok = r.status === 0 && !r.error;
+  const saidaTotal = `${r.stdout ?? ''}
+${r.stderr ?? ''}`;
+  // Falhou só por falta de banco (a heurística estática não pegou): vira "exige banco", não vermelho.
+  if (!ok && !completo && /ECONNREFUSED|DATABASE_URL|Transaction Pooler|password authentication/i.test(saidaTotal)) { linhas.push({ id, resultado: 'PULADO', seg, motivo: 'exige banco (use --completo)' }); continue; }
+  linhas.push({ id, resultado: ok ? 'PASSOU' : tempo ? 'TEMPO' : 'FALHOU', seg, fim: ok ? undefined : fim });
+}
+
 const cont = (x: Linha['resultado']) => linhas.filter((l) => l.resultado === x).length;
 const falhas = linhas.filter((l) => l.resultado === 'FALHOU' || l.resultado === 'TEMPO');
 if (json) console.log(JSON.stringify({ modo: completo ? 'completo' : 'rapido', passou: cont('PASSOU'), falhou: falhas.length, pulado: cont('PULADO'), ignorado: cont('IGNORADO'), linhas }, null, 1));

@@ -202,7 +202,12 @@ const rec = (over: Partial<SentRecord> & { masterProductId: string; sentAt: Date
   ok(productDedupBlock(c, sent61, NOW) === null && cupomDedupBlock(c, sent61, NOW) === null, 'depois de 1 h o cupom pode voltar');
   ok(applyLimits([c], sent61, NOW).next === null, 'R-47: o mesmo cupom ja divulgado ha 61 min segue em cooldown de produto (8 h)');
   const sent9h = [rec({ masterProductId: c.masterProductId, sentAt: new Date(NOW.getTime() - 9 * 60 * MIN), trigger: 'CUPOM', cls: 'cupom', couponOfferId: 'o-cup' })];
+  // R-77 (2026-11-16): o mesmo cupom já divulgado não volta em 72 h sem novidade. Para provar que o COOLDOWN de 8 h (R-47) libera, a R-77 é isolada; a R-77 é afirmada à parte.
+  const r77 = process.env.GROUP_MASTER_REPEAT_SEM_NOVIDADE_H;
+  process.env.GROUP_MASTER_REPEAT_SEM_NOVIDADE_H = 'off';
   ok(applyLimits([c], sent9h, NOW).next?.messageKey === 'cup', 'applyLimits libera depois do cooldown de 8 h');
+  if (r77 === undefined) delete process.env.GROUP_MASTER_REPEAT_SEM_NOVIDADE_H; else process.env.GROUP_MASTER_REPEAT_SEM_NOVIDADE_H = r77;
+  ok(applyLimits([c], sent9h, NOW).next === null, 'R-77: o mesmo cupom já divulgado há 9 h segue barrado (sem novidade em 72 h)');
   // preco enviado do mesmo produto nao bloqueia o cupom
   const priceSent = [rec({ masterProductId: c.masterProductId, sentAt: new Date(NOW.getTime() - 5 * MIN), trigger: 'OK2', cls: 'alerta' })];
   ok(productDedupBlock(c, priceSent, NOW) === null, 'mensagem de preco do mesmo produto nao bloqueia o cupom');

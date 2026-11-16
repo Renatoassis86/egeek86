@@ -59,7 +59,9 @@ ok(avaliarConfirmacao({ ...E, auditoria: { verdict: 'ok', checkedAt: h(30) }, pr
 ok(avaliarConfirmacao({ ...E, auditoria: { verdict: 'ok', checkedAt: h(30) }, itemTrocadoEm: h(10) }).motivo === 'veredito_obsoleto', 'ok anterior à troca de anúncio: obsoleto');
 ok(avaliarConfirmacao({ ...E, auditoria: { verdict: 'ok', checkedAt: h(5) }, precoMudouEm: h(10) }).ok, 'ok posterior à mudança: vale');
 // Amazon/Shopee no estrito: sem veredito de página, valem pela janela de confirmação
-ok(avaliarConfirmacao({ ...E, rede: 'amazon', priceItemId: null, auditoria: null, confirmedAt: h(100) }).ok, 'estrito Amazon: sem veredito, confirmação de 100 min passa');
+// R-81 (2026-11-16): a Amazon só vale com leitura de até 45 min (antes: 130). A garantia é "sem veredito de página, vale pela janela de confirmação".
+ok(avaliarConfirmacao({ ...E, rede: 'amazon', priceItemId: null, auditoria: null, confirmedAt: h(40) }).ok, 'estrito Amazon: sem veredito, confirmação de 40 min passa');
+ok(!avaliarConfirmacao({ ...E, rede: 'amazon', priceItemId: null, auditoria: null, confirmedAt: h(100) }).ok, 'estrito Amazon: confirmação de 100 min NÃO passa (R-81, 45 min)');
 ok(avaliarConfirmacao({ ...E, rede: 'amazon', priceItemId: null, auditoria: null, confirmedAt: h(140) }).motivo === 'confirmacao_velha', 'estrito Amazon: confirmação de 140 min barra');
 
 // Caminho de envio de grupos/canal (live-recheck): fail-open por padrão; estrito com CONFIRMACAO_ESTRITA_CANAL=1
@@ -93,7 +95,8 @@ const fase = (t: LiveTarget) => runLivePhase({ now, targets: [t], mode: 'single'
   ok(!(await fase(alvo({ ehBambu: false, auditoria: { verdict: 'pendente_de_anuncio', checkedAt: h(10) } }))).ok && (VEREDITOS_BLOQUEANTES as readonly string[]).includes('pendente_de_anuncio'), 'pendente_de_anuncio bloqueia');
   const ra = await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(200), auditoria: null }));
   ok(!ra.ok && /confirmacao_velha/.test(ra.reason ?? ''), 'canal escopo bambu: Amazon Bambu com leitura de 200 min não sai', ra.reason);
-  ok((await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(60), auditoria: null }))).ok, 'canal escopo bambu: Amazon Bambu com leitura de 60 min sai');
+  ok((await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(30), auditoria: null }))).ok, 'canal escopo bambu: Amazon Bambu com leitura de 30 min sai');
+  ok(!(await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(60), auditoria: null }))).ok, 'canal escopo bambu: Amazon Bambu com leitura de 60 min NÃO sai (R-81, 45 min)');
   delete process.env.CONFIRMACAO_ESTRITA_CANAL_ESCOPO;
   console.log(fails ? `${fails} falha(s)` : 'OK: auditoria de links #119');
   process.exit(fails ? 1 : 0);

@@ -741,3 +741,6 @@ Fonte: `docs/03-metodologia/METODOLOGIA_IA.md` (como se muda o sistema sem desfa
 
 ### 15.3 Pontas novas (fila)
 Ligar os 82 testes órfãos ao portão (#134); teste de paridade preço × mensagem × página × link e `preco-exibido.ts` em sombra (#133); primeira onda de congelamento após o ok do dono (#135); Fase 2 (hook de commit, hooks do Claude Code, GitHub Action; #136); estrangular `group-rules.ts` com testes de caracterização (#137).
+
+### 15.4 R-77 por vertical (2026-11-16, fila #139)
+A janela "o mesmo produto não volta sem novidade" da R-77 é de 72 h para todas as verticais, **exceto impressão 3D: 24 h** (`MASTER_REPEAT_H_POR_VERTICAL` em `group-rules.ts`). Motivo medido: o catálogo de 3D esgotou (56 de 67 propostas barradas, 17 h sem envio no canal enquanto os demais enviaram). A novidade material (queda de 2% ou R$ 10, degrau mais forte, cupom novo) segue liberando em qualquer janela. Override por vertical: `GROUP_MASTER_REPEAT_SEM_NOVIDADE_H_<VERTICAL>` (ex.: `..._IMPRESSAO3D=48`; `off` desliga só ela); o global mais curto vence; global `off` desliga tudo. Teste: `scripts/test-informacao-publicada-r71-r75.ts`. Reverter: `GROUP_MASTER_REPEAT_SEM_NOVIDADE_H_IMPRESSAO3D=72`. Decisão do dono em 2026-11-16 ("implementar tudo o que está aberto"), medir em 24 h se as mensagens de 3D voltaram sem repetir o mesmo preço.

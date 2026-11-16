@@ -1881,6 +1881,23 @@ export function masterRepeatSemNovidadeHours(env: Record<string, string | undefi
   const n = Number(raw);
   return Number.isFinite(n) && n > 0 && n <= 24 * 14 ? n : MASTER_REPEAT_SEM_NOVIDADE_H;
 }
+/**
+ * R-77 por vertical (fila #139, 2026-11-16): vertical com catálogo pequeno esgota em 72 h (impressão 3D ficou 17 h sem enviar). A janela da vertical é a do mapa abaixo;
+ * o global mais curto vence (min). Override por vertical: GROUP_MASTER_REPEAT_SEM_NOVIDADE_H_<VERTICAL> (ex.: ..._IMPRESSAO3D=48; 'off' desliga só ela). Global 'off' desliga tudo.
+ */
+export const MASTER_REPEAT_H_POR_VERTICAL: Record<string, number> = { impressao3d: 24 };
+export function masterRepeatHoursFor(vertical: string | null | undefined, env: Record<string, string | undefined> = process.env): number {
+  const global = masterRepeatSemNovidadeHours(env);
+  if (global === 0) return 0;
+  const raw = vertical ? env[`GROUP_MASTER_REPEAT_SEM_NOVIDADE_H_${vertical.toUpperCase()}`]?.trim() : undefined;
+  if (raw) {
+    if (/^(off|false|0)$/i.test(raw)) return 0;
+    const n = Number(raw);
+    if (Number.isFinite(n) && n > 0 && n <= 24 * 14) return n;
+  }
+  const padrao = vertical ? MASTER_REPEAT_H_POR_VERTICAL[vertical] : undefined;
+  return padrao !== undefined ? Math.min(padrao, global) : global;
+}
 /** Queda mínima contra o último preço enviado para valer como novidade: 2% ou R$ 10 (o que ocorrer primeiro). */
 export const NOVIDADE_QUEDA_PCT = 2;
 export const NOVIDADE_QUEDA_CENTS = 1000;
@@ -1892,10 +1909,10 @@ export const NOVIDADE_QUEDA_CENTS = 1000;
  * O tempo sozinho nunca é novidade dentro da janela. Caso fundador: Resina Anycubic 1 kg Standard (R$ 169,90) enviada 8 vezes em 3 dias, a cada 8 h.
  */
 export function masterSemNovidadeBlock(
-  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger' | 'offerIds' | 'couponRef' | 'regua'> & { cls?: MessageClass },
+  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger' | 'offerIds' | 'couponRef' | 'regua'> & { cls?: MessageClass; vertical?: string | null },
   history: SentRecord[],
   now: Date,
-  hours: number = masterRepeatSemNovidadeHours()
+  hours: number = masterRepeatHoursFor(c.vertical)
 ): string | null {
   if (!(hours > 0) || !c.masterProductId || c.trigger === 'G4' || c.trigger === 'RADAR' || c.cls === 'plataforma') return null;
   const winMs = hours * 3600_000;

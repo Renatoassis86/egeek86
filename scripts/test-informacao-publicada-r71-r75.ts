@@ -10,7 +10,7 @@ import { hojeContradizBase, baseIncluiAmazon } from '../src/lib/messaging/base-c
 import { vendasTexto } from '../src/lib/messaging/group-messages';
 import { ofertaNovaNoMonitoramento, ACHADO_NOVO_MAX_HORAS } from '../src/lib/messaging/group-rules';
 import { condicaoNaoNova, CONDICAO_NAO_NOVA_PG } from '../src/lib/pricing/condicao-nao-nova';
-import { masterSemNovidadeBlock, masterRepeatSemNovidadeHours, type SentRecord } from '../src/lib/messaging/group-rules';
+import { masterSemNovidadeBlock, masterRepeatSemNovidadeHours, masterRepeatHoursFor, type SentRecord } from '../src/lib/messaging/group-rules';
 import { avaliarIsca, type ReferenciaIsca } from '../src/lib/pricing/preco-isca';
 
 let n = 0;
@@ -139,6 +139,27 @@ ok('R-77: novidade material libera (queda >= 2% ou R$ 10, degrau mais forte, cup
 ok('R-77: plataforma e radar ficam fora; guarda: o plano chama o bloqueio', () => {
   assert.equal(masterSemNovidadeBlock({ ...cand, cls: 'plataforma' as const }, [env(8)], T0), null);
   assert.match(src('src/lib/messaging/group-rules.ts'), /why = masterSemNovidadeBlock\(c, history, now\)/);
+});
+
+// ---- R-77 por vertical (fila #139, 2026-11-16): impressao 3D tem catalogo pequeno e ficou 17 h sem enviar; a janela dela e 24 h, as demais seguem 72 h ----
+ok('R-77 por vertical: impressao3d = 24 h, demais = 72 h, override por variavel e global off valem', () => {
+  assert.equal(masterRepeatHoursFor('impressao3d', {}), 24);
+  assert.equal(masterRepeatHoursFor('games', {}), 72);
+  assert.equal(masterRepeatHoursFor(null, {}), 72);
+  assert.equal(masterRepeatHoursFor('impressao3d', { GROUP_MASTER_REPEAT_SEM_NOVIDADE_H_IMPRESSAO3D: '48' }), 48);
+  assert.equal(masterRepeatHoursFor('impressao3d', { GROUP_MASTER_REPEAT_SEM_NOVIDADE_H_IMPRESSAO3D: 'off' }), 0);
+  assert.equal(masterRepeatHoursFor('impressao3d', { GROUP_MASTER_REPEAT_SEM_NOVIDADE_H: '12' }), 12, 'o global mais curto vence o padrao da vertical');
+  assert.equal(masterRepeatHoursFor('impressao3d', { GROUP_MASTER_REPEAT_SEM_NOVIDADE_H: 'off' }), 0, 'global off desliga tudo');
+});
+ok('R-77 por vertical: 3D volta depois de 24 h sem novidade; games e demais seguem barrados ate 72 h', () => {
+  const c3d = { ...cand, vertical: 'impressao3d' };
+  assert.match(masterSemNovidadeBlock(c3d, [env(18)], T0) ?? '', /^master_repetido_sem_novidade_24h/);
+  assert.equal(masterSemNovidadeBlock(c3d, [env(25)], T0), null);
+  const cg = { ...cand, vertical: 'games' };
+  assert.match(masterSemNovidadeBlock(cg, [env(30)], T0) ?? '', /^master_repetido_sem_novidade_72h/);
+  assert.equal(masterSemNovidadeBlock(c3d, [env(18)], T0, 0), null, 'horas explicitas continuam mandando');
+  // novidade material continua liberando a 3D mesmo dentro de 24 h
+  assert.equal(masterSemNovidadeBlock({ ...c3d, priceCents: 16990 - 1000 }, [env(8)], T0), null);
 });
 
 console.log(`${n} testes ok (R-71 a R-75)`);
