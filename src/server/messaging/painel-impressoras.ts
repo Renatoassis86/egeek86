@@ -14,7 +14,7 @@ import { amazonForaDasMensagens, avaliarConfirmacao, confirmacaoLigada, rigidoPr
 import { ultimosVereditos } from '@/server/links/auditoria-links';
 import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
-  alvosLigados, INTERVALO_RODADA_MS, MAX_QUEDAS_POR_CICLO, MASTERS_PRIVADO, montarPaineis, secaoDe, textoQuedaSeguro,
+  alvosLigados, TOP_POR_MODELO, INTERVALO_RODADA_MS, MAX_QUEDAS_POR_CICLO, MASTERS_PRIVADO, montarPaineis, secaoDe, textoQuedaSeguro,
   type Alvo, type GatilhoIndividual, type OfertaPainel, type SaidaPaineis,
 } from '@/lib/messaging/painel-impressoras';
 
@@ -154,7 +154,8 @@ export async function gerarLista(now: Date, gravarLista = true): Promise<ListaCo
   // Frete e prazo (#118): só nos 20 primeiros itens de cada rede (P2S Combo primeiro) para não estourar 4096. Sem leitura fresca: 'Prazo ainda não lido'.
   try {
     for (const rede of ['mercado-livre', 'amazon']) {
-      const ord = comAnterior.filter((o) => o.rede === rede).sort((a, b) => { const x = secaoDe(a), y = secaoDe(b); return x.rank - y.rank || x.ordemFixa - y.ordemFixa || a.cents - b.cents; }).slice(0, 20);
+      const porModelo = new Map<string, number>();
+      const ord = comAnterior.filter((o) => o.rede === rede).sort((a, b) => a.cents - b.cents).filter((o) => { const k = secaoDe(o).chave; const n = porModelo.get(k) ?? 0; porModelo.set(k, n + 1); return n < TOP_POR_MODELO; });
       const linhas = await linhasFretePrazoPorOferta(ord.map((o) => o.id), now);
       for (const o of ord) o.fretePrazo = linhas.get(o.id) ?? 'Prazo ainda não lido';
     }

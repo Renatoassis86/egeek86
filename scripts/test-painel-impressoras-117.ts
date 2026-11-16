@@ -27,24 +27,23 @@ const mix = [
 const r = montarPaineis({ ofertas: mix, inicio: now, adTag: '#publicidade' });
 const t0 = r.paineis[0].text;
 ok(r.paineis.length === 1 && r.paineis[0].rede === 'mercado-livre', 'um painel ML', r.paineis.length);
-const ordem = ['P2S Combo', 'P1S Combo', 'A1 Combo', 'A1 Mini', 'Kobra', 'X2d', 'Ender 3'].map((k) => t0.lastIndexOf(k));
+const ordem = ['P2S Combo', 'P1S Combo', 'A1 Combo', 'A1 Mini', 'Kobra', 'X2d', 'Ender 3'].map((k) => t0.toLowerCase().lastIndexOf(k.toLowerCase()));
 ok(ordem.every((v, i) => v >= 0 && (i === 0 || v > ordem[i - 1])), 'ordem do dono (combo primeiro, Kobra, Bambu, demais)', ordem);
-ok(t0.indexOf('R$ 8.330,00</a>') < t0.indexOf('R$ 9.000,00</a>'), 'menor ao maior');
-ok(t0.includes('⭐') && t0.includes('MENOR PREÇO'), 'destaque P2S/P1S Combo');
+ok(t0.indexOf('R$ 8.330,00</b></a>') < t0.indexOf('R$ 9.000,00</b></a>'), 'menor ao maior');
+ok(t0.includes('⭐') && t0.includes('MELHOR PREÇO AGORA'), 'destaque P2S/P1S Combo');
 ok(t0.includes('#publicidade') && t0.includes('/mercado/impressao3d'), 'rodape');
-ok(/Bambu P2S[/]P1S Combo · [0-9]{2}:[0-9]{2} · parte 1[/]1/.test(t0) && !/Bras[ií]lia/i.test(t0), 'hora sem Brasília');
+ok(/BAMBU P2S . P1S COMBO · MERCADO LIVRE/.test(t0) && /Atualizado às [0-9]{2}:[0-9]{2}/.test(t0) && !/parte/.test(t0) && !/Bras[ií]lia/i.test(t0), 'cabeçalho claro, hora sem Brasília');
 ok(!/amazon/i.test(t0), 'ML sem Amazon');
-ok(/não é medido por nós/.test(t0) && !/chega em \d|entrega em \d|prazo de \d/i.test(t0), 'prazo não afirmado');
+ok(!/não é medido por nós/.test(t0) && !/chega em \d|entrega em \d|prazo de \d/i.test(t0), 'sem texto interno nem prazo inventado');
 
 // Muitas ofertas: várias mensagens, todas < 4096, nenhuma linha perdida, numeração por seção.
 const muitas = Array.from({ length: 600 }, (_, i) => of(i % 2 ? 'Impressora 3d Bambu Lab A1 Combo' : 'Impressora 3D Bambu Lab P2S Combo de FDM', 800000 + i * 100, 'mercado-livre', `Loja <${i}> & Cia`));
 const g = montarPaineis({ ofertas: muitas, inicio: now, adTag: '#publicidade' });
-ok(g.paineis.length > 3 && g.paineis.every((p) => p.text.length < 4096), 'cada mensagem < 4096', g.paineis.map((p) => p.text.length));
-const linhas = g.paineis.map((p) => (p.text.match(/^\d+\. /gm) ?? []).length).reduce((a, b) => a + b, 0);
-ok(linhas === 600, 'sem anúncio perdido', linhas);
+ok(g.paineis.length >= 1 && g.paineis.every((p) => p.text.length < 4096), 'cada mensagem < 4096', g.paineis.map((p) => p.text.length));
+const linhas = g.paineis.map((p) => (p.text.match(/^(?:🥇|🥈|🥉|4️⃣|5️⃣) /gm) ?? []).length).reduce((a, b) => a + b, 0);
+ok(linhas === 10 && g.paineis.every((p) => /➕ outros 295/.test(g.paineis.map((x) => x.text).join())), 'só os 5 melhores de cada modelo, resto resumido', linhas);
 ok(g.paineis.every((p) => textProblems(p.text, 'tg').length === 0), 'barreira limpa em todas');
 ok(g.paineis[0].text.includes('&lt;') && g.paineis[0].text.includes('&amp;'), 'escape HTML');
-ok(g.paineis.some((p) => p.text.includes('(continuação)')), 'continuação marcada');
 ok(g.paineis.map((p) => p.key).join() === g.paineis.map((_, i) => `ml-${String(i).padStart(2, '0')}`).join(), 'chaves posicionais estáveis');
 
 // Frescor: > 24 h fica de fora e é contado.
@@ -71,11 +70,11 @@ ok(b.ativosMl === 1 && !/Afiliada/.test(b.paineis[0].text), 'loja vetada sai');
 ok(ordenar(of('x', 1), of('x', 2)) < 0, 'ordenar');
 
 // Lista: cabeçalho "Lista de impressoras 3D · HH:MM · parte i/N" em toda mensagem; resumo de 1 linha por item.
-ok(g.paineis.every((p, i) => p.text.includes(`parte ${i + 1}/${g.paineis.length}`) && /Bambu P2S[/]P1S Combo · \d{2}:\d{2}/.test(p.text)), 'cabeçalho com parte i/N');
+ok(g.paineis.every((p, i) => (g.paineis.length === 1 || p.text.includes(`parte ${i + 1}/${g.paineis.length}`)) && /BAMBU P2S . P1S COMBO/.test(p.text)), 'cabeçalho em toda mensagem');
 const rs = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 90000, 'mercado-livre', 'L', 1, { anteriorCents: 100000, minimo14: true, beneficios: [{ rotulo: 'Itaú Mastercard 15%', needsConfirm: true }] })], inicio: now, adTag: '' });
-ok(rs.paineis[0].text.includes('↓ 10% (era R$ 1.000,00)') && rs.paineis[0].text.includes('novo mínimo de 14 dias') && rs.paineis[0].text.includes('(a confirmar no carrinho)'), 'resumo: queda, mínimo, cartão', rs.paineis[0].text);
+ok(rs.paineis[0].text.includes('caiu 10% (era R$ 1.000,00)') && rs.paineis[0].text.includes('menor preço em 14 dias') && rs.paineis[0].text.includes('(a confirmar no carrinho)'), 'resumo: queda, mínimo, cartão', rs.paineis[0].text);
 const alta = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 110000, 'mercado-livre', 'L', 1, { anteriorCents: 100000 })], inicio: now, adTag: '' });
-ok(alta.paineis[0].text.includes('↑ 10%'), 'resumo: alta');
+ok(alta.paineis[0].text.includes('subiu 10%'), 'resumo: alta');
 const am3 = montarPaineis({ ofertas: [of('Impressora 3d Bambu Lab A1', 90000, 'amazon', 'Amazon.com.br')], inicio: now, adTag: '#publicidade' });
 ok(am3.paineis.length === 1 && /Preço na Amazon em [0-9]{2}[/][0-9]{2} às [0-9]{2}:[0-9]{2}/.test(am3.paineis[0].text) && !/Amazon.com/.test(am3.paineis[0].text), 'Amazon: carimbo em todas as partes, loja não aparece');
 
@@ -83,8 +82,8 @@ ok(am3.paineis.length === 1 && /Preço na Amazon em [0-9]{2}[/][0-9]{2} às [0-9
 const q = textoQuedaSeguro({ rede: 'mercado-livre', titulo: 'Impressora 3D Bambu Lab P2S Combo <FDM>', loja: 'LOJA X', reputacao: '98% de avaliações positivas', cents: 800000, anteriorCents: 833000, minimo14: true, url: 'https://meli.la/abc', leituraEm: now,
   cupom: { nome: 'R$ 20 OFF em LOJA', finalCents: 780000, passo: 'ative em Cupons' }, cartoes: [{ rotulo: 'Itaú Mastercard 15%', finalCents: 680000, needsConfirm: true }], adTag: '#publicidade' });
 ok(!!q.text && q.text.length < 4096, 'queda cabe', q.problemas);
-ok(q.text!.includes('queda de 4%') && q.text!.includes('R$ 8.330,00') && q.text!.includes('novo mínimo de 14 dias') && q.text!.includes('&lt;FDM&gt;'), 'queda: preços, %, mínimo, escape');
-ok(q.text!.includes('Cupom R$ 20 OFF em LOJA') && q.text!.includes('R$ 6.800,00') && q.text!.includes('a confirmar no carrinho'), 'queda: cupom e cartão');
+ok(q.text!.includes('queda de 4%') && q.text!.includes('R$ 8.330,00') && q.text!.includes('Novo mínimo de 14 dias') && q.text!.includes('&lt;FDM&gt;'), 'queda: preços, %, mínimo, escape');
+ok(q.text!.includes('Cupom R$ 20 OFF em LOJA') && q.text!.includes('R$ 6.800,00</b>') && q.text!.includes('a confirmar no carrinho'), 'queda: cupom e cartão');
 ok(q.text!.includes('🚚 Prazo ainda não lido') && !/chega em \d|entrega em \d/i.test(q.text!), 'queda: sem leitura, prazo não inventado');
 const gat = (g: 'queda' | 'minimo' | 'cupom' | 'cartao') => textoQuedaSeguro({ gatilho: g, rede: 'mercado-livre', titulo: 'Impressora 3d Bambu Lab P1s Combo', loja: 'LOJA X', reputacao: '98% de avaliações positivas', cents: 600000, anteriorCents: g === 'cupom' || g === 'cartao' ? null : 650000, anteriorEm: now, minimo14: g === 'minimo', url: 'https://meli.la/x', leituraEm: now, cupom: g === 'cupom' ? { nome: 'R$ 50 OFF em LOJA X', finalCents: 595000, passo: null } : null, cartoes: g === 'cartao' ? [{ rotulo: 'Itaú Mastercard 15%', finalCents: 510000, needsConfirm: true }] : [], fretePrazo: 'Frete grátis · chega de 26/11 a 27/11 (CEP 58035090)', adTag: '#publicidade' });
 ok(gat('queda').text!.includes('📉 Queda de preço') && gat('minimo').text!.includes('🏷️ Novo mínimo de 14 dias') && gat('cupom').text!.includes('🎟️ Cupom no anúncio') && gat('cartao').text!.includes('💳 Desconto no cartão'), 'rótulos dos 4 gatilhos');

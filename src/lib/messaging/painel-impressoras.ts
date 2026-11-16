@@ -117,62 +117,76 @@ export function resumoOferta(o: OfertaPainel): string {
   return p.join(' · ');
 }
 
+/** Quantas ofertas de cada modelo aparecem em detalhe na lista; o resto vira uma linha de resumo (decisão: ler 5 e comparar, não 37). */
+export const TOP_POR_MODELO = 5;
+const MEDALHA = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+
+const efetivo = (o: OfertaPainel): number => (o.cupomFinalCents != null && o.cupomFinalCents > 0 && o.cupomFinalCents < o.cents ? o.cupomFinalCents : o.cents);
+
+/** Uma oferta em até 4 linhas: preço (link) e loja; frete/prazo; variação; cupom e cartão. Só o que foi lido. */
 function linhaOferta(i: number, o: OfertaPainel, rede: string): string {
   const loja = rede === 'amazon' ? '' : nomeLoja(o.loja);
-  const l1 = o.url ? `${i}. <a href="${escapeTelegramAttr(o.url)}">${brl(o.cents)}</a>${loja}` : `${i}. ${brl(o.cents)}${loja}`;
-  const r = resumoOferta(o);
-  if (o.fretePrazo) return `${l1}${r ? `\n    ${e(r)}` : ''}\n    🚚 ${e(o.fretePrazo)}`;
-  return r ? `${l1}
-    ${e(r)}` : l1;
+  const medalha = MEDALHA[i - 1] ?? `${i}.`;
+  const preco = o.url ? `<a href="${escapeTelegramAttr(o.url)}"><b>${brl(o.cents)}</b></a>` : `<b>${brl(o.cents)}</b>`;
+  const L = [`${medalha} ${preco}${loja}`];
+  if (o.fretePrazo) L.push(`      🚚 ${e(o.fretePrazo)}`);
+  const v: string[] = [];
+  if (o.anteriorCents && o.anteriorCents !== o.cents) {
+    const pct = Math.max(1, Math.round((Math.abs(o.cents - o.anteriorCents) / o.anteriorCents) * 100));
+    v.push(`${o.cents < o.anteriorCents ? '📉 caiu' : '📈 subiu'} ${pct}% (era ${brl(o.anteriorCents)})`);
+  }
+  if (o.minimo14) v.push('🏷️ menor preço em 14 dias');
+  if (v.length) L.push(`      ${v.join(' · ')}`);
+  if (o.cupomFinalCents != null && o.cupomFinalCents > 0 && o.cupomFinalCents < o.cents) L.push(`      🎟️ ${o.cupomNome ? `Cupom ${e(o.cupomNome)}` : 'Com cupom'}: <b>${brl(o.cupomFinalCents)}</b>`);
+  const b = (o.beneficios ?? [])[0];
+  if (b) L.push(`      💳 ${e(b.rotulo)}${b.needsConfirm ? ' (a confirmar no carrinho)' : ''}`);
+  return L.join('\n');
 }
+
+const SEP = '━━━━━━━━━━━━━━━';
 
 function cabecalhoSecao(s: Secao, cont: boolean): string {
   const t = e(tituloSeguro(s.titulo));
-  const base = Math.min(...s.ofertas.map((o) => o.cents));
   const n = s.ofertas.length;
-  if (cont) return `\n<b>${s.destaque ? '⭐ ' : ''}${t}</b> (continuação)`;
-  return `\n<b>${s.destaque ? '⭐ ' : ''}${t}</b> · ${n} anúncio${n === 1 ? '' : 's'} · a partir de ${brl(base)}`;
+  if (cont) return `
+<b>${s.destaque ? '⭐ ' : ''}${t}</b> (continuação)`;
+  return `
+${SEP}
+<b>${s.destaque ? '⭐ ' : ''}${t.toUpperCase()}</b> · ${n} anúncio${n === 1 ? '' : 's'}`;
+}
+
+/** Linhas de uma seção: as TOP_POR_MODELO melhores em detalhe e uma linha com o restante (faixa de preço). */
+function linhasSecao(s: Secao, rede: string): string[] {
+  const top = s.ofertas.slice(0, TOP_POR_MODELO).map((o, i) => linhaOferta(i + 1, o, rede));
+  const resto = s.ofertas.slice(TOP_POR_MODELO);
+  if (resto.length) top.push(`➕ outros ${resto.length}: de ${brl(resto[0].cents)} a ${brl(resto[resto.length - 1].cents)}`);
+  return top;
 }
 
 function resumo(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: number): string[] {
   const L: string[] = [];
-  const pl = total === 1 ? '' : 's';
-  L.push(`${total} anúncio${pl} ativo${pl} em ${secoes.length} modelo${secoes.length === 1 ? '' : 's'}`);
   const dest = secoes.filter((s) => s.destaque).sort((a, b) => a.ordemFixa - b.ordemFixa);
   if (dest.length) {
-    L.push('', '🏆 <b>MENOR PREÇO</b>');
-    for (const s of dest) L.push(`⭐ ${e(s.titulo)}: <b>${brl(s.ofertas[0].cents)}</b>${rede === 'amazon' ? '' : nomeLoja(s.ofertas[0].loja)}`);
-    const comCupom = dest.flatMap((s) => s.ofertas.filter((o) => o.cupomFinalCents != null && o.cupomFinalCents > 0 && o.cupomFinalCents < o.cents));
-    comCupom.sort((a, b) => (a.cupomFinalCents as number) - (b.cupomFinalCents as number));
-    if (comCupom.length) {
-      const c = comCupom[0];
-      const nome = c.cupomNome ? `${e(c.cupomNome)}: ` : '';
-      L.push('', '🎟️ <b>CUPOM</b>', `${nome}<b>${brl(c.cupomFinalCents as number)}</b> com cupom (de ${brl(c.cents)}) · ${e(secaoDe(c).titulo)}`);
+    L.push('🏆 <b>MELHOR PREÇO AGORA</b>');
+    for (const s of dest) {
+      const o = s.ofertas[0];
+      const ef = efetivo(o);
+      L.push(`⭐ ${e(s.titulo)}: <b>${brl(o.cents)}</b>${rede === 'amazon' ? '' : nomeLoja(o.loja)}${ef < o.cents ? ` · com cupom ${brl(ef)}` : ''}`);
     }
-    const cartoes = new Map<string, { rotulo: string; conf: boolean }>();
-    for (const s of dest) for (const o of s.ofertas) for (const b of o.beneficios ?? []) {
-      const k = b.rotulo.toLowerCase();
-      const cur = cartoes.get(k) ?? { rotulo: b.rotulo, conf: false };
-      cur.conf = cur.conf || b.needsConfirm;
-      cartoes.set(k, cur);
-    }
-    if (cartoes.size) {
-      L.push('', '💳 <b>CARTÃO E PAGAMENTO</b>');
-      for (const c of [...cartoes.values()].slice(0, 4)) L.push(`• ${e(c.rotulo)}${c.conf ? ' · a confirmar no carrinho' : ''}`);
-    }
+  } else {
+    const pl = total === 1 ? '' : 's';
+    L.push(`${total} anúncio${pl} ativo${pl} em ${secoes.length} modelo${secoes.length === 1 ? '' : 's'}`);
   }
-  L.push('', 'Prazo de entrega: não é medido por nós; a data aparece na página da loja, conforme o seu CEP.');
-  void rede;
   return L;
 }
 
 const RESERVA_CABECALHO = 170;
 
 export function cabecalhoParte(rede: 'mercado-livre' | 'amazon', inicio: Date, i: number, n: number): string {
-  const nome = rede === 'amazon' ? 'Amazon' : 'Mercado Livre';
-  const l1 = `🖨️ <b>Bambu P2S/P1S Combo · ${rede === 'amazon' ? 'Amazon · ' : ''}${horaSP(inicio)} · parte ${i}/${n}</b>`;
-  return rede === 'amazon' ? `${l1}
-Preço na Amazon em ${diaSP(inicio)} às ${horaSP(inicio)}` : l1;
+  const l1 = `🖨️ <b>BAMBU P2S / P1S COMBO · ${rede === 'amazon' ? 'AMAZON' : 'MERCADO LIVRE'}</b>`;
+  const l2 = rede === 'amazon' ? `Preço na Amazon em ${diaSP(inicio)} às ${horaSP(inicio)}` : `Atualizado às ${horaSP(inicio)}`;
+  return `${l1}
+${l2}${n > 1 ? ` · parte ${i}/${n}` : ''}`;
 }
 
 /** Empacota seções em mensagens: seção inteira vai junta quando cabe; seção grande começa mensagem nova e continua nas seguintes. */
@@ -181,7 +195,7 @@ function empacotar(rede: 'mercado-livre' | 'amazon', secoes: Secao[], total: num
   const msgs: string[][] = [resumo(rede, secoes, total)];
   const tam = (m: string[]) => m.join('\n').length;
   for (const s of secoes) {
-    const linhas = s.ofertas.map((o, i) => linhaOferta(i + 1, o, rede));
+    const linhas = linhasSecao(s, rede);
     const bloco = [cabecalhoSecao(s, false), ...linhas];
     const atual = msgs[msgs.length - 1];
     if (tam(atual) + 1 + tam(bloco) <= max) { atual.push(...bloco); continue; }
@@ -271,14 +285,16 @@ export function textoQueda(q: EntradaQueda): string {
   const L: string[] = [];
   L.push(`<b>${ROTULO_GATILHO[q.gatilho ?? 'queda']}</b>`);
   L.push(`<b>${e(q.titulo.length > 100 ? `${q.titulo.slice(0, 99)}…` : q.titulo)}</b>`);
-  L.push(caiu ? `<b>${brl(q.cents)}</b> (era ${brl(q.anteriorCents as number)}, queda de ${pct}%)${q.minimo14 && q.gatilho !== 'minimo' ? ' · novo mínimo de 14 dias' : ''}` : `<b>${brl(q.cents)}</b>`);
-  if (caiu && q.anteriorEm) L.push(`Preço anterior lido: ${brl(q.anteriorCents as number)} em ${diaSP(q.anteriorEm)} às ${horaSP(q.anteriorEm)}`);
+  L.push('');
+  L.push(`💰 <b>${brl(q.cents)}</b>${caiu ? `  (era ${brl(q.anteriorCents as number)} · queda de ${pct}%)` : ''}`);
+  if (q.minimo14 && q.gatilho !== 'minimo') L.push('🏷️ Novo mínimo de 14 dias');
+  if (caiu && q.anteriorEm) L.push(`🕘 Preço anterior lido: ${brl(q.anteriorCents as number)} em ${diaSP(q.anteriorEm)} às ${horaSP(q.anteriorEm)}`);
   const onde = [amazon ? 'Amazon' : q.loja ? e(q.loja) : null, q.reputacao ? e(q.reputacao) : null].filter(Boolean).join(' · ');
-  if (onde) L.push(`Loja: ${onde}`);
+  if (onde) L.push(`🏪 ${onde}`);
   if (q.cupom) L.push(`🎟️ Cupom${q.cupom.nome ? ` ${e(q.cupom.nome)}` : ''}: <b>${brl(q.cupom.finalCents)}</b> com cupom${q.cupom.passo ? ` · ${e(q.cupom.passo)}` : ''}`);
-  for (const c of (q.cartoes ?? []).slice(0, 2)) L.push(`💳 ${e(c.rotulo)}${c.finalCents ? `: ${brl(c.finalCents)}` : ''}${c.needsConfirm ? ' · a confirmar no carrinho' : ''}`);
+  for (const c of (q.cartoes ?? []).slice(0, 2)) L.push(`💳 ${e(c.rotulo)}${c.finalCents ? `: <b>${brl(c.finalCents)}</b>` : ''}${c.needsConfirm ? ' · a confirmar no carrinho' : ''}`);
   L.push(`🚚 ${e(q.fretePrazo || 'Prazo ainda não lido')}`);
-  L.push(amazon ? `Preço na Amazon em ${diaSP(q.leituraEm)} às ${horaSP(q.leituraEm)}` : `Lido às ${horaSP(q.leituraEm)}`);
+  L.push(amazon ? `🕒 Preço na Amazon em ${diaSP(q.leituraEm)} às ${horaSP(q.leituraEm)}` : `🕒 Lido às ${horaSP(q.leituraEm)}`);
   if (q.adTag) L.push(e(q.adTag));
   return L.join('\n');
 }
