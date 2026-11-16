@@ -117,6 +117,12 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
     if (!p.ok && !semProva) semProva = p.motivo;
     return p.ok;
   });
+  if (!comProva.length && positives.length && cofreLigado()) {
+    // Trilha (QA F7): a primeira trava (prova do ML) barra antes do cofre; registra a decisão do cofre para a leitura barrada (por que foi barrado) sem mudar o resultado.
+    const p0 = positives[0]!;
+    void registrarDecisao({ offerId, couponRef: p0.campaign ?? 'sem_campanha', tipoItem: 'cupom', rede: p0.net, uso: 'mensagem', nome: p0.p_name, valorFinalCents: Number(p0.pw),
+      decisao: decidirCupomLido({ net: p0.net, campaignId: p0.campaign, status: p0.status, src: p0.src, isPromo: false, promoVerificada: false, readAt: new Date(p0.read_at), nome: p0.p_name, now }) });
+  }
   if (!comProva.length) { trace?.(positives.length && semProva ? semProva : rows.some((r) => r.pw != null) ? 'sumiu_na_releitura' : 'lida_sem_cupom'); return null; }
   // Mesma rodada de leitura (até 60 s da mais nova): vale o menor preço com cupom, como a página mostra.
   const newestPos = new Date(comProva[0].read_at).getTime();
