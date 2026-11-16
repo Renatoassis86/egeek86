@@ -235,7 +235,8 @@ export function calcularVeredito(i: VereditoInput): Veredito | null {
     degrauBruto: bruto,
     rotulo,
     pct,
-    mostrarPct: !poucas && !viaMinima,
+    // Dono (2026-11-16): se há média, diagnóstico sempre mostra a média e o % (média provisória aceita na beta; não rebaixa rótulo). Só a via 'menor registrado' não tem média.
+    mostrarPct: !viaMinima,
     cautela,
     minLinha,
     naMinima,

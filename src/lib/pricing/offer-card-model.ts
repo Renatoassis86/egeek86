@@ -141,7 +141,7 @@ export function chooseInsight(input: OfferCardInput): Insight | null {
     const pct = ((s.avgCents - p) / s.avgCents) * 100;
     // Amazon nunca diz "média das lojas": 'market' = do mercado; 'amazon' (produto só na Amazon) = média na Amazon.
     const label = amzAvg === 'amazon' ? 'média na Amazon' : amzAvg === 'market' ? 'média do mercado' : 'média das lojas';
-    if (pct >= INSIGHT_BELOW_AVG_MIN_PCT) return { kind: 'below_avg', text: `${formatReaisRounded(s.avgCents - p)} abaixo da ${label}` };
+    if (pct >= INSIGHT_BELOW_AVG_MIN_PCT) return { kind: 'below_avg', text: `${formatReaisRounded(s.avgCents - p)} abaixo da ${label} (${formatReaisRounded(s.avgCents)})` };
   }
   if (serieOk) {
     const rec = s.recordCents as number;

@@ -74,7 +74,7 @@ function pure() {
   check('2 vale para Amazon (histórico dela)', i?.kind === 'drop' && i.text === 'Caiu 10% desde ontem', i);
   // Prioridade 3: abaixo da média >= 10%
   i = chooseInsight(mk(31500, {}, { prev: null }));
-  check('3 abaixo da média', i?.kind === 'below_avg' && i.text === 'R$ 35 abaixo da média das lojas', i);
+  check('3 abaixo da média', i?.kind === 'below_avg' && i.text === 'R$ 35 abaixo da média das lojas (R$ 350)', i);
   check('3 exige 3 ofertas', chooseInsight(mk(31500, {}, { prev: null, distinctOffers: 2 }))?.kind !== 'below_avg');
   check('3 menos de 10% não vale', chooseInsight(mk(32000, {}, { prev: null, recordCents: 20000 })) === null);
   check('3 não vale para Amazon', chooseInsight(mk(31500, { isAmazon: true }, { prev: null })) === null);

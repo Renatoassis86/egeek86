@@ -126,7 +126,7 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
       if (input && candidate.regua) {
         // Régua de destaque: faixa da cor do degrau com o veredito em texto e as marcas (a cor nunca fica sozinha).
         const d = DEGRAUS[candidate.regua.degrau];
-        input.regua = { degrau: candidate.regua.degrau, rotulo: candidate.regua.rotulo, cor: d.cor, corTexto: d.corTexto, pctTexto: candidate.regua.mostrarPct ? `${candidate.regua.pct.toFixed(1).replace('.', ',')}% abaixo da média das lojas` : null, faixaTexto: candidate.regua.faixa ? faixaTexto(candidate.regua.faixa) : null };
+        input.regua = { degrau: candidate.regua.degrau, rotulo: candidate.regua.rotulo, cor: d.cor, corTexto: d.corTexto, pctTexto: candidate.regua.mostrarPct ? `${candidate.regua.pct.toFixed(1).replace('.', ',')}% abaixo da média das lojas${candidate.avgCents ? ` (R$ ${(candidate.avgCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})` : ''}` : null, faixaTexto: candidate.regua.faixa ? faixaTexto(candidate.regua.faixa) : null };
       }
       return input ? ((await renderOfferCard(input))?.png ?? null) : null;
     },

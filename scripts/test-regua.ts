@@ -44,7 +44,7 @@ eq('3% acima da minima ainda Compre agora', V({ precoCents: 10300, minCents: 100
 yes('3% acima: linha "3,0% acima da minima"', /acima da mínima de 30 dias/.test(V({ precoCents: 10300, minCents: 10000 }).minLinha ?? ''));
 eq('mais de 3% acima da minima = Otima compra (degrau 3, amarelo)', [V({ precoCents: 10400, minCents: 10000 }).degrau, V({ precoCents: 10400, minCents: 10000 }).rotulo], [3, 'Ótima compra']);
 eq('< 5 ofertas: sem Compre agora', V({ nOfertas: 4 }).rotulo, 'Ótima compra');
-eq('< 5 ofertas: sem percentual afirmado', V({ nOfertas: 4 }).mostrarPct, false);
+eq('< 5 ofertas: média provisória e percentual aparecem (dono 2026-11-16: se tem média, mostra a média)', V({ nOfertas: 4 }).mostrarPct, true);
 eq('5 ofertas: percentual', V({ nOfertas: 5 }).mostrarPct, true);
 eq('sem historico (min nulo): aviso Confira antes de comprar, cor e rotulo do degrau intactos', [V({ minCents: null, diasHistorico: 0 }).rotulo, /^Confira antes de comprar/.test(V({ minCents: null, diasHistorico: 0 }).aviso ?? '')], ['Ótima compra', true]);
 eq('sem historico: sem linha da minima', V({ minCents: null, diasHistorico: 0 }).minLinha, null);
@@ -181,7 +181,7 @@ const c5 = g2('esporte', 6000);
 eq('40% abaixo = degrau 5', c5?.regua?.degrau, 5);
 yes('degrau 5 cai em aprovacao/retencao humana (R-28), nao sai sozinho', !!c5 && c5.status === 'review');
 const cPoucas = evaluateProductV2(mkProd('esporte', ofertas(8200).slice(0, 4), { avg: { cents: 10000, distinctOffers: 4, offerDays: 40, spanDays: 16, eligible: true } }), ctx).candidates.find((c) => c.trigger === 'G2' || c.regua);
-yes('< 5 ofertas na media: sem percentual no texto', !!cPoucas && !/% abaixo da média/.test(cPoucas.texts.telegram) && cPoucas.regua?.mostrarPct === false);
+yes('< 5 ofertas na media: texto mostra % e a média (R$)', !!cPoucas && /% abaixo da média das lojas \(R\$/.test(cPoucas.texts.telegram) && cPoucas.regua?.mostrarPct === true);
 // Amazon nunca recebe a regua
 const amz = evaluateProductV2(mkProd('esporte', [mkOffer('z', 9000, { networkSlug: 'amazon', networkName: 'Amazon' }), ...ofertas(9650).slice(1)]), ctx).candidates;
 yes('Amazon sem regua', amz.filter((c) => c.networkSlug === 'amazon').every((c) => c.regua === undefined));
