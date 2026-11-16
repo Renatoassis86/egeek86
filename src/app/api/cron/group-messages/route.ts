@@ -72,16 +72,23 @@ async function registrarFases(origem: string, fases: Fases, totalMs: number): Pr
   } catch { /* medição não derruba o ciclo */ }
 }
 
-/** Integridade de preço: auditoria dos links, preenchimento de anúncio e renovação da Shopee. Orçamento total ~40 s, ordem fixa, cada fase sai se não há tempo mínimo. */
+/**
+ * Invocação AUXILIAR (`?fase=integridade`): ordem fixa de prioridade e mínimo por fase, teto total de 50 s (maxDuration 60):
+ * painel do privado > agente de cupons > auditoria de links > frete/prazo > anúncios > Shopee. Cada fase sai se o tempo restante for menor que o seu mínimo.
+ */
 async function runIntegridade() {
   const t0 = Date.now();
   const fases: Fases = {};
-  const restante = () => 42_000 - (Date.now() - t0);
-  const auditoriaLinks = restante() >= 10_000 ? await fase(fases, 'auditoria', () => cicloAuditoriaLinks({ budgetMs: Math.min(24_000, restante() - 14_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
-  const anuncios = !/^(0|off|false)$/i.test(process.env.ANUNCIOS_PREENCHER ?? '') && restante() >= 9_000 ? await fase(fases, 'anuncios', () => preencherAnuncios({ orcamentoMs: Math.min(12_000, restante() - 3_000), maxCatalogos: 2 })).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
-  const shopeeRenov = !/^(0|off|false)$/i.test(process.env.SHOPEE_RENOVAR ?? '') && restante() >= 5_000 ? await fase(fases, 'shopee', () => renovarShopee({ limite: 6 })).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
+  const restante = () => 50_000 - (Date.now() - t0);
+  const nao = (v?: string) => /^(0|off|false)$/i.test(v ?? '');
+  const paineis = restante() >= 8_000 ? await fase(fases, 'painel_privado', () => atualizarPaineisImpressoras(new Date(), { budgetMs: Math.min(16_000, restante() - 2_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  const agente = restante() >= 6_000 ? await fase(fases, 'agente_cupons', () => cicloAgenteCupons({ budgetMs: Math.min(9_000, restante() - 1_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  const auditoriaLinks = restante() >= 10_000 ? await fase(fases, 'auditoria', () => cicloAuditoriaLinks({ budgetMs: Math.min(18_000, restante() - 8_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  const fretePrazo = restante() >= 9_000 ? await fase(fases, 'frete_prazo', () => capturarFreteMl(new Date(), { budgetMs: Math.min(8_000, restante() - 2_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  const anuncios = !nao(process.env.ANUNCIOS_PREENCHER) && restante() >= 8_000 ? await fase(fases, 'anuncios', () => preencherAnuncios({ orcamentoMs: Math.min(12_000, restante() - 3_000), maxCatalogos: 2 })).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
+  const shopeeRenov = !nao(process.env.SHOPEE_RENOVAR) && restante() >= 5_000 ? await fase(fases, 'shopee', () => renovarShopee({ limite: 6 })).catch(() => ({ erro: 'falha' })) : { skipped: 'desligado ou sem tempo' };
   await registrarFases('integridade', fases, Date.now() - t0);
-  return NextResponse.json({ ok: true, fase: 'integridade', fases, auditoriaLinks, anuncios, shopeeRenov });
+  return NextResponse.json({ ok: true, fase: 'integridade', fases, paineisImpressoras: paineis, agenteCupons: agente, auditoriaLinks, fretePrazo, anuncios, shopeeRenov });
 }
 
 async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
@@ -125,21 +132,9 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
     // Mensagem com cupom enviada: o agente passa a acompanhar esse cupom (o guardião avisa o grupo quando ele acabar).
     onCouponSent: (info, ctx) => registrarDivulgacao(info, ctx),
   }));
-  // Guardião de cupons (~5 min, tolerante a falha, orçamento próprio): fecha cupons divulgados que acabaram, avisa o grupo da loja
-  // com um card silencioso e grava o relatório da equipe em collector_runs (job 'agente-cupons').
-  // Orçamento pelo tempo REAL que sobra (maxDuration 60 s, margem de 5 s): antes o ciclo era pulado sempre que o envio passava de 35 s, o que
-  // acontece nos minutos 00 a 20 de cada hora (crons empilhados) e deixava o agente de cupons até 15 min sem rodar (vigia 2026-11-15).
-  // ORÇAMENTO por fase (rodada 3, regressão de tempo): teto total ~40 s; ordem fixa envio > agente de cupons > painel do privado > frete/prazo;
-  // cada fase sai se o tempo que resta até o teto é menor que o seu mínimo. Medido: envio 21-24 s, frete/prazo ~13 s, agente até 7 s.
-  const TETO_MS = 40_000;
-  const restanteMs = TETO_MS - (Date.now() - startedAt);
-  const agente = restanteMs >= 6_000 ? await fase(fases, 'agente_cupons', () => cicloAgenteCupons({ budgetMs: Math.min(fases.ciclo_envio > 20_000 ? 5_000 : 10_000, restanteMs - 1_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
-  // Painéis vivos das impressoras 3D (#117; PAINEL_IMPRESSORAS, padrão desligada): mensagens fixas editadas, rodada a cada 10 min com cursor; usa só o tempo que sobra.
-  const sobraMs = TETO_MS - (Date.now() - startedAt);
-  const paineis = sobraMs >= 6_000 ? await fase(fases, 'painel_privado', () => atualizarPaineisImpressoras(new Date(), { budgetMs: sobraMs - 1_500 })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
-  // Frete e prazo das impressoras até o CEP do dono (#118; FRETE_PRAZO_IMPRESSORAS, padrão desligada): API oficial do ML, lote pequeno com orçamento do que sobra.
-  const sobra2Ms = TETO_MS - (Date.now() - startedAt);
-  const fretePrazo = sobra2Ms >= 7_000 && fases.ciclo_envio <= 20_000 ? await fase(fases, 'frete_prazo', () => capturarFreteMl(new Date(), { budgetMs: Math.min(8_000, sobra2Ms - 2_000) })).catch(() => ({ erro: 'falha' })) : { skipped: 'sem tempo' };
+  // As fases AUXILIARES (painel do privado, agente de cupons, frete/prazo, auditoria de links, anúncios, Shopee) rodam na invocação `?fase=integridade`
+  // (mesma rota, trava e orçamento próprios). O envio usa até 38 s por desenho (SEND_BUDGET_MS) e, nos horários de mais mensagens, deixava as
+  // fases auxiliares sem tempo (painel/agente parados de 23:52Z a 00:15Z de 16/11); medido: o tempo do ciclo acompanha o nº de mensagens enviadas.
   await registrarFases('envio', { ...fases, pick: ((summary as { timing?: Record<string, number> }).timing?.pick) ?? 0, facts: ((summary as { timing?: Record<string, number> }).timing?.facts) ?? 0, detect: ((summary as { timing?: Record<string, number> }).timing?.detectMs) ?? 0 }, Date.now() - startedAt);
-  return NextResponse.json({ ...summary, agenteCupons: agente, paineisImpressoras: paineis, fretePrazo, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
+  return NextResponse.json({ ...summary, ...(lockFailedOpen ? { lockFailedOpen: true } : {}) }, { status: summary.ok ? 200 : 500 });
 }
