@@ -716,3 +716,28 @@ Relatório de 6 em 6 horas e vigia a cada 5 minutos (loops nunca param, R-37). O
 ### 14.5 NÃO VERIFICADO nesta rodada
 Valores das variáveis Sensitive da Vercel (`GROUP_CARD_V2`, `PROMO_*`, `CRON_ACEITA_KEY_NA_URL`, `COLLECTOR_*`); regra de firewall para Googlebot/TelegramBot; plano e PITR do Supabase; existência do job pg_cron/pg_net; estado do `redesenho_home` em produção (a linha não existe em `feature_flags`, efetivo 0%); aplicação da paleta oficial. A tabela de flags continua na seção 11.
 
+
+---
+
+## 15. Adendo v1.3 (2026-11-16): metodologia de desenvolvimento com IA
+
+Fonte: `docs/03-metodologia/METODOLOGIA_IA.md` (como se muda o sistema sem desfazer o que está validado e sem deixar cadeia pela metade); ata `docs/conselho/atas/2026-11-16-metodologia-ia.md`. Pedido do dono de 16/11: "não alterar o que já está validado, apenas atualizar" e "não deixar nada inacabado". Marcas: CÓDIGO (existe e foi testado), DECISÃO (dono), NÃO VERIFICADO.
+
+### 15.1 Regras imperativas novas
+| Id | Regra | Gatilho em código | Estado |
+|---|---|---|---|
+| R-83 | **Portão antes de todo commit.** `npm run gate` (typecheck + todos os `test:*` sem banco) roda e fica verde antes de qualquer commit que toque `src/`, `scripts/` ou `public/loops/`; `--completo` antes de deploy. Vermelho que já existia é registrado com data, nunca contornado. Teste novo ligado ao `package.json` entra sozinho. | `scripts/gate.ts`; exceções só em `docs/validado/gate.json` com motivo | CÓDIGO (Fase 1); hook de commit é Fase 2 (depende do dono) |
+| R-84 | **Módulo congelado só muda com descongelamento do dono, com prazo.** Estados: rascunho, em_validacao, validado, congelado (e candidato, que ainda não bloqueia). A análise de impacto (consumidores) é obrigatória em todo contrato de tarefa. | `docs/validado/MODULOS.json`; `scripts/check-frozen.ts` (`npm run congelado`); `docs/validado/descongelar.json` | CÓDIGO; 10 módulos `candidato`, 0 `congelado` (primeira onda proposta, seção 15 da metodologia) |
+| R-85 | **Contrato de Tarefa e cadeia completa.** Toda mudança abre com contrato (sintoma, camada, arquivos permitidos, módulos, consumidores, teste vermelho, fora de escopo); corrigir = teste que falha primeiro, mudança mínima, portão verde; os nós a jusante (série, média, site, mensagem, link, cofre, fluxo, fila) ficam verdes ou viram ponta solta **com número na fila**, nunca omitidos. | `check-frozen` avisa regra mudada sem teste e sem este documento no mesmo commit | DECISÃO + CÓDIGO parcial |
+| R-86 | **Fonte única do preço exibido.** Um módulo decide o número, o tipo, a média (com estado `ok`/`provisoria`/`ausente`) e o frescor; mensagem, card, página e link só leem. O preço da mensagem, o da página e o do link são o mesmo; diagnóstico "compra boa" sem média presente é invariante violada. Convergência em sombra, por flag, com teste de paridade como juiz (sem reescrita de uma vez). | teste de paridade e `preco-exibido.ts` (Fase 3); hoje há ao menos 4 formatadores de preço e 2 médias no site (FM-01) | DECISÃO; implementação na fila |
+| R-87 | **Quem implementa não valida.** "Pronto" exige a saída do portão e a validação de um QA independente (`qa-verificador`); teste existente só muda em commit separado com a justificativa de que a garantia continua valendo. | revisão do `qa-verificador`; `check-frozen` avisa mudança de teste sem regra | DECISÃO |
+
+### 15.2 Achados medidos em 16/11 (primeira rodada do portão)
+- 120 scripts `test-*.ts` no disco, **38 ligados** ao `package.json`; nenhum hook de commit, nenhuma CI de testes (único workflow: backup externo); `.claude/settings.json` só com permissões.
+- Portão rápido: 30 passaram, 2 falharam, 7 exigem banco; 51 s. As 2 falhas eram testes desatualizados (versão exata `1.1.0` do leitor da Amazon, depois do R-81; expectativa da Amazon anterior à contenção #120) e foram corrigidas só nos testes.
+- `group-rules.ts` com 2.544 linhas importado por 39 arquivos; `group-messages.ts` com 1.366.
+- Portão completo (com banco): 34 passaram, **4 falharam** (`test:amazon-media`, `test:vertical`, `test:departamentos`, `test:front-regras`); origem não determinada, fila #138, detalhe em `docs/validado/BASELINE_2026-11-16.md`.
+- NÃO VERIFICADO: a origem exata da divergência preço da mensagem × página no caso relatado (fila #133); quantos dos 82 testes órfãos passam.
+
+### 15.3 Pontas novas (fila)
+Ligar os 82 testes órfãos ao portão (#134); teste de paridade preço × mensagem × página × link e `preco-exibido.ts` em sombra (#133); primeira onda de congelamento após o ok do dono (#135); Fase 2 (hook de commit, hooks do Claude Code, GitHub Action; #136); estrangular `group-rules.ts` com testes de caracterização (#137).

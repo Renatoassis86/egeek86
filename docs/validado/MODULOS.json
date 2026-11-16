@@ -1,0 +1,273 @@
+{
+ "versao": 1,
+ "atualizadoEm": "2026-11-16",
+ "estados": {
+  "rascunho": "em construção; qualquer um mexe",
+  "em_validacao": "implementado, ainda sem prova completa",
+  "validado": "prova completa (teste que o guarda verde + cadeia fechada); mexer só por contrato de tarefa",
+  "congelado": "validado pelo dono/QA; alterar exige descongelamento vigente em docs/validado/descongelar.json",
+  "candidato": "proposto para validação/congelamento; ainda NÃO impõe bloqueio"
+ },
+ "modulos": [
+  {
+   "id": "preco-isca",
+   "estado": "candidato",
+   "regra": "R-61",
+   "caminhos": [
+    "src/lib/pricing/preco-isca.ts"
+   ],
+   "guarda": [
+    "test:preco-isca"
+   ],
+   "consumidores": [
+    "src/server/pricing/preco-isca-sql.ts",
+    "src/server/pricing/preco-isca.ts"
+   ],
+   "nota": "Anúncio muito abaixo dos outros do mesmo produto nunca define mínimo, média, card nem mensagem."
+  },
+  {
+   "id": "tipo-preco-amazon",
+   "estado": "candidato",
+   "regra": "R-69",
+   "caminhos": [
+    "src/lib/pricing/tipo-preco.ts"
+   ],
+   "guarda": [
+    "test:tipo-preco"
+   ],
+   "consumidores": [
+    "src/server/collector/amazon-tipo-preco.ts"
+   ],
+   "nota": "Série Amazon = preço CHEIO; Pix é atributo; queda só entre o mesmo tipo."
+  },
+  {
+   "id": "link-afiliado",
+   "estado": "candidato",
+   "regra": "R-70",
+   "caminhos": [
+    "src/lib/affiliate/link-afiliado.ts"
+   ],
+   "guarda": [
+    "test:link-afiliado"
+   ],
+   "consumidores": [
+    "src/app/go/[slug]/route.ts",
+    "src/lib/messaging/telegram-send.ts",
+    "src/server/messaging/painel-impressoras.ts",
+    "src/server/messaging/porteiro-links.ts",
+    "src/server/notifications/send-telegram.ts",
+    "src/server/queries/public-offers.ts"
+   ],
+   "nota": "Todo link ao usuário é do dono; padrão negado em camadas."
+  },
+  {
+   "id": "item-miudo",
+   "estado": "candidato",
+   "regra": "R-58",
+   "caminhos": [
+    "src/lib/catalog/item-miudo.ts"
+   ],
+   "guarda": [
+    "test:item-miudo"
+   ],
+   "consumidores": [
+    "src/lib/affiliate/product-type-classifier.ts",
+    "src/lib/catalog/aprovacao-nicho.ts",
+    "src/lib/catalog/dimensions.ts",
+    "src/lib/catalog/gate.ts",
+    "src/lib/vitrines/regras.ts",
+    "src/server/collector/discover-shopee-esporte.ts",
+    "src/server/coupons/monitor-preco-impressoras.ts",
+    "src/server/messaging/painel-impressoras.ts",
+    "src/server/queries/departamento.ts",
+    "src/server/queries/guia-3d.ts"
+   ],
+   "nota": "Sem peças, cabos, grips e itens de baixo valor no banco e no site."
+  },
+  {
+   "id": "console-videogame",
+   "estado": "candidato",
+   "regra": "R-58",
+   "caminhos": [
+    "src/lib/catalog/console-videogame.ts"
+   ],
+   "guarda": [
+    "test:console-regra"
+   ],
+   "consumidores": [
+    "src/app/(shop)/ofertas/page.tsx",
+    "src/components/geek-deals/sales-highlights.tsx",
+    "src/lib/affiliate/product-type-classifier.ts",
+    "src/lib/catalog/dimensions.ts",
+    "src/lib/catalog/gate.ts",
+    "src/lib/catalog/item-miudo.ts",
+    "src/lib/vitrines/regras.ts"
+   ],
+   "nota": "Console é só videogame, sem peças."
+  },
+  {
+   "id": "gate-catalogo",
+   "estado": "candidato",
+   "regra": "R-58",
+   "caminhos": [
+    "src/lib/catalog/gate.ts",
+    "src/lib/catalog/dimensions.ts"
+   ],
+   "guarda": [
+    "test:gate",
+    "test:dimensions"
+   ],
+   "consumidores": [
+    "src/lib/affiliate/rodizio-expirados.ts",
+    "src/lib/catalog/titulo-risco.ts",
+    "src/server/actions/affiliate.ts",
+    "src/server/actions/collector.ts",
+    "src/server/collector/discover-magalu-products.ts",
+    "src/server/collector/discover-products.ts",
+    "src/server/collector/discover-shopee-products.ts",
+    "src/server/queries/catalog-dimensions.ts",
+    "src/app/(shop)/black-friday/page.tsx",
+    "src/app/(shop)/ofertas/page.tsx",
+    "src/components/affiliate/offer-card.tsx",
+    "src/components/search/product-thumb.tsx",
+    "src/components/ui/product-image.tsx",
+    "src/lib/affiliate/dedup.ts",
+    "src/lib/catalog/console-identity.ts",
+    "src/lib/identity-queue/model.ts",
+    "src/lib/identity-queue/obvio.ts",
+    "src/server/collector/amazon-vitrine.ts",
+    "src/server/queries/home-search.ts",
+    "src/server/queries/search-products.ts"
+   ],
+   "nota": "Porteiro de entrada do catálogo (só novo e em linha)."
+  },
+  {
+   "id": "plausibilidade-quarentena",
+   "estado": "candidato",
+   "regra": "R-57",
+   "caminhos": [
+    "src/lib/pricing/plausibilidade-tipo.ts",
+    "src/lib/catalog/titulo-risco.ts"
+   ],
+   "guarda": [
+    "test:quarentena-preco"
+   ],
+   "consumidores": [
+    "src/server/collector/quarentena-preco-tipo.ts"
+   ],
+   "nota": "Preço implausível e título de risco vão para quarentena."
+  },
+  {
+   "id": "mensagens-regras",
+   "estado": "candidato",
+   "regra": "R-47,R-77",
+   "caminhos": [
+    "src/lib/messaging/group-rules.ts",
+    "src/lib/messaging/group-messages.ts",
+    "src/lib/messaging/group-config.ts"
+   ],
+   "guarda": [
+    "test:mensagens-grupo",
+    "test:mensagens-motor-v2",
+    "test:mensagens-onda2",
+    "test:mensagens-diversidade",
+    "test:mensagens-neutro"
+   ],
+   "consumidores": [
+    "src/lib/identity-queue/obvio.ts",
+    "src/lib/messaging/group-automation.ts",
+    "src/lib/messaging/group-platform.ts",
+    "src/lib/messaging/live-recheck.ts",
+    "src/lib/stores/lojas.ts",
+    "src/server/messaging/coupon-offers.ts",
+    "src/server/messaging/group-auto.ts",
+    "src/server/messaging/group-offers.ts",
+    "src/server/messaging/group-overview.ts",
+    "src/server/messaging/group-plan.ts",
+    "src/server/messaging/group-queue.ts",
+    "src/server/messaging/group-view.ts",
+    "src/server/messaging/live-recheck.ts",
+    "src/lib/affiliate/message-template.ts",
+    "src/lib/coupons/aviso-impressoras.ts",
+    "src/lib/coupons/monitor-preco-impressoras.ts",
+    "src/lib/messaging/painel-impressoras.ts",
+    "src/lib/messaging/regua.ts",
+    "src/lib/messaging/telegram-send.ts",
+    "src/server/actions/group-messages.ts",
+    "src/server/messaging/agente-cupons.ts",
+    "src/server/messaging/campaign-coupon-lookup.ts",
+    "src/server/messaging/coupon-item-lookup.ts",
+    "src/server/messaging/coupon-lookup.ts",
+    "src/server/messaging/guardiao-cupons.ts"
+   ],
+   "nota": "Motor de regras e texto das mensagens (2.544 + 1.366 linhas; estrangular por blocos, nunca reescrever de uma vez)."
+  },
+  {
+   "id": "parecer-e-preco-no-site",
+   "estado": "candidato",
+   "regra": "R-78",
+   "caminhos": [
+    "src/lib/pricing/parecer-produto.ts",
+    "src/lib/pricing/price-verdict-v2.ts",
+    "src/lib/pricing/daily-state.ts",
+    "src/lib/pricing/chart-model.ts",
+    "src/lib/pricing/chart-props.ts",
+    "src/lib/pricing/lojas-hoje.ts",
+    "src/lib/pricing/price-card-model.ts"
+   ],
+   "guarda": [
+    "test:parecer"
+   ],
+   "consumidores": [
+    "src/app/(detalhe)/ofertas/[slug]/page.tsx",
+    "src/components/affiliate/camada-gatilho.tsx",
+    "src/components/affiliate/camada-produto.tsx",
+    "src/components/affiliate/product-card-v1.tsx",
+    "src/server/pricing/parecer-produto.ts",
+    "src/components/affiliate/price-metrics-v2-block.tsx",
+    "src/components/monitoring/price-chart-v2.tsx",
+    "src/server/pricing/price-metrics-v2.ts",
+    "scripts/backfill-price-daily.ts",
+    "scripts/comparar-metricas-sombra.ts",
+    "scripts/consolidar-switch2-mkw-2026-11-15.ts",
+    "scripts/recalcular-mario-kart-world-diario.ts",
+    "scripts/reprocess-amazon-state.ts",
+    "scripts/reprocess-draft-offers.ts",
+    "scripts/reprocess-placeholder-collision.ts",
+    "scripts/reprocessar-estado-isca-aud11.ts",
+    "src/lib/identity-queue/model.ts",
+    "src/lib/pricing/grafico-dados.ts",
+    "src/server/jobs/refresh-price-daily.ts",
+    "src/server/messaging/group-offers.ts",
+    "src/server/messaging/offer-card.tsx",
+    "src/server/messaging/price-card.tsx",
+    "src/server/pricing/grafico-dados.ts",
+    "src/server/pricing/price-chart-v2.ts",
+    "src/server/pricing/price-daily.ts"
+   ],
+   "nota": "Diagnóstico, média, gráfico e card do produto no site."
+  },
+  {
+   "id": "frescor-e-confirmacao",
+   "estado": "candidato",
+   "regra": "R-81,R-82",
+   "caminhos": [
+    "src/lib/messaging/confirmacao-preco.ts",
+    "src/lib/precos-fontes/"
+   ],
+   "guarda": [],
+   "consumidores": [
+    "src/lib/messaging/live-recheck.ts",
+    "src/lib/pricing/integridade-preco.ts",
+    "src/server/collector/record-price-snapshot.ts",
+    "src/server/collector/vertical/collect-vertical.ts",
+    "src/server/links/auditoria-links.ts",
+    "src/server/links/ritmo-e-api.ts",
+    "src/server/messaging/group-offers.ts",
+    "src/server/messaging/painel-impressoras.ts",
+    "src/server/pricing/link-divergente.ts"
+   ],
+   "nota": "Frescor de 45 min da Amazon e camadas de fonte. Teste existe (scripts/test-confirmacao-preco-119.ts, scripts/test-precos-fontes-82.ts) mas NÃO está ligado ao package.json: ligar antes de congelar."
+  }
+ ]
+}

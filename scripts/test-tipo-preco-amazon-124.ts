@@ -41,7 +41,8 @@ ok(cDe.px === 1 && cDe.l === null, 'Pix com "De:" no card: o De NAO e o cheio, l
 const pg = A.parsePagina(fx('pagina-pix.html'), 'B0G87M7V8Z');
 ok(pg.ok && pg.p === 'R$ 9.499,05' && pg.px === 1, 'pagina: "5% off a vista no Pix" no bloco de pagamento marca px=1; Pix do carrossel nao conta', pg);
 ok(A.validarPayload([{ id: '11111111-1111-4111-8111-111111111111', r: [cPix, cSem] }]).rows[0].r.map((c: { px?: number }) => c.px).join() === '1,0', 'payload leva px 1/0');
-ok(/\bVERSAO = '1\.1\.0'/.test(src('public/loops/amazon-assistida.js')), 'leitor v1.1.0');
+// A garantia é "o leitor tem o marcador de tipo de preço (v1.1.0 em diante)", não a versão exata: o R-81 subiu o loop para 1.2.0 e este teste ficou vermelho sem motivo.
+ok(/\bVERSAO = '(1\.[1-9]\d*|[2-9]\d*)\.\d+'/.test(src('public/loops/amazon-assistida.js')), 'leitor v1.1.0 ou superior');
 
 // 2) definicao unica: preco da serie = CHEIO; Pix = atributo
 const dPix = gravaria(fx('card-pix.html'));

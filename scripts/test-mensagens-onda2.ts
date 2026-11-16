@@ -183,7 +183,8 @@ async function liveTests() {
   ok(needsLive(mlTarget({ confirmedAt: new Date(NOW.getTime() - 30 * MIN) }), NOW, false) === false && needsLive(mlTarget({ confirmedAt: new Date(NOW.getTime() - 31 * MIN) }), NOW, false) === true, 'preço com mais de 30 min pede consulta ao vivo');
   m = meliFetch([{ body: item() }]);
   r = await phase([mlTarget({ networkSlug: 'amazon', networkName: 'Amazon', affiliateUrl: 'https://www.amazon.com.br/dp/B0X', confirmedAt: new Date(NOW.getTime() - 120 * MIN) })], baseDeps(m.f));
-  ok(r.ok && m.calls.length === 0 && /amazon/.test(r.logs[0].reason ?? ''), 'Amazon: NÃO consulta ao vivo (segue o frescor da coleta assistida)', r.logs);
+  // A garantia é "Amazon nunca gasta consulta ao vivo e o motivo cita a Amazon". Com a contenção #120 a Amazon também fica fora das mensagens (r.ok = false), então r.ok não faz parte da garantia.
+  ok(m.calls.length === 0 && /amazon/.test(r.logs[0].reason ?? ''), 'Amazon: NÃO consulta ao vivo (segue o frescor da coleta assistida)', r.logs);
   // 1.6 ML sem id do anúncio nem vendedor (placeholder de catálogo)
   m = meliFetch([{ body: item() }]);
   r = await phase([mlTarget({ affiliateUrl: 'https://www.mercadolivre.com.br/p/MLB999', externalItemId: null, sellerExternalId: null })], baseDeps(m.f));
