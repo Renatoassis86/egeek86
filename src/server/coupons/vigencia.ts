@@ -143,3 +143,22 @@ export function decideSweepClose(i: { couponsRead: number; pagesRead: number; en
   if (i.recentGone > universo * SWEEP_MAX_DROP) return { close: false, reason: 'queda_brusca_leitura_suspeita' };
   return { close: true, reason: 'ok' };
 }
+
+
+/**
+ * Seguranca do FECHAMENTO POR AUSENCIA de uma releitura completa (2026-11-16). Medido na Shopee: leituras com 1, 2 e 5 cartoes entre leituras de 6 a 9
+ * (pagina desenhada pela metade, cartoes "Esgotado" que voltam) marcaram vencido, de uma vez, 8, 4 e 2 cupons; cada reaparecimento zera a sequencia
+ * e o cupom volta a esperar 30 min para ser "verificado" de novo. Sumir em massa = leitura ruim, nao fim de campanha. Quando o fechamento deixaria
+ * de fora quase tudo (a leitura traz menos cupons do que os que seriam fechados e eles sao 60% ou mais dos ativos da fonte), NAO fecha: nada e
+ * perdido, porque o cupom so entra em mensagem com `verified_at` dentro de 120 min (sem releitura ele deixa de servir sozinho) e a proxima leitura
+ * sadia fecha. Poucos cupons (menos de 4) fecham como antes.
+ */
+export const ABSENCE_CLOSE_MIN_BULK = 4;
+export const ABSENCE_CLOSE_MAX_SHARE = 0.6;
+export function decideAbsenceClose(i: { wouldClose: number; activeFromSource: number; readInBatch: number }): { close: boolean; reason: string } {
+  if (i.wouldClose <= 0) return { close: true, reason: 'nada_a_fechar' };
+  if (i.wouldClose < ABSENCE_CLOSE_MIN_BULK) return { close: true, reason: 'poucos' };
+  const share = i.activeFromSource > 0 ? i.wouldClose / i.activeFromSource : 1;
+  if (i.readInBatch < i.wouldClose && share >= ABSENCE_CLOSE_MAX_SHARE) return { close: false, reason: 'leitura_menor_que_o_fechamento_em_massa' };
+  return { close: true, reason: 'ok' };
+}

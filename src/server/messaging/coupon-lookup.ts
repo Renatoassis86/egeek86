@@ -94,10 +94,12 @@ export async function lookupVerifiedCoupon(offerId: string, trace?: MissTrace, n
       const am = amazonPromoText(best);
       return { code: am.name, conditions: am.conditions, expiresAt: best.validUntil, verifiedAt: best.verifiedAt, couponRef: best.id, annKind: 'loja' };
     }
+    // Cupom de PLATAFORMA INTEIRA (escopo loja_inteira, sem referência): vale para todos os itens da rede; a mensagem diz isso e usa o nome lido.
+    const todos = best.scopeKind === 'loja_inteira' ? ` Vale para todos os itens${o.net === 'shopee' ? ' da Shopee' : ' do Mercado Livre'}.` : '';
     const where = o.net === 'mercado-livre' ? 'ative em Cupons no Mercado Livre' : 'resgate em Cupons na Shopee';
     return {
-      code: label(best),
-      conditions: `${where}.${min}${cap}`.replace(/\s+/g, ' ').trim(),
+      code: best.scopeKind === 'loja_inteira' && best.nome ? best.nome : label(best),
+      conditions: `${where}.${min}${cap}${todos}`.replace(/\s+/g, ' ').trim(),
       expiresAt: best.validUntil,
       verifiedAt: best.verifiedAt,
       couponRef: best.id,

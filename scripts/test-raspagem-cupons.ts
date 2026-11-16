@@ -8,7 +8,7 @@
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { validateBatch, validateSweepClose } from '../src/server/coupons/normalize';
-import { decideSweepClose } from '../src/server/coupons/vigencia';
+import { decideAbsenceClose, decideSweepClose } from '../src/server/coupons/vigencia';
 import { planManualCoupon } from './cadastrar-cupom-manual';
 
 const req = createRequire(import.meta.url);
@@ -98,6 +98,14 @@ const m3 = ML.montarCupom(bl[2], 3, NOW);
 check('ML cupom de seguir a loja: público restrito, escopo categoria, sem validade deduzida', m3.cupom && m3.cupom.publico === 'outro' && m3.cupom.condicoes.uso === 'seguir_loja' && m3.cupom.escopo === 'categoria' && m3.cupom.validade_fim === undefined, m3);
 check('ML bloco sem valor lido é descartado', ML.montarCupom(bl[3], 3, NOW).descarte === 'sem_titulo');
 check('ML bloco sem escopo lido é descartado (nunca presume loja inteira)', ML.montarCupom(bl[4], 3, NOW).descarte === 'sem_escopo_lido');
+// Plataforma inteira (2026-11-16): só com declaração explícita no cartão; "Em produtos de X" segue lista_itens e sem declaração segue descarte.
+const bPlat = (sub: string) => ({ id: '555', textos: ['R$ 30 OFF', sub, 'Compra mínima R$ 200'], categoria: null, ativacao: 'EU_QUERO', acao: 'apply', seguir: false });
+const mP1 = ML.montarCupom(bPlat('Em todo o Mercado Livre'), 3, NOW);
+check('ML: "Em todo o Mercado Livre" vira loja_inteira sem referência', mP1.cupom && mP1.cupom.escopo === 'loja_inteira' && Object.keys(mP1.cupom.escopo_ref).length === 0 && mP1.cupom.valor === 30 && mP1.cupom.minimo_compra_centavos === 20000, mP1);
+check('ML: "Em todos os produtos do Mercado Livre", "Em todo o site" e "Em todas as categorias" também', ['Em todos os produtos do Mercado Livre', 'Em todo o site', 'Em todas as categorias', 'Em Todo o Mercado Livre'].every((t) => ML.montarCupom(bPlat(t), 3, NOW).cupom?.escopo === 'loja_inteira'));
+check('ML: "Em produtos de Loja X" e "Em Maquininhas" NÃO viram plataforma', ML.montarCupom(bPlat('Em produtos de Loja X'), 3, NOW).cupom?.escopo === 'lista_itens' && ML.montarCupom(bPlat('Em Maquininhas'), 3, NOW).cupom?.escopo === 'categoria');
+const lMP = validateBatch({ rede: 'mercado-livre', fonte_url: 'https://www.mercadolivre.com.br/cupons/filter?all=true&page=1', lidos_em: new Date(NOW).toISOString(), cupons: [mP1.cupom] }, new Date(NOW));
+check('servidor aceita o cupom de plataforma do ML como loja_inteira', lMP.ok && lMP.coupons.length === 1 && lMP.coupons[0].scopeKind === 'loja_inteira', lMP.ok ? lMP.rejected : lMP);
 const lML = validateBatch({ rede: 'mercado-livre', fonte_url: 'https://www.mercadolivre.com.br/cupons/filter?all=true&page=3', lidos_em: new Date(NOW).toISOString(), cupons: [m1.cupom, m3.cupom] }, new Date(NOW));
 check('servidor aceita os cupons do ML (0 rejeitados)', lML.ok && lML.coupons.length === 2 && lML.rejected.length === 0, lML.ok ? lML.rejected : lML);
 const lML2 = validateBatch({ rede: 'mercado-livre', fonte_url: 'https://www.mercadolivre.com.br/cupons/filter?all=true&page=3', lidos_em: new Date(NOW).toISOString(), cupons: [m2.cupom] }, new Date(NOW));
@@ -123,6 +131,12 @@ const sw = { couponsRead: 4300, pagesRead: 90, endReached: true, pageErrors: 0, 
 check('decisão: varredura sadia fecha', decideSweepClose(sw).close);
 check('decisão: sem chegar ao fim, com erro de página ou curta demais NÃO fecha', !decideSweepClose({ ...sw, endReached: false }).close && !decideSweepClose({ ...sw, pageErrors: 1 }).close && !decideSweepClose({ ...sw, couponsRead: 10 }).close && !decideSweepClose({ ...sw, pagesRead: 1 }).close);
 check('decisão: queda brusca (mais de 60% do visto nas últimas 72 h sumiu) NÃO fecha', !decideSweepClose({ ...sw, couponsRead: 1000, recentGone: 3000 }).close && decideSweepClose({ ...sw, couponsRead: 1000, recentGone: 1400 }).close);
+
+// ---------------- fechamento por ausência (releitura completa) ----------------
+check('ausência: poucos cupons (1 a 3) fecham como antes', decideAbsenceClose({ wouldClose: 3, activeFromSource: 4, readInBatch: 1 }).close && decideAbsenceClose({ wouldClose: 0, activeFromSource: 5, readInBatch: 5 }).close);
+check('ausência: caso medido na Shopee (1 lido, 8 fechariam de 9 ativos) NÃO fecha', !decideAbsenceClose({ wouldClose: 8, activeFromSource: 9, readInBatch: 1 }).close);
+check('ausência: 4 a fechar de 6 ativos com 2 lidos NÃO fecha; com 5 lidos fecha', !decideAbsenceClose({ wouldClose: 4, activeFromSource: 6, readInBatch: 2 }).close && decideAbsenceClose({ wouldClose: 4, activeFromSource: 6, readInBatch: 5 }).close);
+check('ausência: fechamento em massa pequeno diante da base (4 de 20) fecha', decideAbsenceClose({ wouldClose: 4, activeFromSource: 20, readInBatch: 2 }).close);
 
 // ---------------- cadastro manual ----------------
 const man = planManualCoupon({ rede: 'mercado-livre', codigo: 'TESTECUPOM', percentual: 10, minimoReais: 100, ate: '2026-11-30', por: 'Renato', nome: 'Cupom de teste', fonteUrl: 'https://www.mercadolivre.com.br/cupons', lidoEm: new Date(NOW) });

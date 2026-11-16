@@ -107,4 +107,6 @@ export interface StoredCoupon {
   lastPagePriceCents: number | null;
   /** Termos curtos lidos na página da promoção (Amazon); ausente nas demais redes. */
   termos?: string | null;
+  /** Nome do cupom lido pela aba (conditions.nome), ex.: "Cupom de R$ 15 no carrinho" (Shopee). Ausente quando a leitura não trouxe. */
+  nome?: string | null;
 }

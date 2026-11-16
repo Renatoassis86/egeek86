@@ -293,7 +293,7 @@
       var j = await r.json().catch(function () { return {}; });
       S.totais.enviados += cupons.length; S.totais.gravados += j.gravados || 0; S.totais.novos += j.novos || 0; S.totais.vencidosPorAusencia += j.vencidos_por_ausencia || 0;
       (j.rejeitados || []).forEach(function (x) { S.totais.rejeitados++; S.rejeicoes[x.reason] = (S.rejeicoes[x.reason] || 0) + 1; });
-      linha({ pagina: caminho, enviados: cupons.length, gravados: j.gravados, novos: j.novos, vencidos_por_ausencia: j.vencidos_por_ausencia, erro: r.status === 400 ? (j.error || 'lote_recusado') : undefined, rejeitados: (j.rejeitados || []).slice(0, 4) });
+      linha({ pagina: caminho, enviados: cupons.length, gravados: j.gravados, novos: j.novos, vencidos_por_ausencia: j.vencidos_por_ausencia, fechamento_recusado: j.fechamento_recusado, erro: r.status === 400 ? (j.error || 'lote_recusado') : undefined, rejeitados: (j.rejeitados || []).slice(0, 4) });
     } catch (e) { await pausarOuParar('rede', 'envio: ' + e.message); return 'parar'; }
     return 'ok';
   }

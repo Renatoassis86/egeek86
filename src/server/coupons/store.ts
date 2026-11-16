@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { sha256 } from './normalize';
 import type { SweepCloseRequest } from './normalize';
 import type { BatchValidation } from './normalize';
-import { DEFAULT_MAX_AGE_MINUTES, VERIFIED_BY, decideState, decideSweepClose, isUsableForMessage, matchesScope, meetsMinimum, type ScopeTarget } from './vigencia';
+import { DEFAULT_MAX_AGE_MINUTES, VERIFIED_BY, decideState, decideAbsenceClose, decideSweepClose, isUsableForMessage, matchesScope, meetsMinimum, type ScopeTarget } from './vigencia';
 import type { CouponNetwork, CouponScopeRef, NormalizedCoupon, StoredCoupon } from './types';
 
 /**
@@ -24,14 +24,14 @@ export type Row = {
   min_order_cents: string | null; max_discount_cents: string | null; conditions_raw: string; audience: StoredCoupon['audience']; audience_text: string | null;
   eligible_on_read_account: boolean | null; scope_kind: StoredCoupon['scopeKind']; scope: CouponScopeRef; source_url: string;
   valid_from: string | null; valid_until: string | null; validity_source: StoredCoupon['validitySource']; state: StoredCoupon['state'];
-  first_seen_at: string; streak_started_at: string; last_seen_at: string; verified_at: string | null; last_page_price_cents: string | null; termos: string | null;
+  first_seen_at: string; streak_started_at: string; last_seen_at: string; verified_at: string | null; last_page_price_cents: string | null; termos: string | null; nome?: string | null;
 };
 
 export const SELECT_COLS = sql`
   id::text AS id, network_slug, code, kind, value_num::text AS value_num, value_unit, min_order_cents::text AS min_order_cents,
   max_discount_cents::text AS max_discount_cents, conditions_raw, audience, audience_text, eligible_on_read_account, scope_kind, scope, source_url,
   ${ts('valid_from')}, ${ts('valid_until')}, validity_source, state, ${ts('first_seen_at')}, ${ts('streak_started_at')}, ${ts('last_seen_at')},
-  ${ts('verified_at')}, last_page_price_cents::text AS last_page_price_cents, conditions->>'termos' AS termos`;
+  ${ts('verified_at')}, last_page_price_cents::text AS last_page_price_cents, conditions->>'termos' AS termos, conditions->>'nome' AS nome`;
 
 const num = (v: string | null) => (v === null ? null : Number(v));
 
@@ -42,7 +42,7 @@ export function mapRow(r: Row): StoredCoupon {
     audience: r.audience, audienceText: r.audience_text, eligibleOnReadAccount: r.eligible_on_read_account,
     scopeKind: r.scope_kind, scope: r.scope ?? {}, sourceUrl: r.source_url, validFrom: r.valid_from, validUntil: r.valid_until,
     validitySource: r.validity_source, state: r.state, firstSeenAt: r.first_seen_at, streakStartedAt: r.streak_started_at,
-    lastSeenAt: r.last_seen_at, verifiedAt: r.verified_at, lastPagePriceCents: num(r.last_page_price_cents), termos: r.termos ?? null,
+    lastSeenAt: r.last_seen_at, verifiedAt: r.verified_at, lastPagePriceCents: num(r.last_page_price_cents), termos: r.termos ?? null, nome: r.nome ?? null,
   };
 }
 
@@ -111,6 +111,8 @@ export interface IngestSummary {
   fora_de_ordem: number;
   vencidos_por_ausencia: number;
   vencidos_por_prazo: number;
+  /** Releitura completa que NAO fechou por ausencia (leitura menor que o fechamento em massa): motivo. */
+  fechamento_recusado?: string;
   rejeitados: { index: number; reason: string }[];
 }
 
@@ -206,11 +208,17 @@ export async function ingestCouponBatch(v: BatchValidation): Promise<IngestSumma
     // Releitura COMPLETA da fonte: o que o servidor conhece dessa fonte e nao veio agora sumiu da pagina -> vencido (ausencia nao prova validade).
     const seen = v.coupons.map((c) => c.dedupHash);
     const notSeen: SQL = seen.length ? sql`AND dedup_hash NOT IN (${sql.join(seen.map((h) => sql`${h}`), sql`, `)})` : sql``;
-    const gone = (await db.execute<{ id: string }>(sql`
+    const scopeWhere = sql`network_slug = ${network} AND source_url = ${batchSourceUrl} AND source_kind <> 'manual_dono' AND state IN ('nao_verificado', 'verificado')`;
+    const cnt = (await db.execute<{ would: string; active: string }>(sql`
+      SELECT count(*) FILTER (WHERE last_seen_at < ${readAt}::timestamptz ${notSeen})::text AS would, count(*)::text AS active
+      FROM coupon_items WHERE ${scopeWhere}`)) as unknown as { would: string; active: string }[];
+    const dec = decideAbsenceClose({ wouldClose: Number(cnt[0]?.would ?? 0), activeFromSource: Number(cnt[0]?.active ?? 0), readInBatch: v.coupons.length });
+    summary.fechamento_recusado = dec.close ? undefined : dec.reason;
+    const gone = dec.close ? ((await db.execute<{ id: string }>(sql`
       UPDATE coupon_items SET state = 'vencido', state_reason = 'sumiu_da_releitura_completa', verified_at = NULL, updated_at = now()
-      WHERE network_slug = ${network} AND source_url = ${batchSourceUrl} AND source_kind <> 'manual_dono' AND state IN ('nao_verificado', 'verificado')
+      WHERE ${scopeWhere}
         AND last_seen_at < ${readAt}::timestamptz ${notSeen}
-      RETURNING id::text AS id`)) as unknown as { id: string }[];
+      RETURNING id::text AS id`)) as unknown as { id: string }[]) : [];
     summary.vencidos_por_ausencia = gone.length;
     if (gone.length) {
       const evidence = sha256(JSON.stringify(seen.sort()));

@@ -106,6 +106,13 @@
     return out;
   };
 
+  /** "Em todo o Mercado Livre", "Em todo o site", "Em todos os produtos do Mercado Livre", "Em todas as categorias": o cartão declara plataforma inteira. */
+  PURO.ehEscopoPlataforma = function (t) {
+    var x = String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+    return /^em (todo o|todo|todos os|todas as) (site|mercado ?livre|marketplace|anuncios|produtos do mercado ?livre|produtos do site|categorias|produtos e categorias)$/.test(x)
+      || /^em (todo o|toda a) (plataforma|loja do mercado ?livre)$/.test(x) || /^em todo o mercado ?livre$/.test(x);
+  };
+
   /** Um bloco -> { cupom } no contrato de POST /api/ingest/cupons, ou { descarte: 'motivo' }. Nada é deduzido: o que não foi lido fica de fora. */
   PURO.montarCupom = function (b, pagina, agoraMs, origem) {
     var tx = b.textos || [];
@@ -129,6 +136,8 @@
     var escopo, ref = {};
     var loja = escTxt ? /^em produtos d[eao]s?\s+(.{1,80})$/i.exec(escTxt) : null;
     if (loja) { escopo = 'lista_itens'; ref = { vendedores: [loja[1].trim()] }; }
+    // Cupom de PLATAFORMA INTEIRA (2026-11-16): só quando o cartão DECLARA que vale em todo o site; sem declaração, nada é presumido (cai em categoria ou descarte).
+    else if (escTxt && PURO.ehEscopoPlataforma(escTxt)) { escopo = 'loja_inteira'; ref = {}; }
     else if (escTxt && escTxt.length <= 80) { escopo = 'categoria'; ref = { categorias: [escTxt.replace(/^em\s+/i, '').trim()] }; }
     else return { descarte: 'sem_escopo_lido' };
     var vtx = find(/^(vence|v[aá]lido|encerra|expira|termina)/i);
