@@ -4,7 +4,7 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { isVertical } from '@/lib/catalog/verticais';
 import { ingestAmazonVitrine, isVitrineId, vitrineQueue } from '@/server/collector/amazon-vitrine';
-import { amazonDiscoverQueue, amazonDiscoverTotal, amazonQueue, amazonQueueTotal, amazonRefreshQueue, amazonRefreshTotal, ingestAmazonRows, type AmzRow } from '@/server/collector/amazon-assisted';
+import { amazonCabecaQueue, amazonDiscoverQueue, amazonDiscoverTotal, amazonQueue, amazonQueueTotal, amazonRefreshQueue, amazonRefreshTotal, ingestAmazonRows, type AmzRow } from '@/server/collector/amazon-assisted';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -60,6 +60,10 @@ export async function GET(request: NextRequest) {
   if (mode === 'refresh') {
     const [items, total] = await Promise.all([amazonRefreshQueue(offset, n, vertical), amazonRefreshTotal(vertical)]);
     return NextResponse.json({ total, items }, { headers: cors(request) });
+  }
+  if (mode === 'cabeca') {
+    // R-81: passada rápida (≈20 min) só da cabeça prioritária (impressoras do privado), para o preço da Amazon nunca passar de 45 min.
+    return NextResponse.json(await amazonCabecaQueue(), { headers: cors(request) });
   }
   if (mode === 'vitrine') {
     // Vitrine (plano 2): buscas características de cada loja, ids sintéticos (prefixo 0000…-4000-8000-), rotação por hora. Opt-in no laço (modos:['vitrine']).

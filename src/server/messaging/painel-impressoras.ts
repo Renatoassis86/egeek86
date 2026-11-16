@@ -12,7 +12,7 @@ import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { linkPublicavelFilter } from '@/server/queries/public-offers';
 import { auditarUrlsDeMensagem, resumoViolacoes } from '@/lib/affiliate/link-afiliado';
 import { lookupItemCouponDetail } from '@/server/messaging/coupon-item-lookup';
-import { amazonForaDasMensagens, amazonNoPrivado, avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
+import { amazonForaDasMensagens, amazonFrescorMin, amazonNoPrivado, avaliarConfirmacao, confirmacaoLigada, rigidoPrivadoLigado, itemIdDaUrl, quedaDoMesmoAnuncio, type Veredito } from '@/lib/messaging/confirmacao-preco';
 import { ultimosVereditos } from '@/server/links/auditoria-links';
 import { decidir, INTERVALO_MIN_MS, JANELA_MINIMO_DIAS, type MenorPreco } from '@/lib/coupons/monitor-preco-impressoras';
 import {
@@ -142,7 +142,9 @@ async function mudouDesdeCongelamento(L: ListaCongelada): Promise<number> {
   const rows = (await db.execute(sql`
     SELECT count(*)::int AS n FROM affiliate_offers
     WHERE id IN (${sql.join(ids.map((i) => sql`${i}::uuid`), sql`, `)})
-      AND (last_price_change_at > ${L.inicio}::timestamptz OR item_trocado_at > ${L.inicio}::timestamptz OR status <> 'active' OR consecutive_miss_count > 0 OR quarantined_at IS NOT NULL)`)) as unknown as { n: number }[];
+      AND (last_price_change_at > ${L.inicio}::timestamptz OR item_trocado_at > ${L.inicio}::timestamptz OR status <> 'active' OR consecutive_miss_count > 0 OR quarantined_at IS NOT NULL
+           /* R-81: preço de Amazon velho no momento do envio (a lista é entregue em partes) obriga a regenerar; Amazon sem leitura fresca sai da lista */
+           OR (network_id IN (SELECT id FROM affiliate_networks WHERE slug = 'amazon') AND (last_price_confirmed_at IS NULL OR last_price_confirmed_at < now() - ${amazonFrescorMin() + 15} * interval '1 minute')))`)) as unknown as { n: number }[];
   return Number(rows[0]?.n ?? 0);
 }
 

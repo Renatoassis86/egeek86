@@ -2,7 +2,7 @@
  * #119: confirmação fresca de preço antes de mensagem/lista, troca de anúncio não é queda, link no mesmo anúncio do preço.
  * Uso: npx tsx --conditions=react-server --env-file=.env.local scripts/test-confirmacao-preco-119.ts
  */
-import { decidirTrocaDeAnuncio, avaliarConfirmacao, CONFIRMACAO, confirmacaoLigada, itemIdDaUrl, mesmoAnuncio, planejarLinkDoAnuncio, quedaDoMesmoAnuncio } from '../src/lib/messaging/confirmacao-preco';
+import { amazonFrescorMin, decidirTrocaDeAnuncio, avaliarConfirmacao, CONFIRMACAO, confirmacaoLigada, itemIdDaUrl, mesmoAnuncio, planejarLinkDoAnuncio, quedaDoMesmoAnuncio } from '../src/lib/messaging/confirmacao-preco';
 import { runLivePhase, type LiveTarget } from '../src/lib/messaging/live-recheck';
 
 process.env.AMAZON_FORA_DAS_MENSAGENS = '0'; // contencao #120 (Amazon fora das mensagens) e de outra frente: estes testes cobrem as regras de confirmacao em si
@@ -18,7 +18,10 @@ ok(avaliarConfirmacao({ ...base, confirmedAt: ago(61) }).motivo === 'confirmacao
 ok(avaliarConfirmacao({ ...base, uso: 'lista', confirmedAt: ago(61) }).ok, 'lista: 61 min ok');
 ok(avaliarConfirmacao({ ...base, uso: 'lista', confirmedAt: ago(361) }).motivo === 'confirmacao_velha', 'lista: 361 min barra');
 ok(avaliarConfirmacao({ ...base, confirmedAt: null }).motivo === 'sem_confirmacao', 'nunca confirmado (caso A1 Combo)');
-ok(avaliarConfirmacao({ ...base, rede: 'amazon', confirmedAt: ago(100) }).ok && !avaliarConfirmacao({ ...base, rede: 'amazon', confirmedAt: ago(131) }).ok, 'Amazon: janela do ciclo da coleta assistida');
+ok(avaliarConfirmacao({ ...base, rede: 'amazon', confirmedAt: ago(40) }).ok && !avaliarConfirmacao({ ...base, rede: 'amazon', confirmedAt: ago(46) }).ok, 'Amazon (R-81): preço só vale com leitura de até 45 min');
+ok(!avaliarConfirmacao({ ...base, rede: 'amazon', uso: 'lista', confirmedAt: ago(100) }).ok && avaliarConfirmacao({ ...base, rede: 'amazon', uso: 'lista', confirmedAt: ago(30) }).ok, 'Amazon (R-81): lista também exige 45 min (a P2S Combo mostrou R$ 8.499 com a página em R$ 9.499)');
+ok(avaliarConfirmacao({ ...base, rede: 'mercado-livre', uso: 'lista', confirmedAt: ago(300) }).ok, 'ML: lista segue com 6 h');
+ok(amazonFrescorMin({}) === 45 && amazonFrescorMin({ AMAZON_FRESCOR_MIN: '20' }) === 20 && amazonFrescorMin({ AMAZON_FRESCOR_MIN: '9999' }) === 45 && amazonFrescorMin({ AMAZON_FRESCOR_MIN: 'x' }) === 45, 'AMAZON_FRESCOR_MIN: válido sobrescreve, inválido volta ao padrão');
 ok(CONFIRMACAO.QUEDA_MIN === 60 && CONFIRMACAO.LISTA_MIN === 360, 'limites do dono');
 // Status e sumiço
 ok(avaliarConfirmacao({ ...base, status: 'expired', confirmedAt: ago(1) }).motivo === 'oferta_inativa', 'expirada barra');

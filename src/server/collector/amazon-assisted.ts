@@ -151,6 +151,15 @@ export const amazonRefreshQueue = (offset: number, n: number, vertical?: Vertica
 /** Fila de DESCOBERTA: impressoras 3D prioritárias primeiro (sem carência); masters elegíveis SEM oferta ativa da Amazon: nunca buscados primeiro, depois o rodízio por busca mais antiga (carência de 72 h). */
 export const amazonDiscoverQueue = (offset: number, n: number, vertical?: Vertical) => loadQueue('discover', offset, n, vertical);
 
+/**
+ * R-81 (dono, 2026-11-16): preço de Amazon só vale com leitura de até 45 min (confirmacao-preco). A cabeça prioritária (as impressoras do privado do dono)
+ * ganha uma passada própria, curta, a cada ~20 min dentro do loop (modo 'cabeca'), sem esperar o ciclo de 2 h. No máximo 10 itens.
+ */
+export async function amazonCabecaQueue(): Promise<{ total: number; items: AmzQueueItem[] }> {
+  const c = (await cabecaPrioritaria()).slice(0, 10).map(({ id, q }) => ({ id, q }));
+  return { total: c.length, items: c };
+}
+
 /** Totais JÁ limitados pelo orçamento do ciclo (o laço pára em `total`); incluem a cabeça prioritária. */
 export async function amazonRefreshTotal(vertical?: Vertical): Promise<number> {
   const ids = (await cabecaPrioritaria(vertical)).map((c) => c.id);

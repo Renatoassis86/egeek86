@@ -11,11 +11,21 @@
 export const CONFIRMACAO = {
   /** Mensagem de queda/card: preço confirmado na API há no máximo isto (min). */
   QUEDA_MIN: 60,
-  /** Amazon: a coleta assistida roda a cada ~2 h; a janela acompanha o ciclo (honesto: não é 60 min). */
-  QUEDA_MIN_AMAZON: 130,
+  /**
+   * Amazon (R-81, dono 2026-11-16): o preço da Amazon mexe em horas (a P2S Combo subiu R$ 1.000 entre duas leituras) e o link vai direto para a página.
+   * Preço de Amazon só é dito (mensagem, card OU lista) com leitura de até 45 min; sem isso a oferta NÃO entra (nunca preço velho). Ajuste: AMAZON_FRESCOR_MIN.
+   */
+  QUEDA_MIN_AMAZON: 45,
+  LISTA_MIN_AMAZON: 45,
   /** Lista: preço confirmado há no máximo isto (min). */
   LISTA_MIN: 360,
 } as const;
+
+/** Frescor máximo do preço da Amazon (min). Padrão 45; AMAZON_FRESCOR_MIN válido (10..360) sobrescreve. */
+export function amazonFrescorMin(env: Record<string, string | undefined> = process.env): number {
+  const n = Number((env.AMAZON_FRESCOR_MIN ?? '').trim());
+  return Number.isFinite(n) && n >= 10 && n <= 360 ? Math.round(n) : CONFIRMACAO.LISTA_MIN_AMAZON;
+}
 
 export type UsoPreco = 'queda' | 'lista';
 export type MotivoConfirmacao =
@@ -168,7 +178,7 @@ export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito
   if (f.quarantined) return falha('em_quarentena');
   if ((f.missCount ?? 0) > 0) return falha('sumiu_da_api');
   if (!f.confirmedAt) return falha('sem_confirmacao');
-  const limite = f.uso === 'lista' ? CONFIRMACAO.LISTA_MIN : /amazon/i.test(f.rede) ? CONFIRMACAO.QUEDA_MIN_AMAZON : CONFIRMACAO.QUEDA_MIN;
+  const limite = /amazon/i.test(f.rede) ? amazonFrescorMin() : f.uso === 'lista' ? CONFIRMACAO.LISTA_MIN : CONFIRMACAO.QUEDA_MIN;
   const idadeMin = (f.now.getTime() - f.confirmedAt.getTime()) / 60_000;
   if (idadeMin > limite) return falha('confirmacao_velha');
   const aud = avaliarAuditoria(f);

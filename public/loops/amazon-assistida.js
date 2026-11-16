@@ -18,7 +18,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.1.0'; // 1.1.0 (R-69): marca px (preço em destaque é "à vista no Pix") e lista sem parcela
+  var VERSAO = '1.2.0'; // 1.2.0 (R-81): passada rápida da cabeça prioritária (impressoras do privado) a cada ~20 min, para o preço da Amazon nunca passar de 45 min. 1.1.0 (R-69): marca px (preço em destaque é "à vista no Pix") e lista sem parcela
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-amazon-assistida.ts
@@ -253,7 +253,7 @@
     return 'servidor_instavel';
   };
 
-  var MODOS = { refresh: 1, discover: 1, queue: 1, vitrine: 1 }; // vitrine = opt-in (modos:['refresh','discover','vitrine'])
+  var MODOS = { refresh: 1, discover: 1, queue: 1, vitrine: 1, cabeca: 1 }; // vitrine = opt-in (modos:['refresh','discover','vitrine'])
   var VERTICAIS = /^[a-z0-9_-]{2,30}$/;
   /** Valida a configuração injetada sem devolver o token em mensagem. */
   PURO.validarCfg = function (c, host) {
@@ -270,7 +270,7 @@
       cfg: {
         api: api, enviar: c.enviar === true, lote: Math.min(MAX_ROWS, Math.max(1, +c.lote || 10)), pausaMs: faixa, modos: modos,
         vertical: typeof c.vertical === 'string' && VERTICAIS.test(c.vertical) ? c.vertical : null,
-        cicloMin: Math.max(5, +c.cicloMin || 120), idleMs: Math.max(1, +c.idleMin || 10) * 60000,
+        cabecaMs: Math.max(10, +c.cabecaMin || 20) * 60000, cicloMin: Math.max(5, +c.cicloMin || 120), idleMs: Math.max(1, +c.idleMin || 10) * 60000,
       },
       token: c.token,
     };
@@ -487,6 +487,28 @@
     if (pend.length && r.rows) await resolverPaginas(pend, r.rows, round);
   }
 
+  // ----- R-81: passada rápida da cabeça prioritária (impressoras do privado): preço da Amazon com leitura de até 45 min -----
+  async function passadaCabeca() {
+    S.ultimaCabeca = Date.now();
+    var modoAntes = S.modo;
+    try {
+      S.modo = 'cabeca';
+      var itens = await baixarFila('cabeca');
+      var lote = [];
+      for (var i = 0; i < itens.length && !parado; i++) {
+        var b = await persistir(function () { return buscar(itens[i]); }, 'busca-cabeca');
+        if (!b) break;
+        S.buscas++;
+        if (b.row) { sucesso(); lote.push(b.row); } else { erro('cabeca ' + itens[i].id.slice(0, 8) + ' pulada: ' + b.pular); }
+        if (i < itens.length - 1) await dormir(PURO.pausaEntreItens(CFG.pausaMs, null, PISO_PAUSA_MS, S.cadenciaS));
+      }
+      if (lote.length && !parado) await enviarLote(lote, 'amza-cab' + S.cycle + '-' + Date.now());
+      S.passadasCabeca = (S.passadasCabeca || 0) + 1;
+    } catch (e) { S.excecoes++; erro('cabeca: ' + (e && e.message)); }
+    S.modo = modoAntes;
+  }
+  function cabecaDevida() { return !parado && (Date.now() - (S.ultimaCabeca || 0)) >= CFG.cabecaMs; }
+
   // ----- ciclo -----
   async function umCiclo() {
     S.cycle++; S.cycleStart = agora(); S.done = 0; S.total = 0;
@@ -496,6 +518,7 @@
     S.total = todos.length;
     var batch = [], modoLote = null;
     for (var i = 0; i < todos.length && !parado; i++) {
+      if (cabecaDevida()) await passadaCabeca();
       var it = todos[i];
       S.modo = it.modo;
       var b = await persistir(function () { return buscar(it); }, 'busca');
@@ -519,7 +542,11 @@
       if (parado) return;
       var espera = S.total === 0 ? CFG.idleMs : Math.max(60000, CFG.cicloMin * 60000 - (Date.now() - ini));
       S.proximoCicloEm = new Date(Date.now() + espera).toISOString();
-      await dormir(espera);
+      var fimEspera = Date.now() + espera;
+      while (!parado && Date.now() < fimEspera) { // espera em fatias: a cabeça prioritária é relida a cada ~20 min mesmo entre ciclos
+        await dormir(Math.max(1000, Math.min(fimEspera - Date.now(), Math.max(60000, CFG.cabecaMs - (Date.now() - (S.ultimaCabeca || 0))))));
+        if (cabecaDevida()) await passadaCabeca();
+      }
       S.proximoCicloEm = null;
     }
   }
@@ -532,7 +559,7 @@
       cycle: S.cycle, cycleStart: S.cycleStart, modo: S.modo, done: S.done, total: S.total, posted: S.posted, errs: S.errs, redeRetry: S.redeRetry, lastOk: S.lastOk,
       buscas: S.buscas, semResultados: S.semResultados, paginasLidas: S.paginasLidas, descartes: S.descartes, enviosFalhos: S.enviosFalhos, excecoes: S.excecoes,
       pausa: S.pausa, seguidos: S.seguidos, cadenciaS: S.cadenciaS, proximoCicloEm: S.proximoCicloEm || null, stats: S.stats,
-      legadoAMZ4: S.legadoAMZ4, erros: S.erros.slice(-8), linhas: S.linhas.slice(-12), ultimaAmostra: S.ultimaAmostra,
+      legadoAMZ4: S.legadoAMZ4, passadasCabeca: S.passadasCabeca || 0, ultimaCabeca: S.ultimaCabeca ? new Date(S.ultimaCabeca).toISOString() : null, erros: S.erros.slice(-8), linhas: S.linhas.slice(-12), ultimaAmostra: S.ultimaAmostra,
     }));
   }
   function stop(motivo) {
