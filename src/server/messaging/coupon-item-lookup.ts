@@ -8,6 +8,7 @@ import { verticaisDaCategoria } from '@/lib/coupons/categoria-vertical';
 import { agulhaRuleFromLabel } from '@/lib/coupons/page-read';
 import { resolveCouponUse, stepsText } from '@/lib/coupons/coupon-name';
 import { FONTES_PROMO, promoPrimeMensagemLigada } from '@/lib/coupons/amazon-promocoes';
+import { cupomMlExigeProva, cupomMlFrescorMin, provaCupomMl, type MotivoSemProva } from '@/lib/coupons/prova-cupom';
 
 /**
  * Cupom POR ANÚNCIO (dono, 2026-11-11): a aba logada lê a página do item e grava o "preço com cupom" (offer_coupon_reads). Vale 2 horas.
@@ -104,10 +105,20 @@ export async function lookupItemCouponDetail(offerId: string, trace?: MissTrace,
   const negAtOf = (promo: boolean) => rows.filter((r) => r.pw == null && isPromoRow(r) === promo).map((r) => new Date(r.read_at).getTime()).reduce((m, t) => Math.max(m, t), -Infinity);
   const negAt = { promo: negAtOf(true), item: negAtOf(false) };
   const positives = rows.filter((r) => r.pw != null && new Date(r.read_at).getTime() > (isPromoRow(r) ? negAt.promo : negAt.item));
-  if (!positives.length) { trace?.(rows.some((r) => r.pw != null) ? 'sumiu_na_releitura' : 'lida_sem_cupom'); return null; }
+  // PROVA NO ITEM (R-63, 2026-11-16): cupom do ML só vale com campaign_id + confirmação do modal do MESMO item + leitura de até 10 min na hora de usar (detectar e enviar).
+  let semProva: MotivoSemProva | null = null;
+  const exigirProva = cupomMlExigeProva();
+  const frescorMl = cupomMlFrescorMin();
+  const comProva = positives.filter((r) => {
+    if (r.net !== 'mercado-livre') return true;
+    const p = provaCupomMl({ campaignId: r.campaign, status: r.status, readAt: new Date(r.read_at), now }, exigirProva, frescorMl);
+    if (!p.ok && !semProva) semProva = p.motivo;
+    return p.ok;
+  });
+  if (!comProva.length) { trace?.(positives.length && semProva ? semProva : rows.some((r) => r.pw != null) ? 'sumiu_na_releitura' : 'lida_sem_cupom'); return null; }
   // Mesma rodada de leitura (até 60 s da mais nova): vale o menor preço com cupom, como a página mostra.
-  const newestPos = new Date(positives[0].read_at).getTime();
-  const cycle = positives.filter((r) => newestPos - new Date(r.read_at).getTime() <= 60_000).sort((a, b) => Number(a.pw) - Number(b.pw));
+  const newestPos = new Date(comProva[0].read_at).getTime();
+  const cycle = comProva.filter((r) => newestPos - new Date(r.read_at).getTime() <= 60_000).sort((a, b) => Number(a.pw) - Number(b.pw));
 
   const current = Number(first.cur);
   let lastReason: string | null = null;

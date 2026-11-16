@@ -38,6 +38,9 @@ export type MissTrace = (reason: string) => void;
 export type AgulhaSource = 'item' | 'campanha' | 'loja_categoria';
 
 export const AGULHA_MISS = [
+  'cupom_sem_campanha',
+  'cupom_sem_confirmacao_do_modal',
+  'cupom_leitura_antiga_para_enviar',
   'rede_sem_leitura_autorizada',
   'sem_leitura',
   'leitura_antiga',

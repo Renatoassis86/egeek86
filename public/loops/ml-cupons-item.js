@@ -22,7 +22,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.2.0';
+  var VERSAO = '1.3.0';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-ml-links-ui.ts
@@ -416,12 +416,15 @@
     if (tp !== 'ok') return { problema: tp, detalhe: 'item ' + id + ' status ' + r.status };
     if (!PURO.paginaConfere(html, id)) { S.totais.naoConfere++; return { descarte: 'pagina_nao_confere' }; }
     var x = PURO.extrairCupons(html);
-    if (x.cupons.some(function (c) { return c.campaign_id; })) {
-      // nome real do cupom: modal "Ver cupons disponíveis" (/cupons/pdp). Falha aqui NUNCA derruba a leitura (o cupom segue sem nome); só 429/403 vira pausa.
-      // O nome é da CAMPANHA (não muda entre leituras): cache por campaign_id (12 h) evita refazer a consulta do modal; só consulta o que falta, no máx.
-      // MODAL_POR_CICLO por ciclo e com 6 a 10 s entre consultas (captcha real do ML).
-      var faltam = x.cupons.filter(function (c) { return c.campaign_id && !PURO.nomeEmCache(nomesCache, c.campaign_id, Date.now()); });
-      var mu = faltam.length && modaisNoCiclo < MODAL_POR_CICLO ? PURO.urlModalCupons(html, id) : null;
+    // PROVA NO ITEM (2026-11-16, "CUPOM ATIVO P1S Combo NIC.3D R$ 5.799" que não existia): o texto "R$ X com cupom" vem do TEXTO INTEIRO da página (a página de catálogo
+    // lista várias ofertas) e pode ser de OUTRO vendedor. O cupom só vale se (1) tem campaign_id no estado embutido da página E (2) o modal /cupons/pdp DESTE item
+    // (item_id do link) confirma essa campanha. Sem as duas provas = sem cupom (a leitura segue como "sem cupom", nunca como positiva). Cache só serve para o NOME.
+    var comCamp = x.cupons.filter(function (c) { return c.campaign_id; });
+    if (x.cupons.length - comCamp.length) S.totais.cupomSemCampanha = (S.totais.cupomSemCampanha || 0) + (x.cupons.length - comCamp.length);
+    var confirmados = [];
+    if (comCamp.length) {
+      var mapa = null; // null = modal não consultado ou inconclusivo; {} = modal respondeu sem essa campanha
+      var mu = modaisNoCiclo < MODAL_POR_CICLO ? PURO.urlModalCupons(html, id) : null;
       if (mu) {
         var espera = PURO.esperaModal(ultimoModalEm, Date.now(), Math.random());
         if (espera > 0) await dormir(espera);
@@ -431,13 +434,18 @@
           if (rm.status === 429 || rm.status === 403) return { problema: 'http_429', detalhe: 'modal de cupons ' + rm.status };
           if (/captcha|account-verification|\/security/i.test(String(rm.url))) return { problema: 'captcha', detalhe: 'item ' + id + ' modal de cupons em página de verificação' };
           if (rm.status === 200 && /\/cupons\/pdp/.test(rm.url)) {
-            var md = PURO.cuponsDoModal(await rm.text());
-            Object.keys(md).forEach(function (k) { nomesCache[k] = { d: md[k], t: Date.now() }; });
+            mapa = PURO.cuponsDoModal(await rm.text());
+            Object.keys(mapa).forEach(function (k) { nomesCache[k] = { d: mapa[k], t: Date.now() }; });
           }
-        } catch (e) { /* sem nome nesta leitura */ }
+        } catch (e) { /* inconclusivo: sem confirmação nesta leitura */ }
       }
-      x.cupons.forEach(function (c) { var d = c.campaign_id && PURO.nomeEmCache(nomesCache, c.campaign_id, Date.now()); if (d) { c.name = d.name; c.acao = d.acao; c.seguir = d.seguir; } });
+      comCamp.forEach(function (c) {
+        var d = mapa && mapa[c.campaign_id];
+        if (d) { c.name = d.name; c.acao = d.acao; c.seguir = d.seguir; c.status = 'confirmado_modal'; confirmados.push(c); }
+        else S.totais.cupomNaoConfirmado = (S.totais.cupomNaoConfirmado || 0) + 1;
+      });
     }
+    x.cupons = confirmados;
     if (x.ambiguo) { S.totais.ambiguos++; return { descarte: 'ambiguo_mencao_a_cupom_sem_preco' }; }
     if (x.cupons.length) S.totais.comCupom++;
     var bc = PURO.extrairBeneficiosCartao(html);

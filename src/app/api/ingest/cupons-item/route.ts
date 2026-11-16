@@ -6,6 +6,7 @@ import { listarFilaRevalidacao, resolverUrlsLeitura } from '@/server/coupons/rev
 import { sanitizeCouponCode, sanitizeCouponName } from '@/lib/coupons/coupon-name';
 import { gravarBeneficiosCartao } from '@/server/coupons/card-benefits';
 import { nomeColunasLigadas } from '@/server/coupons/nome-colunas';
+import { cupomMlExigeProva, leituraPositivaGravavel } from '@/lib/coupons/prova-cupom';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -80,12 +81,15 @@ export async function POST(request: NextRequest) {
       .map((c) => ({ campaign: /^\d{3,12}$/.test(String(c.campaign_id ?? '')) ? String(c.campaign_id) : null, label: String(c.label ?? '').slice(0, 120), status: String(c.status ?? '').slice(0, 40), name: sanitizeCouponName(c.name), code: sanitizeCouponCode(c.code) }))
       .map((c) => ({ ...c, cents: centsFromLabel(c.label) }))
       .filter((c) => c.cents != null && c.cents > 0 && c.cents < price && /cupom/i.test(c.label));
-    if (!valid.length) {
-      await db.execute(sql`INSERT INTO offer_coupon_reads (offer_id, status, price_seen_cents) VALUES (${r.id}::uuid, 'sem_cupom', ${price}::int)`);
+    // PROVA NO ITEM (R-63): só entra como positiva a leitura com campaign_id e confirmação do modal do mesmo item (status `confirmado_modal`); o resto é gravado como
+    // leitura SEM cupom (`sem_prova`), que também derruba qualquer positiva anterior (leitura divergente = sem cupom).
+    const provados = valid.filter((c) => leituraPositivaGravavel({ campaign: c.campaign, status: c.status }, cupomMlExigeProva()));
+    if (!provados.length) {
+      await db.execute(sql`INSERT INTO offer_coupon_reads (offer_id, status, price_seen_cents) VALUES (${r.id}::uuid, ${valid.length ? 'sem_prova' : 'sem_cupom'}, ${price}::int)`);
       lidas++;
       continue;
     }
-    for (const c of valid) {
+    for (const c of provados) {
       if (nomeColunasLigadas()) {
         await db.execute(sql`
           INSERT INTO offer_coupon_reads (offer_id, campaign_id, status, label, price_with_coupon_cents, price_seen_cents, coupon_name, coupon_code)
