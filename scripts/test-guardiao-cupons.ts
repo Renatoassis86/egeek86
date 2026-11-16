@@ -36,7 +36,7 @@ const baseAnn = (kind: AnnKind, over: Partial<Announcement> = {}): Announcement 
 
 async function main() {
   const { consultarCupom } = await import('../src/server/messaging/agente-cupons');
-  const consultarComCofre = (id: string, d: Record<string, unknown>) => consultarCupom(id, { redeDaOferta: async () => 'mercado-livre', registrar: async () => undefined, now: NOW, ...d } as never);
+  const consultarComCofre = (id: string, d: NonNullable<Parameters<typeof consultarCupom>[1]> = {}) => consultarCupom(id, { redeDaOferta: async () => 'mercado-livre', registrar: async () => undefined, now: NOW, ...d });
   const { rodarGuardiao } = await import('../src/server/messaging/guardiao-cupons');
   const { renderEndedCouponCard } = await import('../src/server/messaging/ended-coupon-card');
   type Store = import('../src/server/messaging/guardiao-cupons').GuardiaoStore;

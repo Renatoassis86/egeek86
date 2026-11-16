@@ -121,7 +121,7 @@ async function main() {
   // ---------------- consulta única: motivo registrado e ordem ----------------
   const { consultarCupom } = await import('../src/server/messaging/agente-cupons');
   // O cofre decide campanha e loja/categoria: o teste injeta rede, gravador e relógio (sem banco).
-  const consultarComCofre = (id: string, d: Record<string, unknown>) => consultarCupom(id, { redeDaOferta: async () => 'mercado-livre', registrar: async () => undefined, now: NOW, ...d } as never);
+  const consultarComCofre = (id: string, d: NonNullable<Parameters<typeof consultarCupom>[1]> = {}) => consultarCupom(id, { redeDaOferta: async () => 'mercado-livre', registrar: async () => undefined, now: NOW, ...d });
   const audits: { found: boolean; source: string | null; missReason?: string | null }[] = [];
   const okInfo = { code: 'R$ 90,00 com cupom', conditions: 'x', expiresAt: null, verifiedAt: NOW.toISOString(), couponRef: 'ref', annKind: 'anuncio' as const };
   const miss = await consultarComCofre('00000000-0000-4000-8000-000000000001', {
