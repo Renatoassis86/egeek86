@@ -118,7 +118,7 @@ async function main() {
       const fpAfter = await fingerprint(tx, products, now);
       report.cotacoesEOfertasInalteradas = JSON.stringify(fpBefore) === JSON.stringify(fpAfter);
       if (!report.cotacoesEOfertasInalteradas) throw new Error('Cotações/ofertas mudaram dentro da transação: abortando.');
-      report.diasComIscaAinda = Number((await tx.execute<Row>(sql`SELECT count(*)::int n FROM price_daily_state st JOIN affiliate_offers o ON o.id = st.min_offer_id WHERE ${stateWhere} AND o.quarantine_reason LIKE 'preco_isca%'`))[0].n);
+      report.diasComIscaAinda = Number((await tx.execute<Row>(sql`SELECT count(*)::int n FROM (SELECT min_offer_id FROM price_daily_state WHERE ${stateWhere}) st JOIN affiliate_offers o ON o.id = st.min_offer_id WHERE o.quarantine_reason LIKE 'preco_isca%'`))[0].n);
       if (APPLY) {
         log.files = { price_daily_state: writeNdjson('price_daily_state', bkState), price_min_events: writeNdjson('price_min_events', []) };
         Object.assign(log, { products, from: FROM, backupLinhas: report.backupLinhas });

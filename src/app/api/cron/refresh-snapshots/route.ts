@@ -66,6 +66,13 @@ export async function GET(request: NextRequest) {
       } catch (err) {
         out.condicao = { erro: err instanceof Error ? err.message.slice(0, 120) : 'erro' };
       }
+      // Link divergente (R-76): oferta com auditoria de link bloqueante recente sai da vitrine (quarentena reversível). Melhor esforço.
+      try {
+        const { varrerLinkDivergente } = await import('@/server/pricing/link-divergente');
+        out.linkDivergente = await varrerLinkDivergente(true);
+      } catch (err) {
+        out.linkDivergente = { erro: err instanceof Error ? err.message.slice(0, 120) : 'erro' };
+      }
       out.daily = priceDailyShadowEnabled()
         ? await refreshPriceDaily({ budgetMs: Math.max(20_000, BUDGET_MS - (Date.now() - started)) })
         : { skipped: 'PRICE_DAILY_SHADOW desligada' };

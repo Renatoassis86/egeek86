@@ -312,6 +312,8 @@ async function rodarAlvo(alvo: Alvo, L: ListaCongelada, now: Date, deadline: num
     if (c.chamadas > 0) await dormir(ESPACO_MS);
     const ehQueda = cursor < Q;
     let r: RespTg;
+    let textoEnviado = '';
+    let botaoUrl: string | null = null;
     if (ehQueda) {
       // Card individual: o MESMO gerador dos grupos (loadOfferCardInput + renderOfferCard), foto real + legenda, com som e botão. Sem tempo = próximo minuto.
       if (deadline - Date.now() < 9000) break;
@@ -322,13 +324,17 @@ async function rodarAlvo(alvo: Alvo, L: ListaCongelada, now: Date, deadline: num
         const input = await loadOfferCardInput(q.oferta);
         png = input ? ((await renderOfferCard(input))?.png ?? null) : null;
       } catch (err) { console.error('[lista-impressoras] card falhou:', err instanceof Error ? err.message : err); }
+      textoEnviado = q.text; botaoUrl = q.url ?? null;
       const sd = await sendTelegramGroupMessage({ token, chatId: chat, text: q.text, photo: png, silent: false, button: q.url ? { text: 'Ver oferta e comprar', url: q.url } : null, maxRetryAfterSec: 5 });
       r = { ok: sd.ok, status: sd.status ?? 0, desc: sd.error ?? '', messageId: sd.messageId, retryAfter: sd.retryAfterSec };
       if (sd.ok && sd.photoSent) c.cards++;
     } else {
+      textoEnviado = L.listas[cursor - Q].text;
       r = await tg(token, 'sendMessage', { chat_id: chat, text: L.listas[cursor - Q].text, parse_mode: 'HTML', link_preview_options: { is_disabled: true }, disable_notification: true });
     }
     c.chamadas++;
+    // AUD-26 (R-72): o texto e a URL do botão de CADA mensagem do painel privado ficam guardados (auditoria). Melhor esforço, nunca derruba o envio.
+    await gravar('painel-impressoras-enviado', r.ok ? 'ok' : 'error', 0, { alvo, tipo: ehQueda ? 'queda' : 'lista', oferta: ehQueda ? L.quedas[cursor].oferta : null, texto: textoEnviado, botaoUrl, messageId: r.messageId ?? null, status: r.status }).catch(() => undefined);
     if (r.status === 429) { pausaAte = new Date(Date.now() + (r.retryAfter ?? 5) * 1000).toISOString(); break; }
     if (r.ok && r.messageId) {
       if (ehQueda) c.quedas++; else { ids[cursor - Q] = r.messageId; c.enviados++; }

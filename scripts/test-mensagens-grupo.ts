@@ -457,7 +457,9 @@ ok(plan.next === null && plan.deferred[0]?.reason.startsWith('produto_ja_enviado
 plan = applyLimits([cand('1')], [sent('1', 1.6)], midday);
 ok(plan.next === null && /^produto_em_cooldown_8h/.test(plan.deferred[0]?.reason ?? ''), 'após 90 min o produto ainda está em cooldown (8 h)', plan);
 plan = applyLimits([cand('1')], [sent('1', 8.5)], midday);
-ok(plan.next?.masterProductId === '1', 'após o cooldown (8 h 30 min) o produto pode voltar');
+ok(plan.next === null && /^master_repetido_sem_novidade_72h/.test(plan.deferred[0]?.reason ?? ''), 'R-77: após o cooldown (8 h 30 min) o MESMO preço sem novidade NÃO volta (72 h)', plan);
+plan = applyLimits([cand('1')], [sent('1', 80)], midday);
+ok(plan.next?.masterProductId === '1', 'R-77: depois de 72 h o produto pode voltar');
 eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday), null, 'novo menor preço (menor que o enviado) repete depois de 30 min');
 eq(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'OK1' }, [sent('1', 0.6, 'mercado-livre', 10000)], midday), null, 'OK1 (novo mínimo) também repete depois de 30 min');
 ok(productDedupBlock({ masterProductId: '1', priceCents: 9400, trigger: 'G1' }, [sent('1', 0.3, 'mercado-livre', 10000)], midday) !== null, 'antes de 30 min não repete');

@@ -10,6 +10,7 @@ import { hojeContradizBase, baseIncluiAmazon } from '../src/lib/messaging/base-c
 import { vendasTexto } from '../src/lib/messaging/group-messages';
 import { ofertaNovaNoMonitoramento, ACHADO_NOVO_MAX_HORAS } from '../src/lib/messaging/group-rules';
 import { condicaoNaoNova, CONDICAO_NAO_NOVA_PG } from '../src/lib/pricing/condicao-nao-nova';
+import { masterSemNovidadeBlock, masterRepeatSemNovidadeHours, type SentRecord } from '../src/lib/messaging/group-rules';
 import { avaliarIsca, type ReferenciaIsca } from '../src/lib/pricing/preco-isca';
 
 let n = 0;
@@ -111,6 +112,33 @@ ok('R-75 guarda: a varredura roda no cron diario e o padrao SQL ainda casa os te
   assert.match(src('src/app/api/cron/refresh-snapshots/route.ts'), /varrerCondicaoNaoNova\(true\)/);
   const re = new RegExp(CONDICAO_NAO_NOVA_PG.replace(/\[:space:\]/g, '\\s'), 'i');
   assert.ok(re.test('Jogo Open Box') && re.test('PS5 DE VITRINE') && re.test('mostruário'));
+});
+
+// ---- R-77 (Resina Anycubic: 8 envios em 3 dias a cada ~8 h, mesmo preco) ----
+const H = 3600_000;
+const T0 = new Date('2026-11-16T02:04:00Z');
+const env = (hAgo: number, over: Partial<SentRecord> = {}): SentRecord => ({ masterProductId: '0fd269fa', priceCents: 16990, sentAt: new Date(T0.getTime() - hAgo * H), trigger: 'G2', cls: 'alerta', degrau: 3, ...over });
+const cand = { masterProductId: '0fd269fa', priceCents: 16990, trigger: 'G2' as const, offerIds: ['e254feb7'], couponRef: undefined, cls: 'alerta' as const, regua: { degrau: 3 } as never };
+ok('R-77: resina a R$ 169,90 apos 8 h, 16 h, 40 h, 71 h do ultimo envio, SEM novidade, e barrada', () => {
+  for (const h of [8, 16, 40, 71]) assert.match(masterSemNovidadeBlock(cand, [env(h)], T0) ?? '', /^master_repetido_sem_novidade_72h/);
+});
+ok('R-77: depois de 72 h volta; flag 0 desliga', () => {
+  assert.equal(masterSemNovidadeBlock(cand, [env(73)], T0), null);
+  assert.equal(masterSemNovidadeBlock(cand, [env(8)], T0, 0), null);
+  assert.equal(masterRepeatSemNovidadeHours({ GROUP_MASTER_REPEAT_SEM_NOVIDADE_H: 'off' }), 0);
+  assert.equal(masterRepeatSemNovidadeHours({}), 72);
+});
+ok('R-77: novidade material libera (queda >= 2% ou R$ 10, degrau mais forte, cupom novo)', () => {
+  assert.equal(masterSemNovidadeBlock({ ...cand, priceCents: 16990 - 400 }, [env(8)], T0), null); // 2,4%
+  assert.equal(masterSemNovidadeBlock({ ...cand, priceCents: 16990 - 1000 }, [env(8)], T0), null); // R$ 10
+  assert.notEqual(masterSemNovidadeBlock({ ...cand, priceCents: 16990 - 100 }, [env(8)], T0), null); // 0,6%: nao
+  assert.equal(masterSemNovidadeBlock({ ...cand, regua: { degrau: 4 } as never }, [env(8)], T0), null);
+  assert.equal(masterSemNovidadeBlock({ ...cand, trigger: 'CUPOM' as const, couponRef: 'c-novo' }, [env(8, { couponOfferId: 'c-velho' })], T0), null);
+  assert.notEqual(masterSemNovidadeBlock({ ...cand, trigger: 'CUPOM' as const, couponRef: 'c-velho' }, [env(8, { couponOfferId: 'c-velho' })], T0), null);
+});
+ok('R-77: plataforma e radar ficam fora; guarda: o plano chama o bloqueio', () => {
+  assert.equal(masterSemNovidadeBlock({ ...cand, cls: 'plataforma' as const }, [env(8)], T0), null);
+  assert.match(src('src/lib/messaging/group-rules.ts'), /why = masterSemNovidadeBlock\(c, history, now\)/);
 });
 
 console.log(`${n} testes ok (R-71 a R-75)`);

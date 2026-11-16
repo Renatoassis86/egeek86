@@ -1872,6 +1872,45 @@ export function masterCooldownBlock(
   return `produto_em_cooldown_${hours}h_ultimo_envio_ha_${Math.floor(sinceMin)}min_${prior.trigger ?? 'x'}`;
 }
 
+/** R-77: janela (h) em que o mesmo master NÃO volta sem novidade material. Ausente = 72; '0'/'off'/'false' desliga (GROUP_MASTER_REPEAT_SEM_NOVIDADE_H). */
+export const MASTER_REPEAT_SEM_NOVIDADE_H = 72;
+export function masterRepeatSemNovidadeHours(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.GROUP_MASTER_REPEAT_SEM_NOVIDADE_H?.trim();
+  if (!raw) return MASTER_REPEAT_SEM_NOVIDADE_H;
+  if (/^(off|false|0)$/i.test(raw)) return 0;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 && n <= 24 * 14 ? n : MASTER_REPEAT_SEM_NOVIDADE_H;
+}
+/** Queda mínima contra o último preço enviado para valer como novidade: 2% ou R$ 10 (o que ocorrer primeiro). */
+export const NOVIDADE_QUEDA_PCT = 2;
+export const NOVIDADE_QUEDA_CENTS = 1000;
+
+/**
+ * R-77 (dono, 2026-11-16): o cooldown de horas (R-47) é só uma pausa; NÃO é novidade. O mesmo master (qualquer gatilho, canal e grupos, qualquer rede)
+ * não volta dentro de masterRepeatSemNovidadeHours (72 h) sem NOVIDADE MATERIAL contra o ÚLTIMO envio dele: (1) preço menor em >= 2% ou R$ 10; (2) degrau da
+ * régua MAIS FORTE; (3) CUPOM com referência ainda não divulgada (a prova vem do cofre, R-64); (4) novo mínimo (G1/OK1) com preço menor que o enviado.
+ * O tempo sozinho nunca é novidade dentro da janela. Caso fundador: Resina Anycubic 1 kg Standard (R$ 169,90) enviada 8 vezes em 3 dias, a cada 8 h.
+ */
+export function masterSemNovidadeBlock(
+  c: Pick<Candidate, 'masterProductId' | 'priceCents' | 'trigger' | 'offerIds' | 'couponRef' | 'regua'> & { cls?: MessageClass },
+  history: SentRecord[],
+  now: Date,
+  hours: number = masterRepeatSemNovidadeHours()
+): string | null {
+  if (!(hours > 0) || !c.masterProductId || c.trigger === 'G4' || c.trigger === 'RADAR' || c.cls === 'plataforma') return null;
+  const winMs = hours * 3600_000;
+  const mine = history.filter((h) => h.masterProductId === c.masterProductId && h.cls !== 'plataforma' && !h.itemOnly && h.sentAt.getTime() <= now.getTime() + 5_000 && now.getTime() - h.sentAt.getTime() < winMs);
+  if (!mine.length) return null;
+  const prior = [...mine].sort((a, b) => b.sentAt.getTime() - a.sentAt.getTime())[0];
+  if (prior.priceCents > 0 && c.priceCents > 0 && (prior.priceCents - c.priceCents >= NOVIDADE_QUEDA_CENTS || c.priceCents <= prior.priceCents * (1 - NOVIDADE_QUEDA_PCT / 100))) return null;
+  if (c.regua?.degrau != null && prior.degrau != null && c.regua.degrau > prior.degrau) return null;
+  if (c.trigger === 'CUPOM') {
+    const ref = c.couponRef ?? c.offerIds[0];
+    if (!mine.some((h) => h.couponOfferId && h.couponOfferId === ref)) return null;
+  }
+  return `master_repetido_sem_novidade_${hours}h_ultimo_envio_ha_${Math.floor((now.getTime() - prior.sentAt.getTime()) / 3600_000)}h_${prior.trigger ?? 'x'}`;
+}
+
 /**
  * Duplicata do produto (dono, 2026-11-11): o mesmo produto só repete depois de 1 h. Exceção: novo mínimo (OK1/G1) com preço
  * MENOR que o do último envio pode repetir depois de 30 min.
@@ -2291,6 +2330,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     if (!why && !platform && night && cls === 'alerta' && nightAlerts >= (opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP)) why = `noite_maximo_${opts.caps?.nightAlert ?? RULES.NIGHT_ALERT_CAP}_alertas`;
     if (!why && !platform) why = productDedupBlock(c, history, now);
     if (!why && !platform && !opts.ignoreSpacing) why = masterCooldownBlock(c, history, now);
+    if (!why && !platform && !opts.ignoreSpacing) why = masterSemNovidadeBlock(c, history, now);
     if (!why && c.trigger === 'CUPOM') why = cupomDedupBlock(c, history, now) ?? cupomQuotaBlock(c.vertical, real, now) ?? (c.exclusivePrime ? primePromoQuotaBlock(real, now) : null);
     if (!why && !platform && c.items?.length && !opts.ignoreSpacing) why = productGapBlock(c, history, now);
     if (!why && c.trigger === 'AC') why = achadoQuotaBlock(c.vertical, real, now);

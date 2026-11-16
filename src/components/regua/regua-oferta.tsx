@@ -48,7 +48,7 @@ export function ReguaEtiqueta({ regua, className = '' }: { regua: ReguaFront; cl
           <span className="whitespace-nowrap text-xs leading-tight text-[var(--color-text-secondary)]">abaixo da média</span>
         </span>
       ) : null}
-      <span className="sr-only">{`Degrau ${v.degrau} de 5 pela queda sobre a média das lojas.`}</span>
+      <span className="sr-only">{v.degrau === v.degrauBruto ? `Degrau ${v.degrau} de 5 pela queda sobre a média das lojas.` : `Degrau ${v.degrau} de 5, mantido com cautela (histórico ainda curto): a queda sobre a média das lojas pediria o degrau ${v.degrauBruto}.`}</span>
     </span>
   );
 }
