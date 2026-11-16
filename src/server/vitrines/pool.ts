@@ -1,6 +1,6 @@
 import 'server-only';
-import { cofreLigado, provasDeValorFinalDaOferta } from '@/server/coupons/cofre';
-import { podeDivulgar } from '@/lib/coupons/cofre';
+import { cofreLigado, provasDeSimulacao } from '@/server/coupons/cofre';
+import { decidirPrecoFinalPrime } from '@/lib/coupons/cofre';
 import { sql, type SQL } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { GAMES } from '@/lib/catalog/verticais';
@@ -102,7 +102,7 @@ export async function carregarPromosPrime(ofertas: ReadonlyArray<{ offerId: stri
   try {
     const ids = ofertas.map((o) => o.offerId).join(',');
     const rows = await comTeto((tx) => tx.execute<Row>(sql`
-      SELECT ci.scope->'offer_ids'->>0 AS oid, max(ci.value_num)::float AS pct, max(ci.valid_until) AS valid_until, max(r.read_at) AS conf
+      SELECT ci.scope->'offer_ids'->>0 AS oid, max(ci.conditions->>'promo_id') AS promo, max(ci.value_num)::float AS pct, max(ci.valid_until) AS valid_until, max(r.read_at) AS conf
       FROM coupon_items ci
       JOIN offer_coupon_reads r ON r.offer_id = (ci.scope->'offer_ids'->>0)::uuid AND r.campaign_id = ci.conditions->>'promo_id'
         AND r.source = 'amazon-item-confirmado' AND r.price_with_coupon_cents IS NOT NULL AND r.read_at > now() - interval '120 minutes'
@@ -115,9 +115,10 @@ export async function carregarPromosPrime(ofertas: ReadonlyArray<{ offerId: stri
       const p = preco.get(str(r.oid));
       const pct = num(r.pct);
       if (!p || !(pct > 0 && pct < 100)) continue;
-      // COFRE (R-64/R-66, QA F1): preço final DERIVADO (prateleira x (1 - pct)) só com prova de valor final vigente (simulação de checkout aplicada); o selo do bloco de compra não basta.
+      // COFRE (R-64/R-66, QA F1 e 2ª validação): preço final DERIVADO só com a simulação do MESMO cupom que prova valor igual ao derivado; simulação revogada veta.
+      const finalDerivado = precoComPromocao(p, pct);
       if (cofreLigado()) {
-        const dec = podeDivulgar({ rede: 'amazon', tipoItem: 'cupom', uso: 'preco_final', provas: [{ tipo: 'bloco_de_compra_escopado', validadaEm: new Date(r.conf as string | Date) }, ...(await provasDeValorFinalDaOferta(str(r.oid)))], now: new Date() });
+        const dec = decidirPrecoFinalPrime({ finalDerivadoCents: finalDerivado, confirmadoEm: new Date(r.conf as string | Date), simulacoes: await provasDeSimulacao(str(r.oid), str(r.promo)), now: new Date() });
         if (!dec.ok) continue;
       }
       out.set(str(r.oid), { pct, finalCentavos: precoComPromocao(p, pct), validaAte: r.valid_until ? new Date(r.valid_until as string | Date).toISOString() : null, confirmadoEm: new Date(r.conf as string | Date).toISOString() });

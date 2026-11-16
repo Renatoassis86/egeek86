@@ -1,4 +1,6 @@
 import 'server-only';
+import { cofreLigado, registrarDecisao } from '@/server/coupons/cofre';
+import { podeDivulgar, provaDeFonteDeCupom } from '@/lib/coupons/cofre';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import type { CouponInfo } from '@/lib/messaging/group-messages';
@@ -25,6 +27,11 @@ export interface ConsultaDeps {
   lojaCategoria?: Lookup;
   /** Auditoria (padrão: coupon_consults). Falha nunca derruba a consulta. */
   audit?: (row: ConsultAudit) => Promise<void>;
+  /** Rede da oferta (padrão: banco) e gravador da decisão do cofre (padrão: coupon_validations); injetáveis nos testes. */
+  redeDaOferta?: (offerId: string) => Promise<string>;
+  registrar?: typeof registrarDecisao;
+  /** Relógio injetável (testes); padrão: agora. */
+  now?: Date;
 }
 
 export interface ConsultAudit {
@@ -53,6 +60,13 @@ async function auditDb(row: ConsultAudit): Promise<void> {
   await db.execute(sql`INSERT INTO coupon_consults (offer_id, found, source, coupon_ref) VALUES (${row.offerId}::uuid, ${row.found}, ${row.source}, ${row.couponRef})`);
 }
 
+async function redeDaOfertaDb(offerId: string): Promise<string> {
+  try {
+    const r = (await db.execute(sql`SELECT nn.slug AS rede FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id WHERE o.id = ${offerId}::uuid`)) as unknown as { rede: string }[];
+    return r[0]?.rede ?? '';
+  } catch { return ''; } // id inválido ou banco fora: sem rede = sem validador = bloqueado (padrão negado)
+}
+
 export async function consultarCupom(offerId: string, deps: ConsultaDeps = {}): Promise<ConsultedCoupon | null> {
   const steps: [CouponSource, Lookup, AnnKind][] = [
     ['item', deps.item ?? lookupItemCoupon, 'anuncio'],
@@ -67,6 +81,13 @@ export async function consultarCupom(offerId: string, deps: ConsultaDeps = {}): 
       return null;
     });
     if (!info) continue;
+    // COFRE (R-64, G1): campanha e loja/categoria também só saem com prova vigente aceita pelo validador da rede (a fonte 'item' já foi decidida no lookup do anúncio).
+    if (source !== 'item' && cofreLigado()) {
+      const rede = await (deps.redeDaOferta ?? redeDaOfertaDb)(offerId);
+      const dec = podeDivulgar({ rede, tipoItem: 'cupom', uso: 'mensagem', provas: provaDeFonteDeCupom(source, info.verifiedAt ? new Date(info.verifiedAt) : null), now: deps.now ?? new Date() });
+      void (deps.registrar ?? registrarDecisao)({ offerId, couponRef: `${source}:${info.couponRef ?? info.code}`.slice(0, 80), tipoItem: 'cupom', rede, uso: 'mensagem', decisao: dec });
+      if (!dec.ok) { misses.push(`${source}:cofre_${dec.motivo}`.slice(0, 80)); continue; }
+    }
     result = {
       ...info,
       source,

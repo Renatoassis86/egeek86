@@ -76,3 +76,11 @@ export function descontoConfereComModal(modal: { nome: string | null | undefined
   }
   return { ok: true };
 }
+
+/**
+ * Ingest do ML (ponto único de decisão, testado por comportamento): das leituras com cupom, só entram como POSITIVAS as que têm campaign_id + `confirmado_modal` E cujo desconto do rótulo
+ * confere com o valor do modal. O resto é gravado como leitura sem prova (derruba positivas anteriores).
+ */
+export function selecionarProvados<T extends { campaign: string | null; status: string; name?: unknown; cents: number }>(valid: readonly T[], precoCents: number, exigirProva = true): T[] {
+  return valid.filter((c) => leituraPositivaGravavel({ campaign: c.campaign, status: c.status }, exigirProva) && (!exigirProva || descontoConfereComModal({ nome: typeof c.name === 'string' ? c.name : null }, precoCents, c.cents).ok));
+}

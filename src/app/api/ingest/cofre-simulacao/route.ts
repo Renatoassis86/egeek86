@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { couponCors as cors, couponGuard as guard } from '@/server/coupons/ingest-guard';
 import { COUPON_ORIGINS_BY_NETWORK } from '@/lib/coupons/page-read';
 import { TTL_PROVA_MIN } from '@/lib/coupons/cofre';
+import { avaliarLinhaSimulacao, excedeLimite, resultadoValido } from '@/lib/coupons/simulacao';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -35,28 +36,27 @@ export async function POST(request: NextRequest) {
   if (text.length > 20_000) return NextResponse.json({ error: 'corpo_grande_demais' }, { status: 413, headers });
   let body: { rows?: { offer_id?: string; coupon_ref?: string; kind?: string; resultado?: string; valor_final_cents?: number; nome?: string; minimo_cents?: number }[] };
   try { body = JSON.parse(text); } catch { return NextResponse.json({ error: 'json_invalido' }, { status: 400, headers }); }
-  const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, 10).filter((r) => r && /^[0-9a-f-]{36}$/i.test(String(r.offer_id)) && /^[\w:.-]{1,80}$/.test(String(r.coupon_ref)) && (r.resultado === 'aplicado' || r.resultado === 'nao_aplicado'));
+  const rows = (Array.isArray(body.rows) ? body.rows : []).slice(0, 10).filter((r) => r && /^[0-9a-f-]{36}$/i.test(String(r.offer_id)) && /^[\w:.-]{1,80}$/.test(String(r.coupon_ref)) && resultadoValido(r.resultado));
   if (!rows.length) return NextResponse.json({ error: 'sem_linhas_validas' }, { status: 400, headers });
   const limite = Math.max(1, Number(process.env.SIMULACOES_POR_HORA) || 30);
 
   const res = await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('cofre-simulacao'))`);
     const [uso] = (await tx.execute(sql`SELECT count(*)::int AS n FROM coupon_validation_trail WHERE uso = 'simulacao_de_checkout' AND at > now() - interval '1 hour'`)) as unknown as { n: number }[];
-    if ((uso?.n ?? 0) + rows.length > limite) return { limite429: true as const, usadas: uso?.n ?? 0 };
+    if (excedeLimite(uso?.n ?? 0, rows.length, limite)) return { limite429: true as const, usadas: uso?.n ?? 0 };
     let gravadas = 0;
     const recusadas: string[] = [];
     for (const r of rows) {
       const kind = r.kind === 'beneficio' ? 'beneficio' : 'cupom';
       const offer = (await tx.execute(sql`SELECT nn.slug AS rede, o.current_price_cents::int AS price FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id WHERE o.id = ${r.offer_id}::uuid AND o.status = 'active'`)) as unknown as { rede: string; price: number }[];
       if (!offer[0]) { recusadas.push('oferta_inexistente'); continue; }
-      if (redeAba && offer[0].rede !== redeAba) { recusadas.push('oferta_de_outra_rede'); continue; }
       const aplicado = r.resultado === 'aplicado';
       const v = r.valor_final_cents;
-      if (aplicado && !(Number.isInteger(v) && (v as number) > 0 && (v as number) < offer[0].price && (v as number) >= offer[0].price * 0.3)) { recusadas.push('valor_final_invalido'); continue; }
-      const refOk = (r.coupon_ref === 'sem_campanha' && offer[0].rede !== 'mercado-livre') || ((await tx.execute(sql`
+      const refExiste = ((await tx.execute(sql`
         SELECT 1 FROM offer_coupon_reads WHERE offer_id = ${r.offer_id}::uuid AND campaign_id = ${r.coupon_ref} AND read_at > now() - interval '24 hours'
         UNION ALL SELECT 1 FROM coupon_validations WHERE offer_id = ${r.offer_id}::uuid AND coupon_ref = ${r.coupon_ref} LIMIT 1`)) as unknown as unknown[]).length > 0;
-      if (!refOk) { recusadas.push('cupom_inexistente_na_oferta'); continue; }
+      const av = avaliarLinhaSimulacao({ resultado: r.resultado, valorFinalCents: v, couponRef: String(r.coupon_ref), redeOferta: offer[0].rede, redeAba, precoOfertaCents: offer[0].price, refExiste });
+      if (!av.ok) { recusadas.push(av.motivo); continue; }
       const proved = JSON.stringify({ nome: typeof r.nome === 'string' ? r.nome.slice(0, 80) : null, valorFinalCents: aplicado ? v : null, minimoCents: Number.isFinite(r.minimo_cents) ? r.minimo_cents : null });
       await tx.execute(sql`
         INSERT INTO coupon_validations (offer_id, coupon_ref, kind, network_slug, proof_type, state, motivo, proved, read_at, validated_at, expires_at, validator, revoked_at, last_decided_at)

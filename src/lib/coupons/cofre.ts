@@ -13,7 +13,7 @@
 //
 // PADRÃO NEGADO: rede sem validador registrado, tipo de benefício sem validador e uso não previsto = BLOQUEADO.
 
-export type TipoProva = 'modal_oficial_do_item' | 'bloco_de_compra_escopado' | 'valor_final_impresso_pela_pagina' | 'simulacao_de_checkout';
+export type TipoProva = 'modal_oficial_do_item' | 'bloco_de_compra_escopado' | 'valor_final_impresso_pela_pagina' | 'simulacao_de_checkout' | 'campanha_confirmada_pelo_dono' | 'lista_oficial_de_cupons';
 export type UsoCupom = 'mensagem' | 'card' | 'lista' | 'site' | 'alerta_privado' | 'preco_final';
 export type EstadoCofre = 'lido' | 'validado' | 'divulgavel' | 'revalidando' | 'revogado';
 export type TipoItem = 'cupom' | 'beneficio';
@@ -24,6 +24,8 @@ export const TTL_PROVA_MIN: Record<TipoProva, number> = {
   bloco_de_compra_escopado: 120, // texto dentro do bloco de compra/pagamento do próprio item (selo, parcelas, "à vista no Pix")
   valor_final_impresso_pela_pagina: 10, // a página mostra o valor final com o benefício
   simulacao_de_checkout: 30, // simulação até ANTES de pagar (nunca compra)
+  campanha_confirmada_pelo_dono: 24 * 60, // código de campanha digitado/confirmado pelo dono (AGULHA.CAMPANHA_FRESH_MIN)
+  lista_oficial_de_cupons: 120, // cupom de loja/categoria conferido na lista oficial de cupons da rede (AGULHA.LIST_FRESH_MIN)
 };
 
 /** Provas que sustentam preço final (cálculo ou texto "com o desconto: R$ X"). Bloco de compra NÃO basta: um selo não diz o valor final. */
@@ -43,10 +45,10 @@ export interface Validador {
  */
 export const VALIDADORES: readonly Validador[] = [
   // Benefício do ML SEM validador (QA R-67 F10): o leitor do ML lê parcelas/"à vista" do TEXTO INTEIRO da página (não só do bloco de compra); só volta com leitor escopado.
-  { rede: 'mercado-livre', leitor: 'public/loops/ml-cupons-item.js', aceita: { cupom: ['modal_oficial_do_item', 'simulacao_de_checkout'] } },
+  { rede: 'mercado-livre', leitor: 'public/loops/ml-cupons-item.js', aceita: { cupom: ['modal_oficial_do_item', 'simulacao_de_checkout', 'campanha_confirmada_pelo_dono', 'lista_oficial_de_cupons'] } },
   { rede: 'amazon', leitor: 'public/loops/cupons-24h.js', aceita: { cupom: ['bloco_de_compra_escopado', 'simulacao_de_checkout'], beneficio: ['bloco_de_compra_escopado', 'valor_final_impresso_pela_pagina', 'simulacao_de_checkout'] } },
   // PROVISÓRIO (etapa 2 audita o leitor da Shopee): cupom lido do bloco do item; benefício de cartão da Shopee não tem validador = bloqueado.
-  { rede: 'shopee', leitor: 'loop Shopee (provisório até a etapa 2)', aceita: { cupom: ['bloco_de_compra_escopado', 'simulacao_de_checkout'] } },
+  { rede: 'shopee', leitor: 'loop Shopee (provisório até a etapa 2)', aceita: { cupom: ['bloco_de_compra_escopado', 'simulacao_de_checkout', 'lista_oficial_de_cupons'] } },
 ];
 
 export const validadorDaRede = (rede: string): Validador | null => VALIDADORES.find((v) => v.rede === rede) ?? null;
@@ -178,4 +180,22 @@ export function decidirCupomLido(c: CupomLido): Decisao {
     : c.net === 'shopee' ? provaDoCupomAmazon({ verificado: /^shopee-pagina$/.test(String(c.src)), readAt: c.readAt, nome: c.nome }) : [];
   const sims = (c.simulacoes ?? []).filter((s) => s.revogada || c.net !== 'mercado-livre' || !!c.campaignId);
   return podeDivulgar({ rede: c.net, tipoItem: 'cupom', uso: 'mensagem', provas: [...base, ...sims], now: c.now });
+}
+
+/**
+ * G1 (QA 2ª validação): cupom de CAMPANHA (código confirmado pelo dono) e de LOJA/CATEGORIA (lista oficial) também só saem pelo cofre. Prova = a verificação que a própria fonte já faz
+ * (`verifiedAt`), com TTL do tipo. Fonte 'item' já passa por `decidirCupomLido` no lookup do anúncio.
+ */
+export function provaDeFonteDeCupom(fonte: 'campanha' | 'loja_categoria', verificadoEm: Date | null): Prova[] {
+  if (!verificadoEm || Number.isNaN(verificadoEm.getTime())) return [];
+  return [{ tipo: fonte === 'campanha' ? 'campanha_confirmada_pelo_dono' : 'lista_oficial_de_cupons', validadaEm: verificadoEm }];
+}
+
+/**
+ * Vitrine (QA 2ª validação, ponto 5): o preço final DERIVADO da promoção Prime só sai se a simulação de checkout DO MESMO cupom provou um valor que bate com o derivado (R$ 1,00) e
+ * nenhuma simulação do mesmo cupom o vetou. Bloco de compra sozinho nunca sustenta preço final.
+ */
+export function decidirPrecoFinalPrime(e: { finalDerivadoCents: number; confirmadoEm: Date; simulacoes: readonly Prova[]; now: Date }): Decisao {
+  const base: Prova = { tipo: 'bloco_de_compra_escopado', validadaEm: e.confirmadoEm };
+  return podeDivulgar({ rede: 'amazon', tipoItem: 'cupom', uso: 'preco_final', valorFinalDito: e.finalDerivadoCents, toleranciaCents: 100, provas: [base, ...e.simulacoes], now: e.now });
 }

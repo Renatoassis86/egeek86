@@ -32,7 +32,8 @@ ok(leituraPositivaGravavel({ campaign: '999', status: STATUS_CONFIRMADO_MODAL })
 
 // O leitor da aba: página de CATÁLOGO com vários vendedores e um "com Cupom" de OUTRO vendedor, sem campaign_id => nenhum cupom sai da página
 const src = fs.readFileSync('public/loops/ml-cupons-item.js', 'utf8');
-ok(/confirmado_modal/.test(src) && /cupomSemCampanha/.test(src) && /var VERSAO = '1\.3\.0'/.test(src), 'leitor v1.3.x exige campanha e confirma no modal do mesmo item');
+const vers = /var VERSAO = '(\d+)\.(\d+)\.(\d+)'/.exec(src);
+ok(/confirmado_modal/.test(src) && /cupomSemCampanha/.test(src) && !!vers && Number(vers[1]) === 1 && Number(vers[2]) >= 3, `leitor ${vers ? vers.slice(1).join('.') : '?'} (versão lida do arquivo) exige campanha e confirma no modal do mesmo item`);
 const sandbox: { window: Record<string, unknown>; document: object; console: Console } = { window: {}, document: {}, console };
 try { vm.runInNewContext(src, sandbox as unknown as vm.Context, { timeout: 2000 }); } catch { /* o loop só inicia no navegador; PURO é exposto antes */ }
 const PURO = (sandbox.window as { __mlCupItem?: { PURO?: { extrairCupons?: (h: string) => { cupons: { label: string; campaign_id?: string }[] } } } }).__mlCupItem?.PURO;

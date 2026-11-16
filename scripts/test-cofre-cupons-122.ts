@@ -84,7 +84,7 @@ const lookup = lerSrc('src/server/messaging/coupon-item-lookup.ts');
 ok(/decidirCupomLido\(/.test(lookup) && /if \(!dec\.ok\) \{ lastReason = `cofre_\$\{dec\.motivo\}`; continue; \}/.test(lookup) && /cofreLigado\(\)/.test(lookup), 'GUARDA: coupon-item-lookup.ts chama decidirCupomLido e dá continue quando o cofre barra');
 ok(/podeDivulgar\(/.test(lerSrc('src/server/coupons/card-benefits.ts')) && /cofreLigado\(\) && !podeDivulgar\(/.test(lerSrc('src/server/coupons/card-benefits.ts')), 'GUARDA: card-benefits.ts barra benefício sem prova (podeDivulgar)');
 ok(/retirarAvisosSemProva\(\)/.test(lerSrc('src/app/api/cron/group-messages/route.ts')) && /revogarVencidos\(\)/.test(lerSrc('src/app/api/cron/group-messages/route.ts')), 'GUARDA: o cron chama retirarAvisosSemProva e revogarVencidos (nada de import morto)');
-ok(/podeDivulgar\(/.test(lerSrc('src/server/vitrines/pool.ts')) && /uso: 'preco_final'/.test(lerSrc('src/server/vitrines/pool.ts')), "GUARDA: preço final derivado da vitrine passa por podeDivulgar (uso 'preco_final')");
+ok(/decidirPrecoFinalPrime\(/.test(lerSrc('src/server/vitrines/pool.ts')) && /if \(!dec\.ok\) continue/.test(lerSrc('src/server/vitrines/pool.ts')), 'GUARDA: a vitrine decide o preço final derivado por decidirPrecoFinalPrime (comportamento em test-cofre-integracao-123)');
 ok(/motivoDeFim\(/.test(lerSrc('src/server/messaging/guardiao-cupons.ts')), 'GUARDA: o guardião usa motivoDeFim (encerrado só com prova)');
 ok(/modal_inconclusivo/.test(lerSrc('public/loops/ml-cupons-item.js')) && /filtrarConfirmados/.test(lerSrc('public/loops/ml-cupons-item.js')), 'GUARDA: o leitor ML descarta modal inconclusivo e filtra pelo modal do item');
 

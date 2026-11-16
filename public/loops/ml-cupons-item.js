@@ -22,7 +22,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.3.2';
+  var VERSAO = '1.3.3';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-ml-links-ui.ts
@@ -168,6 +168,30 @@
       else out.naoConfirmados++;
     });
     return out;
+  };
+
+  /**
+   * QA 2ª validação (F8b): o que o corpo do modal /cupons/pdp quer dizer. 'cupons' = estrutura de campanhas (JSON com campaignId); 'vazio_explicito' = a página diz literalmente que
+   * NÃO há cupons; QUALQUER outra coisa (corpo vazio, HTML de erro, página de verificação que mantém a URL) = 'inconclusivo' => a leitura é DESCARTADA, nunca vira "sem cupom".
+   */
+  PURO.classificarModal = function (corpo) {
+    var t = String(corpo || '');
+    if (/"campaignId"\s*:\s*"\d{3,12}"/.test(t)) return 'cupons';
+    if (/voc[eê]\s+n[aã]o\s+tem\s+cupons\s+dispon[ií]veis/i.test(PURO.textoDoHtml(t))) return 'vazio_explicito';
+    return 'inconclusivo';
+  };
+
+  /**
+   * Decisão final dos cupons lidos de UMA página (testada por comportamento em scripts/test-prova-cupom-121.ts).
+   * `mapa` = campanhas do modal do MESMO item (null = modal não consultado ou inconclusivo). Devolve { descarte } (leitura descartada, volta à fila: NUNCA vira "sem cupom") ou { confirmados }.
+   */
+  PURO.resolverCupons = function (cupons, mapa) {
+    cupons = cupons || [];
+    var comCamp = cupons.filter(function (c) { return c.campaign_id; });
+    if (comCamp.length && mapa === null) return { descarte: 'modal_inconclusivo', confirmados: [], semCampanha: cupons.length - comCamp.length, naoConfirmados: 0 };
+    var f = comCamp.length ? PURO.filtrarConfirmados(comCamp, mapa) : { confirmados: [], naoConfirmados: 0 };
+    if (cupons.length > 0 && f.confirmados.length === 0 && comCamp.length === 0) return { descarte: 'cupom_sem_campanha', confirmados: [], semCampanha: cupons.length, naoConfirmados: 0 };
+    return { descarte: null, confirmados: f.confirmados, semCampanha: cupons.length - comCamp.length, naoConfirmados: f.naoConfirmados };
   };
 
   /** 2ª captcha seguida no MESMO item => bloquear o item por 24 h. */
@@ -436,7 +460,6 @@
     // lista várias ofertas) e pode ser de OUTRO vendedor. O cupom só vale se (1) tem campaign_id no estado embutido da página E (2) o modal /cupons/pdp DESTE item
     // (item_id do link) confirma essa campanha. Sem as duas provas = sem cupom (a leitura segue como "sem cupom", nunca como positiva). Cache só serve para o NOME.
     var comCamp = x.cupons.filter(function (c) { return c.campaign_id; });
-    if (x.cupons.length - comCamp.length) S.totais.cupomSemCampanha = (S.totais.cupomSemCampanha || 0) + (x.cupons.length - comCamp.length);
     var confirmados = [];
     if (comCamp.length) {
       var mapa = null; // null = modal não consultado ou inconclusivo; {} = modal respondeu sem essa campanha
@@ -450,19 +473,20 @@
           if (rm.status === 429 || rm.status === 403) return { problema: 'http_429', detalhe: 'modal de cupons ' + rm.status };
           if (/captcha|account-verification|\/security/i.test(String(rm.url))) return { problema: 'captcha', detalhe: 'item ' + id + ' modal de cupons em página de verificação' };
           if (rm.status === 200 && /\/cupons\/pdp/.test(rm.url)) {
-            mapa = PURO.cuponsDoModal(await rm.text());
-            Object.keys(mapa).forEach(function (k) { nomesCache[k] = { d: mapa[k], t: Date.now() }; });
+            var corpoModal = await rm.text();
+            var tipoModal = PURO.classificarModal(corpoModal);
+            if (tipoModal === 'cupons') { mapa = PURO.cuponsDoModal(corpoModal); Object.keys(mapa).forEach(function (k) { nomesCache[k] = { d: mapa[k], t: Date.now() }; }); }
+            else if (tipoModal === 'vazio_explicito') mapa = {};
           }
         } catch (e) { /* inconclusivo: sem confirmação nesta leitura */ }
       }
-      // QA F8: modal não consultado (cota do ciclo), com exceção ou inconclusivo => DESCARTA a leitura (volta à fila); NUNCA vira "sem cupom" (derrubaria cupom real e anunciaria "encerrado").
-      if (mapa === null) { S.totais.modalInconclusivo = (S.totais.modalInconclusivo || 0) + 1; return { descarte: 'modal_inconclusivo' }; }
-      var f = PURO.filtrarConfirmados(comCamp, mapa);
-      confirmados = f.confirmados;
-      S.totais.cupomNaoConfirmado = (S.totais.cupomNaoConfirmado || 0) + f.naoConfirmados;
+      // QA F8/F8b: modal não consultado, exceção, corpo ilegível ou ambíguo => DESCARTA a leitura (volta à fila); NUNCA vira "sem cupom".
     }
-    // Rótulo sem campaign_id e nada confirmado: leitura ambígua (pode ser cupom real sem id no estado ou card de outro produto): não afirmar "sem cupom".
-    if (x.cupons.length > 0 && confirmados.length === 0 && comCamp.length === 0) return { descarte: 'cupom_sem_campanha' };
+    var dec = PURO.resolverCupons(x.cupons, comCamp.length ? mapa : {});
+    if (dec.semCampanha) S.totais.cupomSemCampanha = (S.totais.cupomSemCampanha || 0) + dec.semCampanha;
+    if (dec.naoConfirmados) S.totais.cupomNaoConfirmado = (S.totais.cupomNaoConfirmado || 0) + dec.naoConfirmados;
+    if (dec.descarte) { S.totais.modalInconclusivo = (S.totais.modalInconclusivo || 0) + (dec.descarte === 'modal_inconclusivo' ? 1 : 0); return { descarte: dec.descarte }; }
+    confirmados = dec.confirmados;
     x.cupons = confirmados;
     if (x.ambiguo) { S.totais.ambiguos++; return { descarte: 'ambiguo_mencao_a_cupom_sem_preco' }; }
     if (x.cupons.length) S.totais.comCupom++;

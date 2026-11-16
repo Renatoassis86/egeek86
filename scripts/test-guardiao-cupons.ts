@@ -36,6 +36,7 @@ const baseAnn = (kind: AnnKind, over: Partial<Announcement> = {}): Announcement 
 
 async function main() {
   const { consultarCupom } = await import('../src/server/messaging/agente-cupons');
+  const consultarComCofre = (id: string, d: Record<string, unknown>) => consultarCupom(id, { redeDaOferta: async () => 'mercado-livre', registrar: async () => undefined, now: NOW, ...d } as never);
   const { rodarGuardiao } = await import('../src/server/messaging/guardiao-cupons');
   const { renderEndedCouponCard } = await import('../src/server/messaging/ended-coupon-card');
   type Store = import('../src/server/messaging/guardiao-cupons').GuardiaoStore;
@@ -121,19 +122,19 @@ async function main() {
   const info = (code: string) => ({ code, conditions: '', expiresAt: null, verifiedAt: NOW.toISOString() });
   const calls: string[] = [];
   const mk = (n: string, v: ReturnType<typeof info> & Record<string, unknown> | null) => async () => (calls.push(n), v);
-  let c = await consultarCupom('off-1', { item: mk('item', { ...info('R$ 10 com cupom'), couponRef: 'off-1', annKind: 'anuncio' }), campanha: mk('camp', info('X')), lojaCategoria: mk('loja', info('Y')), audit });
+  let c = await consultarComCofre('off-1', { item: mk('item', { ...info('R$ 10 com cupom'), couponRef: 'off-1', annKind: 'anuncio' }), campanha: mk('camp', info('X')), lojaCategoria: mk('loja', info('Y')), audit });
   check('consulta: item vence e não chama os outros', c?.source === 'item' && c.couponRef === 'off-1' && c.annKind === 'anuncio' && calls.join() === 'item');
   calls.length = 0;
-  c = await consultarCupom('off-2', { item: mk('item', null), campanha: mk('camp', { ...info('TODOSITE1111'), couponRef: 'ci-1', annKind: 'campanha' }), lojaCategoria: mk('loja', info('Y')), audit });
+  c = await consultarComCofre('off-2', { item: mk('item', null), campanha: mk('camp', { ...info('TODOSITE1111'), couponRef: 'ci-1', annKind: 'campanha' }), lojaCategoria: mk('loja', info('Y')), audit });
   check('consulta: sem item, campanha do dono', c?.source === 'campanha' && c.code === 'TODOSITE1111' && c.couponRef === 'ci-1' && calls.join() === 'item,camp');
-  c = await consultarCupom('off-3', { item: mk('item', null), campanha: mk('camp', null), lojaCategoria: mk('loja', { ...info('10% OFF em games'), couponRef: 'ci-2', annKind: 'categoria' }), audit });
+  c = await consultarComCofre('off-3', { item: mk('item', null), campanha: mk('camp', null), lojaCategoria: mk('loja', { ...info('10% OFF em games'), couponRef: 'ci-2', annKind: 'categoria' }), audit });
   check('consulta: por último loja/categoria', c?.source === 'loja_categoria' && c.annKind === 'categoria');
-  c = await consultarCupom('off-4', { item: mk('item', null), campanha: mk('camp', null), lojaCategoria: mk('loja', null), audit });
+  c = await consultarComCofre('off-4', { item: mk('item', null), campanha: mk('camp', null), lojaCategoria: mk('loja', null), audit });
   check('consulta: nada achado => null (nunca inventa)', c === null);
-  c = await consultarCupom('off-5', { item: async () => { throw new Error('banco fora'); }, campanha: mk('camp', null), lojaCategoria: mk('loja', null), audit });
+  c = await consultarComCofre('off-5', { item: async () => { throw new Error('banco fora'); }, campanha: mk('camp', null), lojaCategoria: mk('loja', null), audit });
   check('consulta: falha de uma fonte não derruba a consulta', c === null);
   check('consulta: cada chamada grava auditoria (5)', audits.length === 5 && (audits[0] as { found: boolean }).found === true && (audits[3] as { found: boolean }).found === false);
-  c = await consultarCupom('off-6', { item: mk('item', info('A')), campanha: mk('camp', null), lojaCategoria: mk('loja', null), audit: async () => { throw new Error('tabela ausente'); } });
+  c = await consultarComCofre('off-6', { item: mk('item', info('A')), campanha: mk('camp', null), lojaCategoria: mk('loja', null), audit: async () => { throw new Error('tabela ausente'); } });
   check('consulta: falha na auditoria é ignorada', c?.code === 'A');
 
   // ---------------------------------------------------------------- 3) guardião com armazenamento em memória

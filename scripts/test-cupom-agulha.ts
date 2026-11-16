@@ -120,30 +120,32 @@ async function main() {
 
   // ---------------- consulta única: motivo registrado e ordem ----------------
   const { consultarCupom } = await import('../src/server/messaging/agente-cupons');
+  // O cofre decide campanha e loja/categoria: o teste injeta rede, gravador e relógio (sem banco).
+  const consultarComCofre = (id: string, d: Record<string, unknown>) => consultarCupom(id, { redeDaOferta: async () => 'mercado-livre', registrar: async () => undefined, now: NOW, ...d } as never);
   const audits: { found: boolean; source: string | null; missReason?: string | null }[] = [];
   const okInfo = { code: 'R$ 90,00 com cupom', conditions: 'x', expiresAt: null, verifiedAt: NOW.toISOString(), couponRef: 'ref', annKind: 'anuncio' as const };
-  const miss = await consultarCupom('00000000-0000-4000-8000-000000000001', {
+  const miss = await consultarComCofre('00000000-0000-4000-8000-000000000001', {
     item: async (_id, trace) => { trace?.('sem_leitura'); return null; },
     campanha: async (_id, trace) => { trace?.('sem_codigo_do_dono_ativo'); return null; },
     lojaCategoria: async (_id, trace) => { trace?.('categoria_produtos_selecionados'); return null; },
     audit: async (r) => { audits.push(r); },
   });
   check('sem cupom: null e motivo de cada etapa na auditoria', miss === null && audits[0]?.missReason === 'item:sem_leitura | campanha:sem_codigo_do_dono_ativo | loja_categoria:categoria_produtos_selecionados', audits[0]);
-  const hit = await consultarCupom('00000000-0000-4000-8000-000000000002', {
+  const hit = await consultarComCofre('00000000-0000-4000-8000-000000000002', {
     item: async (_id, trace) => { trace?.('lida_sem_cupom'); return null; },
     campanha: async () => ({ ...okInfo, code: 'TODOSITE', annKind: 'campanha' as const }),
     lojaCategoria: async () => { throw new Error('não deve ser chamada'); },
     audit: async (r) => { audits.push(r); },
   });
   check('achou na 2a etapa: fonte campanha e motivo vazio na auditoria', hit?.source === 'campanha' && audits[1]?.found === true && audits[1]?.missReason == null, audits[1]);
-  const boom = await consultarCupom('00000000-0000-4000-8000-000000000003', {
+  const boom = await consultarComCofre('00000000-0000-4000-8000-000000000003', {
     item: async () => { throw new Error('banco fora'); },
     campanha: async () => null,
     lojaCategoria: async () => null,
     audit: async (r) => { audits.push(r); },
   });
   check('erro numa etapa nunca bloqueia: segue, sem cupom, motivo erro_na_consulta', boom === null && /item:erro_na_consulta/.test(audits[2]?.missReason ?? ''), audits[2]);
-  const badAudit = await consultarCupom('00000000-0000-4000-8000-000000000004', { item: async () => okInfo, audit: async () => { throw new Error('auditoria fora'); } });
+  const badAudit = await consultarComCofre('00000000-0000-4000-8000-000000000004', { item: async () => okInfo, audit: async () => { throw new Error('auditoria fora'); } });
   check('auditoria que falha não derruba a consulta', badAudit?.source === 'item');
 
   // ---------------- pontos de encaixe por rede ----------------
