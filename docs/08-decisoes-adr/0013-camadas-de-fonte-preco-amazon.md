@@ -1,4 +1,4 @@
-# ADR 0010: camadas de fonte para o preco da Amazon (R-82)
+# ADR 0013: camadas de fonte para o preco da Amazon (R-82)
 
 Status: aceita pelo dono em 2026-11-16 ("implementar as formas da melhor para a pior, cada uma na sua fase como validacao da outra; uma nao funcionando, cai a outra").
 

@@ -1,0 +1,4223 @@
+{
+  "status": "applied",
+  "stamp": "2026-11-12T03-56-31-378Z",
+  "por": "Renato (dono)",
+  "approvedBy": "bloco:plus-v3:2026-11-12",
+  "approvedAt": "2026-11-12T03:56:34.917Z",
+  "criteriaVersion": 3,
+  "planFile": "docs\\backups\\aprovacao-plus-plano-2026-11-12T03-29-42-100Z.json",
+  "backup": "docs\\backups\\aplicar-aprovacao-plus-2026-11-12T03-56-31-378Z.ndjson",
+  "aprovados": [
+    {
+      "id": "60945588-33ff-4488-ae84-efe24b6bfaa2",
+      "name": "Fritadeira Air Fryer Mondial Oven Digital 127v",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T03:17:25.711Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8305c0c8-1000-4eb2-b834-7ed97e3388a5",
+      "name": "Air Fryer Mondial Afn Afn-40-bf 220V",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T12:37:40.567Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b08e5544-fdc6-42e1-b943-cf07191ec930",
+      "name": "Fritadeira Air Fryer Arno Air Plus Expert & Grill Digital 4,2L UFE2",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T12:40:09.805Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8235b849-c146-4499-9fe5-bc0140318dc7",
+      "name": "Fritadeira Air Fryer Fischer Smart 8l Cor Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T12:40:35.890Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "43865858-3e19-4471-9c05-90908d21ff8f",
+      "name": "Fritadeira Elétrica Fischer Air Fryer Dual Grill 220v 4l Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T12:40:39.160Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "73db7ef6-5153-4981-98c0-bc7f99beaa17",
+      "name": "Multilaser gourmet air fryer ce084 4l 1500w vermelho",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:11:09.897Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0f8a00ea-4899-4682-9b41-2ca8cb3970eb",
+      "name": "Fritadeira Air Fryer Forno Agratto 12 Litros Digital 220v",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:11:38.565Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7193232f-00ce-4139-9556-ed914e5aa822",
+      "name": "Air Fryer Digital Sem Óleo 7L BLACK+DECKER AFD7Q 220V",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:11:48.010Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "23b65fb7-9c56-4712-9705-a6e786e23c56",
+      "name": "Fritadeira Air Fryer Supremma 7,5l 1800w Agratto Cor Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:11:41.679Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c95a09aa-fc90-4ce1-be6c-85a21a5e2781",
+      "name": "Air Fryer 4 Litros Afm4 Fritadeira Black Decker Cor Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:11:54.413Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a27090d5-e6c7-4572-8d4c-9920a4a53e49",
+      "name": "Air Fryer Com Display Digital 4,5L BLACK+DECKER AFMDV360 Potência 1300W",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:12:03.949Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a42fa298-9364-44d5-9c65-3ddfbd5afd97",
+      "name": "Geladeira Inverse Frost Free 416l Inverter Cor Inox Midea Cor Prateado 110V/220V",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:18:48.728Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "85a4c3bb-d3bb-4c1a-95df-e1075dc3cfbc",
+      "name": "Fritadeira Air Fryer 4,2l Bfr37 Britânia Cor Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:12:32.412Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3a4866f9-3cca-4cab-81d3-4dd89d9eb908",
+      "name": "Air Fryer Britânia 5,5L 1500W Antiaderente Redstone BFR50 127V",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:12:51.577Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e5b63f76-7c6e-4823-b90b-40ebffbd3501",
+      "name": "Air Fryer Britânia 5,5L Antiaderente Gold 1500W BFR51",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:12:48.467Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cb8f68ef-6dee-4254-8ea3-dd6e39d00d70",
+      "name": "Air Fryer Oven Britânia 11L 8 Funções 1800W Painel Digital BAF11A",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:13:52.926Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a381c493-bff8-4b17-9bd4-4a2256ec0ff4",
+      "name": "Fritadeira Air Fryer Forno Oven 12L, Mondial, 2000W - AFON-12L-BI",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:13:14.327Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5d296d65-779b-46fd-b22d-2216bbb33b2d",
+      "name": "Geladeira Side By Side 511l Inverter Cor Preto Conectada Mid",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:18:54.882Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6d0d7165-0ea7-4953-954f-4f89087bbd61",
+      "name": "Geladeira Side by Side Inverter 442L Cor Inox MDRS598FGA041 Midea",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:18:58.078Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "945b2492-0a5a-42d6-9b34-be9d459cfdf6",
+      "name": "Geladeira Duplex Philco 458l Frost Free Eco Inverter Prf45a Inox",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T13:19:20.088Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "01e6ba40-762c-4537-8414-90bd8477d430",
+      "name": "Fogão 4 Bocas Preto Com Mesa Inox Atlas Milão Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:16:40.528Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "4266f8dc-3258-42bd-9641-22a6c0c0b832",
+      "name": "Fogão 4 Bocas New Sirius Braslar Branco",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:16:47.451Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3e4cc60d-3772-4b54-82c7-69087313fdbf",
+      "name": "Fogão 4 Bocas Atlas Milão Plus Inox Preto Acendimento Automático",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:16:50.878Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7788becd-e639-4ba9-8cae-47c0651614e9",
+      "name": "Fogão 4 Bocas Atlas Coliseum Plus com Mesa de Inox Manual Branco",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:16:57.715Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "091965a2-19c7-4abf-9b4c-dc25ab442618",
+      "name": "Fogão 4 Bocas Acendimento Manual Mesa De Inox Forno Atlas Cor Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:17:01.158Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c10bcd32-bcdb-4be9-abdc-1f6a718e2e1d",
+      "name": "Fogão 4 Bocas Star Clean New Itatiaia Branco",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:17:04.548Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d6c42864-522e-4399-a445-a89a7463ab6f",
+      "name": "Fogão Cooktop Indução 2 Bocas Oster Cor Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:19:23.982Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b566f0c9-db87-46b2-8902-1df7a951ffff",
+      "name": "Fogão 4 Bocas Atlas Milão Com Mesa De Inox A Gás Manual Branco",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:17:21.722Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1bcd3860-57a8-43af-9350-64c768bb150f",
+      "name": "Fogão 4 Bocas Atlas Mônaco Top Glass Acendimento Automático Cor Branco",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:17:25.134Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "21afbfd8-a3b1-47ad-aed9-9733bb772429",
+      "name": "Cooktop Indução 4 Bocas Touchscreen Vidro Preto Oster",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:19:47.816Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "be61ade1-0113-4011-9396-1b2a1d3d83d5",
+      "name": "Micro-ondas Electrolux 20l Branco MTO30",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:21:56.253Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b0c4ed3d-e163-4fdb-8c13-af22b1aaaec1",
+      "name": "Lava Louças Brastemp 8 Serviços Cinza - Blf08bs",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:23:58.633Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6fa0d976-9e56-4c02-a50d-ff0305a26a5a",
+      "name": "Lava Louças Brastemp 8 Serviços Preta - BLF08AE Preto",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:24:02.104Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "baef0247-608d-431f-bb88-3a1249143514",
+      "name": "Lava-Louças Brastemp 8 Serviços Inox - BLF08BS",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:24:09.014Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0ccbdf39-5286-4bf3-af48-7e1565c83a92",
+      "name": "Liquidificador Oster 1100 Full 3,2L Cinza OLIQ606",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:28:49.266Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6ac69430-775e-43b3-ba25-4c384a5e2410",
+      "name": "Panela Elétrica de Arroz, Mondial, 700W - PE-42-10X",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:40:46.181Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "824ab4af-e1e3-4f94-9e1e-ad76c3cfcdce",
+      "name": "Secadora Brastemp Rotativa Branca 10kg Bsr10bb Cor Branco",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:45:43.690Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "882e3902-9e28-4cca-a9d4-0b2a683f1a45",
+      "name": "Secadora de Roupa Brastemp 10kg BSR10BB Cor Branco",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:45:36.503Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8afb5572-b4c3-4296-94fb-4c3e52508ba9",
+      "name": "Freezer Horizontal Consul 2 Portas Chb42f 414l",
+      "vertical": "eletrodomesticos",
+      "before": {
+        "at": "2026-11-11T16:48:24.883Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cb104a13-2a55-4be3-bfcd-cfcd608be586",
+      "name": "Fonte Carregador USB-C 20W",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:22:17.519Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "22bd2ecb-341d-4f49-a8f7-a62ad03fc4fa",
+      "name": "Carregador Usb-c Ec 10 Power 20w Intelbras Branco",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:22:36.745Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "841506b3-4b33-4240-a749-6ee36cd5fd8a",
+      "name": "Power Bank Portátil 10000mah Usb",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:24:54.095Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "44ab815f-809e-4fe9-a8d3-8218fe7adff3",
+      "name": "Soundbar JBL Cinema SB595 Bluetooth 220w 3.1.2 Canais - JBLSB595BLKBR",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-08T16:10:51.457Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0a896d52-c699-4e66-b498-61f0afb267c3",
+      "name": "Caixa Som Bluetooth Portátil Jbl Xtreme 4 Cor Preto",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:40:41.694Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d382be36-f2f3-4bfc-8c95-3f7f19264203",
+      "name": "Jbl Bar 1000mk2 Soundbar 7.1.4 Canais Dolby Atmos 480w Rms Preto Com Subwoofer De 25cm 33 Hz - 20khz",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:38:48.583Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ca1294e9-17c8-4947-9da3-cd2d5996ff0a",
+      "name": "Soundbar Jbl Cinema 2.1 Hdmi Arc Bluetooth 110w Rms Preto 40hz - 20khz",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T03:16:08.325Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "491d3c71-49cc-4da9-9904-6497b22caf73",
+      "name": "Cowin E7 Pro Fone Ouvido Bluetooth 4.0 Cancelamento Ruído",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:50.976Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4f7d3439-90fd-4dc4-8c16-84fcc003346d",
+      "name": "Sony Ht-s400 Soundbar Dolby 2.1ch Subwoofer Sem Fio - 330w",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:38:58.601Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:mpn"
+      }
+    },
+    {
+      "id": "c4f8a99e-8486-4d5a-b65c-113a7fed9938",
+      "name": "Fone De Ouvido JBL Tune Buds Sem Fio Com Cancelamento De Ruído Preto",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:27.972Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1a58f035-176e-43c4-9f68-f840e194a468",
+      "name": "Fone Headphone Sem Fio Bluetooth Fone Ouvido Estéreo Inova Cor Azul",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:17.446Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c201717e-a8cf-4c29-ba68-810c2e023cd4",
+      "name": "Samsung Soundbar HW-Q800C",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:38:41.282Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "147acde9-3a13-4952-9028-3427b989568b",
+      "name": "Soundbar Hw-b400f Zd 40w Bluetooth 2.0 Canais Woofer Samsung",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:38:45.350Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f9005077-9edc-404f-8d71-70f61b2821a5",
+      "name": "Soundbar Fortrek Sonar BT Preto",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:38:51.837Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b4ccf5a5-4b50-4211-ab3b-57a43239302a",
+      "name": "Soundbar Com Subwoofer Polk Audio Magnifi Max Ax Dolby Atmos Cor Preto",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:39:01.820Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dfb6e0b6-1774-406e-8f76-99cf4adb7aaf",
+      "name": "Inova Caixa Som Bluetooth Caixa De Som Pequena Som Casa Cor Preto1",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:40:51.730Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "89e7fbb7-92f5-410b-b0dc-039ff005919f",
+      "name": "Inova Caixa Som Bluetooth Caixa De Som Pequena Som Casa Cor Azul-marinho",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:40:55.063Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "19b33760-afb3-4c56-b29c-76f291a97274",
+      "name": "Fone Ouvido Sem Fio Earbuds Wireless Bluetooth Tws 5.3 Budsy",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:34.441Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "597021e4-10eb-4813-8b8c-f52c885f1860",
+      "name": "Caixa Som JBL JBLGO5PIKAM portátil com bluetooth waterproof rosa",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:40:37.550Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "46f5d0af-045b-429b-b379-d96f85c54f93",
+      "name": "Caixa Som Bluetooth Jbl Xtreme 4 Portátil Azul",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:40:48.395Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "647caa3c-2bf2-47b9-aa5b-1500d93597d8",
+      "name": "Caixa Som Bluetooth Mini Caixa Potente Amplificada Littlefun Cor Rosa",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:40:58.405Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0e0e9303-0dec-48e1-b0af-1d8633fec001",
+      "name": "Caixa Som Jbl Go 5 Bluetooth Portátil Prova Dágua Preto",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:40:45.032Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1b620e05-aee9-4281-8079-45c3f1ccb4bd",
+      "name": "Fone Ouvido Neckband Sem Fio Jbl Tune 125bt Bluetooth Black Cor Branco",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:21.525Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "5d4e95ee-0102-48ba-93a7-4077db0b7ca9",
+      "name": "Bose On Ear Headfone Fone Ouvido Wireless Sem Fio Bluetooth",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:31.208Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "c8095e40-e88b-440b-af10-b9b998917745",
+      "name": "Fone Ouvido Sem Fio Jbl Wave Beam 2 Preto Cancelamento de Ruído",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:37.650Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fed8dafe-adcb-45c3-8da9-ecd4441d7cdd",
+      "name": "Fone Ouvido Bluetooth Baseus Inspire Xp1 Cancelamento Ruído Branco",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T17:43:47.744Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0e90776f-dd9e-4438-8042-b3f745814990",
+      "name": "Soundbar Jbl Cinema Sb510 5.1 200 Watts Bluetooth Hdmi Usb Preto",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T12:45:58.656Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "58358b96-6b2e-4175-8db0-cd38a4f3f239",
+      "name": "Soundbar LG S40T Bluetooth, 300W, Som Imersivo Design Compacto, Conectividade, Ideal para TV e Entretenimento em Casa",
+      "vertical": "eletroeletronicos",
+      "before": {
+        "at": "2026-11-11T12:46:24.527Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "58406421-8161-4cd3-b928-9f2511d50119",
+      "name": "Manguito Manga Compressão Vôlei TM7 Longo Profissional",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:14:12.638Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "66650867-38dc-4ef0-8ff9-2ec6660e2f6e",
+      "name": "Manguito Volei Manga Compressão N1 Sport Protetor Antebraço",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:14:16.567Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "6575d2e9-4277-48cd-8a16-a58379aeb382",
+      "name": "Esteira Ergométrica Elétrica Gallant Elite 2.8hp 16kmh 120kg GEE12M28A-127PT)",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:31.676Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "552c7a45-1cda-4703-b9e7-b5a7e9d60dca",
+      "name": "Esteira Elétrica Dream Fitness Ergométrica Bivolt Ginástica DR2110 Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:31:10.103Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2d8f3459-b0f4-46cc-9273-b92a05a8bfd3",
+      "name": "Bicicleta Ergometrica Spinning Academia Bike Profissional Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:27:51.559Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9b62769e-cbda-4747-b590-0863d2b65348",
+      "name": "Bicicleta Ergométrica Spinning Fitness Inércia 8kg Preta",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:27:55.576Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0782c9e8-fbcb-4891-bb29-09ece10a905a",
+      "name": "Bicicleta Ergométrica Magnética Horizontal Gallant Elite X",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:27:58.757Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "02edeccd-ade2-4e2a-8b7d-69fd172c3b0f",
+      "name": "Bicicleta Ergométrica Horizontal Bluetooth H4 Move Preto/cinza",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:28:01.976Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "45f8566d-fbaf-4001-a3e0-f7759c30b246",
+      "name": "Bicicleta Ergométrica Vertical Profissional Linha Master Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:28:08.397Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c03d27d4-5529-488b-95a3-2d41049e9f84",
+      "name": "Bicicleta Ergométrica Vertical Dobrável Cadence X Odin Fit",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T17:28:05.217Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4734322f-9d56-4435-90c6-10d16a1679ad",
+      "name": "Bola Vôlei De Praia Mikasa Bv552c-wybr Amarelo",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T16:48:46.756Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "760c7f4f-d0e8-4ce7-99a3-292168585942",
+      "name": "Raquete Beach Tennis Camewin Carbono 3K Profissional 2023",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T16:53:33.051Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e8d89237-bc52-4ad7-8865-27636aeaeffe",
+      "name": "Bicicleta Ergométrica Profissional Spinning Academias",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:01.329Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "13c652d3-f972-4b26-b276-9f7d49d018c8",
+      "name": "Esteira Ergométrica E41 Elétrica Dobrável 10km Acte Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:16:17.392Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f6c21c68-f48f-4c68-8918-208dfee5d3bf",
+      "name": "Bola Futebol campo Topper Samba Hibryd",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:12:00.935Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bb903ec3-c8b4-49c7-b762-d7b253d546c5",
+      "name": "Esteira Ergométrica Athletic Performance 310t 13km/h",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:28:42.743Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4c60c153-9a06-435e-b420-e199d7c9e3d9",
+      "name": "Esteira Ergométrica Ziyou Zu150 Connect Bluetooth 2hp G2",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:31:00.743Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f786ab9f-78f1-4979-9402-e69e4e119ac2",
+      "name": "Esteira Ergométrica Athletic Profissional 2.0t 16 Km/h",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:28:49.863Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3c0c1712-af86-4c3f-b769-63285f9e5943",
+      "name": "Esteira Ergométrica Athletic Performance 610t 130kg Dobrável Cor Grafite Bvolt",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:28:52.982Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2e354dd2-f2f8-4e1c-b486-eb05359484ad",
+      "name": "Esteira Ergométrica Athletic Performance 210t 10km/h",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:28:56.167Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ec5ade31-872d-4a1f-8c19-68679d9d194c",
+      "name": "Esteira Ergométrica Profissional Athletic Amazon 3.0ti Cor Preto/cinza",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:28:59.238Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b9e58675-195d-4943-9900-a739acc0acb2",
+      "name": "Esteira Ergométrica Athletic Extreme 1060t 16 Km/h Cor Preto/cinza",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:16.116Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d71e6e3e-0b24-43e3-8665-879cee48a946",
+      "name": "Esteira Ergométrica Caminhada Corrida Academia Fitness Ginastica Em Casa Portátil Dobrável",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:22.350Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:mpn"
+      }
+    },
+    {
+      "id": "04aeb485-ff11-4225-9fa1-ccfa27f141d6",
+      "name": "Prancha Deck Esteira Ergométrica Caloi Home Fitness Cle 20 Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:25.442Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4e2ff9ea-e2ba-4ead-9f08-265892b41611",
+      "name": "Esteira Ergométrica Elétrica 2.0hp Tela Led Até 14 Km/h Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:47.770Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "df0f7428-079f-46e7-bc5e-d03f6f4a82c3",
+      "name": "Esteira Ergométrica Gallant Trainer 12.8km 2.0hp 127v",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:28.604Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1f8bebb9-97f5-4476-a005-3a67e4780d51",
+      "name": "Esteira Ergométrica E41 Elétrica Dobrável 12 km/h Acte Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:41.418Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "27bd8996-f43e-4d77-b7b7-05d12ed64cfb",
+      "name": "Esteira Ergométrica Elétrica Smart 14km/h 2.5 Hp Dobrável Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:44.486Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8818a24d-2076-4c9c-8269-71d350fec018",
+      "name": "Esteira ergométrica Corrente doméstica Pratitudo Essencial Fitness home - Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:31:06.996Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "d525667f-bb8f-497f-a6db-c29e950ee437",
+      "name": "Esteira Ergométrica Athletic Performance 710t 16 Km/h",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:28:46.645Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c7b25dd3-297b-4200-8c5c-04506b020164",
+      "name": "Esteira Ergométrica Ep 1600 Sênior Polimet Bivolt Nacional Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:08.824Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2cd0ceff-876e-43a8-a695-7ba3f05c589f",
+      "name": "Esteira Ergométrica Khaata Profissional Dobrável 18km/h Inclinação Elétrica",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:50.891Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "2b13bfc0-9982-4fbf-a05b-6f34aa75dee3",
+      "name": "Deck Esteira Ergométrica TRG Progress 2.6 MDF Alta Qualidade",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:57.572Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4b611e59-d83b-4f2b-b0a4-5c1e3f15f99f",
+      "name": "Bicicleta Ergométrica Spinning Exercício Academia Fitnees Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:04.502Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "31cb105b-44fd-41a3-886e-66921ba11025",
+      "name": "Esteira Ergométrica Athletic Racer 16km/h Residencial Suporta 130kg",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:02.585Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d0c6f00b-98f5-4d3f-a834-baeaf246e30a",
+      "name": "Esteira Ergométrica Elétrica Polimet Dobrável Residencial 5 Funções Ep-1600 Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:05.673Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fdc26648-988a-4c85-a7d6-c6db9c848d4f",
+      "name": "Esteira Ergométrica E42 Elétrica Dobrável 12km Acte Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:11.895Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "376ac9bf-9c53-48d0-8c16-bcc67d21c48d",
+      "name": "Eletrica Dobravel Academia Semi Profissi Esteira Ergometrica Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:15.160Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dd99e15f-68b1-4f28-b14d-eb4a9d7d4556",
+      "name": "Esteira Ergométrica Starke Pro 6.5",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:18.529Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b7e79dad-af46-46b7-9513-9c909fd01a74",
+      "name": "Prancha Esteira Ergometrica Dream Dr2110 Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:21.606Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8bb3e6a9-5a5a-45f0-a82c-4f620f68e33f",
+      "name": "Esteira Ergométrica Evolution Fitness Evo 3850 Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:24.911Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "48dacdf5-0667-4905-b4a1-372f4702e4a0",
+      "name": "Esteira Ergométrica Mormaii Soft Run Voltagem:110v",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:27.982Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6fc08d8d-56c6-4ca5-b819-6f76644e742a",
+      "name": "Esteira Ergométrica Mormaii Soft-run - Motor Dc 4.0hp",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:31.195Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "82cd08db-4057-4720-940e-28e2238d57f2",
+      "name": "Esteira Ergométrica Dobrável Elétrica Painel Lcd E Controle Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:34.637Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9e82fa7a-f024-4c8c-a7f6-8c6e531831df",
+      "name": "Esteira Ergométrica Profissional Exercit Ew-3.0 Pro 220v",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:09.528Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bbbd906a-583b-40ad-ab84-5edb5331662e",
+      "name": "Esteira Ergométrica Wct Fit 2.0hp Elétrica 12km/h Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:37.766Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0fc7f9bc-4843-4f14-ba86-5a73dd680724",
+      "name": "Esteira Ergométrica Elétrica C/ Inclinação Ahead Home Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:40.850Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1d400dfa-4770-4923-aa3a-7f96ebd034e2",
+      "name": "Esteira Ergométrica Elétrica Nakasaki KM102 Dobrável Portátil 12km/h Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:43.943Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d52cc3c1-e336-4a80-a285-bf3fa13fb3f4",
+      "name": "Esteira Ergométrica Elétrica Dobrável Caminhada 6km/h Wct Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:47.050Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "56b0a083-10b1-4516-89c3-692c763ad9b8",
+      "name": "Esteira Ergométrica Speedo Tr4 - Inclinação Eletrônica",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:06.311Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "036f2811-8d00-4ecf-8ea4-4679b1d0f837",
+      "name": "Esteira Ergométrica Dobrável Portátil Bt 110v 2 Em 1 Vollo",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:50.397Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ce0c52fc-33a4-4af9-9635-2acb5bfb67df",
+      "name": "Esteira Ergométrica NordicTrack T6.5 Dobrável com iFIT e Bluetooth",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:53.466Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2612066f-55d8-4fa8-bea6-99df3d577d1d",
+      "name": "Esteira Ergométrica Dobrável Portátil Bt 2 Em 1 Vollo Cinza 220v",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:29:56.974Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0f1f6257-faaa-40e8-a03d-13908abdbece",
+      "name": "Prancha Deck Esteira Ergometrica Embreex 546 Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:00.051Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ecb12fc7-4460-4054-b809-fcbe32ffcb46",
+      "name": "Esteira Ergométrica Residencial CHOCYN Dobrável com Monitor LCD - Caminhada e Corrida",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:03.216Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:mpn"
+      }
+    },
+    {
+      "id": "a98ba788-ef39-455e-bf05-a5c90b023185",
+      "name": "Esteira Ergométrica Gallant Trainer 12.8km 2.0hp Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:12.629Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:mpn"
+      }
+    },
+    {
+      "id": "1a0df08a-e4c8-4ffa-a768-33f6f6cc6822",
+      "name": "Esteira Ergométrica Athletic Training 12km/h Suporta 120kg Cor Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:19.218Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e13fbd06-af81-4acf-aa20-a62d718ae6ea",
+      "name": "Esteira Ergométrica Elétrica Gallant Trainer 12.8 Km/H 110kg 2.0hp",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:34.890Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "d94dfb47-6b71-4dba-a522-08fb20bd8733",
+      "name": "Bicicleta Ergométrica Kikos Kr3.8 Cor Preto/Branco",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:36:18.693Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cfb0a2a0-8336-4976-be33-d675f93bc33d",
+      "name": "Esteira Ergométrica Elétrica Gallant Elite 2.5hp 14kmh 120kg GEE12M25A-127PT)",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:37.958Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8a0c15f2-3f9c-4249-92a3-87b5de133bc1",
+      "name": "Esteira Ergométrica Dobrável Elétrica Residencial Caminhada Corrida GV Fit Good Vision",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:31:03.866Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4d2d023a-4a1c-46f5-97db-08e60b70a61e",
+      "name": "Bike Ergometrica Bicicleta Ergometrica Profissional Academia Sport Bike Ergometrica Bicicleta Ergometrica Spinning Magnetica Inercia",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:34:47.348Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "36381211-3ed9-473f-8e31-1c745070bc3f",
+      "name": "Bicicleta Ergométrica Spinning 13kg Vermelho Importway",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:34:57.885Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "59c6b11e-bb80-4482-b233-425edc728cca",
+      "name": "Bicicleta ergométrica Kikos F7i cor preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:36:02.547Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "00c09d21-587c-43a5-843e-09b9053849c7",
+      "name": "Esteira Ergométrica Elétrica Residencial EP-1600 Sênior 1.6hp Poli Sports",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:30:54.154Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7e2ad28e-e3db-4182-94d2-f00c61078e03",
+      "name": "Bicicleta Ergométrica Spinning Inércia Profissional Aço Bicicleta Ergométrica Spinning Roda De Inércia",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:34:51.348Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "93c27f8f-0c8c-44bf-9a29-48310fabe7f4",
+      "name": "Bicicleta Ergométrica Spinning Speed 150kg",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:34:54.671Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "150d0ae5-85da-43f0-aaee-11d130bc8056",
+      "name": "Bicicleta Ergométrica Spinning O'Neal TP1900 Até 120kg",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:10.897Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4f4467ec-6710-47c6-896b-3c622092e475",
+      "name": "Bicicleta Ergométrica Horizontal Residencial Cardio Academia Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:23.807Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4888d0a8-816c-475f-a12b-19de5d6e8ed4",
+      "name": "Bicicleta Ergométrica Horizontal Resistência Magnética WCT Fitness",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:26.958Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e0a21119-ad43-4432-8ef6-471f2e4f843a",
+      "name": "Bicicleta Ergométrica Embralumi Exercício Spinning Ajustável",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:07.732Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "500220f3-7c23-4e68-86c5-bcbd7ea9be06",
+      "name": "Bicicleta Ergométrica Horizontal Athletic Professional 1600b",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:20.622Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "91c8265f-5207-4174-af65-db65de1a020c",
+      "name": "Bicicleta Ergométrica Kikos Kv3.0",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:52.922Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d0b87a3f-c407-4f02-99ef-c3c56a2c06c3",
+      "name": "Bicicleta Ergometrica Spinning Linha Premium Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:14.150Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e9c4d50e-e1ef-40d9-bbaa-939df6ed535a",
+      "name": "Bicicleta Ergométrica Horizontal Movement Home H2 Preta 8 Níveis Resistência",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:17.424Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3694cae8-0eda-4e0c-ab00-d205436094d0",
+      "name": "Bicicleta Ergométrica Horizontal Goper Smart Bike Preta",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:30.234Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bab00c25-5408-4d0b-a931-e871f83f18e1",
+      "name": "Bicicleta Ergométrica Horizontal Magnética Evox Delux R9",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:36.696Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9a24b801-a831-4deb-ba69-7a4be554a361",
+      "name": "Bicicleta Ergométrica Vertical Magnética Cor Preto Arktus",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:43.198Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8c21a627-1ae6-473e-b795-78d43bfc9e59",
+      "name": "Bicicleta Ergométrica Magnética Horizontal Gallant Elite Pro Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:33.394Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "19fd643c-33a5-40bd-8bc2-fb176ab0dd32",
+      "name": "Bicicleta Ergométrica Horizontal Exercit Eh-500 Plus",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:39.847Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8254af32-fd95-4bdd-a0ef-9e209c798e22",
+      "name": "Bicicleta Ergométrica Vertical Magnética Century Odin Fit",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:46.354Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fe1f8228-9965-46e8-ab20-88bda0207a13",
+      "name": "Bicicleta Ergométrica Vertical Liftness Bc100 Metal Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:49.733Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5527dcd3-37da-4aa7-95df-d0902141a9e2",
+      "name": "Bicicleta Ergométrica Spinning F2l Roda De Inércia 8kg Kikos Preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:56.181Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1b20e4a0-846f-40a6-a66a-499a5b93cd82",
+      "name": "Bicicleta Ergométrica Spinning Kikos Bolt F1 com Resistência Mecânica",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:35:59.340Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "850049f3-b69a-4214-9218-565b30f0b558",
+      "name": "Bicicleta ergométrica Kikos Kv6.3i cor preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:36:09.054Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a89002cb-dfb5-4f8f-aa64-51bff889aa01",
+      "name": "Bicicleta Ergométrica KV3.1I Magnética Kikos",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:36:05.705Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6e935621-007a-498a-b430-7367280398c3",
+      "name": "Bicicleta ergométrica Kikos Vertical KV 8.7 cor preto",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:36:12.248Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fbac8a29-585c-4584-8e75-5691cec1c580",
+      "name": "Bicicleta ergométrica Kikos Kr9.1 cor cinza",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:36:15.536Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f9434490-34f7-409d-a38b-aed21fd3274c",
+      "name": "Bicicleta Ergométrica Vertical Bolt 3016 Monitor Digital Preto Kikos ",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T13:36:22.199Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e96863ea-11d0-414e-873d-1ffd5575d8c6",
+      "name": "Faixa Elástica Poker Chumbo",
+      "vertical": "esporte",
+      "before": {
+        "at": "2026-11-11T16:56:05.969Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2d08408e-1ab0-4714-af55-22eccea9577d",
+      "name": "Impressora 3d Elegoo Neptune 4 Pro Fdm 500 Mm/s",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:00.608Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "e97c99d7-8896-482b-9e98-2ac97ec7b7c0",
+      "name": "Impressora 3d Resina Uv Sla Anycubic Photon Mono M7",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:57:41.010Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "84c559c4-a56e-4acc-9c72-d0dfd846acae",
+      "name": "Filamento Pla Silk Metalizado 1kg Multfila 1.75mm",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:25:41.798Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "e7894516-3992-4ca2-a541-bc589aa01390",
+      "name": "Filamento Petg Hf Premium 1kg - 1.75mm - Voolt3d",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:19:03.602Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "fc9e252f-1c13-4efd-9e34-b13531c13fe9",
+      "name": "Filamento Pla High Speed Polyflow 1.75mm 1kg",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:18:19.891Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "fe645310-6a72-4273-a625-cde1d6a40253",
+      "name": "Filamento PETG Masterprint de 1.75mm e 1kg",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:19:00.271Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "254f724f-cef0-451a-afdf-99949f86c5ca",
+      "name": "Filamento Petg 1.75mm 1kg Para Impressora 3d",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:18:57.161Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0db9b6a3-c096-42d4-802a-b87ff02ebfc1",
+      "name": "Filamento Pla Wood Dynalabs 1.75mm 1kg Pinus",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:17:50.032Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "27b6fc41-e6ad-43d6-947c-73fd5374053b",
+      "name": "Filamento Tpu 95a Sunlu 1kg 1.75mm Flexível",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:19:51.742Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "413cd969-d6f9-4d54-9383-a86915f7edd2",
+      "name": "Filamento Abs 1,75 Mm | 1kg",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:21:47.206Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "a1131fec-d8c8-4fd2-9815-918b9059379f",
+      "name": "Filamento Pla 3n3 1.75mm 1kg",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:17:53.175Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "2653943f-99f4-4444-b327-9ce646a6e4e9",
+      "name": "Filamento PETG 1.75mm 1kg Elegoo Rapid Impressão 3D",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:25:26.417Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0fd269fa-184c-4928-94e3-39f23851f38b",
+      "name": "Resina 3D Anycubic 1kg Standard Resin (Basic)",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:28:01.639Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "6d21025e-e34c-495d-a288-3a85d70daa99",
+      "name": "Filamento PLA SILK Masterprint 1.75mm Brilhante 1kg",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:25:51.808Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "58f57796-db6a-46c1-8df2-32dab432c9d2",
+      "name": "Resina 3d Cure Acqua Art 1kg Lavável Com Água Semiflexível Cinza-claro",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:28:12.655Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8b74a990-6e2d-4d1f-ada9-c017b1911a4a",
+      "name": "Impressora 3D Bambu Lab A2l",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:31:47.546Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "7bbfea1b-aec0-4963-992e-a9a74d37c85d",
+      "name": "Impressora 3d Creality Ender-3 V3 Plus, Fdm - 1201020495",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:33:33.151Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "27f87811-3af3-4e9c-93a7-51948cc824e0",
+      "name": "Impressora 3d Bambu Lab X2d",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:32:00.431Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "bfb0758b-3b33-4a91-b32d-63b13dac4f9e",
+      "name": "Impressora 3D Creality Ender 3 V3 Se 220x220x250mm",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:32:34.354Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8b280bd0-6325-479d-84c4-040c8f18dd1f",
+      "name": "Impressora 3D Creality K2 Pro Combo Fdm",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:33:27.463Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "02f4799c-9309-492d-80bc-3a024fad7455",
+      "name": "Creality Halot Mage impressora 3d resina 8k",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:33:08.998Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "805a8ad8-034e-4c68-b72e-f4b137e23ec2",
+      "name": "Impressora 3D Easythreed K1 Compacta FDM Espaço 10x10x10cm",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:57:08.313Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0a4c126a-e415-449f-bf44-a74a6ec94f94",
+      "name": "Impressora 3D Elegoo Centauri Carbon 2 Combo Fdm",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:04.340Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "f472cdb7-885a-4fb4-8499-94e842aae2e4",
+      "name": "Impressora 3d Anycubic - Kobra X Combo",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:57:37.241Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "fd4a20db-79f4-4980-b339-dfa65bee8602",
+      "name": "Bambu Lab Impressora 3d X2d Combo Ams 2",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:29.788Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "fb0d7cb7-7fc6-4b5e-927c-d0b1d937fb84",
+      "name": "Impressora 3D Resina Elegoo Saturn 4 Ultra Rápida 12K",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:38.688Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "18bd6607-0f19-4e34-9038-e525bbddce1b",
+      "name": "Impressora 3d Halot One Creality Resina",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:54:54.314Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0deceff2-34a3-4544-8292-7bf68b4f4541",
+      "name": "Impressora 3d Fdm Fechada H2d Combo Ams Bambu Lab",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:08.830Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3806c989-dfa9-472f-a841-64de365b4bbf",
+      "name": "Impressora 3d Anycubic Kobra 3 V2 Combo Fdm Multicolorida",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:36.547Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8e5c4cbe-838e-4cc5-8a39-4d32f67d381d",
+      "name": "Impressora 3d Anycubic Photon Mono Se",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:46.307Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9bbc16ab-8205-48e1-bdf5-a07e27e327a9",
+      "name": "Impressora 3d De Resina Anycubic Photon Mono 4 10k, Pret",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:56.840Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "d0a13477-fbf3-4bcc-a898-5d1000f3e10f",
+      "name": "Impressora 3D de resina LCD Creality Halot R6 2k",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:02.379Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "ab487bd1-3741-4c7c-9cdc-d3008b20f650",
+      "name": "Impressora 3d Elegoo Mars 5 Ultra",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:15.708Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "2e4a5bd1-27d7-42c6-bc62-dfa1d5eace45",
+      "name": "Impressora 3D Bambu Lab P2S Combo de FDM Automática,",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:11.984Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "65bf612c-1897-414b-8f28-2927a17e8b5b",
+      "name": "Impressora 3d Fdm Fechada Anycubic Kobra S1 V2 Combo",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:33.302Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "7d3f69ea-90a7-4905-9bf6-a884e9cc022a",
+      "name": "Impressora 3D Anycubic Photon Mono M7 Max Resina 7K 14.7L",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:53.078Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "eac43cd0-1378-4b3a-b9b1-376134b568a5",
+      "name": "Impressora 3D Elegoo Neptune 4 Plus FDM 320x320x385mm Filamento Aberto",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:11.953Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "e22236e2-1b4e-4230-bb41-4fad7ba34fa5",
+      "name": "Impressora 3D Elegoo Centauri Carbon FDM 500mm/s Alta Velocidade",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:08.145Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1de7b590-913c-4c68-8ab2-f53e48607605",
+      "name": "Impressora 3D de tamanho grande Elegoo Orangestorm Giga",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:22.091Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "6401fff2-b36a-4da8-98c6-867e445c11ef",
+      "name": "Impressora 3D de resina Elegoo Saturn 4 12k",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:25.856Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "380594bf-ae6f-4d47-bd56-2904f166c3cb",
+      "name": "Impressora 3D Flashforge AD5x, impressora 3D multicolorida com I. 110v",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:42.511Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fafd99c6-0d8a-4c29-8c85-f42876023d5c",
+      "name": "Impressora 3d Creality Hi Combo - 1201010192",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:56:46.268Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8a701c77-9e66-4e5c-b209-8abbf80d6e1f",
+      "name": "Impressora 3d Elegoo Neptune 4 Kliper Firmware",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:57:57.875Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "dfeb690f-bebf-46a2-bf77-cabfaa652f5f",
+      "name": "Impressora 3D Anycubic Kobra S1 Combo 600mm/s Multicor PLA ABS FDM",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:57:27.020Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8754a4d7-2cb5-4d5b-88a3-72854e8eeaf7",
+      "name": "Impressora 3d Anycubic Kobra X Multicor",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:55:49.415Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "81bf7069-2716-41b7-b166-ced93672949c",
+      "name": "Impressora 3D Photon P1 Anycubic com tubo duplo de resina",
+      "vertical": "impressao3d",
+      "before": {
+        "at": "2026-11-11T12:57:45.035Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "45dd39e7-7a91-4792-825c-3379f5bc5009",
+      "name": "Call of duty: vanguard - Maggs, Sam - Panini - Capa Mole",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:28:33.823Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "a87410be-d75d-4f86-ae1c-911f804c5825",
+      "name": "Livro Regras do jogo: a doutrina da morte, de Dashner, James. Editorial Vergara & Riba Editoras, tapa mole, en português (2015)",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:29:58.876Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "58a664e6-5509-4850-979d-1db8335c4591",
+      "name": "Manual Do Defensor 3det - Jambo",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:30:02.024Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "52d60847-a300-4bce-8955-8747cc0b70ed",
+      "name": "Livro Tratado Do Jogo De Regras As Regras Em Jogo 1 Ed 2025",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:29:45.920Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "576c216d-7746-408d-b200-e7100576a699",
+      "name": "Livro Dungeons & Dragons Livro Do Jogador Livro",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-09T02:07:17.375Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "942d4d6e-2d38-4617-8661-af1d31c05b6e",
+      "name": "Livro Livro Aberto",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-10T19:17:07.629Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "2f483084-532c-4651-aa35-632058088d8d",
+      "name": "Livro Tarô Instrumento De Autoajuda Segredos Da Mente",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-10T19:17:37.165Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "aa9d1a18-af0f-4772-85ff-4a00ca1ebfcf",
+      "name": "Dungeons & Dragons: Dragões & Tesouros",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:03:58.571Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7a6917a5-6143-45ed-967e-34022c27bc04",
+      "name": "Manual Do Devoto - Tormenta RPG - Jambô",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:04:01.648Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "95df74a4-24d1-49d0-98c3-8e3085cc4490",
+      "name": "Tormenta Rpg - So Aventuras - Vol.2",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:04:04.722Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "bc30c753-ceae-4f66-84c8-867d36b516c5",
+      "name": "Tormenta Daemon",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:04:32.508Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "150172d9-31c0-4cf5-bc9b-8ff135456a2b",
+      "name": "Tormenta Rpg - So Aventuras - Vol.4",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:04:10.895Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "50a74e57-1511-4d20-a76a-98c943559625",
+      "name": "Tormenta Rpg - O Desafio Dos Deuses, De Dei Svaldi, Guilherme. Editora Jambo Em Português",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:04:13.975Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "1682c381-8529-4cd3-b2aa-18da7763a283",
+      "name": "Tormenta Alpha",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:04:29.428Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "8cb66cae-911e-4f8c-83b0-55466bc1fabf",
+      "name": "Vampiro A Máscara (5ª Edição) Sabá Com Itens Colecionáveis",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:05:58.871Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "963cae47-6011-44c4-b955-6f62398593fe",
+      "name": "Vampiro A Máscara 5ª Edição Livro Do Mestre Galápagos Vam001",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T03:06:08.091Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "c479efdd-4be7-4a48-bd05-6eb1e0f4d0f3",
+      "name": "Ordem Paranormal Vol. 1 — Iniciação (Econômico) - Lange, Rafael “Cellbit” - Jambô Editora - Capa Mole",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:30:52.436Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "fcd34992-8111-472a-82d2-dc5724c32a1e",
+      "name": "Dungeons & Dragons - Tumbas & Masmorras: Dungeons & Dragons - Tumbas & Masmorras, De Wheeler, Andrew. Book One Editora, Capa Dura, Edição 1 Em Português, 2022",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:28:27.450Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "af2151e6-1cc2-49ac-94c1-c804d6fa2f9e",
+      "name": "Ordem Paranormal Vol. 4 — Desconjuração, parte 1 - Lange, Rafael “Cellbit” - Jambô Editora - Capa Dura",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:31:00.491Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7ea33468-8591-4d31-babd-e31f42b3a212",
+      "name": "Livro Programacão linear, de Kwong, Wu Hong. Editorial EDUFSCAR, tapa mole, en português (2013)",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:31:23.849Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "c8b6c515-9776-44d7-94de-9444f90947e9",
+      "name": "Pathfinder 2ª Edição - Escudo Avançado Do Mestre - Rpg - New",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:29:13.373Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "cae4ccb8-5172-4643-8c64-230ac7ae2757",
+      "name": "Livro Regras, instituições e decisões na câmara dos deputados do Brasil, de Vieira, Fernando Sabóia. Editorial Appris Editora e Livraria Eireli - ME, tapa mole, en português (2019)",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:29:55.544Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "8532323a-db4b-45e1-8dc0-b51881a2500e",
+      "name": "Ordem Paranormal: O Espreitador e Outras Histórias - Hartmann, Daniel - Jambô Editora - Capa Dura",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:30:48.601Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "966d37aa-b3e7-4d5f-b5df-121ea6642ee4",
+      "name": "Ordem Paranormal Vol. 3 - O Segredo na Floresta, parte 2 - Lange, Rafael \"Cellbit\" - Jambô Editora - Capa Dura",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:31:12.167Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "6c8da54f-beec-4f8a-a987-569d9cc3f978",
+      "name": "Livro Regras da criatividade, de Seelig, Tina. Editorial Editora Belas-Letras Ltda., tapa mole, en português (2020)",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:29:36.129Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "16b794d3-c54c-4de0-a9fa-a201c864d427",
+      "name": "Livro Regras de Ulpiano, de Ulpiano, Eneu Domício. Editorial Edipro - edições profissionais ltda, tapa mole, en português/latim (2002)",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:29:39.539Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "c36ac16d-3811-4a18-962b-d4ac2301f731",
+      "name": "Manual do Arcanauta — 3DeT Victory - Cassaro, Marcelo - Jambô Editora - Capa Mole",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:30:05.299Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "04e8f8c8-a0ec-4169-a0ee-b9b22b5cfaca",
+      "name": "3det Victory - Versão Luxo: O Livro Básico Do Jogo Defensores De Tóquio, De Jambo Editora., Vol. 1. Editorial Jambo, Capa Mole Em Português",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:30:11.666Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "d451fa4c-7e9a-4acb-96ae-c00186bb4b13",
+      "name": "Ordem Paranormal Vol. 2 — O Segredo na Floresta, parte 1 - Lange, Rafael “Cellbit” - Jambô Editora - Capa Dura",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T12:31:08.259Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "344e3488-90a1-47de-9f52-9e30b4fb519b",
+      "name": "Meu primeiro livro de programação - Burlamaqui, Nestor - Ciranda Cultural - Capa Mole",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:56:19.211Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "3ff52e34-7400-4e42-867b-b0eea0829cf7",
+      "name": "Padroes Javascript",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:56:42.391Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7e9a4ff5-dd0e-43a0-a25c-b150ea1efab7",
+      "name": "Algoritmos Com Javascript Para Iniciantes",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:56:46.182Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "0117aa2e-f5a2-4b92-b745-fedc39165605",
+      "name": "Livro: Inteligência Social",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:59:55.136Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "053d0541-cb0b-4472-b7e0-e61668c79da8",
+      "name": "Livro As 7 Regras Do Sucesso - Wayne Cordeiro",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:55:51.982Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "e8746ce0-52f0-4e0b-aedd-0cb3ab732a82",
+      "name": "A Lenda de Ghanor RPG - Svaldi, Guilherme Dei - Jambô Editora - Capa Dura",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:55:48.141Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "03644819-6ee5-41b1-aec9-b69694aa17ba",
+      "name": "FF 25 - A Cripta do Vampiro - Martin, Keith - Jambô Editora - Capa Mole",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:55:36.721Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "eb678980-b9ae-460a-9ebe-854fe40bde37",
+      "name": "Typescript Gerando O Javascript Do Futuro",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:56:53.814Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "0fceee02-08c7-4a91-8636-a2baddeff79d",
+      "name": "Livro ALGORITMOS - PROGRAMACAO PARA INICIANTES, de VILARIM, GILVAN. Editorial Ciencia Moderna, tapa mole, en português",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:57:25.340Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "824bfad2-13e3-4c15-9805-6cbe413b580d",
+      "name": "Introdução À Programação Com Python: Algoritmos E Lógica De Programação Para Iniciantes, De Nilo Ney Coutinho Menezes. Editorial Novatec, Edição 4ª Edição Em Português",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:56:26.948Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "0ca71abb-20a4-4495-8380-cfc9efafa28e",
+      "name": "Livro Algoritmos da Opressão, de Noble, Safiya Umoja. Editorial Editora Rua do Sabão Eireli, tapa mole, en português (2021)",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:57:36.922Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "876c6fa4-1b88-4574-9164-2a0ff9a27a93",
+      "name": "Simplificando Algoritmos - Menéndez, Andrés - Ltc - Capa Mole",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:58:19.542Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "d792eb2f-145a-4c8c-b333-63386310f351",
+      "name": "Livro Liderança Em Engenharia De Software Novatec Editora",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:58:42.426Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "e6ec9150-12e8-4d4f-ae44-a42569d4ea53",
+      "name": "Livro Engenharia, Inovação e Desenvolvimento Sustentável, de (Organizador) Piqueira, José Roberto Castilho/ (Organizador) Leal Filho, Laurindo de Salles/ (Apresentado por) Bogossian, Francis, tapa...",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:59:01.457Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "e5661ec5-04c2-451e-9903-0f668c3320cd",
+      "name": "Livro Inteligência Artificial: Trabalho & Capitalismo",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T16:59:39.873Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "c1868bb0-f89a-4a4d-85cb-905805c748a7",
+      "name": "Livro Entendendo Estruturas De Dados, De Marcello La Rocca. Novatec Editora, Capa Mole (2025)",
+      "vertical": "livros",
+      "before": {
+        "at": "2026-11-11T17:01:42.968Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "d2904dc5-ce64-43a5-be78-dd77bcfa2dc1",
+      "name": "Impressora Multifuncional Mega Tank Canon Gm4010 Mono",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:20.749Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cd835c71-4ae0-4a1e-9b6b-909d0bd2e866",
+      "name": "Impressora Térmica Para Etiquetas Correios Ml Com Bluetooth",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:25.749Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7e3b2f38-1b5c-4643-ab4f-046f91b2e139",
+      "name": "Mouse Gamer Sem Fio Logitech G Series Lightspeed G305 Preto",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T03:13:48.572Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "560329b8-6e1b-4b34-b005-58158db94e34",
+      "name": "Placa de Vídeo Gigabyte RTX 5060 TI Eagle OC 8GB GDDR7 128-bit",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:16:16.800Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0db48c19-08f6-4540-8438-7353df6ff1cc",
+      "name": "Impressora multifuncional cor Epson EcoTank L3210",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:07.079Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c3cd4b3f-b6ee-4198-9cb1-799630ee22ba",
+      "name": "Impressora multifuncional cor HP Smart Tank 581",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:11.078Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dea62dd7-dd71-414b-b92b-275eb93facd6",
+      "name": "Impressora Multifuncional HP Smart Tank 584 - Preta",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:14.238Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fa05da41-f488-4843-9190-de7c6fa0fab5",
+      "name": "Impressora multifuncional cor HP Smart Tank 583",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:17.592Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "25d05278-19ba-4813-9c51-352a516f3b62",
+      "name": "Impressora Laser Multifuncional Brother Dcp-l1652w Nova Preto",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:34.000Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "86a298ee-7d59-4079-8e59-804ee3ce8fa6",
+      "name": "Impressora multifuncional monocromática Samsung Impressora Laser",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:37.264Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8ba4b05f-c52b-4100-85c5-e86bd9c0d32f",
+      "name": "Impressora Laser Mono Hl1202br Brother",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:24.328Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f4a7cf53-a7bc-4c68-87bf-cd91d1650622",
+      "name": "Impressora Laser Brother Hl-l8360cdw Color Wifi",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:27.505Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "94084fa4-2966-464d-9093-865f3a809b92",
+      "name": "Impressora Multifuncional Epson Ecotank L5590 Color Wifi Adf Preto",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:56.651Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7ddbeb0f-0696-409b-a77b-8226406764e4",
+      "name": "Impressora laser monocromática Lexmark MS622de 36s0500",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:06.307Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4137a575-21ce-41a5-99c0-db5ea09162c4",
+      "name": "Impressora laser monocromática Brother HL-l1222",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:30.794Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "69819812-e54d-41cb-be70-a48607173a1c",
+      "name": "Impressora multifuncional Epson Ecotank L6270 Adf Duplex Wifi",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:53.474Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "66684939-f06f-42d8-b48f-a2914feade7a",
+      "name": "Impressora Laser Kyocera Pa2000 A4 Monocromática Usb Preto",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:19.354Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3d43990a-b64f-4e15-bd68-d168800b3947",
+      "name": "Impressora De Etiquetas Adesivas Branca Davely Impressora Térmica De Etiquetas Impressora Portátil De Etiquetas Alta Qualidade E Eficiência Ideal Para Ecommerce",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:22.576Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a356c6be-901c-46f1-b472-7685e15fd4ff",
+      "name": "Impressora Laser Brother HL-L1232W Monocromática Wi-fi",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:40.477Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ed8df547-d4ce-4401-9212-ee3b07570474",
+      "name": "Impressora Laser Brother Hl-l1232 Monocromática Wi-fi",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:43.891Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b943cbbb-1d9e-4a37-9ccf-7b3d642d6d5f",
+      "name": "Impressora multifuncional Epson L3250 Wifi Usb Preto",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:50.286Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "4aef99fa-940c-40d7-9ad1-e1eeb7cebcc6",
+      "name": "Impressora multifuncional Epson Stylus Tx135",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:22:59.837Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "18616049-a0be-4809-aaec-d89d1711cbe3",
+      "name": "Impressora laser monocromática Ricoh M320F Monocromática",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:03.141Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:mpn"
+      }
+    },
+    {
+      "id": "1d3d6afc-7f7b-4ad1-af88-8490fd3ed578",
+      "name": "Impressora térmica Zjian 5802",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:29.174Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "41b7df7c-8297-4439-977c-66576abceaed",
+      "name": "Impressora Laser Monocromática Pantum Bm2300aw Com Wifi Branco",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:09.793Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "89962cef-0176-4c71-85cb-ae3ce0e78e89",
+      "name": "Impressora Laser Monocromática Xerox Phaser 4622 para Escritório",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:12.969Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "27460a88-4b42-4e2f-9aea-16ec05fe1e19",
+      "name": "Impressora laser monocromática Lexmark MX522adhe",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:16.143Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "25bd9830-c711-4787-8856-faab3d76e757",
+      "name": "Impressora térmica monocromática Niimbot Térmica B1",
+      "vertical": "tecnologia",
+      "before": {
+        "at": "2026-11-11T12:23:38.870Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    }
+  ],
+  "filaItens": [
+    "8a54edc4-6a3b-4a7a-bb27-5665fe329701",
+    "3d89b25c-a21f-49a5-a0d7-e614be9779c7",
+    "f8a9f2ab-b329-4f15-89ca-ca6b1316e050",
+    "e596c4be-c846-4dee-8baf-b8160afb5cf9",
+    "e1640d65-61c6-45dd-8b9e-a40b637203e2",
+    "8ec83066-309a-42b3-9dc9-a3d73c316391",
+    "6ce0323b-d81c-4be4-a379-c48e12f814b9",
+    "eee4fe14-2ca4-4656-bc00-f67aea4c8a7c",
+    "f018eb2e-33fe-4875-95a8-a4f085b2d2f3",
+    "ef35fc6d-d2c2-43cc-9092-b278d8fd0916",
+    "fd3e1720-7b78-46c0-b6b8-479e6677adbb",
+    "a397ebed-0ce3-42d9-95db-7ed857c0cee7",
+    "9e659d9e-db88-478b-970f-4393915330d9",
+    "d61c0d8a-32ec-4134-8468-807802ce1f5e",
+    "df3b1fde-63eb-4669-8e3c-8150643d8a9b",
+    "d12db77f-8a30-4a75-99d8-ac99ed865a4f",
+    "a75f4286-1fd7-4cdf-be9d-4f71ec496e33",
+    "9eb99645-96d4-49bf-b484-33059dcb9e60",
+    "677e7519-4f5f-475c-bc8f-4585d12877bc",
+    "2e2efc0a-9256-4d62-a2c0-812cc8e3b5b0",
+    "7e705b2d-373a-42a4-acfa-f22708e3af99",
+    "d0dcadea-0ecd-49d9-9931-5c5267b3e5c5",
+    "9171aea3-5df1-4eb0-a7d7-38b91f22e9cd",
+    "a6ad8764-dd19-4559-b73d-bf6510bc98f0",
+    "0f7f5332-0983-42c0-af50-94a6150311b8",
+    "0c75adbb-d77a-4127-938b-dbf1ae7ccff0",
+    "8a7de377-73cb-4e16-8345-0e808c8a66ad",
+    "61efcd28-63a1-4b9e-b1ee-0af8f0fc6af4",
+    "7845d261-5642-4492-bd15-829c57d48a32",
+    "b83beb86-777f-44db-a27c-660532bd4d25",
+    "c8cbcbf7-3405-4acf-90e0-0e0f0d4903df",
+    "b6ae599b-607c-48c3-aabd-bf11a13e8cd6",
+    "60825be0-3116-4b2e-bd9c-2254847e1fee",
+    "16643eac-a83b-4ddc-8a97-83669848f679",
+    "6d82f82c-5a97-4336-84d4-42737565c8c7",
+    "c1105459-bcb5-4921-a8c5-173242b43158",
+    "457b293e-38b4-4e3e-8986-9832d4133a84",
+    "625b8fe7-bd5c-4b81-9b61-fa2632ec5db1",
+    "933d537e-1a31-4267-84a3-2fe66e6013cb",
+    "e446e1e1-a53b-43d1-be7a-f33650128b6d",
+    "d12a7cda-f604-487d-aac8-b183ee00961b",
+    "f45f18a7-e08e-4cb1-a74f-e32defc952e7",
+    "c6693fa9-3684-4875-a7b4-bd6c8becf387",
+    "12b9b30c-df8e-44a1-89ba-e62088c498ff",
+    "c4da09c2-55f2-497a-9ea8-ab101f2fdb56",
+    "93120741-c37d-46e1-801d-9427030bf6c3",
+    "c0d28510-17e3-4d70-bc70-e66b6b48f72d",
+    "c08bbf4c-85a1-4a28-96e7-fe31c1985d0d",
+    "e67c131e-622f-453c-ad2c-5b92dbe1c1f2",
+    "9ce365e2-1875-461b-ae8d-9bb5c969d34f",
+    "e5fd72e5-77e6-4017-b269-d4f3e5e57db6",
+    "c15f3e8d-cb2b-4179-bc5a-3fc0daef7206",
+    "9c728004-7951-44e8-adbb-4b0eea792dc8",
+    "ee19783d-58ca-4ce8-b959-0511ea3b323d",
+    "785ec843-c8c5-4916-a3df-5937416a9d33",
+    "65f82495-ec4c-4610-831b-8ddb06c10d42",
+    "5ed8a758-9608-4f7d-a6f3-a94b52ae093c",
+    "d36a3b77-5cbf-4974-bfae-9f2ac7d704bc",
+    "ad920f2b-59ae-443a-bfc4-d7d25830f72e",
+    "3d3e76ac-98c4-4382-b201-2d257a2d940b",
+    "797fc5f8-7a71-4e7b-88d0-798384a385de",
+    "d663b1dd-eae9-4e37-af5c-164eb8fa71c9",
+    "746b0315-a6eb-425b-b4d3-0684d036dd3a",
+    "21523e71-c3f9-4f20-b7d0-06dbf318a975",
+    "f78e65f9-2d29-4121-8fd9-d10111081748",
+    "e7105cea-f708-4f33-b3b7-04ebb770bb77",
+    "20976f99-82f1-4e5a-8654-9c6dc4471c06"
+  ],
+  "nAprovados": 276,
+  "nFila": 67
+}

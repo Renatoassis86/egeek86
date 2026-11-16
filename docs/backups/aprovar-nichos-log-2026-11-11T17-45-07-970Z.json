@@ -1,0 +1,5539 @@
+{
+  "stamp": "2026-11-11T17-45-07-970Z",
+  "approvedBy": "Renato (dono)",
+  "approvedAt": "2026-11-11T17:45:10.674Z",
+  "criteriaVersion": 2,
+  "backup": "docs\\backups\\aprovar-nichos-2026-11-11T17-45-07-970Z.ndjson",
+  "changes": [
+    {
+      "id": "0d2a6921-092a-40ef-9552-3c29c8d7ca8d",
+      "name": "Ar Condicionado Split Inverter 9000 Btus Midea Branco",
+      "before": {
+        "at": "2026-11-11T16:35:39.407Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1417549b-cbff-4c4c-bd81-4768d03ca143",
+      "name": "Ar Condicionado Split Midea AI Ecomaster 9000 BTUs Quente e Frio",
+      "before": {
+        "at": "2026-11-11T16:35:50.819Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6ab28990-567e-4f29-a932-5d90fbadd2bb",
+      "name": "Ar Condicionado Split Teto Midea 60.000 BTUs Frio",
+      "before": {
+        "at": "2026-11-11T16:36:04.617Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5f09e32b-618d-4096-847b-4079282a9d58",
+      "name": "Ar-condicionado Split Inverter 9000 Btus Eos Frio",
+      "before": {
+        "at": "2026-11-11T16:35:57.721Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8ed0f308-ab41-40ca-95af-9b6645bd382b",
+      "name": "Ar-condicionado Split Inverter Midea 9000 Btus Ai Ecomaster - Branco",
+      "before": {
+        "at": "2026-11-11T16:35:43.757Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "96ed0c3b-f2f9-4d75-8826-8817bab3bcd4",
+      "name": "Ar-condicionado Split Inverter Philco Pac9qc 9000 Btus - Branco",
+      "before": {
+        "at": "2026-11-11T16:36:01.139Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9caa7c0e-89f3-4f01-a25c-a577ee98c232",
+      "name": "Aspirador Pó Vertical Electrolux 2 Em 1 Stk15 1300w Cinza",
+      "before": {
+        "at": "2026-11-11T16:26:34.013Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3dde709e-b7fb-43b6-965a-b16e50982312",
+      "name": "Batedeira Planetária 3,5l Multilaser Vermelha",
+      "before": {
+        "at": "2026-11-11T16:31:32.479Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0e293be4-9346-4d09-af3e-9087a0b04e4c",
+      "name": "Batedeira Planetária Artisan Kitchenaid 4,8l Hibiscus",
+      "before": {
+        "at": "2026-11-11T16:30:55.220Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "44b277a6-74cd-4aec-b0a5-8db9167d0abb",
+      "name": "Batedeira Planetária Bbt500b Turbo Britânia",
+      "before": {
+        "at": "2026-11-11T16:31:08.416Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5fc93c32-28e5-4982-87db-14e43ce0456f",
+      "name": "Batedeira Planetaria Britania 900w Bbp900a",
+      "before": {
+        "at": "2026-11-11T16:31:28.504Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7d7b00bf-8de6-4fa0-bfff-01ddaebb6317",
+      "name": "BATEDEIRA PLANETARIA KITCHENAID ARTISAN AMARELO BUTTER 60 Hz 127V",
+      "before": {
+        "at": "2026-11-11T16:31:12.430Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "86acfd23-c7c2-417a-bda7-27f7e1d25934",
+      "name": "Batedeira Planetária Kitchenaid Black Matte 4.8l Kea30cp Artisan",
+      "before": {
+        "at": "2026-11-11T16:31:24.494Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d5bc82a5-736d-4f27-81f2-a87219cefcfa",
+      "name": "Batedeira Planetária Philco Cor Cinza",
+      "before": {
+        "at": "2026-11-11T16:31:16.436Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "756a457c-af7e-411b-b3a0-a4901a75a725",
+      "name": "Batedeira Planetária Php500b Philco",
+      "before": {
+        "at": "2026-11-11T16:31:20.411Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9c937377-e7f1-4623-a479-a2e301f7653c",
+      "name": "Batedeira Planetária Stand Mixer Kitchenaid Amarela",
+      "before": {
+        "at": "2026-11-11T16:31:00.358Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8e5c0a8d-1a2f-4a75-8268-d0118cf96c98",
+      "name": "Brastemp BRM44H Geladeira Frost Free Duplex 375 Litros Cor Branco",
+      "before": {
+        "at": "2026-11-11T16:55:49.633Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1c34eeb2-0293-4f81-89d3-a8b36f925de7",
+      "name": "Britânia Batedeira Planetária - Rosa",
+      "before": {
+        "at": "2026-11-11T16:31:04.334Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "e45ced7e-3a4b-4fc6-b2c7-b6032f5ddbab",
+      "name": "Cafeteira Expresso Gaggia Besana Black Superautomática",
+      "before": {
+        "at": "2026-11-11T17:04:01.753Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "28d35d28-0915-4a8f-9c42-d411acc38207",
+      "name": "Cafeteira Expresso Oster PrimaLatte Touch Cinza BVSTEM6801",
+      "before": {
+        "at": "2026-11-11T17:04:09.184Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "f6940524-e6a6-4c7b-a4aa-61e3fc339db5",
+      "name": "Cooktop Indução 1 Boca Brinox 127v",
+      "before": {
+        "at": "2026-11-11T16:19:16.116Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ad4e4f73-f45c-4fcc-9937-c3e1d01bc47f",
+      "name": "Cooktop Indução 1 Boca Brinox 220v",
+      "before": {
+        "at": "2026-11-11T16:19:00.083Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bb83aaec-cc44-40d4-ae2b-e736bbd10c62",
+      "name": "Cooktop Indução 2 Bocas Brinox 127v",
+      "before": {
+        "at": "2026-11-11T16:19:04.261Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "56320d13-6b3d-448f-aa1f-05bec0bc3f90",
+      "name": "Cooktop Indução 2 Bocas Brinox 220v",
+      "before": {
+        "at": "2026-11-11T16:19:12.151Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "352f23d4-012b-4d2f-9887-e276846f303d",
+      "name": "Cooktop Indução 2 Bocas Oster Cor Preto",
+      "before": {
+        "at": "2026-11-11T16:19:20.051Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "19838c41-6f98-4f1f-b988-927e5b7d75fe",
+      "name": "Cooktop Indução Neoflam 1 Boca Branco 2000W 220V Elétrico",
+      "before": {
+        "at": "2026-11-11T16:19:35.837Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4d03293d-370c-4a07-899c-8d46835fcb87",
+      "name": "Cooktop Indução Portátil 1 Queimador Pct10ip Preto Philco",
+      "before": {
+        "at": "2026-11-11T16:19:27.936Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "03927ad8-185f-41dc-8016-aed8f5ae4779",
+      "name": "Cooktop Indução Tramontina Slim Slider Bridge 94722222",
+      "before": {
+        "at": "2026-11-11T16:19:08.201Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3975aa64-4e60-4710-a66c-c30d2dc4d33a",
+      "name": "Dako Supreme Cooktop, Cooktop Indução, Dako - Preto",
+      "before": {
+        "at": "2026-11-11T16:18:54.976Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bf71afda-1c25-4534-94d7-622a255d90ee",
+      "name": "Ferro Passar A Vapor Antiaderente Electrolux Easyline Sie60",
+      "before": {
+        "at": "2026-11-11T16:43:14.620Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5514ea45-8285-4df2-bb26-43b447586632",
+      "name": "Ferro Passar A Vapor Black Decker Fx3100 - Preto/branco",
+      "before": {
+        "at": "2026-11-11T16:43:27.100Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a66ba527-2dc7-42a3-adef-dd5b1f6c1d64",
+      "name": "Ferro Passar Roupa A Vapor Antiaderente Azul Multilaser",
+      "before": {
+        "at": "2026-11-11T16:43:22.917Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8104b08e-b8d2-4095-b411-d81be9069500",
+      "name": "Ferro Passar Roupa A Vapor Philips Walita Easyspeed",
+      "before": {
+        "at": "2026-11-11T16:43:05.278Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0a05bbe8-6284-4f23-973c-260f10ed369c",
+      "name": "Ferro Passar Roupa A Vapor Westman Mini Ferro De Viagem",
+      "before": {
+        "at": "2026-11-11T16:43:18.723Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "340eec1a-e45a-46be-a3d5-090afda3ccf6",
+      "name": "Ferro Passar Roupas All In One Philips Walita Ai6020",
+      "before": {
+        "at": "2026-11-11T16:43:10.441Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "63570a4d-8593-4c73-ab21-6ef9a2643e00",
+      "name": "Fogão 4 Bocas À Gás Atlas Havana Glass Preto Bivolt",
+      "before": {
+        "at": "2026-11-11T16:16:36.126Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d11ea948-7d84-45ae-bac4-33a1ebba80e5",
+      "name": "Fogão 4 Bocas Atlas Agile Glass Automático Mesa De Vidro Titanium",
+      "before": {
+        "at": "2026-11-11T16:17:18.306Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1028d2ee-7a05-4ec2-8ae8-b7e3bdd82f44",
+      "name": "Fogão 4 Bocas Atlas Agile Up Preto Mesa De Vidro -",
+      "before": {
+        "at": "2026-11-11T16:16:54.312Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9e2f6c18-7887-42ef-a136-8df9640a18f5",
+      "name": "Fogão 4 Bocas Gás Mônaco Top Glass Preto Atlas",
+      "before": {
+        "at": "2026-11-11T16:16:43.998Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3cfa27f0-15c1-44e8-a34e-ddfc4b9fd102",
+      "name": "Fogao 4 Bocas Venax Temis Azul Glp",
+      "before": {
+        "at": "2026-11-11T16:17:07.989Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b57a14ce-aca6-4e11-961a-925ca5c2c2e3",
+      "name": "Fogao 4 Bocas Venax Temis Inox Glp",
+      "before": {
+        "at": "2026-11-11T16:17:14.885Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "10c2efb3-af3d-49dd-be7c-71062a8b6ba3",
+      "name": "Fogao 4 Bocas Venax Temis Vermelho Glp",
+      "before": {
+        "at": "2026-11-11T16:17:11.428Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "42d0dbf2-de64-4e5f-a712-2c93c05d40af",
+      "name": "Fogão Cooktop Indução 1boca Elétrico Balcão Gourmet Preto",
+      "before": {
+        "at": "2026-11-11T16:19:43.888Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "30b66b05-964c-4e50-8812-df8620ac886b",
+      "name": "Fogão Cooktop Indução Elétrico Preto 1 Boca Agratto",
+      "before": {
+        "at": "2026-11-11T16:19:31.880Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a53382a9-237c-4df5-89c3-cb56b45c0657",
+      "name": "Fogão Cooktop Indução Sokany LG-SK93 Touch Preto",
+      "before": {
+        "at": "2026-11-11T16:19:39.797Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b52c3795-923d-4260-a812-30fb9f843788",
+      "name": "Fogão Elétrico Cooktop Indução Vidrocerâmico Touch 220 Volts",
+      "before": {
+        "at": "2026-11-11T16:19:51.817Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "867c0976-9c19-4cd5-8255-3d73a44de9b3",
+      "name": "Forno Elétrico de Bancada Sapore Preto 44 litros Preto",
+      "before": {
+        "at": "2026-11-11T16:50:42.025Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "df1bd04a-c4ef-4da2-b33c-e0f16bba130a",
+      "name": "Forno Elétrico de Embutir Decorato 44 Litros Inox",
+      "before": {
+        "at": "2026-11-11T16:50:33.557Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "71622bb8-4602-4e7c-a133-ceca6a7b5cde",
+      "name": "Forno Elétrico de Embutir Decorato Preto 44 Litros Preto",
+      "before": {
+        "at": "2026-11-11T16:50:45.791Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ece53a4e-ea07-4d67-8bb0-d90b657eb8e2",
+      "name": "Forno Elétrico Mondial Family Fr-15 36 Litros Preto 110v",
+      "before": {
+        "at": "2026-11-11T16:50:38.236Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6674fdca-22ef-4e67-a477-7bbdfb4d2127",
+      "name": "Forno Elétrico Mueller 44 Litros Sonetto Preto Cor Grafite",
+      "before": {
+        "at": "2026-11-11T16:50:49.553Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ee0a32ad-03de-41a9-9b68-60022e0e9ac5",
+      "name": "Freezer Horizontal Cha22fb 220 Litros Consul Cor Branco",
+      "before": {
+        "at": "2026-11-11T16:48:21.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7ec8765a-242d-4d3a-97e8-4ea3767c9864",
+      "name": "Freezer Horizontal Chb42fbana 414 Litros Consul Branco",
+      "before": {
+        "at": "2026-11-11T16:48:17.445Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c05f6409-0099-40a7-a4e8-927140af5895",
+      "name": "Freezer Horizontal Consul 142 Litros Branco - CHA14MB",
+      "before": {
+        "at": "2026-11-11T16:48:09.883Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b8cfe055-68a7-4dcc-9898-d36905f7e452",
+      "name": "Freezer Horizontal Consul 142l - Cha14ab Cor Branco",
+      "before": {
+        "at": "2026-11-11T16:48:02.240Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5957be0b-7206-48b4-8280-ccb46874445c",
+      "name": "Freezer Horizontal Consul 307 Litros Branco - CHA31MB",
+      "before": {
+        "at": "2026-11-11T16:48:13.739Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "57c161d3-f5a3-4519-8cfa-ee8d03808eab",
+      "name": "Freezer Horizontal Consul 309l Cha31fb Cor Branco",
+      "before": {
+        "at": "2026-11-11T16:48:06.059Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "57bf3a9d-bdc0-4389-8ec9-faa7b21f7c6d",
+      "name": "Freezer horizontal Consul CHA31EB branco 309L",
+      "before": {
+        "at": "2026-11-11T16:47:57.585Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b9a08902-390c-4dd5-bc5d-8750b440c09f",
+      "name": "Freezer vertical Consul CVU30EB branco 246L",
+      "before": {
+        "at": "2026-11-11T16:48:28.602Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dc13383b-7762-442e-a522-8014f6022b39",
+      "name": "Geladeira Duplex SmartThings Samsung RT42 Inox 415L Bivolt",
+      "before": {
+        "at": "2026-11-11T16:55:53.599Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "aa57c5e3-ff18-404f-b5c6-81e8740a110f",
+      "name": "Geladeira Frost Free Duplex Brm52me 415l Extrafrio Brastemp Black Inox",
+      "before": {
+        "at": "2026-11-11T16:55:45.828Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "11fad097-86f4-4718-b591-1dbaa8a78a6b",
+      "name": "Geladeira Frost Free Electrolux 3 Portas Inverter 590l Im8b",
+      "before": {
+        "at": "2026-11-11T16:55:40.908Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "90a0b64d-fc46-4b46-8374-2a2a8e87f642",
+      "name": "Lava Louças 8 Serviços Branco Touch Plus Midea",
+      "before": {
+        "at": "2026-11-11T16:23:47.495Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a49ec996-ceb1-48b1-8b75-f1cb7b63917e",
+      "name": "Lava Louças 8 Serviços Midea Cor Cinza",
+      "before": {
+        "at": "2026-11-11T16:23:43.059Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "458faf79-7bec-4647-8aa3-f2b523c2947f",
+      "name": "Lava-Louças Electrolux 8 Serviços Branco com Função Higienizar LL08B",
+      "before": {
+        "at": "2026-11-11T16:23:55.153Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "75102f37-420f-4e0d-a532-ed05cd4e110e",
+      "name": "Lava-louças Electrolux 8 Serviços Inox (ll08s) Cor Prateado",
+      "before": {
+        "at": "2026-11-11T16:23:51.102Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0e25be6b-749d-4c67-ab4d-41c9e01cd1e1",
+      "name": "Liquidificador Alta Rotação 1,5 Litros Industrial Prateado",
+      "before": {
+        "at": "2026-11-11T16:28:57.120Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "ded917ae-03ea-4df9-9d1f-028935b42434",
+      "name": "Liquidificador Alta Rotacao 4 Litros",
+      "before": {
+        "at": "2026-11-11T16:28:53.219Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4e97bb07-b6f8-4b08-9511-69aca79fdd2d",
+      "name": "Liquidificador Oster Clássico 600w 1,25l - Prata",
+      "before": {
+        "at": "2026-11-11T16:28:45.300Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "00f2bf12-bcee-4e2a-9016-cdab960d8f9e",
+      "name": "Liquidificador Oster OLIQ510",
+      "before": {
+        "at": "2026-11-11T16:28:40.284Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "864669f0-e341-4108-81d3-b6dbf098ac96",
+      "name": "Micro-ondas Bmo23bb 20 Litros Branco Britânia",
+      "before": {
+        "at": "2026-11-11T16:21:34.608Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b377d820-1986-4584-9773-26452432e140",
+      "name": "Micro-ondas De Embutir 34 Litros Electrolux (me3ep) Preto",
+      "before": {
+        "at": "2026-11-11T16:21:49.337Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cc595e54-2089-4cb5-b324-f17d63ba1ee5",
+      "name": "Micro-ondas Electrolux 31 Litros E Grill Prata - Me41x",
+      "before": {
+        "at": "2026-11-11T16:21:45.848Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1fb8d5e3-7db3-4fa4-99bb-f6f89fea288a",
+      "name": "Micro-ondas MI41S Inox Espelhado Painel Integrado 31 litros Electrolux",
+      "before": {
+        "at": "2026-11-11T16:21:52.789Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fec43af2-5b07-46f7-98d5-152548c799e8",
+      "name": "Micro-ondas Philco Multifunções 1100w 20 Litros Espelhado",
+      "before": {
+        "at": "2026-11-11T16:21:38.943Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b3013b4b-0c23-4a60-9051-8d7e38ec332a",
+      "name": "Micro-ondas Preto 34 Litros Electrolux Me3bp 38x59x39cm",
+      "before": {
+        "at": "2026-11-11T16:21:42.377Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5e66cbad-40d0-400f-a04e-e99d2f5062a2",
+      "name": "Ozonizador Ionizador Purificador Ar Brizzamar Adeus Odor Vírus E Mofo Cheiro",
+      "before": {
+        "at": "2026-11-11T16:38:04.069Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2c46aeae-fbf6-477a-b852-9bd1de801b75",
+      "name": "Ozonizador Ionizador Purificador Ar Brizzamar Alta Qualidade Adeus Odor Vírus E Mofo Preto",
+      "before": {
+        "at": "2026-11-11T16:38:07.726Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b25763ba-fbcd-4697-9620-3e3529c417f8",
+      "name": "Panela De Arroz Elétrica Stonni Panela elétrica Blanco",
+      "before": {
+        "at": "2026-11-11T16:40:16.631Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "c5535928-7d31-4a2f-bc41-a9e6c9c014c0",
+      "name": "Panela elétrica Crock-Pot 2,5 l, panela elétrica, cor branca",
+      "before": {
+        "at": "2026-11-11T16:40:54.319Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "6fd52bf1-8bb3-4b31-bb26-a79c3456cf68",
+      "name": "Panela Elétrica De Arroz Com Suporte P/ Legumes Mondial 4xic",
+      "before": {
+        "at": "2026-11-11T16:40:42.170Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bec71a3a-60f6-4ca8-a061-b6fdcd76a71b",
+      "name": "Panela Elétrica de Arroz Mondial 500W - PE-45-6X",
+      "before": {
+        "at": "2026-11-11T16:40:29.737Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8e940395-c211-42a6-acd4-6cdb89ef2fa7",
+      "name": "Panela Elétrica de Arroz Mondial 500W PE-43-6X",
+      "before": {
+        "at": "2026-11-11T16:40:50.217Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "692bc322-f780-47b5-8c9e-73f68ce47c1b",
+      "name": "Panela Elétrica de Arroz Mondial 700W - PE-44-10X",
+      "before": {
+        "at": "2026-11-11T16:40:25.699Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ce03b52a-ab58-419d-a40d-de5d7770b80a",
+      "name": "Panela Elétrica de Arroz, Mondial, 700W - PE-46-10X",
+      "before": {
+        "at": "2026-11-11T16:40:21.685Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "852f163b-21e7-4632-8199-b513f8aceda9",
+      "name": "Panela Elétrica Mondial Multicook Vermelha -",
+      "before": {
+        "at": "2026-11-11T16:40:33.973Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "385ab7be-64a5-42dd-8060-b29ac840ea6f",
+      "name": "Purificador Ar Elimina impurezas polen pelos Fumaca C/ Aromaterapia",
+      "before": {
+        "at": "2026-11-11T16:38:00.625Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2c0ac3b2-f867-438e-841d-4b2d2b29ddd4",
+      "name": "Purificador de ar Xiaomi Mijia Purificador de ar Max BHR08xEeu branco",
+      "before": {
+        "at": "2026-11-11T16:38:11.154Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2fe434a1-c369-4f0b-859f-5052626af29d",
+      "name": "Robô aspirador Xiaomi 1S branco",
+      "before": {
+        "at": "2026-11-11T17:01:40.783Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "e1a62a3f-0b9e-4a92-94b9-536c756377fa",
+      "name": "Robô Aspirador Xiaomi H50 Pro Branco",
+      "before": {
+        "at": "2026-11-11T17:01:37.211Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d261a336-298a-490a-b951-3197b5d0f2ba",
+      "name": "Robô Aspirador Xiaomi H50 Pro Branco 110v",
+      "before": {
+        "at": "2026-11-11T17:01:44.266Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9f68081a-3c2a-494b-83c5-5cee73e689b5",
+      "name": "Secadora Brastemp Ative! Piso 10 Kg - Bsr10ab Cor Branco",
+      "before": {
+        "at": "2026-11-11T16:45:47.285Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e2706ba3-0a50-46eb-bff8-02cbc9a3f4ed",
+      "name": "Secadora Brastemp Suspensa Branca 10kg Bsi10bb",
+      "before": {
+        "at": "2026-11-11T16:45:28.652Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cf13c9b6-e075-4d75-9262-75a992ee8799",
+      "name": "Secadora De Roupas Brastemp 10kg, Suspensa, Branca - Bsi10bb Cor Branco",
+      "before": {
+        "at": "2026-11-11T16:45:25.163Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0551a94c-5ebd-41ae-854e-dd536ac71628",
+      "name": "Secadora de roupas Brastemp Ative! BSX10AR 10kg 127V",
+      "before": {
+        "at": "2026-11-11T16:45:13.837Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "75cbf769-5519-4b78-beb2-c4da010d3c17",
+      "name": "Secadora de roupas elétrica Coplax, secadora de roupas portátil",
+      "before": {
+        "at": "2026-11-11T16:45:21.679Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f148d68f-846d-4146-bc35-3edb3f014c32",
+      "name": "Secadora de roupas elétrica Inanna, secadora compacta para. Cor Bege",
+      "before": {
+        "at": "2026-11-11T16:45:33.011Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "92aad80a-a68c-4424-b872-9bae0f4ae2e9",
+      "name": "Sforte Panela Elétrica De Arroz - Branco",
+      "before": {
+        "at": "2026-11-11T16:40:38.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "60ea7d59-5564-42b8-b278-c61ec7d8d84a",
+      "name": "Ventilador Coluna Britânia Mega Turbo 400 140w",
+      "before": {
+        "at": "2026-11-11T16:33:48.072Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0e984bbb-760a-43a9-8345-bee6d81a7d8d",
+      "name": "Ventilador Coluna Pedestal Silencioso 3",
+      "before": {
+        "at": "2026-11-11T16:33:51.545Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9a93b24e-29ce-4353-a423-1e15dffcfd66",
+      "name": "Ventilador Coluna Spirit 360o Digital Branco 127v",
+      "before": {
+        "at": "2026-11-11T16:33:44.608Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "94cda446-108c-43ae-a647-07ea55b1f6ae",
+      "name": "Ventilador Coluna Venti-Delta Ventura 50cm Branco Oscilante Bivolt",
+      "before": {
+        "at": "2026-11-11T16:33:55.046Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6488ee7f-c6b8-44dc-8160-20a9414b0a3a",
+      "name": "Ventilador de Coluna Camppor VENTILADOR COLUNA 43cm com 3 Velocidades e Oscilação",
+      "before": {
+        "at": "2026-11-11T16:33:41.143Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c4ffa4ac-ac88-4f8c-bc90-9d25ea9b6795",
+      "name": "Ventilador Mesa 6 Pás 50cm Xtreme Silence 126w - Arno Diâmetro 50 Cm",
+      "before": {
+        "at": "2026-11-11T16:33:22.479Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2d14e5e1-fa14-43bb-bf3b-c9d9ac6edd15",
+      "name": "Ventilador Mesa Pt/a Mondial Super Turbo Vtx-40",
+      "before": {
+        "at": "2026-11-11T16:33:34.046Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "003fb638-531b-489f-9929-031a733fe53c",
+      "name": "Ventilador Mesa Pt/a Mondial Super Turbo Vtx-40 220v",
+      "before": {
+        "at": "2026-11-11T16:33:37.573Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c692defb-8871-480b-a876-1a3290832ade",
+      "name": "Ventilador Mesa Venti-delta Turbi Max 40cm Preto",
+      "before": {
+        "at": "2026-11-11T16:33:26.860Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "104145ae-6646-4cf6-8055-ea28355ab9cc",
+      "name": "Ventilador Mesa Ventilador Turbo Portátil - Manu Decor Móveis",
+      "before": {
+        "at": "2026-11-11T16:33:30.431Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4f3f74c4-3b02-4f5c-b1dc-5e2514eaabdd",
+      "name": "Blackshark Gs3 Smartwatch - Gps, Amoled - Preto",
+      "before": {
+        "at": "2026-11-11T17:20:26.394Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "aca5b68e-f4be-4760-8cbb-121f737f86ad",
+      "name": "Byintek V60 Mini Projetor Full Hd 1080p 4k Dlp Com Bateria Branco",
+      "before": {
+        "at": "2026-11-11T17:13:55.222Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "917666c8-7867-4f6e-8373-49c1461d24e0",
+      "name": "Cabo HDMI 4 K Cabo HDMI 6 Pies Capshi Hdmi A Cabo HDMI So",
+      "before": {
+        "at": "2026-11-11T17:27:42.123Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e72497fd-2b3f-43e4-95bf-6043397458c9",
+      "name": "Cabo HDMI 4K/Cabo Hdmi 0,5 Pies /0,5 Pies, Hdmi A Hdmi",
+      "before": {
+        "at": "2026-11-11T17:27:46.172Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f50ca78f-a507-40d1-89e1-833b7930ac5a",
+      "name": "Cabo HDMI 4K/Cabo HDMI 1 Pie/1 Pie, Hdmi A Hdmi, Série A",
+      "before": {
+        "at": "2026-11-11T17:27:52.565Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c1f774a0-d529-41fc-a1df-0a01dbfa5b41",
+      "name": "Cabo HDMI Fibra Ótica 2.0 Cabo Hdmi 20 Metros 4K Preto",
+      "before": {
+        "at": "2026-11-11T17:27:58.938Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "569ea249-7527-4da9-8924-981e1608c177",
+      "name": "Cabo HDMI macho Vanjoe de 5 metros de áudio 4K para TV Pc Conector HDMI Full Hd Cabo HDMI Cabo HDMI de 5 metros Cabo de alto-falante Cabo de plugue Cabo auxiliar de Displayport de áudio",
+      "before": {
+        "at": "2026-11-11T17:27:55.772Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ebf4fe5d-d1b6-412b-b6d1-ec942e53da63",
+      "name": "Câmera Ação 360° Mentech Panox V3 Tela Touch 3",
+      "before": {
+        "at": "2026-11-11T17:08:51.087Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d8801545-976a-45a9-86b9-d0caa09832fa",
+      "name": "Câmera Ação 4k Estabilizadora Led Noturno Videolog Wi-fi App Preta Câmera De Ação 4k Mini",
+      "before": {
+        "at": "2026-11-11T17:08:39.774Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bc703bc9-5168-498b-81e8-9e1be1c6d623",
+      "name": "Câmera Ação 4k Estabilizadora Wi-fi App Led Noturno Touchscreen Videolog",
+      "before": {
+        "at": "2026-11-11T17:09:06.492Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "943cebbd-b7f2-4fd2-aad2-33624cfc323c",
+      "name": "Câmera Ação Akaso V50x 4k Native Com Tela Touch Preto",
+      "before": {
+        "at": "2026-11-11T17:08:58.645Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ba39ebbe-e574-46d1-ba37-0c8447718e71",
+      "name": "Câmera Ação Click M10 4K Wi-Fi Controle Preto Prova D'água 32GB",
+      "before": {
+        "at": "2026-11-11T17:09:17.294Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cc72729a-3905-44e7-bd81-4a4707631b2f",
+      "name": "Câmera Ação Estabilizada Feiyutech Pocket 3 4k/60fps Preto",
+      "before": {
+        "at": "2026-11-11T17:08:47.318Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f278d934-cfb4-4a8f-acc7-865f538dbfaa",
+      "name": "Câmera Ação Insta360 Ace Pro Lente Leica 8k - Cor Preto",
+      "before": {
+        "at": "2026-11-11T17:08:54.852Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "69da8748-9300-4f99-bc11-7f8f9a6c4e5b",
+      "name": "Câmera Ação Sports Filmadora 900mAh Capacete Esporte Mergulho Preto",
+      "before": {
+        "at": "2026-11-11T17:08:43.555Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2a12d072-2db1-4a05-949d-33f0f55b89ec",
+      "name": "Câmera Ação Tomate MT 1090 Esporte 4K Preto Prova D'água Wifi",
+      "before": {
+        "at": "2026-11-11T17:09:10.097Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "7683dec3-0402-45d8-9d71-940354b9a756",
+      "name": "Câmera Ação Tomate MT-1081 HD Cinza 12 Mpx 1080x720 Resistente Água",
+      "before": {
+        "at": "2026-11-11T17:09:13.680Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "25337560-26b3-49c1-84ae-9709f441ff0b",
+      "name": "Câmera Ação Ultra Action Ultra 4K Wi-Fi Waterproof 4K Resolução",
+      "before": {
+        "at": "2026-11-11T17:09:20.829Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "44ba380e-5e37-4dc5-81b2-725ee290c28f",
+      "name": "Câmera de segurança Bivena Câmera Segurança Wifi Câmera segurança wifi lâmpada com resolução 1080p - branco",
+      "before": {
+        "at": "2026-11-11T17:10:53.394Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c60d4d5a-5322-4add-a4f1-d1940a595478",
+      "name": "Câmera De Segurança Teleheer Câmera Segurança Camera Segurança Com Resolução 1080p - Branco",
+      "before": {
+        "at": "2026-11-11T17:10:58.292Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "612725f1-3075-425e-900c-00ba51e28050",
+      "name": "Câmera Digital Canon DSLR, Corpo Para Fotografia Profissional",
+      "before": {
+        "at": "2026-11-11T17:06:34.926Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ee3a409a-316b-4e1b-b81b-e229de92f6fe",
+      "name": "Câmera Mirrorless Canon Eos R10 - Corpo - Com Nf-e",
+      "before": {
+        "at": "2026-11-11T17:06:43.217Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ebc4771d-b32f-4ed7-b9ee-56bf7b393bd4",
+      "name": "Câmera Mirrorless Canon Eos R100 - Corpo + Nf-e * Cor Preto",
+      "before": {
+        "at": "2026-11-11T17:06:54.336Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "78169e8b-5c3c-4f25-b418-6bd4f0a36821",
+      "name": "Câmera Mirrorless Canon Eos Rp Corpo Com Bateria Preto",
+      "before": {
+        "at": "2026-11-11T17:06:39.487Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cc0980fa-5095-4501-b738-23dbeefc9fb4",
+      "name": "Câmera Mirrorless Canon R10 24.2mp, Aps-c Cmos, 4k30",
+      "before": {
+        "at": "2026-11-11T17:06:58.099Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fe201eb1-d26a-4ebb-b744-00933d348b8f",
+      "name": "Câmera Mirrorless Canon R5 Mark Ii 45mp 8k60 Raw",
+      "before": {
+        "at": "2026-11-11T17:06:50.666Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9890d9b2-e4dc-4c33-b77d-5144f91579f6",
+      "name": "Câmera Mirrorless Fujifilm X100vi Cor Cinza",
+      "before": {
+        "at": "2026-11-11T17:06:46.994Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "7f69793c-609b-424f-8224-d2fc18c6bf4d",
+      "name": "Camera Mirrorless Sony Zv-e10 Ii",
+      "before": {
+        "at": "2026-11-11T17:07:01.828Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2e37c7a5-8104-4b21-a188-db5aabe3aa27",
+      "name": "Camera Segurança 4k Lente Dupla Vigilância Wifi",
+      "before": {
+        "at": "2026-11-11T17:11:09.360Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ddf92b66-89da-4382-b2a0-347b0d68f48e",
+      "name": "Câmera Segurança Bullet Full Color Intelbras Ip67 Branco",
+      "before": {
+        "at": "2026-11-11T17:11:27.433Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "775119ae-450f-4ad8-9a9a-214f319297ff",
+      "name": "Câmera Segurança Externa Dome Wifi Yoosee Hd Infravermelho",
+      "before": {
+        "at": "2026-11-11T17:11:31.075Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a9e4e394-71d3-4b01-bdf3-8a2616eb5329",
+      "name": "Câmera Segurança Imx C Wifi Ip Sd 32gb Intelbras Screen Vision",
+      "before": {
+        "at": "2026-11-11T17:11:23.774Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "febca7a3-5685-407e-887e-a78edc7461c2",
+      "name": "Camera Segurança Lente Dupla 6mp Wifi Sirene",
+      "before": {
+        "at": "2026-11-11T17:11:20.198Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "32bb4010-cf4b-43f8-aa00-414b33373cd0",
+      "name": "Câmera Segurança Wifi Imx Som Alarme App Sd 32gb Intelbras",
+      "before": {
+        "at": "2026-11-11T17:11:02.046Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5971fc50-bcbe-48bd-87e2-8850d222028b",
+      "name": "Câmera Segurança Wifi Visão Noturna Monitoramento Pet",
+      "before": {
+        "at": "2026-11-11T17:11:16.606Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "09d43fca-b8c1-4821-94d8-beab69361544",
+      "name": "Carregador super rápido tipo C, carregador USB C, carregador PA",
+      "before": {
+        "at": "2026-11-11T17:22:43.124Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "2b37811a-87d7-4aa6-ba1f-413d4c4ebe87",
+      "name": "Carregador Usb 1hora 20w Usb C Branco+ Cabo Usb C Cor Branco",
+      "before": {
+        "at": "2026-11-11T17:22:20.737Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e4472b27-955e-4dda-b605-fd18867cf52c",
+      "name": "Carregador Usb C Huntkey M20 Máx. 20w Branco",
+      "before": {
+        "at": "2026-11-11T17:22:27.083Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c05ee9ed-e91b-4d0c-b0e2-e695badf4590",
+      "name": "Carregador Usb Tipo-c Cudy Gan Pd 20w",
+      "before": {
+        "at": "2026-11-11T17:22:39.964Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2961ac7b-1e2f-4b28-8d23-f2cfe69fa32c",
+      "name": "Carregador USB-C 20W | PD Charger Coca-Cola",
+      "before": {
+        "at": "2026-11-11T17:22:33.510Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d2005ee7-385c-4b57-a7e8-aeaf6d9186c0",
+      "name": "Carregador Usb-c 20w Carregamento Rápido Bivolt Branco",
+      "before": {
+        "at": "2026-11-11T17:22:23.910Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7f29799e-9750-4ded-a1dc-a49cae06aa8d",
+      "name": "Carregador Usb-c De 20w Branco - Apple - Muvu3bz/a",
+      "before": {
+        "at": "2026-11-11T17:22:13.503Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "41cdd3a6-71bf-4eab-8dc1-4499bdf6cb65",
+      "name": "E-Reader Kindle Paperwhite Signature 12ª Geração de 7\" com 32 GB",
+      "before": {
+        "at": "2026-11-11T17:18:24.263Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a7158d8f-31d5-4bfd-96ac-f6faf159d1fe",
+      "name": "Fonte Carregador Usb-c Chip Inteligente Quick Turbo 20w",
+      "before": {
+        "at": "2026-11-11T17:22:30.282Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8fc13308-73b9-43a8-9d0c-a2439eb7fd76",
+      "name": "GoPro HERO 4K Câmera de Ação Compacta à Prova d'água Cor Preto",
+      "before": {
+        "at": "2026-11-11T17:09:02.428Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "13fe1a46-45c9-4e47-adf5-2d005c5303fe",
+      "name": "Hub USB Guadrini Hub USB 3.0",
+      "before": {
+        "at": "2026-11-11T17:29:43.849Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "183d61a6-4393-461e-ae2e-99619ebee2de",
+      "name": "Hub USB Imagine Cases Hub Usb-A 3in1 cinza",
+      "before": {
+        "at": "2026-11-11T17:29:48.349Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9d23c8ee-fa21-4840-ac36-9e7f0f30fcb9",
+      "name": "Mergulho Sport Ação Celplace Câmera Ação 4K Resistente Água CMOS",
+      "before": {
+        "at": "2026-11-11T17:08:34.964Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ceec7dd6-5965-4521-b36a-e33044a2a797",
+      "name": "Mobile Power 20000mah Carregador Rápido Portátil Power Bank Carregador Portátil Power Bank Rapido Compatível Ios E Android",
+      "before": {
+        "at": "2026-11-11T17:24:58.209Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "50da54c4-80ab-4cf2-874e-82aec8d2755a",
+      "name": "Projetor 4K Portátil",
+      "before": {
+        "at": "2026-11-11T17:13:58.471Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cdda7a2f-931b-4f46-94f0-59b6e1d12050",
+      "name": "Projetor Full HD 5200 Lúmens PFL5211 Intelbras Preto",
+      "before": {
+        "at": "2026-11-11T17:13:41.724Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d2fd1b6d-5a69-41e8-a57a-6001b4f6bb3a",
+      "name": "Projetor Full Hd 6300 Lumens Pfl 6430 Projecao 150 Pol Preto",
+      "before": {
+        "at": "2026-11-11T17:13:52.056Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2ae461ab-1468-4a88-a3a3-213afccf8231",
+      "name": "Projetor Full HD com 8700 Lúmens Intelbras Preto",
+      "before": {
+        "at": "2026-11-11T17:13:48.892Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0024f3bd-d894-4245-962b-9192b46bbe37",
+      "name": "Projetor Full Hd Smart Wifi6 Cinema 4k Android",
+      "before": {
+        "at": "2026-11-11T17:13:45.712Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d36e8d36-6296-4cdd-b527-e2e081a0d3a8",
+      "name": "Smart TV Samsung 32 HD H5000f 4k (2025)",
+      "before": {
+        "at": "2026-11-11T17:35:21.919Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d2e17615-3a64-47d1-88ee-cbd371e69910",
+      "name": "Smart TV Samsung UN43DU7700GXZD 43\" UHD 4K Crystal",
+      "before": {
+        "at": "2026-11-11T17:35:17.712Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d20aaf94-9db0-46bf-af67-260cbe7260f8",
+      "name": "Smartwatch Apple Watch Series 4 Apple Watch Serie 4 44mm Com Pulseira Cor Preto",
+      "before": {
+        "at": "2026-11-11T17:20:22.348Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "f391e9ab-55ed-45aa-9681-efcea10b643a",
+      "name": "Syncwire SW-HD075 Cabo HDMI 4K Cabo HDMI 2.0 Cabo HDMI de alta velocidade de 10 pés",
+      "before": {
+        "at": "2026-11-11T17:27:49.346Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e28e72a3-f7cd-48f0-8f2d-82f3f88f7a64",
+      "name": "Tablet Samsung Tab A9 preto",
+      "before": {
+        "at": "2026-11-11T17:16:19.565Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4aedb0ee-cfe8-4270-be28-2bcb0d2aebb2",
+      "name": "): Bolsa Academia Feminina Treino Welcon Pocket 1",
+      "before": {
+        "at": "2026-11-11T16:36:43.733Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "960c0464-827a-4abd-bf27-7bc028eb4e50",
+      "name": "Bola Basquete Brasport Adulto Laranja",
+      "before": {
+        "at": "2026-11-11T16:46:49.824Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "69f1506e-c4ae-41a9-8820-524a38e16090",
+      "name": "Bola Basquete Outdoor Spalding Lay Up Tamanho 7 Amarelo Borracha Resistente",
+      "before": {
+        "at": "2026-11-11T16:46:58.102Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1de211f6-67cc-47a5-a773-61cc63dfa9b2",
+      "name": "Bola Basquete Spalding Force Azul E Preto",
+      "before": {
+        "at": "2026-11-11T16:46:20.060Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6f937d48-8a6d-4769-bab1-659cc55857c7",
+      "name": "Bola Basquete Spalding Lay Up Cor Laranja",
+      "before": {
+        "at": "2026-11-11T16:46:24.441Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8658c135-e75a-4da5-9c5f-f22346629834",
+      "name": "Bola Basquete Spalding Mvp-borracha - Tam 7 - Amarelo/ Preto Cor Preto/Amarelo",
+      "before": {
+        "at": "2026-11-11T16:47:02.329Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dd635cef-a8b6-403e-a191-41184835d9ea",
+      "name": "Bola Basquete Spalding Outdoor Preta Adulto Nba Pro Preto",
+      "before": {
+        "at": "2026-11-11T16:46:37.115Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9e5ae8f4-0229-473d-a7ce-46362fc13e1e",
+      "name": "Bola Basquete Spalding Rookie Gear Jr. Tamanho 5 - Mirim",
+      "before": {
+        "at": "2026-11-11T16:46:45.608Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8b4f511a-e545-4502-be40-05c03da1e063",
+      "name": "Bola Basquete Spalding Streetball Tam. 7 Laranja",
+      "before": {
+        "at": "2026-11-11T16:46:28.642Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ce02f05a-91ca-47fa-abae-3fef91afb9b3",
+      "name": "Bola Basquete Spalding Varsity Quadra Licenciada Vermelho/branco/azul",
+      "before": {
+        "at": "2026-11-11T16:46:41.236Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b9cb785b-fd73-4bcf-99c0-5d49fe665f3d",
+      "name": "Bola Basquete Spalding Varsity Tf-150 Fiba - Tam 6 Laranja 6",
+      "before": {
+        "at": "2026-11-11T16:46:53.983Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b0db6630-bb09-42ab-a5e8-baf65c750423",
+      "name": "Bola Futebol Campo cor07",
+      "before": {
+        "at": "2026-11-11T17:19:00.669Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fcdf5937-dbe4-40b8-91b8-e174e66b642b",
+      "name": "Bola Vôlei Colorida Praia Quadra Volei",
+      "before": {
+        "at": "2026-11-11T16:49:04.485Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "260e9234-3bf4-420b-a47c-fa70fdad4d32",
+      "name": "Bola Vôlei De Quadra Mikasa Costurada V370w Oficial",
+      "before": {
+        "at": "2026-11-11T16:48:43.241Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5ac9ccd0-db10-45f1-ac99-f6e373a36a49",
+      "name": "Bola Vôlei Diadora 3800",
+      "before": {
+        "at": "2026-11-11T16:48:50.236Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f8ba2512-1822-4c8f-9014-d5479e30e02c",
+      "name": "Bola Vôlei Eva Cores Sortidas",
+      "before": {
+        "at": "2026-11-11T16:49:25.877Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "86e249c6-3bb4-4197-99a3-bce39d4229da",
+      "name": "Bola Volei Mikasa Bv550 Areia Praia Pro -oficial Olimpíadas Cor Branco",
+      "before": {
+        "at": "2026-11-11T16:48:53.699Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "96c61337-e03c-445f-ae6e-4b3793f570fc",
+      "name": "Bola Vôlei Mikasa Vls300 Aprovada Fivb E Cbv Com",
+      "before": {
+        "at": "2026-11-11T16:48:38.863Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e9b346e7-756c-432a-9b04-4dc68d630fe0",
+      "name": "Bola Volei Molten V5m2700 - Volleyball Tricolor",
+      "before": {
+        "at": "2026-11-11T16:49:22.333Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "21772f99-828f-4997-bbb9-67a407f9c0af",
+      "name": "Bola Vôlei Oficial Veloster Lemon",
+      "before": {
+        "at": "2026-11-11T16:49:11.852Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "89a32913-6607-4751-b6b3-04418d948269",
+      "name": "Bola Volei Penalty 6.1 Pro Amarelo",
+      "before": {
+        "at": "2026-11-11T16:49:18.898Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cc386b73-b57a-4c3f-8b8a-dc7cee4ed21a",
+      "name": "Bola Volei Penalty 8.1 Pro Amarelo",
+      "before": {
+        "at": "2026-11-11T16:49:08.407Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "11ad08ba-687c-43ba-ae70-4c381154cf4c",
+      "name": "Bola Vôlei Star Lemon",
+      "before": {
+        "at": "2026-11-11T16:48:57.317Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1d75f493-e2c2-47d9-ba23-678647399feb",
+      "name": "Bola Vôlei Veloster Lemon",
+      "before": {
+        "at": "2026-11-11T16:49:00.880Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "15cb76eb-5a7c-457e-b00c-60cf2bd56017",
+      "name": "Bola Vôlei Wilson Cast Away",
+      "before": {
+        "at": "2026-11-11T16:49:15.448Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "055725f2-4878-409d-a820-dabee645bc4c",
+      "name": "Bolsa Academia Esportiva Viagem Mala Fitness Lisa",
+      "before": {
+        "at": "2026-11-11T16:37:00.117Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1b2d08ff-22f1-471c-9e89-0da2ce464c6f",
+      "name": "Bolsa Academia Seanite Violeta 31L Esportiva Dobrável",
+      "before": {
+        "at": "2026-11-11T16:36:55.973Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3010cdbd-7198-479c-90b4-8dcdbf0ac205",
+      "name": "Bolsa Pequena Militar Tática Trilha Caminhada Treino",
+      "before": {
+        "at": "2026-11-11T16:36:47.847Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0a4f24f0-7984-4201-9ac4-c6ba065a1016",
+      "name": "Bolsa Sacola Mochila Bag Esportiva Academia Treino Fit Saco Mochila Saco Bolsa Sacola",
+      "before": {
+        "at": "2026-11-11T16:36:51.924Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3a48cfb8-4fa8-4a3a-b785-66c43fe2f384",
+      "name": "Bolsa Treino Mala Duffel Média Academia Viagem Zíper Ombro Lisa",
+      "before": {
+        "at": "2026-11-11T16:36:39.627Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "c208927f-edd3-44b4-9fd7-e7d1ac101cdc",
+      "name": "Bolsa Treino Mala Fitness Viagens Passeios Esportiva Unissex Liso",
+      "before": {
+        "at": "2026-11-11T16:36:35.443Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "818b9be9-3833-4dd2-b948-fda1cda367cc",
+      "name": "Bolsa Treino Viagem Lazer Média Welcon Bolso Impermeável",
+      "before": {
+        "at": "2026-11-11T16:36:30.247Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3240d981-f536-4877-9833-508f65852e6b",
+      "name": "Boné Running Olympikus U",
+      "before": {
+        "at": "2026-11-11T16:30:33.781Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "4befe24e-dc08-42d3-9042-4ccd43a7b103",
+      "name": "Boné Snapback New Era Orlando Magic",
+      "before": {
+        "at": "2026-11-11T16:30:30.283Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "cded77a4-ea25-4b93-af78-e70393d8ef2d",
+      "name": "Boné Trucker Converse Dissected Trucker em",
+      "before": {
+        "at": "2026-11-11T16:30:22.509Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "c7b98a1a-a64e-4c9b-8cd5-19a367dc2af5",
+      "name": "Boné Trucker Infantojuvenil Palmeiras Supercap",
+      "before": {
+        "at": "2026-11-11T16:30:26.800Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b144d2b8-de6d-4270-81ad-9a98d0fe1395",
+      "name": "Caneleira De Peso 2kg Rosa Par Tornozeleira Peso Academia",
+      "before": {
+        "at": "2026-11-11T16:58:25.965Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "013eee94-1754-42fa-91e7-bad9065eab5c",
+      "name": "Caneleira De Peso 5kg Rosa Par Tornozeleira Peso Academia Rosa",
+      "before": {
+        "at": "2026-11-11T16:58:29.615Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "286e630d-b4de-4aeb-97dc-afc134120bdb",
+      "name": "Caneleira Futebol F23 Juvenil",
+      "before": {
+        "at": "2026-11-11T16:43:46.689Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "07ad70ae-27c8-402a-a3c8-c2d554ba5647",
+      "name": "Caneleira Futebol F24 Infantil",
+      "before": {
+        "at": "2026-11-11T16:44:19.537Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "5ad694eb-1fa2-4ba8-89db-7b9ef5619c6e",
+      "name": "Caneleira Futebol F29 Juvenil (caixa 12 Pares) Juvenil",
+      "before": {
+        "at": "2026-11-11T16:44:32.240Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "84d44336-b1db-4cb2-bb10-ba0c4e7682a2",
+      "name": "Caneleira Futebol Lotto Solista",
+      "before": {
+        "at": "2026-11-11T16:43:59.214Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "20538bef-7492-49cf-a25d-179a88978eb2",
+      "name": "Caneleira Futebol Penalty Matis Tamanho Juvenil",
+      "before": {
+        "at": "2026-11-11T16:44:06.912Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "a3f0e8cc-07c7-4229-aa93-e57578f931a5",
+      "name": "Caneleira Futebol Santos Fc Japão",
+      "before": {
+        "at": "2026-11-11T16:44:35.974Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "dfe1bf48-6857-43ca-859a-7bb88d1ab306",
+      "name": "Caneleira Futebol Spoart F46 Juvenil",
+      "before": {
+        "at": "2026-11-11T16:44:03.064Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0143a019-f7dc-452c-a8f8-9af9e77bccf0",
+      "name": "Caneleira Futebol Supreo Placa PE EVA",
+      "before": {
+        "at": "2026-11-11T16:44:28.525Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "f8453bc1-1a1c-4c66-b2f4-a98e055a1461",
+      "name": "Caneleira Futebol Young Juvenil - Campo Society",
+      "before": {
+        "at": "2026-11-11T16:44:11.883Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9eaa92ef-f770-45fc-a26b-954ab385ac2c",
+      "name": "Caneleira Tornozeleira Peso 10kg Exercise Sports Rosa Reforçado Nylon",
+      "before": {
+        "at": "2026-11-11T16:58:48.066Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "23d90b14-c38d-49dd-afab-4f0daed20abe",
+      "name": "Caneleira Tornozeleira Peso 1kg Par Mob Preto Para Pernas",
+      "before": {
+        "at": "2026-11-11T16:58:51.717Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "da565ac4-6089-4bdc-9d1e-b83a6ccbf8b9",
+      "name": "Carenagem Traseira Elíptico Movement Rt240 Champagne",
+      "before": {
+        "at": "2026-11-11T17:11:07.580Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8e6aa77e-7302-4c8c-b4cd-0958c8ec116d",
+      "name": "Chuteira Campo Umbro Orbit Jr",
+      "before": {
+        "at": "2026-11-11T16:25:29.435Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "68a16ae0-39af-41ec-91af-072b62283f24",
+      "name": "Chuteira Campo Umbro Score",
+      "before": {
+        "at": "2026-11-11T16:25:22.498Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "a75d2d01-14c2-48fd-8227-ca2fadeeff9a",
+      "name": "Chuteira Society Lider Penalty",
+      "before": {
+        "at": "2026-11-11T16:25:35.295Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "503bb98a-7755-44a3-948b-82266a25ab19",
+      "name": "Corda Pular Ajustável Domyos Velocidade Crossfit Cabo Ergonômico Preto",
+      "before": {
+        "at": "2026-11-11T17:07:39.292Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f16733ab-966f-412e-8cd4-9fa5d7160536",
+      "name": "Corda Pular Com Rolamento Treino Funcional Crossfit Laranja",
+      "before": {
+        "at": "2026-11-11T17:07:29.084Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cb4b7cc1-c781-4e5d-a2b6-f4df7a98041c",
+      "name": "Corda Pular Exercicio Funcional Cross Fit Ajustavel MBFIT",
+      "before": {
+        "at": "2026-11-11T17:07:35.899Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "47df863a-5859-407d-985b-75a58c72bcd7",
+      "name": "Corda Pular Proaction G307 2,75m Treino Funcional",
+      "before": {
+        "at": "2026-11-11T17:07:32.461Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "741d511b-dc0d-499d-bb58-38a4afe544fd",
+      "name": "Corda Pular Profissional Rolamento Aeróbico Boxe Crossfit",
+      "before": {
+        "at": "2026-11-11T17:07:22.280Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9ebf8a4f-5f54-4dba-a323-747000a28680",
+      "name": "Corda Pular Profissional Vollo Pvc Ajustável Cardio",
+      "before": {
+        "at": "2026-11-11T17:07:25.700Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e91a96f3-e16a-4248-9463-b87c24806705",
+      "name": "Corda Pular T79 Com Rolamento Treino Funcional - Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:07:14.650Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cfefcb7a-73d5-4000-9408-b2372163a867",
+      "name": "Corda Pular Treino Funcional Cross Speed Rope Acte Sports Cor Amarelo",
+      "before": {
+        "at": "2026-11-11T17:07:18.895Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3da35979-b8ab-46dc-81c5-469a89bc43c8",
+      "name": "Elíptico E4 Magnético Movement Residencial 8 Níveis Preto",
+      "before": {
+        "at": "2026-11-11T17:11:11.663Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "db3b1603-bc04-4b7b-be15-d288aa77874d",
+      "name": "Elíptico Kikos 2.0 Cinza",
+      "before": {
+        "at": "2026-11-11T17:11:14.865Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "57de0890-6926-4735-9b4a-a41c9c3a309b",
+      "name": "Faixa Elastica 3 Intensidades - Acte T13 Diversos",
+      "before": {
+        "at": "2026-11-11T16:55:45.169Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "823be167-e7d7-4fce-812b-b834fa616de0",
+      "name": "Faixa Elástica Extra Forte",
+      "before": {
+        "at": "2026-11-11T16:56:09.406Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "eee11c9d-abd8-4593-9667-80a5051d2aa9",
+      "name": "Faixa Elástica Forte T13-f Vermelho Acte Sports",
+      "before": {
+        "at": "2026-11-11T16:55:48.604Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "097e8bb3-e53f-454a-a224-8df95910ddbc",
+      "name": "Faixa Elástica Leve Azul T13-l Acte Sports",
+      "before": {
+        "at": "2026-11-11T16:55:55.578Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f072f94b-366e-47b4-b40d-441430ed8f11",
+      "name": "Faixa Elástica Para Alongamento Acte",
+      "before": {
+        "at": "2026-11-11T16:55:40.872Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dca8bc35-a53a-4519-bc68-fbadd28bb3f1",
+      "name": "Faixa Elástica Pro Suave - Hidrolight",
+      "before": {
+        "at": "2026-11-11T16:56:12.833Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9a00619b-6717-4207-bb04-7365a864d6e2",
+      "name": "Garrafa Squeeze De Água Panda",
+      "before": {
+        "at": "2026-11-11T17:09:29.545Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "beaeeefe-9532-4927-bb22-1621f4b84e99",
+      "name": "Garrafa Squeeze Icons Moments Friends",
+      "before": {
+        "at": "2026-11-11T17:09:36.217Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "159daa65-5681-429b-a0f2-0431fbd7b745",
+      "name": "Garrafa Squeeze Matte 900ml - Azul",
+      "before": {
+        "at": "2026-11-11T17:09:26.310Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "72156a23-7b73-410b-9cc2-85e283f512eb",
+      "name": "Garrafa Squeeze Mq Dev - Flutter",
+      "before": {
+        "at": "2026-11-11T17:09:19.699Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "abe062fc-1ee0-4595-a0e9-f1f34728dd0d",
+      "name": "Garrafa Squeeze Mq6 - Dev Html",
+      "before": {
+        "at": "2026-11-11T17:09:15.605Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "84e7c1a7-423a-445b-a6ab-59f751458092",
+      "name": "Garrafa Squeeze Nk Python",
+      "before": {
+        "at": "2026-11-11T17:09:22.973Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "396a36d3-ac12-4d73-967d-6b6fe414d0a2",
+      "name": "Garrafa Squeeze Ou 700ML",
+      "before": {
+        "at": "2026-11-11T17:09:32.825Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b37e34b3-b92b-4313-bb36-8747b2c2605b",
+      "name": "Halter Emborrachado 10kg S10 Preto Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:00:32.937Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c87c097e-44e2-48e5-8ea1-a73c831a6e0c",
+      "name": "Halter Emborrachado 1kg S1-r Acte Sports Cor Rosa",
+      "before": {
+        "at": "2026-11-11T17:00:40.383Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5cf3cd9b-4277-417a-8e88-3da3659c79fe",
+      "name": "Halter Emborrachado 2kg S2 Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:00:26.020Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5e8214fa-4d3e-4a70-a525-48856d1358dc",
+      "name": "Halter Emborrachado 3kg Cinza S3 Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:00:22.557Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5cb810d3-45fc-4dd1-a10c-b2ed9cb6053e",
+      "name": "Halter Emborrachado 4kg S4 Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:00:18.240Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fece2674-135a-4906-8180-74c5bf45b7d9",
+      "name": "Halter Emborrachado 5kg Rosa S5-r Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:00:36.531Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "34a3c718-1f16-46de-a2bc-955227944be0",
+      "name": "Halter Emborrachado 9kg S9 Acte Sports Preto",
+      "before": {
+        "at": "2026-11-11T17:00:29.484Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c09cf3bd-7578-4842-91f8-94dbcb34e4f0",
+      "name": "Halter Sextavado Emborrachado S57-r 2kg Rosa Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:00:43.860Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "187a4cef-cb0d-4905-8532-62d78eeba659",
+      "name": "Kettlebell 4kg + Tornozeleira Rosa 3kg + Faixa | Exercício Preto",
+      "before": {
+        "at": "2026-11-11T17:02:50.467Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "6eac23c5-addd-47fe-b8ac-b230b3a30f34",
+      "name": "Kettlebell 4kg Rosa Treino Muscular Emborrachado Confortável",
+      "before": {
+        "at": "2026-11-11T17:02:45.969Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "737a3ce1-8d0a-4eaa-99fe-b369a6aaa0ce",
+      "name": "Kit Caneleira Tornozeleira Peso Funcional Lona 1,2,3,4,5 Kg",
+      "before": {
+        "at": "2026-11-11T16:58:36.981Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9f139772-3b62-42ac-b866-a57a07736180",
+      "name": "Kit Minibomba De Mão P/ Encher + Bola Futebol Futsal Cor6",
+      "before": {
+        "at": "2026-11-11T17:19:04.815Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5b7e639b-6f6c-496e-8c8c-5215041b35db",
+      "name": "Luva Academia Dray 2106 Neopreme",
+      "before": {
+        "at": "2026-11-11T16:42:00.270Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "592cea88-526f-4c8b-b768-3654b47c3e5b",
+      "name": "Luva Academia Exercise Sports Meia Luva Neoprene Caveirinha",
+      "before": {
+        "at": "2026-11-11T16:41:36.758Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "be39c91b-e044-4aac-bdd6-9c7b66725890",
+      "name": "Luva Academia Ginastica Musculaçao Sem Polegar",
+      "before": {
+        "at": "2026-11-11T16:42:03.975Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0b643e2e-9788-4d46-90e4-794dc9873502",
+      "name": "Luva Academia Musculação Com Munhequeira P",
+      "before": {
+        "at": "2026-11-11T16:41:48.826Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "f563a875-d8e4-4e9a-93f6-55adf4663286",
+      "name": "Luva Academia Musculação Fitness",
+      "before": {
+        "at": "2026-11-11T16:41:45.102Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "a6cf9e51-9dba-424a-aad1-e699bbf9ff81",
+      "name": "Luva Academia Neoprene Grip Progne Sports G",
+      "before": {
+        "at": "2026-11-11T16:42:07.698Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "7c76cef9-6158-4b80-9f3c-1c7b4beabb6c",
+      "name": "Luva Academia Neoprene Musculação Qualidade Fitness",
+      "before": {
+        "at": "2026-11-11T16:41:56.398Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0660e7cc-f751-49ed-8080-54be3887bd0e",
+      "name": "Luva Academia Poker Palmar",
+      "before": {
+        "at": "2026-11-11T16:41:41.373Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "39263697-e3f2-42ff-b5d0-1d6f37a975e2",
+      "name": "Luva Academia Treino Musculação - Integralmedica",
+      "before": {
+        "at": "2026-11-11T16:41:52.690Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "e4231e7b-5ed8-48c2-ab3d-6436707e08cf",
+      "name": "Luva Goleiro Campo Umbro Class 9",
+      "before": {
+        "at": "2026-11-11T16:38:51.658Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "73892992-80a4-4876-9979-63605e4ba263",
+      "name": "Luva Goleiro Ho Soccer Profissional Initial 9",
+      "before": {
+        "at": "2026-11-11T16:39:10.746Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "263f22ac-adcf-4820-9fbd-0bcf9749da3b",
+      "name": "Luva Goleiro Infantil Campo",
+      "before": {
+        "at": "2026-11-11T16:39:23.714Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "ba8b76c2-a5eb-4e9b-b847-efae61092161",
+      "name": "Luva Goleiro Profissional Difai Crazy 2025 10",
+      "before": {
+        "at": "2026-11-11T16:38:59.598Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "eeb750d2-b771-4265-9c1c-5e854605c64d",
+      "name": "Luva Goleiro Profissional Poker Altered 9",
+      "before": {
+        "at": "2026-11-11T16:39:03.665Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "2bfe8d32-7c3e-4f07-adea-74de6de110ab",
+      "name": "Luva Goleiro South Team Campo",
+      "before": {
+        "at": "2026-11-11T16:39:30.641Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "2b6d6ac8-a100-49bc-84bd-264af0cb45f7",
+      "name": "Meia Esportiva Antiderrapante 02339 Br/cz/pt",
+      "before": {
+        "at": "2026-11-11T16:28:12.201Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "aa502395-dbd8-439a-a959-f0122542dc15",
+      "name": "Meia Esportiva Antiderrapante 02339 Vm/cz/br",
+      "before": {
+        "at": "2026-11-11T16:27:55.125Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b541a109-14f4-48b9-900e-b62481f112f4",
+      "name": "Meia Esportiva Antiderrapante para Futebol na",
+      "before": {
+        "at": "2026-11-11T16:28:01.977Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "4981ff51-a663-42db-a6fb-8e54c5cd38aa",
+      "name": "Meia Esportiva Antiderrapante Pro Grip - Finta",
+      "before": {
+        "at": "2026-11-11T16:28:21.328Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "276c50c9-78e0-4ee9-80e9-a90523d53b33",
+      "name": "Meia Esportiva De Futebol Antiderrapante Treino Meias",
+      "before": {
+        "at": "2026-11-11T16:28:05.378Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9c029d62-80b2-426c-a35d-6dc52e1958de",
+      "name": "Meia Esportiva Futebol Ultragrip Prosocks",
+      "before": {
+        "at": "2026-11-11T16:28:24.781Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1ac16913-5bfa-4bfe-847e-99c3648c0c07",
+      "name": "Meia Esportiva Penalty Cano Alto 330 39/44",
+      "before": {
+        "at": "2026-11-11T16:27:50.830Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "79226a66-39c8-4d0d-9fb3-056466e68525",
+      "name": "Meia Esportiva Penalty Cano Alto Ecoknit Adulto Un",
+      "before": {
+        "at": "2026-11-11T16:28:08.754Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "308f8141-4b3a-404a-8580-cb8835f15eab",
+      "name": "Meia Esportiva Penalty Cano Médio 331",
+      "before": {
+        "at": "2026-11-11T16:27:58.539Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3841b234-61b5-45b6-aa76-d013bf9e9469",
+      "name": "Meia Esportiva Penalty Grip 33/38",
+      "before": {
+        "at": "2026-11-11T16:28:28.236Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "5359a4fe-50ab-41e1-a5ef-e43a212478e4",
+      "name": "Meião Futebol Masculino Meia Esportiva Futsal Jogador 28ao43 P",
+      "before": {
+        "at": "2026-11-11T16:28:17.953Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "c08e52f0-6098-429c-94bd-7514c86aacb4",
+      "name": "Mini Bola Basquete Laranja Spalding Spaldeen TF",
+      "before": {
+        "at": "2026-11-11T16:46:32.866Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9db81f95-23d7-4c41-9d62-8f064ddcee19",
+      "name": "Mini Bola Basquete Tf Spalding Laranja",
+      "before": {
+        "at": "2026-11-11T16:46:14.816Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "5d54e0bf-0da1-48bd-adec-9811f2072d64",
+      "name": "Mochila Academia Faculdade Escolar Feminina Masculina Liso",
+      "before": {
+        "at": "2026-11-11T16:33:41.486Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "835951d2-17f4-481b-9748-6eaeefc37f25",
+      "name": "Mochila academia Olympikus Prime",
+      "before": {
+        "at": "2026-11-11T16:33:30.763Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9a52ecf7-bd74-4cf9-a869-22c5048d02ee",
+      "name": "Mochila Esportiva adidas",
+      "before": {
+        "at": "2026-11-11T16:33:14.199Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0942b97e-a4a0-491d-8b27-7d4bcfa3a962",
+      "name": "Mochila Esportiva Big",
+      "before": {
+        "at": "2026-11-11T16:33:05.930Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "241d8e7f-1c02-4d01-bdc6-6f1f42065ce7",
+      "name": "Mochila Esportiva Circle",
+      "before": {
+        "at": "2026-11-11T16:33:23.826Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9b836fe5-2c09-4974-bb87-2bb90711c5e0",
+      "name": "Mochila Esportiva Classic",
+      "before": {
+        "at": "2026-11-11T16:33:27.293Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "a01b395d-367a-4cd9-a5af-a9935fef69e8",
+      "name": "Mochila Esportiva Double",
+      "before": {
+        "at": "2026-11-11T16:33:10.600Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "649f243a-ada2-4be1-84a8-4ac6b4c438fc",
+      "name": "Mochila Esportiva Trio",
+      "before": {
+        "at": "2026-11-11T16:33:17.854Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "51a9a2ea-850f-44f7-bc74-427ab646e095",
+      "name": "Par de halter sextavado Halter Sextavado 5 Kg para academia",
+      "before": {
+        "at": "2026-11-11T17:00:47.395Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b1dddc26-af43-40bc-aba4-78949eb70452",
+      "name": "Par Halter Emborrachado 3 Kg Peso Halter Academia Treino Cor Azul",
+      "before": {
+        "at": "2026-11-11T17:00:50.853Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ef74dc1d-1d22-4b9e-ad0f-10d1f5a61839",
+      "name": "Raquete Beach Tennis Camewin Fibra de Carbono Jaws Vermelha para Adultos",
+      "before": {
+        "at": "2026-11-11T16:54:02.935Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "acd0c9cb-4953-47ce-8ede-298447c22fcd",
+      "name": "Raquete Beach Tennis Controle Camewin Carbono Eva Soft Redonda",
+      "before": {
+        "at": "2026-11-11T16:53:58.718Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c9492337-338b-4fd6-b293-b39696b468e1",
+      "name": "Raquete Beach Tennis Drop Shot Canyon Pro Carbono Eva Soft 2023",
+      "before": {
+        "at": "2026-11-11T16:53:37.218Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3bfc5f2a-79cc-4887-95af-a2fda635e498",
+      "name": "Raquete Beach Tennis Drop Shot Conqueror 11 Nicole Nobile Le Cor Dourado",
+      "before": {
+        "at": "2026-11-11T16:53:54.264Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "68de9047-cf6b-4983-9727-8852c6e3845e",
+      "name": "Raquete Beach Tennis Drop Shot Conqueror 11.0 2023 Carbon24k Cor Preta/Azul",
+      "before": {
+        "at": "2026-11-11T16:53:49.822Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0cf422cd-1ee7-41d2-974d-17d0daaf0844",
+      "name": "Raquete Beach Tennis Drop Shot Conqueror 13 Tech Azul",
+      "before": {
+        "at": "2026-11-11T16:53:28.842Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0331b67d-75db-4715-997b-390bc82956a6",
+      "name": "Raquete Beach Tennis Drop Shot Explorer 6.0 Bt 2025 + Cinza",
+      "before": {
+        "at": "2026-11-11T16:53:23.659Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "facf4af4-c3f1-44d5-8ab4-fe253773c331",
+      "name": "Raquete Beach Tennis Drop Shot Quantum 1.0 Bt - Ralff Abreu Cinza",
+      "before": {
+        "at": "2026-11-11T16:53:41.377Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e87a2ee0-b75d-4ed0-be48-8d198aab98f7",
+      "name": "Raquete Beach Tennis Madeira",
+      "before": {
+        "at": "2026-11-11T16:53:45.634Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "761a34c8-22e7-43dd-bdba-bb17c768c40a",
+      "name": "Raquete Tênis Babolat Evoke Tour Preto/vermelho L2",
+      "before": {
+        "at": "2026-11-11T16:51:16.458Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b17c051d-de93-4627-8b10-1796329dd8fa",
+      "name": "Raquete Tênis Babolat Junior 21 Wimbledon 2025",
+      "before": {
+        "at": "2026-11-11T16:51:23.500Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e4e16e1a-af2d-4df0-832b-2bb782d96538",
+      "name": "Raquete Tenis Carlitos Jr 26 Babolat Cinza L1",
+      "before": {
+        "at": "2026-11-11T16:51:12.941Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c6faa7d1-42d3-4cf8-8810-2d2001976fec",
+      "name": "Raquete Tênis Fort Sports Modelo 27 68.58cm",
+      "before": {
+        "at": "2026-11-11T16:51:09.426Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9ffa2f0f-e1d3-4efb-b226-52bb6bb35361",
+      "name": "Raquete Tênis Pro Staff 97l Classic L2 Preto L2",
+      "before": {
+        "at": "2026-11-11T16:51:30.480Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b83ceb6c-7d47-4289-b526-6fed93715e40",
+      "name": "Raquete Tênis Sport Lazer Com Bolsa Transporte Tradicional Vermelho",
+      "before": {
+        "at": "2026-11-11T16:51:27.018Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "539c075d-5b3c-460d-ac2e-8a64108254e0",
+      "name": "Raquete Tênis Wilson Blade 100 V10 16x19 300g - L2",
+      "before": {
+        "at": "2026-11-11T16:50:54.414Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "18be82e0-6da7-4a8f-aaee-b2646c28936a",
+      "name": "Raquete Tênis Wilson Clash 100l V3 L3",
+      "before": {
+        "at": "2026-11-11T16:51:02.289Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "d51effa2-9ffc-4def-9333-db2d8279e4fd",
+      "name": "Raquete Tênis Wilson Fusion Xl L2 L3 - Cor Branco E Cinza | 2024",
+      "before": {
+        "at": "2026-11-11T16:51:05.976Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "25edbf7e-291f-4adc-9624-99dd910065d9",
+      "name": "Raquete Tênis Wilson Pro Staff 97l Classic 290g Tamanho L2 Clássico 4 3/8",
+      "before": {
+        "at": "2026-11-11T16:51:20.042Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "eab1927a-ea3a-4285-b252-f2842814a382",
+      "name": "Raquete Tênis Wilson Shift 99l V1 L3 Branco Perolado Grip 3",
+      "before": {
+        "at": "2026-11-11T16:50:58.853Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "47deb3d2-053c-42b3-a7cf-752d076981e3",
+      "name": "Rolo De Faixa Elastica T275 Acte Sports",
+      "before": {
+        "at": "2026-11-11T16:56:02.403Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3aa08bd3-3c86-450a-a7e7-513dd8f5a6c1",
+      "name": "Rolo De Faixa Elastica T276 Acte Sports",
+      "before": {
+        "at": "2026-11-11T16:55:52.192Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d6e5f3ba-8e60-440e-9661-e0307e11beeb",
+      "name": "Rolo De Faixa Elastica T277 Acte Sports",
+      "before": {
+        "at": "2026-11-11T16:55:58.994Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "24a6d535-5aa9-4b1e-93d8-832c38427bbc",
+      "name": "Tapete Yoga Antiderrapante Tatames EVA 180x55x1cm Rosa",
+      "before": {
+        "at": "2026-11-11T17:05:14.374Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3c196cde-8629-4a15-adba-07ce900d6fdd",
+      "name": "Tapete Yoga Mat Pilates - Metalife",
+      "before": {
+        "at": "2026-11-11T17:05:22.193Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9a3e45ef-5a17-4afc-a2ca-6cca972d0f39",
+      "name": "Tapete Yoga Mat T10NV Com Alça de Transporte Antiderrapante Vermelho Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:05:03.147Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bc04e8fb-1033-4eeb-b20c-02421445b972",
+      "name": "Tapete yoga mat T11NA con alça de transporte antiderrapante azul royal Acte Sports",
+      "before": {
+        "at": "2026-11-11T17:05:06.880Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8c6768f8-5235-4d4a-aec9-5b0747626113",
+      "name": "Tapete Yoga Rosa Mat Master Acte Sports 182x61cm TPE",
+      "before": {
+        "at": "2026-11-11T17:04:58.463Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "aed61d66-8e07-488c-9759-7bdc20bc619e",
+      "name": "Tornozeleira Peso 2kg O Par Profissional Academia Funcional",
+      "before": {
+        "at": "2026-11-11T16:58:40.706Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0e4fe418-c747-4ab0-8d2d-b3fcd55f95bb",
+      "name": "Tornozeleira Peso Rmc Ajustável 1 À 5 Kg",
+      "before": {
+        "at": "2026-11-11T16:58:44.398Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ec0415c8-0601-41f9-94bf-9e6e12bcc47d",
+      "name": "Tornozeleira Peso Rmc Ajustável 2 À 10 Kg",
+      "before": {
+        "at": "2026-11-11T16:58:33.299Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4742bcbd-f104-4ec6-a1ee-103830c32530",
+      "name": "A Salvação: Uma História De Vampiro, De Diego Sousa. Editora Skull Em Português",
+      "before": {
+        "at": "2026-11-11T16:55:44.351Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "2252ce45-a1e1-4c3e-a7ec-2d827255043c",
+      "name": "Algoritmos - Dasgupta, Sanjoy - Amgh - Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:58:04.285Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "3d3fcf75-2476-4482-b17e-8f5627b88bf1",
+      "name": "Algoritmos E Proteção De Dados Pessoais",
+      "before": {
+        "at": "2026-11-11T16:58:11.958Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "95880cd3-d263-4c90-8a43-e55ef4722134",
+      "name": "Banco De Dados: Implementação Em Sql, Pl Sql E Oracle 11g, De Puga, Sandra. Editora Pearson Universitaria, Capa Mole, Edição 1ª Edição - 2013 Em Português",
+      "before": {
+        "at": "2026-11-11T17:00:52.619Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b38cc2ae-35c9-4076-a3b0-da098395fdc9",
+      "name": "Call of the night: canções da noite 01 - Kotoyama - Panini - Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:55:21.214Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7260691a-b860-400f-a768-701860a60391",
+      "name": "Call of the night: canções da noite 02 - Kotoyama - Panini - Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:55:25.119Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "59aed1f4-a668-413b-a3d1-fca85e391521",
+      "name": "Depois Da Tormenta, A Liberdade",
+      "before": {
+        "at": "2026-11-11T16:55:13.515Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "6f8239e6-472e-48f6-8e33-dd686fd8f6de",
+      "name": "Dos Algoritmos À Inteligência Artificial",
+      "before": {
+        "at": "2026-11-11T16:58:00.384Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b37a551e-ba21-4f40-ac68-3d8691794966",
+      "name": "Estruturas de dados - Lorenzi, Fabiana - Editora Cengage - Capa Mole",
+      "before": {
+        "at": "2026-11-11T17:01:50.796Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "374c5f3b-3046-46cb-ba13-b6b5d744c7a3",
+      "name": "Estruturas De Dados E Algoritmos Em Javascript",
+      "before": {
+        "at": "2026-11-11T16:57:01.395Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "757188e6-5275-4854-b583-fecae0f347d4",
+      "name": "Introdução A Computação E Programação Usando Python",
+      "before": {
+        "at": "2026-11-11T16:56:07.408Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "bc4e39e1-7488-4ca5-9721-595b78bebd57",
+      "name": "JavaScript - Flanagan, David - Bookman - Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:56:49.990Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "4fd3f761-3d8d-4121-b53d-a0ce29e68039",
+      "name": "Javascript - Reis, Daniela Borges dos - Viena Educação - Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:57:09.386Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "567379fc-f3e3-4cd8-a2c7-0bff9c51fa02",
+      "name": "Javascript e Jquery - Duckett, Jon - Editora Alta Books - Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:57:13.785Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "50d7c11e-1fc3-42c1-868d-424308656dfb",
+      "name": "Livro - Direito, Inteligência Artificial E Algoritmos",
+      "before": {
+        "at": "2026-11-11T16:57:40.784Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "17fe67ad-82f4-49be-b90b-a64776482110",
+      "name": "Livro - Engenharia História Em Construção",
+      "before": {
+        "at": "2026-11-11T16:58:23.371Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "08058297-a105-4f6c-98f8-5df29c486821",
+      "name": "Livro - Inteligência Artificial - Regulação Ética E Responsabilidade Civil",
+      "before": {
+        "at": "2026-11-11T17:00:02.752Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "d83ee71e-5519-46d6-b6a9-e2d6d4ee06cd",
+      "name": "Livro - Obsolescência Das Estruturas Nacionais De Poder",
+      "before": {
+        "at": "2026-11-11T17:01:39.152Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "8c3a160e-ce91-4a9a-babf-d8d991d227b9",
+      "name": "Livro - Razão, Religião & Estruturas De Poder",
+      "before": {
+        "at": "2026-11-11T17:01:27.480Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "a479eb3d-728f-4f08-aaa5-7fc15e993aea",
+      "name": "Livro Algoritmos Diagnósticos E Terapêuticos Na Medicina Interna De Cães E Gatos",
+      "before": {
+        "at": "2026-11-11T16:57:17.562Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "514dcd75-c4eb-46a9-ad38-34bf3c78d1ba",
+      "name": "Livro Algoritmos em terapia intensiva pediátrica, de Bousso, Albert. Editorial Editora Atheneu Ltda, tapa mole, en português (2010)",
+      "before": {
+        "at": "2026-11-11T16:57:32.975Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "04c3e6ef-8c44-41f8-8119-b358497796c9",
+      "name": "Livro Algoritmos funcionais, de Manzano, José Augusto Navarro Garcia. Alta Books, capa mole em Português 2020",
+      "before": {
+        "at": "2026-11-11T16:57:29.156Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "9331a193-d0ff-4c7c-a0f0-f04b8f2fb777",
+      "name": "Livro Apostila Vb.net Com Asp.net Trabalhando Com Banco ...",
+      "before": {
+        "at": "2026-11-11T17:00:44.751Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "3c2142cb-554f-48ec-b230-01b46d45b505",
+      "name": "Livro Banco de dados, de Balieiro, Ricardo. Editorial Meta Impressão e Soluções Digitais Ltda., tapa mole, en português (2015)",
+      "before": {
+        "at": "2026-11-11T17:00:25.665Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "2327c4fc-35e4-4581-b544-5637e1f1b3d6",
+      "name": "Livro Banco de dados, de Medeiros, Luciano Frontino De. Editorial Editora Intersaberes Ltda., tapa mole, en português (2013)",
+      "before": {
+        "at": "2026-11-11T17:00:21.802Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "8705f2cb-dfc1-49a1-a80a-2e9fa86955ac",
+      "name": "Livro Engenharia da vida, de Patriota, Ronaldo. Editorial Literare Books International Ltda, tapa mole, en português (2020)",
+      "before": {
+        "at": "2026-11-11T16:59:05.393Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "1c037af0-90cd-46b6-8415-ddc0142a422e",
+      "name": "Livro Engenharia De Avaliações E Perícias Judiciais, De Niel Nascimento Teixeira. Editora Juspodivm, Capa Mole (2026)",
+      "before": {
+        "at": "2026-11-11T16:58:57.664Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "d34ca969-6ebc-4f6d-b935-816debb091e5",
+      "name": "Livro Engenharia De Avaliações E Perícias: Um Roteiro Essencial, De Maia Neto, Francisco / Soares, Andrea Cristina Kluppel Munhoz. Editora Leud, Capa Mole (2023)",
+      "before": {
+        "at": "2026-11-11T16:59:12.980Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "73a47477-84a0-4d60-9e76-67f05404346c",
+      "name": "Livro Engenharia De Dados (engenharia E Banco De Dados Aplicado), De Edison Andrade Martins Morais. Editora Grupo Ser, Capa Mole (2025)",
+      "before": {
+        "at": "2026-11-11T16:58:50.067Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "53f4237a-6b5e-4d2f-83f0-d3689f20fa12",
+      "name": "Livro Engenharia De Ia Novatec Editora",
+      "before": {
+        "at": "2026-11-11T16:58:30.966Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "eea3d97f-f745-4e31-8e70-df762267b752",
+      "name": "Livro Engenharia de Métodos e Produtividade, de Wagner Cardoso. Editorial Clube de Autores, tapa mole, en português (2018)",
+      "before": {
+        "at": "2026-11-11T16:59:09.194Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "31201daf-0d89-404a-abc0-52e4a7b1fe69",
+      "name": "Livro Engenharia De Protocolos Com Lotos",
+      "before": {
+        "at": "2026-11-11T16:58:27.146Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b2b5e3cd-0b00-4b4b-b4a5-63a685cf168a",
+      "name": "Livro Engenharia De Si - Santiago, Ro - Texto E Cafe Comunicacao E Editora - Mole",
+      "before": {
+        "at": "2026-11-11T16:58:34.814Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b41c5a27-e987-4842-97cb-e80a7f8fb9be",
+      "name": "Livro Engenharia De Software Para Cientistas De Dados: De Notebook, De Nelson, Catherine, Vol. 1. Editora Novatec, Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:58:38.640Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "e0499da0-9e05-4f05-aac0-2f77e79561ce",
+      "name": "Livro Engenharia de usabilidade, de Santos, Fabiano Gonçalves dos. Editorial Estácio, tapa mole, en português (2016)",
+      "before": {
+        "at": "2026-11-11T16:58:53.893Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b7014f76-3cf0-4eb0-826f-dc8d1ed67380",
+      "name": "Livro Engenharia Econômica: Avaliação E Seleção De Projetos De Investimento, de Ehrlich, Pierre Jacques. Editorial Editora Atlas Ltda., tapa mole, en português (2005)",
+      "before": {
+        "at": "2026-11-11T16:59:28.219Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "1ca2ecd4-93b3-464e-a366-1658be5fe5ba",
+      "name": "Livro Engenharia Genética O Sétimo Dia Da Criação Fátima Oliveira 4ª Editora Moderna Coleção Polêmica Coleção Polêmica 1995 - G4",
+      "before": {
+        "at": "2026-11-11T16:59:16.810Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "6f8ae26f-a0ce-4b36-92b4-8caeff1004fc",
+      "name": "Livro Entendendo Algoritmos",
+      "before": {
+        "at": "2026-11-11T16:57:21.385Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7521df2d-7dfb-4998-989b-38f11af7e9f1",
+      "name": "Livro Escriturário/agente Comercial - Banco Do Brasil - Bb",
+      "before": {
+        "at": "2026-11-11T17:00:48.760Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "f68b9ee1-aa2c-4b81-98d8-40769040ce7d",
+      "name": "Livro Estruturas algébricas, de Cochmanski, Julio Cesar. Editorial Editora Intersaberes Ltda., tapa mole, en português (2016)",
+      "before": {
+        "at": "2026-11-11T17:01:15.926Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "481c011c-bbfc-494e-b90f-18198a0d6ee5",
+      "name": "Livro Estruturas ALGébricas, De Cochmanski, Liliane Cristina De Camargo; Cochmanski, Julio Cesar. Editora Intersaberes, Capa Mole Em Português, 2023",
+      "before": {
+        "at": "2026-11-11T17:01:19.720Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "5a72f165-2e5b-4afe-b3ac-87d6df20e6c5",
+      "name": "Livro Estruturas De Dados E Algoritmos Com Javascript",
+      "before": {
+        "at": "2026-11-11T16:56:34.731Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "379d0a77-ce25-4349-b9c5-700b9e993ad1",
+      "name": "Livro Estruturas de Dados Usando C, de LANGSAM, YEDIDYAH. Editora Grupo A",
+      "before": {
+        "at": "2026-11-11T17:01:04.407Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "33352791-7ae9-4403-9414-3f5695b497e9",
+      "name": "Livro Estruturas De Gestão Estratégica Da Inovação Em Uni...",
+      "before": {
+        "at": "2026-11-11T17:01:12.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "8836b7a6-6875-4651-82ad-180950b44e3c",
+      "name": "Livro Estruturas E Expressões Básicas Da Língua Japonesa",
+      "before": {
+        "at": "2026-11-11T17:01:08.281Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "0a1f2934-aae8-4e3e-acf2-e4e28f704cf2",
+      "name": "Livro Estudo dirigido: Algoritmos, de Manzano, José Augusto N. G.. Editorial Editora Érica, tapa mole, en português (1997)",
+      "before": {
+        "at": "2026-11-11T16:57:56.453Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "926d207b-779d-4a00-8a64-98697a38b889",
+      "name": "Livro Fundamentos Da Engenharia De Software Novatec Editora",
+      "before": {
+        "at": "2026-11-11T16:58:46.210Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "222715bb-ecef-4b56-866a-256c0b09fa99",
+      "name": "Livro Fundamentos Do Sga - Rpg A Serviço Do Esporte - C Dura",
+      "before": {
+        "at": "2026-11-11T16:55:32.884Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "113b8aad-4ad7-4469-b3fe-e253a53b2304",
+      "name": "Livro Inteligência Artificial",
+      "before": {
+        "at": "2026-11-11T16:59:36.052Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "69dd2372-a3a6-49a8-8137-6b7d6474a901",
+      "name": "Livro Inteligência Artificial No Agro, Aluízio Borém",
+      "before": {
+        "at": "2026-11-11T16:59:58.972Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "be429d74-9089-4197-9c52-55357bef0875",
+      "name": "Livro Inteligência artificial, de Nicoli, Sidnei. Editorial Estácio, tapa mole, en português (2017)",
+      "before": {
+        "at": "2026-11-11T17:00:17.990Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "e273e5bd-559e-4a75-8902-6f42ae26851f",
+      "name": "Livro Inteligência Competitiva",
+      "before": {
+        "at": "2026-11-11T16:59:47.479Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "a33eb458-5e4f-43ba-acfe-633482f4431b",
+      "name": "Livro Inteligência Emocional Para Pais",
+      "before": {
+        "at": "2026-11-11T17:00:10.407Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b5ca5989-da29-454b-b4b5-1dd2c5c616b9",
+      "name": "Livro Inteligencia Empresarial",
+      "before": {
+        "at": "2026-11-11T16:59:51.295Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "f41b5b32-6111-4120-9207-61865ddfd907",
+      "name": "Livro Introdução a Programação Numérica em Python, de SANTOS, ELINEI. Editorial Ciencia Moderna, tapa mole, en português",
+      "before": {
+        "at": "2026-11-11T16:56:11.262Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "9a6025cb-8fdc-4087-873f-a3b3e02385bb",
+      "name": "Livro Javascript Essencial, De Silva, Mauricio Samy. Editora Novatec, Capa Mole",
+      "before": {
+        "at": "2026-11-11T16:56:30.852Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "a4aeed33-b96d-440b-a5f0-da7b023f017d",
+      "name": "Livro Lógica De Programação E Algoritmos Com Javascript",
+      "before": {
+        "at": "2026-11-11T16:56:03.408Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "6683d37c-20ce-4967-8b20-5fe6f4c4247b",
+      "name": "Livro O Corpo Digitalizado - Banco De Dados Genéticos",
+      "before": {
+        "at": "2026-11-11T17:00:29.476Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "59ace338-1c1e-49cd-94f1-d75eaa998965",
+      "name": "Livro O Direito E O Estado Como Estruturas E Sistemas",
+      "before": {
+        "at": "2026-11-11T17:01:46.785Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "5e920a5b-9695-4bbd-aba7-a05f519b2212",
+      "name": "Livro Otimização Combinatória e Meta-heurísticas - Algoritmos e Aplicações, de Elizabeth Goldbarg. Editorial GEN LTC, em português (2015)",
+      "before": {
+        "at": "2026-11-11T16:57:52.658Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "0050a76e-1b8f-44a0-95c8-7630c8c5681d",
+      "name": "Livro Programação cliente em sistemas Web, de Casati, João Paulo. Editorial Meta Impressão e Soluções Digitais Ltda., tapa mole, en português (2016)",
+      "before": {
+        "at": "2026-11-11T16:55:59.578Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "ff45ffaa-7d18-4033-8bb7-56cbd6c5e552",
+      "name": "Livro Programação para internet rica, de Fonseca, Cleber Costa da. Editorial Meta Impressão e Soluções Digitais Ltda., tapa mole, en português (2016)",
+      "before": {
+        "at": "2026-11-11T16:55:55.777Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "e9f2a38a-2484-464c-8059-d3eafab3fec6",
+      "name": "Livro Sql Para Análise De Dados",
+      "before": {
+        "at": "2026-11-11T17:00:37.097Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "a358cbab-c7df-4ec5-9d34-5324837810a2",
+      "name": "Livro Técnicas de planejamento, programação e controle da produção e introdução à programação linear, de Bezerra, Cicero Aparecido. Editorial Editora Intersaberes Ltda., tapa mole, en português (2014)",
+      "before": {
+        "at": "2026-11-11T16:56:15.062Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "8f3c5a41-a6c0-4fa3-a430-9c8760bc0ecd",
+      "name": "Livro: Banco - Um Inimigo Do Povo Autor: Ebenezer W. A. Nascimento (novo, Lacrado)",
+      "before": {
+        "at": "2026-11-11T17:00:33.254Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "d80f2d42-8e94-4aa1-98a6-15267ce37231",
+      "name": "Livro: Fenomenos De Transporte Para Engenharia",
+      "before": {
+        "at": "2026-11-11T16:59:32.269Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "cc737a67-bacb-43b0-81f3-d6f2a1c3ebe6",
+      "name": "Livro: Oncorradiologia: Need To Know - Update - Diagnóstico Por Imagem, Algoritmos E Condutas - Douglas J. Racy",
+      "before": {
+        "at": "2026-11-11T16:57:48.433Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b9e34516-b318-4a20-8cca-4885a7634ff7",
+      "name": "Mean: Full Stack Javascript Para Aplicações Web Com Mongod",
+      "before": {
+        "at": "2026-11-11T16:57:05.321Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "77465f2b-965c-41a0-86c6-abc130350743",
+      "name": "Principios De Orientaçao A Objetos Em Javascript",
+      "before": {
+        "at": "2026-11-11T16:56:57.614Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7edc6d57-a2ed-45a5-bc5d-db8c893140c0",
+      "name": "Rpg Desafios - Livro Terapeutico - Treino De Habilidades Para Prevenção",
+      "before": {
+        "at": "2026-11-11T16:55:04.513Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "1c0d1c82-db1f-49cf-afc3-17f07e262fc2",
+      "name": "Tormenta 20 - Baralho De Magias",
+      "before": {
+        "at": "2026-11-11T16:55:17.434Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    }
+  ]
+}

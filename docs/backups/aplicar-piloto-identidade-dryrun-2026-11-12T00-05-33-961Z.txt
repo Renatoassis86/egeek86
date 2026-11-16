@@ -1,0 +1,56 @@
+=== APLICAR PILOTO DE IDENTIDADE (DRY-RUN, READ ONLY) ===
+plano docs\backups\piloto-identidade-itens-plano-2026-11-11T21-13-50-604Z.json (gerado ha 2.9 h) | backup de affiliate_offers: 3.5 h | migracao 0044 (colunas avg_excluded_*): NAO aplicada
+Do plano: mover=6; cerca SUPERIOR=4 (inferior ignorado, regra do dono: 3); incertas=16; veredito=32d3d75a=em_revisao
+
+--- MEDIAS antes -> depois por master afetado (recalculo local; cada oferta vale 1) ---
+  2541db02 "Console Playstation 5 Pro 2tb Branco Sony Bivolt Bra": armazenada(2026-11-11, n=12)=R$ 8.289,92 | agora n=11 R$ 8.364,38 -> depois n=14 R$ 8.918,44 (6.6%)
+  fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1tb Bran": armazenada(2026-11-11, n=27)=R$ 5.315,36 | agora n=25 R$ 5.300,75 -> depois n=28 R$ 5.309,13 (0.2%)
+  599ae76d "Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb ": armazenada(2026-11-11, n=2)=- | agora n=3 R$ 10.949,99 -> depois n=0 - (-)
+  71a42333 "Console Sony Playstation 5 Slim Cor branco/preto": armazenada(2026-11-11, n=2)=- | agora n=3 R$ 5.379,00 -> depois n=0 - (-)
+  1a410cbb "Pacote Playstation 5: console colorido Nba 2k26": armazenada(2026-11-11, n=1)=- | agora n=2 - -> depois n=0 - (-)
+  24f34f3d "Console PlayStation® 5, EA SPORTS FC™ 24": armazenada(2026-11-11, n=4)=R$ 4.887,25 | agora n=4 R$ 4.887,25 -> depois n=0 - (-)
+  7f47de59 "Console Mídia Física Com God Of War Ragnarok Playsta": armazenada(2026-11-11, n=2)=- | agora n=3 R$ 5.375,67 -> depois n=0 - (-)
+  0163ced3 "Sony PlayStation 5 825GB padrão branco e preto conso": armazenada(2026-11-11, n=11)=R$ 5.036,18 | agora n=15 R$ 4.946,53 -> depois n=11 R$ 4.845,27 (-2.0%)
+  06b7ebd1 "Console digital God Of War Ragnarok Ps5 - branco": armazenada(2026-11-11, n=3)=R$ 4.585,00 | agora n=3 R$ 4.585,00 -> depois n=0 - (-)
+  68041832 "Console PlayStation 5 Midia Fisica Slim Branco 1TB R": armazenada(2026-11-11, n=12)=R$ 5.811,11 | agora n=12 R$ 5.736,03 -> depois n=11 R$ 5.348,39 (-6.8%)
+  c8a82f2b "Console PlayStation 5 Slim 1 TB Digital Edição Limit": armazenada(2026-11-11, n=33)=R$ 9.030,86 | agora n=34 R$ 8.927,02 -> depois n=32 R$ 8.141,20 (-8.8%)
+  22c09745 "Console PlayStation 5 Slim Digital": armazenada(2026-11-11, n=150)=R$ 4.632,03 | agora n=138 R$ 4.652,23 -> depois n=137 R$ 4.627,79 (-0.5%)
+
+--- ACOES QUE SERIAM APLICADAS (apos revalidacao ao vivo) ---
+MOVER 6:
+   bfb5cdae R$ 10.799,99 599ae76d -> 2541db02 "Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 2024 Bla"
+   0f295317 R$ 4.419,00 71a42333 -> fea28c9c "Console Sony Playstation 5 Slim Cor branco/preto"
+   1e97aa72 R$ 4.419,00 71a42333 -> fea28c9c "Console Sony Playstation 5 Slim Cor branco/preto"
+   5a7a5426 R$ 7.299,00 71a42333 -> fea28c9c "Console Sony Playstation 5 Slim Cor branco/preto"
+   bd827f86 R$ 11.250,00 599ae76d -> 2541db02 "Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 2024 Bla"
+   f5116653 R$ 10.799,99 599ae76d -> 2541db02 "Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 2024 Bla"
+FORA DA MEDIA - cerca superior 4:
+   f3804865 R$ 8.000,00 [ps5|slim|digital|br|avulso]
+   e0a19a53 R$ 23.000,00 [ps5|ed|ed:aniversario_30|br|avulso]
+   a190b4be R$ 20.000,00 [ps5|ed|ed:aniversario_30|br|avulso]
+   14cceb55 R$ 10.000,00 [ps5|slim|disc|br|pacote:ratchet]
+   (ps5|slim|digital|br|avulso: n=136 cerca superior ao vivo=R$ 6.508,54)
+   (ps5|ed|ed:aniversario_30|br|avulso: n=34 cerca superior ao vivo=R$ 16.293,07)
+   (ps5|slim|disc|br|pacote:ratchet: n=12 cerca superior ao vivo=R$ 9.156,39)
+FORA DA MEDIA - identidade incerta 16:
+   8b522778 R$ 4.485,19 master 1a410cbb
+   15c3a043 R$ 4.250,00 master 24f34f3d
+   7acb886a R$ 4.500,00 master 24f34f3d
+   67e88974 R$ 5.299,00 master 7f47de59
+   d4fd02e3 R$ 5.529,00 master 7f47de59
+   8df153b1 R$ 5.299,00 master 7f47de59
+   9b2d4e43 R$ 4.900,00 master 24f34f3d
+   4e47de62 R$ 4.500,00 master 0163ced3
+   d2f36ed9 R$ 4.485,19 master 1a410cbb
+   2be87e29 R$ 5.899,00 master 24f34f3d
+   f245e4b4 R$ 5.200,00 master 0163ced3
+   4f7decc2 R$ 5.600,00 master 0163ced3
+   2d57de59 R$ 5.600,00 master 0163ced3
+   c95d0696 R$ 4.855,00 master 06b7ebd1
+   b5d6935a R$ 4.900,00 master 06b7ebd1
+   68ee7d32 R$ 4.000,00 master 06b7ebd1
+VEREDITO: master 32d3d75a identityVerdict=em_revisao (anterior: null)
+IGNORADAS na revalidacao (0):
+DIVERGENCIAS QUE ABORTAM (1):
+   acoes fora_da_media (20 ofertas) exigem a migracao 0044 (colunas avg_excluded_at/avg_excluded_reason). Aplique-a antes ou use --so mover,veredito
+Contagens estaveis (<= inicio da transacao): ofertas=29814 cotacoes=3393652 masters=7908

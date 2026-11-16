@@ -1,0 +1,4 @@
+{
+  "colunas_antes": [],
+  "rollback": "drizzle/migrations/0062_tipo_preco_amazon.rollback.sql"
+}

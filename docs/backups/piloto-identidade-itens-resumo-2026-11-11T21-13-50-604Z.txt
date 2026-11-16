@@ -1,0 +1,534 @@
+=== PILOTO DE IDENTIDADE DOS ITENS (SIMULACAO, SOMENTE LEITURA) ===
+Gerado em 2026-11-11T21:13:53.848Z | dado real do banco (SELECT em transacao READ ONLY) | R2 e R4 NAO executados
+{
+  "modo": "SIMULACAO (read only)",
+  "mastersPs5ConsoleNoPiloto": 53,
+  "mastersForaDoPiloto": 19,
+  "ofertasAtivasAvaliadas": 299,
+  "gruposPorChave": 14,
+  "gruposComMasterExistente": 14,
+  "gruposQuePedemMasterNovo": 0,
+  "ofertasGrupo": 283,
+  "ofertasIncertas": 16,
+  "ofertasForaEscopo": 0,
+  "ofertasCondicaoNaoNova": 0,
+  "manter": 277,
+  "mover": 6,
+  "moverParaMasterNovo": 0,
+  "marcarIncerta": 16,
+  "marcarForaDaMedia": 0,
+  "quarentenar": 0,
+  "marcarForaDaCerca": 7,
+  "uniaoDeMastersDuplicados": 2
+}
+
+##### PARTE A: PS5 CONSOLE #####
+
+--- ANTES: masters atuais (media armazenada hoje x media recalculada do mesmo universo; cada oferta vale 1) ---
+22c09745 "Console PlayStation 5 Slim Digital" | ativas=137 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 3.725,00 a R$ 8.000,00 (ratio 2.1x) mediana=R$ 4.519,00 | media armazenada(2026-11-11, n=146)=R$ 4.654,83 | recalculada(n=137)=R$ 4.667,46
+c8a82f2b "Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Anivers" | ativas=34 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 5.500,00 a R$ 23.000,00 (ratio 4.2x) mediana=R$ 7.770,17 | media armazenada(2026-11-11, n=33)=R$ 9.030,86 | recalculada(n=34)=R$ 8.927,02
+fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1tb Branco" | ativas=25 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 4.300,00 a R$ 8.000,00 (ratio 1.9x) mediana=R$ 5.389,00 | media armazenada(2026-11-11, n=27)=R$ 5.315,36 | recalculada(n=25)=R$ 5.302,79
+0163ced3 "Sony PlayStation 5 825GB padrão branco e preto console potente" | ativas=15 chaves=2 fora_escopo=0 nao_novo=0 incertas=4
+     preco R$ 4.200,00 a R$ 6.000,00 (ratio 1.4x) mediana=R$ 4.800,00 | media armazenada(2026-11-11, n=10)=R$ 5.009,80 | recalculada(n=15)=R$ 4.946,53
+b7560511 "Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine" | ativas=15 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 6.299,99 a R$ 12.989,73 (ratio 2.1x) mediana=R$ 9.999,00 | media armazenada(2026-11-11, n=14)=R$ 9.306,02 | recalculada(n=15)=R$ 9.105,62
+68041832 "Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet " | ativas=12 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 4.399,00 a R$ 10.000,00 (ratio 2.3x) mediana=R$ 5.479,50 | media armazenada(2026-11-11, n=12)=R$ 5.811,11 | recalculada(n=12)=R$ 5.736,03
+2541db02 "Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco" | ativas=12 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 5.322,21 a R$ 9.999,00 (ratio 1.9x) mediana=R$ 8.993,60 | media armazenada(2026-11-11, n=12)=R$ 8.289,92 | recalculada(n=12)=R$ 8.110,87
+9b77b9dd "Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White" | ativas=8 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 6.833,98 a R$ 11.900,00 (ratio 1.7x) mediana=R$ 10.733,50 | media armazenada(2026-11-11, n=7)=R$ 10.152,71 | recalculada(n=8)=R$ 9.737,87
+789ccfa8 "Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 " | ativas=7 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 4.400,00 a R$ 5.000,00 (ratio 1.1x) mediana=R$ 4.537,00 | media armazenada(2026-11-11, n=6)=R$ 4.677,17 | recalculada(n=7)=R$ 4.637,57
+24f34f3d "Console PlayStation® 5, EA SPORTS FC™ 24" | ativas=4 chaves=1 fora_escopo=0 nao_novo=0 incertas=4
+     preco R$ 4.250,00 a R$ 5.899,00 (ratio 1.4x) mediana=R$ 4.700,00 | media armazenada(2026-11-11, n=4)=R$ 4.887,25 | recalculada(n=4)=R$ 4.887,25
+16bfdd87 "Playstation Ps5 Slim Disc de 1 TB, pacote Fortnite, console branco" | ativas=4 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 5.999,99 a R$ 8.286,09 (ratio 1.4x) mediana=R$ 6.149,95 | media armazenada(2026-11-11, n=3)=R$ 6.861,99 | recalculada(n=4)=R$ 6.646,49
+30c95eb3 "Console Sony PlayStation 5 PS5 Slim Disk, 1TB, Pacote ASTRO BOT e Gran" | ativas=4 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 4.480,00 a R$ 6.839,25 (ratio 1.5x) mediana=R$ 5.659,63 | media armazenada(2026-11-11, n=2)=- | recalculada(n=4)=R$ 5.659,63
+57273127 "Playstation 5 Slim Digital 825gb Branco Novo Cfi-2114 2 Controles Dual" | ativas=3 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 5.213,00 a R$ 5.214,99 (ratio 1.0x) mediana=R$ 5.213,00 | media armazenada(2026-11-11, n=2)=- | recalculada(n=3)=R$ 5.213,66
+599ae76d "Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 2024 Bla White" | ativas=3 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 10.799,99 a R$ 11.250,00 (ratio 1.0x) mediana=R$ 10.799,99 | media armazenada(2026-11-11, n=2)=- | recalculada(n=3)=R$ 10.949,99
+71a42333 "Console Sony Playstation 5 Slim Cor branco/preto" | ativas=3 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 4.419,00 a R$ 7.299,00 (ratio 1.7x) mediana=R$ 4.419,00 | media armazenada(2026-11-11, n=2)=- | recalculada(n=3)=R$ 5.379,00
+06b7ebd1 "Console digital God Of War Ragnarok Ps5 - branco" | ativas=3 chaves=1 fora_escopo=0 nao_novo=0 incertas=3
+     preco R$ 4.000,00 a R$ 4.900,00 (ratio 1.2x) mediana=R$ 4.855,00 | media armazenada(2026-11-11, n=3)=R$ 4.585,00 | recalculada(n=3)=R$ 4.585,00
+7f47de59 "Console Mídia Física Com God Of War Ragnarok Playstation 5 Cor Branco" | ativas=3 chaves=1 fora_escopo=0 nao_novo=0 incertas=3
+     preco R$ 5.299,00 a R$ 5.529,00 (ratio 1.0x) mediana=R$ 5.299,00 | media armazenada(2026-11-11, n=2)=- | recalculada(n=3)=R$ 5.375,67
+777b11cd "Sony PlayStation 5 825GB Kit: PS5 HW Standard + Dualsense + PS5 Demons" | ativas=3 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 5.000,00 a R$ 6.000,00 (ratio 1.2x) mediana=R$ 5.000,00 | media armazenada(2026-11-11, n=2)=- | recalculada(n=3)=R$ 5.333,33
+48c89201 "Console Playstation 5 Slim Fisico -2 Controles Ps5 Nacional Branco" | ativas=2 chaves=1 fora_escopo=0 nao_novo=0 incertas=0
+     preco R$ 12.500,00 a R$ 12.500,00 (ratio 1.0x) mediana=R$ 12.500,00 | media armazenada(2026-11-11, n=1)=- | recalculada(n=2)=-
+1a410cbb "Pacote Playstation 5: console colorido Nba 2k26" | ativas=2 chaves=1 fora_escopo=0 nao_novo=0 incertas=2
+     preco R$ 4.485,19 a R$ 4.485,19 (ratio 1.0x) mediana=R$ 4.485,19 | media armazenada(2026-11-11, n=1)=- | recalculada(n=2)=-
+
+--- DEPOIS: grupos propostos por chave de identidade (R1) com R3 ---
+
+[AVULSO] ps5|slim|digital|br|avulso  | confianca=alta | destino: master 22c09745 "Console PlayStation 5 Slim Digital"
+   n=137 lojas=136 | min=R$ 3.725,00 max=R$ 8.000,00 ratio=2.15x | mediana=R$ 4.519,00 media=R$ 4.667,46 (3.3%) | IQR/mediana=0.18 | gap bimodal log=0.02 entre R$ 5.577,00 e R$ 5.699,00
+   cerca Tukey(log): R$ 3.231,54 a R$ 6.496,90 | fora da cerca=1 | implausiveis=0 | veredito R3=ok_com_ofertas_fora_da_media
+   MEDIA: regra atual=R$ 4.667,46 (n=137) -> com cerca=R$ 4.642,96 (n=136) | cerca so superior=R$ 4.642,96
+     - 889dd555    R$ 3.725,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 7fb086c5    R$ 3.800,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 1e1491ca    R$ 3.819,73 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 32d6d546    R$ 3.894,98 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 4634e363    R$ 3.894,98 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 6a0c3267    R$ 3.900,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 7a87813c    R$ 3.900,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - faeb750b    R$ 3.923,45 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 866c3825    R$ 3.932,36 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - ba296dcf    R$ 3.965,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 457b7eb8    R$ 3.975,14 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 457eedc3    R$ 3.979,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 927f43ca    R$ 3.985,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - facfcccd    R$ 3.989,90 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 04cc1658    R$ 3.995,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - ca8c5fda    R$ 3.999,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 7b26a991    R$ 3.999,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 0a3f0738    R$ 3.999,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - a9896325    R$ 3.999,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 45b73051    R$ 3.999,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 945f6215    R$ 3.999,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 38d5e05a    R$ 4.000,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - d295aa8b    R$ 4.000,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 1b7fce6d    R$ 4.014,36 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 8b278398    R$ 4.014,36 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 2ddea982    R$ 4.016,89 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - a3df06ba    R$ 4.089,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - b276e612    R$ 4.097,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - ec36106b    R$ 4.110,33 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - b30ac2be    R$ 4.149,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 183efd1f    R$ 4.154,42 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - e2638075    R$ 4.154,42 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - b3980bd7    R$ 4.171,14 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - f9b6878b    R$ 4.179,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 1f4a2710    R$ 4.199,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 9e3a84ca    R$ 4.200,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 3d5970f4    R$ 4.200,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 3794d921    R$ 4.200,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 828d91c6    R$ 4.212,68 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 085c35ec    R$ 4.221,11 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 17f1e374    R$ 4.249,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 6ef4efb7    R$ 4.250,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - e108c2e1    R$ 4.299,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 19c54e0f    R$ 4.299,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 2c945a0e    R$ 4.299,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 72c8a147    R$ 4.299,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 09853c7f    R$ 4.299,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 4b770291    R$ 4.299,99 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 62b044ec    R$ 4.300,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - f3687aa5    R$ 4.300,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 313ac276    R$ 4.300,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 0f7e5424    R$ 4.300,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 728394d7    R$ 4.300,95 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 011403e5    R$ 4.336,79 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 00fdc61c    R$ 4.337,51 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - e3be2c06    R$ 4.417,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 27cf09d0    R$ 4.450,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - c1fe8986    R$ 4.459,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 376bcef9    R$ 4.499,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 40fbb731    R$ 4.499,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 0a07c7c3    R$ 4.499,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - e3f7247d    R$ 4.499,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - bda7c945    R$ 4.500,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - d962c3fc    R$ 4.500,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 82c35697    R$ 4.500,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 96fc001b    R$ 4.500,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 016ece9f    R$ 4.500,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 107e5c99    R$ 4.500,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 7a3f8a30    R$ 4.519,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - af72b683    R$ 4.548,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 7ec1ef27    R$ 4.550,70 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 74b3c73d    R$ 4.580,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - bb38713b    R$ 4.589,99 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 26128a2e    R$ 4.598,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - eb569522    R$ 4.599,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 56e12ee4    R$ 4.599,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - d773640e    R$ 4.599,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - d78da9c7    R$ 4.600,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 5bf19d1f    R$ 4.632,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 68edaff3    R$ 4.650,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 5b1ed75e    R$ 4.689,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 33cdf176    R$ 4.690,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 286b3725    R$ 4.699,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 11e5e397    R$ 4.699,90 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 50fdbcc1    R$ 4.699,99 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - ad818d5e    R$ 4.721,69 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - f7e957f5    R$ 4.779,20 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 7d7e0d51    R$ 4.799,99 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 48a18c67    R$ 4.829,85 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - e4f92cb4    R$ 4.850,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 605fbdb8    R$ 4.890,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 2bc260c1    R$ 4.890,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - c9689acc    R$ 4.899,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - ba844290    R$ 4.900,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - bb30630a    R$ 4.933,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 146474f9    R$ 4.954,99 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 994defac    R$ 4.966,65 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - a81a6ff3    R$ 4.989,50 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 2329b9bd    R$ 4.990,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - d02d261b    R$ 4.999,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - e8a68324    R$ 4.999,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - e6447c0c    R$ 5.000,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - b628b933    R$ 5.000,00 mercado-livre [manter] Console digital Sony Playstation 5 Slim Digital de 1 TB branco/preto
+     - 39635794    R$ 5.000,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 50b4f645    R$ 5.000,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - ee6520d5    R$ 5.000,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 141b9ca1    R$ 5.000,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - db0609c0    R$ 5.000,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 56582541    R$ 5.079,90 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 90622a60    R$ 5.079,90 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - ccf5c6f2    R$ 5.099,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 8d8f92a4    R$ 5.100,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - bdfc8378    R$ 5.109,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 926908b8    R$ 5.199,20 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 2863dd98    R$ 5.199,99 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 736ef145    R$ 5.200,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 8cbadfea    R$ 5.299,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - b2ac583a    R$ 5.390,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 87813eb7    R$ 5.399,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 9c8ec723    R$ 5.399,99 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 9a58ecdf    R$ 5.490,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 6ec0a35b    R$ 5.500,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - d3246ca9    R$ 5.577,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 67bbbf6f    R$ 5.699,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - b327e7e1    R$ 5.749,90 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 135a077a    R$ 5.790,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - df7cfa1e    R$ 5.800,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 2e1624ee    R$ 5.885,56 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - c7bb9603    R$ 5.899,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - b3b71fb9    R$ 5.900,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 4d268690    R$ 5.900,00 mercado-livre [manter] Console PlayStation 5 Slim Digital 825GB
+     - 87690328    R$ 5.950,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - 86dd7522    R$ 5.965,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - f0ce6d80    R$ 5.999,99 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - 388bd4fe    R$ 6.000,00 mercado-livre [manter] Console PlayStation 5 Slim Digital
+     - f80a6983    R$ 6.000,00 mercado-livre [manter] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+     - f3804865    R$ 8.000,00 mercado-livre [manter+marcar_fora_da_cerca] Console PlayStation® 5 Slim Edição Digital 825 GB Branco - Sony
+
+[EDICAO] ps5|ed|ed:aniversario_30|br|avulso  | confianca=alta | destino: master c8a82f2b "Console PlayStation 5 Slim 1 TB Digital Edição Limitada"
+   n=34 lojas=34 | min=R$ 5.500,00 max=R$ 23.000,00 ratio=4.18x | mediana=R$ 7.770,17 media=R$ 8.927,02 (14.9%) | IQR/mediana=0.37 | gap bimodal log=0.29 entre R$ 15.000,00 e R$ 20.000,00
+   cerca Tukey(log): R$ 4.123,40 a R$ 16.293,07 | fora da cerca=2 | implausiveis=0 | veredito R3=ok_com_ofertas_fora_da_media
+   MEDIA: regra atual=R$ 8.927,02 (n=34) -> com cerca=R$ 8.141,20 (n=32) | cerca so superior=R$ 8.141,20
+     - 9e2c1485    R$ 5.500,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - bd703e37    R$ 5.500,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - da1ca29b    R$ 6.000,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 53fce281    R$ 6.100,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - c110e013    R$ 6.295,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 9a84ded1    R$ 6.450,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 397277e7    R$ 6.799,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 710a9439    R$ 6.800,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 6ceeb628    R$ 6.874,20 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 21097947    R$ 6.990,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 886d0456    R$ 6.999,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - f9314725    R$ 7.100,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 609f9f1c    R$ 7.299,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 5408902c    R$ 7.299,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 39edea64    R$ 7.499,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - a431c717    R$ 7.699,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 7419a8c3    R$ 7.750,44 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 8856f0bc    R$ 7.789,90 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 15a50318    R$ 7.800,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 92b408ca    R$ 7.800,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 2f3fbef0    R$ 7.990,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 0385b235    R$ 8.000,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 01185d3a    R$ 8.500,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 40985f81    R$ 8.699,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 4b0e60b4    R$ 8.999,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - e90f4b85    R$ 9.990,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 6eeb03eb    R$ 9.999,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 48b8128a    R$ 9.999,99 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 9c18f897    R$ 9.999,99 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - cf95068c   R$ 11.999,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - 9560b05e   R$ 12.999,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - dd8803a3   R$ 15.000,00 mercado-livre [manter] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - a190b4be   R$ 20.000,00 mercado-livre [manter+marcar_fora_da_cerca] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+     - e0a19a53   R$ 23.000,00 mercado-livre [manter+marcar_fora_da_cerca] Console PlayStation 5 Slim 1 TB Digital Edição Limitada do 30º Aniversário com Controle DualSen
+
+[AVULSO] ps5|slim|disc|br|avulso  | confianca=media | destino: master fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1tb Branco"
+   n=28 lojas=26 | min=R$ 4.300,00 max=R$ 8.000,00 ratio=1.86x | mediana=R$ 5.294,00 media=R$ 5.310,95 (0.3%) | IQR/mediana=0.22 | gap bimodal log=0.16 entre R$ 6.199,00 e R$ 7.299,00
+   cerca Tukey(log): R$ 3.322,53 a R$ 8.068,73 | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 5.310,95 (n=28) -> com cerca=R$ 5.310,95 (n=28) | cerca so superior=R$ 5.310,95
+   titulo nao prova: mídia presumida (sem a palavra digital/disco)
+     - 357a0d34    R$ 4.300,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 81c5691b    R$ 4.300,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 0f295317    R$ 4.419,00 mercado-livre [mover] Console Sony Playstation 5 Slim Cor branco/preto  (de 71a42333)
+     - 1e97aa72    R$ 4.419,00 mercado-livre [mover] Console Sony Playstation 5 Slim Cor branco/preto  (de 71a42333)
+     - ffa39e10    R$ 4.500,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - a76c446d    R$ 4.519,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 4f0d9c5b    R$ 4.550,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - fae216a6    R$ 4.662,54 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 7101c97d    R$ 4.699,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 46d26ec0    R$ 4.699,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - bac1db33    R$ 4.751,78 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 44e2ee65    R$ 4.810,90 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 7fd80164    R$ 4.900,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - bdea6a8b    R$ 5.199,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - c010d1ca    R$ 5.389,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - cbc97533    R$ 5.449,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 45efa7de    R$ 5.499,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 1bc90bd3    R$ 5.499,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - d6117316    R$ 5.500,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - d5485130    R$ 5.500,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 33dba5f1    R$ 5.747,50 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 25b8e8a0    R$ 5.899,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - df73a573    R$ 5.999,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - f394efe2    R$ 5.999,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 64c8d11d    R$ 5.999,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 858d975c    R$ 6.199,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+     - 5a7a5426    R$ 7.299,00 mercado-livre [mover] Console Sony Playstation 5 Slim Cor branco/preto  (de 71a42333)
+     - 27f767bb    R$ 8.000,00 mercado-livre [manter] Console Sony Playstation 5 Edição Slim Disk 1tb Branco
+
+[AVULSO] ps5|pro|na|br|avulso  | confianca=alta | destino: master 2541db02 "Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco"
+   n=15 lojas=13 | min=R$ 5.322,21 max=R$ 11.250,00 ratio=2.11x | mediana=R$ 9.000,00 media=R$ 8.678,69 (-3.6%) | IQR/mediana=0.21 | gap bimodal log=0.34 entre R$ 5.500,00 e R$ 7.699,00
+   cerca Tukey(log): R$ 5.770,41 a R$ 13.538,87 | fora da cerca=3 | implausiveis=0 | veredito R3=ok_com_ofertas_fora_da_media
+   MEDIA: regra atual=R$ 8.678,69 (n=15) -> com cerca=R$ 9.488,18 (n=12) | cerca so superior=R$ 8.678,69
+     - 23bdd0cf    R$ 5.322,21 mercado-livre [manter+marcar_fora_da_cerca] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - eb0bff4a    R$ 5.500,00 mercado-livre [manter+marcar_fora_da_cerca] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - 5190c318    R$ 5.500,00 mercado-livre [manter+marcar_fora_da_cerca] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - df1fb8a9    R$ 7.699,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - f43b7862    R$ 8.199,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - 7407b587    R$ 8.988,20 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - 41b0d5a9    R$ 8.999,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - 26aace73    R$ 9.000,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - 8bcaf9a4    R$ 9.100,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - f4a65e07    R$ 9.354,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - dc78532c    R$ 9.670,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - c7b7879e    R$ 9.999,00 mercado-livre [manter] Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco
+     - bfb5cdae   R$ 10.799,99 mercado-livre [mover] Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 2024 Bla White  (de 599ae76d)
+     - f5116653   R$ 10.799,99 mercado-livre [mover] Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 2024 Bla White  (de 599ae76d)
+     - bd827f86   R$ 11.250,00 mercado-livre [mover] Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 2024 Bla White  (de 599ae76d)
+
+[EDICAO] ps5|ed|ed:wolverine|br|avulso  | confianca=alta | destino: master b7560511 "Console PlayStation 5 Digital 825GB - Edição Limitada W"
+   n=15 lojas=15 | min=R$ 6.299,99 max=R$ 12.989,73 ratio=2.06x | mediana=R$ 9.999,00 media=R$ 9.105,62 (-8.9%) | IQR/mediana=0.40 | gap bimodal log=0.22 entre R$ 7.999,99 e R$ 9.999,00
+   cerca Tukey(log): R$ 3.460,58 a R$ 21.741,70 | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 9.105,62 (n=15) -> com cerca=R$ 9.105,62 (n=15) | cerca so superior=R$ 9.105,62
+     - 57921c34    R$ 6.299,99 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - c023a399    R$ 6.299,99 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - 6fa30151    R$ 6.399,00 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - d2c1b5c5    R$ 6.790,00 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - ad68f3c5    R$ 6.999,00 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - be2a4712    R$ 7.999,00 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - dc4741a7    R$ 7.999,99 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - b2a2a773    R$ 9.999,00 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - b776339c    R$ 9.999,99 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - 2dd88a80   R$ 10.000,00 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - 6673234f   R$ 10.839,00 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - 11ca19bd   R$ 10.989,78 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - 87b961bc   R$ 10.989,78 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - 48b50cd5   R$ 11.989,99 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+     - f94f1a1a   R$ 12.989,73 mercado-livre [manter] Console PlayStation 5 Digital 825GB - Edição Limitada Wolverine
+
+[PACOTE] ps5|slim|disc|br|pacote:ratchet  | confianca=alta | destino: master 68041832 "Console PlayStation 5 Midia Fisica Slim Branco 1TB Retu"
+   n=12 lojas=12 | min=R$ 4.399,00 max=R$ 10.000,00 ratio=2.27x | mediana=R$ 5.479,50 media=R$ 5.736,03 (4.7%) | IQR/mediana=0.26 | gap bimodal log=0.09 entre R$ 4.750,00 e R$ 5.199,90
+   cerca Tukey(log): R$ 3.128,43 a R$ 9.156,39 | fora da cerca=1 | implausiveis=0 | veredito R3=ok_com_ofertas_fora_da_media
+   MEDIA: regra atual=R$ 5.736,03 (n=12) -> com cerca=R$ 5.348,39 (n=11) | cerca so superior=R$ 5.348,39
+     - 6bc3e93f    R$ 4.399,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 96f6fbae    R$ 4.399,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - cf45d48c    R$ 4.475,30 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 6e15990a    R$ 4.750,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 04490aa8    R$ 5.199,90 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - c839557f    R$ 5.460,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 3be09164    R$ 5.499,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 35c2a454    R$ 5.652,11 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 61661f3f    R$ 6.000,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 01c4eef6    R$ 6.499,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 15f65b99    R$ 6.499,00 mercado-livre [manter] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+     - 14cceb55   R$ 10.000,00 mercado-livre [manter+marcar_fora_da_cerca] Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet e Clank Controle Sem Fio 
+
+[AVULSO] ps5|base|disc|br|avulso  | confianca=media | destino: master 0163ced3 "Sony PlayStation 5 825GB padrão branco e preto console "
+   n=11 lojas=8 | min=R$ 4.200,00 max=R$ 6.000,00 ratio=1.43x | mediana=R$ 4.800,00 media=R$ 4.845,27 (0.9%) | IQR/mediana=0.17 | gap bimodal log=0.11 entre R$ 5.200,00 e R$ 5.799,00
+   cerca Tukey(log): R$ 3.329,98 a R$ 6.584,37 | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 4.845,27 (n=11) -> com cerca=R$ 4.845,27 (n=11) | cerca so superior=R$ 4.845,27
+   titulo nao prova: sem marcador Slim/Pro/Fat: tratado como PS5 original, como o dedup
+     - 790ff7f1    R$ 4.200,00 mercado-livre [manter] Sony PlayStation 5 825GB padrão branco e preto console potente
+     - 843ca186    R$ 4.200,00 mercado-livre [manter] Sony PlayStation 5 825GB padrão branco e preto console potente
+     - 51f16642    R$ 4.300,00 mercado-livre [manter] Console Sony Playstation 5 Ps5 825gb Mídia Física Standard Cor Branco-preto
+     - 403cf43e    R$ 4.300,00 mercado-livre [manter] Console Sony Playstation 5 Ps5 825gb Mídia Física Standard Cor Branco-preto
+     - a2116452    R$ 4.699,00 mercado-livre [manter] Console Sony Playstation 5 Ps5 825gb Mídia Física Standard Cor Branco-preto
+     - cb94cd43    R$ 4.800,00 mercado-livre [manter] Sony PlayStation 5 PS5 825GB Standard
+     - 20cdb5a6    R$ 4.800,00 mercado-livre [manter] Sony PlayStation 5 PS5 825GB Standard
+     - 160e141a    R$ 5.000,00 mercado-livre [manter] Console Sony Playstation 5 Ps5 825gb Mídia Física Standard Cor Branco-preto
+     - 4e5a4a7d    R$ 5.200,00 mercado-livre [manter] Sony Playstation 5 Playstation 5 825gb Standard Cor Branco
+     - 20e8365c    R$ 5.799,00 mercado-livre [manter] Sony PlayStation 5 825GB padrão branco e preto console potente
+     - 616797d1    R$ 6.000,00 mercado-livre [manter] Sony PlayStation 5 825GB padrão branco e preto console potente
+
+[PACOTE] ps5|pro|na|br|pacote:controle extra  | confianca=alta | destino: master 9b77b9dd "Console Playstation 5 Pro Ps5 Digital Edition + Dualsen"
+   n=8 lojas=8 | min=R$ 6.833,98 max=R$ 11.900,00 ratio=1.74x | mediana=R$ 10.733,50 media=R$ 9.737,87 (-9.3%) | IQR/mediana=0.40 | gap bimodal log=0.34 entre R$ 7.499,00 e R$ 10.568,00
+   cerca Tukey(log): R$ 3.658,14 a R$ 23.317,91 | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 9.737,87 (n=8) -> com cerca=R$ 9.737,87 (n=8) | cerca so superior=R$ 9.737,87
+     - 44ac61b0    R$ 6.833,98 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+     - 4c097b95    R$ 6.833,98 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+     - bdb3c466    R$ 7.499,00 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+     - d919f3cf   R$ 10.568,00 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+     - b98f63f4   R$ 10.899,00 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+     - 14469155   R$ 11.600,00 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+     - 80902da9   R$ 11.769,00 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+     - 1534349c   R$ 11.900,00 mercado-livre [manter] Console Playstation 5 Pro Ps5 Digital Edition + Dualsense White
+
+[PACOTE] ps5|slim|digital|br|pacote:astro bot+gran turismo  | confianca=alta | destino: master 789ccfa8 "Console digital Sony Playstation 5 Ps5 Slim + 2 jogos A"
+   n=7 lojas=7 | min=R$ 4.400,00 max=R$ 5.000,00 ratio=1.14x | mediana=R$ 4.537,00 media=R$ 4.637,57 (2.2%) | IQR/mediana=0.10 | gap bimodal log=0.05 entre R$ 4.736,00 e R$ 4.990,00
+   cerca Tukey(log): R$ 3.788,76 a R$ 5.645,62 | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 4.637,57 (n=7) -> com cerca=R$ 4.637,57 (n=7) | cerca so superior=R$ 4.637,57
+     - 915b387b    R$ 4.400,00 mercado-livre [manter] Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 - branco 825 GB
+     - be409c2e    R$ 4.400,00 mercado-livre [manter] Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 - branco 825 GB
+     - 5ba8b29c    R$ 4.400,00 mercado-livre [manter] Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 - branco 825 GB
+     - afb4a97a    R$ 4.537,00 mercado-livre [manter] Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 - branco 825 GB
+     - 98600c15    R$ 4.736,00 mercado-livre [manter] Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 - branco 825 GB
+     - 71adb4a7    R$ 4.990,00 mercado-livre [manter] Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 - branco 825 GB
+     - 50b784ca    R$ 5.000,00 mercado-livre [manter] Console digital Sony Playstation 5 Ps5 Slim + 2 jogos Astro Bot e Gt7 - branco 825 GB
+
+[PACOTE] ps5|slim|disc|br|pacote:astro bot+gran turismo  | confianca=media | destino: master 30c95eb3 "Console Sony PlayStation 5 PS5 Slim Disk, 1TB, Pacote A"
+   n=4 lojas=3 | min=R$ 4.480,00 max=R$ 6.839,25 ratio=1.53x | mediana=R$ 5.659,63 media=R$ 5.659,63 (0.0%) | IQR/mediana=0.42 | gap bimodal log=0.42 entre R$ 4.480,00 e R$ 6.839,25 BIMODAL
+   cerca Tukey(log): n<5: vale plausibilidade | fora da cerca=0 | implausiveis=0 | veredito R3=em_revisao_bimodal_sem_cerca
+   MEDIA: regra atual=R$ 5.659,63 (n=4) -> com cerca=- (n=4) | cerca so superior=-
+   titulo nao prova: mídia presumida (sem a palavra digital/disco)
+     - ee72700e    R$ 4.480,00 mercado-livre [manter] Console Sony Playstation 5 Slim + Jogo Astro Bot E Gt7 Branco
+     - f21182cc    R$ 4.480,00 mercado-livre [manter] Console Sony Playstation 5 Slim + Jogo Astro Bot E Gt7 Branco
+     - 143a3937    R$ 6.839,25 mercado-livre [manter] Console Slim Playstation 5 Ps5 padrão, jogo Astro Bot e Gran Turismo 7
+     - ea661504    R$ 6.839,25 mercado-livre [manter] Console Slim Playstation 5 Ps5 padrão, jogo Astro Bot e Gran Turismo 7
+
+[PACOTE] ps5|slim|disc|br|pacote:fortnite  | confianca=alta | destino: master 16bfdd87 "Playstation Ps5 Slim Disc de 1 TB, pacote Fortnite, con"
+   n=4 lojas=4 | min=R$ 5.999,99 max=R$ 8.286,09 ratio=1.38x | mediana=R$ 6.149,95 media=R$ 6.646,49 (8.1%) | IQR/mediana=0.13 | gap bimodal log=0.05 entre R$ 5.999,99 e R$ 6.299,90
+   cerca Tukey(log): n<5: vale plausibilidade | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 6.646,49 (n=4) -> com cerca=R$ 6.646,49 (n=4) | cerca so superior=R$ 6.646,49
+     - da554ac2    R$ 5.999,99 mercado-livre [manter] Playstation Ps5 Slim Disc de 1 TB, pacote Fortnite, console branco
+     - 9b9795d6    R$ 5.999,99 mercado-livre [manter] Playstation Ps5 Slim Disc de 1 TB, pacote Fortnite, console branco
+     - ebb2efb7    R$ 6.299,90 mercado-livre [manter] Playstation Ps5 Slim Disc de 1 TB, pacote Fortnite, console branco
+     - 5d7c267f    R$ 8.286,09 mercado-livre [manter] Playstation Ps5 Slim Disc de 1 TB, pacote Fortnite, console branco
+
+[PACOTE] ps5|base|disc|br|pacote:controle extra+demons souls+ratchet  | confianca=media | destino: master 777b11cd "Sony PlayStation 5 825GB Kit: PS5 HW Standard + Dualsen"
+   n=3 lojas=3 | min=R$ 5.000,00 max=R$ 6.000,00 ratio=1.20x | mediana=R$ 5.000,00 media=R$ 5.333,33 (6.7%) | IQR/mediana=0.10 | gap bimodal log=0.00
+   cerca Tukey(log): n<5: vale plausibilidade | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 5.333,33 (n=3) -> com cerca=R$ 5.333,33 (n=3) | cerca so superior=R$ 5.333,33
+   titulo nao prova: sem marcador Slim/Pro/Fat: tratado como PS5 original, como o dedup
+     - 4ebdd4ad    R$ 5.000,00 mercado-livre [manter] Sony PlayStation 5 825GB Kit: PS5 HW Standard + Dualsense + PS5 Demons Souls + PS5 Ratchet & Cl
+     - 155c9747    R$ 5.000,00 mercado-livre [manter] Sony PlayStation 5 825GB Kit: PS5 HW Standard + Dualsense + PS5 Demons Souls + PS5 Ratchet & Cl
+     - 95bba261    R$ 6.000,00 mercado-livre [manter] Sony PlayStation 5 825GB Kit: PS5 HW Standard + Dualsense + PS5 Demons Souls + PS5 Ratchet & Cl
+
+[PACOTE] ps5|slim|digital|br|pacote:controle extra  | confianca=alta | destino: master 57273127 "Playstation 5 Slim Digital 825gb Branco Novo Cfi-2114 2"
+   n=3 lojas=3 | min=R$ 5.213,00 max=R$ 5.214,99 ratio=1.00x | mediana=R$ 5.213,00 media=R$ 5.213,66 (0.0%) | IQR/mediana=0.00 | gap bimodal log=0.00
+   cerca Tukey(log): n<5: vale plausibilidade | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: regra atual=R$ 5.213,66 (n=3) -> com cerca=R$ 5.213,66 (n=3) | cerca so superior=R$ 5.213,66
+     - 6d3dbd39    R$ 5.213,00 mercado-livre [manter] Playstation 5 Slim Digital 825gb Branco Novo Cfi-2114 2 Controles Dualsense Originais Sony Ps5 
+     - ed5fa209    R$ 5.213,00 mercado-livre [manter] Playstation 5 Slim Digital 825gb Branco Novo Cfi-2114 2 Controles Dualsense Originais Sony Ps5 
+     - 3246adf1    R$ 5.214,99 mercado-livre [manter] Playstation 5 Slim Digital 825gb Branco Novo Cfi-2114 2 Controles Dualsense Originais Sony Ps5 
+
+[PACOTE] ps5|slim|disc|br|pacote:controle extra  | confianca=alta | destino: master 48c89201 "Console Playstation 5 Slim Fisico -2 Controles Ps5 Naci"
+   n=2 lojas=2 | min=R$ 12.500,00 max=R$ 12.500,00 ratio=1.00x | mediana=R$ 12.500,00 media=R$ 12.500,00 (0.0%) | IQR/mediana=0.00 | gap bimodal log=0.00
+   cerca Tukey(log): n<5: vale plausibilidade | fora da cerca=0 | implausiveis=0 | veredito R3=sem_media_menos_de_3_ofertas
+   MEDIA: regra atual=- (n=2) -> com cerca=- (n=2) | cerca so superior=-
+     - 512f4c5e   R$ 12.500,00 mercado-livre [manter] Console Playstation 5 Slim Fisico -2 Controles Ps5 Nacional Branco
+     - 7d9c93a5   R$ 12.500,00 mercado-livre [manter] Console Playstation 5 Slim Fisico -2 Controles Ps5 Nacional Branco
+
+--- IDENTIDADE INCERTA (visiveis, fora da media): 16 ofertas ---
+     - 4e47de62    R$ 4.500,00 shopee        (master 0163ced3) Console P.S.5 Disco. | chave ps5|nd|disc|br|avulso | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - f245e4b4    R$ 5.200,00 mercado-livre (master 0163ced3) Console Playstation 5 Disco Sony Brasil | chave ps5|nd|disc|br|avulso | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 4f7decc2    R$ 5.600,00 mercado-livre (master 0163ced3) Console e joystick padrão Playstation 5 Dualsense Ps5, cor cinza, camuflagem | chave ps5|nd|disc|br|avulso | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 2d57de59    R$ 5.600,00 mercado-livre (master 0163ced3) Console e joystick padrão Playstation 5 Dualsense Ps5, cor cinza, camuflagem | chave ps5|nd|disc|br|avulso | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 68ee7d32    R$ 4.000,00 mercado-livre (master 06b7ebd1) Console digital God Of War Ragnarok Ps5 - branco | chave ps5|nd|digital|br|pacote:god of war | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - c95d0696    R$ 4.855,00 mercado-livre (master 06b7ebd1) Console digital God Of War Ragnarok Ps5 - branco | chave ps5|nd|digital|br|pacote:god of war | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - b5d6935a    R$ 4.900,00 mercado-livre (master 06b7ebd1) Console digital God Of War Ragnarok Ps5 - branco | chave ps5|nd|digital|br|pacote:god of war | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 8b522778    R$ 4.485,19 mercado-livre (master 1a410cbb) Pacote Playstation 5: console colorido Nba 2k26 | chave ps5|nd|disc|br|pacote:nba 2k | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - d2f36ed9    R$ 4.485,19 mercado-livre (master 1a410cbb) Pacote Playstation 5: console colorido Nba 2k26 | chave ps5|nd|disc|br|pacote:nba 2k | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 15c3a043    R$ 4.250,00 mercado-livre (master 24f34f3d) Console PlayStation® 5, EA SPORTS FC™ 24 | chave ps5|nd|disc|br|pacote:ea fc | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 7acb886a    R$ 4.500,00 mercado-livre (master 24f34f3d) Console PlayStation® 5, EA SPORTS FC™ 24 | chave ps5|nd|disc|br|pacote:ea fc | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 9b2d4e43    R$ 4.900,00 mercado-livre (master 24f34f3d) Console PlayStation® 5, EA SPORTS FC™ 24 | chave ps5|nd|disc|br|pacote:ea fc | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 2be87e29    R$ 5.899,00 mercado-livre (master 24f34f3d) Console PlayStation® 5, EA SPORTS FC™ 24 | chave ps5|nd|disc|br|pacote:ea fc | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 67e88974    R$ 5.299,00 mercado-livre (master 7f47de59) Console Mídia Física Com God Of War Ragnarok Playstation 5 Cor Branco | chave ps5|nd|disc|br|pacote:god of war | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - 8df153b1    R$ 5.299,00 mercado-livre (master 7f47de59) Console Mídia Física Com God Of War Ragnarok Playstation 5 Cor Branco | chave ps5|nd|disc|br|pacote:god of war | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+     - d4fd02e3    R$ 5.529,00 mercado-livre (master 7f47de59) Console Mídia Física Com God Of War Ragnarok Playstation 5 Cor Branco | chave ps5|nd|disc|br|pacote:god of war | titulo nao prova a versao; fail-closed: visivel, fora da media | versão Fat/Slim não provada pelo título
+
+--- CONDICAO NAO NOVA (fora da media): 0 ofertas ---
+
+--- FORA DE ESCOPO (nao e console PS5 em linha): 0 ofertas ---
+
+--- ANTES x DEPOIS por master destino (media armazenada hoje -> media do grupo, regra atual / com cerca) ---
+     22c09745 Console PlayStation 5 Slim Digital               antes=R$ 4.654,83 (n=146) | depois: regra=R$ 4.667,46 (n=137) cerca=R$ 4.642,96 (n=136) | variacao=-0.3%
+     c8a82f2b Console PlayStation 5 Slim 1 TB Digital Edição L antes=R$ 9.030,86 (n=33) | depois: regra=R$ 8.927,02 (n=34) cerca=R$ 8.141,20 (n=32) | variacao=-9.9%
+     fea28c9c Console Sony Playstation 5 Edição Slim Disk 1tb  antes=R$ 5.315,36 (n=27) | depois: regra=R$ 5.310,95 (n=28) cerca=R$ 5.310,95 (n=28) | variacao=-0.1%
+     2541db02 Console Playstation 5 Pro 2tb Branco Sony Bivolt antes=R$ 8.289,92 (n=12) | depois: regra=R$ 8.678,69 (n=15) cerca=R$ 9.488,18 (n=12) | variacao=14.5%
+     b7560511 Console PlayStation 5 Digital 825GB - Edição Lim antes=R$ 9.306,02 (n=14) | depois: regra=R$ 9.105,62 (n=15) cerca=R$ 9.105,62 (n=15) | variacao=-2.2%
+     68041832 Console PlayStation 5 Midia Fisica Slim Branco 1 antes=R$ 5.811,11 (n=12) | depois: regra=R$ 5.736,03 (n=12) cerca=R$ 5.348,39 (n=11) | variacao=-8.0%
+     0163ced3 Sony PlayStation 5 825GB padrão branco e preto c antes=R$ 5.009,80 (n=10) | depois: regra=R$ 4.845,27 (n=11) cerca=R$ 4.845,27 (n=11) | variacao=-3.3%
+     9b77b9dd Console Playstation 5 Pro Ps5 Digital Edition +  antes=R$ 10.152,71 (n=7) | depois: regra=R$ 9.737,87 (n=8) cerca=R$ 9.737,87 (n=8) | variacao=-4.1%
+     789ccfa8 Console digital Sony Playstation 5 Ps5 Slim + 2  antes=R$ 4.677,17 (n=6) | depois: regra=R$ 4.637,57 (n=7) cerca=R$ 4.637,57 (n=7) | variacao=-0.8%
+     30c95eb3 Console Sony PlayStation 5 PS5 Slim Disk, 1TB, P antes=R$ 5.659,63 (n=2) | depois: regra=R$ 5.659,63 (n=4) cerca=- (n=4) | variacao=-
+     16bfdd87 Playstation Ps5 Slim Disc de 1 TB, pacote Fortni antes=R$ 6.861,99 (n=3) | depois: regra=R$ 6.646,49 (n=4) cerca=R$ 6.646,49 (n=4) | variacao=-3.1%
+     777b11cd Sony PlayStation 5 825GB Kit: PS5 HW Standard +  antes=R$ 5.333,33 (n=2) | depois: regra=R$ 5.333,33 (n=3) cerca=R$ 5.333,33 (n=3) | variacao=0.0%
+     57273127 Playstation 5 Slim Digital 825gb Branco Novo Cfi antes=R$ 5.213,66 (n=2) | depois: regra=R$ 5.213,66 (n=3) cerca=R$ 5.213,66 (n=3) | variacao=0.0%
+     48c89201 Console Playstation 5 Slim Fisico -2 Controles P antes=- (n=1) | depois: regra=- (n=2) cerca=- (n=2) | variacao=-
+
+Ofertas de confianca media mantidas no grupo (precisam de R2/R4): 44 de 283
+Ofertas PS5 console ja em quarentena hoje (fora de toda leitura): 5; maior preco em quarentena R$ 10.000.000,00; 2 com preco >= R$ 1 milhao (nenhuma ativa/fora de quarentena o tem).
+
+--- Masters fora do piloto (nome nao e console PS5) ---
+     4c66a5e7 (console, 1 ativas) "Gori: Cuddly Carnage - Playstation 5" - sem substantivo de aparelho nem modelo (provável jogo)
+     d28c5f21 (console, 3 ativas) "Unidade de leitor de disco para console digital Sony Playstation 5 Ps5" - acessório/peça/jogo (unidade de leitor)
+     e981e2d4 (console, 2 ativas) "Dissipador Calor Ssd M2 2280 Ps5 Playstation 5 Cinza Prata" - acessório/peça/jogo (dissipador)
+     6b679a63 (console, 1 ativas) "EA FC 24 (FIFA 24) - Narração em Português - Ps5" - sem substantivo de aparelho nem modelo (provável jogo)
+     89436f1f (console, 3 ativas) "Ci Hdmi Vídeo Mn864739 Panasonic Para Ps5 Playstation 5" - acessório/peça/jogo (ci)
+     fd024a5a (console, 2 ativas) "Console Playstation 5 Portatil 30 Anos.. Cinza" - PS5/Xbox "portátil" não é o console
+     fd51e22b (console, 9 ativas) "Playstation Portal Para Console Ps5 Cor Branco" - acessório/peça/jogo (portal)
+     3dc9a636 (console, 10 ativas) "Console remoto Playstation Portal para Playstation 5 cor branca" - acessório/peça/jogo (portal)
+     4b837aae (console, 2 ativas) "Playstation 5 - Hyper-5" - sem substantivo de aparelho nem modelo (provável jogo)
+     a0dc800a (console, 1 ativas) "Acessórios para Sistema de Refrigeração / Cooler Externo a USB para PS" - acessório/peça/jogo (acessorios)
+     8a8eeb59 (console, 3 ativas) "Saros - Playstation 5" - sem substantivo de aparelho nem modelo (provável jogo)
+     c34d4058 (console, 7 ativas) "Playstation Portal Reprodutor Remoto De 8 Lcd Ps5 Sony Branco Com Pret" - acessório/peça/jogo (portal)
+     a21e27f7 (console, 1 ativas) "Cooler Original PS5 Nidek 17 ou 23 Lâminas - Peça Substituição Playsta" - acessório/peça/jogo (cooler)
+     a9ac6ac3 (console, 3 ativas) "Portal Ps5 - Jogue com seu console Ps5 de qualquer lugar" - acessório/peça/jogo (portal)
+     5e2f6341 (game, 2 ativas) "Football Manager Console 2024 Jogo Ps5" - sem evidência positiva de aparelho (classificador do catálogo não vê console)
+     f1203e44 (accessory, 2 ativas) "Fones de ouvido Kraken X Gamer para console PS5 Xbox Series Switch - p" - família não identificada no título
+     cc9d10e4 (accessory, 1 ativas) "Carregador Duplo Controle Manete Ps5 Compatível Console Playstation 5 " - título começa por acessório
+     0458a260 (accessory, 1 ativas) "Controlador de Jogo Sem Fio XHD-P501W, Joystick e Gatilho com Efeito H" - título começa por acessório
+     c4acff65 (game, 7 ativas) "Bluey The Videogame PS5 Midia Fisica" - sem evidência positiva de aparelho (classificador do catálogo não vê console)
+
+--- Masters duplicados (mesma chave) ---
+     ps5|pro|na|br|avulso: canonico 2541db02; duplicados 599ae76d
+     ps5|slim|disc|br|avulso: canonico fea28c9c; duplicados 71a42333
+
+--- Masters novos propostos ---
+
+##### PARTE B: RESIDENT EVIL GENERATION PACK - NS2 #####
+Ofertas: 23 nao quarentenadas (20 ativas, 3 expiradas fora do calculo). Media armazenada 2026-11-11: R$ 717,57 (n=19), mediana R$ 699,00.
+
+[RE] re-generation-pack|switch_2|midia:nd|ed:std|avulso|v:padrao | confianca=baixa
+   n=20 lojas=20 | min=R$ 439,90 max=R$ 990,00 ratio=2.25x | mediana=R$ 699,00 media=R$ 708,37 (1.3%) | IQR/mediana=0.31 | gap bimodal log=0.08 entre R$ 533,47 e R$ 579,90
+   cerca Tukey(log): R$ 375,28 a R$ 1.310,16 | fora da cerca=0 | implausiveis=0 | veredito R3=ok
+   MEDIA: antes (regra atual)=R$ 708,37 n=20 -> depois (cerca)=R$ 708,37 n=20
+   titulo nao prova: midia fisica x digital (titulo nao diz); edicao (titulo nao cita; "Generation Pack" e o nome do produto); conteudo do pacote/lote (titulo nao lista os jogos); condicao novo/usado/lacrado (titulo nao diz)
+     - 4eeeb9e8    R$ 439,90 amazon        Resident Evil Generation Pack - Nintendo Switch 2
+     - 4a05fc4a    R$ 533,47 mercado-livre Resident Evil Generation Pack - Ns2
+     - c92cb060    R$ 533,47 mercado-livre Resident Evil Generation Pack - Ns2
+     - bcbf9c1a    R$ 579,90 mercado-livre Resident Evil Generation Pack - Ns2
+     - 9d5cbed1    R$ 599,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 087625ff    R$ 599,99 mercado-livre Resident Evil Generation Pack - Ns2
+     - 699621d6    R$ 600,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 37c917f9    R$ 639,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 559d15c8    R$ 650,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 5bb79ec1    R$ 699,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 17f6920c    R$ 699,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 4b65b400    R$ 748,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - b7712eee    R$ 749,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - a0d95e60    R$ 799,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - d6fe9c2d    R$ 819,80 mercado-livre Resident Evil Generation Pack - Ns2
+     - 782ccea8    R$ 819,80 mercado-livre Resident Evil Generation Pack - Ns2
+     - c33d1411    R$ 870,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 8fda06ab    R$ 899,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - fe5e19cc    R$ 900,00 mercado-livre Resident Evil Generation Pack - Ns2
+     - 68275603    R$ 990,00 mercado-livre Resident Evil Generation Pack - Ns2
+
+Sensibilidade (so alarme, nao prova): media todas=R$ 708,37; mediana=R$ 699,00; sem a cauda >= R$ 748 (9 ofertas: 4b65b400,b7712eee,a0d95e60,d6fe9c2d,782ccea8,c33d1411,8fda06ab,fe5e19cc,68275603)=R$ 597,52; sem Amazon=R$ 722,50.
+
+##### LIMITES #####
+- O titulo das 19 ofertas do Mercado Livre do Resident Evil e IDENTICO ("Resident Evil Generation Pack - Ns2", titulo do catalogo ML, nao o titulo do anuncio do vendedor): R1 so enxerga UMA chave. O titulo nao prova midia (fisica x digital), conteudo do pacote, lote/combo, condicao (novo/usado/lacrado) nem se e a versao Switch 2.
+- Dispersao (R3) e sintoma, nao prova: no RE a faixa R$ 439,90 a R$ 990 e continua (nao ha gap bimodal) e nada cai fora da cerca de Tukey; os 7 anuncios de R$ 748 a R$ 990 so podem ser separados se R4 provar diferenca de atributo ou de condicao.
+- No PS5, o titulo nao prova: Slim x original quando falta a palavra (tratado como incerta), "Digital" ausente (disco presumido: confianca media), 825 GB sem a palavra digital lido como original (Fat, inferencia do piloto, confianca media; 825 GB + digital fica incerta porque o Slim Digital brasileiro tambem tem 825 GB), 1 TB lido como Slim (inferencia do codigo), condicao quando o titulo cala (presume novo), conteudo real de pacote/kit, lacre, regiao quando o titulo nao cita (presume Brasil) e edicoes que o vendedor nao nomeia.
+- Identidade de cor nao separa (regra do dono). Capacidade do PS5 nao separa (decisao 2026-11-03); quem carrega e o modelo.
+- R2 (auditor cego, outro agente): precisa receber SO os titulos (sem chave e sem preco) de cada grupo, apontar pares "diferente/nao provado", e dar segundo parecer nas ofertas de confianca media, nos masters com mais de 30 ofertas (Slim Digital) e nos grupos com mensagem automatica. Este piloto nao substitui o auditor: o classificador e o mesmo codigo.
+- R4 (API oficial, sem scraping): ML Items/Catalog API (condition, attributes de modelo/capacidade/edicao, listing, seller), Amazon PA-API/Catalog (ASIN/atributos), Shopee Open API. Necessaria para: provar midia e conteudo do pacote do RE; confirmar condicao dos extremos; confirmar modelo/edicao das ofertas de confianca media e das incertas. Nao consultada aqui (sem credenciais).
+- Preco usado nas medias e o preco atual de cada oferta ativa (1 valor por oferta = oferta-dia de hoje); a media armazenada do price_daily_state usa a elegibilidade de producao e pode diferir da recalculada.

@@ -1,0 +1,404 @@
+=== AUDITORIA DE CONSOLES (PLANO, SOMENTE LEITURA) ===
+{
+  "mastersTypeConsole": 449,
+  "mastersConsoleEmLinha": 242,
+  "mastersConsoleEmLinhaComOfertaAtiva": 97,
+  "mastersForaDeEscopoComOferta": 47,
+  "mastersTipoErradoComOfertaDeConsole": 42,
+  "mastersComOfertaDeConsoleAntes": 117,
+  "identidadesDepois": 49,
+  "identidadesDepoisAvulso": 24,
+  "identidadesDepoisPacote": 25,
+  "porFamilia": {
+    "switch_1": {
+      "mastersAntes": 61,
+      "identidadesDepois": 18
+    },
+    "ps5": {
+      "mastersAntes": 27,
+      "identidadesDepois": 18
+    },
+    "switch_2": {
+      "mastersAntes": 10,
+      "identidadesDepois": 5
+    },
+    "xbox_series": {
+      "mastersAntes": 19,
+      "identidadesDepois": 8
+    }
+  },
+  "identidadesComMasterExistente": 49,
+  "identidadesSemMaster": 0,
+  "mastersAArquivarPorUniao": 129,
+  "mastersAReclassificarParaConsole": 7,
+  "mastersQueFicamVaziosSemUniao": 0,
+  "ofertasAtivasAvaliadas": 960,
+  "ofertasMovidas": 156,
+  "ofertasQuarentena": 0,
+  "ofertasForaDaMediaPorCondicao": 20,
+  "ofertasForaDeEscopo": 99,
+  "ofertasForaDeLinha": 96,
+  "ofertasSemMasterDestino": 0,
+  "ps5SemMarcador": "base"
+}
+
+--- Identidades DEPOIS (n ofertas na media, n lojas, media, mediana) ---
+pacote  ps5|base|digital|br|pacote:god of war
+   master 06b7ebd1 | n=3 lojas=3 media=R$ 4.585,00 mediana=R$ 4.855,00 min=R$ 4.000,00 max=R$ 4.900,00 fora_da_faixa=0 | conf=media | masters de origem: 06b7ebd1
+avulso  ps5|base|disc|br|avulso
+   master 0163ced3 | n=10 lojas=10 media=R$ 5.009,80 mediana=R$ 4.900,00 min=R$ 4.200,00 max=R$ 6.000,00 fora_da_faixa=0 | conf=media | masters de origem: a8beb11f,0163ced3,a101e0af,78a8955d,24c6ff7e,b72b88a4
+pacote  ps5|base|disc|br|pacote:controle extra+demons souls+ratchet
+   master 777b11cd | n=2 lojas=2 media=- mediana=R$ 5.500,00 min=R$ 5.000,00 max=R$ 6.000,00 fora_da_faixa=0 | conf=media | masters de origem: 777b11cd
+pacote  ps5|base|disc|br|pacote:ea fc
+   master 24f34f3d | n=4 lojas=4 media=R$ 4.887,25 mediana=R$ 4.700,00 min=R$ 4.250,00 max=R$ 5.899,00 fora_da_faixa=0 | conf=media | masters de origem: 24f34f3d
+pacote  ps5|base|disc|br|pacote:god of war
+   master 7f47de59 | n=2 lojas=2 media=- mediana=R$ 5.414,00 min=R$ 5.299,00 max=R$ 5.529,00 fora_da_faixa=0 | conf=media | masters de origem: 7f47de59
+pacote  ps5|base|disc|br|pacote:nba 2k
+   master 1a410cbb | n=1 lojas=1 media=- mediana=R$ 4.485,19 min=R$ 4.485,19 max=R$ 4.485,19 fora_da_faixa=0 | conf=media | masters de origem: 1a410cbb
+avulso  ps5|ed|ed:aniversario_30|br|avulso
+   master c8a82f2b | n=33 lojas=33 media=R$ 9.030,86 mediana=R$ 7.789,90 min=R$ 5.500,00 max=R$ 23.000,00 fora_da_faixa=0 | conf=alta | masters de origem: c8a82f2b
+avulso  ps5|ed|ed:wolverine|br|avulso
+   master b7560511 | n=14 lojas=14 media=R$ 9.306,02 mediana=R$ 9.999,50 min=R$ 6.299,99 max=R$ 12.989,73 fora_da_faixa=0 | conf=media | masters de origem: b7560511
+avulso  ps5|pro|na|br|avulso
+   master 2541db02 | n=12 lojas=11 media=R$ 8.731,70 mediana=R$ 8.999,50 min=R$ 5.322,21 max=R$ 11.250,00 fora_da_faixa=0 | conf=alta | masters de origem: 599ae76d,2541db02
+pacote  ps5|pro|na|br|pacote:controle extra
+   master 9b77b9dd | n=7 lojas=7 media=R$ 10.152,71 mediana=R$ 10.899,00 min=R$ 6.833,98 max=R$ 11.900,00 fora_da_faixa=0 | conf=alta | masters de origem: 9b77b9dd
+avulso  ps5|slim|digital|br|avulso
+   master 22c09745 | n=137 lojas=137 media=R$ 4.669,73 mediana=R$ 4.519,00 min=R$ 3.725,00 max=R$ 8.000,00 fora_da_faixa=0 | conf=alta | masters de origem: 22c09745
+pacote  ps5|slim|digital|br|pacote:astro bot+gran turismo
+   master c2f08e2b | n=79 lojas=79 media=R$ 4.941,01 mediana=R$ 4.750,00 min=R$ 4.121,51 max=R$ 8.989,99 fora_da_faixa=0 | conf=alta | masters de origem: c2f08e2b,789ccfa8
+pacote  ps5|slim|digital|br|pacote:controle extra
+   master 57273127 | n=2 lojas=2 media=- mediana=R$ 5.215,00 min=R$ 5.214,99 max=R$ 5.215,00 fora_da_faixa=0 | conf=alta | masters de origem: 57273127
+avulso  ps5|slim|disc|br|avulso
+   master fea28c9c | n=28 lojas=27 media=R$ 5.372,63 mediana=R$ 5.419,00 min=R$ 4.300,00 max=R$ 8.000,00 fora_da_faixa=0 | conf=media | masters de origem: fea28c9c,71a42333
+pacote  ps5|slim|disc|br|pacote:astro bot+gran turismo
+   master 30c95eb3 | n=2 lojas=2 media=- mediana=R$ 5.659,63 min=R$ 4.480,00 max=R$ 6.839,25 fora_da_faixa=0 | conf=media | masters de origem: 19fcfd98,0c3cdf48
+pacote  ps5|slim|disc|br|pacote:controle extra
+   master 48c89201 | n=1 lojas=1 media=- mediana=R$ 12.500,00 min=R$ 12.500,00 max=R$ 12.500,00 fora_da_faixa=0 | conf=alta | masters de origem: 48c89201
+pacote  ps5|slim|disc|br|pacote:fortnite
+   master 16bfdd87 | n=3 lojas=3 media=R$ 6.861,99 mediana=R$ 6.299,90 min=R$ 5.999,99 max=R$ 8.286,09 fora_da_faixa=0 | conf=alta | masters de origem: 16bfdd87
+pacote  ps5|slim|disc|br|pacote:ratchet
+   master 68041832 | n=11 lojas=11 media=R$ 5.866,67 mediana=R$ 5.499,00 min=R$ 4.399,00 max=R$ 10.000,00 fora_da_faixa=0 | conf=alta | masters de origem: 68041832
+avulso  switch_1|lite|ed:pokemon_dialga_palkia|br|avulso
+   master e099dfa9 | n=3 lojas=3 media=R$ 4.594,00 mediana=R$ 5.492,00 min=R$ 2.400,00 max=R$ 5.890,00 fora_da_faixa=0 | conf=alta | masters de origem: e099dfa9
+avulso  switch_1|lite|ed:zelda|br|avulso
+   master fa821356 | n=6 lojas=6 media=R$ 3.004,40 mediana=R$ 2.849,00 min=R$ 2.236,40 max=R$ 4.000,00 fora_da_faixa=0 | conf=alta | masters de origem: fa821356
+avulso  switch_1|lite|na|br|avulso
+   master b0996ccb | n=21 lojas=20 media=R$ 1.790,74 mediana=R$ 1.799,89 min=R$ 1.200,00 max=R$ 2.600,00 fora_da_faixa=0 | conf=alta | masters de origem: b0996ccb,47ce4d1f,00cdae4d,087c2cc4,e80321e0,d141db9d,62a026df,781b1835,fcbd5fdc,d19c247c,20980d7b
+avulso  switch_1|oled|ed:mario_vermelho|br|avulso
+   master 5baf8033 | n=3 lojas=3 media=R$ 3.689,30 mediana=R$ 3.434,00 min=R$ 3.399,00 max=R$ 4.234,89 fora_da_faixa=0 | conf=alta | masters de origem: 40460005,5baf8033
+avulso  switch_1|oled|ed:splatoon|br|avulso
+   master 943b55c8 | n=2 lojas=2 media=- mediana=R$ 3.949,00 min=R$ 2.999,00 max=R$ 4.899,00 fora_da_faixa=0 | conf=alta | masters de origem: 943b55c8,81cb7885
+avulso  switch_1|oled|ed:zelda|br|avulso
+   master 1518b4db | n=4 lojas=4 media=R$ 3.521,25 mediana=R$ 3.375,00 min=R$ 3.055,00 max=R$ 4.280,00 fora_da_faixa=0 | conf=alta | masters de origem: c4f88591,f21da0b3,4cfac2ad,1518b4db
+pacote  switch_1|oled|ed:zelda|br|pacote:anuncio_de_pacote
+   master a12faa2e | n=1 lojas=1 media=- mediana=R$ 2.899,00 min=R$ 2.899,00 max=R$ 2.899,00 fora_da_faixa=0 | conf=alta | masters de origem: a12faa2e
+avulso  switch_1|oled|ed:zelda|japao|avulso
+   master f6131773 | n=1 lojas=1 media=- mediana=R$ 3.499,00 min=R$ 3.499,00 max=R$ 3.499,00 fora_da_faixa=0 | conf=alta | masters de origem: f6131773
+avulso  switch_1|oled|na|br|avulso
+   master 05f37d01 | n=53 lojas=52 media=R$ 2.637,99 mediana=R$ 2.499,00 min=R$ 1.900,00 max=R$ 5.499,99 fora_da_faixa=1 | conf=alta | masters de origem: 5fdb6ccf,05f37d01,f99208ca,86a51925,22342964,4bd1ce6f
+pacote  switch_1|oled|na|br|pacote:assinatura+mario kart
+   master ff33ca60 | n=3 lojas=3 media=R$ 2.679,46 mediana=R$ 2.858,55 min=R$ 2.299,90 max=R$ 2.879,93 fora_da_faixa=0 | conf=alta | masters de origem: ff33ca60
+pacote  switch_1|oled|na|br|pacote:assinatura+mario wonder
+   master e0087c44 | n=69 lojas=69 media=R$ 2.468,62 mediana=R$ 2.399,00 min=R$ 1.919,00 max=R$ 3.999,00 fora_da_faixa=0 | conf=alta | masters de origem: e0087c44
+pacote  switch_1|oled|na|br|pacote:cartao sd
+   master 49664f76 | n=1 lojas=1 media=- mediana=R$ 3.949,00 min=R$ 3.949,00 max=R$ 3.949,00 fora_da_faixa=0 | conf=alta | masters de origem: 49664f76
+pacote  switch_1|oled|na|br|pacote:jogos
+   master ce741ff9 | n=1 lojas=1 media=- mediana=R$ 3.550,00 min=R$ 3.550,00 max=R$ 3.550,00 fora_da_faixa=0 | conf=alta | masters de origem: ce741ff9
+pacote  switch_1|oled|na|br|pacote:mario kart
+   master 4093f689 | n=1 lojas=1 media=- mediana=R$ 5.332,78 min=R$ 5.332,78 max=R$ 5.332,78 fora_da_faixa=0 | conf=alta | masters de origem: 4093f689
+avulso  switch_1|oled|na|importado|avulso
+   master d3a13621 | n=1 lojas=1 media=- mediana=R$ 2.700,00 min=R$ 2.700,00 max=R$ 2.700,00 fora_da_faixa=0 | conf=alta | masters de origem: d3a13621
+avulso  switch_1|standard|ed:zelda|br|avulso
+   master 90e3875e | n=3 lojas=3 media=R$ 3.282,67 mediana=R$ 3.299,00 min=R$ 2.850,00 max=R$ 3.699,00 fora_da_faixa=0 | conf=alta | masters de origem: 90e3875e,61d54fbd
+avulso  switch_1|standard|na|br|avulso
+   master 04a23090 | n=31 lojas=31 media=R$ 2.588,89 mediana=R$ 2.499,00 min=R$ 1.649,00 max=R$ 3.809,90 fora_da_faixa=0 | conf=alta | masters de origem: dace474e,04a23090,7445804c,6e01975d,f0c5dc25,15087ff2
+pacote  switch_1|standard|na|br|pacote:assinatura+controle extra+mario kart
+   master 050b8120 | n=1 lojas=1 media=- mediana=R$ 2.600,00 min=R$ 2.600,00 max=R$ 2.600,00 fora_da_faixa=0 | conf=alta | masters de origem: 050b8120
+avulso  switch_2|standard|na|br|avulso
+   master c8366787 | n=67 lojas=67 media=R$ 4.476,48 mediana=R$ 4.399,70 min=R$ 3.140,69 max=R$ 6.999,90 fora_da_faixa=0 | conf=alta | masters de origem: c8366787,6ec60f23,bd035a2e,290c967a
+pacote  switch_2|standard|na|br|pacote:assinatura+mario kart
+   master 74ec16c4 | n=2 lojas=2 media=- mediana=R$ 4.339,99 min=R$ 4.319,99 max=R$ 4.359,99 fora_da_faixa=0 | conf=alta | masters de origem: 74ec16c4
+pacote  switch_2|standard|na|br|pacote:mario kart
+   master 374675ec | n=4 lojas=4 media=R$ 4.547,94 mediana=R$ 4.740,28 min=R$ 3.511,19 max=R$ 5.200,00 fora_da_faixa=0 | conf=alta | masters de origem: d83185da,a5fcfd8f
+pacote  switch_2|standard|na|br|pacote:pokemon legends
+   master 062777d2 | n=1 lojas=1 media=- mediana=R$ 3.740,32 min=R$ 3.740,32 max=R$ 3.740,32 fora_da_faixa=0 | conf=alta | masters de origem: 062777d2
+pacote  switch_2|standard|na|importado|pacote:mario kart
+   master b64f6eaf | n=2 lojas=2 media=- mediana=R$ 4.659,50 min=R$ 4.190,00 max=R$ 5.129,00 fora_da_faixa=0 | conf=alta | masters de origem: b64f6eaf,46615333
+avulso  xbox_series|ed|ed:halo_infinite|br|avulso
+   master f9cd118c | n=2 lojas=2 media=- mediana=R$ 16.489,00 min=R$ 15.500,00 max=R$ 17.478,00 fora_da_faixa=0 | conf=media | masters de origem: f9cd118c
+avulso  xbox_series|series_s|na|1000gb|br|avulso
+   master 4ec715f4 | n=9 lojas=8 media=R$ 4.896,69 mediana=R$ 5.199,99 min=R$ 3.733,17 max=R$ 5.523,00 fora_da_faixa=0 | conf=alta | masters de origem: b5cef78c,4ec715f4
+avulso  xbox_series|series_s|na|512gb|br|avulso
+   master a2e2cb97 | n=6 lojas=6 media=R$ 4.652,55 mediana=R$ 4.493,50 min=R$ 3.600,00 max=R$ 6.499,00 fora_da_faixa=0 | conf=alta | masters de origem: a2e2cb97,c240cffd,fbff9180
+pacote  xbox_series|series_s|na|512gb|br|pacote:controle extra
+   master 91b3938e | n=15 lojas=11 media=R$ 4.890,41 mediana=R$ 4.799,99 min=R$ 4.200,00 max=R$ 5.790,00 fora_da_faixa=0 | conf=alta | masters de origem: cc4b2f59,91b3938e,2d70ff33,b9994f0d
+avulso  xbox_series|series_x|digital|1000gb|br|avulso
+   master 729b5504 | n=6 lojas=6 media=R$ 6.696,34 mediana=R$ 6.536,58 min=R$ 5.083,83 max=R$ 8.300,00 fora_da_faixa=0 | conf=alta | masters de origem: a6fa460e,729b5504
+pacote  xbox_series|series_x|digital|nd|br|pacote:controle extra
+   master aa4821c2 | n=3 lojas=3 media=R$ 7.896,66 mediana=R$ 7.990,00 min=R$ 7.399,99 max=R$ 8.299,99 fora_da_faixa=0 | conf=media | masters de origem: aa4821c2
+avulso  xbox_series|series_x|disc|1000gb|br|avulso
+   master a265eb0c | n=8 lojas=7 media=R$ 8.671,00 mediana=R$ 8.499,00 min=R$ 7.499,00 max=R$ 9.995,00 fora_da_faixa=0 | conf=alta | masters de origem: 8905826f,9a153499,a265eb0c,9d580734
+avulso  xbox_series|series_x|disc|2000gb|br|avulso
+   master f7768fb6 | n=5 lojas=5 media=R$ 14.119,00 mediana=R$ 11.999,00 min=R$ 8.597,00 max=R$ 19.999,00 fora_da_faixa=0 | conf=media | masters de origem: f7768fb6
+
+--- Uniões (master duplicado -> canônico) ---
+087c2cc4 (1 ativas) "Console Nintendo Switch Lite 32GB Azul - HBH-S-BBZA1" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+e80321e0 (2 ativas) "Nintendo Nintendo Switch Nintendo Lite Turquesa Lite HB" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+00cdae4d (1 ativas) "Console Portátil Nintendo Switch Lite 32GB Wi-Fi Outlet" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+d141db9d (3 ativas) "Console Portátil Nintendo Switch Lite de 32 GB, Cinza" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+05e0461a (0 ativas) "Console Nintendo Switch 32gb Lite Tela De 5.5 Pol. Turq" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+12ef47fb (0 ativas) "Porta de console Nintendo Switch Lite Turquesa Nintendo" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+20980d7b (1 ativas) "Console Nintendo Switch Lite - Turquesa" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+47ce4d1f (1 ativas) "Nintendo Switch Lite D.E.S.B.L.O.Q. 128GB" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+62a026df (1 ativas) "Console Nintendo Switch Lite 32gb Azul Tela 5.5 Portati" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+fcbd5fdc (5 ativas) "Console Portátil Nintendo Switch Lite com 128 GB e Tela" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+6e704b70 (0 ativas) "Console Nintendo Switch Lite 32gb Amarelo" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+9100bd47 (0 ativas) "Console Nintendo Switch Lite Animal Crossing: New Horiz" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+96b98a87 (0 ativas) "CONSOLE NINTENDO SWITCH LITE TURQUESA NT000024NSW" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+d19c247c (1 ativas) "Nintendo Switch Lite Preto (i) Novo Com Nota Fiscal" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+ec6aa933 (0 ativas) "Console Nintendo Switch Lite Coral" -> b0996ccb "Console Nintendo Switch Lite 32gb Azul Turque" [switch_1|lite|na|br|avulso]
+9d580734 (1 ativas) "Xbox séries x 1 tb" -> a265eb0c "Console Xbox Series X 1TB Standard" [xbox_series|series_x|disc|1000gb|br|avulso]
+720d61aa (0 ativas) "Xbox séries x 1 tb  -  ORIGINAL, Lacrado!" -> a265eb0c "Console Xbox Series X 1TB Standard" [xbox_series|series_x|disc|1000gb|br|avulso]
+8905826f (3 ativas) "Console de videogame Microsoft Xbox Series X, Ssd De 1 " -> a265eb0c "Console Xbox Series X 1TB Standard" [xbox_series|series_x|disc|1000gb|br|avulso]
+9a153499 (1 ativas) "Console Xbox Series X 1TB com leitor de disco" -> a265eb0c "Console Xbox Series X 1TB Standard" [xbox_series|series_x|disc|1000gb|br|avulso]
+ce711669 (0 ativas) "Console Xbox Series X de 1 TB preto Rrt-00052 preto" -> a265eb0c "Console Xbox Series X 1TB Standard" [xbox_series|series_x|disc|1000gb|br|avulso]
+789ccfa8 (7 ativas) "Console digital Sony Playstation 5 Ps5 Slim + 2 jogos A" -> c2f08e2b "Console Playstation®5 Slim Digital - Pacote A" [ps5|slim|digital|br|pacote:astro bot+gran turismo]
+2d70ff33 (5 ativas) "Console Microsoft Xbox Series S 512gb Com 2 controles b" -> 91b3938e "Console Microsoft Xbox Series S 512gb Com Con" [xbox_series|series_s|na|512gb|br|pacote:controle extra]
+b9994f0d (2 ativas) "Xbox Serie S | 2 Controles | 500gb | Cor Branco | Bluet" -> 91b3938e "Console Microsoft Xbox Series S 512gb Com Con" [xbox_series|series_s|na|512gb|br|pacote:controle extra]
+03b92e43 (0 ativas) "Console Microsoft Xbox Series S 512gb + 1 Controle Bran" -> 91b3938e "Console Microsoft Xbox Series S 512gb Com Con" [xbox_series|series_s|na|512gb|br|pacote:controle extra]
+7726149b (0 ativas) "Console PlayStation 5 Slim Digital 825GB + Controle Sem" -> 57273127 "Playstation 5 Slim Digital 825gb Branco Novo " [ps5|slim|digital|br|pacote:controle extra]
+0867d084 (0 ativas) "Console Sony PlayStation 5 PS5 Slim Digital 825GB SSD C" -> 57273127 "Playstation 5 Slim Digital 825gb Branco Novo " [ps5|slim|digital|br|pacote:controle extra]
+8c0bde9a (0 ativas) "Console Sony Slim Standard Playstation 5 Ps5, disco de " -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+00395323 (0 ativas) "Console PlayStation 5 Edição Slim 1TB Disk CFI-2114 Com" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+00bda7e1 (0 ativas) "Console Playstation 5 Sony, Slim, SSD 1TB, Edição Disk" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+ff943d78 (0 ativas) "Console PlayStation Ps5 PS5DVD-1TBOB Slim 2023" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+71a42333 (3 ativas) "Console Sony Playstation 5 Slim Cor branco/preto" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+18c0375d (0 ativas) "Console PlayStation Playstation 5 Slim standar 2020" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+1c35fa30 (0 ativas) "PlayStation 5 Slim Disk 1TB 1 Controle Branco Sony" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+47b26130 (0 ativas) "CONSOLE PLAYSTATION 5 SLIM DISK 1TB" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+9acc7a64 (0 ativas) "Console PlayStation 5 Edição Slim" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+b98c4ed2 (0 ativas) "Console PlayStation PlayStation 5 PS5 SLIM CFI-2000 Sta" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+c91a512c (0 ativas) "Console PlayStation PlayStation 5 Slim PlayStation 5 St" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+cd401795 (0 ativas) "Console PlayStation PlayStation 5 Slim CFI-2015 Fantasm" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+e1ff6c92 (0 ativas) "Console Ps5 Slim Ssd 1tb Dourado Edição Ghost Of Yotei " -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+e97a888d (0 ativas) "Console PlayStation Playstation 5 Slim Slim Standard CF" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+f9de85d2 (0 ativas) "Console PlayStation PlayStation 5 Slim Standard 2024" -> fea28c9c "Console Sony Playstation 5 Edição Slim Disk 1" [ps5|slim|disc|br|avulso]
+9f7b4579 (0 ativas) "Console Nintendo Switch Lite - Zelda Hyrule Edition Cor" -> fa821356 "Nintendo Switch Lite, edição Zelda, Hyrule Ad" [switch_1|lite|ed:zelda|br|avulso]
+15087ff2 (2 ativas) "Console de Mesa Nintendo Switch 32 GB, Edição Standard " -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+6e01975d (3 ativas) "Console Portátil Nintendo Switch de 32 GB Cinza" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+0cafbecf (0 ativas) "Console Nintendo Switch Nintendo Switch 2023" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+23314ac4 (0 ativas) "Console Nintendo Switch Nintendo Switch Standard 2021" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+454d4590 (0 ativas) "Nintendo Nintendo Switch Console NSHA07776001FGR 64GB C" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+dace474e (1 ativas) "Nintendo Switch V2 D.E.S.B.L.O.Q 128GB tudo 100%" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+f0c5dc25 (2 ativas) "Console portátil Nintendo Switch de 32 GB, vermelho neo" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+68ae281a (0 ativas) "Console Nintendo Switch Nintendo Switch Switch" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+6a334571 (0 ativas) "Nintendo Nintendo Switch Console NSHA07776001FGR Consol" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+7445804c (13 ativas) "Nintendo Switch Console NSHA07776101FGR 32GB Console Ni" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+ed98ac53 (0 ativas) "Console Nintendo Switch Neon Com 32GB e Sports" -> 04a23090 "Console Nintendo Switch 32 GB Standard com Jo" [switch_1|standard|na|br|avulso]
+a3232051 (0 ativas) "PlayStation 5 Edição Digital 825GB 1 Controle Branco So" -> 9ff79895 "Console Playstation 5 Digital Edition branco/" [ps5|base|digital|br|avulso]
+3551cad0 (0 ativas) "Console PlayStation PlayStation 5 Digital" -> 9ff79895 "Console Playstation 5 Digital Edition branco/" [ps5|base|digital|br|avulso]
+d335b69f (0 ativas) "Console PlayStation 5 - Digital Edition" -> 9ff79895 "Console Playstation 5 Digital Edition branco/" [ps5|base|digital|br|avulso]
+fbff9180 (1 ativas) "Microsoft xbox series S 512 GB SSD" -> a2e2cb97 "Console Xbox Series S - 512 GB, cor branca" [xbox_series|series_s|na|512gb|br|avulso]
+c240cffd (2 ativas) "Console Microsoft Xbox Serie S Ssd 500gb Controle Rrs-0" -> a2e2cb97 "Console Xbox Series S - 512 GB, cor branca" [xbox_series|series_s|na|512gb|br|avulso]
+04a22be9 (0 ativas) "Console Xbox Series S 512gb Digital Branco" -> a2e2cb97 "Console Xbox Series S - 512 GB, cor branca" [xbox_series|series_s|na|512gb|br|avulso]
+a5e7b93c (0 ativas) "Console Xbox Series S 512gb Starter Pack branco" -> a2e2cb97 "Console Xbox Series S - 512 GB, cor branca" [xbox_series|series_s|na|512gb|br|avulso]
+f1df95a2 (0 ativas) "Console Nintendo Switch 2 256GB LCD Gray Novo Lacrado L" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+290c967a (1 ativas) "Console Nintendo Switch 2 256gb Preto Azul Vermelho Pre" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+6260b311 (0 ativas) "Nintendo Switch 2 256GB armazenamento interno suporta H" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+6ec60f23 (1 ativas) "Console Nintendo Switch 2 Nacional Portátil e Doméstico" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+7dd8f3a3 (0 ativas) "Console Nintendo Switch 2 Cinza 256GB Modelo Nacional C" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+80b852e2 (0 ativas) "CONSOLE NINTENDO SWITCH 2 256GB LCD" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+88e7a552 (0 ativas) "Nintendo Nintendo Switch 2 Console standalone NSHW07775" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+b93c4cd6 (0 ativas) "Console Nintendo Switch 2 Standard Edition Led 256gb pr" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+bd035a2e (1 ativas) "Console Nintendo Switch 2 256 GB Preto Nacional Origina" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+efcec1cb (0 ativas) "Console Nintendo Switch 2" -> c8366787 "Console Nintendo Switch 2, Modelo Nacional de" [switch_2|standard|na|br|avulso]
+a101e0af (2 ativas) "Console e joystick padrão Playstation 5 Dualsense Ps5, " -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+085c69c6 (0 ativas) "Console Ps5 Playstation 5  Versão Com Leitor" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+24c6ff7e (2 ativas) "Console Playstation 5 Disco Sony Brasil" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+5cb3986a (0 ativas) "Console PlayStation Playstation 5 PlayStation 5 Standar" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+5f106913 (0 ativas) "Console PlayStation PS5 HW 1215 STANDARD_MEX GOWR_" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+62f54121 (0 ativas) "Console PlayStation PlayStation 5 CFI-1015A Standard" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+6f882155 (0 ativas) "PlayStation 5 Fat Com Leitor | 825GB | Controles | Gara" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+78a8955d (1 ativas) "Console P.S.5 Disco." -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+aa8f1ca0 (0 ativas) "Console PlayStation PlayStation 5" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+b72b88a4 (2 ativas) "Console PlayStation 5 Standard" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+c714a2ad (0 ativas) "Console PlayStation 5 CFI 2114A 1000049892 Padrão 2022" -> 0163ced3 "Sony PlayStation 5 825GB padrão branco e pret" [ps5|base|disc|br|avulso]
+cbbe9d53 (0 ativas) "Console PlayStation PlayStation 5 Wolverine PlayStation" -> b7560511 "Console PlayStation 5 Digital 825GB - Edição " [ps5|ed|ed:wolverine|br|avulso]
+ad04dc17 (0 ativas) "Console PlayStation ps5 slim HW_2115B Wolverine 2026" -> b7560511 "Console PlayStation 5 Digital 825GB - Edição " [ps5|ed|ed:wolverine|br|avulso]
+599ae76d (3 ativas) "Console Sony Playstation 5 Pro Digital Ps5 Pro 2 Tb 202" -> 2541db02 "Console Playstation 5 Pro 2tb Branco Sony Biv" [ps5|pro|na|br|avulso]
+97b596b6 (0 ativas) "Console PlayStation PLAYSTATION 5 PRO PRO DIGITAL PlayS" -> 2541db02 "Console Playstation 5 Pro 2tb Branco Sony Biv" [ps5|pro|na|br|avulso]
+961dea86 (0 ativas) "Console PlayStation PlayStation 5 Standard Edition CFI-" -> 24f34f3d "Console PlayStation® 5, EA SPORTS FC™ 24" [ps5|base|disc|br|pacote:ea fc]
+81cb7885 (2 ativas) "Console Híbrido Nintendo Switch OLED Splatoon 3 Edition" -> 943b55c8 "Console Nintendo Switch Oled modelo Splatoon " [switch_1|oled|ed:splatoon|br|avulso]
+fd3c9a77 (0 ativas) "Console PlayStation PlayStation 5 Pacote NBA 2K26 2020" -> 1a410cbb "Pacote Playstation 5: console colorido Nba 2k" [ps5|base|disc|br|pacote:nba 2k]
+b5cef78c (2 ativas) "Console de Mesa Microsoft Xbox Series S Carbon Black de" -> 4ec715f4 "Console Microsoft Xbox Series S 1 TB Branco" [xbox_series|series_s|na|1000gb|br|avulso]
+a6fa460e (2 ativas) "Console digital Microsoft Xbox Series X de 1 TB, cor br" -> 729b5504 "Console Xbox Series X All-Digital Edition com" [xbox_series|series_x|digital|1000gb|br|avulso]
+12884427 (0 ativas) "Xbox Series X 1 tb  Digital Edition LACRADO com NF e ga" -> 729b5504 "Console Xbox Series X All-Digital Edition com" [xbox_series|series_x|digital|1000gb|br|avulso]
+5d7958d8 (0 ativas) "Nintendo Switch Oled 64gb Edição Mario Vermelho" -> 5baf8033 "Console Nintendo Switch OLED 64GB Edição Mari" [switch_1|oled|ed:mario_vermelho|br|avulso]
+61d54fbd (1 ativas) "Console Nintendo Switch Zelda Edition" -> 90e3875e "Console Nintendo Switch - The Legend of Zelda" [switch_1|standard|ed:zelda|br|avulso]
+22b87f92 (0 ativas) "Console Nintendo Switch Oled Edição Super Smash Bros Ul" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+4bd1ce6f (1 ativas) "Bat para Nintendo Switch V1/V2/Oled HAC-003" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+5104880b (0 ativas) "Console Nintendo Switch modelo Oled com Joy-Con branco " -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+69943658 (0 ativas) "Splatoon 3 2 1 Frye Shiver Personagens Do Homem Grande " -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+86a51925 (1 ativas) "Nintendo Switch Oled - Branco" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+9818df0b (0 ativas) "Console Nintendo Switch Nintendo Switch OLED Standard" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+a424e61c (0 ativas) "Console Nintendo Switch Com Tela Oled 64gb Hbgskdaa2" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+c678ed3d (0 ativas) "Console Nintendo Switch modelo Oled Neon, cor vermelha" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+ef989d8d (0 ativas) "NINTENDO SWITCH OLED - NEON - NOVO - ORIGINAL - LACRADO" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+f191709a (0 ativas) "Nintendo Switch Oled Desbloq. 512gb Novo/Envio Imediato" -> 05f37d01 "Console Nintendo Switch Oled 64gb Tela 7" [switch_1|oled|na|br|avulso]
+0917f9d5 (0 ativas) "Console PlayStation PlayStation 5 Slim Digital CFI-2115" -> 22c09745 "Console PlayStation 5 Slim Digital" [ps5|slim|digital|br|avulso]
+3941ed4d (0 ativas) " Escudo Anti-Poeira para PS5 Slim com Plugues de Silico" -> 22c09745 "Console PlayStation 5 Slim Digital" [ps5|slim|digital|br|avulso]
+e3e39fc7 (0 ativas) "Console PlayStation PlayStation 5 Slim Edición Digital " -> 22c09745 "Console PlayStation 5 Slim Digital" [ps5|slim|digital|br|avulso]
+f3748f58 (0 ativas) "OUTLET Console PlayStation 5 Edição Slim Digital Com Ga" -> 22c09745 "Console PlayStation 5 Slim Digital" [ps5|slim|digital|br|avulso]
+3f9f1008 (0 ativas) "Nintendo Switch Oled 64GB Edição Especial The Legend of" -> 1518b4db "Nintendo Switch OLED Edição Especial Zelda – " [switch_1|oled|ed:zelda|br|avulso]
+4cfac2ad (1 ativas) "Nintendo Nintendo Switch Oled 64gb The Legend Of Zelda:" -> 1518b4db "Nintendo Switch OLED Edição Especial Zelda – " [switch_1|oled|ed:zelda|br|avulso]
+c4f88591 (1 ativas) "Nintendo Switch Oled EDIÇÃO ESPECIAL ZELDA Desbloqueiad" -> 1518b4db "Nintendo Switch OLED Edição Especial Zelda – " [switch_1|oled|ed:zelda|br|avulso]
+f21da0b3 (1 ativas) "Nintendo Switch Oled – Zelda Tears of the Kingdom – Nac" -> 1518b4db "Nintendo Switch OLED Edição Especial Zelda – " [switch_1|oled|ed:zelda|br|avulso]
+1a41b1fe (0 ativas) "Nintendo Switch 2 256GB Bundle Mario Kart World Lacrado" -> 374675ec "Console Nintendo Switch 2+pacote Mario Kart W" [switch_2|standard|na|br|pacote:mario kart]
+6da13b95 (0 ativas) "Nintendo Switch 2 + Mario Kart World Bundle Novo Nacion" -> 374675ec "Console Nintendo Switch 2+pacote Mario Kart W" [switch_2|standard|na|br|pacote:mario kart]
+a333da04 (0 ativas) "Pacote de console Nintendo Switch 2+Mario Kart World Bl" -> 374675ec "Console Nintendo Switch 2+pacote Mario Kart W" [switch_2|standard|na|br|pacote:mario kart]
+aadc6408 (0 ativas) "Console Nintendo Switch 2 + Mario Kart World Bundle Pre" -> 374675ec "Console Nintendo Switch 2+pacote Mario Kart W" [switch_2|standard|na|br|pacote:mario kart]
+ddac0f7a (0 ativas) "CONSOLE NINTENDO SWITCH 2 256GB LCD GRAY MARIO KART WOR" -> 374675ec "Console Nintendo Switch 2+pacote Mario Kart W" [switch_2|standard|na|br|pacote:mario kart]
+1ac53333 (0 ativas) "Console Xbox Series X RRT-00042 1TB Diablo IV Bundle co" -> 5022c4de "Console Xbox Series X Bundle Diablo 4 Cor Pre" [xbox_series|ed|ed:diablo_iv|br|pacote:anuncio_de_pacote]
+8e45c859 (0 ativas) "Console Nintendo Switch OLED 64Gb Mario Bros Wonder" -> 24257799 "Nintendo Switch Oled Mario Wonder Novo/ Lacra" [switch_1|oled|na|br|pacote:mario wonder]
+374b542d (0 ativas) "Console Xbox Series S - Fim de Ano" -> 32d5b8e1 "Console Microsoft Console Xbox Series S Origi" [xbox_series|series_s|na|nd|br|avulso]
+d30f66cf (0 ativas) "Console Xbox Serie S SERIE S" -> 32d5b8e1 "Console Microsoft Console Xbox Series S Origi" [xbox_series|series_s|na|nd|br|avulso]
+463e2715 (0 ativas) "Console Nintendo + Smb Wonder + 3 meses de Switch Onlin" -> 3d524238 "Console Nintendo Switch Switch 1.1 Nintendo S" [switch_1|standard|na|br|pacote:anuncio_de_pacote]
+20d809aa (0 ativas) "Nintendo Switch V1 Desbl.via soft + Cartao de 128 gb" -> 3d524238 "Console Nintendo Switch Switch 1.1 Nintendo S" [switch_1|standard|na|br|pacote:anuncio_de_pacote]
+4f07c56b (0 ativas) "Nintendo Switch OLED Bundle Mario Bros. Wonder + NSO 3 " -> e0087c44 "Console Nintendo Switch Oled Nintendo Bundle " [switch_1|oled|na|br|pacote:assinatura+mario wonder]
+8099c676 (0 ativas) "Console Nintendo Switch Oled + Super Mario Bros Wonder " -> e0087c44 "Console Nintendo Switch Oled Nintendo Bundle " [switch_1|oled|na|br|pacote:assinatura+mario wonder]
+55763ba6 (0 ativas) "Console Xbox Series X, cor preta" -> bbc8bf90 "Console Xbox Series X Xbox One X" [xbox_series|series_x|disc|nd|br|avulso]
+005dfb4f (0 ativas) "rcm loader RCM + Ferramenta De Clipe De Gabarito nitend" -> 912c906a "Console Nintendo Switch HMG-S-KAASA Nintendo " [switch_1|oled|na|br|pacote:anuncio_de_pacote]
+a6c930a4 (0 ativas) "Console PlayStation PlayStation 5 CFI-1214A Marvel’s Sp" -> b9ce4122 "CONSOLE - PLAYSTATION 5 SPIDER-MAN 2 LIMITED " [ps5|base|disc|br|pacote:spider man]
+bfe31420 (0 ativas) "Console PlayStation PlayStation 5 Pacote Spider-Man 2" -> b9ce4122 "CONSOLE - PLAYSTATION 5 SPIDER-MAN 2 LIMITED " [ps5|base|disc|br|pacote:spider man]
+f118b7ce (0 ativas) "Console Playstation 5 + Spider Man 2" -> b9ce4122 "CONSOLE - PLAYSTATION 5 SPIDER-MAN 2 LIMITED " [ps5|base|disc|br|pacote:spider man]
+
+--- Amostra de 15 decisões (conferência humana) ---
+[mover] R$ 3.399,00 mercado-livre | "Console Híbrido Nintendo Switch OLED Mario Red Edition de 64 GB"
+   origem: Console Híbrido Nintendo Switch OLED Mario Red Edition de 64 (40460005) -> destino: Console Nintendo Switch OLED 64GB Edição Mario Vermelho c/ T | chave: switch_1|oled|ed:mario_vermelho|br|avulso | identidade switch_1|oled|ed:mario_vermelho|br|avulso pertence ao master 5baf8033
+[mover] R$ 2.310,00 mercado-livre | "Nintendo Switch Oled 64gb Standard Com Joy-con Branco"
+   origem: Nintendo Switch Oled 64gb Standard Com Joy-con Branco (5fdb6ccf) -> destino: Console Nintendo Switch Oled 64gb Tela 7 | chave: switch_1|oled|na|br|avulso | identidade switch_1|oled|na|br|avulso pertence ao master 05f37d01
+[mover] R$ 2.600,00 shopee | "Nintendo Switch Oled - Branco"
+   origem: Nintendo Switch Oled - Branco (86a51925) -> destino: Console Nintendo Switch Oled 64gb Tela 7 | chave: switch_1|oled|na|br|avulso | identidade switch_1|oled|na|br|avulso pertence ao master 05f37d01
+[mover] R$ 4.399,00 mercado-livre | "Console Bundle Nintendo Switch 2 + Jogo Digital Mario Kart World"
+   origem: Console Bundle Nintendo Switch 2 + Jogo Digital Mario Kart W (a5fcfd8f) -> destino: Console Nintendo Switch 2+pacote Mario Kart World | chave: switch_2|standard|na|br|pacote:mario kart | identidade switch_2|standard|na|br|pacote:mario kart pertence ao master 374675ec
+[mover] R$ 2.699,00 mercado-livre | "Console De Jogo Nintendo Switch 64gb Tela Oled 7 Pol. Neon"
+   origem: Console De Jogo Nintendo Switch 64gb Tela Oled 7 Pol. Neon (22342964) -> destino: Console Nintendo Switch Oled 64gb Tela 7 | chave: switch_1|oled|na|br|avulso | identidade switch_1|oled|na|br|avulso pertence ao master 05f37d01
+[condicao_fora_da_media] R$ 2.400,00 shopee | "Nintendo switch oled desbloqueado dual boot 128GB"
+   origem: Nintendo switch oled desbloqueado dual boot 128GB (130ccba3) -> destino: - | chave: switch_1|oled|na|br|avulso | condição used: fora das médias
+[condicao_fora_da_media] R$ 2.799,00 shopee | "Console Nintendo Switch V1 + 128gb Atmosphere"
+   origem: Console Nintendo Switch V1 + 128gb Atmosphere (e85a5a67) -> destino: - | chave: switch_1|standard|na|br|pacote:anuncio_de_pacote | condição modded: fora das médias
+[fora_escopo] R$ 349,99 mercado-livre | "Saros - Playstation 5"
+   origem: Saros - Playstation 5 (8a8eeb59) -> destino: - | chave: - | sem substantivo de aparelho nem modelo (provável jogo)
+[fora_escopo] R$ 289,90 mercado-livre | "Par De Grip Joycon Controller Nintendo Switch Console Game Cor Vermelh"
+   origem: Par De Grip Joycon Controller Nintendo Switch Console Game C (c2c44738) -> destino: - | chave: - | título começa por acessório
+[fora_escopo] R$ 1.450,00 mercado-livre | "Playstation Portal Para Console Ps5 Cor Branco"
+   origem: Playstation Portal Para Console Ps5 Cor Branco (fd51e22b) -> destino: - | chave: - | acessório/peça/jogo (portal)
+[fora_de_linha] R$ 3.900,00 mercado-livre | "Console Sony PlayStation 4 Slim 1TB Preto"
+   origem: Console Sony PlayStation 4 Slim 1TB Preto (f4ac511b) -> destino: - | chave: - | fora de linha (ps4)
+[manter] R$ 6.499,00 mercado-livre | "Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet "
+   origem: Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal  (68041832) -> destino: Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal  | chave: ps5|slim|disc|br|pacote:ratchet | 
+[manter] R$ 4.899,99 mercado-livre | "Console Playstation®5 Slim Digital - Pacote Astro Bot E Gran Turismo 7"
+   origem: Console Playstation®5 Slim Digital - Pacote Astro Bot E Gran (c2f08e2b) -> destino: Console Playstation®5 Slim Digital - Pacote Astro Bot E Gran | chave: ps5|slim|digital|br|pacote:astro bot+gran turismo | 
+[manter] R$ 4.200,00 mercado-livre | "Sony PlayStation 5 825GB padrão branco e preto console potente"
+   origem: Sony PlayStation 5 825GB padrão branco e preto console poten (0163ced3) -> destino: Sony PlayStation 5 825GB padrão branco e preto console poten | chave: ps5|base|disc|br|avulso | 
+[manter] R$ 6.000,00 mercado-livre | "Sony PlayStation 5 825GB padrão branco e preto console potente"
+   origem: Sony PlayStation 5 825GB padrão branco e preto console poten (0163ced3) -> destino: Sony PlayStation 5 825GB padrão branco e preto console poten | chave: ps5|base|disc|br|avulso | 
+
+--- Masters a reclassificar para console (tipo errado) ---
+aa4821c2 accessory -> console (3 ativas) "Kit Console Xbox Series X Digital 2 Controles Branco" [xbox_series|series_x|digital|nd|br|pacote:controle extra]
+7f47de59 game -> console (3 ativas) "Console Mídia Física Com God Of War Ragnarok Playstation 5 Cor Branco" [ps5|base|disc|br|pacote:god of war]
+777b11cd accessory -> console (3 ativas) "Sony PlayStation 5 825GB Kit: PS5 HW Standard + Dualsense + PS5 Demons" [ps5|base|disc|br|pacote:controle extra+demons souls+ratchet]
+68041832 game -> console (12 ativas) "Console PlayStation 5 Midia Fisica Slim Branco 1TB Returnal e Ratchet " [ps5|slim|disc|br|pacote:ratchet]
+48c89201 game -> console (2 ativas) "Console Playstation 5 Slim Fisico -2 Controles Ps5 Nacional Branco" [ps5|slim|disc|br|pacote:controle extra]
+ce741ff9 game -> console (2 ativas) "Console Híbrido Nintendo Switch OLED 64GB com Jogo Super Mario Odyssey" [switch_1|oled|na|br|pacote:jogos]
+ff33ca60 game -> console (4 ativas) "Console Switch Oled Mario Kart 8 + 3 Meses De Assinatura Branco Ninten" [switch_1|oled|na|br|pacote:assinatura+mario kart]
+
+--- Uniões com divergência DURA no léxico do dedup (revisão humana antes de aplicar) ---
+087c2cc4 -> b0996ccb: numeral: [1] x [5] | "Console Nintendo Switch Lite 32GB Azul - HBH-S-BBZ"
+e80321e0 -> b0996ccb: numeral: [1,19] x [5] | "Nintendo Nintendo Switch Nintendo Lite Turquesa Li"
+05e0461a -> b0996ccb: numeral: [55] x [5] | "Console Nintendo Switch 32gb Lite Tela De 5.5 Pol."
+47ce4d1f -> b0996ccb: capacidade: 128GB x 32GB | "Nintendo Switch Lite D.E.S.B.L.O.Q. 128GB"
+62a026df -> b0996ccb: numeral: [55] x [5] | "Console Nintendo Switch Lite 32gb Azul Tela 5.5 Po"
+fcbd5fdc -> b0996ccb: numeral: [55] x [5] | capacidade: 128GB x 32GB | "Console Portátil Nintendo Switch Lite com 128 GB e"
+789ccfa8 -> c2f08e2b: numeral: [2,7] x [7] | "Console digital Sony Playstation 5 Ps5 Slim + 2 jo"
+2d70ff33 -> 91b3938e: composicao: bundle só no título A | "Console Microsoft Xbox Series S 512gb Com 2 contro"
+b9994f0d -> 91b3938e: composicao: bundle só no título A | modelo: wireless só no título A | capacidade: 500GB x 512GB | "Xbox Serie S | 2 Controles | 500gb | Cor Branco | "
+03b92e43 -> 91b3938e: composicao: bundle só no título A | "Console Microsoft Xbox Series S 512gb + 1 Controle"
+7726149b -> 57273127: composicao: controle só no título A | "Console PlayStation 5 Slim Digital 825GB + Control"
+0867d084 -> 57273127: composicao: controle só no título A | "Console Sony PlayStation 5 PS5 Slim Digital 825GB "
+8c0bde9a -> fea28c9c: modelo: slim só no título A | modelo: wireless só no título A | edicao: edxslim só no master | "Console Sony Slim Standard Playstation 5 Ps5, disc"
+00bda7e1 -> fea28c9c: edicao: edxdisk só no título A | modelo: slim só no título A | edicao: edxslim só no master | "Console Playstation 5 Sony, Slim, SSD 1TB, Edição "
+ff943d78 -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console PlayStation Ps5 PS5DVD-1TBOB Slim 2023"
+71a42333 -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console Sony Playstation 5 Slim Cor branco/preto"
+18c0375d -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console PlayStation Playstation 5 Slim standar 202"
+1c35fa30 -> fea28c9c: composicao: controle só no título A | modelo: slim só no título A | edicao: edxslim só no master | numeral: [1] x [] | "PlayStation 5 Slim Disk 1TB 1 Controle Branco Sony"
+47b26130 -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "CONSOLE PLAYSTATION 5 SLIM DISK 1TB"
+b98c4ed2 -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console PlayStation PlayStation 5 PS5 SLIM CFI-200"
+c91a512c -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console PlayStation PlayStation 5 Slim PlayStation"
+cd401795 -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console PlayStation PlayStation 5 Slim CFI-2015 Fa"
+e1ff6c92 -> fea28c9c: edicao: edxghost só no título A | modelo: slim só no título A | edicao: edxslim só no master | "Console Ps5 Slim Ssd 1tb Dourado Edição Ghost Of Y"
+e97a888d -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console PlayStation Playstation 5 Slim Slim Standa"
+f9de85d2 -> fea28c9c: modelo: slim só no título A | edicao: edxslim só no master | "Console PlayStation PlayStation 5 Slim Standard 20"
+9f7b4579 -> fa821356: edicao: edxhyrule só no título A | edicao: edxzelda só no master | "Console Nintendo Switch Lite - Zelda Hyrule Editio"
+454d4590 -> 04a23090: capacidade: 64GB x 32GB | "Nintendo Nintendo Switch Console NSHA07776001FGR 6"
+dace474e -> 04a23090: capacidade: 128GB x 32GB | "Nintendo Switch V2 D.E.S.B.L.O.Q 128GB tudo 100%"
+a3232051 -> 9ff79895: composicao: controle só no título A | "PlayStation 5 Edição Digital 825GB 1 Controle Bran"
+c240cffd -> a2e2cb97: composicao: controle só no título A | capacidade: 500GB x 512GB | "Console Microsoft Xbox Serie S Ssd 500gb Controle "
+04a22be9 -> a2e2cb97: formato: digital só no título A | "Console Xbox Series S 512gb Digital Branco"
+6f882155 -> 0163ced3: modelo: fat só no título A | "PlayStation 5 Fat Com Leitor | 825GB | Controles |"
+cbbe9d53 -> b7560511: modelo: slim só no título A | formato: digital só no master | edicao: limited só no master | "Console PlayStation PlayStation 5 Wolverine PlaySt"
+ad04dc17 -> b7560511: modelo: slim só no título A | formato: digital só no master | edicao: limited só no master | "Console PlayStation ps5 slim HW_2115B Wolverine 20"
+599ae76d -> 2541db02: formato: digital só no título A | "Console Sony Playstation 5 Pro Digital Ps5 Pro 2 T"
+97b596b6 -> 2541db02: formato: digital só no título A | "Console PlayStation PLAYSTATION 5 PRO PRO DIGITAL "
+961dea86 -> 24f34f3d: composicao: bundle só no título A | numeral: [12,23] x [24] | "Console PlayStation PlayStation 5 Standard Edition"
+fd3c9a77 -> 1a410cbb: numeral: [20,26] x [26] | "Console PlayStation PlayStation 5 Pacote NBA 2K26 "
+61d54fbd -> 90e3875e: edicao: edxzelda só no título A | edicao: edxkingdom só no master | "Console Nintendo Switch Zelda Edition"
+22b87f92 -> 05f37d01: edicao: edxsuper só no título A | edicao: ultimate só no título A | "Console Nintendo Switch Oled Edição Super Smash Br"
+4bd1ce6f -> 05f37d01: numeral: [003] x [7] | "Bat para Nintendo Switch V1/V2/Oled HAC-003"
+5104880b -> 05f37d01: numeral: [12] x [7] | "Console Nintendo Switch modelo Oled com Joy-Con br"
+69943658 -> 05f37d01: composicao: cartao só no título A | modelo: lite só no título A | numeral: [1,2,3] x [7] | "Splatoon 3 2 1 Frye Shiver Personagens Do Homem Gr"
+a424e61c -> 05f37d01: numeral: [2] x [7] | "Console Nintendo Switch Com Tela Oled 64gb Hbgskda"
+f191709a -> 05f37d01: capacidade: 512GB x 64GB | "Nintendo Switch Oled Desbloq. 512gb Novo/Envio Ime"
+f3748f58 -> 22c09745: edicao: edxslim só no título A | modelo: slim só no master | "OUTLET Console PlayStation 5 Edição Slim Digital C"
+3f9f1008 -> 1518b4db: composicao: controle só no título A | "Nintendo Switch Oled 64GB Edição Especial The Lege"
+4cfac2ad -> 1518b4db: edicao: special só no master | "Nintendo Nintendo Switch Oled 64gb The Legend Of Z"
+f21da0b3 -> 1518b4db: edicao: special só no master | "Nintendo Switch Oled – Zelda Tears of the Kingdom "
+ddac0f7a -> 374675ec: composicao: bundle só no master | "CONSOLE NINTENDO SWITCH 2 256GB LCD GRAY MARIO KAR"
+1ac53333 -> 5022c4de: numeral: [00042,23,4] x [4] | "Console Xbox Series X RRT-00042 1TB Diablo IV Bund"
+8e45c859 -> 24257799: composicao: bundle só no master | "Console Nintendo Switch OLED 64Gb Mario Bros Wonde"
+463e2715 -> 3d524238: numeral: [3] x [11,8] | "Console Nintendo + Smb Wonder + 3 meses de Switch "
+20d809aa -> 3d524238: composicao: cartao só no título A | "Nintendo Switch V1 Desbl.via soft + Cartao de 128 "
+8099c676 -> e0087c44: numeral: [03] x [3] | "Console Nintendo Switch Oled + Super Mario Bros Wo"
+005dfb4f -> 912c906a: modelo: lite só no título A | "rcm loader RCM + Ferramenta De Clipe De Gabarito n"
+a6c930a4 -> b9ce4122: edicao: limited só no master | numeral: [2] x [1,2] | "Console PlayStation PlayStation 5 CFI-1214A Marvel"
+bfe31420 -> b9ce4122: composicao: bundle só no título A | edicao: limited só no master | numeral: [2] x [1,2] | "Console PlayStation PlayStation 5 Pacote Spider-Ma"
+f118b7ce -> b9ce4122: composicao: bundle só no título A | edicao: limited só no master | numeral: [2] x [1,2] | "Console Playstation 5 + Spider Man 2"
+
+--- Caso 0163ced3 ---
+{
+  "antes": {
+    "n": 3,
+    "stores": 3,
+    "mean": 533300,
+    "median": 579900,
+    "min": 420000,
+    "max": 600000,
+    "outOfBand": 0
+  },
+  "depois": {
+    "n": 10,
+    "stores": 10,
+    "mean": 500980,
+    "median": 490000,
+    "min": 420000,
+    "max": 600000,
+    "outOfBand": 0
+  },
+  "key": "ps5|base|disc|br|avulso"
+}
+  790ff7f1 R$ 4.200,00 mercado-livre manter 
+  2b8c8cdb R$ 10.000.000,00 mercado-livre ja_em_quarentena já em quarentena (fora de toda leitura e média)
+  616797d1 R$ 6.000,00 mercado-livre manter 
+  20e8365c R$ 5.799,00 mercado-livre manter 
+  843ca186 R$ 4.200,00 mercado-livre manter 

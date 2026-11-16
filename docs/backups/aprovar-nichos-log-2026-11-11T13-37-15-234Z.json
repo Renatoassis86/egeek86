@@ -1,0 +1,4881 @@
+{
+  "stamp": "2026-11-11T13-37-15-234Z",
+  "approvedBy": "Renato (dono)",
+  "approvedAt": "2026-11-11T13:37:18.566Z",
+  "criteriaVersion": 1,
+  "backup": "docs\\backups\\aprovar-nichos-2026-11-11T13-37-15-234Z.ndjson",
+  "changes": [
+    {
+      "id": "73e2be5c-983d-4808-9491-2b7ef7e6c8f4",
+      "name": "Air Fryer 4,5l Black+decker Afm4 Com Desligamento Automático Preto",
+      "before": {
+        "at": "2026-11-11T13:11:51.154Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1416679e-bbc2-4b3b-9b75-d9e273b71ee4",
+      "name": "Air Fryer 4l Essencial Preta- Itatiaia",
+      "before": {
+        "at": "2026-11-11T12:38:12.537Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "29ba8518-dd9a-445d-99fe-330157d2a0d8",
+      "name": "Air fryer Agratto AFFD01I de 12L preto",
+      "before": {
+        "at": "2026-11-11T13:11:29.062Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9c2e0191-e029-4cff-b2e9-c1e55fc8a54a",
+      "name": "Air fryer Agratto AFFD01I de 12L preto 1800W",
+      "before": {
+        "at": "2026-11-11T13:11:32.259Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b14c4db1-927d-49b0-94bd-26f988746590",
+      "name": "Air fryer Agratto Fritadeira sem Óleo AFSC01L PRETO de 4L preto",
+      "before": {
+        "at": "2026-11-11T13:11:44.890Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "4e6979ad-99f4-4dba-89a2-ed8ec91fc655",
+      "name": "Air Fryer Antiaderente Britânia Fritadeira Bella Cuccina 12l Preto",
+      "before": {
+        "at": "2026-11-11T12:38:41.853Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4fb08db8-4bca-475a-8a72-7fdd7d604621",
+      "name": "Air fryer Bak Air Fryer BK-ARFYM110 de 4L preto",
+      "before": {
+        "at": "2026-11-11T12:37:37.277Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5d8e6ba5-e5f3-4759-93b3-2cb2f1df8794",
+      "name": "Air Fryer Britânia 3,5l Antiaderente 1500w Bcaf40c Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:12:41.993Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "70dc4a97-4169-412e-9b5f-4d4d4eeb4a6b",
+      "name": "Air Fryer Britânia 4,2L Silverstone 1500W BFR36A",
+      "before": {
+        "at": "2026-11-11T13:12:26.098Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ffa01de7-1329-4bb2-b68d-18404d85b4db",
+      "name": "Air Fryer Britânia 5l Antiaderente Digital Inox 1500w Bfr41p",
+      "before": {
+        "at": "2026-11-11T12:38:32.131Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "89546d0d-1492-4e33-9eb4-abfeb5a8bf49",
+      "name": "Air Fryer Britânia 5l Antiaderente Gold 1500w Baf45a Cor Preto",
+      "before": {
+        "at": "2026-11-11T12:38:28.929Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "24ea19c7-c6df-4f36-8fee-1b4471484859",
+      "name": "Air Fryer Britânia 6,5L 1700W 8 Funções Painel Digital Redstone BAF65A",
+      "before": {
+        "at": "2026-11-11T13:13:49.783Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8a250281-2bde-4247-a8f4-d36bedc8db90",
+      "name": "Air Fryer Britânia 8L Redstone Visor Glass BAF80A",
+      "before": {
+        "at": "2026-11-11T13:12:38.748Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "71435356-44cc-47d9-9046-20f93562c8ec",
+      "name": "Air Fryer Britânia 9,5l Painel Digital 1800w Baf95a",
+      "before": {
+        "at": "2026-11-11T12:39:27.750Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "87925cef-c6a3-44a1-b762-5c59edb5d6d6",
+      "name": "Air fryer Britânia BFR2300P de 12L preto",
+      "before": {
+        "at": "2026-11-11T12:37:53.283Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "c7dd5ef1-8b56-46ab-9954-315d87f40056",
+      "name": "Air fryer Cadence Super Light Fryer + de 3.8L preto",
+      "before": {
+        "at": "2026-11-11T12:40:00.274Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1e242904-217f-4777-8816-14161d24e6ad",
+      "name": "Air fryer DFJN Fritadeira de 4L preto",
+      "before": {
+        "at": "2026-11-11T12:38:09.359Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d1bab5f0-bcff-4f22-9d12-8864a1c31126",
+      "name": "Air fryer Electrolux Efficient EAF50 de 6.5L cinza-escuro",
+      "before": {
+        "at": "2026-11-11T13:14:02.567Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d9074819-95a9-4783-a66b-3b0ab18dcb71",
+      "name": "Air fryer eletro lika Fritadeira de 4L preto",
+      "before": {
+        "at": "2026-11-11T13:14:05.692Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "24d63a40-34dc-48d2-8940-355d191a7ad3",
+      "name": "Air fryer Elgin Quick Fryer de 4L preto",
+      "before": {
+        "at": "2026-11-11T12:37:59.662Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3280d20b-5dfd-4891-94e2-274c4ef6f65f",
+      "name": "Air Fryer Forno 12l Afon-12l-gi 2000w Digital Mondial - Preto E Inox",
+      "before": {
+        "at": "2026-11-11T12:39:53.738Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bb2845b6-62e5-42a8-95c6-0162aba138ed",
+      "name": "Air Fryer Forno Mondial AFON-12L-GI 12L 2200W Digital 220V - Preto e Inox",
+      "before": {
+        "at": "2026-11-11T13:13:17.788Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "aa033599-30d4-466a-afc1-b7a292b5853c",
+      "name": "Air Fryer Fritadeira Forno S/óleo Digital 12l 1800w Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:13:20.925Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fe75fc99-932a-4a64-beac-f846b38296a0",
+      "name": "Air Fryer Fritadeira Forno S/óleo Digital 12l 1800w Preto Cor Pr",
+      "before": {
+        "at": "2026-11-11T13:13:43.265Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3841de3c-65c8-4d68-990c-c24b8e83ac2d",
+      "name": "Air Fryer Fritadeira Wap Waff2 Family 4l Prosdócimo Vermelha Cor Vermelho",
+      "before": {
+        "at": "2026-11-11T12:40:16.209Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "04ab4906-7be1-4272-8e75-16777e6d396c",
+      "name": "Air fryer Multilaser Gourmet CE22 de 4L black piano",
+      "before": {
+        "at": "2026-11-11T13:11:13.019Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b4562055-78bc-4845-a0d5-42407ec0ce23",
+      "name": "Air fryer Multilaser Home CE02 de 4L preto",
+      "before": {
+        "at": "2026-11-11T13:13:01.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8157f57e-c5f3-4003-82cf-ea25a1b50a2f",
+      "name": "Air fryer Oster Fritadeira OFRT400 de 4L preto",
+      "before": {
+        "at": "2026-11-11T12:38:15.870Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8ff41de8-f6e5-4931-b160-64cbbae0637b",
+      "name": "Air fryer Oster OFRT970 de 4.6L preto",
+      "before": {
+        "at": "2026-11-11T12:39:56.935Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c1639a15-7e91-43b9-ba98-33057949aebc",
+      "name": "Air Fryer Oven 12L 1200W 3 em 1 Mini Forno Elétrico 127V",
+      "before": {
+        "at": "2026-11-11T13:13:27.237Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "67bab336-482c-4cb3-b4a7-5609e36a99da",
+      "name": "Air Fryer Oven 12L 1200W 3 em 1 Mini Forno Elétrico 220V",
+      "before": {
+        "at": "2026-11-11T13:13:33.602Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "291a5fb7-18ba-4339-bbfd-549930edef8a",
+      "name": "Air Fryer Oven 12l 1700w Fritadeira Elétrica Forno Prateado",
+      "before": {
+        "at": "2026-11-11T12:38:51.424Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5e4ff6be-cb72-45ae-913b-623272134b1a",
+      "name": "Air Fryer Oven Britânia 12l 4 Em 1 1800w Bfr2100",
+      "before": {
+        "at": "2026-11-11T12:39:11.316Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bb628ae0-b3ae-463d-af8d-c78e4675a8fa",
+      "name": "Air Fryer Philco 5L Gourmet Black Plus 1900W PFR16P",
+      "before": {
+        "at": "2026-11-11T13:11:19.399Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "01254120-1a42-4206-841b-984144b3d46f",
+      "name": "Air Fryer Philips Walita Serie 5000 Ai551/08 De 12l",
+      "before": {
+        "at": "2026-11-11T12:37:50.128Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "d17bd5cc-6be2-40a3-9f01-6f4684b259c1",
+      "name": "Air Fryer Prime Digital Fischer 6 Litros Touch Screen",
+      "before": {
+        "at": "2026-11-11T12:40:42.384Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a4906f13-95d4-432a-8c3e-0a597cc1882a",
+      "name": "Air fryer Smartfy Cozinha Fritadeira Eletrica Air Fryer de 3.6L rosa",
+      "before": {
+        "at": "2026-11-11T12:37:43.723Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "458512a8-b274-48ae-b061-01abee6ed7ee",
+      "name": "Air fryer Telefunken Easy Fryer 6900 aço/preto",
+      "before": {
+        "at": "2026-11-11T13:12:22.993Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "5c4660f0-41f2-4a92-b5dc-e250bd108e24",
+      "name": "Air Fryer Wap Grand Family 5L 1500W GreyStone 127V",
+      "before": {
+        "at": "2026-11-11T12:40:25.935Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a5fa0b52-bd4a-4189-afaa-210ace895e15",
+      "name": "Air Fryer Wap Grand Family 5L 1500W GreyStone 220V",
+      "before": {
+        "at": "2026-11-11T12:40:29.214Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7428765f-7416-406e-883f-76aaac0a0c71",
+      "name": "Air fryer Xiaomi Mi Smart Air Fryer de 3.5L branco",
+      "before": {
+        "at": "2026-11-11T12:37:33.213Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "29704d39-38da-450e-822d-28133b41af4a",
+      "name": "Air fryer Xion Premium de 4L preto",
+      "before": {
+        "at": "2026-11-11T12:38:02.957Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c7742589-638c-4607-9182-cef09b6d35e5",
+      "name": "Britânia fritadeira air fryer 3l 1300w Bfr31 cor preto",
+      "before": {
+        "at": "2026-11-11T13:12:54.808Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3c46d75e-edea-41b1-a079-698f5384ce3a",
+      "name": "Electrolux Air Fryer Efficient",
+      "before": {
+        "at": "2026-11-11T12:39:34.133Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6d1664e3-818f-468e-8584-fb97d81639c9",
+      "name": "Forno Air Fryer Oven Gourmand Gris 12L BLACK+DECKER AFO12G",
+      "before": {
+        "at": "2026-11-11T13:12:00.685Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "652da498-ca84-4b9f-a12b-6ef7011b07af",
+      "name": "Fritadeira Air Fryer 12L Forno 1700W Painel Digital Touch K NAKASAKI Preto",
+      "before": {
+        "at": "2026-11-11T13:13:40.123Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1c876041-ba16-4413-8ea7-522c11129ed6",
+      "name": "Fritadeira Air Fryer 3,5 Litros Af-31 Mondial",
+      "before": {
+        "at": "2026-11-11T13:12:16.552Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cb6173d6-ea7d-49af-9f7b-a44de389bc67",
+      "name": "Fritadeira Air Fryer 5l Antiaderente 1500w Baf45a Britânia",
+      "before": {
+        "at": "2026-11-11T12:38:22.249Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "84d48eb5-d379-46cf-a2c7-82482db81985",
+      "name": "Fritadeira Air Fryer 5L Itatiaia 1900W Preto Antiaderente",
+      "before": {
+        "at": "2026-11-11T13:13:07.488Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b1aa7c65-fb38-4bba-bcef-53a6933e7e2a",
+      "name": "Fritadeira Air Fryer Bfr21p 4l 1500w Britânia 110v Preto",
+      "before": {
+        "at": "2026-11-11T12:37:56.514Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "ef7786bf-e5ce-4a82-b1c2-43c227aad45c",
+      "name": "Fritadeira Air Fryer Bfr25p 3,5 Litros Preta Britânia Preto",
+      "before": {
+        "at": "2026-11-11T13:12:45.119Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "104af4d2-748a-41b3-82ef-3443a5bde63d",
+      "name": "Fritadeira Air Fryer Bfr40bi Redstone 5l 1500w Britânia",
+      "before": {
+        "at": "2026-11-11T12:38:19.062Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f72b16dc-8cbe-4cb5-bf50-d2dd854460e8",
+      "name": "Fritadeira air fryer Britânia 3 litros Bfr30 preto",
+      "before": {
+        "at": "2026-11-11T13:12:35.623Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "da096cd8-3219-4479-be5f-e83e8549900b",
+      "name": "Fritadeira Air Fryer Britânia Baf45a 5l 1500w Cor Preto",
+      "before": {
+        "at": "2026-11-11T12:38:25.419Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5ea28a11-3278-4e41-831b-3047dad5dece",
+      "name": "Fritadeira Air Fryer Britânia Bfr01vi 3,2l Cor Vermelho",
+      "before": {
+        "at": "2026-11-11T13:12:29.300Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "2c110e13-ffea-4c80-8da4-e671ad8abfb1",
+      "name": "Fritadeira Air Fryer Britânia Bfr41pi Digital Inox 1500w Cor Preto",
+      "before": {
+        "at": "2026-11-11T12:39:30.911Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "261b2a9b-7826-4531-af46-8cc880a941f3",
+      "name": "Fritadeira Air Fryer Britânia Digital Inox Bfr20pi 4,1l 1500 Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:13:46.395Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "963c12d5-ad00-4459-bab4-ebc258cb706f",
+      "name": "Fritadeira Air Fryer Digital 6,9l Telefunken Easy Fryer 6900 127",
+      "before": {
+        "at": "2026-11-11T13:14:12.266Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5985ac0c-de1b-47a1-958d-31ed947a9e70",
+      "name": "Fritadeira Air Fryer Digital 6,9l Telefunken Easy Fryer 6900 220",
+      "before": {
+        "at": "2026-11-11T13:14:09.128Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f5a087e3-4ce1-40e6-bc2f-bf652437cf0e",
+      "name": "Fritadeira Air Fryer Digital 6,9l Telefunken Easy Fryer 6900 Cor Cinza",
+      "before": {
+        "at": "2026-11-11T13:14:15.481Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "df9e7333-8a70-4299-a73f-42248e6b1e79",
+      "name": "Fritadeira Air Fryer Digital C/visor Frontal 7l Black Decker Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:12:07.065Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "359960a7-e221-4235-9469-2fe8162cc786",
+      "name": "Fritadeira Air Fryer Digital Multi 5l Visor Gourmet 1500w Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:11:22.716Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d24a8774-73ea-46b0-af8e-8d8dc1d428ec",
+      "name": "Fritadeira Air Fryer Electrolux 5l 1700w Eaf50/51 Cor Dark red",
+      "before": {
+        "at": "2026-11-11T12:39:37.534Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "c16df8e9-ec53-4c8b-895c-7e45a5f40220",
+      "name": "Fritadeira Air Fryer Electrolux Grand Efficient EAF30 Grafite",
+      "before": {
+        "at": "2026-11-11T13:13:56.259Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b6e29982-eafa-4da7-b789-4e74c42c5bff",
+      "name": "Fritadeira Air Fryer Elétrica Libell 5l Preto",
+      "before": {
+        "at": "2026-11-11T12:39:40.740Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "39b2981a-e377-41e5-9477-36ae3f38ad99",
+      "name": "Fritadeira Air Fryer Eos Chef Gourmet 4l Eaf40s",
+      "before": {
+        "at": "2026-11-11T13:11:16.253Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "875bb14d-d7b1-4b15-ade8-40e94d2a9f35",
+      "name": "Fritadeira Air Fryer Fischer Dual Grill 4 L Digital Preto",
+      "before": {
+        "at": "2026-11-11T12:40:45.793Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e2077762-dc6a-4e1c-b9af-0ebb9c386330",
+      "name": "Fritadeira Air Fryer Forno 12l 1800w Multi - Go226 Preto",
+      "before": {
+        "at": "2026-11-11T12:38:54.577Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9d0076f0-908e-4275-bf19-86a470dd91db",
+      "name": "Fritadeira Air Fryer Forno 12l Time 60 Min 1700w Multi Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:13:30.484Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "ea12c861-e7cd-42ee-b04c-21ee06fcd311",
+      "name": "Fritadeira Air Fryer Forno A5 Florença 12L Preta Antiaderente",
+      "before": {
+        "at": "2026-11-11T12:38:48.209Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8f1b55d0-8791-4261-b8f6-690c0c4f4e14",
+      "name": "Fritadeira Air Fryer Forno Oven 12L Itatiaia 1900W",
+      "before": {
+        "at": "2026-11-11T12:38:35.344Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "cf39d64d-fba9-4662-9bfa-3865bc214a27",
+      "name": "Fritadeira Air Fryer Forno Oven 12L Itatiaia 220V 2000W",
+      "before": {
+        "at": "2026-11-11T12:39:01.554Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "083dd99d-dec4-4119-b301-f73a7d65e30b",
+      "name": "Fritadeira Air Fryer Forno Oven 12L Mondial 2000W - AFON-12L-WI",
+      "before": {
+        "at": "2026-11-11T12:39:17.730Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "486451d3-e642-480c-bd7c-ac1fb342f5b9",
+      "name": "Fritadeira Air Fryer Forno Oven 12L Mondial 2200W - AFON-12L-RI",
+      "before": {
+        "at": "2026-11-11T12:39:20.907Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2ccfd671-39ab-4475-8ad3-80a73443fbf3",
+      "name": "Fritadeira Air Fryer Forno Oven 12L Mondial 2200W - AFON-12L-WI",
+      "before": {
+        "at": "2026-11-11T12:39:24.497Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "275d101b-fc48-49d1-93b7-75b4d17920d5",
+      "name": "Fritadeira Air Fryer Forno Oven 12L Mondial 2200W AFON-12L-BI-BC",
+      "before": {
+        "at": "2026-11-11T12:39:50.318Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fafab7b2-012e-45f5-827f-b1d0a12803b9",
+      "name": "Fritadeira Air Fryer Forno Oven 12L Mondial 2200W AFON-12L-FB",
+      "before": {
+        "at": "2026-11-11T12:39:14.502Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4024cd76-a6b8-4bb8-b5ce-235832278c47",
+      "name": "Fritadeira Air Fryer Forno Oven 12l Mondial Afon-12l-ab Preto",
+      "before": {
+        "at": "2026-11-11T12:39:07.952Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bc0b33eb-5bf0-47b8-bfad-8a58ce991f26",
+      "name": "Fritadeira Air Fryer Forno Oven 12l Mondial AFON-12L-BIN",
+      "before": {
+        "at": "2026-11-11T12:39:04.766Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "48e407c6-114a-4985-8a33-3506cddfd57f",
+      "name": "Fritadeira Air Fryer Forno Oven 12L, Mondial, 2200W - AFON-12L-BI",
+      "before": {
+        "at": "2026-11-11T13:13:24.098Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "47e48ca1-974c-43f7-a9c9-ed208262bdee",
+      "name": "Fritadeira Air Fryer Mallory GRANDSMART 4L 1200W Preto",
+      "before": {
+        "at": "2026-11-11T12:38:06.110Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "83d2c643-459b-41b4-beb0-19cdde907d42",
+      "name": "Fritadeira Air Fryer Mondial Família 3.5 Litros Preta",
+      "before": {
+        "at": "2026-11-11T13:12:19.668Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ca63e168-d878-4564-8944-a5f9b9c96f7f",
+      "name": "Fritadeira Air Fryer Multilaser Gourmet Digital 4 Litros Preta",
+      "before": {
+        "at": "2026-11-11T13:11:25.899Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "ef4b8572-1612-4516-bb79-45c4af7cb11d",
+      "name": "Fritadeira Air Fryer Oven 12L BAK Preto Forno Elétrico",
+      "before": {
+        "at": "2026-11-11T12:38:38.511Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c10baad4-cd0b-4ae1-9107-d5e4d64414ea",
+      "name": "Fritadeira Air Fryer Oven Britânia 16 Litros Baf16B Preto",
+      "before": {
+        "at": "2026-11-11T13:12:57.927Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0afe92dd-85da-4bb7-b716-1d246c5e848c",
+      "name": "Fritadeira Air Fryer Oven Britânia Rosa 12l 1800w Bfr2150rs",
+      "before": {
+        "at": "2026-11-11T12:38:45.053Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b0b7e7b1-774e-4611-b789-9037a6e66035",
+      "name": "Fritadeira Elétrica Air Fryer 3,6l + Liquidificador Mondial Preto",
+      "before": {
+        "at": "2026-11-11T13:12:10.263Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "caa59cf1-e2a1-4986-9954-7dbd3a285748",
+      "name": "Fritadeira Elétrica Air Fryer 5l - Homeland Branco",
+      "before": {
+        "at": "2026-11-11T12:39:43.930Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0e7d938f-4a17-4746-a4a2-c7c83ec9d1a4",
+      "name": "Fritadeira Elétrica Air Fryer Agratto Supremma 6.2L Preta",
+      "before": {
+        "at": "2026-11-11T13:11:35.408Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d688b311-51b6-4604-a830-c81549ee95a5",
+      "name": "Fritadeira Elétrica Air Fryer EAF51 5 Litros Electrolux",
+      "before": {
+        "at": "2026-11-11T13:13:59.377Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cb1dc088-695c-4ace-b33c-3ca1ccfd1d06",
+      "name": "Fritadeira Elétrica Air Fryer Home Land 4l Preto",
+      "before": {
+        "at": "2026-11-11T13:13:04.222Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "7dd0ca93-56f3-43c8-a00f-ca4b36a3a607",
+      "name": "Fritadeira Elétrica Air Fryer Mondial + Liquidificador - Preto Com Inox",
+      "before": {
+        "at": "2026-11-11T13:12:13.386Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b8747e9a-23f9-47e9-863a-d3662919182b",
+      "name": "Fritadeira Elétrica Air Fryer Mondial Afn40bi 4l Cor Black/Inox",
+      "before": {
+        "at": "2026-11-11T13:11:57.560Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9873b2e2-4696-4899-8268-3cb944f46a83",
+      "name": "Fritadeira Elétrica Air Fryer WAP Barbecue Flame Digital 10L",
+      "before": {
+        "at": "2026-11-11T12:40:32.711Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a3f78f39-cf15-4fad-8471-881ab4ad6a0b",
+      "name": "Fritadeira Elétrica Air Fryer WAP Family 4L 1500W Antiaderente Preta",
+      "before": {
+        "at": "2026-11-11T12:40:19.500Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "645e161f-d32e-46bb-a652-0468c2462d0d",
+      "name": "Fritadeira Elétrica Air Fryer WAP Sem Óleo 4L 1500W Antiaderente Preta",
+      "before": {
+        "at": "2026-11-11T12:40:22.676Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "45487bef-e83c-419f-9abd-be6de8b97934",
+      "name": "Fritadeira Elétrica Sem Óleo/air Fryer Forno 12l - Homeland Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:13:10.798Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "14cc4908-4e8f-4970-ab9c-87b6d2e5fa5f",
+      "name": "Fritadeira Elétrica WAP Air Fryer Family 4L Antiaderente Vermelha 1500W",
+      "before": {
+        "at": "2026-11-11T13:11:05.947Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "05748c42-c566-4145-bdbd-ff3e9a760d8c",
+      "name": "Fritadeira Elétrica Wap Air Fryer Mega 9l",
+      "before": {
+        "at": "2026-11-11T12:40:13.021Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f6067669-5687-4b65-9e03-8c6e8f9322d2",
+      "name": "Fritadeira Forno Air Fryer Elétrica 1500w 12l Cor Preto",
+      "before": {
+        "at": "2026-11-11T12:38:57.874Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "36369d05-ad6e-4f36-814a-7ffc4840d730",
+      "name": "Fritadeira Forno Air Fryer Elétrica 4 Em 1 1500w 12l Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:13:36.991Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1c407601-7789-4350-beb9-45792718343f",
+      "name": "Fritadeira Sem Óleo Air Fryer Arno Essential Max 5l Inox Afi5",
+      "before": {
+        "at": "2026-11-11T12:40:03.468Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e66febc7-5879-47ca-bb32-37e7db79dda0",
+      "name": "Fritadeira Sem Óleo Air Fryer Arno Essential Max 5l Preta Afe5",
+      "before": {
+        "at": "2026-11-11T12:40:06.653Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dad7eb19-2f8b-4918-ae9a-5bc16379a0ce",
+      "name": "Fritadeira Sem Óleo Elétrica Air Fryer Oven Electrolux 12l Preto",
+      "before": {
+        "at": "2026-11-11T12:39:47.127Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "f21cdb6f-e31c-4757-8572-63a43e56b6ae",
+      "name": "Geladeira Duplex 294l Cycle Defrost Branca Midea Cor Branco",
+      "before": {
+        "at": "2026-11-11T13:19:10.530Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "178edb7d-23db-417b-925c-bc064f869503",
+      "name": "Geladeira Duplex Consul Crm40mb Inverter 333l Frost Free Branco",
+      "before": {
+        "at": "2026-11-11T13:19:13.633Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "352924aa-b971-4402-81dc-cfb24170d541",
+      "name": "Geladeira Duplex SmartThings Samsung RT53 Inox 524L Biv",
+      "before": {
+        "at": "2026-11-11T13:19:17.035Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3dac7e77-ed9f-43fb-a1ae-7026c72fee58",
+      "name": "Geladeira Frost Free Brastemp Inverse 447 Litros Inox - Bre57fk",
+      "before": {
+        "at": "2026-11-11T13:18:39.453Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0a4e5196-d41a-4565-9125-2db0ce05b42b",
+      "name": "Geladeira Frost Free Bre85mk 591l Inverse Inox Brastemp",
+      "before": {
+        "at": "2026-11-11T13:18:45.577Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3339b988-35d9-4b1a-9842-74784064564f",
+      "name": "Geladeira Frost Free Duplex 415 Litros Inox Brastemp - Brm51",
+      "before": {
+        "at": "2026-11-11T13:18:42.509Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7ea637b8-15fa-4808-90fe-16063c37ad70",
+      "name": "Geladeira Frost Free Electrolux Inverse 490l Inox Ib54s",
+      "before": {
+        "at": "2026-11-11T13:18:32.397Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "898d24ef-27cc-4763-9899-18cd99b6df62",
+      "name": "Geladeira frost free Electrolux TF39 inox com freezer 310L",
+      "before": {
+        "at": "2026-11-11T13:18:36.361Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a1d8da81-cd1f-47ad-a5c4-0aecb509913d",
+      "name": "Geladeira Inverse Frost Free 416l Inverter Branca Midea Cor Branco MDRB593FGD013",
+      "before": {
+        "at": "2026-11-11T13:18:51.811Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a5d90e15-df4a-4c29-aeb8-ab18a72c101e",
+      "name": "Geladeira Side By Side 511l Inverter Preta Conectada Midea Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:19:01.234Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a7abd7e1-c2c1-44a2-b91b-e40044102ce1",
+      "name": "Barra de som preta LG Soundbar Sqc1",
+      "before": {
+        "at": "2026-11-11T12:46:37.573Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "00a67c15-a656-4e84-82b6-89d0db2f981f",
+      "name": "Fone de Ouvido JBL Tune 770NC Bluetooth Preto Cancela Ruído",
+      "before": {
+        "at": "2026-11-11T12:59:06.968Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0b9c77d9-8916-48cd-9b10-1848dde66714",
+      "name": "Fone de ouvido Samsung Fone Ouvido Rectangle Design Preto",
+      "before": {
+        "at": "2026-11-11T12:59:54.850Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "6d0ee7bf-311b-4621-959b-22e21762160a",
+      "name": "Fone Headphone Sem Fio Bluetooth Fone Ouvido Estéreo Inova Cor Vermelho",
+      "before": {
+        "at": "2026-11-11T13:00:04.932Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "82b7e120-25ad-4277-819e-5da571481adb",
+      "name": "Fone Ouvido Bluetooth 4.2 Exbom Hf420bt Azul",
+      "before": {
+        "at": "2026-11-11T12:59:48.122Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "30fc5a82-d615-4c7d-8b22-ebfa50a7fc5a",
+      "name": "Fone Ouvido Bluetooth Ambie Caixinha De Carregar Fone",
+      "before": {
+        "at": "2026-11-11T12:59:20.636Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bce3e118-818d-4506-8e42-a89b1a05551b",
+      "name": "Fone Ouvido Bluetooth Infantil Mini Cat Fone Orelha Gato Led",
+      "before": {
+        "at": "2026-11-11T13:00:08.340Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d97fc103-b6f9-47b1-9416-fca4fe7ea273",
+      "name": "Fone Ouvido Bluetooth Intraocular Q16spro",
+      "before": {
+        "at": "2026-11-11T12:59:27.359Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b97a4f81-4487-4d99-b992-462ad75125f3",
+      "name": "Fone Ouvido Bluetooth Jbl Tune 510 Pure Bass Wireless Branco",
+      "before": {
+        "at": "2026-11-11T12:59:17.022Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d28497e6-f7a2-4229-b237-be87beb5fa31",
+      "name": "Fone Ouvido Bluetooth Mb83090 Branco Mbtech",
+      "before": {
+        "at": "2026-11-11T12:59:30.669Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ec27c028-6cf7-4ffe-8698-49b02376b97a",
+      "name": "Fone Ouvido Headphone Jbl Focus 100 Harman",
+      "before": {
+        "at": "2026-11-11T12:59:51.468Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "60cf4636-e032-483a-835b-3f752ed6ca91",
+      "name": "Fone Ouvido Jbl Wavebeam2 S/ruído Bluetooth Ip54 Multiponto Cor Preto",
+      "before": {
+        "at": "2026-11-11T12:59:34.458Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e6c66b34-91cb-48dd-8ffb-fc3391b7a145",
+      "name": "Fone Ouvido M19 Sem Fio Bluetooth Stereo Tws True Wireless Cor Preto Luz Vermelho",
+      "before": {
+        "at": "2026-11-11T13:00:15.335Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "80de6999-a781-47e1-9c65-829de33726f6",
+      "name": "Fone Ouvido Sem Fio Bluetooth Recarregável Wireless B-05",
+      "before": {
+        "at": "2026-11-11T13:00:11.978Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e229ebd1-7bdd-48d3-86ec-59741aadd03d",
+      "name": "Fone Ouvido Tws Inear Preto Philips Fone De Ouvido",
+      "before": {
+        "at": "2026-11-11T12:59:58.189Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8b2ae6f6-4bf4-4b1a-93cc-b410e07f2e17",
+      "name": "Headphone Bluetooth 6.0 Jbl Tune 730bt Fone Ouvido Azul",
+      "before": {
+        "at": "2026-11-11T12:59:13.678Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1d3b087b-c9e7-4248-8aaf-536c0f65ca3b",
+      "name": "Headphone Bluetooth 6.0 Jbl Tune 730bt Fone Ouvido Branco",
+      "before": {
+        "at": "2026-11-11T12:59:10.279Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "3f2b94db-e244-43d7-ab87-2c71ea96de2a",
+      "name": "Jbl Bar 500 Soundbar Com Dolby Atmos 295w preto",
+      "before": {
+        "at": "2026-11-11T12:46:14.843Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:mpn"
+      }
+    },
+    {
+      "id": "1daabb59-668a-4be5-b424-b4f241382bbb",
+      "name": "JBL SOUNDBAR 1300MK2 11.1.4 Canais",
+      "before": {
+        "at": "2026-11-11T12:46:11.570Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4005bec0-6d7a-42f8-8557-be8de0eda3e2",
+      "name": "LG Soundbar S60tr 440w Rms, 5.1 Canais, Bluetooth 5.3, Dol Preto 120 Hz",
+      "before": {
+        "at": "2026-11-11T12:46:40.910Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "be9a1a83-171c-4353-b96b-3376c64ef688",
+      "name": "Sennheiser Ambeo Soundbar | Plus 7.1.4 Channel Soundbar Dual Cor Preto Frequência 38hz",
+      "before": {
+        "at": "2026-11-11T12:46:50.703Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0837fd1c-39cc-4609-b85d-2c78c817e919",
+      "name": "Set x2 LG Soundbar S70TY Dolby Atmos canais 3.1.1 e 400W RMS",
+      "before": {
+        "at": "2026-11-11T12:46:47.379Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "671d8f78-7c84-4e05-bef2-98fa1f7857d2",
+      "name": "Smart Tv 32 Hd Samsung+nfe",
+      "before": {
+        "at": "2026-11-11T12:56:49.197Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7232df86-2e1a-45a5-b7df-37997ce5b1bc",
+      "name": "Smart Tv 43'' Android Led Full Hd 43s615 Tcl Bivolt",
+      "before": {
+        "at": "2026-11-11T12:57:13.636Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "35e650e3-eb9f-4f40-8886-d8116afc2a1b",
+      "name": "Smart TV 55\" LG QNED73 4K WebOS AI Magic",
+      "before": {
+        "at": "2026-11-11T12:57:02.872Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a6d8cd5d-499a-490e-9aa1-a82b8639656a",
+      "name": "Smart TV LED Samsung 43 Uhd 4k",
+      "before": {
+        "at": "2026-11-11T12:56:32.114Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2468796b-300b-453c-b149-e2744fb44586",
+      "name": "Smart TV LED Xion 43",
+      "before": {
+        "at": "2026-11-11T12:56:59.416Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "91d7e46a-939a-442b-9bf7-4864e87a5427",
+      "name": "Smart TV LG 43\" 43LB6500PSB",
+      "before": {
+        "at": "2026-11-11T12:56:24.361Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b976bded-0975-4675-8245-4b24e50b045f",
+      "name": "Smart TV portátil Samsung UN75TU8000GXZD LED 4K 75\"",
+      "before": {
+        "at": "2026-11-11T12:56:45.770Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6763ba66-e794-4ed5-aa51-fb140038a683",
+      "name": "Smart TV Profissional LG 32\" LED HD - 32RL601CBSA",
+      "before": {
+        "at": "2026-11-11T12:57:06.389Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8d5e0927-41af-4672-9423-c21543269361",
+      "name": "Smart TV Samsung 50 Crystal Uhd 4k UN50Cu7000GXPE TV",
+      "before": {
+        "at": "2026-11-11T12:56:35.516Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cd84a307-7047-4413-b820-7dfc8ddd855a",
+      "name": "Smart Tv Samsung 50 Uhd 4k 50du7700",
+      "before": {
+        "at": "2026-11-11T12:56:42.375Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "9c3ac4bc-a48c-47d6-8f6b-5b3f7698ae25",
+      "name": "Smart TV Samsung 75\" MiniLED 4K e Smart TV 43\" QLED Full HD (Pack)",
+      "before": {
+        "at": "2026-11-11T12:56:28.684Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bc9c10f0-c3d1-4706-860a-d821dd1a30c7",
+      "name": "Smart Tv Samsung LS32BETBLGGXZD 32\" HD Led",
+      "before": {
+        "at": "2026-11-11T12:56:56.029Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "67bb169a-8fed-4492-8400-a2eb85e84986",
+      "name": "Smart TV Samsung UN32T4300A 32\" HD LED",
+      "before": {
+        "at": "2026-11-11T12:56:52.614Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c2eee753-821f-4332-932c-0d21b21db321",
+      "name": "Smart TV Samsung UN50DU7700GXZD 50\" 4K Crystal",
+      "before": {
+        "at": "2026-11-11T12:56:38.918Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9d518181-362f-486b-8f48-2504f246fd1f",
+      "name": "Smart Tv Tcl 43 Polegadas 43s5k Fhd Qled Hdr10 Google Tv",
+      "before": {
+        "at": "2026-11-11T12:57:10.180Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "050d1ca0-4c59-4088-9e6b-e812f99c5fd8",
+      "name": "Smart TV TCL de 50\" 4K com Google TV",
+      "before": {
+        "at": "2026-11-11T12:57:17.034Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0f0bfd12-3567-47fc-a48d-ed2411332573",
+      "name": "Soundbar - JBL Cinema SB180 - 2.1 Canais, 110W RMS, Subwoofer Sem Fio de 6,5\", Bluetooth, HDMI ARC e Modos Cinema, Música e Notícias - Preta",
+      "before": {
+        "at": "2026-11-11T12:46:08.324Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "51c3d01d-2fe3-4dde-aacf-7cfb05f9cdc9",
+      "name": "Soundbar JBL 1300X MK2 11.1.14 Canais Preto para Home Theater com Dolby Atmos e Bluetooth",
+      "before": {
+        "at": "2026-11-11T12:46:05.086Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3e7362ff-4925-4002-a8a8-711e7510208e",
+      "name": "Soundbar JBL Bar 2.1 Canais Com Subwoofer e Bluetooth",
+      "before": {
+        "at": "2026-11-11T12:45:55.331Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7a2f47f4-3c0e-4871-8949-8b8c32e56871",
+      "name": "Soundbar JBL Bar 5.1 Surround com Subwoofer de 10\" e 325 W RMS",
+      "before": {
+        "at": "2026-11-11T12:45:52.036Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "b24eae0e-1f94-46f7-84bb-c24635dd0a94",
+      "name": "Soundbar Jbl Bar 500 Mk2 375w Rms Dolby Atmos Multibeam 3.0 Preto 40 Hz 20 Khz -6 Db",
+      "before": {
+        "at": "2026-11-11T12:46:01.877Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fcc4901e-be58-4dfa-95bf-20e9f2713d7d",
+      "name": "SoundBar LG 160W RMS, Conexão Bluetooth, 2.1 Canais, Auto Sound Engine (ASE), Adaptive Sound Control (ASC), Sem fios, Conexões Múltiplas - SQC1",
+      "before": {
+        "at": "2026-11-11T12:46:31.007Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0ec9d1b4-eecf-4f69-a363-666bf05a01d0",
+      "name": "Soundbar LG Com 5.1.2 Canais E 520w Rms - Sp9a",
+      "before": {
+        "at": "2026-11-11T12:46:18.089Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "89a86849-39c4-4238-bc8a-4ebfa021678e",
+      "name": "Soundbar LG S70TR Bluetooth, 520W, Som Potente e Imersivo, Subwoofer Sem Fio, Design Elegante, Conectividade Avançada e Experiência de Áudio Cinemática para Sua TV",
+      "before": {
+        "at": "2026-11-11T12:46:34.229Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "68414ed9-865c-4fbb-bb5b-c507507784bf",
+      "name": "Soundbar LG S70ty Dolby Atmos Com Configuração De Canais 3.1.1 Preto",
+      "before": {
+        "at": "2026-11-11T12:46:21.296Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "26dc76ff-77b1-4459-aea4-f2bd5fabffe0",
+      "name": "Soundbar LG S90TY Dolby Atmos, 570W, Som Potente e Imersivo, Subwoofer Sem Fio, Design Elegante, Conectividade Avançada, Perfeita para Filmes e Entretenimento",
+      "before": {
+        "at": "2026-11-11T12:46:27.742Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "eca70378-7245-45ad-b1e4-eb01e8f4e995",
+      "name": "Soundbar Samsung B-series Hw-b650f 3.1 Canais Subwoofer Incluso 2025",
+      "before": {
+        "at": "2026-11-11T12:45:38.848Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2ac31f68-bb98-4389-b977-6ed63d60930a",
+      "name": "Soundbar Samsung Hw-b550 Bluetooth E Subwoofer Sem Fio Cor Preto 110V/220V",
+      "before": {
+        "at": "2026-11-11T12:45:45.535Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a5f91ff3-fe45-42b1-8de3-81a2372dd549",
+      "name": "Soundbar Samsung Hw-q600a 3.1.2 Canais 360w Dolby Atmos",
+      "before": {
+        "at": "2026-11-11T12:45:48.767Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "16262eb3-2dc7-4a04-a4ce-3af39fc164d7",
+      "name": "Soundbar Samsung Hw-q930d, Com 9.1.4 Canais Cor Titan black",
+      "before": {
+        "at": "2026-11-11T12:45:34.631Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e5fb43fb-1803-422d-8275-1f0ab4f436aa",
+      "name": "Soundbar Samsung Hw-s800d, Com 3.1.2 Canais Cor Titan black",
+      "before": {
+        "at": "2026-11-11T12:45:42.040Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b784d969-a78b-43f5-a6e4-43ac5bcb4db8",
+      "name": "Soundbar Sony Ht-a3000 2.1ch Black - 330w Soundbar Hdmi Preto",
+      "before": {
+        "at": "2026-11-11T12:46:44.166Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4a4bf6f4-8c4a-4f11-a37c-ea505d21f3c2",
+      "name": "Bicicleta Ergométrica Spinning Bike Ergométrica Spinning IT'S Fitness X11",
+      "before": {
+        "at": "2026-11-11T03:18:38.233Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ae13a366-acec-4e68-8588-122e0af4e0ab",
+      "name": "Bola De Futebol Penalty Futsal 500 Bola 8",
+      "before": {
+        "at": "2026-11-11T13:11:38.941Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "316504e9-3bf4-456f-886e-09d1c9c68ad5",
+      "name": "Bola Futebol 084214 Big Cat Ball Amarela Puma",
+      "before": {
+        "at": "2026-11-11T13:11:48.290Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1c2da5d4-5e7f-4717-bd9b-1630dca6e0c3",
+      "name": "Bola Futebol Campo 8 Penalty Amarela",
+      "before": {
+        "at": "2026-11-11T13:10:57.874Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b2dac499-c6b4-48cb-a5c1-4c4c5118738d",
+      "name": "Bola Futebol Campo cor01",
+      "before": {
+        "at": "2026-11-11T13:10:07.820Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ab7e8902-e0d6-4adf-87db-5c3ee75ace62",
+      "name": "Bola Futebol Campo cor10",
+      "before": {
+        "at": "2026-11-11T13:23:18.391Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bb9bcd03-4348-4ed1-9984-acda876ed471",
+      "name": "Bola Futebol Campo Iniciação Penalty Cor Branco",
+      "before": {
+        "at": "2026-11-11T13:10:21.533Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4b5edc10-6ff5-48d7-acf6-95ad6f52ea9c",
+      "name": "Bola Futebol Campo Neo Swerve Ball Umbro Branco/azul",
+      "before": {
+        "at": "2026-11-11T13:11:51.429Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "aa27b9a7-7f1f-4e52-9ced-d3d555a2121a",
+      "name": "Bola Futebol Campo Penalty Bravo Xxiii Cor Branco E Azul",
+      "before": {
+        "at": "2026-11-11T13:11:16.843Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "053ca9a2-2fba-4ea7-821a-dd6d901eac8a",
+      "name": "Bola Futebol Campo Penalty S11 Torneio Xxiii Cor Branco E Laranja",
+      "before": {
+        "at": "2026-11-11T13:13:07.322Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "206eb1c2-b12d-4b85-b244-88401d2be925",
+      "name": "Bola Futebol Campo Penalty Storm Xxi Bco/verm",
+      "before": {
+        "at": "2026-11-11T13:11:26.279Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1dae4e8d-f3fe-40d6-9aac-e317688b647e",
+      "name": "Bola Futebol Campo Pu Cor Branco/preto",
+      "before": {
+        "at": "2026-11-11T13:12:19.764Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1fb8e8e1-057e-4ff7-bd6c-51afa4b73366",
+      "name": "Bola Futebol Campo Pu Preto/vermelho",
+      "before": {
+        "at": "2026-11-11T13:10:14.909Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "e70db7de-8a1d-4834-a374-c53a1593e0a3",
+      "name": "Bola Futebol Campo PVC Sportcom Amarela",
+      "before": {
+        "at": "2026-11-11T13:12:26.078Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8c6d1a9a-e4f2-4e1c-b88a-8a1df100d4ff",
+      "name": "Bola Futebol Campo Star Numero 5 Amarelo",
+      "before": {
+        "at": "2026-11-11T13:12:13.548Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "ee77b90a-b5bb-45ec-9ba9-6c922188fcca",
+      "name": "Bola Futebol Campo Topper Boleiro Cor Branco Preto E Azul",
+      "before": {
+        "at": "2026-11-11T13:12:07.209Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9eff1e44-f1ea-4ae4-8a96-b242f271ae67",
+      "name": "Bola Futebol Campo Topper Slick Ii",
+      "before": {
+        "at": "2026-11-11T13:11:57.828Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7e0fb175-a7e0-4891-825a-fa670d2adeb3",
+      "name": "Bola Futebol Campo Vinil Vermelho Costurada",
+      "before": {
+        "at": "2026-11-11T13:10:11.778Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "248b3ff1-20c1-4588-ba5d-1a9219165481",
+      "name": "Bola Futebol Capotão Barcelona Couro Sintético Campo Society",
+      "before": {
+        "at": "2026-11-11T13:12:41.827Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "77752c30-08ea-4ce8-9564-0b6461c8694b",
+      "name": "Bola Futebol Cheia Campo Tamanho Capotão - Branco",
+      "before": {
+        "at": "2026-11-11T13:10:24.744Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "84b957f9-a2e6-41eb-912d-a23772753993",
+      "name": "Bola Futebol Corinthians Sportcom Campo Tamanho 5 Preto",
+      "before": {
+        "at": "2026-11-11T13:12:35.518Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bceb26c9-63fd-49b6-8777-215b0c52b7e5",
+      "name": "Bola Futebol Dalponte 81 New Campo Society Futsal Tamanho 5 Violeta",
+      "before": {
+        "at": "2026-11-11T13:12:54.647Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "c86e097d-1017-471e-8910-407c4e04fda7",
+      "name": "Bola Futebol De Campo Bola 8 X Penalty Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:10:28.815Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "948fa1c5-bae5-4b7d-a551-3f332e9547ba",
+      "name": "Bola Futebol De Campo Fusionada Cor Branco",
+      "before": {
+        "at": "2026-11-11T13:12:29.232Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ded6c69c-94e0-493e-80e2-e6b6277793be",
+      "name": "Bola Futebol De Campo Lider Xxi Ed. Brasil Na Copa - Penalty Branco",
+      "before": {
+        "at": "2026-11-11T13:13:10.588Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "62f3fc36-5fca-4996-8cfc-fc0a87e689fc",
+      "name": "Bola Futebol De Campo Matis Xxiv Penalty Cor Branco/Marinho",
+      "before": {
+        "at": "2026-11-11T13:11:23.157Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "1199097b-ddab-4c51-81b7-bbaf7e3b0a21",
+      "name": "Bola Futebol De Campo Neo Swerve Umbro Branco/preto/limão",
+      "before": {
+        "at": "2026-11-11T13:11:54.663Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1832a125-641e-4d5d-a9ac-62a6003f3732",
+      "name": "Bola Futebol De Campo Penalty Matis Termotec Cor Azul",
+      "before": {
+        "at": "2026-11-11T13:11:04.331Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2667b32e-f080-470a-8125-2fb1a02bdee6",
+      "name": "Bola Futebol De Campo Penalty Matis Termotec Oficial Cor Verde",
+      "before": {
+        "at": "2026-11-11T13:11:19.953Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5a85da0a-584d-4cd8-9e1a-5d03f34629a1",
+      "name": "Bola Futebol de Campo Penalty Player Xxiii Cor Azul/Laranja",
+      "before": {
+        "at": "2026-11-11T13:11:13.750Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "de4c35d7-ad19-40d8-bbe0-92f07f957067",
+      "name": "Bola Futebol de Campo Penalty Player Xxiii cor Vermelho/Preto",
+      "before": {
+        "at": "2026-11-11T13:23:22.626Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "08e50e4d-cb7b-4d4f-acdc-ea9598275b28",
+      "name": "Bola Futebol De Campo Penalty S11 Torneio Cor Vermelho",
+      "before": {
+        "at": "2026-11-11T13:11:07.464Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "0f72559f-f238-4e18-9c4d-4ad50d4a36ca",
+      "name": "Bola Futebol De Campo S11 R2 Xxiv Penalty Cor Branco/Vermelho/Preto",
+      "before": {
+        "at": "2026-11-11T13:13:14.168Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "104fe565-281c-4d55-8ea8-6726b7ba5dab",
+      "name": "Bola Futebol De Campo Storm Xxiii Penalty Cor Branco-verde-preto",
+      "before": {
+        "at": "2026-11-11T13:13:04.061Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d17844fd-0a76-470b-914e-18679970fcbc",
+      "name": "Bola Futebol De Campo Tornado XXII Branco Penalty",
+      "before": {
+        "at": "2026-11-11T13:11:01.204Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cdb76555-2c86-4071-ab8e-3d60e2230bfb",
+      "name": "Bola Futebol De Salão Futsal Infantil Dualt Velox Pro Sub 07",
+      "before": {
+        "at": "2026-11-11T13:12:51.408Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "10ccc4a2-7ad0-44bb-b5d2-61ecb598c872",
+      "name": "Bola Futebol Futsal Salão Topper Slick Branco",
+      "before": {
+        "at": "2026-11-11T13:10:38.479Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "58a7f7dd-72a7-47ae-a8a3-8851d6609897",
+      "name": "Bola Futebol Grama Society Penalty 8 X Termotec Cor Verde-limão",
+      "before": {
+        "at": "2026-11-11T13:11:29.407Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "5e0a2968-596d-4942-9a37-2c890e5c52da",
+      "name": "Bola Futebol Palmeiras Campo N° 5",
+      "before": {
+        "at": "2026-11-11T13:12:32.337Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "17084586-466f-4fae-9ba9-40917c6eb050",
+      "name": "Bola Futebol Penalty Campo Bravo Esportiva Grama Cor Azul",
+      "before": {
+        "at": "2026-11-11T13:11:10.574Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3e369e46-e5e2-41a5-9c5c-1b23f019f49b",
+      "name": "Bola Futebol Puma Big Cat",
+      "before": {
+        "at": "2026-11-11T13:11:45.191Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d796482c-02af-4ff6-b8de-4907ab214174",
+      "name": "BOLA FUTEBOL PUMA CUMBRE CONMEBOL LIBERTADORES",
+      "before": {
+        "at": "2026-11-11T13:11:42.035Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "819213e3-cae0-4291-81c7-9b2613d2c9e1",
+      "name": "Bola Futebol Qualidade cor10",
+      "before": {
+        "at": "2026-11-11T13:12:57.738Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ed818b79-5544-4930-9119-90a1ae1a7ee9",
+      "name": "Bola Futebol Rissin Campo Futsal Society Couro Sintético Brilhante",
+      "before": {
+        "at": "2026-11-11T13:10:41.578Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8a37c82d-e6b9-4bf7-89a7-5d3ff9f283e4",
+      "name": "Bola Futebol Salão Futsal Penalty Rx 500 XVVI",
+      "before": {
+        "at": "2026-11-11T13:11:35.786Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "88d4cea0-0fc7-4744-b510-b6678e2096b2",
+      "name": "Bola Futebol Samba Pro Campo Society Resistente Original",
+      "before": {
+        "at": "2026-11-11T13:12:44.959Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a36af985-af7e-449c-b33c-e92e2b708592",
+      "name": "Bola Futebol Society 5 Kaemy Violeta Microfibra Campo Sintético",
+      "before": {
+        "at": "2026-11-11T13:12:38.611Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "73536ae9-2de1-4e45-b936-64613c3eb9b7",
+      "name": "Bola Futebol Society Campo Campeonato Profissional Dualt Azul",
+      "before": {
+        "at": "2026-11-11T13:10:35.017Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "59e7533c-d250-4782-a5f1-850b3f8dff0d",
+      "name": "Bola Futebol Society Magussy 4 Evolution Cor Branco/cinza",
+      "before": {
+        "at": "2026-11-11T13:12:16.672Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "efc93480-1363-4e2b-8257-d30a1c8fa80c",
+      "name": "Bola Futebol Society Se7e Sete Ultra Fusion Penalty Cor Branco/amarelo",
+      "before": {
+        "at": "2026-11-11T13:11:32.662Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "21dbf9ea-6270-4ead-a18b-cca28533d91c",
+      "name": "Bola Futebol Society Topper Slick",
+      "before": {
+        "at": "2026-11-11T13:10:31.906Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5ddaf2a6-2d97-455a-8afd-0733a9c0b269",
+      "name": "Bola Futebol Topper Society Grama Sintética Slick Maestro Azul",
+      "before": {
+        "at": "2026-11-11T13:12:10.417Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0a746cbf-3be9-48f8-bf3d-4217703d1977",
+      "name": "Bola Futebol Uhlsport Score Society Laranja Tamanho 5 Micro Composto",
+      "before": {
+        "at": "2026-11-11T13:12:48.306Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6bf3c49b-c5de-47da-a6e4-a137ffaf8a9b",
+      "name": "Bola Futebol Xhaday Couro Sintético Camisa 5 Futsal Campo Preta",
+      "before": {
+        "at": "2026-11-11T13:10:47.905Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "62080372-6c6d-47e5-a0cf-856c17305fe5",
+      "name": "Bola Society Penalty Bola 8 Futebol",
+      "before": {
+        "at": "2026-11-11T13:13:17.626Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "01b582e0-157a-4856-a953-0a843570ee58",
+      "name": "Esteira Ergometrica 2.1hp Dobravel Com Bluetooth Aplicativo Preto",
+      "before": {
+        "at": "2026-11-11T03:18:32.601Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0f4729cd-57f0-4405-8d28-bece7703f5d2",
+      "name": "Esteira Ergométrica Academia Caminhada Elétrica Dobrável Preto",
+      "before": {
+        "at": "2026-11-11T13:15:43.936Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "8fb5efd9-fe45-4e9f-acd5-fc8ea3f5e6b8",
+      "name": "Esteira Ergométrica Dobrável 2.5hp Bluetooth Owo Ftiness Preto",
+      "before": {
+        "at": "2026-11-11T13:16:27.338Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ece6fcf9-34a0-4f7d-9f67-d4187dec0876",
+      "name": "Esteira Ergométrica Dobrável E Portátil - Rb Fitness Preto",
+      "before": {
+        "at": "2026-11-11T13:16:33.578Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "797ec12f-1382-41e4-8101-51c0047504c5",
+      "name": "Esteira Ergométrica Dobrável Elétrica Maat Brand Silenciosa Preto",
+      "before": {
+        "at": "2026-11-11T13:15:57.838Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "bb95fe1e-a61f-48b4-ba38-ef145ab4a45a",
+      "name": "Esteira Ergométrica Dobrável Importway Corrida Caminhada Cor Preto",
+      "before": {
+        "at": "2026-11-11T13:16:30.470Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "4103d039-0c70-422b-983a-1fb2a35428a6",
+      "name": "Esteira Ergométrica Dobrável Liftness Premium Top Casa Preto",
+      "before": {
+        "at": "2026-11-11T13:16:36.849Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3cc5fbc1-d4f5-4dc8-9d23-ae1712e25330",
+      "name": "Esteira Ergométrica Elétrica Dobrável Corrida - Rb Fitness Preto",
+      "before": {
+        "at": "2026-11-11T13:16:07.416Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1ffd8801-0bd6-4882-8467-c7b137f16271",
+      "name": "Esteira Ergométrica Elétrica Dobrável Residencial Com Bluetooth Tela Led 14km/h Jmjn Esteira Ergometrica 120kg",
+      "before": {
+        "at": "2026-11-11T03:18:26.474Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8df947d4-5932-4421-8263-f6601b63d076",
+      "name": "Esteira Ergométrica Elétrica Gallant Elite 2.5hp 14km Preto",
+      "before": {
+        "at": "2026-11-11T13:16:00.972Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6d74e251-c318-4ec2-ba91-0d184fdd545c",
+      "name": "Esteira Ergométrica Elétrica Gallant Elite 2.8hp 16kmh 220V",
+      "before": {
+        "at": "2026-11-11T13:15:48.147Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:brand_model"
+      }
+    },
+    {
+      "id": "4e32d465-8ea2-4616-ade9-3b714901a50f",
+      "name": "Esteira Ergométrica Elétrica Gallant Elite Cor Preto",
+      "before": {
+        "at": "2026-11-11T03:18:29.536Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "02067000-9a4e-4720-b729-9dba63ea5b57",
+      "name": "Esteira Ergométrica Elétrica Profissional Residencial 14km/h Preto",
+      "before": {
+        "at": "2026-11-11T13:15:54.689Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1a41a628-9a58-4596-af43-202e3eb96601",
+      "name": "Esteira Ergométrica Elétrica Residencial Bluetooth R1 Move",
+      "before": {
+        "at": "2026-11-11T13:16:04.104Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0befe966-77b3-4f97-b79c-7f8785a8f957",
+      "name": "Esteira Ergométrica Elétrica Residencial Bluetooth R4 Move Preto",
+      "before": {
+        "at": "2026-11-11T13:15:51.321Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3628c203-26db-437e-98f3-6c8ad107c715",
+      "name": "Esteira Ergométrica Elétrica Residencial Bluetooth R4i Move",
+      "before": {
+        "at": "2026-11-11T13:16:10.583Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "28e0e52a-4386-4655-9a85-4aa86ebbd29d",
+      "name": "Esteira Ergométrica Elétrica Residencial TX100 Polimet cor preto",
+      "before": {
+        "at": "2026-11-11T13:16:20.790Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "61ca0028-1ffd-413e-8ad8-60293cf25bdf",
+      "name": "Esteira Ergométrica Kikos E700c 2.0 HP 10 Km/h",
+      "before": {
+        "at": "2026-11-11T13:16:52.753Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "e4d468dd-ee52-4596-9f06-aa7b731f3baf",
+      "name": "Esteira Ergometrica Rtx320 Evox Fitness Preto",
+      "before": {
+        "at": "2026-11-11T13:16:49.641Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "366341df-0c6f-4c99-a497-5408442f02bd",
+      "name": "Esteira Ergométrica Speedo Tr3 - Dobrável Residencial",
+      "before": {
+        "at": "2026-11-11T13:16:24.200Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "353abbf0-1f8e-472f-bfa3-a3279d4656c4",
+      "name": "Esteira Ergométrica Speedo Tr5 Residencial - 4hp Até 18km/",
+      "before": {
+        "at": "2026-11-11T13:16:39.971Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "17e32f0c-a5e7-410d-8026-a2b474c38c0e",
+      "name": "Kit Minibomba De Mão P/ Encher + Bola Futebol Futsal Cor1",
+      "before": {
+        "at": "2026-11-11T13:10:54.783Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fd21cd6b-5cb6-4c1a-8572-5328d7253c76",
+      "name": "Mini Bola Futebol Costurada Infantil Azul",
+      "before": {
+        "at": "2026-11-11T13:13:00.948Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "fee8c479-4c2f-42c9-81a8-87d25824d421",
+      "name": "Prancha Deck Esteira Ergométrica Movement Master Futura 2.1 Preto",
+      "before": {
+        "at": "2026-11-11T13:16:43.239Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b6a6aef4-53b5-4ec0-86ca-9e2ed9c8bbee",
+      "name": "Prancha Esteira Ergométrica Deck Múltipla T3000 Preto",
+      "before": {
+        "at": "2026-11-11T13:16:46.381Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1675db00-c9a7-48b0-bc24-099c35820d31",
+      "name": "Prancha Esteira Ergometrica Kikos E600ix Preto",
+      "before": {
+        "at": "2026-11-11T13:16:13.707Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1128d7c5-fa2d-4493-bd5e-b062dcfc35d3",
+      "name": "Topper Bola Futebol De Campo Velocity Samba Profissional",
+      "before": {
+        "at": "2026-11-11T13:12:04.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "7fcdcfe3-5b6d-4606-acc4-e1f1e9c79163",
+      "name": "Topper Futsal Slick Bola Futebol Salão Branco Com Azul",
+      "before": {
+        "at": "2026-11-11T13:10:51.163Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ee350730-13d4-413d-a761-f422d92c93e7",
+      "name": "3det Victory - Versão Capa Dura: O Livro Básico Do Jogo Defensores De Tóquio, De Jambo Editora., Vol. 1. Editorial Jambo, Capa Mole Em Português",
+      "before": {
+        "at": "2026-11-11T12:30:14.866Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "a5ae31d9-f6c5-46d2-a9c7-3e7f1335ada0",
+      "name": "3DeT Victory — Masmorras e Marmitas - Cassaro, Marcelo - Jambô Editora - Capa Mole",
+      "before": {
+        "at": "2026-11-11T12:30:08.448Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "74d84577-3b39-4936-aaa9-9d0a55d7dcda",
+      "name": "A Escrava Isaura E O Vampiro: A Escrava Isaura E O Vampiro, De Jovane; Guimarães, Bernardo. Editora Lua De Papel (leya), Capa Mole, Edição 1 Em Português",
+      "before": {
+        "at": "2026-11-11T12:29:03.517Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "cc0ccfc0-a136-4a40-ada1-d00b0b09dcd2",
+      "name": "A Idade Média Narrada Por Um Vampiro Por Marcia Medeiros",
+      "before": {
+        "at": "2026-11-11T12:29:09.880Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "913d1a4a-1192-443d-9319-4a886122df91",
+      "name": "A insônia do vampiro - Jaf, Ivan - Ática - Capa Mole",
+      "before": {
+        "at": "2026-11-11T12:28:49.820Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "68958d0e-f43d-4169-837d-5dc412e9389c",
+      "name": "A Saga Do Vampiro Mogkull: Perseguição Implacável, De Orisval Brito. Série A Saga do Vampiro Mogkull, Vol. 1. Editora Clube De Autores, Capa Mole, Edição 1 Em Português, 2021",
+      "before": {
+        "at": "2026-11-11T12:28:43.424Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "34f9eb25-177e-4120-b40c-e5d7449203b0",
+      "name": "Classroom Deathmatch Livro O Mestre De Rpg Buró",
+      "before": {
+        "at": "2026-11-11T12:28:19.984Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "01b0ed62-2bab-4c2e-9f07-ef5cb3996df6",
+      "name": "Dungeons Dragons - Livro Do Jogador 2 - Devir",
+      "before": {
+        "at": "2026-11-11T12:28:30.611Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7365b251-9e01-400f-ab1f-d6df5d940066",
+      "name": "Lankhmar: Olhos De Goro'mosh - Rpg - Retropunk",
+      "before": {
+        "at": "2026-11-11T12:30:21.631Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "cbbc5223-2a75-4e27-85f0-909fd6a6641f",
+      "name": "Livro As Regras Simples Da Vida",
+      "before": {
+        "at": "2026-11-11T12:29:52.328Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b9071350-ecfe-417b-bdab-4d1182091967",
+      "name": "Livro Diários Do Vampiro 3 - A Fúria",
+      "before": {
+        "at": "2026-11-11T12:28:40.179Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "947a226c-f147-4c65-ba35-9a8e46eefcf7",
+      "name": "Livro Inovacao: As Regras Do Jogo",
+      "before": {
+        "at": "2026-11-11T12:29:49.120Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b5b58396-dc16-45a4-960e-c4b85ee750b4",
+      "name": "Livro Introdução À Programação Com Python",
+      "before": {
+        "at": "2026-11-11T12:31:19.989Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "4afbaf75-2bb6-4eb1-b627-c5137d0212c4",
+      "name": "Livro Lógica De Programação Com VisuaLG",
+      "before": {
+        "at": "2026-11-11T12:31:39.686Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "892bacc7-d43b-4024-808a-2bd5548ebddc",
+      "name": "Livro Programação de Sistemas Embarcados, de Almeida, Rodrigo Maximiano A.. Editorial GEN LTC, tapa mole, en português (2022)",
+      "before": {
+        "at": "2026-11-11T12:31:35.588Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b63720b8-2370-45a0-a236-835187cadccc",
+      "name": "Livro Programação I, de Santos, Fabiano Gonçalves dos. Editorial Meta Impressão e Soluções Digitais Ltda., tapa mole, en português (2017)",
+      "before": {
+        "at": "2026-11-11T12:31:43.821Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "ec5ddd73-a043-4070-b7ac-afd2a4709d9e",
+      "name": "Livro Programação Neurolinguística, Coaching e Equipes de Alta Performance, de Minsky, Tânia. Editorial Editora Intersaberes Ltda., tapa mole, en português (2021)",
+      "before": {
+        "at": "2026-11-11T12:31:31.641Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "90a2f70a-ec73-4546-9ded-2cb457698bd4",
+      "name": "Livro Programação orientada a objetos, de Santos, Fabiano Gonçalves dos. Editorial Estácio, tapa mole, en português (2017)",
+      "before": {
+        "at": "2026-11-11T12:31:27.774Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "ba468b37-5cd1-4968-951d-cbceace9f7b5",
+      "name": "Livro Programação servidor em sistemas Web, de Casati, João Paulo. Editorial Meta Impressão e Soluções Digitais Ltda., tapa mole, en português (2016)",
+      "before": {
+        "at": "2026-11-11T12:31:47.623Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "0c1bfba1-e933-4b98-a37e-d30506324862",
+      "name": "Livro Regras Do Jogo Chris Brady S24",
+      "before": {
+        "at": "2026-11-11T12:29:22.996Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "9d813da2-d42f-47bc-8654-0c87ef9536fd",
+      "name": "Livro Vampiro: A Máscara (5ª Edição) - Chicago By Night (suplemento), De Chicago, Vol. 1. Editora Wd, Capa Dura",
+      "before": {
+        "at": "2026-11-11T12:28:59.362Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "66cceaa6-9663-4d91-8b52-029dde65cc87",
+      "name": "Love Bites: A Vingança Do Vampiro Trovoada Perla, Jana",
+      "before": {
+        "at": "2026-11-11T12:28:52.976Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "63f0f26c-fae6-47d4-b815-cc185d164cbc",
+      "name": "Ordem Paranormal — O Jogo do Anfitrião - Lange, Rafael \"Cellbit\" - Jambô Editora - Capa Dura",
+      "before": {
+        "at": "2026-11-11T12:30:44.694Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "711ed735-b112-4750-abb4-13e2cd90651e",
+      "name": "Ordem Paranormal RPG - Sobrevivendo ao Horror - Lange, Rafael \"Cellbit\" - Jambô Editora - Capa Dura",
+      "before": {
+        "at": "2026-11-11T12:30:29.182Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b06c6aa6-ca80-4d12-8007-e198f809f61a",
+      "name": "Ordem Paranormal Rpg: Casos Paranormais (suplemento)",
+      "before": {
+        "at": "2026-11-11T12:30:18.429Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "640ebe0b-0cf1-4b90-965f-b5241d1f0ded",
+      "name": "Ordem Paranormal Vol. 1 — Iniciação - Lange, Rafael “Cellbit” - Jambô Editora - Capa Dura",
+      "before": {
+        "at": "2026-11-11T12:30:37.037Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "d210bc41-22ba-4039-9f91-6bc9d9d2a38b",
+      "name": "Ordem Paranormal Vol. 2 — Segredo na Floresta, parte 1 (Econômico) - Lange, Rafael \"Cellbit\" - Jambô Editora - Capa Mole",
+      "before": {
+        "at": "2026-11-11T12:31:04.324Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "f15e25cb-7b6d-4e99-b675-54201c17f880",
+      "name": "Ordem Paranormal Vol. 3 — O Segredo na Floresta, Parte 2 (Econômico) - Lange, Rafael \"Cellbit\" - Jambô Editora - Capa Mole",
+      "before": {
+        "at": "2026-11-11T12:31:16.027Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "f1f057ee-39cd-4456-b74c-ed1dd93aeca8",
+      "name": "Ordem Paranormal Vol. 5 — Desconjuração Parte 2 - Lange, Rafael \"Cellbit\" - Jambô Editora - Capa Dura",
+      "before": {
+        "at": "2026-11-11T12:30:56.514Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "c8272133-a0b0-4625-9ddd-34b2ab73b9ff",
+      "name": "Pathfinder Remaster Rpg: Livro Do Mestre Pt Br",
+      "before": {
+        "at": "2026-11-11T12:28:24.001Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "416050c2-4ce4-438d-b490-328fe943e107",
+      "name": "Pathfinder Rpg 2e: Kingmaker Guia De Companheiros (sup) Pt",
+      "before": {
+        "at": "2026-11-11T12:29:16.614Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "a50c5e11-2ee5-4746-a4c4-ebbf9c9d1121",
+      "name": "Pathfinder Rpg 2e: Kingmaker Guia Do Jogador (sup) Pt Br",
+      "before": {
+        "at": "2026-11-11T12:29:19.797Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "b63ecbf3-6d63-412c-b95a-5099f71e7a46",
+      "name": "Savage Pathfinder: Livro De Regras - Retropunk",
+      "before": {
+        "at": "2026-11-11T12:29:42.696Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "f4a4f7fe-7ef7-437e-a4b0-47e0976873e4",
+      "name": "Savage Worlds Rpg Edicao Aventura: Livro De Regras Capa Dura",
+      "before": {
+        "at": "2026-11-11T12:29:32.816Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7f267efc-a982-4904-a09a-479052aeaf5a",
+      "name": "The Call of the Wild - London, Jack - Ciranda Cultural - Capa Mole",
+      "before": {
+        "at": "2026-11-11T12:28:36.988Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "7429f20d-8460-4ace-b8ca-5d4a8f5c22f7",
+      "name": "The Dark Eye Rpg: Livro De Regras Em Portugues",
+      "before": {
+        "at": "2026-11-11T12:29:26.184Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "1c2a3cea-c2ba-4458-bf9f-3c9e76d605db",
+      "name": "Traveller Livro Básico De Regras - Rpg -capa Preta Metalizada",
+      "before": {
+        "at": "2026-11-11T12:29:29.641Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "3bef0d66-0b30-41f5-acba-090ab9eff032",
+      "name": "Vaesen Rpg: A Saga Da Montanha Perdida (suplemento)",
+      "before": {
+        "at": "2026-11-11T12:28:46.597Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "9f147fec-b91c-4fe1-ba37-d655c4954751",
+      "name": "Vendeta Oculta - Uma Série Ordem Paranormal - Português",
+      "before": {
+        "at": "2026-11-11T12:30:32.975Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "235eca0f-6764-4bb7-971e-ce4d3185eb59",
+      "name": "Vendeta Oculta 2 — Uma Série Ordem Paranormal - Cellbit - Jambô Editora - Capa Mole",
+      "before": {
+        "at": "2026-11-11T12:30:40.852Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:isbn"
+      }
+    },
+    {
+      "id": "506dcc8e-a80c-475e-ba01-b92537e2b92c",
+      "name": "Asrock Rx 9060 Xt Placa De Vídeo Radeon 16gb Gddr6",
+      "before": {
+        "at": "2026-11-11T12:15:21.285Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "605ded5b-58ce-4249-afa4-0a441475d2d2",
+      "name": "Placa De Vídeo Amd Asrock Steel Legend Oc Rx 9060 Xt 16gb",
+      "before": {
+        "at": "2026-11-11T12:15:30.775Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "dd14ba42-d040-4ec5-98fd-9ecff5a11e0f",
+      "name": "Placa de Vídeo ASRock Radeon RX 7600 8GB Challenger OC GDDR6 HDMI 2.1",
+      "before": {
+        "at": "2026-11-11T12:13:14.426Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8f4b3cea-cf57-4904-84d3-58cce397fc5c",
+      "name": "Placa de Vídeo ASRock Radeon RX 7600 Challenger Pro OC 8GB GDDR6 128-bit",
+      "before": {
+        "at": "2026-11-11T12:13:24.863Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0ffb8e0e-947a-45f5-aa71-0d432ef4fe78",
+      "name": "Placa De Vídeo Asus Dual AMD Radeon RX 7600 EVO OC Edition, 8GB, GDDR6, FSR, Ray Tracing",
+      "before": {
+        "at": "2026-11-11T12:14:54.875Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "79b0d2c6-03f3-49eb-8ab6-59d6cb494dc1",
+      "name": "Placa de vídeo Asus Dual Geforce Rtx 5060 Ti 16gb Gddr7 Oc",
+      "before": {
+        "at": "2026-11-11T12:13:44.175Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1d519fae-8fd7-4df4-9fa1-6cb7c755ad7c",
+      "name": "Placa de Vídeo Asus GeForce RTX 5070 Prime OC Edition 12GB GDDR7 192-bit",
+      "before": {
+        "at": "2026-11-11T12:14:22.602Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "78e93b1d-8cc0-406c-ba7a-95bd061144ec",
+      "name": "Placa De Vídeo Asus Geforce Rtx 5070 Ti Prime Oc 16gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:14:13.015Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "784eef5c-647a-44d4-ae61-1e6d0f83b8d3",
+      "name": "Placa De Vídeo Asus Nvidia Geforce Rtx 5070 Ats Oc 12gb",
+      "before": {
+        "at": "2026-11-11T12:14:09.761Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9c488d04-5947-474b-9fd6-cf79a934d65e",
+      "name": "Placa De Vídeo Asus Prime Geforce Rtx 5060 Ti Oc 16gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:13:50.562Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "61eb95c1-5735-41f2-9448-5668063c574e",
+      "name": "Placa De Vídeo Asus Prime Geforce Rtx 5070 12gb Gdr7",
+      "before": {
+        "at": "2026-11-11T12:13:56.982Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "4f1bfa81-2cd2-4bd5-8bca-40cd4d092e39",
+      "name": "Placa de vídeo Asus Prime Rtx 5060 Ti Oc 16gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:13:37.691Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "29a7dc51-446d-40d9-81c6-d5a13dedab76",
+      "name": "Placa de vídeo Asus Prime Rtx 5070 Oc Edition 12gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:14:03.376Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6b68fbd1-5873-49af-9de3-5ed6acefdc81",
+      "name": "Placa De Vídeo Asus Prime Rx 9060 Xt Oc 8gb Amd Radeon Gddr6",
+      "before": {
+        "at": "2026-11-11T12:15:04.840Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2fd75bec-075d-40ef-9c45-9a7ffafedfce",
+      "name": "Placa de Vídeo ASUS PRIME-RTX 5060 TI O16G NVIDIA 16GB GDDR7",
+      "before": {
+        "at": "2026-11-11T12:13:47.373Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "af00233d-f278-47fb-a359-ba9982707e47",
+      "name": "Placa de Vídeo Asus Radeon RX 9060 XT Dual 16GB GDDR6 128-bit",
+      "before": {
+        "at": "2026-11-11T12:15:08.023Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "04b4db37-d000-4460-9143-c3efd4a0faed",
+      "name": "Placa De Vídeo Asus Radeon Rx 9060 Xt Prime 16gb Gddr6 Oc",
+      "before": {
+        "at": "2026-11-11T12:15:01.694Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "a93217f5-664b-4fd7-8d9f-57610a8a86be",
+      "name": "Placa De Vídeo Asus Rog Strix Rtx 4070 Ti 12gb Gddr6x",
+      "before": {
+        "at": "2026-11-11T12:14:58.348Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "95268afd-855d-492d-8b0a-c39026458ab1",
+      "name": "Placa de vídeo Asus Rtx 5060 8gb Dual Gdr7 de 128 bits",
+      "before": {
+        "at": "2026-11-11T12:13:53.801Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ed6d7554-69a0-40ce-8b54-b6ba12e3ee1e",
+      "name": "Placa de Vídeo ASUS RTX 5060 TI DUAL O8G GeForce 8GB GDDR7",
+      "before": {
+        "at": "2026-11-11T12:13:40.989Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f6a87e1a-87c0-4e29-876f-c05de302dead",
+      "name": "Placa De Vídeo Asus Rtx 5070 Ti Prime Oc, 16gb, Gddr7",
+      "before": {
+        "at": "2026-11-11T12:14:06.598Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "80676a15-ceb8-427e-95aa-169fd6229ec4",
+      "name": "Placa De Vídeo Asus Rtx 5070 Ti Tuf Oc, 16gb, Gddr7, 256-bit",
+      "before": {
+        "at": "2026-11-11T12:14:19.386Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8c71e4d8-975e-4bbd-a448-16e5ab78ebb3",
+      "name": "Placa De Vídeo Asus Rx 9060 Xt Dual 8gb Gddr6 Radeon Hdmi Dp",
+      "before": {
+        "at": "2026-11-11T12:15:11.439Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "cc7c437b-4bfa-4023-9f11-7e4eabe0dd51",
+      "name": "Placa De Vídeo Asus Tuf Gaming Rtx 5070 12gb Gddr7 Oc",
+      "before": {
+        "at": "2026-11-11T12:14:00.225Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ed9c76d0-72e5-47e3-92f1-1e0c72e48400",
+      "name": "Placa de Vídeo Gainward RTX 5070 Ti 16GB GDDR7 256bits",
+      "before": {
+        "at": "2026-11-11T12:14:48.482Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "6113f4c8-3999-4753-95a1-35523b9f7451",
+      "name": "Placa de vídeo Geforce Nvidia Gigabyte Rtx 5060 Ti 8gb Eagle Ice Gddr6 Dlss4",
+      "before": {
+        "at": "2026-11-11T12:16:19.956Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "679761e0-9766-41f8-a0c0-d47619e79b97",
+      "name": "Placa De Vídeo Geforce Rtx 5060 Ti Eagle Oc Ice 16g Gigabyte",
+      "before": {
+        "at": "2026-11-11T12:16:10.410Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "22e2eaba-93dd-455c-8923-0c0a89210a2b",
+      "name": "Placa De Vídeo Geforce Rtx 5060 Windforce Oc 8g Gigabyte GDDR7",
+      "before": {
+        "at": "2026-11-11T12:15:50.815Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "b38fb79c-4f8e-491e-b76f-6c9dc8bb7011",
+      "name": "Placa De Vídeo Gigabyte Geforce Rtx 5060 Gaming Oc 8gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:16:00.604Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1bab0dd6-53e5-4df9-a79c-49e5c36747ef",
+      "name": "Placa de vídeo Gigabyte GeForce RTX 5060 Ti GDDR7 Windforce Max OC de 8 GB",
+      "before": {
+        "at": "2026-11-11T12:16:23.171Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "158ebe09-21b3-4702-a2a3-c147e07dc8ce",
+      "name": "Placa De Vídeo Gigabyte Nvidia Gaming Oc Rtx 5070 12gb",
+      "before": {
+        "at": "2026-11-11T12:14:35.615Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d0efe64f-9f87-45f2-ba6e-3f57ca7a233b",
+      "name": "Placa De Vídeo Gigabyte Rtx 5060 Aero Oc 8gb Gddr7 128bits",
+      "before": {
+        "at": "2026-11-11T12:15:57.320Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "23c9635a-03e3-41b9-b270-6110cf726e7f",
+      "name": "Placa De Vídeo Gigabyte Rtx 5060 Eagle Ice Oc 8gb Gdrr7 128b",
+      "before": {
+        "at": "2026-11-11T12:16:13.594Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "477db2ef-255c-4e53-b2b8-0cd608984848",
+      "name": "Placa De Vídeo Gigabyte Rtx 5060 Eagle Oc 8gb Gddr7 128bits",
+      "before": {
+        "at": "2026-11-11T12:16:07.098Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1ef0e53c-076c-48f5-b1c5-91760cbd707f",
+      "name": "Placa De Vídeo Gigabyte Rtx 5060 Eagle Oc Max 8gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:15:53.975Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "85af47e8-fb48-4e65-8bb8-c20fd26d77fe",
+      "name": "Placa De Vídeo Gigabyte Rtx 5060 Ti Gaming Oc 8gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:15:47.391Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "f81d0287-c96d-412c-ba1d-999e026b5f94",
+      "name": "Placa de vídeo Gigabyte Rtx 5070 Aero Oc 12gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:14:45.301Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "8ec3f17b-83d3-4d3b-9a08-faf3b19a2e0c",
+      "name": "Placa De Vídeo Gigabyte Rtx 5070 Aorus Master, 12gb, Gddr7",
+      "before": {
+        "at": "2026-11-11T12:14:51.677Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "3d44b174-f11f-452d-a517-3ac4d355e55d",
+      "name": "Placa de Vídeo Gigabyte RTX 5070 Eagle OC 12GB",
+      "before": {
+        "at": "2026-11-11T12:14:29.266Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "66da4e18-019a-4527-915c-4eb148cd1ee4",
+      "name": "Placa De Vídeo Gigabyte Rtx 5070 Eagle Oc Sff 12gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:16:26.369Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9357ed31-d14d-4784-a97a-86659888281f",
+      "name": "Placa De Vídeo Gigabyte Rtx 5070 Windforce Oc Sff 12gb",
+      "before": {
+        "at": "2026-11-11T12:14:42.109Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "46c69b58-7fbc-453d-8205-729673ed515c",
+      "name": "Placa De Vídeo Gigabyte Rtx 5070 Windforce Sff 12gb",
+      "before": {
+        "at": "2026-11-11T12:14:25.826Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0ffb8f68-815a-4194-81c7-3404a12ade7c",
+      "name": "Placa de Vídeo Gigabyte RX 9060 XT Gaming OC AMD Radeon 8GB GDDR6",
+      "before": {
+        "at": "2026-11-11T12:15:34.192Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "50cba965-7226-4dcb-9dee-3d8182c577bd",
+      "name": "Placa de vídeo Gigabyte Rx 9060 Xt Gaming Oc Edition de 8 GB",
+      "before": {
+        "at": "2026-11-11T12:15:40.683Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "73177e3c-01bf-4f1e-935b-292ccc4b9748",
+      "name": "Placa De Vídeo Gpu 12gb Dual Asus Geforce Rtx 5070 Oc Editio",
+      "before": {
+        "at": "2026-11-11T12:14:16.183Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ce08fd9d-b791-48ce-ace7-6e7fc3ad8234",
+      "name": "Placa de Vídeo Inno3D Nvidia GeForce RTX 5070 12GB GDDR6",
+      "before": {
+        "at": "2026-11-11T12:14:32.430Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "1bc7ece5-dd87-449f-9aea-444568d5ee6c",
+      "name": "Placa de Vídeo PowerColor AMD Radeon RX 7600 8GB GDDR6 PCIe 4.0 1xHDMI 3xDisplayPort",
+      "before": {
+        "at": "2026-11-11T12:13:21.650Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "9681d915-b3ff-49aa-a7e2-0c38ffa3432e",
+      "name": "Placa de Vídeo PowerColor Radeon RX 7600 XT Hellhound 16GB GDDR6 RDNA 3 AMD",
+      "before": {
+        "at": "2026-11-11T12:13:18.475Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "ba949b04-23f0-48a2-bcee-c853bf49b6fd",
+      "name": "Placa De Video Powercolor Radeon Rx 9060 Xt Hellhound",
+      "before": {
+        "at": "2026-11-11T12:15:14.710Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "5c7a84f5-2d9b-4397-bb04-92a12e8d156a",
+      "name": "Placa De Video Powercolor Radeon RX 9060 XT Reaper, 8GB, 128-bit",
+      "before": {
+        "at": "2026-11-11T12:15:27.605Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "d18bb9a3-bd07-48da-b51f-75a9b3a4b707",
+      "name": "Placa de Vídeo XFX Mercury AMD RX 9060 XT OC White 16GB GDDR6",
+      "before": {
+        "at": "2026-11-11T12:15:43.845Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "2ac22c2c-02d9-442c-ae77-15e92a361fe9",
+      "name": "Placa de Vídeo XFX Swift AMD Radeon RX 9060 XT 16GB GDDR6",
+      "before": {
+        "at": "2026-11-11T12:15:24.440Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "29395b90-8009-4da6-8ea4-e8c5635014a7",
+      "name": "Placa De Vídeo Xfx Swift Rx 9060 Xt Oc Gaming Edition De 8gb",
+      "before": {
+        "at": "2026-11-11T12:15:37.488Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "22ca206e-2e6e-4547-bb18-e604a8ccf18e",
+      "name": "Placa De Vídeo Zotac Gaming Geforce Rtx 5070 12gb Gddr7",
+      "before": {
+        "at": "2026-11-11T12:14:38.771Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "de8bfc25-1b5a-4e44-bed2-f3d7f61d39d0",
+      "name": "Placa gráfica Asus Amd Radeon Rx 9060 Xt Tuf Oc 16gb Venex",
+      "before": {
+        "at": "2026-11-11T12:15:17.873Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "679aea22-1126-4570-86e5-4fa002bb2fe0",
+      "name": "Placa Video 8gb Rtx4060 Asus Dual-rtx4060-o8g-evo",
+      "before": {
+        "at": "2026-11-11T12:13:28.013Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    },
+    {
+      "id": "0c5a44f8-4ff7-4ff4-820c-5359711d7222",
+      "name": "Placa Vídeo Pcyes Radeon Rx550, 4gb, Gddr5, 128 Bits",
+      "before": {
+        "at": "2026-11-11T12:13:34.522Z",
+        "reason": "semeadura_vertical_aguardando_conferencia",
+        "matched": null,
+        "verdict": "review",
+        "version": 1,
+        "category": "unverified",
+        "suggested": "approved",
+        "suggestedReason": "evidencia_positiva:gtin"
+      }
+    }
+  ]
+}

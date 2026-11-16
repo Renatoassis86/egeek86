@@ -1,0 +1,697 @@
+{
+  "geradoEm": "2026-11-12T03:58:37.970Z",
+  "versaoRegra": 1,
+  "marcar": [
+    {
+      "id": "75102f37-420f-4e0d-a532-ed05cd4e110e",
+      "name": "Lava-louças Electrolux 8 Serviços Inox (ll08s) Cor Prateado",
+      "vertical": "eletrodomesticos",
+      "tipo": "lavadora-secadora",
+      "motivo": "preco_anomalo",
+      "precoMedianoCents": 180000000,
+      "nOfertas": 1,
+      "nVendedores": 1
+    },
+    {
+      "id": "183d61a6-4393-461e-ae2e-99619ebee2de",
+      "name": "Hub USB Imagine Cases Hub Usb-A 3in1 cinza",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 3699,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "841506b3-4b33-4240-a749-6ee36cd5fd8a",
+      "name": "Power Bank Portátil 10000mah Usb",
+      "vertical": "eletroeletronicos",
+      "tipo": "carregadores",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 1890,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "2961ac7b-1e2f-4b28-8d23-f2cfe69fa32c",
+      "name": "Carregador USB-C 20W | PD Charger Coca-Cola",
+      "vertical": "eletroeletronicos",
+      "tipo": "carregadores",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 6990,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "917666c8-7867-4f6e-8373-49c1461d24e0",
+      "name": "Cabo HDMI 4 K Cabo HDMI 6 Pies Capshi Hdmi A Cabo HDMI So",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 7000,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "647caa3c-2bf2-47b9-aa5b-1500d93597d8",
+      "name": "Caixa Som Bluetooth Mini Caixa Potente Amplificada Littlefun Cor Rosa",
+      "vertical": "eletroeletronicos",
+      "tipo": "outros",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2599,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "e72497fd-2b3f-43e4-95bf-6043397458c9",
+      "name": "Cabo HDMI 4K/Cabo Hdmi 0,5 Pies /0,5 Pies, Hdmi A Hdmi",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 1200,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "f50ca78f-a507-40d1-89e1-833b7930ac5a",
+      "name": "Cabo HDMI 4K/Cabo HDMI 1 Pie/1 Pie, Hdmi A Hdmi, Série A",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 2500,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "c1f774a0-d529-41fc-a1df-0a01dbfa5b41",
+      "name": "Cabo HDMI Fibra Ótica 2.0 Cabo Hdmi 20 Metros 4K Preto",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 20400,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "09d43fca-b8c1-4821-94d8-beab69361544",
+      "name": "Carregador super rápido tipo C, carregador USB C, carregador PA",
+      "vertical": "eletroeletronicos",
+      "tipo": "carregadores",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4500,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "13fe1a46-45c9-4e47-adf5-2d005c5303fe",
+      "name": "Hub USB Guadrini Hub USB 3.0",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 4399,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "a7158d8f-31d5-4bfd-96ac-f6faf159d1fe",
+      "name": "Fonte Carregador Usb-c Chip Inteligente Quick Turbo 20w",
+      "vertical": "eletroeletronicos",
+      "tipo": "carregadores",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 9490,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "e4472b27-955e-4dda-b605-fd18867cf52c",
+      "name": "Carregador Usb C Huntkey M20 Máx. 20w Branco",
+      "vertical": "eletroeletronicos",
+      "tipo": "carregadores",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2999,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "30fc5a82-d615-4c7d-8b22-ebfa50a7fc5a",
+      "name": "Fone Ouvido Bluetooth Ambie Caixinha De Carregar Fone",
+      "vertical": "eletroeletronicos",
+      "tipo": "fones",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 7858,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "0b9c77d9-8916-48cd-9b10-1848dde66714",
+      "name": "Fone de ouvido Samsung Fone Ouvido Rectangle Design Preto",
+      "vertical": "eletroeletronicos",
+      "tipo": "fones",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3898,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "d28497e6-f7a2-4229-b237-be87beb5fa31",
+      "name": "Fone Ouvido Bluetooth Mb83090 Branco Mbtech",
+      "vertical": "eletroeletronicos",
+      "tipo": "fones",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 5894,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "e6c66b34-91cb-48dd-8ffb-fc3391b7a145",
+      "name": "Fone Ouvido M19 Sem Fio Bluetooth Stereo Tws True Wireless Cor Preto Luz Vermelho",
+      "vertical": "eletroeletronicos",
+      "tipo": "fones",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2790,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "bce3e118-818d-4506-8e42-a89b1a05551b",
+      "name": "Fone Ouvido Bluetooth Infantil Mini Cat Fone Orelha Gato Led",
+      "vertical": "eletroeletronicos",
+      "tipo": "fones",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 5689,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "c05ee9ed-e91b-4d0c-b0e2-e695badf4590",
+      "name": "Carregador Usb Tipo-c Cudy Gan Pd 20w",
+      "vertical": "eletroeletronicos",
+      "tipo": "carregadores",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4222,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "569ea249-7527-4da9-8924-981e1608c177",
+      "name": "Cabo HDMI macho Vanjoe de 5 metros de áudio 4K para TV Pc Conector HDMI Full Hd Cabo HDMI Cabo HDMI de 5 metros Cabo de alto-falante Cabo de plugue Cabo auxiliar de Displayport de áudio",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 5590,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "f391e9ab-55ed-45aa-9681-efcea10b643a",
+      "name": "Syncwire SW-HD075 Cabo HDMI 4K Cabo HDMI 2.0 Cabo HDMI de alta velocidade de 10 pés",
+      "vertical": "eletroeletronicos",
+      "tipo": "cabos-acessorios",
+      "motivo": "tipo_excluido",
+      "precoMedianoCents": 800,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "44ba380e-5e37-4dc5-81b2-725ee290c28f",
+      "name": "Câmera de segurança Bivena Câmera Segurança Wifi Câmera segurança wifi lâmpada com resolução 1080p - branco",
+      "vertical": "eletroeletronicos",
+      "tipo": "camera-seguranca",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 9331,
+      "nOfertas": 4,
+      "nVendedores": 4
+    },
+    {
+      "id": "24a6d535-5aa9-4b1e-93d8-832c38427bbc",
+      "name": "Tapete Yoga Antiderrapante Tatames EVA 180x55x1cm Rosa",
+      "vertical": "esporte",
+      "tipo": "fitness",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4699,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "276c50c9-78e0-4ee9-80e9-a90523d53b33",
+      "name": "Meia Esportiva De Futebol Antiderrapante Treino Meias",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2158,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "5b7e639b-6f6c-496e-8c8c-5215041b35db",
+      "name": "Luva Academia Dray 2106 Neopreme",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4258,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "77752c30-08ea-4ce8-9564-0b6461c8694b",
+      "name": "Bola Futebol Cheia Campo Tamanho Capotão - Branco",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2847,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "b0db6630-bb09-42ab-a5e8-baf65c750423",
+      "name": "Bola Futebol Campo cor07",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2499,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "ed818b79-5544-4930-9119-90a1ae1a7ee9",
+      "name": "Bola Futebol Rissin Campo Futsal Society Couro Sintético Brilhante",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2349,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "248b3ff1-20c1-4588-ba5d-1a9219165481",
+      "name": "Bola Futebol Capotão Barcelona Couro Sintético Campo Society",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2556,
+      "nOfertas": 4,
+      "nVendedores": 4
+    },
+    {
+      "id": "7e0fb175-a7e0-4891-825a-fa670d2adeb3",
+      "name": "Bola Futebol Campo Vinil Vermelho Costurada",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2499,
+      "nOfertas": 4,
+      "nVendedores": 4
+    },
+    {
+      "id": "960c0464-827a-4abd-bf27-7bc028eb4e50",
+      "name": "Bola Basquete Brasport Adulto Laranja",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4900,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "84d44336-b1db-4cb2-bb10-ba0c4e7682a2",
+      "name": "Caneleira Futebol Lotto Solista",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 1685,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "dfe1bf48-6857-43ca-859a-7bb88d1ab306",
+      "name": "Caneleira Futebol Spoart F46 Juvenil",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2690,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "f8453bc1-1a1c-4c66-b2f4-a98e055a1461",
+      "name": "Caneleira Futebol Young Juvenil - Campo Society",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 1900,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "f16733ab-966f-412e-8cd4-9fa5d7160536",
+      "name": "Corda Pular Com Rolamento Treino Funcional Crossfit Laranja",
+      "vertical": "esporte",
+      "tipo": "fitness",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4138,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "47df863a-5859-407d-985b-75a58c72bcd7",
+      "name": "Corda Pular Proaction G307 2,75m Treino Funcional",
+      "vertical": "esporte",
+      "tipo": "fitness",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2755,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "9ebf8a4f-5f54-4dba-a323-747000a28680",
+      "name": "Corda Pular Profissional Vollo Pvc Ajustável Cardio",
+      "vertical": "esporte",
+      "tipo": "fitness",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2599,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "cfefcb7a-73d5-4000-9408-b2372163a867",
+      "name": "Corda Pular Treino Funcional Cross Speed Rope Acte Sports Cor Amarelo",
+      "vertical": "esporte",
+      "tipo": "fitness",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2130,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "eee11c9d-abd8-4593-9667-80a5051d2aa9",
+      "name": "Faixa Elástica Forte T13-f Vermelho Acte Sports",
+      "vertical": "esporte",
+      "tipo": "fitness",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4340,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "9a00619b-6717-4207-bb04-7365a864d6e2",
+      "name": "Garrafa Squeeze De Água Panda",
+      "vertical": "esporte",
+      "tipo": "garrafas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4581,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "9f139772-3b62-42ac-b866-a57a07736180",
+      "name": "Kit Minibomba De Mão P/ Encher + Bola Futebol Futsal Cor6",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3299,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "be39c91b-e044-4aac-bdd6-9c7b66725890",
+      "name": "Luva Academia Ginastica Musculaçao Sem Polegar",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3425,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "a6cf9e51-9dba-424a-aad1-e699bbf9ff81",
+      "name": "Luva Academia Neoprene Grip Progne Sports G",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4959,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "39263697-e3f2-42ff-b5d0-1d6f37a975e2",
+      "name": "Luva Academia Treino Musculação - Integralmedica",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 1891,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "b541a109-14f4-48b9-900e-b62481f112f4",
+      "name": "Meia Esportiva Antiderrapante para Futebol na",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2838,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "79226a66-39c8-4d0d-9fb3-056466e68525",
+      "name": "Meia Esportiva Penalty Cano Alto Ecoknit Adulto Un",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4890,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "1ac16913-5bfa-4bfe-847e-99c3648c0c07",
+      "name": "Meia Esportiva Penalty Cano Alto 330 39/44",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3999,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "308f8141-4b3a-404a-8580-cb8835f15eab",
+      "name": "Meia Esportiva Penalty Cano Médio 331",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4000,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "c08e52f0-6098-429c-94bd-7514c86aacb4",
+      "name": "Mini Bola Basquete Laranja Spalding Spaldeen TF",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 5990,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "5359a4fe-50ab-41e1-a5ef-e43a212478e4",
+      "name": "Meião Futebol Masculino Meia Esportiva Futsal Jogador 28ao43 P",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3890,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "0143a019-f7dc-452c-a8f8-9af9e77bccf0",
+      "name": "Caneleira Futebol Supreo Placa PE EVA",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3799,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "07ad70ae-27c8-402a-a3c8-c2d554ba5647",
+      "name": "Caneleira Futebol F24 Infantil",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2890,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "0b643e2e-9788-4d46-90e4-794dc9873502",
+      "name": "Luva Academia Musculação Com Munhequeira P",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3800,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "aa502395-dbd8-439a-a959-f0122542dc15",
+      "name": "Meia Esportiva Antiderrapante 02339 Vm/cz/br",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4947,
+      "nOfertas": 4,
+      "nVendedores": 4
+    },
+    {
+      "id": "159daa65-5681-429b-a0f2-0431fbd7b745",
+      "name": "Garrafa Squeeze Matte 900ml - Azul",
+      "vertical": "esporte",
+      "tipo": "garrafas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3690,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "ab7e8902-e0d6-4adf-87db-5c3ee75ace62",
+      "name": "Bola Futebol Campo cor10",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2499,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "b2dac499-c6b4-48cb-a5c1-4c4c5118738d",
+      "name": "Bola Futebol Campo cor01",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2499,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "e70db7de-8a1d-4834-a374-c53a1593e0a3",
+      "name": "Bola Futebol Campo PVC Sportcom Amarela",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3589,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "8c6d1a9a-e4f2-4e1c-b88a-8a1df100d4ff",
+      "name": "Bola Futebol Campo Star Numero 5 Amarelo",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4890,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "819213e3-cae0-4291-81c7-9b2613d2c9e1",
+      "name": "Bola Futebol Qualidade cor10",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3099,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "6bf3c49b-c5de-47da-a6e4-a137ffaf8a9b",
+      "name": "Bola Futebol Xhaday Couro Sintético Camisa 5 Futsal Campo Preta",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2349,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "2b6d6ac8-a100-49bc-84bd-264af0cb45f7",
+      "name": "Meia Esportiva Antiderrapante 02339 Br/cz/pt",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4637,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "592cea88-526f-4c8b-b768-3654b47c3e5b",
+      "name": "Luva Academia Exercise Sports Meia Luva Neoprene Caveirinha",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2701,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "f563a875-d8e4-4e9a-93f6-55adf4663286",
+      "name": "Luva Academia Musculação Fitness",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2999,
+      "nOfertas": 2,
+      "nVendedores": 2
+    },
+    {
+      "id": "17e32f0c-a5e7-410d-8026-a2b474c38c0e",
+      "name": "Kit Minibomba De Mão P/ Encher + Bola Futebol Futsal Cor1",
+      "vertical": "esporte",
+      "tipo": "bola",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 3299,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "20538bef-7492-49cf-a25d-179a88978eb2",
+      "name": "Caneleira Futebol Penalty Matis Tamanho Juvenil",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 2490,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "e96863ea-11d0-414e-873d-1ffd5575d8c6",
+      "name": "Faixa Elástica Poker Chumbo",
+      "vertical": "esporte",
+      "tipo": "fitness",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4299,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "4981ff51-a663-42db-a6fb-8e54c5cd38aa",
+      "name": "Meia Esportiva Antiderrapante Pro Grip - Finta",
+      "vertical": "esporte",
+      "tipo": "meias-roupas",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4834,
+      "nOfertas": 3,
+      "nVendedores": 3
+    },
+    {
+      "id": "23d90b14-c38d-49dd-afab-4f0daed20abe",
+      "name": "Caneleira Tornozeleira Peso 1kg Par Mob Preto Para Pernas",
+      "vertical": "esporte",
+      "tipo": "protecao",
+      "motivo": "abaixo_do_piso",
+      "precoMedianoCents": 4390,
+      "nOfertas": 3,
+      "nVendedores": 3
+    }
+  ],
+  "desmarcar": []
+}

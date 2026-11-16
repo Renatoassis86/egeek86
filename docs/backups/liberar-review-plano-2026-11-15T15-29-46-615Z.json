@@ -1,0 +1,3129 @@
+{
+  "criadoEm": "2026-11-15T15:29:46.618Z",
+  "alvos": [
+    {
+      "id": "1469de2c-8415-4b20-bb13-c04a00e8873e",
+      "nome": "Caixa De Som Luna Harman Kardon",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c081bbd5-1610-4277-bb1c-806a65b78f52",
+      "nome": "Caixa De Som Bluetooth Harman Kardon Onyx Studio 9",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "4286dc77-5827-45f6-8310-a5d6a6d582fb",
+      "nome": "Caixa de Som Bluetooth Harman Kardon SoundSticks 5 - Branca",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "52af85ae-f9ee-4fba-983b-744eab5bd485",
+      "nome": "Caixa de Som Harman Kardon SoundStiks 4, 140W RMS, Bluetooth, Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "1a896547-84a9-4def-8861-f947bbbb4ba4",
+      "nome": "Câmera digital Ricoh Gr Iiix preta",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f2fcd79a-99c7-4ae4-9a92-1ccc0cc366da",
+      "nome": "Drone DJI Mavic Mini Dobrável Com Câmera 2.7K e GPS",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "98f5246c-dd26-45e7-b05e-a75187ea3b10",
+      "nome": "Drone Profissional Xt808 Dobrável Estável Iniciante 2bateria Preto Iigenai-Sogno",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "3fd4f882-9537-44cc-bfbd-da6cdc56be13",
+      "nome": "Drone Profissional Gps L500 Pro Dual Camera 4k 5ghz Laranja",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "6842c087-a9f0-49fd-9489-124313af839c",
+      "nome": "Projetor Led Viewsonic Wxga 1280x800 3000 Lumens Ls600w Cor Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "09756245-d950-4665-9a2e-67841c58d0ec",
+      "nome": "Projetor 4K Laser DLP Optoma UHZ55 3.000 Lúmens HDMI Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "d341044a-75e8-4093-bbe7-cdbd0348138c",
+      "nome": "Projetor Led Viewsonic Ls500wh 3000 Lúmens Wxga Pcreg Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "47d78200-b03a-4932-8fe0-a0e7539b98d5",
+      "nome": "Projetor Mini ViewSonic Value PA503S 4000lm branco/cinza",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "325930d9-3cee-4fc3-be00-df012712b1b4",
+      "nome": "Final Fantasy X/X-2 HD Remaster - Switch2",
+      "vertical": "games",
+      "motivo": "jogo_sem_plataforma_nem_formato_fisico",
+      "naoIdentificado": true
+    },
+    {
+      "id": "f149cc21-0ce0-4575-a382-bc3db4e92724",
+      "nome": "Amplificador integrado Fosi Audio Mc331 Hifi Dac Tubes",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2f9aec52-0a3f-4e4a-bdde-6ef6118744c3",
+      "nome": "Amplificador integrado Denon PMA-1700ne cor preta",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "3aa51cf8-1ff5-431a-b64d-4ac384d9b163",
+      "nome": "Amplificador integrado Marantz modelo 40n, cor preta",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "0c6604c2-bd49-451b-aeac-3a7d4f796a4f",
+      "nome": "Amplificador Integrado Denon Pma-900hne Black ( 120v )",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2d4f58e7-9398-4061-9b93-2f94426bd455",
+      "nome": "Amplificador Integrado Hayonik Compact 200 Bluetooth 20W USB",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c521f924-98a5-420c-bfe8-456264d43cd7",
+      "nome": "Cambridge Audio Axa25 Amplificador Integrado 25w Ch - 120v",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "51bec81f-1848-448d-9e52-45bcaec8d1fb",
+      "nome": "Amplificador Integrado Cambridge Audio CXA61 Bluetooth 60W RMS Prateado",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "ad73a9e6-1f48-4404-81fa-cc392021fff7",
+      "nome": "Fone Ouvido Jabra Evolve2 85 Usb Bluetooth C Base",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "32b55a2f-42f0-4cce-aff1-a7ff7452621a",
+      "nome": "Fone Ouvido Dinamic Preto Loud",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "b5d4c2b8-eb1d-4439-ad5d-bf7fcc62395d",
+      "nome": "Receiver Jbl Avr 1010 5.1 Canais 375w Hdmi 3d 110v",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "4d83f3b3-ee5f-4cea-9d74-17b4752aa9cd",
+      "nome": "Sonorizador Soundvoice Compacto Receiver Rc-01 Bluetooth",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "4974be5e-ec83-4872-b0ed-5123fe942558",
+      "nome": "Chinelo, slide e sandália Havaianas Top Feminino",
+      "vertical": "esporte",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "0d5f239f-36fe-4164-a48b-6e1f9ee861ea",
+      "nome": "Smart TV Hisense de 65 polegadas Vidaa 65u6qv Uled 4k",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "e86a8523-8b87-47db-9556-3ee4e7baa34a",
+      "nome": "Microfone Dinâmico Rode Xdm-100 Usb-c Gravação Estúdio Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "8046cca0-4412-4d9e-bdb4-c75866e6b137",
+      "nome": "Amazon Echo Dot 2nd Gen com assistente virtual Alexa - white",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "1a005076-b3ff-4b08-a43e-d845a196ace3",
+      "nome": "Fone Ouvido Bluetooth Sem Fio Earcuffs Esportivo Brinco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "8b4b2778-99de-4822-a494-f4d8ac6e8cbb",
+      "nome": "Fone Ouvido Esportivo Bluetooth Som Hd Com Microfone Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "54bf1e33-5d82-4e24-bcef-185819cf140c",
+      "nome": "Fone Ouvido Bluetooth 5.4 Sem Fio Esportivo Resistente Agua Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "921c897d-e84a-4956-ab98-944a4c9bef47",
+      "nome": "Fone Ouvido Sound Earcuffs Bluetooth S/fio Esportivo Cor",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "a29d0a51-2065-4e71-b8d9-1734fa85c428",
+      "nome": "Fone Ouvido Bluetooth Tws Sem Fio 5.3 Super Esportivo Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "a5a3b390-154f-4113-843d-9705c9d58b2c",
+      "nome": "Fone Ouvido Bluetooth Esportivo S/fio Com Display Digital Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "68b01c76-4407-4e67-9fcb-9e8aad57c9ba",
+      "nome": "Hp Dhh1111 Fone Ouvido Com Fio P2 Microfone Intra Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "081c4a3d-37e6-4d74-8a6f-f71214e646d3",
+      "nome": "Fone Ouvido Com Fio P2 Compatível Andorid Ios Plaquê Música Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "b0773e45-e174-466c-aea8-b7388250a087",
+      "nome": "Microfone Condensador Rode Nt1 5 Gen. Estúdio Gravação",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "54664676-46ca-40c0-9524-feeb57366e1a",
+      "nome": "Fone Ouvido Com Fio P2 Microfone Headphone Kp423 Knup Azul",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "18ce3798-4059-49c2-90b7-50c949e46214",
+      "nome": "Vention Fone Ouvido Com Fio In-ear C/ Microfone P2 Celular",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "1bdcfd9a-a966-4638-869d-8c4beb483027",
+      "nome": "Fone Ouvido Azul Claro Confortável C/fio Estojo Conector P2",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "85c3db39-b9c9-4304-b09f-5f159065530a",
+      "nome": "Fone Ouvido Sem Fio Bluetooth Recarregável P2 Sd Fm Vermelho",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "dda08144-74a2-476b-9630-2e4dc7fe103b",
+      "nome": "Fone Ouvido Stereo P2 3.5mm Super Bass Com Fio Android Iphon Cor Azul",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "47d24883-93bf-45d8-9eed-e2b31405f6e6",
+      "nome": "Fone Ouvido Knup Kp421 Azul Com Volume No Fio",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "58555404-5eba-49c9-9681-0acdd655a6dd",
+      "nome": "Fone Ouvido Headphone Com Fio Stéreo Super Bass Amarelo",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "31879945-5daa-4ec6-b9a9-c063f8007d5a",
+      "nome": "Fone Ouvido Estéreo P2 Com Microfone Extra Bass Xcell",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "64f13b65-188d-4b63-9b1a-fd5af2a00d1f",
+      "nome": "Nier Replicant Midia Fisica Original Xbox One Xbox Series X Novo LACRADO",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "c474e825-de3f-4d76-8c5a-a83437149d46",
+      "nome": "Jogo Xbox One/Series X The Darck Pictures House Of Ashes Midia Fisica",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "fbcfe155-01dd-487a-bd6a-8b7bd3c08dba",
+      "nome": "Blood Bowl 2 Xbox One Xbox Series X Mídia Física Novo Lacrado",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "6a3a2acb-1d4d-42db-ab1f-8f1d48262c54",
+      "nome": "Portal Skylanders Trapteam para Xbox one, Xbox series S e Xbox series X",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "13c12bb9-0efd-4a2f-9d5f-637d0889bdeb",
+      "nome": "Fone De Ouvido Com Fio Jbl T530 Entrada P2 Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c4a59661-fb50-4c35-a926-f7b3e0e8dcc5",
+      "nome": "Fone Ouvido Hrebos Dynamic Bass P2 Earphones",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "cc367d12-e2b4-4548-b9b6-c43c3f780e89",
+      "nome": "Manual Resident Evil 2 PS4/PS5 (papel fotográfico)",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "57552f5c-9451-4006-8c2f-b4ce715115a6",
+      "nome": "ENVIO IMEDIATO RED DEAD REDEMPETION 2 PS4 PLAYSTATION 4 OU PLAYSTATION 5 MIDIA FISICA",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "75948fc7-e31a-4a89-aa84-781871e08023",
+      "nome": "Bladestorm Nightmare Xbox One Xbox Series X Mídia Física Novo Lacrado",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "de2b0aef-3cb8-42df-8e2d-24af49207995",
+      "nome": "Murdered Soul Suspect Xbox One Xbox Series X Lacrado. ORIGINAL",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "e3b37f95-1ae4-4cff-8256-a26e49a0c9a6",
+      "nome": "Tênis Adidas Samba Feminino",
+      "vertical": "esporte",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f9a36cba-564a-49b6-afbc-eb963099b116",
+      "nome": "Mi Tv Box Mi Stick 4k Generacion 4K 2GB",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "45ba6cbe-fde4-4dce-88f2-9d12e709c9e1",
+      "nome": "Chinelo, slide e sandália Havaianas Tradicional Masculino",
+      "vertical": "esporte",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "5e876af3-6f54-44a5-be30-254e3a4550a4",
+      "nome": "Chinelo, slide e sandália Havaianas Tradicional Unissex",
+      "vertical": "esporte",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "65f3c781-de7a-40f9-80cf-6fd1d97a49f8",
+      "nome": "Chinelo, slide e sandália Havaianas Tradicional Feminino",
+      "vertical": "esporte",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "1f8bab8c-629b-42f4-a14b-0fc9c07bed97",
+      "nome": "Microfone Condensador Rode Ntg-1 Shotgun Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "107efcd6-ed93-46b9-9bea-d6f606e7f2ef",
+      "nome": "Rode Xcm-50 Microfone Condensador Usb Ultracompacto Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "fbf3dbe6-fb98-4ae6-8bcb-f84848711a96",
+      "nome": "Microfone Condensador Rode VideoMic Pro+ para Câmera",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "338c6fec-1fd4-4de9-8db8-d70d06355848",
+      "nome": "Microfone Condensador Rode PinMic de Lapela Omnidirecional Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "5376dc91-0411-4fcf-ba13-061b8b837caa",
+      "nome": "Microfone Condensador Rode Nt1000 Xlr Estúdio Gravação Prata",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "e424df5f-3d70-45eb-8f17-81083230c309",
+      "nome": "Cavaleiros do Zodíaco PS4 PS5 português BR",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "15e6449b-5464-4d40-a528-20f34119eff4",
+      "nome": "Microfone Condensador Rode M5 1/2 Par Combinado Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "fdaee8eb-d6f5-401a-8fe3-86d8e85da68c",
+      "nome": "Microfone Lapela Sem Fio Duplo Rode Wireless Micro Usb-c Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f8bd9584-2f96-471f-b123-1b4f1b8e55f6",
+      "nome": "Marshall Acton Iii Bluetooth Home Caixa Som Cream Creme",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c9208789-a865-44bd-ad5c-af3f02e0d583",
+      "nome": "Basike Caixa Som Bluetooth Tws Azul",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "8e23b4c5-b87e-432d-b77b-f171d35108cb",
+      "nome": "Lâmpada inteligente multicolorida Amazon Echo Glow",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "e109184a-c1c7-419d-890c-90cb734966d9",
+      "nome": "Chinelo, slide e sandália Havaianas Flash Feminino",
+      "vertical": "esporte",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f08767fe-c010-4e96-ba0b-e9fbb8224a39",
+      "nome": "Impressora 3d Bambu Lab - H2s Combo Ams 2 Pro",
+      "vertical": "impressao3d",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "e76325c2-1add-4cdc-aa14-75f268f186c1",
+      "nome": "Burnout Paradise Remastered Xbox One Xbox Series X Mídia Física Novo Lacrado",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "cd277341-2935-4c84-9e31-76aef8f7c2f5",
+      "nome": "Jogo Battleborn Xbox One Xbox Series X. Novo Lacrado",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "b72c1c0c-0e39-4a98-9313-614e3a8940ed",
+      "nome": "NBA Live 18  Xbox One / Series X Midia FIsica",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "d38b6a51-9d0f-4d72-9c6a-5754b52df97b",
+      "nome": "Jogo Hunting Simulator Xbox One, Xbox Series X. NOVO LACRADO",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "55c60a6d-4bea-4f75-9199-e6291f262caa",
+      "nome": "Super Dungeon Bros - Xbox One Midia Fisica Original , Xbox Series X LACRADO",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "b463c5f8-f4f8-419c-8ffd-9036c17d6dd1",
+      "nome": "Agents of Mayhem Xbox One Xbox Series X Novo Original Lacrado",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "cd587b15-2857-41f9-9498-49d263cd9141",
+      "nome": "Dark Pictures - House of Ashes Xbox ONE - Xbox Series X",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "ea933156-b169-407e-81a4-699c67bb863b",
+      "nome": "Jogo NBA 2K14 Xbox One Midia Fisica Xbox Series X Original Novo Lacrado",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "75883f86-f326-4181-8c02-967f13578d0a",
+      "nome": "Drone Fimi X8 Tele Max Câmera 4k Hdr | Vídeo 4k 60fps | Gp",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "9d03a72f-628c-459b-b10b-e719f98f1c1e",
+      "nome": "Drone Fimi X8 Tele Max 2025 4k Xiaomi câmera Sony 60 Fps 30x Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f7b9fd0f-c9ef-4a0c-b0ca-3384a4f87148",
+      "nome": "Drone Fimi X8 Mini V2 4k Gimbal Gps 5.8ghz 1 Bateria Pro Cor Laranja",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "dd36309e-4cd6-4f95-84cb-820beed5f851",
+      "nome": "Drone Profissional Fimi Mini3 Se Gps 4k 30fps 9km",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "6ee8aa30-f2a2-4bfc-aa4a-a2ee4e220b48",
+      "nome": "Smart TV 65\" Toshiba 65c450ns Google TV 4K Led",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "e9907c7a-b743-4e67-bc1b-2797c7de5f77",
+      "nome": "Smart Tv Multilaser 32 Hd Android Hdmi Usb - Tl062m",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f5fa0536-261b-40a4-93da-2c1f28d7d56e",
+      "nome": "Fonte Carregador Turbo 125w Usb-c Bivolt Compatível Samsung Motorola Xiaomi iPhone | Arca7",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c9c800a0-f8b4-4afb-92e1-75d9c9ce4521",
+      "nome": "Microfone Condensador Shure Mx405lp/c",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "262f4d32-8a75-4092-9761-76f311ac44d9",
+      "nome": "Microfone Condensador Shure Mx396/c-dual",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "4590e9ba-9c00-44a6-9cc0-e7984c308053",
+      "nome": "Chinelo, slide e sandália Havaianas You Feminino",
+      "vertical": "esporte",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "a43af851-3f44-4a16-af84-b5b08cd74a8d",
+      "nome": "Microfone Condensador Para Bateria Shure Pga98d-xlr",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "fcd296bb-58df-49c6-af64-902c31109f7a",
+      "nome": "Microfone condensador cardióide Shure Sm SM31fh-tqg laranja",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "029d39a0-0976-455d-9188-2fbf78b10067",
+      "nome": "Bully Scholarship Edition XBox 360 Xbox Series X Xbox X Retrocompatível Original Completo",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "00351cc9-a0fa-48c9-af4a-14905f69d662",
+      "nome": "Jogo NBA Live 18 Midia Fisica Original Xbox One | Xbox One X | Xbox Series X | NOVO LACRADO",
+      "vertical": "games",
+      "motivo": "geracao_ambigua",
+      "naoIdentificado": true
+    },
+    {
+      "id": "a7c62c1b-b050-4ba1-a5c4-c8e93d7d1f8a",
+      "nome": "Amplificador Receiver Multicanal Taramps TPA 70V 800.2",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "d94a6c24-4744-4b43-80a3-d27afce062da",
+      "nome": "Amplificador Receiver Usb Bluetooth Rádio Fm Som Ambiente",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "cd1b33db-5bb4-4d87-827b-30ed363fbcbd",
+      "nome": "Frahm Receiver Slim 1600 App Bluetooth Fm + 10 Arandelas Jbl",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "7b34a117-d856-4172-b8a6-c24278745d29",
+      "nome": "Amplificador Receiver De Som 200w Bluetooth Datrel Nacional",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "3883c84c-3006-4533-96d0-16cd9800f784",
+      "nome": "Receiver Jbl Ma310 5.2 Canais 4k 60w Com Bluetooth Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "619cda31-fb14-4c2b-a51a-44507a62a615",
+      "nome": "Amplificador Frahm Receiver Som Ambiente Gr4200 Bluetooth",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2b191d72-ffba-4971-8089-52b327d4b6de",
+      "nome": "Smart TV de 50\" Multilaser TL032 com tela LCD 4K - preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "13cc80eb-9fa0-4e7f-bf7b-84109ca369a9",
+      "nome": "Smart TV de 50\" Multilaser TL032M com tela DLED 4K - preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f7e32460-0a1b-463e-980b-1bee438b581a",
+      "nome": "Fone Ouvido Com Fio Usb-c Tae2146wt Intra-auricular Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "33891cb4-5540-476b-8fd8-caf7c1a08742",
+      "nome": "Fone Ouvido Usb Tipo C Compatível Samsung Linha Note, S E A Cor Fone De Ouvido Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "99a7524c-7b80-40eb-95eb-ae8e3caed025",
+      "nome": "Fone Ouvido - Stereo Onyx",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "38e8a59e-c5a4-4251-a671-b9db84f45a26",
+      "nome": "Fone Ouvido Shure Srh240a",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "1b05a6c3-0b8b-4ea8-b6a9-97b878bd18b1",
+      "nome": "Fone Ouvido Estéreo Cor Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "6de979db-d093-40e9-84b6-be99d86d7c31",
+      "nome": "Fone Ouvido Jabra Evolve2 75 Ms Usb C+ Adap Usb A Carregador Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "b049e2db-f395-426e-a460-6c6f707d5fa0",
+      "nome": "Fone Ouvido Usb-c Com Fio Microfone E Controle Volume +/- Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "8a5e77cb-6354-40c9-93a4-c861e82f43ed",
+      "nome": "Fone Ouvido Bluetooth Headphone Sonic Pro Itblue Sortido",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "724c61bb-b91f-4d07-8999-42e7f094239b",
+      "nome": "Fone Ouvido Neumann Ndh 20",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "6545975f-e1b9-4f48-9c69-45bc3d000ca9",
+      "nome": "Fone Ouvido Economico Intra Auricular Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "b58f6c71-f525-477d-8de9-4117d0961eb3",
+      "nome": "Fone Ouvido Kz Zex Pro Tecnologia Eletrostática Microfone",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2c22b06d-1752-41bf-8b00-73072dde8366",
+      "nome": "Microfone dinâmico omnidirecional Rode Reporter",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c7db05b5-21ef-4e9f-b858-bf91fe1ca492",
+      "nome": "Caixa De Som Bluetooth Jbl Flip 7 Rosa",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f0714836-aa11-486e-ad6a-273d1a6fc7c3",
+      "nome": "Caixa Som Ambiente 70w Leson Terracota Ativa + Passiva Caixa Som Ambiente 70w Leson Terracota Ativa + Passiva",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "86235987-4bcf-45e1-8142-c69e2208793d",
+      "nome": "Caixa Som Ambiente 35 Watts Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "a8fdbe8c-8c80-4b92-97b5-d7f8a4a41a45",
+      "nome": "Caixa De Som Bluetooth Jbl Charge 6 Verde",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "91ea294b-9930-4f0e-afc8-eb6c1cd5b4ed",
+      "nome": "Caixa Som Bowers & Wilkins CCM664 Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "7dd6ef42-2b86-4422-96fd-7d9fb4fa4e74",
+      "nome": "6 Caixa Som Ambiente Passiva Jbl Control Sa6 100w Preta Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "062ff00e-cac9-406b-9855-feaaaf4cd17d",
+      "nome": "12 Alto-falante Arandela Caixa Som Teto Jbl Branca Redonda Cor Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "35a8d8a9-b79e-4c00-9a93-f1428938595e",
+      "nome": "Par Arandela Caixa Som Jbl Ci6s Plus Alto Falante 320w 8ohms",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "fea36d45-315b-4322-9aef-5db5896449de",
+      "nome": "Echo Dot 5a Geração Alexa Branco Amazon Assistente Virtual Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2674071a-61a2-4c39-b7a5-dd30730453f3",
+      "nome": "Amazon Echo Dot 5 Geração Alexa Assistente Virtual Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "f318e7b3-371b-43c0-bfe7-c5fde1f3f0a4",
+      "nome": "Echo Dot 5 Assistente Virtual Alexa Amazon Azul Mar Profundo",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "cae5219b-b2d0-4ea0-b8de-b748cb4a9b08",
+      "nome": "Amazon Echo Auto (2nd Gen) com assistente virtual Alexa - preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "05532b98-9a92-4660-b62d-0a2c7081b3f5",
+      "nome": "Assistente virtual Amazon Echo Dot E Jc, 5ª geração",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "bce4fe66-8327-4c1b-b6af-fcc82d80e1ac",
+      "nome": "Alexa Assistente Virtual Amazon Echo Show 5 Segunda Geracao Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2c3933f5-3226-48ef-903e-ce42bf86845f",
+      "nome": "Amazon Echo Dot 3rd Gen com assistente virtual Alexa - sandstone",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2c53936a-8167-4320-8d49-c24a2a621670",
+      "nome": "Amazon Echo Show 5 com assistente virtual Alexa carvão Charcoal",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "0ac40478-cc0e-472a-b68f-842c8f82fc57",
+      "nome": "Amazon Echo Pop Kids Amazon com assistente virtual Alexa - marvel 127/220V",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "028d0c7f-1246-49ad-ad0a-6358aad44d2f",
+      "nome": "Amazon Asistente Virtual Echo Dot 5th Gen com assistente virtual Alexa - charcoal 127/220V",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "536222a3-1257-47b3-94a0-cf11567ce9f8",
+      "nome": "Amazon Echo Pop Com Assistente Virtual Alexa Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "06f51c6b-e7ab-4667-a900-5737bfb78022",
+      "nome": "Câmera de Ação GoPro Portátil HD com Wi-Fi e à Prova D'Água",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "946bba61-b0a4-4c10-a21c-c400ab7b43e2",
+      "nome": "Amazon Echo Show 5 (3a Gen) Com Assistente Virtual Cor Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "9b85d4ae-1295-4e9f-9d31-35c7ff809988",
+      "nome": "Câmera de ação fotográfica Gopro Hero12 Black 5.3k HDR de 27 MP",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "d546841f-bbe0-47ca-b16b-f7021f6d0587",
+      "nome": "GoPro HERO12 Black - Câmera de ação 5.3k60, 27MP, à Prova d'água 10m, Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "ad3eaab3-f03f-42e9-b2a8-4ce260bd04ac",
+      "nome": "Câmera de Ação GoPro Hero7 Silver 4K com Tela Tátil e Estabilizador de Imagem",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "d2e18242-3c4d-44ab-9b38-f84b402bcc28",
+      "nome": "Drone Mini E99 Com Câmera Fpv Design Dobrável 3 Baterias Cinza",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "1f29792f-9a92-4014-a827-5aeecab55dfd",
+      "nome": "Drone Mini Pro Câmera Hd 2.4ghz Gps Profissional 2 Baterias Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "48f074d6-7149-48ae-b5b7-50d3274bc951",
+      "nome": "Drone Mini Genai S4S Preto com Câmera 1080P e Duas Baterias",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "fd752060-73e7-466f-b6da-bd6bac8ab06b",
+      "nome": "Receiver Denon DJ AVC-X3800H Dolby Atmos 9.4 Canais 8k 127 V Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "62b2b404-b261-4535-9741-ccb64625041e",
+      "nome": "Receiver Denon AVR-X1800H 7.2 Canais Bluetooth Wifi HDMI 8K Dolby Atmos 127/220v",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "020d287e-223a-4eaa-9229-d23f5c6c74f3",
+      "nome": "Receiver Denon Avr-s770h 7.2 Canais Zona 2 De Áudio 8k Hdr 127/220v",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "cb05be1f-3f66-4fe6-b6ad-05c012317774",
+      "nome": "Receiver Denon DJ Avr-X1700h Dolby Atmos 7.2 Ch HDMI Bluetooth WiFi",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "15044edb-01cb-47e3-811b-ccb315065431",
+      "nome": "Smart TV de 32\" Multilaser TL042 com tela DLED HD - preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "efcdb73e-c1e3-4800-bf78-7395b691b07c",
+      "nome": "Shure Wl183 - Microfone condensador preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "6a21be1a-faf2-4108-9b85-ab602683b4dc",
+      "nome": "Microfone Condensador Shure Mx415lp/s",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "44bcb3d7-2272-4b3a-adbb-464e00a79fe1",
+      "nome": "Microfone Condensador Shure Sm81-lc Para Instrumentos",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c7dc6ace-cf1c-4789-8c36-f01864de035b",
+      "nome": "Sistema Sem Fio Shure Slxd14/85 Bodypack Microfone Lapela Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2a44be3f-8b09-439b-90b3-b6d80921c60d",
+      "nome": "Microfone Lapela Shure Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "c5748331-cd27-41d4-8be1-0a422030829f",
+      "nome": "Microfone Lapela Sem Fio Movemic One Shure Mv-one-z7",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "b8a6b679-55ea-41d2-9386-dcbf6f942a66",
+      "nome": "Microfone Condensador Digital Shure Mv5-dig",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "52ab0c59-6128-494b-abbe-9b52e17ebbbd",
+      "nome": "Microfone Condensador Cardioide Gooseneck Mx412d/c - Shure",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "214b9d6d-d225-4529-affd-38cb9a1982cd",
+      "nome": "Microfone Condensador Shure Microflex Mx396-C-Dual Cardioide",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "85a309dd-e389-4ccf-ab2b-8c5ffc5d93de",
+      "nome": "Pioneer Dj Toca Disco Plx-1000 Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "0576263a-a55a-4ddf-b9e0-492f04ea9700",
+      "nome": "Toca Disco Pioneer Plx 1000 Plx-1000 Pro Dj",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "2f602493-d62f-42fc-bc6e-feff261f37f3",
+      "nome": "Microfone Condensador Digital Shure Motiv Mv5bdig Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "1c1d9a83-6634-4f2b-92f7-83617e3513a7",
+      "nome": "Bandeja de DJ Pioneer DJ Toca Discos PLX-500-K branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "d78274d6-338a-47de-aa57-54c465652305",
+      "nome": "Caixa Som Bluetooth Tribit Xsound Go Bts38 Portátil Preta",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "be853e37-692f-4f45-a5fa-4dd341c0d181",
+      "nome": "Caixa Som Portatil Bluetooth Xtreme 40w Resiste Agua 28cm Cor Preto",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "b5121b4c-9961-4e22-b44f-5e7f97c2d483",
+      "nome": "Caixa de Som JBL PartyBox 310 Preta",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "00bf96c7-4995-4c6d-97d1-91202f4ec5a0",
+      "nome": "Caixa De Som Jbl Partybox Club 120 Bluetooth Branco",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "ce0bdad4-4d1b-4379-919e-7ee83967d86c",
+      "nome": "Caixa de Som Bluetooth PartyBox Encore Essencial JBL - Preta",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    },
+    {
+      "id": "9547b0d5-a6dd-45d8-b01a-9ca579c4ff09",
+      "nome": "Caixa Som Bluetooth Potente Amplificada Wireless Usb Cor Prata",
+      "vertical": "eletroeletronicos",
+      "motivo": "semeadura_vertical_aguardando_conferencia",
+      "naoIdentificado": false
+    }
+  ],
+  "mantidos": [
+    {
+      "id": "884124c6-03bf-4fa9-bd41-31cb1667f872",
+      "nome": "Controle Gamer Joystick Para Pc Ou Ps3 Com Fio Usb Fr-218a",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "01d87d54-8ffb-4152-8c08-5a2e837a7be1",
+      "nome": "Volante De Vibração Gamer Pro Kp-5815a P/ Xbox360 Pc Ps2 Ps3 Cor Preto",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "31a43f42-af35-49d7-a29a-adb0dfdd146e",
+      "nome": "Volante Para Nintendo Wii E Wii U Preto",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "8e91b8ab-379a-45fa-bef6-0e57ce2bd938",
+      "nome": "Porta jogo nintendo switch caixa super mario",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "3ae5a64f-572e-4eb2-9f88-5802d62aefb4",
+      "nome": "[O MAIS BARATO+ENVIO RÁPIDO!] Porta Cartão de Jogo / Jogos - SD - Nintendo Switch 1/2 - Cogumelo do Mário - 3D",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "ad684dac-bbd2-4731-ad5a-bdeede3a575d",
+      "nome": "Wii Logitech Volante Speed Force Wireless",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "422574bf-dbd4-4341-90e4-e9fa2ed0205b",
+      "nome": "Volante Para Nintendo Wii Preto Kart Corrida Alta Qualidade Preto",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "94d3999b-6df5-4592-a958-69fa291bf0ec",
+      "nome": "Fonte Cabo Adaptador Ps2 Playstation 2 Slim 8,5V 5.65A - Bivolt",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 1
+    },
+    {
+      "id": "3aaf5f57-3e18-4507-8dc8-daee34488b23",
+      "nome": "Volante Turbo Racing Wii - Maxprint",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "c15e0526-796e-43ba-9e46-1184c9cbb9ce",
+      "nome": "Volante Direção Corrida Racing Nintendo Wii Cor Branco",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "1cf0e5fa-0b65-42a4-87d5-e0974299d6da",
+      "nome": "Joystick Pc Playstation Ps2 Ps3 Inalambrico Bateria De Litio",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "008f2224-5aa8-4639-9536-736297d5ce5d",
+      "nome": "Resident Evil Origins Deluxe 0 e 1 Jogo Xbox Series e One",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "16a12530-1331-40f7-aa00-f479c6b11f7f",
+      "nome": "Call Of Duty Vanguard Xbox One Xbox Series",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "39660aaa-e312-474c-af1d-87010b66acf8",
+      "nome": "Battlefield 4 Xbox One Xbox Series",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "e343b400-a4e9-4488-b702-2abf8a68cad7",
+      "nome": "Jogo Cuphead Xbox One Series S X",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "b4748bdd-f905-4db5-9a1f-c69735a62552",
+      "nome": "Far Cry 6 Xbox One Xbox Series",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "ee2e13b2-4303-44bc-ab72-4560a259aadb",
+      "nome": "Porta Cartão Nintendo Switch Mario Organizador para 12 Jogos Impressão 3D",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "04433f11-f3c8-4bcf-9181-4cb30fa0f77a",
+      "nome": "Call Of Duty Black Ops Cold War Xbox One Xbox Series",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "994f9cfc-3fee-4e6e-9b41-0c0fef533b3e",
+      "nome": "Porta Jogos Nintendo Switch 3D 12 Jogos",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "e0c2812a-84b7-4493-82dd-07c0088bef21",
+      "nome": "Volante gamer OEM Wii",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "402f3a68-79d9-4977-be5f-b5014d014933",
+      "nome": "Carregador Portátil Power Bank 4500 Mah Multilaser",
+      "vertical": "eletroeletronicos",
+      "grupo": "power_bank_fora_R2-16",
+      "ativas": 1
+    },
+    {
+      "id": "044b8429-2552-4e15-a333-fb0d5c4d919e",
+      "nome": "Playstation 2 + Memory Card + 2 Controles + 5 Jogos + Nota Fiscal",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 1
+    },
+    {
+      "id": "03b3541b-4536-4723-af52-a059a00d816e",
+      "nome": "2 Porta Jogos Nintendo Switch Capacidade Para 4 Jogos Cada Edição Zelda Breath of The wild",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "11b4adfe-68df-47ce-a29b-c9548068acf3",
+      "nome": "Controle Joystick Pc Gaming Usb Para Pc Windows Ps3 Tv Box Cor Preto",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "1712b028-7e9e-421a-971c-59c250c2f20c",
+      "nome": "Controle Joystick Pc Ou Ps3 Com Fio Dualshock B-max",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "8f3c313c-87aa-4ff0-90a4-da4fdce6d1d7",
+      "nome": "Porta jogos console nintendo switch zelda breath of the wild",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 2
+    },
+    {
+      "id": "17714715-9a66-427e-8d45-84274a06dd60",
+      "nome": "Spongebob Squarepants - A Patrick Star - Xbox S X/xbox One",
+      "vertical": "games",
+      "grupo": "porteiro_rejeita:jogo_plataforma_retro_fora_do_escopo",
+      "ativas": 0
+    },
+    {
+      "id": "5b31f65c-8a35-4f11-a58a-b45c7154f847",
+      "nome": "Porta Cartão Cartuchos de Jogos (6 Em 1) Bloco Mario para Nintendo Switch Fitas",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "66cbf71c-1dcc-49b3-9c75-4a536252ec8d",
+      "nome": "Joystick Pc Ps3 Android Usb Ds Orochi Black Double Vibration",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "6d5c0283-4e55-48b1-a17b-f497bc0c4548",
+      "nome": "Controle joystick B-Max Joystick Pc Ps3 Dualshock",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "df101c5e-3baa-4656-94bb-5170ec2eefcb",
+      "nome": "Jogo Silent Hill Shattered Memories para Sony em Formato Físico",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 2
+    },
+    {
+      "id": "ebd4692e-cebc-40bd-8db2-f6536900259d",
+      "nome": "Porta Cartão de memória Super Mario Bross Porta Cartão SD Porta Jogo Nintendo Switch Cartão",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "c67ffb37-c9ac-4d03-a8cd-e904a5d1e810",
+      "nome": "Fritadeira Air Fryer Air Forno Mueller 35L - Forno e Fritadeira Air Fry com Timer de 120 Min",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "53f602bc-4f6c-4162-9f79-dce24cd45a2a",
+      "nome": "Fritadeira Elétrica Air Fryer WAP WC AB1050 Barbecue Flame Digital 10L 1700W 230°C 127V",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "f13fd507-6189-4b6b-bcf0-216c3cefb9b1",
+      "nome": "porta jogos do Nintendo switch",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "2bc47af7-87ac-4cf7-ab1f-2ee6e7558046",
+      "nome": "Joystick Hotas X Thrustmaster Pc Ps3",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "9be633e4-4549-4e22-b309-5e4d948428dc",
+      "nome": "God of War Playstation Hits",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 2
+    },
+    {
+      "id": "9372674e-82a0-4e93-9970-51846c23f6cc",
+      "nome": "Forno e Fryer 25L Oster Multifunções 10 em 1",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4498f7f6-a3cd-442c-bbca-2b4b43c3f045",
+      "nome": "Porta cartão Nintendo Switch formato interrogação Mario Decora Armazena game porta jogos",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "49f8bf82-4c42-4253-b47a-653be7c364be",
+      "nome": "Volante Gamer + Pedais Playstation Ps2 Ps3 e Pc Vibration",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "f1ed947f-7b0c-41bd-8b43-1ee437fb25f1",
+      "nome": "Binóculo Profissional 20x50 Longo Alcance Com Bolsa 50mm",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_lexico_fora_do_escopo",
+      "ativas": 3
+    },
+    {
+      "id": "148bcc17-e238-4553-a291-99da9eb22071",
+      "nome": "Porta Jogos Nintendo Switch – Versão 2 com Encaixe por Atrito | Armazena até 16 Cartuchos",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 2
+    },
+    {
+      "id": "80eecda0-e08b-434b-bd66-f0a88a26f813",
+      "nome": "Kit 2 Controle Ps2 Sem Fio Joystick Play2 - 1 ou 2 Unidades",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "ec56d9c1-8379-45f9-b601-4ea2a4764db3",
+      "nome": "controle de gamepad sem fio PS2",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "e18ddbaa-24a9-4dc1-b0bc-27c5f3f65452",
+      "nome": "Porta cartão nintendo switch pedra do mario",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "4915bae6-4dfe-455f-9394-65d37aae76bd",
+      "nome": "Binóculo Profissional Longo Alcance 20x50 1000m Com Bolsa Preto",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_lexico_fora_do_escopo",
+      "ativas": 2
+    },
+    {
+      "id": "ec23fa5b-5f8a-4d09-b784-801499f3528f",
+      "nome": "Porta jogos para PS3/PS4/PS5/Xbox One/S e X Resident Evil",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "caf4369e-307d-4d53-9221-5c7d5797049b",
+      "nome": "Removedor De Ácaros Portátil Elétrico Aspirador Esterilização De Estofados UV Sem Fio",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "962b32dd-7f22-49ab-96f8-9a63c5177077",
+      "nome": "Assassins Creed Mirage Xbox Série X | Xbox One Mídia Física",
+      "vertical": "games",
+      "grupo": "porteiro_rejeita:jogo_plataforma_retro_fora_do_escopo",
+      "ativas": 0
+    },
+    {
+      "id": "6b717eb8-bf8c-4ce5-912f-0d5d57aa3777",
+      "nome": "Gaabor Aspirador de Pó 2 em 1 18000Pa Fácil Guardar CW-18M02A",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "35bac55b-6b16-4eb1-a00b-c65cf8a5a37c",
+      "nome": "Extratora Worker 1400W Limpa Sofá Colchão Aspira Pó e Água",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d752a909-c7e4-4cb5-a369-01d7b6cfcead",
+      "nome": "Jogos xbox one xbox series",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "e2f9e392-eac3-478d-a74b-915690aed2e6",
+      "nome": "Porta-Jogos Zelda - Baú Bokoblin (Nintendo Switch)",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "c0ecf544-dfb8-4124-8ff0-a2dc07b62b78",
+      "nome": "Porta Jogos Nintendo Switch Tema Zelda",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "0e009e64-a0d2-49bc-b9d4-82bb62019ab9",
+      "nome": "Resident Evil Requiem",
+      "vertical": "games",
+      "grupo": "porteiro_rejeita:papelaria",
+      "ativas": 0
+    },
+    {
+      "id": "519d7393-f2ba-4f53-b525-c5ca6f92143f",
+      "nome": "🕹️ Porta Cartão de Memória - Formato Cartucho Nintendo Switch 🎮",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "d5ff4517-2720-464c-ab0e-78f0b70bb736",
+      "nome": "Porta jogos nintendo switch cubo mário",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 3
+    },
+    {
+      "id": "398c4a14-b257-4a6e-ba01-87317be28f21",
+      "nome": "Porta Jogos de Nintendo Switch - Cubo Charada do Mario",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "1f56e749-3b5d-478c-919e-1b8c1d034dfb",
+      "nome": "Redutor De 28 Para 38 Em Aço Zincado",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7082f985-d581-4300-8671-79589fd8fc94",
+      "nome": "Carregador Power Bank Magnético Magsafe Indução 5000mah Cor Branco",
+      "vertical": "eletroeletronicos",
+      "grupo": "item_miudo_ambiguo:acessorio_menor_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "9fd7c2ce-88db-430b-9903-ac59bf3b81cf",
+      "nome": "Porta Jogos Nintendo Switch e Cartão SD Cubo Interrogação Mario",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "d06e8852-22ef-4f02-b0a8-f03c1442e04c",
+      "nome": "Bolso Modular Porta Magazine Oliva Ak M4 AR 762 556",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "004b73d9-604b-4278-902c-eb253a3dc8cf",
+      "nome": "Carregador Portátil Power Bank Turbo 30000mah Carga Rápida Cor Preto",
+      "vertical": "eletroeletronicos",
+      "grupo": "power_bank_fora_R2-16",
+      "ativas": 1
+    },
+    {
+      "id": "4f9d1015-b430-453c-a824-38bf47f49e7b",
+      "nome": "Porta Cartão De Jogo Bloco Mario para Nintendo Switch",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "1d8c2eab-ec19-48fd-86d7-d0e05fe8cd92",
+      "nome": "Organizador de jogos  Nintendo Switch",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "12f51b41-3d4a-4d8a-8de9-18e5930d91d8",
+      "nome": "Porta Cartão De Jogo (6 Em 1) Pedra Mario para Nintendo Switch",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 0
+    },
+    {
+      "id": "9ddb3e55-8df6-4595-97ed-5faab070e440",
+      "nome": "Step Funcional Aeróbico 2 Alturas Ajustáveis Profissional",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d362d3d8-0123-4c27-892e-e6bfb956d4f9",
+      "nome": "Porta Jogos X Box e PS4",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "04aab261-13c9-458d-898c-1cbd7063534f",
+      "nome": "Amplificador de Tela para Celular 10 Polegadas 3D HD com Filtro Anti-Luz Dobrável",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "6c7748b3-8601-4dd6-9cc4-0588cec9d038",
+      "nome": "Organizador Cartuchos Switch Zelda porta jogos Nintendo caixa porta games nintendo",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "e30b7449-1b29-4882-9103-5b9e4d8ae9f2",
+      "nome": "Organizador de Jogos Playstation PS5",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "22a4acc1-f714-4cc7-84be-9449bf77a5cb",
+      "nome": "Organizador de Jogos Playstation XBOX Nintendo PS3 PS4 PS5 XBOX360 ONE X S Switch",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "da7a5db3-b54f-4c21-a4d2-297e9dfa3f9d",
+      "nome": "1 Amplificador De Imagem Tela Telefone Celular Amplificador De Imagem Tela Ultra Clara Luz Anti-Azul",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e9f13ad4-f1d8-4126-8949-4c995500319e",
+      "nome": "Fone de Ouvido Estereo Com Fio Microfone Controle de Volume Iphone TypeC",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "85caae12-675a-44fd-a358-d3716242d5f3",
+      "nome": "Fast charging 240W port adapter Type-C data cable for iPhone ios USB Androi three in one",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4b90dfa7-2b0a-4170-ae7e-1b03496fc579",
+      "nome": "Porta Jogos Resident Evil PS3/PS4/PS5 ( Capacidade Para 66 Jogos )",
+      "vertical": "games",
+      "grupo": "decisao_anterior:porta_cartao_organizador",
+      "ativas": 1
+    },
+    {
+      "id": "bfc4228a-0475-404c-9022-5da4379da1ff",
+      "nome": "CaboTurbo Iphone Baseus Reforçado Tipo C Lightning 20W – Carregamento Rápido e Dados",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "ee22085f-7c3c-4881-93aa-c849de776538",
+      "nome": "Coldre Velado Saque Rápido Polímero Hasban TH9 , TH40 , TH380 , PT840 , PT838 , PT809",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "6deaabc0-e700-43b6-b36b-5d5946c180a3",
+      "nome": "Jump Box - Caixa Box Jump 50x40x60 - Jump Box Intermediário/Média",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "233211ab-7eb4-4401-a604-392e5b623f01",
+      "nome": "Controle Joystick Para Ps2 Black com fio",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "8488a6cf-89b1-439c-8c78-11cdecd776ed",
+      "nome": "Controle  Playstation 2 Joystick PS2 Com Fio Colorido transparente",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "3924942e-ffbd-4746-84ef-3ad08029030c",
+      "nome": "Kit Ps2 Controle Joystick + Cabos AV RCA + Cabo Força Kit Acessórios para Consoles Playstation 2 Manete",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "acfc1d67-25c5-407e-a354-9edbb9cad798",
+      "nome": "KIT 10 UNIDADES Controle ps2 com fio Cor Preto capo 1.5metro Atacado",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "66b816d3-2d4e-40f2-9856-06c33b6dd4ed",
+      "nome": "5 barreiras 30cm treinamento funcional agilidade obstáculo circuito",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "50bea2b8-833f-40c0-80c0-396c80e454d8",
+      "nome": "Aspirador de Pó e Água Profissional 1000W Função Soprador Com Rodas APV 1010 Vonder",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "92b49a9f-c5b3-430e-80b4-d8bec990103b",
+      "nome": "Bola De Handebol Kagiva K2 Profissional Original",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "0816895c-4d7d-4b42-9235-45e6a2bc31c8",
+      "nome": "Bola Dualt Beach Volley VL500W Profissional",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "5334d8fc-ffad-4144-a57b-2912e03730c6",
+      "nome": "Par Joelheira Esportiva Elástica Com Proteção Acolchoada Futsal Vôlei Dança Handebol Original Adulto e Infantil",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "1010daa0-37ac-4b6b-8d8f-ee5e162ebdc1",
+      "nome": "Rede De Vôlei Futevolei Resistente 2 Faixas com Proteção UV 9,5 metros",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "c8c05880-52b8-48df-ae78-9d43a8c9d2df",
+      "nome": "Prancheta Tatica Magnetica Volei Treinador Tecnico Portatil Dobravel Couro Voleibol Voley",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e77afab9-3211-4de3-baf5-933ad5bc9d75",
+      "nome": "Bola De Volei Tamanho Oficial Praia Quadra Grama Voleibol",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "5af57f17-788a-48a1-a3fe-816b30f8c32a",
+      "nome": "Troféu Vôlei Melhores em Quadra Premiação individual Masc. Fem. Acrílico Mdf - 25 CM pronta entrega",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "29e2f876-75aa-4e06-b182-17f136efdeca",
+      "nome": "PORTA CARTÃO VÔLEI",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4bc6e977-284d-4cad-9869-3a18d267547e",
+      "nome": "Bola De Vôlei Areia Feminina Masculina E Volleyball Quadra Areia Couro Sintético",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "330d9a5f-7b6b-4907-b9bc-12ebc630e8cc",
+      "nome": "REDE DE VOLEI 5M DE SEDA COM 1 FAIXA SINTETICA",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b7844120-a39e-46fc-9b48-cc52a4919a43",
+      "nome": "Kanxa - Manguito Curto Light - Manguito de Volei, Corrida, Caminhadas - Manguito Esportivo",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "f4aa469d-5f49-448c-9f72-3e817bc3b64a",
+      "nome": "Rede de Vôlei 5 Metros 4 FAIXAS - PRODUTO NACIONAL",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "a9aa261a-4715-4b31-ad0e-04eae822685d",
+      "nome": "PORTA Jet Loader Duplo Speed Revólver 5 E 6 Tiros Nylon 600",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "1559f0b3-2cac-4cf8-8c69-bbb31c2d80ff",
+      "nome": "Bornal de perna Tático Modular 4 Compartimentos com Coldre Velado",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e320eb43-753d-4015-bc0d-83cbe8c247ba",
+      "nome": "Aspirador Robô Philco Função MOP Seco Antiqueda PASE10",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "39fe3acc-5b0f-4398-8ea6-1bd7e02b0015",
+      "nome": "Redutor De 32 Para 22 Em Aço Zincado",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b6b064fa-0e2c-456d-885a-105c3f266a31",
+      "nome": "Argola Olímpica em ABS Argola de Suspenção Ginástica Cross – Odin Fit",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "166b0069-6bf7-486e-ad3c-2bbf3a02239b",
+      "nome": "Aspirador e Soprador Portátil 5 em 1 - Alta Potência e Multifuncional para Limpeza Completa",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "0d651b4d-63ae-4626-8cb2-e196ff47a4af",
+      "nome": "Fritadeira Elétrica Mondial Big Fry 2,5L FT-07 110V",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "879c5d19-b39b-4d7a-a12a-71d78c117952",
+      "nome": "Fritadeira Airfryer Digital Philips Walita 6l Xl 1700w 110v",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7df0a226-48d5-4631-b20e-e45b92ec2d05",
+      "nome": "Midea Wide Max Cyclone – Fritadeira Air Fryer 4,5L, e Inox, 1500W, 127V",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "184bf34d-b6b1-41cd-a54c-f9759c07ea26",
+      "nome": "Controle ps2 com fio Cor Preto",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "09124985-9d14-4043-b459-4ffb92e80651",
+      "nome": "Bastão de Alongamento 1metro yoga Pilates Fisioterapia saúde",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b7fb0a06-aec7-4e41-a83f-9d42e55cfb5e",
+      "nome": "Coldre Velado Premium c Lanterna G22 / Th9 / Th / Tx22 / G19 / G48 / C11",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "2185deb6-d293-4775-8bfb-ed6421b0f331",
+      "nome": "Escada de Agilidade Quadrada Funcional – Glamour Fitness – Treino de Velocidade e Performance",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "091442eb-8a49-42f0-bf31-68d21f9fb8ce",
+      "nome": "Bornal Perna Porta Treco Modelo Força Nacional C/ Bolso Duplo Desert Coldres",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "36ebf476-5f03-4161-922b-65390c8613ff",
+      "nome": "C0ldre externo ostensivo GLOCK, G17, G22, G21 GEN5",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "941d7622-e7a1-47f1-bfd4-80580ba1be06",
+      "nome": "Fiel Retrátil Operacional Liso Destro",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e382c6e9-19ab-458e-b60f-e40c123e707a",
+      "nome": "Equipamento De Fitness Para Respirador Pulmonar-Ferramenta De Exercício Ao Ar Livre Treinamento Em Alta Altitude",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4da1e8f9-d589-4d07-af1d-51d256c36a74",
+      "nome": "Tapete antiderrapante de camada dupla HEROI, rolamento de 300 libras, decalques de ruído 40,",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4e677bae-1ba7-425c-a0dd-156244f81d31",
+      "nome": "Desconto Caneleira/Tornozeleira Peso Par de 500G,1KG,2KG,3KG,4KG,5KG - Exercício/Academia/Fisioterapia - Pr",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "9d7baa06-ece3-4987-92e3-9ca173cb0017",
+      "nome": "Anel de Yoga para Alongamento e Pilates – Leve e Resistente",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "20114bd2-2a10-4d9c-bb8e-a2a4521969fe",
+      "nome": "Par Cotoveleira Acolchoada Volei Futsal Progne Sports - Protecao Articular Espuma PU - Basquete Handebol Treino",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "dc635ca6-0e35-4500-b56e-cd77c2f8b147",
+      "nome": "Elevação Trilho - Em Metal - 22mm - Não é 3 D",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "abc217ff-0fcf-4164-a0df-57256d56126b",
+      "nome": "Gaabor Mini Air Fryer 1,4L 900W Sem Óleo Compacta AF20M-YE01A",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "40de0ec8-dda4-45d0-9de4-cf6d5a2b502c",
+      "nome": "Bola Volei Semi Profissional Infantil Alta Qualidade Duravel Jogo Treino Competicao Quadras Areia Praia",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "5d08dfe2-69ae-47b1-9b84-bb318ab2884e",
+      "nome": "Bola De Vôlei De Praia Mikasa Good Vibes Tamanho Oficial",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "87978bff-3422-4bf8-b724-beac0a8ad1f2",
+      "nome": "Nintendo Switch Oled Plus Pokémon Go+ cor preta",
+      "vertical": "games",
+      "grupo": "porteiro_rejeita:console_nao_e_aparelho:acessorio_logo_apos_aparelho",
+      "ativas": 2
+    },
+    {
+      "id": "af7c68c7-ef8e-47e1-bf46-6ac0f392f556",
+      "nome": "Rede de proteção 4x4",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "18f1ca97-c5ce-4043-a0ca-6f5fdac23709",
+      "nome": "REDE DE VÔLEI PRAIA QUADRA 9M x 1M NYLON PROTEÇÃO U.V SEM FAIXA",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "8662d163-606d-47f4-9803-8823529499c8",
+      "nome": "REDE DE VÔLEI RECREAÇÃO 5 METROS 4 BORDAS",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e545da5c-9115-44cb-a861-a08174ffbf86",
+      "nome": "Rede de Vôlei 6 Metros 4 Faixas Oficial - PRODUTO NACIONAL",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "cc3fe14c-c9e2-44f3-9453-65695f44e1f6",
+      "nome": "Bola Vôlei Rainha 2.8 Oficial Praia Areia Piscina Impermeável Resistente Leve Campeonato Jogo Pro",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "cf8fa989-2aec-46d1-b440-9f31c3e224ab",
+      "nome": "Bola De Volei Unicornio Eva Criança Campo Allpha",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "fe394788-16aa-4af7-a547-08bdbf626968",
+      "nome": "Bola de Handebol ADULTO H3L Matrizada | Oficial | 32 Gomos | Leve e Resistente",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d2def006-0cf8-427e-8929-33b0f08cfe9c",
+      "nome": "Bola De Volei Eva Piscina Praia E Quadra Escolar Recreativa",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "54dda915-e634-4378-8ad8-991d09d1d26f",
+      "nome": "Bola de Vôlei Poker Training VLT 140 PVC Soft 2,5mm 18 Gomos Válvula Removível",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e5eb2173-1f94-4825-a6fa-a08e8aae81ed",
+      "nome": "Cone Sinalização Retrátil Refletivo Dobrável Segurança Emergência Estrada",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b30fbf67-b223-44ff-9bea-23eb30586ae8",
+      "nome": "Lançamento Roteador Starlink Mini Original Wi-Fi 6",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "2eb88ac2-ee1f-4b07-8b5b-227f0305445c",
+      "nome": "Fritadeira Air Fryer Philips Walita 6,2L NA130",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7b41a8e1-38a0-4ab8-bfa3-828c0bbfd90e",
+      "nome": "Fritadeira Oven Fryer 12L Oster 3 em 1",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "a96593b3-1377-4295-95d4-3da5d8bf82cb",
+      "nome": "Pastilhas Purificadoras de Água p/ Camping e Viagens - Clorin 1",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "c0c2bbac-03a1-4bce-8ab3-02169188f1c2",
+      "nome": "Quadro Prancheta Tatica Futebol Basquetebol Vôlei Tecnico Magnetica Dupla Face Portatil",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "9691a3d0-a4a6-4523-aef5-3f840ed30aa9",
+      "nome": "Tornozeleira Profissional 3kg (par)",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "603027e0-5b75-4178-a992-8d0d94eedf1a",
+      "nome": "ESTACA DE AGILIDADE 1 UNIDADE TREINO AERÓBICO FUTEBOL FUNCIONAL EM CASA",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "beed3c38-9a8f-4f08-b6ee-16afe1c20670",
+      "nome": "Pegador Escumadeira de Fritura Aço Inox 2 em 1 Pinça Escorredor Pastel Salgados",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "68e3b6c4-0fc8-4a48-898b-cb8dcead0c4d",
+      "nome": "Kit 3 Micro Chave Microondas Electrolux Consul Panasonic",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "0c4c562b-ff03-41a5-af6e-b242d635b83c",
+      "nome": "KIT 50PCS FORMAS REDONDA FRITADEIRA ELÉTRICA PAPEL DESCARTAVEL 20CM X 20CM CLINK",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "19dc6bb1-84a7-4c8e-8ccc-b9ec1b10a667",
+      "nome": "Anéis De Ginástica Infantis HUIJIANG , Alças Ajustáveis , Alça Antiderrapantes , Força De Braço",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "77053b4f-7aff-403d-83fb-0e0f386e8134",
+      "nome": "Par Almofada de Impacto LPO 60x60x14 Proteção e Estabilidade para Treinos Pesados Treino Abdominal Musculação Espuma AG.",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4980abe0-2f0b-4250-bdaa-d4bdc9bf7258",
+      "nome": "Forno De Bancada com Airfryer Philco 12l Digital Redstone 1800w",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4d56349c-3d38-4182-add3-d97d11922f18",
+      "nome": "Air Fryer Philco Oven Painel Digital 11 Litros PAF11B 127v",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "f304e885-8e45-4ff3-8a5d-2eef562890dc",
+      "nome": "Fritadeira Elétrica Air Fryer 5.5L Digital com Visor PRYSMALUX",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "297ee3a1-4e58-441f-8196-70ea5e43619b",
+      "nome": "5x Fonte Universal USB 5V 2A Bivolt para Celular e Dispositivos",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "1067ba4d-5fe6-450a-b559-b9a88057b5aa",
+      "nome": "GUOJH Manguito Curto Voleibol para Compressão e Proteção dos Braços ôlei - Par - Ótimo Ajuste – Alivia impacto",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "a8857552-aa60-47ed-b5f5-37c50d23e6b0",
+      "nome": "Joelheira Elástica Compressão Ajustável Ortopédica Vollo",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "317c5bfd-75a7-4074-aa5f-2a2e891e6eb1",
+      "nome": "Bola De Vôlei Dawi 01 PRO Oficial Praia",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "cd93526d-d940-4172-b9b4-f55d05f91354",
+      "nome": "Bola Vôlei Finta Pró 8 Ultra Soft",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d253af1d-19a7-490f-b129-3374889664d3",
+      "nome": "Bola de Vôlei Beach Pro - Rainha",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "0860d494-26c8-47d4-b83c-41e3a37d2410",
+      "nome": "Bola Volei Soft Touch Extra Macia Quadra Praia Treino Neon - Voleibol",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "44d06a4a-405b-4bc8-98bb-8b9f5d97c2cd",
+      "nome": "Protetor de Papel Para Airfryer e Frituras 22cm 100 Unidades Akiaz",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7693e7a5-7f22-45d2-9822-276fef21e3d4",
+      "nome": "Fritadeira Elétrica Air Fryer Philco PAF55A 5,5 L 1500W",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "3c854756-80d2-4a85-a385-1aeb49d4cd13",
+      "nome": "Rede de Vôlei 9,5m com Uma Faixa Sintética",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "6dd9a981-7e5e-4967-8d5d-d98a6a7639a2",
+      "nome": "50 / 150 / 200 Formas Descartáveis para Airfryer Redondas Papel Forneável",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "9249dc4a-ab37-4410-8798-60c39a891c06",
+      "nome": "Forro Protetor Tapete Air Fryer Redondo Silicone Antiaderente Reutilizável BPA Free Lavável",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4916995d-b7db-4118-8166-edc4a3ad52ca",
+      "nome": "BOLA DE VOLLEI TREINO E JOGO MACIA RESISTENTE PARA QUADRA/PRAIA",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "78ecd20c-8a40-45b6-87d1-23aa3e281b40",
+      "nome": "Rede de vôlei 8 metros Evo Sports 4 faixas",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "cda25579-6e5e-42c8-a8c8-e5413935f475",
+      "nome": "Canaleta para Fio Amadeirada Organizador Canaleta Madeira Adesiva Mogno",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "8864e064-8356-4f84-8d94-e8e56e028189",
+      "nome": "2 Amplificador De Imagem Da Tela Do Celular Lupa 3D Promoção",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "c9820e25-826b-44bb-8c14-f89e3253817d",
+      "nome": "BOLA VÔLEI DE PRAIA E QUADRA ART SPORT ORIGINAL SUPER MACIA QUALIDADE TOP PARA JOGOS E TREINOS",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "5a88ee11-fabf-4eee-9cc1-66ded77b4597",
+      "nome": "Bola de Vôlei Profissional Padrão Oficial V300w",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "9d6feae5-9b92-4132-a870-ff2207b31392",
+      "nome": "Estaca de Fixação para Fitas de Demarcação | Beach Tennis, Futevôlei, Areia ou Gramado",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "475fe430-d3c7-43bc-a413-13d137883094",
+      "nome": "Rede de vôlei 9 metros Evo Sports 4 faixas",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "73242f9b-c78e-4e89-9345-2c918c4498aa",
+      "nome": "Fitas de marcação 8x16 metros para vôlei de praia Evo Sports",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "f2f325bb-14ad-43d9-9c63-b75057af4c1d",
+      "nome": "Fonte 12V Plug P4 – Fonte de Tomada Universal para Câmera de Segurança CFTV, Fita de LED e Roteador Bivolt",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "5f924d3c-11ed-4271-b57e-f984ad8d6a83",
+      "nome": "Velado IMBEL MD2, MD5, MD7",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "61940714-0120-43ff-ba2b-32ab16854c94",
+      "nome": "100 Alvos Silhueta - Offset 90 Grs - Airsoft - Cód A150 (Papel fino)",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "27333c9c-ba26-409e-a39d-b11cfbf3bdca",
+      "nome": "Coldre Velado Pistola Pt 609c, 638, 640, 145, 838c, 809c",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "413c5b55-9874-440f-b9e6-1a6afe9e39b0",
+      "nome": "Escada de Agilidade Funcional QUADRADA Circuito Treinamento",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "896cee00-fed4-49b9-94c4-c94588f463a6",
+      "nome": "Coldre Eagle Fit Fast Cintura - Glock/Taurus TH40/Taurus G3 TORO/Beretta Apx",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "3711b93b-9646-4bff-b54a-9ef5cc617125",
+      "nome": "Massa e Tunel CBC Jade Nitro X SIX Original 7022 e 8122 e 8117",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d1c8863c-59aa-46dc-af75-88bc313ca98d",
+      "nome": "Treinador Respiratório Pulmonar de Silicone, Aparelho de Treino de Alta Altitude para Fitness",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "2bb634ab-e1d1-4365-a0a8-20d6bcccb994",
+      "nome": "A-5 ARO DE AGILIDADE 45 CENTÍMETROS AGILIDADE CROSSFIT VELOCIDADE COORDENAÇÃO",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "6cb98437-07af-4e3b-be3a-25518743865b",
+      "nome": "Coldre Velado G2c Bélica - 9mm .40 Polímero Com Revestimento",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "889525f0-0a89-48b3-b399-2949f1e69664",
+      "nome": "Dispositivo De Levantamento De Peso Unissex Para Pulso E Tornozelo Com Alça De Pulso Ajustável De 2 Libras",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "bf40cc21-1a22-4b30-8299-768d9d72f9c0",
+      "nome": "Porta Lanterna Police Fast Bélica Militar Polimero",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "626de42d-a6a1-4b94-9c93-fa9d77d68416",
+      "nome": "Controle Ps3 Playstation 3 Dual Shock Wirelless Sem Fio Joystick",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "89aae431-692e-417c-8e2d-8baf27f3c178",
+      "nome": "Controle  Com Fio para  PS2 Fio Cor Preto",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "fc2fc435-fb01-4660-ad7f-ddfce914912d",
+      "nome": "Auspiciosorui01  Controle De Jogo Sem Fio De 2.4Ghz Gamepad Para Ps3 Pc Tv",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "57c08bcc-93b9-4f76-8ec7-615600f81ef0",
+      "nome": "Kit 2 Controle Ps3 Com Cabo Carregador Dual Shock Wirelless Sem Fio bluetooth",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "772fca6a-a1d5-477b-8803-e9ccdaab38f0",
+      "nome": "Air Fryer Philco 5,5 Litros Redstone 1500W PAF55B 127v",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "da1d0692-68e4-4bef-84f7-3c10c8bbc01b",
+      "nome": "Gaabor 220V Fritadeira Elétrica Air Fryer 1,4L 900W Timer AF20M-YE01A",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "2be4ce29-c110-4afd-a301-98b9c7d623b7",
+      "nome": "Fritadeira Air Fryer Oven 16 Litros 4 Em 1 PAF16A Com Painel Digital Philco",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "2e43363c-5503-45b8-bdd4-c99913190c64",
+      "nome": "AIR FRYER Fritadeira Sem Óleo Super Cook Fryer FRT410 3,8L 127V Cadence",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "a1263d0f-e81e-4494-9f82-379f3f2212ca",
+      "nome": "Necessaire organizadora bolsa portatil celular cabos fios armanazamento-luna_hyq",
+      "vertical": "eletroeletronicos",
+      "grupo": "item_miudo_sim:item_miudo_por_cabeca",
+      "ativas": 0
+    },
+    {
+      "id": "c568a537-118f-4238-84f9-60ba477d45b8",
+      "nome": "Óculos VR Box 2.0 Realidade Virtual 3D para Smartphones Android e iPhone",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "1efd9c43-1add-4415-849c-5131504d8b69",
+      "nome": "Fivela de Liberação Rápida de Colete ( MOLLE )",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "f5f3835d-0000-4df5-9dde-a38751e73a84",
+      "nome": "Clipe Porta Munição .38 SPL Special Portátil 5 Cartuchos Porta Balas Estojo Organizador Tático Leve Compacto",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "5e96a984-906f-462d-b7b1-48e75a9bf78b",
+      "nome": "E-10 ESCADA DE AGILIDADE 10 DEGRAUS EM PVC TREINAMENTO FUNCIONAL TREINO AGILIDADE",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "8ba46b6e-192a-441f-9554-c72da224b7c2",
+      "nome": "Puxador de Mão Estribo Nylon Alça CrossOver Remada Academia Pilates Puxada Triceps Biceps Par",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e70ea769-30d0-4dd9-9c68-ab72fc7f2439",
+      "nome": "Coldre De Cintura Para Revolver 6 Tiros SÓ COLDRES",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "c43fb0ac-ed1a-4bee-a1dc-241feb1a1bc0",
+      "nome": "BASTÃO 40CM CARGA 0,5 KG PARA FISIOTERAPIA E FORTALECIMENTO",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "20113d45-b143-4703-bd53-fd0e050f429c",
+      "nome": "Coldre Neoprene Revolver 32 3 Polegadas 6 Tiros Uso Velado",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "8a94a2ea-6c4c-429a-8989-94f02a81155e",
+      "nome": "Coldre Eagle FIT MOLLE | Bélica",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "28acce23-1e6b-4b7e-bb5a-17b10b556da7",
+      "nome": "Mono Cross Over Fixo em Parede",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "2c1d1840-3f24-47e9-a6f9-7e6fdc99d8c4",
+      "nome": "Par Cotoveleira Elástica Compressão Ortopédica Fit Alívio Dor Tendinite Saúde Esporte Musculação",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "78e74841-02f0-4aaf-8faf-9fbdd00e65d3",
+      "nome": "Corda Naval Para Treino Croosfit 10m x 40mm",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "800faa8d-07d8-49c7-8697-1a7abf9933b4",
+      "nome": "Clipe mag duplo 556/M4",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "2587eba6-f40f-4567-9b27-f6540f8dd80a",
+      "nome": "Drone Fimi X8 SE 2020 4K Dobrável com GPS e Controle Remoto",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_lexico_fora_do_escopo",
+      "ativas": 1
+    },
+    {
+      "id": "30b00936-74a7-4e7b-84b0-8cd8f4677f35",
+      "nome": "Airfryer Eletrica Mondial 1500wts Naf-03I 4 litros 220V",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "ea000724-4969-46af-bb1c-04aba59d00ea",
+      "nome": "Bolsa Organizadora de Celular, Cabos e Fios - Necessaire Portátil para Viagem e Dia a Dia",
+      "vertical": "eletroeletronicos",
+      "grupo": "item_miudo_sim:item_miudo_por_cabeca",
+      "ativas": 0
+    },
+    {
+      "id": "6bec1d32-7b44-41fb-aab2-6a3a9e1098a5",
+      "nome": "Air Fryer Oven Philco 16L 4 em 1 Painel Digital PAF16A",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "3c519e46-567c-46ce-927e-5dbb0a5338fb",
+      "nome": "Controle Ps3 Playstation 3 Dual Shock Wirelless Sem Fio",
+      "vertical": "games",
+      "grupo": "decisao_anterior:acessorio_plataforma_legada",
+      "ativas": 0
+    },
+    {
+      "id": "8061b222-4fda-4e63-b79d-e74909b7accc",
+      "nome": "Fritadeira Air Fryer 6,5L 1700W Sem Óleo Cesto Antiaderente Controle de Temperatura 127V/220V",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "faf28c47-766b-434d-9011-3facdc5cda93",
+      "nome": "Fritadeira Air Fryer Philco 4 Em 1 Painel Digital PAF16A 16L Inox 110V",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "1c1e8022-bf09-424d-8c46-1f09be2a6e80",
+      "nome": "4 Kit Amplificador Celular De Imagem Da Tela Do Celular / Lupa 3d",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "ab2cdacb-4029-4962-88c0-35fd6833564f",
+      "nome": "Melhor Q Cantil, Bolsa Molle Termica P/ Cinto E Colete Molle",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "639435db-0416-4b03-a9aa-067834ba1c3c",
+      "nome": "Fiel Retrátil Estrela Destro Canhoto",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "6eb3c435-53d8-4448-8699-ad1089bd8af7",
+      "nome": "Coldre Velado - G45 - G23 - G17 - G19 - G19x Bélica",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "69c04e42-4405-476f-b56f-207095b0f8e9",
+      "nome": "Kit 3/6/9 Organizador De Fios Com Imã Multiuso",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "ed0e56fd-4632-4cd6-8ed7-0abf1e928c26",
+      "nome": "SOLEIRA DE BORRACHA MACIA ORIGINAL",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "32407ad3-2cdc-4949-bbd6-7c0193b9d749",
+      "nome": "Bandoleira Tática aberta para colete modular",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7384c70e-eaa4-418a-891f-aaa9342631ca",
+      "nome": "Coldre Velado em Polímero INVICTUS Taurus G2C G3 Toro",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "3bad5564-c879-4aa4-861e-d81de379f9f1",
+      "nome": "Coldre Velado Ts9 Com Revestimento Interno Bélica",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "c2865564-1f30-47c6-a4bf-88005ee9a222",
+      "nome": "PORTA RÁDIO PARA COLETE MODULAR PAPA MIKE",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "85015aee-af53-4067-86a2-d7c411be532a",
+      "nome": "Colete Treino Dupla Face",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "ea577326-e682-457e-90b7-f0d64b1addec",
+      "nome": "Manguito Longo Esportivo Apollo",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "69650f95-1e42-4929-a964-f66d87f829dc",
+      "nome": "Manguito Curto Esportivo Apollo",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d3bc4c5b-18f2-42d3-9cbe-17a9c6431153",
+      "nome": "Cabeça de carregamento rápido quatro em um de 120 W 2A + 2C PD QC3.0 Carregamento simultâneo multiportas",
+      "vertical": "eletroeletronicos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "50579d2a-87bc-4a50-af89-2b7a2e268d00",
+      "nome": "Extratora Aspirador de Pó e Líquidos IPC EA135 Lite 1200W para Estofados",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "254dc00e-2be9-4714-8ea8-dc163b5185c9",
+      "nome": "Aspirador e Soprador Portátil 5 em 1 Alta Potência e Multifuncional para Limpeza Completa para Carro",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "0fae9b09-1e6c-40e9-abab-51df7ac5e83a",
+      "nome": "Jogo Cuphead Xbox One Series S X",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "11f53de8-43c5-494c-829e-be548d4c3317",
+      "nome": "Disco Bd-j ps5",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "b740990d-c9b6-47c8-b9cb-33afdc24024f",
+      "nome": "130000RPM TMini Turbo Jet Fan Poderosa Velocidade Do Vento 35 M/s Ventilador De Jato De Alta Potência",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "5b5ab7f2-885f-4edf-95ca-28b4ef730976",
+      "nome": "Assassin's Creed Valhalla Xbox One Xbox Series X|S",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "652297ba-7904-463e-b499-e8c848fb30fc",
+      "nome": "(Encarte Reimpresso) NBA 2k14 Ps4 Mídia Física",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "a7a7e59f-00b8-46cd-a093-79a670e2eaeb",
+      "nome": "Cubo 3d Mário Dobrável Para Jogos Nintendo Switch 13 Jogos",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "e73ac044-2d18-4c15-82ba-de89c5007d17",
+      "nome": "Jogos xbox one xbox series S/X Baixe diretamente no seu videogame",
+      "vertical": "games",
+      "grupo": "decisao_anterior:fisico_abaixo_do_piso",
+      "ativas": 1
+    },
+    {
+      "id": "0c110faf-a08c-4291-b8b5-c31f0afd6ffb",
+      "nome": "Aspirador para Carro Portátil 12v, 420ml Sólido, Pequeno Wap Car 12v2",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "a5ed3ad8-d4da-41ac-9b35-22ae2744e981",
+      "nome": "Bola de Vôlei Infantil 63cm- Sortida",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b3a49a70-b5ac-4e50-87b3-31834f3cdc9e",
+      "nome": "BOLA VOLEI RAINHA VOLEI 8.0 PRO ORIGINAL ESPORTES VOLEIBOL",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "c659c3db-5dd8-456c-9740-512bba6b3a9e",
+      "nome": "Manguito de Vôlei",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "a0a28d09-206e-4c6c-8f90-811b65c5cf4d",
+      "nome": "BOLA RAINHA VOLEI OFICIAL PRÓ 2.0",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "6ce4e84c-81b2-4194-96b6-0f55c44d3984",
+      "nome": "ESSIEBR Badminton Net 6.1mX0.76m Rede De Malha De Vôlei De Exercício Padrão",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "97e55132-c61e-4fa2-a7a1-4da1eddf34d1",
+      "nome": "Rede de Vôlei 7m Amadora com 4 Faixas Largas e Proteção UV – Para Quadras e Treinos",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "503b0805-927f-43f8-b8d5-fbf5bed92a71",
+      "nome": "Rede Vôlei De Praia 8,50,competição, Oficial, Profissional.",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "0916506e-eb7e-4b22-b0a5-58da350fd47d",
+      "nome": "Coldre Velado Couro Legítimo Para Glock G25 .380 Acp G28 Saque Rápido Interno Paisana",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "06a00bbb-7d4f-4520-826e-8e1279044000",
+      "nome": "Extratora Portátil 3 em 1 ELV1500 400W para Estofados e Carpetes Limpeza Doméstica Vonder",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b8cc22d0-2cca-4b8a-afab-44f69f82a8e3",
+      "nome": "Tornozeleira Puxador Polia Baixa Crossover Profissional Unid",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d180087d-9d17-4aea-aba6-9a5ae3b00021",
+      "nome": "Maça Oficial de Ginástica Rítmica Adulto 45cm - PAR - SS ESPORTES",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "d73d3879-092f-439e-97fa-94172afb6e9a",
+      "nome": "Mini Aspirador De Pó Soprador 4 em 1 Portátil Alta Potência Recarregável Limpezas Carros Janelas Sofás Carpetes Gavetas",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "dac4975c-33a4-4def-9a59-78aaaba62a1a",
+      "nome": "Fritadeira Air Fryer PRYSMALUX 5.5L Visível 1350W, 80% Menos Óleo Temperatura Ajustável 80℃-200℃ Cozinha Rápida Saudável",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "4e0d87e3-73e2-4a75-a2fb-fa797165705e",
+      "nome": "Forma Assadeira Cesto Air Fryer Fritadeira Todas As Marcas",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "8ca7a325-8d9a-4253-9bbc-a77a3378da59",
+      "nome": "Air Fryer Philco 16L 4 em 1 Painel Digital PAF16A",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "483f37f7-4376-42b4-a724-3b384a1e6425",
+      "nome": "Bandeja Mais Nítida Da Grade Fritadeira De Ar Para O Traço 2.6QT-Digital Crisp Com Pés De Borracha",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "9831919f-daf5-47e9-ad2f-0ae964d77303",
+      "nome": "Forno Air Fry 12L, tela touch ampla inteligente, assadeira multifuncional para ingredientes de confeitaria doméstica",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "56b43a9a-c003-42d4-824f-4660107299a9",
+      "nome": "Espirômetro De Incentivo Dispositivo De Exercício Respiratório Para Adultos Medição De Volume De 5000ml Com Indicador De",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "a8925469-30e0-4cec-927c-f4304d315552",
+      "nome": "Bucha Embuchamento 40 Em Aço Carbono 1045",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "e3b0fb60-34d6-427d-b47a-c0c8cd3ca375",
+      "nome": "Bucha de Pu retentor do embolo Quickshot P/ SPA AN500 QGK Night Wolf TAG Scorpion",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "760574bf-ee4e-421a-8e8f-48eec8facaca",
+      "nome": "Bucha de PU Quickshot CBC Standard GII G2 Jade Pro Nitro",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "40e54956-6dad-4233-9a4e-c66b479df1cb",
+      "nome": "Tornozeleira de Compressão Ortopédica Estabilizadora Exercícios Fitness Esportes 4Fitness",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "376f0e38-07cb-47ae-91fd-d864395902fc",
+      "nome": "Almofadas Protetoras De Alça De Ombro LUC , Clipes De Ferramentas EDC , Adequadas Para Mochilas Ao Ar Livre , Coletes De",
+      "vertical": "esporte",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b6cf9da7-5780-449e-a428-b2b962ebab5d",
+      "nome": "Tapetes de Silicone para Air fryer , panelas quentes resistentes Alta temperatura reutilizável",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "0b841b09-cd05-4579-8366-7227e8b44a19",
+      "nome": "Power Bank Concept 5000mah Polímero - Multilaser",
+      "vertical": "eletroeletronicos",
+      "grupo": "power_bank_fora_R2-16",
+      "ativas": 1
+    },
+    {
+      "id": "716318e3-6ae6-48ce-98e8-8981f2be004f",
+      "nome": "Carregador Wireless Power Bank 10000 Mah Multilaser",
+      "vertical": "eletroeletronicos",
+      "grupo": "power_bank_fora_R2-16",
+      "ativas": 1
+    },
+    {
+      "id": "27113729-43ac-4d36-8573-a0eb0296c0bb",
+      "nome": "Air Fryer de Luxo Gourmet Digital 4,5l 110v ou 220v Fritadeira Eletrica Sem Oleo Facil E Rapido",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7778c266-d9c8-4ab7-857e-340ac99c7660",
+      "nome": "Forma Assadeira Cesto Air Fryer Original Antiaderente Fritadeira Todas As Marcas redonda quadrada",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "b4b89b2d-5ff5-4197-8516-c5aebf848846",
+      "nome": "Kit De 50 a 200 Formas Descartável Para Airfryer Antiaderente Não Suja Cozinha Fritadedira Promoção",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "fe220f62-de44-450b-b99f-6f01ed307258",
+      "nome": "Air Fryer 6 Litros 1500w Sem Óleo Ar Quente 220v",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "6c8730c5-8de1-4593-ac97-3aa09602bce2",
+      "nome": "Gaabor Fritadeira Air Fryer 12L Digital Touch com Timer e Frigideira Antiaderente Sem Óleo 127V/220V AF-120T02",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "f6bc2a54-74c5-437c-992b-d5cc21273fde",
+      "nome": "Fritadeira Air Fryer Home Land 4L-",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "09fa42b6-65af-4f4f-b1ff-0c20442871d6",
+      "nome": "Air Fryer WAP 5,2L Cesto Removível Revestimento Stone",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "26caa1f8-ba6a-4068-8dda-6260c60a7579",
+      "nome": "8 Pçs Calor Silicone Fritadeiras Ar Pés Substituição Antiderrapante Pára-Choques Para Bandejas M",
+      "vertical": "eletrodomesticos",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7bc6ddd2-b370-4589-b684-f82510da7ece",
+      "nome": "Mouse Emborrachado com Fio Usb Multilaser - MO222",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "9f973da4-751b-413e-8fd4-b858a69f161b",
+      "nome": "Mouse Gamer , Rainbow, 2400DPI, 3 Botoes,",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "c5ff3c06-e6e8-4f84-a5ee-c2db3b8dd180",
+      "nome": "Mouse Gamer Sem Fio Attack Shark X11 Modo Triplo 2.4G BT5.0 22000DPI RGB Recarregável PC桌上清洁竞技专业电竞装备",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "048b60e5-474a-4ad5-a0e6-c0ed5e7cb531",
+      "nome": "Mouse Sem Fio Recarregável Bluetooth ou Pino USB 1600 DPI Macbook Tablet Android iOS Windows",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "22963993-88ca-453a-aa6a-1c6d06bb6974",
+      "nome": "Mouse Gamer SMAILWOLF M3 Ergonômico Tri-Modo Sensor Óptico PAW3311 12000 DPI 1000Hz Design Leve para PC e Laptop",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "644a4a3a-3c12-4f2a-912b-ccef0e3d8d8b",
+      "nome": "MOUSE GAMER COM FIO 7 BOTOES E 3 BOTOES MAUSE COM LED RGB 2.400 DPI ÓPTICO ILUMINAÇÃO PARA JOGOS VIDEO GAMERS",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "18e91073-5b88-43b6-8a33-ad41aeb935a0",
+      "nome": "Rato com Fio USB Óptico Design Ergonômico Cabo 1,2m Compatível com Notebook PC Desktop MacBook",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "977496d4-8380-4cc1-93af-2e82ac962574",
+      "nome": "Delux M618C Rato Vertical Ergonômico Sem Fio 6 Botões De Jogo RGB 1600 DPI Ratos Ópticos Com Para PC Laptop",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "949636f5-438c-4c7f-8edf-cb5196eb93af",
+      "nome": "Mouse Gamer RGB 7200 DPI com Fio RGB personalizável",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "7a122bd0-427b-43b2-8724-864b9375fb32",
+      "nome": "Mouse Com Fio Design Ergonômico 1200 DPI Ajustável Alta Precisão Cabo Resistente",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "42579185-2dfd-4485-8680-66e5f31cd327",
+      "nome": "Mouse Sem Fio Bluetooth 5.4 USB Recarregável Silencioso 1600 DPI Para PC Notebook Home Office",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    },
+    {
+      "id": "73f726da-2479-400d-8063-9f682f0168f3",
+      "nome": "Mouse Gamer Sem Fio SMAILWOLF RS7 PAW3311 20000 DPI, Driver Macro, Ergonômico, Recarregável, para PC, Escritório e Jogos",
+      "vertical": "tecnologia",
+      "grupo": "semeadura_identidade_fraca_sem_oferta_ativa",
+      "ativas": 0
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "stamp": "2026-11-12T16-13-21-731Z",
+  "modo": "apply",
+  "liberadas": 941,
+  "aprovadasOutras": 723,
+  "ja": 62,
+  "barradas": {
+    "duas_geracoes_no_titulo": 19
+  },
+  "erros": 0,
+  "porLoja": {
+    "amazon": 941
+  },
+  "arquivo": "docs\\backups\\aprovacao-liberar-2026-11-12T16-13-21-731Z.ndjson",
+  "reverter": "npx tsx --conditions=react-server --env-file=.env.local scripts/aprovacao-backup.ts --reverter docs\\backups\\aprovacao-liberar-2026-11-12T16-13-21-731Z.ndjson --apply"
+}

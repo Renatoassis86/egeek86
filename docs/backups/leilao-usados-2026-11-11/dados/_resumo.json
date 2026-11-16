@@ -1,0 +1,22 @@
+{
+  "auctions": 0,
+  "auction_bids": 0,
+  "drops": 0,
+  "drop_waitlist": 0,
+  "drop_purchases": 0,
+  "drop_access_log": 0,
+  "drop_curations": 0,
+  "review_curations": 0,
+  "sellers": 1,
+  "seller_kyc_documents": 0,
+  "seller_metrics": 1,
+  "seller_payouts": 0,
+  "points_ledger": 0,
+  "point_rules": 0,
+  "levels": 0,
+  "badges": 0,
+  "user_badges": 0,
+  "missions": 0,
+  "user_missions": 0,
+  "profiles_colecionadores": 5
+}
