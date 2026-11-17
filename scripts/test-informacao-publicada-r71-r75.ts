@@ -31,7 +31,8 @@ ok('R-71: contencao da Amazon ligada = base sem Amazon; desligada = base com Ama
   assert.equal(baseIncluiAmazon(false), true);
 });
 ok('R-71 guarda: a serie da mensagem usa a mesma base do "hoje" e a plataforma usa o bloqueio', () => {
-  assert.match(src('src/server/messaging/group-offers.ts'), /baseIncluiAmazon\(amazonForaDasMensagens\(\)\)/);
+  // R-92: a base continua a mesma para "hoje" e série, agora por vertical (Amazon liberada por etapas).
+  assert.match(src('src/server/messaging/group-offers.ts'), /baseIncluiAmazon\(amazonForaDasMensagens\(\) && !amazonLiberadaNaVertical\(/);
   assert.match(src('src/server/messaging/group-offers.ts'), /amazonForaDaBaseMinCents: amazonForaBy/);
   assert.match(src('src/lib/messaging/group-platform.ts'), /hojeContradizBase\(cheapest\.priceCents, p\.amazonForaDaBaseMinCents\)/);
 });
