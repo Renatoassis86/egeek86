@@ -785,3 +785,23 @@ A janela "o mesmo produto não volta sem novidade" da R-77 é de 72 h para todas
 - **Fontes embutidas:** `src/app/fonts/*.woff2` (latin, SIL OFL) e `next/font/local` no `layout.tsx`: o build deixa de consultar o Google Fonts (erro intermitente que derrubou os builds de f36865e e 135766f).
 - **Aspiradores (eletrodomésticos):** 219 masters de aspirador no catálogo, só 25 com oferta ativa; 260 ofertas em rascunho e 85 expiradas. A causa de cobertura é a fila de validação de identidade, não a falta de produto.
 
+## 16. Inventário de canais (conferido no banco e no código em 2026-11-17)
+Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o roteamento de `src/server/messaging/group-queue.ts` (`chatForStore(loja) ?? telegramChatFor(vertical)`). **Existem 7 lojas, uma por vertical, cada uma com canal do Telegram próprio verificado e com o bot podendo postar, e cada uma com grupo de WhatsApp cadastrado.** Nenhuma regra do tipo "abrir canal novo para os 7 departamentos" é necessária: eles já existem. Os identificadores (chat id e link de convite) ficam só no banco e não são copiados para a documentação.
+
+| Loja (slug) | Vertical | Título do canal | Estágio | Bot posta | WhatsApp | Enviadas no Telegram (24 h / 7 dias) |
+|---|---|---|---|---|---|---|
+| games | games | Espaço Geek 86 · Ofertas | ativa | sim | cadastrado | 122 / 2.791 |
+| eletroeletronicos | eletroeletronicos | Espaço Geek 86 · Eletrônicos | canal_verificado | sim | cadastrado | 110 / 1.152 |
+| esporte | esporte | Espaço Geek 86 · Esporte | canal_verificado | sim | cadastrado | 40 / 954 |
+| tecnologia | tecnologia | Espaço Geek 86 · Tecnologia | canal_verificado | sim | cadastrado | 50 / 947 |
+| eletrodomesticos | eletrodomesticos | Espaço Geek 86 · Casa | canal_verificado | sim | cadastrado | 29 / 872 |
+| impressao-3d | impressao3d | Espaço Geek 86 · Impressão 3D | canal_verificado | sim | cadastrado | 30 / 825 |
+| livros | livros | Espaço Geek 86 · Livros | canal_verificado | sim | cadastrado | 8 / 719 |
+
+**Pontos a registrar, conferidos:**
+- As mensagens das 6 lojas que não são Games saem normalmente (o roteamento por vertical funciona), mas `group_messages.store_id` fica **vazio** nelas: o relatório por loja precisa agrupar por `vertical`, não por `store_id`. Dívida pequena.
+- O estágio das 6 lojas continua `canal_verificado` mesmo enviando; só Games está `ativa`. Falta decidir se o estágio acompanha o envio real.
+- **Canal Destaques:** a variável `TELEGRAM_DESTAQUES_CHAT_ID` não existe na Vercel; os degraus 4 e 5 não têm canal Destaques configurado.
+- **Canal novo só para estética e beleza** seria a 8ª loja (não existe). Depende de catálogo (seção 15.9) e do ok do dono.
+- Corrige a minha proposta de 2026-11-17 ("3 canais próprios + Achados"): estava errada, os 7 canais já existem.
+
