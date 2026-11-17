@@ -16,6 +16,7 @@ import { InteligenciaGamerTeaserSection } from '@/components/home/secoes/teaser-
 import { HomeNewsSection } from '@/components/home/secoes/noticias-home';
 import { Benefits } from '@/components/home/secoes/beneficios';
 import { NewsletterCTA } from '@/components/home/secoes/newsletter';
+import { RankingBuscaSection } from '@/components/home/secoes/ranking-busca';
 
 // HOME: so compoe as secoes (cada uma em src/components/home/secoes/*).
 // Cada secao com busca propria no banco fica isolada num Suspense para as
@@ -58,6 +59,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         <HomeNewsSection />
       </Suspense>
       <Benefits />
+      {/* Penúltima seção (dono, 2026-11-17): busca com ranking do menor ao maior preço. */}
+      <RankingBuscaSection />
       <NewsletterCTA />
     </>
   );
