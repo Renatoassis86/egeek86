@@ -2,6 +2,13 @@
   "timeoutS": 120,
   "ignorar": {
     "orfao:test-cofre-integracao-123.ts": "grava e apaga linhas reais em coupon_announcements/coupon_validations no banco de producao: rodar so sob supervisao (nao automatico). Fila #134.",
-    "orfao:test-reaper-collector-runs.ts": "insere e apaga uma linha 'teste-reaper' em collector_runs no banco de producao: rodar so sob supervisao (nao automatico). Fila #134."
+    "orfao:test-reaper-collector-runs.ts": "insere e apaga uma linha 'teste-reaper' em collector_runs no banco de producao: rodar so sob supervisao (nao automatico). Fila #134.",
+    "orfao:test-lojas.ts": "teste da fundacao de lojas de 2026-11-11 com expectativas do estado inicial (loja em rascunho, 0 masters de impressao3d, limites iguais ao RULES daquele dia); as lojas e o ritmo evoluiram (171 masters de impressao3d, ritmo de 1 min). 9 falhas = teste desatualizado, nao regressao. Reescrever contra o estado atual: fila #138."
+  },
+  "timeoutsS": {
+    "test:amazon-media": 420
+  },
+  "motivoTimeout": {
+    "test:amazon-media": "varre 787 produtos de games com Amazon no banco real: 3m40s medidos em 2026-11-17 sem falha de asserção de desempenho; o limite global de 120 s apenas cortava o teste (fila #138)."
   }
 }

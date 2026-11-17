@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-interface Config { timeoutS?: number; ignorar?: Record<string, string> }
+interface Config { timeoutS?: number; /** Limite por teste (segundos), com motivo no gate.json > motivoTimeout. Só para teste de banco legitimamente lento. */ timeoutsS?: Record<string, number>; ignorar?: Record<string, string> }
 interface Linha { id: string; resultado: 'PASSOU' | 'FALHOU' | 'PULADO' | 'IGNORADO' | 'TEMPO'; seg: number; motivo?: string; fim?: string }
 
 const args = process.argv.slice(2);
@@ -28,10 +28,11 @@ const pkg = JSON.parse(fs.readFileSync(path.join(raiz, 'package.json'), 'utf8'))
 const cfgPath = path.join(raiz, 'docs', 'validado', 'gate.json');
 const cfg: Config = fs.existsSync(cfgPath) ? JSON.parse(fs.readFileSync(cfgPath, 'utf8')) : {};
 const timeoutMs = (cfg.timeoutS ?? 120) * 1000;
+const limiteDe = (id: string) => (cfg.timeoutsS?.[id] ?? cfg.timeoutS ?? 120) * 1000;
 
 function rodar(script: string): { ok: boolean; seg: number; tempo: boolean; fim: string } {
   const t0 = Date.now();
-  const r = spawnSync('npm', ['run', script, '--silent'], { cwd: raiz, shell: true, encoding: 'utf8', timeout: timeoutMs, maxBuffer: 20 * 1024 * 1024 });
+  const r = spawnSync('npm', ['run', script, '--silent'], { cwd: raiz, shell: true, encoding: 'utf8', timeout: limiteDe(script), maxBuffer: 20 * 1024 * 1024 });
   const seg = Math.round((Date.now() - t0) / 100) / 10;
   const saida = `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split(/\r?\n/).filter(Boolean);
   const tempo = r.error != null && /ETIMEDOUT/.test(String((r.error as NodeJS.ErrnoException).code ?? r.error));
@@ -56,7 +57,7 @@ for (const [id, cmd] of Object.entries(pkg.scripts)) {
 // Teste que toca o banco (heurística no código) só roda no --completo, com --env-file. Vermelho conhecido fica em gate.json > ignorar ("orfao:<arquivo>") COM motivo.
 const ligados = Object.values(pkg.scripts).join(' ');
 const orfaos = fs.readdirSync(path.join(raiz, 'scripts')).filter((f) => /^test-.*\.ts$/.test(f) && !ligados.includes(`scripts/${f}`)).sort();
-const tocaBanco = (f: string) => /_dup-shared|DATABASE_URL|from '(\.\.\/)+src\/db|@\/lib\/db|postgres\(/.test(fs.readFileSync(path.join(raiz, 'scripts', f), 'utf8'));
+const tocaBanco = (f: string) => /_dup-shared|DATABASE_URL|--env-file=\.env\.local|from '(\.\.\/)+src\/db|@\/lib\/db|postgres\(/.test(fs.readFileSync(path.join(raiz, 'scripts', f), 'utf8'));
 for (const f of orfaos) {
   const id = `orfao:${f}`;
   if (so && !f.includes(so)) continue;
@@ -64,7 +65,7 @@ for (const f of orfaos) {
   const banco = tocaBanco(f);
   if (banco && !completo) { linhas.push({ id, resultado: 'PULADO', seg: 0, motivo: 'toca o banco (use --completo)' }); continue; }
   const t0 = Date.now();
-  const r = spawnSync('npx', ['tsx', '--conditions=react-server', ...(banco ? ['--env-file=.env.local'] : []), `scripts/${f}`], { cwd: raiz, shell: true, encoding: 'utf8', timeout: timeoutMs, maxBuffer: 20 * 1024 * 1024 });
+  const r = spawnSync('npx', ['tsx', '--conditions=react-server', ...((banco || completo) ? ['--env-file=.env.local'] : []), `scripts/${f}`], { cwd: raiz, shell: true, encoding: 'utf8', timeout: timeoutMs, maxBuffer: 20 * 1024 * 1024 });
   const seg = Math.round((Date.now() - t0) / 100) / 10;
   const tempo = r.error != null && /ETIMEDOUT/.test(String((r.error as NodeJS.ErrnoException).code ?? r.error));
   const fim = `${r.stdout ?? ''}\n${r.stderr ?? ''}`.trim().split(/\r?\n/).filter(Boolean).slice(-3).join(' | ').slice(0, 220);

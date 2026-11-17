@@ -211,5 +211,6 @@ async function htmlLocal(): Promise<string | null> {
     if (l.length > 15) console.warn(`   ... e mais ${l.length - 15}`);
   }
   console.log(`Resumo: ${falhas.length} falha(s), ${dividas.length} achado(s)${ESTRITO ? ' (modo estrito: achados também derrubam)' : ''}`);
-  process.exit(falhas.length > 0 || (ESTRITO && dividas.length > 0) ? 1 : 0);
+  // #138: process.exit() com o fetch do HTML local ainda fechando derruba o Node 24 no Windows (Assertion failed: UV_HANDLE_CLOSING); sai naturalmente.
+  process.exitCode = falhas.length > 0 || (ESTRITO && dividas.length > 0) ? 1 : 0;
 })();

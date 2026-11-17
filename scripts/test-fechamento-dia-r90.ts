@@ -15,3 +15,11 @@ assert.equal(primeiroDiaATratar({ ...base, lastClosed: '2026-11-16', menorAberto
 // nunca antes do início do regime
 assert.equal(primeiroDiaATratar({ today: '2026-11-05', regimeStart: '2026-10-31', lastClosed: null, menorAbertoPassado: '2026-10-20' }), '2026-10-31');
 console.log('test-fechamento-dia-r90: OK');
+
+// Sobras: o job congela dias passados abertos ao fim de um ciclo completo e sem falha.
+import fs from 'node:fs';
+const job = fs.readFileSync('src/server/jobs/refresh-price-daily.ts', 'utf8');
+assert.ok(/!sum\.budgetExhausted && sum\.failedChunks === 0/.test(job), 'só em ciclo completo e sem falha');
+assert.ok(/UPDATE price_daily_state SET closed = true WHERE NOT closed AND day < \$\{today\}::date/.test(job), 'fecha só dia passado');
+assert.ok(!/DELETE FROM price_daily_state/.test(job), 'nunca apaga linhas');
+console.log('test-fechamento-dia-r90 (sobras): OK');

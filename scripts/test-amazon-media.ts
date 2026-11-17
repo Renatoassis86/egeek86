@@ -267,9 +267,9 @@ const card = (over: Partial<OfferCardInput>): OfferCardInput => ({
   stats: { recordCents: null, seriesFirstDay: null, measuredDays: 0, avgCents: 10000, distinctOffers: 5, prev: null }, ...over,
 });
 ok(chooseInsight(card({})) === null, 'cartão off: Amazon sem insight de média');
-ok(chooseInsight(card({ amazonAvg: 'market' }))?.text === 'R$ 20 abaixo da média do mercado', 'cartão on: "abaixo da média do mercado"', chooseInsight(card({ amazonAvg: 'market' })));
-ok(chooseInsight(card({ amazonAvg: 'amazon' }))?.text === 'R$ 20 abaixo da média na Amazon', 'cartão on, só Amazon: "média na Amazon"');
-ok(chooseInsight(card({ isAmazon: false, store: 'Mercado Livre' }))?.text === 'R$ 20 abaixo da média das lojas', 'cartão demais lojas: texto de sempre');
+ok(chooseInsight(card({ amazonAvg: 'market' }))?.text === 'R$ 20 abaixo da média do mercado (R$ 100)', 'cartão on: "abaixo da média do mercado"', chooseInsight(card({ amazonAvg: 'market' })));
+ok(chooseInsight(card({ amazonAvg: 'amazon' }))?.text === 'R$ 20 abaixo da média na Amazon (R$ 100)', 'cartão on, só Amazon: "média na Amazon"');
+ok(chooseInsight(card({ isAmazon: false, store: 'Mercado Livre' }))?.text === 'R$ 20 abaixo da média das lojas (R$ 100)', 'cartão demais lojas: texto de sempre');
 
 // ---------------------------------------------------------------------------
 // 4) PARTE 2 (banco, só leitura): paridade do modo off contra o SQL original e do modo on

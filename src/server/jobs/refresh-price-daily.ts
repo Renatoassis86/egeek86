@@ -25,6 +25,8 @@ export interface PriceDailySummary {
   stateRows: number;
   eventsWritten: number;
   failedChunks: number;
+  /** Linhas de dias passados que ficaram abertas e foram congeladas no fim do ciclo (E6, #147). */
+  leftoversClosed?: number;
   elapsedMs: number;
   budgetExhausted: boolean;
   /** Modo da flag PRICE_AMAZON_MODE neste ciclo. */
@@ -93,6 +95,12 @@ export async function refreshPriceDaily(opts: { budgetMs: number; chunkSize?: nu
       sum.failedChunks++;
       console.error('[refresh-price-daily] lote falhou:', err instanceof Error ? err.message : err);
     }
+  }
+  // E6 (#147): sobras. Dia passado cujo recálculo não gera estado (produto sem oferta na janela) nunca é reescrito e ficava aberto para sempre
+  // (743 linhas em 2026-11-17). Ciclo completo e sem falha: congela a ÚLTIMA versão calculada (a fiel daquele dia). Só toca linhas passadas abertas.
+  if (!sum.budgetExhausted && sum.failedChunks === 0) {
+    const fechadas = await db.execute<{ id: string }>(sql`UPDATE price_daily_state SET closed = true WHERE NOT closed AND day < ${today}::date RETURNING master_product_id AS id`);
+    sum.leftoversClosed = fechadas.length;
   }
   if (mode === 'shadow') sum.amazonShadow = summarizeAmazonShadow(shadowAll);
   sum.elapsedMs = Date.now() - started;
