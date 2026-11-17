@@ -28,6 +28,7 @@ import {
   composeRadar,
   detectMovement,
   evaluateProductV2,
+  masterRepeatHoursFor,
   neutroSemBaseLigado,
   productDedupBlock,
   type Blocked,
@@ -563,6 +564,10 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
     )`;
     const parts: SQL[] = [sql`SELECT 'main'::text AS k, mid::text AS mid, v::text AS v, r::int AS r, name::text AS name, NULL::text AS plat, NULL::text AS oid, ord::int AS ord FROM mainq`];
     const ctes: SQL[] = [liveCte, mainCte];
+    // 2026-11-17 (dono: "enviar todos os produtos para cada canal"): o pool do aviso excluía só quem saiu em 24 h, mas a R-77 barra o mesmo master por 72 h (24 h na impressão 3D);
+    // 178 das 462 propostas abertas morriam em `master_repetido_sem_novidade` e gastavam as vagas do pool. A exclusão agora usa a MESMA janela da R-77.
+    const janelaAcPadrao = masterRepeatHoursFor('games') || 24;
+    const janelaAc3d = masterRepeatHoursFor('impressao3d') || 24;
     if (o.achadoOn) {
       // Base do ACHADO: produtos vivos fora de games sem envio nas últimas 24 h (qualquer gatilho). O juízo (link, tipo, histórico) é do avaliador.
       // Games entra so SEM media calculada (menos de MED_MIN_OFFERS ofertas vivas fora da Amazon e sem estado diario de media); o resto de games segue G2/OK1/etc.
@@ -582,7 +587,7 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
           OR NOT EXISTS (SELECT 1 FROM price_daily_state s WHERE s.master_product_id = l.mid AND s.day >= ${addDays(today, -3)}::date AND s.avg_cents IS NOT NULL)
         ))
         AND ln.slug <> 'amazon' ${o.hasTable ? sql`AND NOT EXISTS (
-        SELECT 1 FROM group_messages g WHERE g.master_product_id = l.mid AND g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - interval '24 hours'
+        SELECT 1 FROM group_messages g WHERE g.master_product_id = l.mid AND g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - (CASE l.v WHEN 'impressao3d' THEN ${janelaAc3d}::int ELSE ${janelaAcPadrao}::int END) * interval '1 hour'
       )` : sql``}
     )`);
       parts.push(sql`SELECT 'achado'::text, mid::text, v::text, 5::int, name::text, plat::text, NULL::text, 0::int FROM achq`);
