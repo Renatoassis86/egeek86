@@ -662,7 +662,11 @@ Nenhum item abaixo deve ser citado como fato. Cada um vira verificação dentro 
 | Transação presa | zero > 120 s | contínuo |
 | 429 do Mercado Livre | < 2% das chamadas | 1 h móvel |
 | Mensagem com gatilho perdida por atraso | 0 | 24 h |
-| Frescor Amazon no envio | preço confirmado em até 40 min | por envio |
+| Frescor Amazon no envio (R-81/R-89) | preço confirmado em até `AMAZON_FRESCOR_MIN` (45 min; antes 40) | por envio; medidor: `scripts/medir-frescor.ts` (invariante do enviado) |
+| Frescor exibido por rede (R-90) | informativo: p50/p90/máximo da idade do preço lido, por rede; **não expira item** | diário; medidor: `scripts/medir-frescor.ts` |
+| Coleta por vertical (ML e Shopee) | `oldest_due_age_s` < 2 h (eletro, ML) e < 1 h (Shopee) em 24 h | 24 h; medidor: `collector_runs` (`due_total`, `oldest_due_age_s`, `checked`) |
+| Dias passados abertos | `dia_passado_aberto` = 0 | após cada ciclo `refresh-price-daily`; medidor: `scripts/test-daily-state-db.ts` |
+| Regra de estoque (R-90) | oferta pausada, sem estoque ou deixada de vender sai da vitrine na hora; nenhuma outra causa (idade) tira item | por oferta; gatilho: `status` da oferta e `scripts/test-departamentos.ts` |
 | Disponibilidade do site | NÃO VERIFICADO (sem sonda externa, FM-44) | 30 dias |
 | Envio por hora depois do incidente | 60 ou mais enviadas/h, job < 45 s, sem 'Failed query' do `live` por 1 h (critério da fila #33) | 1 h móvel |
 | Régua em produção (R-44) | 0 termo banido, 0 mensagem fora das lojas liberadas, erro < 2%, degrau 1 <= 1/3 | 15 min e 24 h após cada ampliação |
@@ -768,6 +772,6 @@ A janela "o mesmo produto não volta sem novidade" da R-77 é de 72 h para todas
 **Implementado (2026-11-17, lote 2):**
 - **E3 (#144):** `vitrineSemExpiracaoPorTempo()` (padrão ligada; `VITRINE_EXPIRA_POR_TEMPO=1` devolve o filtro de 24 h): o filtro de oferta clicável do departamento não expira mais por idade (`src/server/queries/departamento.ts`); o teto real passa a ser a janela pública de 7 dias de `publicOffersCtes`, que **não foi alterada** (base dos indicadores). Os cartões já mostram "verificado há X" (`VerificadoHa`). **Decisão aberta do dono:** estender também a janela pública de 7 dias exigiria mexer na base da média/selo/série; não foi feito.
 - **E4 (#145):** aviso "Em monitoramento" com `Diagnóstico` quando há histórico próprio (>= 3 dias) e `Situação: ... estamos monitorando` quando não há (`diagnosticoAchado`); aviso AC expira em 90 min (`GROUP_AC_TTL_MIN`) e toda expiração (aviso, retida 24 h, aprovada 12 h, demais 6 h) grava o motivo; dentro de cada rodada do rodízio a queda de preço sai antes do aviso; cupom sem validade da loja diz "a loja não informou". **Não alterado (decisão pendente):** o teto do aviso por hora (`GROUP_AC_POR_HORA`, 6) e o intervalo de 1 min entre mensagens limitam o "enviar todos".
-- **E5 (#146):** causa da Shopee fora de Games: `collect-shopee?v=` existia na rota mas não estava agendado; agendadas esporte, eletrodomésticos, tecnologia, eletroeletrônicos e impressão 3D (a cada 20 min, escalonadas). Coletor de verticais do ML: concorrência 3 -> 4 (`VERTICAL_CATALOG_CONCURRENCY`, 1..8); medir `checked` por execução depois.
+- **E5 (#146):** causa da Shopee fora de Games: `collect-shopee?v=` existia na rota mas não estava agendado; rodízio dentro do cron único `collect-shopee` (1 tick em 3 vai para esporte, eletrodomésticos, tecnologia, eletroeletrônicos e impressão 3D, uma por vez; `COLLECT_SHOPEE_FATIA_OUTRAS=0` desliga; crons paralelos foram descartados por disputarem a cota da API, erro 10030). Coletor de verticais do ML: concorrência 3 -> 4 (`VERTICAL_CATALOG_CONCURRENCY`, 1..8); medir `checked` por execução depois.
 - **E6 (#147/#140):** o job `refresh-price-daily` passa a partir do menor dia passado ainda aberto (`primeiroDiaATratar`; teto 14 dias), corrigindo a causa dos 768 dias abertos (backup das linhas em scratchpad/backups); vendedor fraco sincronizado também no `part=vitrines` (10 min); invariantes do veredito (#133, parte pura) em `scripts/test-veredito-invariantes-r86.ts`.
 

@@ -119,7 +119,7 @@ Especialista. Próximo. Didático. Confiável. Apaixonado por cultura geek. Nunc
 - Next.js 16.2.6 (App Router) 🟢. **Esta versão tem breaking changes**: consultar `node_modules/next/dist/docs/` antes de escrever rota (ver `AGENTS.md`). A auditoria de segurança indica atualização para 16.4.6 (fila #77).
 - TypeScript 🟢 (`tsc` com 0 erros, 31 s); Tailwind v4 🟢; Radix UI + class-variance-authority 🟢.
 - Supabase (Auth + Postgres, plano Micro, 60 conexões, PostgreSQL 17) 🟢; Drizzle ORM 🟢; RLS ligada em 102 de 102 tabelas, `anon` sem nenhum acesso 🟢.
-- Hospedagem Vercel; **24 crons** em `vercel.json` (coleta ML e Shopee a cada 5 min, 6 coletas por vertical a cada 15 min, mensagens a cada minuto, snapshots, cobertura Shopee, semeadura, aprovação automática, saúde) 🟢.
+- Hospedagem Vercel; **26 crons** em `vercel.json` (coleta ML e Shopee a cada 5 min, 6 coletas por vertical a cada 15 min, mensagens a cada minuto, snapshots, cobertura Shopee, semeadura, aprovação automática, saúde) 🟢.
 - RSC-first e Server Actions; páginas públicas dinâmicas com cache de vitrine em memória por instância (risco na Black Friday, fila #89) 🟡.
 - Organização por domínio (DDD-ish, `src/db/schema/*`; lógica pura em `src/lib`, I/O em `src/server`) 🟢.
 - Observabilidade: `collector_runs`, `collector-health` a cada 30 min, `/admin/fluxo`, `/api/health`. **Alertas em dry-run e sem sonda externa** (fila #70) 🟡.

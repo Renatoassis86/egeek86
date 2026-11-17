@@ -1,3 +1,4 @@
+import { verticalDoTick } from '@/lib/catalog/vertical/shopee-rodizio';
 import { NextResponse, type NextRequest } from 'next/server';
 import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 import { collectShopeePrices } from '@/server/collector/collect-shopee-prices';
@@ -14,7 +15,8 @@ export async function GET(request: NextRequest) {
 
   // Sem parâmetro = fila GAMER (comportamento de sempre). ?v=esporte = ofertas Shopee do esporte (descoberta de 2026-11-11), que o
   // collect-vertical (só Mercado Livre) não recoleta. Sem este tick as ofertas passam de 6 h e deixam de ser "clicáveis" na aprovação.
-  const v = request.nextUrl.searchParams.get('v');
+  // E5 (#146): sem ?v= o tick pode ser de uma vertical fora de Games (rodízio 1 em 3; ver shopee-rodizio.ts). ?v= explícito vence.
+  const v = request.nextUrl.searchParams.get('v') ?? verticalDoTick(new Date());
   if (v && !(isVertical(v) && v !== 'games')) return NextResponse.json({ error: 'vertical_invalida' }, { status: 400 });
   const summary = await collectShopeePrices({ budgetMs: 240_000, ...(v ? { vertical: v as Vertical } : {}) });
   // Observabilidade: o corpo da resposta do cron nao fica nos logs da Vercel; sem esta linha nao ha como saber
