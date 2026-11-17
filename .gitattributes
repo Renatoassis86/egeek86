@@ -1,0 +1,4 @@
+
+# Hooks de shell precisam de LF mesmo no Windows (autocrlf quebraria o sh)
+.githooks/* text eol=lf
+*.sh text eol=lf
