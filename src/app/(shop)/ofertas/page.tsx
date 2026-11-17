@@ -411,6 +411,10 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
         </div>
       ) : (
         <div className="flex min-w-0 flex-col gap-10">
+          <Link href="/jogos-switch-ate-200" className="flex items-center justify-between gap-3 border border-[var(--color-border-subtle)] px-4 py-3 text-[var(--color-text-primary)] hover:border-[var(--color-accent-primary)]">
+            <span className="font-semibold">Jogos de Nintendo Switch 1 e 2 até R$ 200</span>
+            <span className="text-sm text-[var(--color-text-secondary)]">Ver a lista</span>
+          </Link>
           {today.length > 0 && (
             <GroupedOfferShelf
               id="ofertas-do-dia"
