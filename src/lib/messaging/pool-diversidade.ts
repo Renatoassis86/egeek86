@@ -39,6 +39,13 @@ export function hash32(s: string): number {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 0x01000193) >>> 0;
   }
+  // 2026-11-17: mistura final (fmix32). FNV-1a sozinho correlacionava as ordens de chaves que diferem só nos últimos caracteres (hora:minuto), e o rodízio por minuto
+  // repetia quase os mesmos produtos (161 de 600 em 60 ciclos). Com a mistura, a união cobre ~570 de 600.
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b) >>> 0;
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35) >>> 0;
+  h ^= h >>> 16;
   return h >>> 0;
 }
 

@@ -488,7 +488,11 @@ export async function pickProductIds(o: Required<Pick<DetectOptions, 'maxAgeMin'
       cupomRows.length = 0; // erro de consulta na validacao: o pool segue sem cupom
     }
   }
-  return selecionarPool({ main, achado: achadoRows, hourKey, sends, achadoOn: !!o.achado, cupom: cupomRows }).slice(0, o.maxProducts);
+  // 2026-11-17 (dono: "como fazemos para os 6 mil serem integralmente considerados"): a semente do rodízio era a HORA, então os mesmos ~880 produtos eram avaliados
+  // a cada minuto durante 1 hora e 46% dos elegíveis nunca eram considerados em 7 dias. A semente passa a ser o MINUTO do ciclo (a leitura base segue em cache por hora):
+  // cada ciclo avalia outra fatia, e o conjunto inteiro é percorrido em poucos minutos. POOL_ROTACAO=hora volta ao comportamento anterior.
+  const rotKey = (process.env.POOL_ROTACAO ?? '').trim().toLowerCase() === 'hora' ? hourKey : o.now.toISOString().slice(0, 16);
+  return selecionarPool({ main, achado: achadoRows, hourKey: rotKey, sends, achadoOn: !!o.achado, cupom: cupomRows }).slice(0, o.maxProducts);
 }
 
 /** UMA leitura: a varredura 'live' (materializada) alimenta o pool principal, o Achado e o Cupom (antes eram 3 varreduras de 2 a 31 s cada). */
