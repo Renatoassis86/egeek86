@@ -12,6 +12,7 @@ import {
   type AmzCand, type MasterIdentity, type Verdict,
 } from '@/lib/affiliate/amazon-identity';
 import { posicaoPrioridade3d } from '@/lib/messaging/prioridade-3d';
+import { amazonVerticaisLiberadas } from '@/lib/messaging/confirmacao-preco';
 import { recordPriceSnapshot } from './record-price-snapshot';
 import { decidirPrecoAmazon } from './amazon-tipo-preco';
 import { enfileirarDuvidaAmazon } from './amazon-fila';
@@ -156,8 +157,44 @@ export const amazonDiscoverQueue = (offset: number, n: number, vertical?: Vertic
  * R-81 (dono, 2026-11-16): preço de Amazon só vale com leitura de até 45 min (confirmacao-preco). A cabeça prioritária (as impressoras do privado do dono)
  * ganha uma passada própria, curta, a cada ~20 min dentro do loop (modo 'cabeca'), sem esperar o ciclo de 2 h. No máximo 10 itens.
  */
+/**
+ * R-92 (dono, 2026-11-17): para a Amazon sair nas mensagens de uma vertical liberada, o preço precisa ter leitura de até 45 min (R-81). Só as impressoras 3D tinham passada
+ * rápida; aqui entram, nas verticais liberadas (AMAZON_MENSAGENS_VERTICAIS), os masters com oferta da Amazon MAIS BARATA que a menor das outras redes (maior chance de mensagem),
+ * pela maior diferença. Teto AMAZON_CABECA_LIBERADAS (padrão 25) por passada. Sem liberação = lista vazia (nada muda).
+ */
+export function cabecaLiberadasMax(env: Record<string, string | undefined> = process.env): number {
+  const raw = (env.AMAZON_CABECA_LIBERADAS ?? '').trim();
+  const n = Number(raw);
+  return raw !== '' && Number.isInteger(n) && n >= 0 && n <= 60 ? n : 25;
+}
+async function cabecaVerticaisLiberadas(): Promise<CabecaItem[]> {
+  const lib = [...amazonVerticaisLiberadas()].filter((v) => v !== 'impressao3d' && isVertical(v));
+  const max = cabecaLiberadasMax();
+  if (!lib.length || max === 0) return [];
+  const rows = await db.execute<QRow>(sql`
+    SELECT m.id::text AS id, m.name, m.vertical, m.game_platform_gen AS gen, m.gtin, m.mpn, m.manufacturer, b.name AS brand_name,
+           m.attributes->'vertical'->>'segment' AS segment, m.attributes->'vertical'->'catalogAttributes' AS cat
+    FROM master_products m LEFT JOIN brands b ON b.id = m.brand_id
+    JOIN LATERAL (SELECT min(o.current_price_cents) AS amz FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id
+                  WHERE o.master_product_id = m.id AND n.slug = 'amazon' AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0) a ON a.amz IS NOT NULL
+    JOIN LATERAL (SELECT min(o.current_price_cents) AS outra FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id
+                  WHERE o.master_product_id = m.id AND n.slug <> 'amazon' AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0) x ON x.outra IS NOT NULL
+    WHERE m.vertical IN (${sql.join(lib.map((v) => sql`${v}`), sql`, `)}) AND ${eligibleSql()} AND a.amz < x.outra
+    ORDER BY (x.outra - a.amz)::float / x.outra DESC, m.id
+    LIMIT ${max}`);
+  const out: CabecaItem[] = [];
+  for (const r of rows) {
+    const m = masterFromRow(r);
+    if (m) out.push({ id: String(r.id), q: buildQueryFor(m), pos: 100, nome: String(r.name) });
+  }
+  return out;
+}
+
 export async function amazonCabecaQueue(): Promise<{ total: number; items: AmzQueueItem[] }> {
-  const c = (await cabecaPrioritaria()).slice(0, 10).map(({ id, q }) => ({ id, q }));
+  const prio = (await cabecaPrioritaria()).slice(0, 10).map(({ id, q }) => ({ id, q }));
+  const vistos = new Set(prio.map((x) => x.id));
+  const lib = (await cabecaVerticaisLiberadas()).filter((x) => !vistos.has(x.id)).map(({ id, q }) => ({ id, q }));
+  const c = [...prio, ...lib];
   return { total: c.length, items: c };
 }
 
