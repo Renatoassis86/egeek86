@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fase 2 da metodologia (R-83/R-84, fila #136): barra commit que viola módulo CONGELADO. Rápido (segundos). O portão completo roda no pre-push e na Action.
+# Instalar uma vez por clone: git config core.hooksPath .githooks
+npm run congelado --silent || { echo "pre-commit: módulo congelado alterado sem descongelamento vigente (docs/validado/descongelar.json). Commit barrado."; exit 1; }

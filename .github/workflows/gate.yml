@@ -1,0 +1,27 @@
+name: gate
+# Fase 2 da metodologia (R-83/R-84, fila #136): o portão rápido roda em todo push e pull request. Sem secrets e sem banco:
+# o que toca o banco fica PULADO (portão completo é a rodada diária com .env.local). Vermelho aqui = não publicar.
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Guarda do congelado (contra o commit anterior)
+        run: npm run congelado -- --contra=origin/main
+        continue-on-error: ${{ github.event_name == 'push' }}
+      - name: Portão rápido
+        run: npm run gate

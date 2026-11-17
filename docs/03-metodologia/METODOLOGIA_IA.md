@@ -205,3 +205,10 @@ Fonte única em código: `src/lib/frescor/orcamento.ts` (etapa E2 da auditoria `
 | Estoque | **sem regra** | n/a | n/a |
 
 **Gatilhos de máquina da seção:** (1) o medidor de frescor roda no portão completo e na linha de base; (2) teste que falha se houver literal de idade de dado fora de `orcamento.ts`; (3) toda superfície nova (página, cartão, mensagem, API) importa o orçamento. Detalhe e plano por etapas: `docs/auditoria-tempo-real-2026-11-16.md`.
+
+## 18. Fase 2 implantada (2026-11-17, fila #136)
+- `.githooks/pre-commit`: barra commit que viola módulo congelado (`npm run congelado`). `.githooks/pre-push`: roda o portão (`npm run gate`) e barra o push se vermelho. **Instalar uma vez por clone:** `git config core.hooksPath .githooks`. Pular só em emergência, com autorização do dono (`--no-verify`), e registrar no Fluxo Mestre.
+- `.github/workflows/gate.yml`: o portão rápido e a guarda do congelado rodam em todo push na `main` e em todo pull request, sem secrets e sem banco (o que toca o banco fica PULADO; o portão completo segue como rodada diária).
+- **Não feito (por ser configuração do próprio Claude Code, do dono):** hooks `PreToolUse`/`Stop` em `settings.json`. A primeira onda de congelamento (7 módulos, #135) segue aguardando o portão completo verde.
+- Teste: `scripts/test-fase2-metodologia.ts`.
+

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Fase 2 da metodologia (R-83, fila #136): portão rápido (typecheck + testes puros + órfãos puros) antes de publicar. Vermelho = push barrado.
+# Pular só em emergência, com autorização do dono: git push --no-verify (e registrar no Fluxo Mestre).
+npm run gate || { echo "pre-push: portão vermelho. Corrija o teste que falhou (R-83) antes de publicar."; exit 1; }
