@@ -225,46 +225,56 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     if (mode === 'send' && gate.ok && state !== 'shadow') {
       const statuses = auto.ok ? (['aprovada', 'proposta_auto'] as const) : (['aprovada'] as const);
       if (v2) {
-        let pending = await listPendingForSend([...statuses], PENDING_LIMIT);
+        const pending0 = await listPendingForSend([...statuses], PENDING_LIMIT);
         let outcome: SendOutcome | { outcome: string; reason?: string } = { outcome: 'nada na fila para enviar' };
-        let history = detection.history;
         const sentBy: Record<string, number> = {};
         let cupomSent = 0;
         let expiredCount = 0;
-        let guard = 0;
+        let restante = 0;
         // Prazo do envio: o orçamento de 38 s do ciclo, mas nunca menos que SEND_MIN_WINDOW_MS a partir de agora (a detecção lenta não pode zerar o envio) e nunca além do teto do ciclo.
         const sendDeadline = Math.min(started.getTime() + CYCLE_HARD_CAP_MS, Math.max(started.getTime() + SEND_BUDGET_MS, Date.now() + SEND_MIN_WINDOW_MS));
-        // Esvazia a fila acumulada dentro do orçamento de tempo (sem teto diário; o freio é o espaçamento por chat e o 429).
-        // Cada volta envia UMA linha e relê o histórico (a recém-enviada passa a contar para o espaçamento do chat e o dedup).
-        while (pending.length && guard++ < MAX_SENDS_PER_RUN && Date.now() < sendDeadline) {
-          const cands: Candidate[] = pending.map((r) => ({ ...r.candidate, status: 'auto', held: false, sendable: true }));
-          const plan = applyLimits(cands, history, new Date(Math.max(now.getTime(), Date.now())));
-          if (!plan.next) {
-            // Espaçamento por chat: se só falta esperar poucos segundos, espera dentro do orçamento em vez de perder a vez.
-            const wait = plan.deferred.some((d) => d.reason.startsWith('intervalo_chat_')) && !plan.deferred.some((d) => !d.reason.startsWith('intervalo_chat_') && !d.reason.startsWith('produto_ja_enviado') && !d.reason.startsWith('mesmo_produto'));
-            if (wait && Date.now() + 3_500 < sendDeadline) {
-              await new Promise((r) => setTimeout(r, 3_100));
-              history = (await loadSentHistory('tg', new Date())).records;
-              continue;
+        // 2026-11-17 (dono: "precisamos ser mais rapidos ... nao perdermos produtos"): cada canal tem o proprio espacamento, entao as filas de cada loja drenam EM PARALELO
+        // (antes uma fila unica: cada envio levava ~10 s de revalidacao e render, 2 a 5 por ciclo para 7 canais). O espacamento por chat e o 429 continuam valendo dentro de cada fila.
+        const porLoja = new Map<string, typeof pending0>();
+        for (const r of pending0) { const k = String(r.candidate.vertical); (porLoja.get(k) ?? porLoja.set(k, []).get(k)!).push(r); }
+        const drenar = async (inicial: typeof pending0) => {
+          let pending = inicial;
+          let history = detection.history;
+          let guard = 0;
+          // Esvazia a fila da loja dentro do orcamento de tempo (sem teto diario; o freio e o espacamento por chat e o 429).
+          // Cada volta envia UMA linha e relê o historico (a recem-enviada passa a contar para o espacamento do chat e o dedup).
+          while (pending.length && guard++ < MAX_SENDS_PER_RUN && Date.now() < sendDeadline) {
+            const cands: Candidate[] = pending.map((r) => ({ ...r.candidate, status: 'auto', held: false, sendable: true }));
+            const plan = applyLimits(cands, history, new Date(Math.max(now.getTime(), Date.now())));
+            if (!plan.next) {
+              // Espaçamento por chat: se só falta esperar poucos segundos, espera dentro do orçamento em vez de perder a vez.
+              const wait = plan.deferred.some((d) => d.reason.startsWith('intervalo_chat_')) && !plan.deferred.some((d) => !d.reason.startsWith('intervalo_chat_') && !d.reason.startsWith('produto_ja_enviado') && !d.reason.startsWith('mesmo_produto'));
+              if (wait && Date.now() + 3_500 < sendDeadline) {
+                await new Promise((r) => setTimeout(r, 3_100));
+                history = (await loadSentHistory('tg', new Date())).records;
+                continue;
+              }
+              outcome = { outcome: 'adiada', reason: plan.deferred[0]?.reason ?? 'limite' };
+              break;
             }
-            outcome = { outcome: 'adiada', reason: plan.deferred[0]?.reason ?? 'limite' };
-            break;
+            const row = pending.find((r) => r.messageKey === plan.next?.messageKey);
+            if (!row) break;
+            const r = await sendQueuedTelegram(row.id, { now: new Date(), fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup, onCouponSent: deps.onCouponSent });
+            outcome = r;
+            pending = pending.filter((x) => x.id !== row.id);
+            if (r.outcome === 'sent') {
+              sentCount++;
+              if (row.candidate.trigger === 'CUPOM') cupomSent++;
+              sentBy[row.candidate.vertical] = (sentBy[row.candidate.vertical] ?? 0) + 1;
+              history = (await loadSentHistory('tg', new Date())).records;
+            } else if (r.outcome === 'expired') expiredCount++;
+            else if (r.outcome === 'deferred') continue; // a linha foi devolvida à fila; tenta a próxima do plano
+            else break; // blocked / failed (inclui 429 longo): para; a linha volta à fila para o próximo ciclo
           }
-          const row = pending.find((r) => r.messageKey === plan.next?.messageKey);
-          if (!row) break;
-          const r = await sendQueuedTelegram(row.id, { now: new Date(), fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup, onCouponSent: deps.onCouponSent });
-          outcome = r;
-          pending = pending.filter((x) => x.id !== row.id);
-          if (r.outcome === 'sent') {
-            sentCount++;
-            if (row.candidate.trigger === 'CUPOM') cupomSent++;
-            sentBy[row.candidate.vertical] = (sentBy[row.candidate.vertical] ?? 0) + 1;
-            history = (await loadSentHistory('tg', new Date())).records;
-          } else if (r.outcome === 'expired') expiredCount++;
-          else if (r.outcome === 'deferred') continue; // a linha foi devolvida à fila; tenta a próxima do plano
-          else break; // blocked / failed (inclui 429 longo): para; a linha volta à fila para o próximo ciclo
-        }
-        summary.sendRun = { sent: sentCount, cupomSent, expired: expiredCount, byStore: sentBy, remainingInQueue: pending.length, ms: Date.now() - started.getTime() };
+          restante += pending.length;
+        };
+        await Promise.all([...porLoja.values()].map((f) => drenar(f)));
+        summary.sendRun = { sent: sentCount, cupomSent, expired: expiredCount, byStore: sentBy, remainingInQueue: restante, ms: Date.now() - started.getTime() };
         summary.send = outcome;
       } else {
         const next = await db
