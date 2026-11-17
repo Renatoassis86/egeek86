@@ -243,9 +243,9 @@ const soD1Cheio = applyLimits([mkCand('d1b', 1)], [enviado(10, 1), enviado(20, 2
 eq('terco so vale com oferta mais forte esperando: so degrau 1 na fila sai mesmo acima de 1/3', soD1Cheio.next?.messageKey, 'g2-261112-d1b');
 const d1ComForte = applyLimits([mkCand('d1c', 1), mkCand('d2c', 2)], [enviado(10, 1), enviado(20, 2), enviado(30, 3)], HOJE);
 eq('com degrau 2 esperando, o degrau 1 acima de 1/3 espera e o 2 sai', [d1ComForte.next?.messageKey, d1ComForte.deferred.some((d) => d.messageKey === 'g2-261112-d1c' && d.reason.startsWith('regua_degrau1'))], ['g2-261112-d2c', true]);
-eq('Achado por hora: padrao 6', achadoPorHora({}), 6);
+eq('Achado por hora: padrao 50 (D2, 2026-11-17)', achadoPorHora({}), 50);
 eq('Achado por hora configuravel', achadoPorHora({ GROUP_AC_POR_HORA: '10' }), 10);
-eq('Achado por hora invalido = 6', achadoPorHora({ GROUP_AC_POR_HORA: 'x' }), 6);
+eq('Achado por hora invalido = 50', achadoPorHora({ GROUP_AC_POR_HORA: 'x' }), 50);
 const acTxt = formatAchadoMessage({ model: 'achado', name: 'Panela X', offer: { slug: 'panela-x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 19900, confirmedAt: HOJE }, offersCount: 8, isLowest: true, novo: true, vertical: 'eletrodomesticos', messageKey: 'ac-261112-abc123', adTag: '#publicidade' } as never, 'tg');
 yes('Achado: "Novo no monitoramento", sem comparacao, sem %', /Novo no monitoramento/.test(acTxt) && !/%|abaixo|média|menor preço/i.test(acTxt));
 eq('Achado: sem termo banido', textProblems(acTxt, 'tg'), []);

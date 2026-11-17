@@ -2103,10 +2103,10 @@ function storeLast24h(history: SentRecord[], vertical: string, now: Date): SentR
  * Cota do ACHADO por loja: no maximo 2 por hora e, em 24 h, max(3, 25% das mensagens da loja) (achados <= nao-achados / 3).
  * null = pode enviar.
  */
-/** Teto de Achados por hora e por grupo: GROUP_AC_POR_HORA (inteiro 1 a 60), padrão 6 (era 2). */
+/** Teto de Achados por hora e por grupo: GROUP_AC_POR_HORA (inteiro 1 a 60), padrão 50 (dono, 2026-11-17, D2: era 6; antes 2). */
 export function achadoPorHora(env: Record<string, string | undefined> = process.env): number {
   const n = Number(env.GROUP_AC_POR_HORA);
-  return Number.isInteger(n) && n >= 1 && n <= 60 ? n : 6;
+  return Number.isInteger(n) && n >= 1 && n <= 60 ? n : 50;
 }
 
 export function achadoQuotaBlock(vertical: string, history: SentRecord[], now: Date): string | null {

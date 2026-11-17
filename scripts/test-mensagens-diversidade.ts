@@ -189,7 +189,7 @@ ok(achadoQuotaBlock('eletroeletronicos', [acRec(100), acRec(200), acRec(300)], N
 ok(achadoQuotaBlock('eletroeletronicos', [acRec(100), acRec(200)], NOW) == null, 'cota do Achado: o 3o do dia libera');
 ok(achadoQuotaBlock('eletroeletronicos', [acRec(100), acRec(200), acRec(300), ...others(9)], NOW) == null, 'cota do Achado: 3 achados com 9 outras seguem livres (teto e por hora)');
 ok(achadoQuotaBlock('eletroeletronicos', [acRec(100), acRec(200), acRec(300), ...others(12)], NOW) == null, 'cota do Achado: 12 outras => ate 4 achados (25%)');
-ok(achadoQuotaBlock('eletroeletronicos', [acRec(10), acRec(15), acRec(20), acRec(25), acRec(30), acRec(35), ...others(30)], NOW)?.startsWith('achado_maximo_6_por_hora') === true, 'cota do Achado: 6 por hora (GROUP_AC_POR_HORA, padrao)');
+ok(achadoQuotaBlock('eletroeletronicos', [acRec(10), acRec(15), acRec(20), acRec(25), acRec(30), acRec(35), ...others(30)], NOW) == null, 'cota do Achado: 6 achados na hora NAO bloqueiam com o padrao de 50 (D2)');
 ok(achadoQuotaBlock('eletroeletronicos', [acRec(10), acRec(40), ...others(30)], NOW) == null, 'cota do Achado: 2 na hora ja nao bloqueiam');
 ok(achadoQuotaBlock('livros', [acRec(100), acRec(200), acRec(300)], NOW) == null, 'cota do Achado: uma loja nao consome a cota da outra');
 
