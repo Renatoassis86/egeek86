@@ -19,7 +19,9 @@ import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+// 2026-11-17: 60 -> 120 s. O ciclo já rodava 43 a 48 s e, com a carga do dia, passou de 60 s: a função era morta antes de gravar a execução e o envio parou por ~70 min
+// (últimas mensagens 20:11 UTC). O orçamento interno do envio (SEND_BUDGET_MS) e o da integridade (50 s) NÃO mudaram; isto só tira o corte seco do Vercel.
+export const maxDuration = 120;
 
 /**
  * Cron das mensagens para grupos. NÃO está no vercel.json (o dono agenda; sugestão a cada 5 minutos).
