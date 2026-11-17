@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono, Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import { cookies, headers } from 'next/headers';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { Toaster } from '@/components/ui/toast';
@@ -10,25 +10,39 @@ import './globals.css';
 // Fonts — self-hosted via next/font (zero CLS).
 // As CSS vars são consumidas em @theme do globals.css.
 // ============================================================
-const geistSans = Geist({
+// 2026-11-17: fontes embutidas no projeto (src/app/fonts, subconjunto latin, licença SIL OFL). O build não consulta mais o Google Fonts: o erro
+// intermitente "next/font/google queries have exactly one entry" derrubava deploys (commits f36865e e 135766f) e exigia reimplantar na mão.
+const geistSans = localFont({
   variable: '--font-sans-display',
-  subsets: ['latin'],
   display: 'swap',
-  weight: ['400', '500', '600', '700', '800'],
+  src: [
+    { path: './fonts/geist-sans-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/geist-sans-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/geist-sans-latin-600-normal.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/geist-sans-latin-700-normal.woff2', weight: '700', style: 'normal' },
+    { path: './fonts/geist-sans-latin-800-normal.woff2', weight: '800', style: 'normal' },
+  ],
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
   variable: '--font-sans-mono',
-  subsets: ['latin'],
   display: 'swap',
-  weight: ['400', '500', '600'],
+  src: [
+    { path: './fonts/geist-mono-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/geist-mono-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/geist-mono-latin-600-normal.woff2', weight: '600', style: 'normal' },
+  ],
 });
 
-const inter = Inter({
+const inter = localFont({
   variable: '--font-sans-body',
-  subsets: ['latin'],
   display: 'swap',
-  weight: ['400', '500', '600', '700'],
+  src: [
+    { path: './fonts/inter-latin-400-normal.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/inter-latin-500-normal.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/inter-latin-600-normal.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/inter-latin-700-normal.woff2', weight: '700', style: 'normal' },
+  ],
 });
 
 // ============================================================
