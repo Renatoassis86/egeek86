@@ -17,18 +17,22 @@ export interface PoolRow {
   grupo?: string;
 }
 
-/** Cotas do pool (ata 2026-11-12). Games não muda (220). */
+/**
+ * Cotas do pool, IGUAIS para toda loja (dono, 2026-11-17: "todas tem o mesmo poder de enviar"; "exatamente o mesmo fluxo para todos os canais existentes e os que vamos criar").
+ * Loja nova herda estas cotas sem código: a seleção itera sobre as verticais que aparecem nos dados.
+ * Cada loja: POR_LOJA produtos principais = até EVENTOS_MAX de eventos/movimento (r = 1) + prioridade (menor razão primeiro, rodízio de tipo) + ROTACAO_PCT de rotação pura
+ * (ignora a razão: percorre o conjunto inteiro, para ninguém ficar fora do ciclo), mais ACHADO_POR_LOJA para o aviso de monitoramento e CUPOM_POR_LOJA.
+ */
+const envInt = (k: string, d: number) => { const n = Number(process.env[k]); return Number.isInteger(n) && n > 0 && n <= 1000 ? n : d; };
 export const POOL = {
-  GAMES: 220,
-  /** Antes 60. Por loja Plus, selecionadas por rodízio de tipo. */
-  PLUS_MAIN: 75,
-  /** Dos PLUS_MAIN, até isto vem direto de eventos/movimento (r = 1) para não perder queda real de preço. */
-  PLUS_EVENTS_MAX: 30,
-  /** Produtos extras por loja Plus para o gatilho ACHADO (1 vendedor / sem média). */
-  PLUS_ACHADO: 30,
-  /** Produtos extras de GAMES sem media calculada (Achado), por rodizio de plataforma. */
-  GAMES_ACHADO: 40,
-  /** Produtos com cupom valido na agulha, por loja (games e Plus). Entram ANTES dos demais, por rodizio de tipo; o excedente cai na fila normal. */
+  POR_LOJA: envInt('POOL_POR_LOJA', 150),
+  /** Dos POR_LOJA, até isto vem direto de eventos/movimento (r = 1) para não perder queda real de preço. */
+  EVENTOS_MAX: 30,
+  /** Parte do POR_LOJA reservada à rotação pura (percentual). */
+  ROTACAO_PCT: 35,
+  /** Produtos extras por loja para o aviso de monitoramento (ACHADO). */
+  ACHADO_POR_LOJA: envInt('POOL_ACHADO_POR_LOJA', 40),
+  /** Produtos com cupom valido na agulha, por loja. Entram ANTES dos demais, por rodizio de tipo; o excedente cai na fila normal. */
   CUPOM_POR_LOJA: 40,
 } as const;
 
@@ -95,35 +99,43 @@ export interface PoolInput {
   cupom?: readonly PoolRow[];
 }
 
-/** Seleção final, sem duplicata: games por razão e hash; lojas Plus por eventos + rodízio de tipo; ACHADO por rodízio de tipo. */
+/**
+ * Seleção final, sem duplicata, IGUAL para toda loja. Por loja: cupom, eventos, prioridade com rodízio de tipo, rotação pura e achado. As listas das lojas são
+ * intercaladas uma a uma (ordem das lojas sorteada pelo ciclo), então qualquer corte posterior no total tira o mesmo de cada loja: nenhuma depende da outra.
+ */
 export function selecionarPool(inp: PoolInput): string[] {
-  const out: string[] = [];
+  const porLoja = new Map<string, string[]>();
   const seen = new Set<string>();
-  const add = (rows: readonly PoolRow[]) => {
-    for (const r of rows) if (!seen.has(r.mid)) (seen.add(r.mid), out.push(r.mid));
+  const lista = (v: string) => porLoja.get(v) ?? porLoja.set(v, []).get(v)!;
+  const add = (v: string, rows: readonly PoolRow[]) => {
+    for (const r of rows) if (!seen.has(r.mid)) (seen.add(r.mid), lista(v).push(r.mid));
   };
-  // Cupom primeiro: o agente de cupons deve sempre ter um cupom testado na fila. Cota por loja, rodizio de tipo (a diversidade vale tambem aqui).
-  const cupomByV = new Map<string, PoolRow[]>();
-  for (const r of inp.cupom ?? []) (cupomByV.get(r.v) ?? cupomByV.set(r.v, []).get(r.v)!).push(r);
-  for (const rows of cupomByV.values()) add(rodizioPorTipo(rows, inp.hourKey, inp.sends, POOL.CUPOM_POR_LOJA));
-  const byV = new Map<string, PoolRow[]>();
-  for (const r of inp.main) (byV.get(r.v) ?? byV.set(r.v, []).get(r.v)!).push(r);
-
-  const games = (byV.get('games') ?? []).slice().sort((a, b) => a.r - b.r || hash32(a.mid + inp.hourKey) - hash32(b.mid + inp.hourKey) || a.mid.localeCompare(b.mid));
-  add(games.slice(0, POOL.GAMES));
-
-  for (const [v, rows] of byV) {
-    if (v === 'games') continue;
-    const events = rodizioPorTipo(rows.filter((r) => r.r <= 1), inp.hourKey, inp.sends, POOL.PLUS_EVENTS_MAX);
+  const by = (src: readonly PoolRow[]) => {
+    const m = new Map<string, PoolRow[]>();
+    for (const r of src) (m.get(r.v) ?? m.set(r.v, []).get(r.v)!).push(r);
+    return m;
+  };
+  // Cupom primeiro: o agente de cupons deve sempre ter um cupom testado na fila.
+  for (const [v, rows] of by(inp.cupom ?? [])) add(v, rodizioPorTipo(rows, inp.hourKey, inp.sends, POOL.CUPOM_POR_LOJA));
+  const rotQuota = Math.floor((POOL.POR_LOJA * POOL.ROTACAO_PCT) / 100);
+  for (const [v, rows] of by(inp.main)) {
+    const events = rodizioPorTipo(rows.filter((r) => r.r <= 1), inp.hourKey, inp.sends, POOL.EVENTOS_MAX);
+    add(v, events);
     const taken = new Set(events.map((r) => r.mid));
-    const rest = rodizioPorTipo(rows.filter((r) => !taken.has(r.mid)), inp.hourKey, inp.sends, POOL.PLUS_MAIN - events.length);
-    add(events);
-    add(rest);
+    const resto = rows.filter((r) => !taken.has(r.mid));
+    add(v, rodizioPorTipo(resto, inp.hourKey, inp.sends, POOL.POR_LOJA - events.length - rotQuota));
+    // Rotação pura: a razão não conta; só o rodízio de tipo e o hash do ciclo. Percorre o conjunto inteiro em poucos ciclos.
+    add(v, rodizioPorTipo(resto.map((r) => ({ ...r, r: 0 })).filter((r) => !seen.has(r.mid)), inp.hourKey + '#rot', inp.sends, rotQuota));
   }
   if (inp.achadoOn) {
-    const byA = new Map<string, PoolRow[]>();
-    for (const r of inp.achado) if (!seen.has(r.mid)) (byA.get(r.v) ?? byA.set(r.v, []).get(r.v)!).push(r);
-    for (const rows of byA.values()) add(rodizioPorTipo(rows, inp.hourKey, inp.sends, rows[0]?.v === 'games' ? POOL.GAMES_ACHADO : POOL.PLUS_ACHADO, { skipOutros: true }));
+    for (const [v, rows] of by(inp.achado)) add(v, rodizioPorTipo(rows.filter((r) => !seen.has(r.mid)), inp.hourKey, inp.sends, POOL.ACHADO_POR_LOJA, { skipOutros: true }));
+  }
+  const ordem = [...porLoja.keys()].sort((a, b) => hash32(a + inp.hourKey) - hash32(b + inp.hourKey) || a.localeCompare(b));
+  const out: string[] = [];
+  for (let i = 0; ; i++) {
+    let took = false;
+    for (const v of ordem) { const l = porLoja.get(v)!; if (i < l.length) { out.push(l[i]); took = true; } }
+    if (!took) break;
   }
   return out;
 }

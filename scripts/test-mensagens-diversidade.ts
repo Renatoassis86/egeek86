@@ -88,9 +88,9 @@ for (const ch of ['telegram', 'whatsapp'] as const) {
   ok(!/%|abaixo|m[eé]dia|desconto|afiliad|menor pre[cç]o/i.test(t.replace(/https?:\/\/\S+/g, '')), `Achado games (${ch}): sem comparacao nem alegacao`, t);
 }
 r = evaluateProductV2(gm({ semMedia: false }), ctx);
-ok(!ac(r) && !acBlocked(r), 'Achado games: com media calculada NAO vale (regra geral de 10% continua)');
+ok(!!ac(r) || !!acBlocked(r), 'Achado games: com media calculada tambem e avaliado (mesma regra de todas as lojas, 2026-11-17)');
 r = evaluateProductV2(gm({ semMedia: undefined }), ctx);
-ok(!ac(r), 'Achado games: sem o fato semMedia nao vale (conservador)');
+ok(!!ac(r) || !!acBlocked(r), 'Achado games: avaliado independente do fato semMedia (igual as demais lojas)');
 r = evaluateProductV2(gm({ offers: [offer({ offerId: 'a', priceCents: 6000, title: 'Jogo Mario Kart 8 Deluxe Switch' })] }), ctx);
 ok(!ac(r) && /preco_abaixo_de_025x_a_mediana_da_plataforma/.test((acBlocked(r)?.reasons ?? []).join('+')), 'Achado games: preco < 0,25x a mediana da plataforma bloqueia');
 r = evaluateProductV2(gm({ offers: [offer({ offerId: 'a', priceCents: 100001, title: 'Jogo Mario Kart 8 Deluxe Switch' })] }), ctx);
@@ -245,14 +245,14 @@ const airfryers = Array.from({ length: 200 }, (_, i) => row(i, 'eletrodomesticos
 const geladeiras = Array.from({ length: 6 }, (_, i) => row(i, 'eletrodomesticos', `Geladeira Frost Free ${i} 400 litros`));
 const fogoes = Array.from({ length: 4 }, (_, i) => row(i, 'eletrodomesticos', `Fogao 5 bocas ${i}`));
 const main = [...airfryers, ...geladeiras, ...fogoes];
-const sel = rodizioPorTipo(main, '2026-11-12T15', {}, POOL.PLUS_MAIN);
-ok(sel.length === POOL.PLUS_MAIN, `pool: rodizio devolve exatamente ${POOL.PLUS_MAIN}`, sel.length);
+const sel = rodizioPorTipo(main, '2026-11-12T15', {}, POOL.POR_LOJA);
+ok(sel.length === POOL.POR_LOJA, `pool: rodizio devolve exatamente ${POOL.POR_LOJA}`, sel.length);
 ok(sel.filter((x) => /Geladeira/.test(x.name)).length === 6 && sel.filter((x) => /Fogao/.test(x.name)).length === 4, 'pool: tipos pequenos entram inteiros (geladeira 6, fogao 4) e nao sao engolidos pelas 200 air fryers');
-ok(sel.filter((x) => /Air Fryer/.test(x.name)).length === POOL.PLUS_MAIN - 10, 'pool: o tipo grande preenche so o resto');
+ok(sel.filter((x) => /Air Fryer/.test(x.name)).length === POOL.POR_LOJA - 10, 'pool: o tipo grande preenche so o resto');
 ok(new Set(sel.map((x) => x.mid)).size === sel.length, 'pool: sem duplicata');
-const sel2 = rodizioPorTipo([...main].reverse(), '2026-11-12T15', {}, POOL.PLUS_MAIN);
+const sel2 = rodizioPorTipo([...main].reverse(), '2026-11-12T15', {}, POOL.POR_LOJA);
 ok(JSON.stringify(sel.map((x) => x.mid)) === JSON.stringify(sel2.map((x) => x.mid)), 'pool: determinista (a ordem de entrada nao importa)');
-const sel3 = rodizioPorTipo(main, '2026-11-12T16', {}, POOL.PLUS_MAIN);
+const sel3 = rodizioPorTipo(main, '2026-11-12T16', {}, POOL.POR_LOJA);
 ok(JSON.stringify(sel.map((x) => x.mid)) !== JSON.stringify(sel3.map((x) => x.mid)), 'pool: o rodizio muda a cada hora (nao premia sempre os mesmos)');
 const first = rodizioPorTipo(main, 'h', { 'eletrodomesticos|air-fryer': 11, 'eletrodomesticos|geladeira-freezer': 1, 'eletrodomesticos|fogao-cooktop': 0 }, 1);
 ok(/Fogao/.test(first[0].name), 'pool: com limite 1 abre o tipo MENOS enviado em 24 h (fogao 0 < geladeira 1 < air fryer 11)', first[0]?.name);
@@ -261,11 +261,16 @@ const full = selecionarPool({
   achado: [row(1, 'eletroeletronicos', 'Smart TV LG 43 4K'), row(2, 'eletroeletronicos', 'Produto Qualquer Estranho'), ...Array.from({ length: 80 }, (_, i) => row(i, 'eletroeletronicos', `Soundbar Modelo ${i}`))],
   hourKey: '2026-11-12T15', sends: {}, achadoOn: true,
 });
-ok(full.filter((id) => id.startsWith('m-games')).length === POOL.GAMES, 'pool: games segue com 220');
+ok(full.filter((id) => id.startsWith('m-games')).length === POOL.POR_LOJA, 'pool: games tem a MESMA cota de toda loja (dono 2026-11-17)', full.filter((id) => id.startsWith('m-games')).length);
+ok(full.filter((id) => id.startsWith('m-eletrodomesticos')).length === POOL.POR_LOJA, 'pool: eletrodomesticos tem a mesma cota que games');
+// Igualdade e independencia: corte do total tira o mesmo de cada loja (intercalado)
+const corte = full.slice(0, 120);
+const nG = corte.filter((id) => id.startsWith('m-games')).length, nE = corte.filter((id) => id.startsWith('m-eletrodomesticos')).length;
+ok(Math.abs(nG - nE) <= 1 && nG >= 30, 'pool: corte do total e simetrico entre lojas (nenhuma depende da outra)', [nG, nE]);
 ok(full.includes('m-eletroeletronicos-Smar-1') && full.includes('m-eletroeletronicos-Smar-1'.replace('Smar-1', 'Smar-1')), 'pool: evento de queda real (r=1) sempre entra');
 ok(new Set(full).size === full.length, 'pool final: sem duplicata');
 const achadoIds = full.filter((id) => /m-eletroeletronicos/.test(id));
-ok(achadoIds.length <= POOL.PLUS_ACHADO + 1, `pool: no maximo ${POOL.PLUS_ACHADO} extras de Achado por loja (+ o evento)`, achadoIds.length);
+ok(achadoIds.length <= POOL.ACHADO_POR_LOJA + 1, `pool: no maximo ${POOL.ACHADO_POR_LOJA} extras de Achado por loja (+ o evento)`, achadoIds.length);
 ok(!achadoIds.some((id) => /Prod/.test(id)), 'pool: tipo "outros" nao entra no grupo Achado (nao classificavel)');
 ok(achadoIds.some((id) => /Smar/.test(id)), 'pool: a Smart TV de 1 vendedor entra no grupo Achado (antes nunca entrava)');
 const off = selecionarPool({ main, achado: [row(1, 'eletroeletronicos', 'Smart TV LG 43 4K')], hourKey: 'h', sends: {}, achadoOn: false });

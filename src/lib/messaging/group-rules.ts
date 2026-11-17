@@ -1538,7 +1538,7 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
   // Preco atual CONFIRMADO de produto que nao gerou mensagem de preco (1 vendedor, sem media, sem movimento). NUNCA compara com media nem
   // alega desconto. Exige: oferta valida (link oficial, frescor, identidade, reputacao), preco dentro da faixa do TIPO (amostra >= 5 masters),
   // coerente com o historico proprio (quando ha >= 3 dias) e plausivel contra as ofertas. Loja que nao e games, ML/Shopee (Amazon fora).
-  if (ctx.achado && (p.vertical !== 'games' || p.semMedia === true) && released && !candidates.slice(beforeMain).some((c) => c.sendable)) {
+  if (ctx.achado && released && !candidates.slice(beforeMain).some((c) => c.sendable)) {
     const acStop = (reasons: string[]) => blocked.push({ masterProductId: p.masterProductId, name: nm, trigger: 'AC', reasons: ['achado', ...reasons] });
     const OK_BLOCK = (r: string) => r === 'link_pendente' || r.startsWith('vendedor_reputacao_') || r === 'preco_nao_reconfirmado_em_15min';
     // Ofertas VIVAS e reais (podem nao ter link): servem para dizer se a citada e a menor e para o teto de 3% acima da mais barata.

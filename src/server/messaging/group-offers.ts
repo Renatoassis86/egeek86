@@ -564,7 +564,7 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
         INNER JOIN (SELECT DISTINCT mid, v FROM live) lv ON lv.mid = u.mid
       ) q
       INNER JOIN master_products mp ON mp.id = q.mid
-      WHERE q.rn <= (CASE WHEN q.v = 'games' THEN ${POOL.GAMES}::int ELSE 400 END)
+      WHERE q.rn <= 400
     )`;
     const parts: SQL[] = [sql`SELECT 'main'::text AS k, mid::text AS mid, v::text AS v, r::int AS r, name::text AS name, NULL::text AS plat, NULL::text AS oid, ord::int AS ord FROM mainq`];
     const ctes: SQL[] = [liveCte, mainCte];
@@ -586,10 +586,7 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
       SELECT DISTINCT l.mid, l.v, mp.name, mp.game_platform_gen AS plat FROM live l INNER JOIN master_products mp ON mp.id = l.mid
       INNER JOIN affiliate_networks ln ON ln.id = l.network_id
       LEFT JOIN livecnt lc ON lc.mid = l.mid
-      WHERE (l.v <> 'games' OR (
-          COALESCE(lc.n_nonamz, 0) < ${RULES.MED_MIN_OFFERS}::int
-          OR NOT EXISTS (SELECT 1 FROM price_daily_state s WHERE s.master_product_id = l.mid AND s.day >= ${addDays(today, -3)}::date AND s.avg_cents IS NOT NULL)
-        ))
+      WHERE true
         AND ln.slug <> 'amazon' ${o.hasTable ? sql`AND NOT EXISTS (
         SELECT 1 FROM group_messages g WHERE g.master_product_id = l.mid AND g.channel = 'tg' AND g.status IN ('enviada', 'enviando') AND g.sent_at >= now() - (CASE l.v WHEN 'impressao3d' THEN ${janelaAc3d}::int ELSE ${janelaAcPadrao}::int END) * interval '1 hour'
       )` : sql``}
@@ -977,7 +974,7 @@ export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<D
   const tPick0 = Date.now();
   const ids = opts.productIds?.length
     ? opts.productIds
-    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 800, achado, cupom, cupomStats, cupomMemo });
+    : await pickProductIds({ verticals, now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, maxProducts: opts.maxProducts ?? 1300, achado, cupom, cupomStats, cupomMemo });
   const tPick = Date.now() - tPick0;
   const tFacts0 = Date.now();
   const facts = await loadFacts(ids, { now, maxAgeMin, amazonMaxAgeMin, eventWindowHours, liveVerified: new Set(opts.liveVerifiedOfferIds ?? []), amazonMode, cupom, cupomMemo });
