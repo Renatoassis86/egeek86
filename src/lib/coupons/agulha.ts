@@ -11,13 +11,15 @@
 // para 6 h publica cupom morto em cerca de 1 de cada 3 mensagens. A alavanca de cobertura é LER MAIS (fila priorizada), não aceitar
 // leitura velha. Por isso a janela de mensagem continua 120 min e a releitura-alvo das ofertas que importam é 45 min.
 
+import { ORCAMENTO } from '../frescor/orcamento';
+
 export const AGULHA = {
   /** Preço-com-cupom lido na página do anúncio. */
-  ITEM_FRESH_MIN: 120,
+  ITEM_FRESH_MIN: ORCAMENTO.cupomItemMin,
   /** Cupom de lista (loja/vendedor/categoria) conferido na lista de cupons. */
-  LIST_FRESH_MIN: 120,
+  LIST_FRESH_MIN: ORCAMENTO.cupomListaMin,
   /** Código de campanha digitado pelo dono (confirmação humana vale mais). */
-  CAMPANHA_FRESH_MIN: 24 * 60,
+  CAMPANHA_FRESH_MIN: ORCAMENTO.cupomCampanhaMin,
   /** Meta de releitura das ofertas que importam (anunciadas, na fila, com cupom): deixa >= 75 min de folga na janela de 120. */
   REREAD_TARGET_MIN: 45,
   /** Releitura das demais ofertas elegíveis. */

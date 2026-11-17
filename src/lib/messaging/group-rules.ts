@@ -1,6 +1,7 @@
 // Regras dos gatilhos e limites anti-spam das mensagens para grupos (ata 2026-11-10). PURO: recebe fatos, devolve decisões.
 // Nada aqui lê banco, relógio ou env: o chamador passa `now` e os fatos medidos.
 
+import { ORCAMENTO } from '../frescor/orcamento';
 import { ehBambuLab3d, ehPrioridade3d, posicaoPrioridade3d, prioridade3dLigada, REFORCO_BAMBU, reforcoBambuLigado } from './prioridade-3d';
 import {
   buildGoLink,
@@ -135,8 +136,9 @@ export const RULES = {
   T2_NEAR_PCT: 4,
 
   // ---- Amazon (decisão do dono A, por conta e risco dele; ata §5b) ----
-  AMAZON_DETECT_MAX_AGE_MIN: 60,
-  AMAZON_SEND_MAX_AGE_MIN: 40,
+  /** E2 (#143): detecção e envio da Amazon leem o ORÇAMENTO único (AMAZON_FRESCOR_MIN, padrão 45); antes 60 e 40 em literais. */
+  AMAZON_DETECT_MAX_AGE_MIN: ORCAMENTO.amazonDizerMin,
+  AMAZON_SEND_MAX_AGE_MIN: ORCAMENTO.amazonDizerMin,
   /** Duas observações separadas por pelo menos isto; vale também para voltar depois de sumir da busca. */
   AMAZON_OBS_GAP_MIN: 15,
   /** Sem lote da coleta assistida por mais que isto: a classe Amazon pausa. */
