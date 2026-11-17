@@ -802,6 +802,6 @@ Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o ro
 - As mensagens das 6 lojas que não são Games saem normalmente (o roteamento por vertical funciona), mas `group_messages.store_id` fica **vazio** nelas: o relatório por loja precisa agrupar por `vertical`, não por `store_id`. Dívida pequena.
 - O estágio das 6 lojas continua `canal_verificado` mesmo enviando; só Games está `ativa`. Falta decidir se o estágio acompanha o envio real.
 - **Canal Destaques:** a variável `TELEGRAM_DESTAQUES_CHAT_ID` não existe na Vercel; os degraus 4 e 5 não têm canal Destaques configurado.
-- **Canal novo só para estética e beleza** seria a 8ª loja (não existe). Depende de catálogo (seção 15.9) e do ok do dono.
+- **8ª loja, Beleza:** canal criado pelo dono em 2026-11-17 (`t.me/egeek86_beleza`, público, título "Espaço Geek 86 . Beleza"); o bot `EspacoGeek86Bot` é administrador e pode postar (conferido por leitura, sem mensagem de teste). **Ainda sem vertical, catálogo nem loja no banco:** nenhum envio até haver produto novo e em linha aprovado. Cor própria da loja já definida (`#571D26`, `cor-loja.ts`). Depende de catálogo (seção 15.9) e do ok do dono.
 - Corrige a minha proposta de 2026-11-17 ("3 canais próprios + Achados"): estava errada, os 7 canais já existem.
 
