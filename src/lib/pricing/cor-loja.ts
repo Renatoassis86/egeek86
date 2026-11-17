@@ -9,7 +9,7 @@
 export const COR_LOJA_ATIVA = process.env.CARD_COR_LOJA !== '0';
 export const FUNDO_PADRAO = '#0B0908';
 
-/** Fundo do cartão por departamento. Games violeta, Impressão 3D petróleo, Tecnologia marinho, Livros ameixa, Casa terra, Eletrônicos ardósia, Esporte pinho. */
+/** Fundo do cartão por departamento. Games violeta, Impressão 3D petróleo, Tecnologia marinho, Livros ameixa, Casa terra, Eletrônicos ardósia, Esporte pinho, Beleza vinho rosado. */
 export const COR_FUNDO_LOJA: Readonly<Record<string, string>> = {
   games: '#2B1760',
   impressao3d: '#0B3D40',
@@ -18,6 +18,8 @@ export const COR_FUNDO_LOJA: Readonly<Record<string, string>> = {
   eletrodomesticos: '#4D2D10',
   eletroeletronicos: '#33363D',
   esporte: '#104522',
+  // 2026-11-17: Beleza (loja nova, canal criado pelo dono) = vinho rosado escuro; luminância 0,0304 (no teto da regra), distância 40 das demais e contraste 10,4:1 com o creme.
+  beleza: '#571D26',
 };
 
 export function fundoDaLoja(vertical: string | null | undefined): string {
