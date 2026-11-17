@@ -680,3 +680,19 @@ export function computePeriodMetrics(days: PeriodDay[], currentCents: number | n
     reasons,
   };
 }
+
+
+/**
+ * E6 (#147, R-90): primeiro dia que o job `refresh-price-daily` deve tratar. PURO.
+ * Antes: (maior dia fechado global + 1), no máximo 7 dias atrás. Se um lote falhava ou o orçamento acabava no meio, os produtos não
+ * processados ficavam com o dia aberto PARA SEMPRE (768 linhas abertas em 2026-11-17). Agora o menor dia PASSADO ainda aberto também entra,
+ * com teto de 14 dias de catch-up quando há dia aberto (7 dias sem ele, como antes).
+ */
+export function primeiroDiaATratar(p: { today: string; lastClosed: string | null; menorAbertoPassado: string | null; regimeStart: string }): string {
+  let first = p.lastClosed ? addDays(p.lastClosed, 1) : p.today;
+  if (p.menorAbertoPassado && p.menorAbertoPassado < p.today && p.menorAbertoPassado < first) first = p.menorAbertoPassado;
+  const cap = addDays(p.today, p.menorAbertoPassado && p.menorAbertoPassado < p.today ? -14 : -7);
+  if (first < cap) first = cap;
+  if (first < p.regimeStart) first = p.regimeStart;
+  return first;
+}

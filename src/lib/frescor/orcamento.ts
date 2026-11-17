@@ -16,6 +16,8 @@ export interface OrcamentoFrescor {
   cupomListaMin: number;
   /** Cupom de campanha confirmado há no máximo isto (min). */
   cupomCampanhaMin: number;
+  /** Aviso "Em monitoramento" (gatilho AC) na fila: vale isto (min) e expira COM motivo; as demais propostas seguem 6 h. */
+  avisoMonitoramentoTtlMin: number;
 }
 
 export function orcamentoFrescor(env: Record<string, string | undefined> = process.env): OrcamentoFrescor {
@@ -26,8 +28,18 @@ export function orcamentoFrescor(env: Record<string, string | undefined> = proce
     cupomItemMin: 120,
     cupomListaMin: 120,
     cupomCampanhaMin: 24 * 60,
+    avisoMonitoramentoTtlMin: ((n) => (Number.isFinite(n) && n >= 15 && n <= 360 ? Math.round(n) : 90))(Number((env.GROUP_AC_TTL_MIN ?? '').trim())),
   };
 }
 
 /** Instância de módulo: valor do ambiente no start do processo (cron/serverless reinicia a cada deploy; AMAZON_FRESCOR_MIN é variável de ambiente). */
 export const ORCAMENTO: OrcamentoFrescor = orcamentoFrescor();
+
+/**
+ * R-90 (dono, 2026-11-16): vitrine e banco NÃO expiram item por idade da coleta; só pausa, sem estoque ou deixou de ser vendido (status da oferta)
+ * tiram o item. O cartão mostra "verificado há X". Ligada por padrão; VITRINE_EXPIRA_POR_TEMPO=1|on|true devolve o filtro antigo (24 h clicável).
+ * Não mexe nos indicadores (média, selo, série) nem na janela pública de 7 dias de `publicOffersCtes`.
+ */
+export function vitrineSemExpiracaoPorTempo(env: Record<string, string | undefined> = process.env): boolean {
+  return !/^(1|on|true|sim)$/i.test((env.VITRINE_EXPIRA_POR_TEMPO ?? '').trim());
+}

@@ -1,3 +1,4 @@
+import { sincronizarVendedorFracoForaDaMedia } from '@/server/pricing/weak-seller-avg';
 import { NextResponse, type NextRequest } from 'next/server';
 import { rejectUnlessCronAuthorized } from '@/lib/auth/cron-auth';
 import { refreshProductStats, refreshShowcase, refreshVitrines } from '@/server/jobs/refresh-snapshots';
@@ -42,6 +43,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // E6 (#147): vendedor fraco fora da média sincronizado também a cada 10 min (antes só a cada 30 min, no part=stats): a janela em que uma oferta nova de vendedor fraco pesa na média cai de 30 para 10 min.
+    if (part === 'vitrines') await sincronizarVendedorFracoForaDaMedia({ apply: true }).catch((e) => console.error('[weak-seller-avg]', e instanceof Error ? e.message : e));
     if (part === 'vitrines') out.vitrines = await refreshVitrines({ budgetMs: 60_000 });
     if (part === 'stats' || part === 'all') {
       out.stats = await refreshProductStats({ budgetMs: BUDGET_MS, minAgeMs: force ? 0 : undefined });

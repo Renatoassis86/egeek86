@@ -559,6 +559,23 @@ export function countStores(offers: OfferFact[]): number {
   return new Set(offers.map((o) => `${netKind(o)}:${o.sellerId ?? o.offerId}`)).size;
 }
 
+/**
+ * R-90 (dono, 2026-11-16): diagnóstico do aviso "Em monitoramento" quando HÁ base (histórico próprio >= ACHADO_OWN_MIN_DAYS dias). PURO.
+ * Sem base devolve null e a mensagem diz que o produto está sendo monitorado. Só fato medido; sem prescrição de compra.
+ */
+export function diagnosticoAchado(priceCents: number, ownDayMinsCents: number[], minDias: number = RULES.ACHADO_OWN_MIN_DAYS): string | null {
+  const dias = ownDayMinsCents.filter((x) => Number.isFinite(x) && x > 0);
+  if (!(priceCents > 0) || dias.length < minDias) return null;
+  const s = [...dias].sort((a, b) => a - b);
+  const mid = s.length >> 1;
+  const med = s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+  const pct = ((priceCents - med) / med) * 100;
+  const base = `mediana dos últimos ${dias.length} dias de coleta deste produto`;
+  if (pct <= -3) return `${Math.round(-pct)}% abaixo da ${base}`;
+  if (pct >= 3) return `${Math.round(pct)}% acima da ${base}`;
+  return `em linha com a ${base}`;
+}
+
 /** R-72: "Novo no monitoramento" só para oferta que entrou há no máximo ACHADO_NOVO_MAX_HORAS (sem data = não afirma). */
 export const ACHADO_NOVO_MAX_HORAS = 24;
 export function ofertaNovaNoMonitoramento(createdAt: Date | null | undefined, now: Date): boolean {
@@ -1579,6 +1596,7 @@ function evaluateProductV2Prices(p: ProductFacts, ctx: EvalContext): { candidate
           offersCount: comparable.length,
           isLowest,
           novo: ofertaNovaNoMonitoramento(o.createdAt, ctx.now) && ofertaNovaNoMonitoramento(p.primeiraVezDoProdutoAt, ctx.now),
+          diagnostico: diagnosticoAchado(price, ownDays.map((x) => x.minCents)),
         };
         candidates.push(
           finish(p, 'AC', input, {

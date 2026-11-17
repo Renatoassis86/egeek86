@@ -2,7 +2,7 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { runInBgPool } from '@/lib/db/pool-context';
-import { PRICE_DAILY_REGIME_START, addDays, computeLiveMin, nextMinEvent, spDay } from '@/lib/pricing/daily-state';
+import { PRICE_DAILY_REGIME_START, addDays, computeLiveMin, nextMinEvent, primeiroDiaATratar, spDay } from '@/lib/pricing/daily-state';
 import { computeStatesForBatch, syncMinEvent, upsertOfferDays, upsertStates } from '@/server/pricing/price-daily';
 import { summarizeAmazonShadow, type AmazonShadowDiff, type AmazonShadowSummary } from '@/lib/pricing/amazon-shadow';
 import { getAmazonMode } from '@/lib/pricing/amazon-mode';
@@ -48,9 +48,8 @@ export async function refreshPriceDaily(opts: { budgetMs: number; chunkSize?: nu
 
   const lastClosedRows = await db.execute<{ d: string | null }>(sql`SELECT max(day)::text AS d FROM price_daily_state WHERE closed`);
   const lastClosed = lastClosedRows[0]?.d ?? null;
-  let first = lastClosed ? addDays(lastClosed, 1) : today;
-  if (first < addDays(today, -7)) first = addDays(today, -7);
-  if (first < PRICE_DAILY_REGIME_START) first = PRICE_DAILY_REGIME_START;
+  const abertoRows = await db.execute<{ d: string | null }>(sql`SELECT min(day)::text AS d FROM price_daily_state WHERE NOT closed AND day < ${today}::date`);
+  const first = primeiroDiaATratar({ today, lastClosed, menorAbertoPassado: abertoRows[0]?.d ?? null, regimeStart: PRICE_DAILY_REGIME_START });
 
   const pre = await db.execute<{ n: number }>(sql`SELECT count(*)::int AS n FROM price_daily_offer WHERE day < ${first}::date`);
   if (!Number(pre[0]?.n ?? 0)) {

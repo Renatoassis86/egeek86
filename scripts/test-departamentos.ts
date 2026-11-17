@@ -9,6 +9,7 @@
  * (c) estático: /go bloqueia pendente, usa after(), não repassa s/m ao destino; arquivos novos sem "afiliad" e sem raio.
  * (d) banco (SELECT): isolamento nos DOIS sentidos; flag fechada = nenhum resultado; link pendente nunca clicável.
  */
+import { vitrineSemExpiracaoPorTempo } from '../src/lib/frescor/orcamento';
 import fs from 'node:fs';
 import path from 'node:path';
 import { PgDialect } from 'drizzle-orm/pg-core';
@@ -93,6 +94,8 @@ function secaoA() {
 }
 
 // ------------------------------------------------------------------------------------------- (b)
+// R-90: sem expiração por idade no filtro de clicável; o teto real é a janela pública de OFFER_FRESHNESS_DAYS (7 dias, publicOffersCtes).
+const LIMITE_H = vitrineSemExpiracaoPorTempo() ? 24 * 7 : OFERTA_CLICAVEL_MAX_HORAS;
 async function secaoB() {
   const { departamentoClicaveisCtes, masterAprovadoSql } = await import('../src/server/queries/departamento');
   for (const d of DEPARTAMENTOS) {
@@ -102,7 +105,8 @@ async function secaoB() {
     check(/verdict' = 'approved'/.test(t) && /manual' = 'approved'/.test(t), `b:${d.slug}:approved`, 'porteiro approved por inclusão (verdict ou manual)');
     check(/affiliate_link_pending = false/.test(t), `b:${d.slug}:pendente`, 'exige affiliate_link_pending = false');
     check(/quarantined_at IS NULL/.test(t) && /status = 'active'/.test(t), `b:${d.slug}:quarentena`, 'exige oferta ativa e sem quarentena');
-    check(new RegExp(`interval '${OFERTA_CLICAVEL_MAX_HORAS} hours'`).test(t), `b:${d.slug}:frescor`, `exige checagem < ${OFERTA_CLICAVEL_MAX_HORAS} h`);
+    if (vitrineSemExpiracaoPorTempo()) check(!t.includes('o.last_checked_at >= now() - (CASE'), `b:${d.slug}:frescor`, 'R-90: o filtro de clicável NÃO expira por idade (só a janela pública de 7 dias)');
+    else check(new RegExp(`interval '${OFERTA_CLICAVEL_MAX_HORAS} hours'`).test(t), `b:${d.slug}:frescor`, `exige checagem < ${OFERTA_CLICAVEL_MAX_HORAS} h`);
     check(/n\.slug IN \(\$\d+, \$\d+\)/.test(t) || /n\.slug IN/.test(t), `b:${d.slug}:redes`, 'restringe a redes ML/Shopee (Amazon fora)');
     check(/public_offers/.test(t) && /fresh_offers/.test(t), `b:${d.slug}:helper`, 'reaproveita publicOffersCtes');
   }
@@ -206,7 +210,7 @@ async function secaoD() {
     if (detalhe) {
       const slugs = detalhe.vendedoresLista.map((v) => v.ofertaSlug);
       const o = await db.execute<{ p: boolean; q: boolean; h: number }>(sql`SELECT affiliate_link_pending AS p, quarantined_at IS NOT NULL AS q, EXTRACT(EPOCH FROM (now() - last_checked_at))/3600 AS h FROM affiliate_offers WHERE slug IN (${sql.join(slugs.map((s) => sql`${s}`), sql`, `)})`);
-      check(o.every((x) => !x.p && !x.q && Number(x.h) <= OFERTA_CLICAVEL_MAX_HORAS), `d:clicavel:${d.slug}`, `${d.slug}: ofertas do detalhe sem pendente, sem quarentena, frescas`);
+      check(o.every((x) => !x.p && !x.q && Number(x.h) <= LIMITE_H), `d:clicavel:${d.slug}`, `${d.slug}: ofertas do detalhe sem pendente, sem quarentena, frescas`);
     }
     if (pag.total > 0) vazouParaNicho += 0;
   }
@@ -216,7 +220,7 @@ async function secaoD() {
       WITH ${dep.departamentoClicaveisCtes(d.slug)}
       SELECT COUNT(*)::int AS bad FROM clickable c INNER JOIN affiliate_offers o ON o.id = c.id
       WHERE o.affiliate_link_pending OR o.quarantined_at IS NOT NULL OR o.status <> 'active' OR c.network_slug NOT IN ('mercado-livre','shopee','amazon')
-         OR o.last_checked_at < now() - interval '${sql.raw(String(OFERTA_CLICAVEL_MAX_HORAS))} hours' OR o.vertical <> ${d.slug}`);
+         OR o.last_checked_at < now() - interval '${sql.raw(String(LIMITE_H))} hours' OR o.vertical <> ${d.slug}`);
     check(Number(r[0]?.bad) === 0, `d:clicavel-limpo:${d.slug}`, `${d.slug}: 0 oferta clicável pendente/quarentenada/velha (24 h)/rede fora de ML-Shopee-Amazon/outra vertical`);
   }
   // Informativo: situação atual (nada foi aprovado ainda pelo dono).

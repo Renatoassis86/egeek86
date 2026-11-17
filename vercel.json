@@ -13,6 +13,26 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/collect-shopee?v=esporte",
+      "schedule": "2-59/20 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-shopee?v=eletrodomesticos",
+      "schedule": "7-59/20 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-shopee?v=tecnologia",
+      "schedule": "12-59/20 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-shopee?v=eletroeletronicos",
+      "schedule": "17-59/20 * * * *"
+    },
+    {
+      "path": "/api/cron/collect-shopee?v=impressao3d",
+      "schedule": "4-59/20 * * * *"
+    },
+    {
       "path": "/api/cron/refresh-snapshots?part=stats",
       "schedule": "*/30 * * * *"
     },

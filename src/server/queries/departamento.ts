@@ -1,3 +1,4 @@
+import { vitrineSemExpiracaoPorTempo } from '@/lib/frescor/orcamento';
 import 'server-only';
 import { priorizarImpressao3d } from '@/lib/messaging/prioridade-3d';
 import { sql, type SQL } from 'drizzle-orm';
@@ -74,7 +75,7 @@ export function departamentoClicaveisCtes(vertical: string, opts: { vitrine?: bo
         AND o.quarantined_at IS NULL
         AND o.status = 'active'
         AND o.current_price_cents > 0
-        AND o.last_checked_at >= now() - (CASE WHEN n.slug = 'amazon' THEN interval '${horasAmazon} hours' ELSE interval '${horas} hours' END)
+        AND ${vitrineSemExpiracaoPorTempo() ? sql`TRUE` : sql`o.last_checked_at >= now() - (CASE WHEN n.slug = 'amazon' THEN interval '${horasAmazon} hours' ELSE interval '${horas} hours' END)`}
         AND n.slug IN (${redes})
         AND o.affiliate_url ~* '^https?://'
     ),

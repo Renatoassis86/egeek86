@@ -1,3 +1,4 @@
+import { ORCAMENTO } from '@/lib/frescor/orcamento';
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -137,7 +138,8 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
               OR ${precoWin})
         ))
     ) q
-    ORDER BY q.rn_fair, q.created_at LIMIT ${limit}::int
+    -- R-90: dentro de cada rodada do rodízio, queda de preço (G/OK/T/P) sai antes do aviso de monitoramento (AC); o rodízio segue garantindo vaga ao AC.
+    ORDER BY q.rn_fair, (q.trigger = 'AC'), q.created_at LIMIT ${limit}::int
   `);
   return rows.map(mapRow);
 }
@@ -331,8 +333,13 @@ export async function expireStale(): Promise<number> {
     `)));
   }
   const expiradas = await manutencaoComRetry('expirar', async () => n(await db.execute(sql`
-    UPDATE group_messages SET status = 'expirada', claimed_at = NULL, updated_at = now(), error = COALESCE(error, 'expirada sem envio')
-    WHERE (status IN ('proposta', 'proposta_auto') AND created_at < now() - (CASE WHEN trigger = 'RADAR' AND status = 'proposta_auto' THEN interval '20 minutes' ELSE interval '6 hours' END))
+    UPDATE group_messages SET status = 'expirada', claimed_at = NULL, updated_at = now(), error = COALESCE(error,
+      CASE WHEN status = 'retida' THEN 'expirada sem envio: retida por 24 h sem liberação (gatilho ' || trigger || ')'
+           WHEN status = 'aprovada' THEN 'expirada sem envio: aprovada e não enviada em 12 h (gatilho ' || trigger || ')'
+           WHEN trigger = 'RADAR' AND status = 'proposta_auto' THEN 'expirada sem envio: radar automático só vale na hora cheia (20 min)'
+           WHEN trigger = 'AC' THEN 'expirada sem envio: aviso de monitoramento não coube no ritmo em ' || ${ORCAMENTO.avisoMonitoramentoTtlMin}::int || ' min (preço envelhece)'
+           ELSE 'expirada sem envio: não coube no ritmo em 6 h (gatilho ' || trigger || ')' END)
+    WHERE (status IN ('proposta', 'proposta_auto') AND created_at < now() - (CASE WHEN trigger = 'RADAR' AND status = 'proposta_auto' THEN interval '20 minutes' WHEN trigger = 'AC' THEN make_interval(mins => ${ORCAMENTO.avisoMonitoramentoTtlMin}::int) ELSE interval '6 hours' END))
        OR (status = 'aprovada' AND created_at < now() - interval '12 hours')
        OR (status = 'retida' AND created_at < now() - interval '24 hours')
   `)));

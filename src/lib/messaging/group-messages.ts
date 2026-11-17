@@ -392,6 +392,8 @@ export type GroupMessageInput = Common &
         isLowest: boolean;
         /** R-72: a oferta entrou no monitoramento há no máximo ACHADO_NOVO_MAX_HORAS. Só então o rótulo diz "Novo no monitoramento"; ausente/false = "Em monitoramento". */
         novo?: boolean;
+        /** R-90 (dono, 2026-11-16): com base de indicadores (histórico próprio), uma frase de diagnóstico; sem base, ausente/null = "sendo monitorado". */
+        diagnostico?: string | null;
         title?: string;
         meta?: string | null;
       }
@@ -745,6 +747,8 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
   for (const t of seloLines(o, f)) topics.push(t);
+  // R-90: com base = diagnóstico; sem base = diz que está sendo monitorado (nunca inventa comparação).
+  topics.push(input.diagnostico ? topic(f, 'Diagnóstico', input.diagnostico) : topic(f, 'Situação', 'ainda sem histórico suficiente; estamos monitorando o preço deste produto'));
   const buyUrl = o.affiliateUrl && /^https:\/\/[^\s<>"]+$/.test(o.affiliateUrl) ? o.affiliateUrl : null;
   const link = buyUrl ? `${f.b('Comprar:')} ${channel === 'tg' ? escapeTelegramHtml(buyUrl) : buyUrl}` : channel === 'tg' ? null : buildGoLink(o.slug, 'wa', input.messageKey);
   const foot = italic(withTag(stampLine(o), input.adTag));
@@ -814,7 +818,8 @@ export function formatCouponMessage(input: Extract<GroupMessageInput, { model: '
   for (const cl of (c.cardLines ?? []).slice(0, 2)) topics.push(topic(f, 'Desconto no cartão', cl));
   if (c.maxDiscountCents) topics.push(topic(f, 'Desconto máximo', fmtBRL(c.maxDiscountCents)));
   topics.push(topic(f, 'Como usar', c.howTo?.length ? c.howTo.map((x, i) => `${i + 1}. ${x}`).join('; ') + '.' : c.activation));
-  if (c.expiresAt) topics.push(topic(f, 'Válido até', `${fmtStamp(c.expiresAt)}, segundo a loja`));
+  // R-90 (E4): cupom nunca sai sem dizer a validade; sem a data da loja, diz que a loja não informou (o horário da leitura vai no rodapé).
+  topics.push(c.expiresAt ? topic(f, 'Válido até', `${fmtStamp(c.expiresAt)}, segundo a loja`) : topic(f, 'Validade', 'a loja não informou; confira na tela do cupom'));
   const other = input.cheaperOther;
   if (other && other.cents > 0 && other.cents < c.finalCents) topics.push(topic(f, 'Outra oferta, sem cupom', `${fmtBRL(other.cents)} ${inNetwork(other.networkName)}`));
   const sellerText = sellerLine(o);
