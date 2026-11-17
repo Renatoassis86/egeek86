@@ -20,7 +20,7 @@ O dono descreveu três dores. Cada uma tem causa medida no repositório (2026-11
 
 Prova de que o mecanismo funciona (primeira rodada do portão, 2026-11-16): ele achou **2 testes já vermelhos** que ninguém tinha visto (um cobrava a versão exata `1.1.0` do leitor da Amazon, e o R-81 a subiu para `1.2.0`; outro ainda esperava o comportamento da Amazon anterior à contenção #120). Os dois foram corrigidos no mesmo dia, só nos testes. Esse é exatamente o tipo de furo que hoje passa em silêncio.
 
-## 2. Os dez princípios
+## 2. Os onze princípios
 
 1. **Tarefa pequena, escopo escrito.** Toda mudança nasce de um *Contrato de Tarefa* (seção 4) que lista os arquivos que podem ser tocados. O que não está no contrato não se mexe.
 2. **Primeiro o teste que falha.** Corrigir é: reproduzir o erro num teste, vê-lo vermelho, mudar o mínimo, vê-lo verde. Sem teste vermelho antes, não há "correção", há palpite.
@@ -32,6 +32,7 @@ Prova de que o mecanismo funciona (primeira rodada do portão, 2026-11-16): ele 
 8. **Teste não é editado para passar.** Mudar um teste existente exige commit separado com a justificativa ("a garantia continua valendo porque…"). Quem implementa não é quem valida (R-87).
 9. **Prova antes de "pronto".** "Pronto" é a saída do portão verde mais a cadeia fechada, mostradas no commit. "Li o código" e "testei na tela" não contam.
 10. **A máquina impõe, o documento explica.** Tudo que a regra puder verificar sozinha vira script, não parágrafo. Documento novo só entra se tiver gatilho em código (a mesma regra do R-63).
+11. **Dado e decisão em tempo real (regra do dono, 2026-11-16, R-89).** Dado velho nunca chega ao usuário como se fosse novo. Todo dado tem **idade máxima declarada num lugar só** (o orçamento de frescor, seção 17), medida por máquina, e toda mudança que cria ou altera um dado novo declara a idade máxima dele no Contrato de Tarefa.
 
 ## 3. Os estados de um módulo
 
@@ -185,3 +186,22 @@ A IA responde com o Contrato de Tarefa (seção 4) antes de escrever código e s
 ## 15. Primeira onda de congelamento proposta (decisão do dono)
 
 Sete módulos pequenos, com teste que passa no portão e regra do dono por trás. **Nenhum está congelado ainda**; só entram em `congelado` com o seu ok: `preco-isca` (R-61), `tipo-preco-amazon` (R-69), `link-afiliado` (R-70), `item-miudo`, `console-videogame`, `gate-catalogo` (R-58) e `plausibilidade-quarentena` (R-57). `mensagens-regras` e `parecer-e-preco-no-site` esperam os testes de caracterização (Fase 3). `frescor-e-confirmacao` espera ligar seus testes ao `package.json`.
+
+## 16. Contrato de Tarefa: acréscimo de frescor (R-89)
+O Contrato de Tarefa (seção 4) ganha a linha **"Idade máxima do dado"**: para cada dado que a mudança lê, grava, mostra ou envia, a idade máxima e **onde a regra é imposta** (arquivo do orçamento de frescor). Sem essa linha o contrato não vale. Cadeia completa (seção 5.1) passa a incluir o nó **"frescor"**: depois de `site` e `mensagem`, confere-se que a superfície nova respeita o mesmo orçamento (a mensagem e a página do mesmo produto nunca usam idades diferentes sem decisão do dono).
+
+## 17. Orçamento de frescor (a tabela que vira contrato)
+Fonte única em código: `src/lib/frescor/orcamento.ts` (etapa E2 da auditoria `docs/auditoria-tempo-real-2026-11-16.md`; **ainda não existe**). Enquanto isso, o mapa abaixo é a referência e o portão passa a falhar se uma constante de idade nova nascer fora do arquivo.
+
+| Dado | Idade máx. proposta | Onde é imposta hoje | Como é medida |
+|---|---|---|---|
+| Preço Amazon (mensagem, lista, card, **site**) | 45 min (`AMAZON_FRESCOR_MIN`) | `confirmacao-preco.ts`; no site é 24 h (G1) | a criar (E1) |
+| Entrega Amazon | 45 min | `frete-prazo.ts` (R-88) | a criar (E1) |
+| Preço ML/Shopee, queda | 30 min no envio (reconferência ao vivo) | `group-rules.ts`, `live-recheck.ts` | `live_checked_at` (medido: 0 min) |
+| Preço, lista do privado | 360 min | `confirmacao-preco.ts` | a criar (E1) |
+| Oferta clicável no site (ML, Shopee) | 24 h (vitrine hoje 168 h: decisão do dono) | `departamentos.ts`, `vitrines/regras.ts` | a criar (E1) |
+| Série e média | 7 dias | `price-verdict.ts`, `daily-state.ts` | invariante `dia_passado_aberto = 0` |
+| Cupom | decisão do dono (hoje 120 min e 24 h) | `group-messages.ts`, `campaign.ts`, `amazon-promocoes.ts` | a criar |
+| Estoque | **sem regra** | n/a | n/a |
+
+**Gatilhos de máquina da seção:** (1) o medidor de frescor roda no portão completo e na linha de base; (2) teste que falha se houver literal de idade de dado fora de `orcamento.ts`; (3) toda superfície nova (página, cartão, mensagem, API) importa o orçamento. Detalhe e plano por etapas: `docs/auditoria-tempo-real-2026-11-16.md`.
