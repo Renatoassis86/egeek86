@@ -184,6 +184,9 @@ export interface Veredito {
   janelaDias: number;
 }
 
+/** Rótulo do veredito quando a média ainda é provisória (R-91). */
+export const ROTULO_MONITORAMENTO = 'Em monitoramento';
+
 const pct1 = (x: number) => x.toFixed(1).replace('.', ',');
 
 /**
@@ -228,7 +231,11 @@ export function calcularVeredito(i: VereditoInput): Veredito | null {
   if (degrau === 4 && !(naMinima && !poucas)) degrau = 3;
   if (poucas && degrau === 4) degrau = 3;
   const base = DEGRAUS[degrau];
-  const rotulo = base.rotulo;
+  // R-91 (dono, 2026-11-17): média provisória (< MIN_OFERTAS_PCT ofertas ou < minDias de histórico) é só para monitoramento. Nada de diagnóstico:
+  // sem percentual, sem veredito em texto, sem Destaques. O laudo só sai com dado estatisticamente significativo. (Supera a regra de 16/11 "sempre mostrar o %".)
+  const significativo = !poucas && histOk && !viaMinima;
+  if (!significativo && !viaMinima && degrau > 2) degrau = 2;
+  const rotulo = !significativo && !viaMinima ? ROTULO_MONITORAMENTO : DEGRAUS[degrau].rotulo;
   const cautela = poucas || !histOk || degrau === 5;
   return {
     degrau,
@@ -236,7 +243,7 @@ export function calcularVeredito(i: VereditoInput): Veredito | null {
     rotulo,
     pct,
     // Dono (2026-11-16): se há média, diagnóstico sempre mostra a média e o % (média provisória aceita na beta; não rebaixa rótulo). Só a via 'menor registrado' não tem média.
-    mostrarPct: !viaMinima,
+    mostrarPct: !viaMinima && significativo,
     cautela,
     minLinha,
     naMinima,

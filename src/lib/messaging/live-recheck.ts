@@ -17,6 +17,8 @@ export interface LiveTarget {
   /** Oferta do candidato ('original') ou concorrente mais barata com preço velho ('competitor'). */
   role: 'original' | 'competitor';
   masterProductId?: string;
+  /** Vertical do produto (R-92): libera a Amazon por vertical. */
+  vertical?: string | null;
   networkSlug: string;
   networkName?: string;
   /** affiliate_offers.external_ref (ML: id do catálogo; Shopee: `shopee-<itemId>`). */
@@ -220,7 +222,7 @@ export async function runLivePhase(input: LivePhaseInput): Promise<LivePhaseResu
       }
     }
     // Contenção #120: Amazon fora das mensagens (original e concorrente) até a correção do leitor de preço estar provada.
-    if (redeForaDasMensagens(t.networkSlug)) {
+    if (redeForaDasMensagens(t.networkSlug, process.env, t.vertical)) {
       log.verdict = 'fail';
       log.reason = 'amazon_fora_das_mensagens: contenção #120 (AMAZON_FORA_DAS_MENSAGENS)';
       return log;

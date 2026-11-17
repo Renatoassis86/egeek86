@@ -60,7 +60,8 @@ eq('viaMinima: sem percentual', VM().mostrarPct, false);
 eq('viaMinima: preco ACIMA da media (pct negativo) tambem degrau 1', VM({ pct: -3 }).degrau, 1);
 eq('viaMinima: linha da minima com a janela medida', VM().minLinha, 'Menor preço dos últimos 10 dias');
 eq('viaMinima ignorada quando a queda ja passa de 3%', VM({ pct: 8 }).degrau, 2);
-eq('viaMinima com queda >= 3%: percentual volta', VM({ pct: 8 }).mostrarPct, true);
+eq('viaMinima com queda >= 3% e historico curto (10 dias): sem percentual (R-91, dado nao significativo)', VM({ pct: 8 }).mostrarPct, false);
+eq('viaMinima com queda >= 3% e dado significativo (20 dias, 8 ofertas): percentual volta', VM({ pct: 8, diasHistorico: 20, nOfertas: 8 }).mostrarPct, true);
 
 // ---- textos ----
 const faixa = { minCents: 9000, maxCents: 12000, dias: 30 };

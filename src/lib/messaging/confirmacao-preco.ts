@@ -59,8 +59,19 @@ export function amazonForaDasMensagens(env: Record<string, string | undefined> =
 export function amazonNoPrivado(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.AMAZON_PRIVADO ?? '').trim());
 }
-export function redeForaDasMensagens(rede: string | null | undefined, env: Record<string, string | undefined> = process.env): boolean {
-  return /amazon/i.test(rede ?? '') && amazonForaDasMensagens(env);
+/**
+ * R-92 (dono, 2026-11-17): liberação ESCALONADA da Amazon nas mensagens, por vertical. AMAZON_MENSAGENS_VERTICAIS = lista (ex.: eletrodomesticos,tecnologia).
+ * Padrão VAZIO = nada liberado (falha fechada). A vertical liberada segue valendo a regra de preço fresco (AMAZON_FRESCOR_MIN, 45 min) e o carimbo da Amazon.
+ * Chamador que não informa a vertical continua na contenção.
+ */
+export function amazonVerticaisLiberadas(env: Record<string, string | undefined> = process.env): Set<string> {
+  return new Set(String(env.AMAZON_MENSAGENS_VERTICAIS ?? '').split(/[,\s;]+/).map((x) => x.trim().toLowerCase()).filter(Boolean));
+}
+export function amazonLiberadaNaVertical(vertical: string | null | undefined, env: Record<string, string | undefined> = process.env): boolean {
+  return !!vertical && amazonVerticaisLiberadas(env).has(String(vertical).toLowerCase());
+}
+export function redeForaDasMensagens(rede: string | null | undefined, env: Record<string, string | undefined> = process.env, vertical?: string | null): boolean {
+  return /amazon/i.test(rede ?? '') && amazonForaDasMensagens(env) && !amazonLiberadaNaVertical(vertical, env);
 }
 
 export const VEREDITOS_BLOQUEANTES = ['preco_divergente', 'item_diferente', 'pausado', 'sem_link', 'pendente_de_anuncio'] as const;
@@ -75,6 +86,8 @@ export interface FatosConfirmacao {
   /** Liberação da contenção #120 SÓ para o privado do dono (P2S/P1S Combo): Amazon vale pela confirmação fresca (<= 5 min na queda, 6 h na lista) e leitor da oferta em destaque. */
   liberaAmazon?: boolean;
   uso: UsoPreco;
+  /** Vertical do produto (R-92): permite a liberação escalonada da Amazon por vertical. */
+  vertical?: string | null;
   /** 'mercado-livre' | 'amazon' | 'shopee' | outra (slug da rede). */
   rede: string;
   status: string;
@@ -172,7 +185,7 @@ export function estritoCanalPara(ehBambu: boolean | undefined, env: Record<strin
  * Desligada pela flag: sempre ok (comportamento antigo).
  */
 export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito {
-  if (redeForaDasMensagens(f.rede) && !f.liberaAmazon) return falha('amazon_fora_das_mensagens');
+  if (redeForaDasMensagens(f.rede, process.env, f.vertical) && !f.liberaAmazon) return falha('amazon_fora_das_mensagens');
   if (!ligada) return { ok: true };
   if (f.status !== 'active') return falha('oferta_inativa');
   if (f.quarantined) return falha('em_quarentena');

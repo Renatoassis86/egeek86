@@ -1,5 +1,5 @@
 import 'server-only';
-import { amazonForaDasMensagens, confirmacaoLigada } from '@/lib/messaging/confirmacao-preco';
+import { amazonForaDasMensagens, amazonLiberadaNaVertical, amazonVerticaisLiberadas, confirmacaoLigada } from '@/lib/messaging/confirmacao-preco';
 import { baseIncluiAmazon } from '@/lib/messaging/base-comparacao';
 import { emFaseDeFormacao } from '@/lib/messaging/fase-formacao';
 import { reguaConfig, reguaDaLoja } from '@/lib/messaging/regua';
@@ -505,7 +505,7 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
       FROM affiliate_offers o
       INNER JOIN master_products m ON m.id = o.master_product_id
       WHERE o.status = 'active' AND o.quarantined_at IS NULL AND o.affiliate_link_pending = false AND ${linkPublicavelFilter('o')} AND o.current_price_cents > 0
-        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz ${confirmacaoLigada() ? sql`AND o.consecutive_miss_count = 0` : sql``} ${amazonForaDasMensagens() ? sql`AND o.network_id NOT IN (SELECT id FROM affiliate_networks WHERE slug ILIKE '%amazon%')` : sql``}
+        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz ${confirmacaoLigada() ? sql`AND o.consecutive_miss_count = 0` : sql``} ${amazonContidaSql('m.vertical')}
         AND o.vertical IN (${txtList(o.verticals)}) AND m.vertical IN (${txtList(o.verticals)})
         AND ${eligibleOfferSql('o')} AND ${inAverageSql('o')}
         AND ${masterNoEscopoSql('m')}
@@ -638,13 +638,22 @@ async function loadPickBase(o: Parameters<typeof pickProductIds>[0] & { hourKey:
   }
 }
 
+/** R-92: contenção da Amazon no SQL por vertical. Sem liberação = como antes (Amazon fora); vertical liberada deixa a Amazon entrar. */
+function amazonContidaSql(verticalCol: string): SQL {
+  if (!amazonForaDasMensagens()) return sql``;
+  const amz = sql`o.network_id NOT IN (SELECT id FROM affiliate_networks WHERE slug ILIKE '%amazon%')`;
+  const lib = [...amazonVerticaisLiberadas()];
+  if (!lib.length) return sql`AND ${amz}`;
+  return sql`AND (${amz} OR ${sql.raw(verticalCol)} IN (${txtList(lib)}))`;
+}
+
 /**
  * Série diária do MENOR preço do produto, dias anteriores a hoje: Mercado Livre/Shopee (principal) e Amazon (separada,
  * porque a Amazon só se compara com o próprio histórico). Fonte: price_daily_offer (um mínimo por oferta-dia, só ofertas
  * elegíveis) nos dias em que price_daily_state tem qualidade complete/partial, desde PRICE_DAILY_REGIME_START (31/10).
  * Dia sem coleta fica lacuna (nada é interpolado).
  */
-async function loadSeries(ids: string[], today: string, mode: AmazonMode): Promise<Map<string, { main: DayPoint[]; amazon: DayPoint[] }>> {
+async function loadSeries(ids: string[], today: string, mode: AmazonMode, verticalBy: Map<string, string> = new Map()): Promise<Map<string, { main: DayPoint[]; amazon: DayPoint[] }>> {
   const out = new Map<string, { main: DayPoint[]; amazon: DayPoint[] }>();
   if (!ids.length) return out;
   const scope = amazonScope(mode);
@@ -669,7 +678,7 @@ async function loadSeries(ids: string[], today: string, mode: AmazonMode): Promi
     (r.amz === true ? e.amazon : e.main).push(pt);
     // PRICE_AMAZON_MODE=on (games): o menor preço do dia do produto também considera a Amazon (mesma base do estado diário); a série própria dela segue à parte.
     // R-71: com a Amazon fora das mensagens (#120) a série da mensagem também a exclui (mesma base do "hoje").
-    if (r.amz === true && scope === 'include' && baseIncluiAmazon(amazonForaDasMensagens())) e.main.push(pt);
+    if (r.amz === true && scope === 'include' && baseIncluiAmazon(amazonForaDasMensagens() && !amazonLiberadaNaVertical(verticalBy.get(mid)))) e.main.push(pt);
   }
   // Menor entre ML e Shopee por dia (as linhas já agrupam por rede, não por tipo): consolida o mínimo de cada dia.
   for (const e of out.values()) {
@@ -707,7 +716,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
       WHERE o.master_product_id IN (${idList(ids)}) AND o.status = 'active' AND o.current_price_cents > 0
-        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz AND ${eligibleOfferSql('o')} ${confirmacaoLigada() ? sql`AND o.consecutive_miss_count = 0` : sql``} ${amazonForaDasMensagens() ? sql`AND o.network_id NOT IN (SELECT id FROM affiliate_networks WHERE slug ILIKE '%amazon%')` : sql``}
+        AND o.last_price_confirmed_at >= ${confirmedSince}::timestamptz AND ${eligibleOfferSql('o')} ${confirmacaoLigada() ? sql`AND o.consecutive_miss_count = 0` : sql``} ${amazonContidaSql('o.vertical')}
     `),
     db.execute<Row>(sql`
       SELECT master_product_id, MIN(at) AS first_at, MIN(min_cents) AS rec_cents
@@ -826,16 +835,17 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
 
   const today = spDay(o.now);
   const from = addDays(today, -29);
-  const seriesBy = await loadSeries(ids, today, o.amazonMode);
+  const seriesBy = await loadSeries(ids, today, o.amazonMode, verticalBy);
   // R-71: menor oferta Amazon elegível e fresca (24 h) que a base da mensagem deixou de fora; o site a mostra como "Menor preço agora".
   const primeiraBy = new Map<string, Date>();
   for (const r of await db.execute<Row>(sql`SELECT master_product_id AS mid, min(created_at) AS first_at FROM affiliate_offers WHERE master_product_id IN (${idList(ids)}) GROUP BY master_product_id`)) primeiraBy.set(String(r.mid), new Date(r.first_at as string | Date));
   const amazonForaBy = new Map<string, number>();
-  if (!baseIncluiAmazon(amazonForaDasMensagens())) {
+  const idsAmazonContida = ids.filter((id) => !baseIncluiAmazon(amazonForaDasMensagens() && !amazonLiberadaNaVertical(verticalBy.get(id))));
+  if (idsAmazonContida.length) {
     const amzRows = await db.execute<Row>(sql`
       SELECT o.master_product_id AS mid, min(o.current_price_cents) AS mn
       FROM affiliate_offers o INNER JOIN affiliate_networks n ON n.id = o.network_id
-      WHERE o.master_product_id IN (${idList(ids)}) AND o.status = 'active' AND o.current_price_cents > 0 AND n.slug ILIKE '%amazon%'
+      WHERE o.master_product_id IN (${idList(idsAmazonContida)}) AND o.status = 'active' AND o.current_price_cents > 0 AND n.slug ILIKE '%amazon%'
         AND o.last_price_confirmed_at >= ${new Date(o.now.getTime() - 24 * 3_600_000).toISOString()}::timestamptz AND ${eligibleOfferSql('o')}
       GROUP BY o.master_product_id
     `);

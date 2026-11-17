@@ -84,6 +84,7 @@ export async function loadLiveTargets(
       offerId,
       role: isOriginal ? 'original' : 'competitor',
       masterProductId: mid,
+      vertical: (r.vertical as string | null) ?? null,
       networkSlug: String(r.net_slug),
       networkName: String(r.net_name),
       externalRef: (r.external_ref as string | null) ?? null,
