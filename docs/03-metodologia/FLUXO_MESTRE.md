@@ -785,6 +785,13 @@ A janela "o mesmo produto não volta sem novidade" da R-77 é de 72 h para todas
 - **Fontes embutidas:** `src/app/fonts/*.woff2` (latin, SIL OFL) e `next/font/local` no `layout.tsx`: o build deixa de consultar o Google Fonts (erro intermitente que derrubou os builds de f36865e e 135766f).
 - **Aspiradores (eletrodomésticos):** 219 masters de aspirador no catálogo, só 25 com oferta ativa; 260 ofertas em rascunho e 85 expiradas. A causa de cobertura é a fila de validação de identidade, não a falta de produto.
 
+### 15.10 R-93, liberar todo produto checado e girar o que se valida (dono, 2026-11-17)
+Pedido: "uma regra que libere todos os produtos checados"; "estao sendo validados os mesmos produtos sempre"; "Pode usar o da Amazon pela verificacao direta no site".
+- **Causa:** a aprovacao continua (R-45b) so olhava a Amazon (`REDES_AUTO`) e so 4 motivos; 2.648 cartoes de `dispersao` (Shopee/ML) e os 2.100 rascunhos da Shopee nunca eram tocados; janela de 600 cartoes e 1 rodada a cada 10 min.
+- **Regra:** `guardaAuto` vale para Amazon, Mercado Livre e Shopee; entra o motivo `dispersao` (faixa 0,5x a 2x da media quando ha 3+ referencias; 0,35x a 3x nos demais). Continua com o dono: duvida do robo (`duvida:*`, voltagem, marca), item miudo ou duvida (R-50), midia, modelo, armazenamento, preco, preco lido ausente, retro sem marca. Todas as guardas de `decidir()` seguem (usado, quarentena, duas geracoes, duplicata). Reverte por `desfazer` com os `decisionIds` de `collector_runs.meta`.
+- **Vazao:** janela de 3.000 cartoes; 3 cartoes em paralelo (mesmo master em sequencia); lote 100 a cada 5 minutos (`2-57/5`), ~1.200/h contra 300/h. `barradasAuto` passa a contar todas as lojas (para ver o que ficou e por que).
+- **Amazon:** `AMAZON_MENSAGENS_VERTICAIS` liberada em todas as verticais menos impressao3d (tem fluxo proprio); preco so vale com leitura direta na pagina nos ultimos 45 min (R-81/R-82); sem leitura fresca nao sai.
+
 ## 16. Inventário de canais (conferido no banco e no código em 2026-11-17)
 Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o roteamento de `src/server/messaging/group-queue.ts` (`chatForStore(loja) ?? telegramChatFor(vertical)`). **Existem 7 lojas, uma por vertical, cada uma com canal do Telegram próprio verificado e com o bot podendo postar, e cada uma com grupo de WhatsApp cadastrado.** Nenhuma regra do tipo "abrir canal novo para os 7 departamentos" é necessária: eles já existem. Os identificadores (chat id e link de convite) ficam só no banco e não são copiados para a documentação.
 

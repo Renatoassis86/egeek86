@@ -8,9 +8,13 @@ const g = (o: Partial<EntradaAuto>) => guardaAuto({ ...base, ...o });
 
 check('produto unico (sem referencia) passa', g({}) === null);
 check('produto unico caro (sem referencia) passa', g({ priceCents: 999900, title: 'Smart TV Samsung 65 4K' , vertical: 'eletroeletronicos', plataforma: null }) === null);
-for (const m of ['produto_novo', 'rascunho', 'cobertura', 'fronteira'] as const) check(`motivo ${m} passa`, g({ motivo: m }) === null);
-for (const m of ['midia', 'modelo', 'armazenamento', 'preco', 'plus', 'dispersao'] as const) check(`motivo ${m} fica com o dono`, g({ motivo: m }) !== null);
-check('shopee nao passa pelo cartao', g({ rede: 'shopee' }) === 'rede_fora:shopee');
+for (const m of ['produto_novo', 'rascunho', 'cobertura', 'fronteira', 'dispersao'] as const) check(`motivo ${m} passa`, g({ motivo: m }) === null);
+for (const m of ['midia', 'modelo', 'armazenamento', 'preco', 'plus'] as const) check(`motivo ${m} fica com o dono`, g({ motivo: m }) !== null);
+check('shopee nao passa pelo cartao', g({ rede: "outra" }) === "rede_fora:outra");
+check('shopee e ML passam (regra para todas as lojas, 2026-11-17)', g({ rede: 'shopee' }) === null && g({ rede: 'mercado-livre' }) === null);
+check('duvida do robo fica com o dono', g({ rede: 'shopee', reason: 'duvida:fronteira:marca_sem_model' }) === 'duvida_do_robo');
+check('peca/miudo fica fora', g({ rede: 'shopee', title: 'Cabo USB-C 2m Carregador Rapido', priceCents: 2990, vertical: 'tecnologia', plataforma: null }) !== null);
+check('dispersao fora de 0,5x-2x fica com o dono', g({ motivo: 'dispersao', priceCents: 40000, refCents: 100000, nRefs: 4 }) === 'dispersao_fora_da_faixa_estreita' && g({ motivo: 'dispersao', priceCents: 80000, refCents: 100000, nRefs: 4 }) === null);
 check('sem preco lido', g({ priceCents: null }) === 'sem_preco_lido');
 check('games sem plataforma', g({ plataforma: null }) === 'plataforma_desconhecida');
 check('loja plus sem plataforma passa', g({ vertical: 'esporte', plataforma: null, title: 'Tenis Nike Air Max 90 Masculino' }) === null);

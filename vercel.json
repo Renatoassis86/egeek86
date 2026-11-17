@@ -89,8 +89,8 @@
       "schedule": "4-54/10 * * * *"
     },
     {
-      "path": "/api/cron/aprovacao-auto?lote=60",
-      "schedule": "12-52/10 * * * *"
+      "path": "/api/cron/aprovacao-auto?lote=100",
+      "schedule": "2-57/5 * * * *"
     },
     {
       "path": "/api/cron/discover-shopee-esporte?apply=1&terms=6&pages=2&maxCalls=40&maxMasters=12&maxOffers=60&link=offer",

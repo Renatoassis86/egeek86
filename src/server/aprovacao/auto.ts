@@ -35,16 +35,22 @@ export async function rodarAprovacaoAuto(dbx: DbT, o: { lote?: number; orcamento
     out.runId = r[0]?.id ?? null;
   }
   try {
-    const todos = await proximosCartoes(dbx, { limit: 600 });
+    const todos = await proximosCartoes(dbx, { limit: 3000 });
     const alvo: Cartao[] = [];
     for (const c of todos) {
-      const g = guardaAuto({ motivo: c.motivo, rede: c.rede, title: c.title, vertical: c.vertical, plataforma: c.plataforma, priceCents: c.priceCents, refCents: c.refCents, nRefs: c.nRefs });
+      const g = guardaAuto({ motivo: c.motivo, rede: c.rede, title: c.title, vertical: c.vertical, plataforma: c.plataforma, priceCents: c.priceCents, refCents: c.refCents, nRefs: c.nRefs, reason: c.reason });
       if (!g) alvo.push(c);
-      else if (c.rede === 'amazon') out.barradasAuto[g] = (out.barradasAuto[g] ?? 0) + 1;
+      else out.barradasAuto[g] = (out.barradasAuto[g] ?? 0) + 1;
     }
     out.candidatos = alvo.length;
-    for (const c of alvo.slice(0, lote)) {
-      if (Date.now() - t0 > orcamento) break;
+    // Paralelo curto (3 por vez, dono 2026-11-17: "precisamos ser mais rapidos"): cada cartao e uma transacao propria; dois cartoes do mesmo master
+    // na mesma rodada vao em sequencia (o segundo ve o master ja aprovado e vira 'ja').
+    const fila = alvo.slice(0, lote);
+    const porMaster = new Map<string, Cartao[]>();
+    for (const c of fila) { const k = c.masterName ?? c.key; porMaster.set(k, [...(porMaster.get(k) ?? []), c]); }
+    const grupos = [...porMaster.values()];
+    const um = async (c: Cartao) => {
+      if (Date.now() - t0 > orcamento) return;
       out.tentados++;
       const aplicar = async (d: DbT) => {
         const r = await decidir(d, { key: c.key, acao: 'aprovar', userId: admin });
@@ -56,8 +62,11 @@ export async function rodarAprovacaoAuto(dbx: DbT, o: { lote?: number; orcamento
       };
       if (o.dry) await dbx.transaction(async (tx) => { await aplicar(tx as unknown as DbT); throw new Rollback(); }).catch((e) => { if (!(e instanceof Rollback)) throw e; });
       else await aplicar(dbx);
-      await new Promise((r) => setTimeout(r, 150));
-    }
+    };
+    let next = 0;
+    await Promise.all(Array.from({ length: 3 }, async () => {
+      while (next < grupos.length) { const g = grupos[next++]; for (const c of g) await um(c); }
+    }));
   } catch (e) {
     out.erros++;
     out.duracaoMs = Date.now() - t0;
