@@ -89,6 +89,8 @@ for (const f of arquivos) if (/\.tsx?$/.test(f)) codigo.set(f, linhasDeCodigo(f)
 /** Literal 'afiliado' sozinho (valor interno de tipo, chave ou comparação) é permitido; qualquer outra ocorrência é texto. */
 function afiliadoVisivel(l: string): boolean {
   if (!/afiliad/i.test(l)) return false;
+  // #138: linha de import/export-from é código (caminho de módulo), nunca texto que chega ao cliente (R-70 trouxe `import ... link-afiliado`).
+  if (/^\s*(import|export)\b[^'"`]*\bfrom\s+['"`]/.test(l) || /^\s*import\s+['"`]/.test(l)) return false;
   // remove valores internos: literais de uma palavra só (sem espaço) que contêm afiliad, ex. 'afiliado', "affiliate-x" não casa
   const semInternos = l.replace(/(['"`])[a-z0-9_.:-]*afiliad[a-z0-9_.:-]*\1/gi, ' ');
   // identificadores de código (variáveis, props) também são internos
@@ -167,7 +169,10 @@ async function htmlLocal(): Promise<string | null> {
     const t = setTimeout(() => ctl.abort(), 3000);
     const r = await fetch(`${URL_LOCAL}/?v=2`, { signal: ctl.signal });
     clearTimeout(t);
-    return r.ok ? await r.text() : null;
+    if (!r.ok) return null;
+    const txt = await r.text();
+    // #138: a porta 3000 pode estar com OUTRO app (visto: site comercial da We Make). Só julga a página se for o Espaço Geek 86.
+    return /espa[cç]o\s*geek|egeek86/i.test(txt) ? txt : null;
   } catch {
     return null;
   }
