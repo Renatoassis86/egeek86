@@ -1,3 +1,4 @@
+import { lojasDaRodada } from '@/lib/messaging/pool-diversidade';
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
@@ -214,7 +215,10 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
       detection = await degradedDetection(now);
       detection.warnings = [];
     } else try {
-      const run = detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag() });
+      // Fase 'deteccao': avalia so algumas lojas por ciclo (rodizio por minuto); GROUP_DETECT_LOJAS_POR_CICLO (padrao 3; 0/off = todas) mantem a consulta do pool dentro do orcamento com o banco lento.
+      const lojasPorCiclo = /^(off|false)$/i.test((process.env.GROUP_DETECT_LOJAS_POR_CICLO ?? '').trim()) ? 0 : Number(process.env.GROUP_DETECT_LOJAS_POR_CICLO) >= 0 && (process.env.GROUP_DETECT_LOJAS_POR_CICLO ?? '').trim() !== '' ? Number(process.env.GROUP_DETECT_LOJAS_POR_CICLO) : 3;
+      const lojasRodada = deps.fase === 'deteccao' ? lojasDaRodada(['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza'], now, lojasPorCiclo) : undefined;
+      const run = detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag(), ...(lojasRodada ? { verticals: lojasRodada } : {}) });
       run.catch(() => undefined); // evita rejeição não tratada se a corrida abaixo já terminou
       let timer: ReturnType<typeof setTimeout> | undefined;
       const limit = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error(`detecção passou de ${orcamentoDeteccao / 1000} s`)), orcamentoDeteccao); });

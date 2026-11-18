@@ -23,3 +23,15 @@ console.log('test-envio-fases (conexao): OK');
 const auto3 = fs.readFileSync('src/server/messaging/group-auto.ts', 'utf8');
 assert.ok(/DETECT_BUDGET_DEDICADO_MS = 95_000/.test(auto3) && auto3.includes("deps.fase === 'deteccao' ? DETECT_BUDGET_DEDICADO_MS : DETECT_BUDGET_MS"), 'a fase de deteccao tem orcamento de 95 s; o ciclo unico segue em 22 s');
 console.log('test-envio-fases (deteccao): OK');
+// deteccao com rodizio de lojas por ciclo (banco lento)
+import { lojasDaRodada } from '../src/lib/messaging/pool-diversidade';
+const todas = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza'];
+assert.deepEqual(lojasDaRodada(todas, new Date(0), 3), ['games', 'tecnologia', 'eletroeletronicos']);
+assert.deepEqual(lojasDaRodada(todas, new Date(7 * 60_000), 3), ['beleza', 'games', 'tecnologia'], 'dá a volta no fim da lista');
+assert.equal(lojasDaRodada(todas, new Date(0), 0).length, 8, 'porCiclo 0 = todas');
+assert.equal(lojasDaRodada(todas, new Date(0), 9).length, 8, 'porCiclo >= total = todas');
+const vistas = new Set<string>();
+for (let m = 0; m < 8; m++) for (const v of lojasDaRodada(todas, new Date(m * 60_000), 3)) vistas.add(v);
+assert.equal(vistas.size, 8, 'em 8 minutos todas as lojas passam pela deteccao');
+assert.ok(fs.readFileSync('src/server/messaging/group-auto.ts', 'utf8').includes("deps.fase === 'deteccao' ? lojasDaRodada("), 'so a fase de deteccao usa o rodizio');
+console.log('test-envio-fases (rodizio de lojas): OK');

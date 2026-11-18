@@ -168,3 +168,14 @@ export function medianaPorTipo(rows: ReadonlyArray<{ v: string; name: string; mi
   }
   return out;
 }
+
+/**
+ * Rodizio de lojas na DETECCAO (2026-11-18, banco lento): cada ciclo avalia so `porCiclo` lojas consecutivas (comeco = minuto % total), então a consulta pesada do pool
+ * custa ~porCiclo/total e todas as lojas passam por ela a cada `total/porCiclo` minutos. porCiclo <= 0 ou >= total = todas (comportamento de antes).
+ */
+export function lojasDaRodada(todas: readonly string[], now: Date, porCiclo: number): string[] {
+  const n = todas.length;
+  if (!n || !(porCiclo > 0) || porCiclo >= n) return [...todas];
+  const ini = Math.floor(now.getTime() / 60_000) % n;
+  return Array.from({ length: porCiclo }, (_, i) => todas[(ini + i) % n]);
+}
