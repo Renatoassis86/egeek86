@@ -286,6 +286,8 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
             const r = await sendQueuedTelegram(row.id, { now: new Date(), fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup, onCouponSent: deps.onCouponSent });
             outcome = r;
             conta(String((r as { outcome: string }).outcome));
+            // 2026-11-18: motivo das falhas no resumo do ciclo (antes só o total 'failed'; sem o motivo não dava para atacar a causa dos envios que falham aos 30 s).
+            if ((r as { outcome: string }).outcome === 'failed') conta(`falha:${String((r as { reason?: string }).reason ?? '?').replace(/\s+/g, ' ').replace(/\d+/g, 'N').slice(0, 60)}`);
             temposEnvio.push(Math.round((Date.now() - tEnvio) / 1000));
             pending = pending.filter((x) => x.id !== row.id);
             if (r.outcome === 'sent') {
