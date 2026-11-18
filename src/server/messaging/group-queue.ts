@@ -160,6 +160,15 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   return rows.map(mapRow);
 }
 
+/** 2026-11-18: 'Failed query: SELECT...' escondia a CAUSA (timeout de 30 s, conexao encerrada, lock). Devolve a mensagem curta + a causa do driver, sem o SQL. */
+export function motivoDeErro(e: unknown): string {
+  if (!(e instanceof Error)) return 'erro';
+  const causa = (e as { cause?: unknown }).cause;
+  const c = causa instanceof Error ? causa.message : '';
+  const base = e.message.replace(/^Failed query:[\s\S]*$/, 'Failed query');
+  return c ? `${base}: ${c}`.slice(0, 160) : e.message.slice(0, 160);
+}
+
 export interface PersistOptions {
   state: AutomationState;
   /** Modo sombra: só o vencedor do plano é gravado como decisão simulada (os demais ficam só no resumo do ciclo). */
@@ -748,7 +757,7 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
     // Exceção ANTES do envio: devolve à fila. (Se o Telegram aceitou e o banco falhou depois, a linha fica 'enviando' e vira 'erro'
     // no expireStale; nunca é reenviada.)
     await release(e instanceof Error ? e.message : 'erro').catch(() => undefined);
-    return { ok: false, outcome: 'failed', reason: e instanceof Error ? e.message : 'erro' };
+    return { ok: false, outcome: 'failed', reason: motivoDeErro(e) };
   }
 }
 
@@ -809,7 +818,7 @@ async function sendApprovedTelegramLegacy(id: string, now: Date): Promise<SendOu
     return { ok: false, outcome: 'failed', reason: sent.error };
   } catch (e) {
     await db.execute(sql`UPDATE group_messages SET claimed_at = NULL, updated_at = now(), error = ${String(e instanceof Error ? e.message : e).slice(0, 300)} WHERE id = ${id}::uuid`);
-    return { ok: false, outcome: 'failed', reason: e instanceof Error ? e.message : 'erro' };
+    return { ok: false, outcome: 'failed', reason: motivoDeErro(e) };
   }
 }
 
