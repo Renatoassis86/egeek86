@@ -51,3 +51,6 @@ Fonte das regras: `docs/03-metodologia/FLUXO_MESTRE.md` §15.10 a 15.18 e `CLAUD
 2. **Keepa:** continua pelo Chrome, tentando solucoes de raspagem. **As 9h: explicar como assinar** (plano, custo, como a chave entra na Vercel). Pendente: preparar o passo a passo.
 3. **Cartao/credito da Amazon:** autorizado com prova no item. Verificado no desktop: o Itau/ITAU20OFF e o "R$ 30 Amazon Credito" nao estao no DOM da aba logada; so "5% off a vista" e um widget de marketing. Sem prova estavel nada sai; pendente ler a pagina como o app a mostra.
 4. **94 "digital entre parenteses" e `review`:** nao reavaliar (manter fora). Item removido da lista.
+
+## 4. Benchmark Keepa e similares (relatorio `docs/relatorios/2026-11-18-benchmark-keepa-e-similares.md`)
+- [ ] Roteiro: (1) vendidos do ML como sinal de demanda + canario de leitores + segundo extrator da Amazon; (2) agendamento por valor e fila fora do Postgres; (3) alerta por usuario no Telegram; (4) Keepa como fonte da Amazon; (5) extensao opt-in e API publica. Decisao do dono sobre a ordem.
