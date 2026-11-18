@@ -100,7 +100,7 @@ const hist: SentRecord[] = Array.from({ length: 10 }, (_, i) => rec({ masterProd
 const sbG2 = mk({ masterProductId: 'sbx', trigger: 'G2', cls: 'alerta', tipo: 'soundbar', moveScore: 30, dedupKey: 'sbx:G2:w' });
 const tvG2 = mk({ masterProductId: 'tvx', trigger: 'G2', cls: 'alerta', tipo: 'smart-tv', moveScore: 3, dedupKey: 'tvx:G2:w' });
 plan = applyLimits([sbG2, tvG2], hist, NOW);
-ok(plan.next?.masterProductId === 'tvx' && plan.deferred.some((d) => /^tipo_soundbar_acima_de_30pct/.test(d.reason)), 'R-47b: G2 de tipo acima de 30% cede a vez ao G2 de outro tipo (antes alerta era isento)', plan.next?.masterProductId);
+ok(plan.next?.masterProductId === 'tvx' && plan.deferred.some((d) => /^tipo_soundbar_acima_de_20pct/.test(d.reason)), 'R-47b: G2 de tipo acima de 20% cede a vez ao G2 de outro tipo (antes alerta era isento)', plan.next?.masterProductId);
 plan = applyLimits([sbG2], hist, NOW);
 ok(plan.next?.masterProductId === 'sbx', 'cota SUAVE: sem alternativa o tipo dominante ainda sai');
 const sbOK1 = mk({ masterProductId: 'sby', trigger: 'OK1', cls: 'alerta', tipo: 'soundbar', moveScore: 9, dedupKey: 'sby:OK1:w' });

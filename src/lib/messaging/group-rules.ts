@@ -2422,7 +2422,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   // eventos de novo minimo (G1, OK1), que mantem prioridade. Dentro do mesmo degrau: tipo MENOS enviado hoje na loja, depois produto MENOS enviado em 72 h, depois a REDE
   // (Mercado Livre, Shopee, Amazon) menos enviada hoje na loja; so entao a ordem de sempre. GROUP_DIVERSIDADE=off volta ao rodizio antigo.
   const diversidadeOn = !/^(0|off|false|nao|não)$/i.test((process.env.GROUP_DIVERSIDADE ?? '').trim());
-  const rotates = (c: Candidate) => diversidadeOn ? c.cls !== 'plataforma' && c.trigger !== 'G1' && c.trigger !== 'OK1' : c.cls === 'insight' || c.cls === 'radar' || (cotaAlerta && c.cls === 'alerta' && c.trigger !== 'G1' && c.trigger !== 'OK1');
+  const rotates = (c: Candidate) => diversidadeOn ? c.cls !== 'plataforma' && c.trigger !== 'G1' && c.trigger !== 'OK1' && (c.cls !== 'alerta' || cotaAlerta) : c.cls === 'insight' || c.cls === 'radar' || (cotaAlerta && c.cls === 'alerta' && c.trigger !== 'G1' && c.trigger !== 'OK1');
   const masterCountOf = (c: Candidate) => real.filter((h) => h.masterProductId === c.masterProductId && now.getTime() - h.sentAt.getTime() < 72 * 3600_000).length;
   const redeCountOf = (c: Candidate) => real.filter((h) => h.vertical === c.vertical && netKind({ networkSlug: h.networkSlug ?? '', networkName: h.networkSlug ?? '' }) === netKind(c) && now.getTime() - h.sentAt.getTime() < 24 * 3600_000).length;
   // Chave transitiva: classe; dentro de insight/radar, o ACHADO (sem comparacao) nunca passa na frente de um insight com comparacao real (G2, G3, T1...);
