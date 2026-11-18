@@ -190,11 +190,47 @@ async function cabecaVerticaisLiberadas(): Promise<CabecaItem[]> {
   return out;
 }
 
+
+/**
+ * ASPIRADORES NA AMAZON (dono, 2026-11-17: "Pode colocar os aspiradores da Amazon. De prioridade aos para uso domestico"): a cada passada rapida entram os masters de aspirador
+ * de uso DOMESTICO (de po, vertical, sem fio, robo, portatil) que ja existem nas outras lojas, primeiro os que a Amazon nunca buscou, depois a checagem mais antiga; industrial,
+ * profissional, automotivo, piscina e extratora ficam de fora da prioridade. Teto AMAZON_ASPIRADOR_CABECA (padrao 12; 0 desliga). Independe da vertical estar liberada nas mensagens:
+ * a oferta lida entra no banco e passa pelas mesmas regras de identidade e preco de sempre.
+ */
+export function aspiradorCabecaMax(env: Record<string, string | undefined> = process.env): number {
+  const raw = (env.AMAZON_ASPIRADOR_CABECA ?? '').trim();
+  const n = Number(raw);
+  return raw !== '' && Number.isInteger(n) && n >= 0 && n <= 40 ? n : 12;
+}
+export const ASPIRADOR_DOMESTICO_SQL = String.raw`m.name ~* '(aspirador|rob[oô] aspirador)' AND m.name !~* '(industrial|profissional|automotivo|automotiva|carro|veicular|piscina|extratora|lava ?jato|lavadora)'`;
+async function cabecaAspiradores(): Promise<CabecaItem[]> {
+  const max = aspiradorCabecaMax();
+  if (max === 0) return [];
+  const rows = await db.execute<QRow>(sql`
+    SELECT m.id::text AS id, m.name, m.vertical, m.game_platform_gen AS gen, m.gtin, m.mpn, m.manufacturer, b.name AS brand_name,
+           m.attributes->'vertical'->>'segment' AS segment, m.attributes->'vertical'->'catalogAttributes' AS cat
+    FROM master_products m LEFT JOIN brands b ON b.id = m.brand_id
+    LEFT JOIN LATERAL (SELECT min(o.last_checked_at) AS chk FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id
+                       WHERE o.master_product_id = m.id AND n.slug = 'amazon' AND o.status IN ('active','draft')) a ON true
+    JOIN LATERAL (SELECT count(*) AS n FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id
+                  WHERE o.master_product_id = m.id AND n.slug <> 'amazon' AND o.status = 'active' AND o.quarantined_at IS NULL AND o.current_price_cents > 0) x ON x.n > 0
+    WHERE m.vertical = 'eletrodomesticos' AND ${sql.raw(ASPIRADOR_DOMESTICO_SQL)} AND ${eligibleSql()}
+    ORDER BY (a.chk IS NULL) DESC, a.chk ASC NULLS FIRST, x.n DESC, m.id
+    LIMIT ${max}`);
+  const out: CabecaItem[] = [];
+  for (const r of rows) {
+    const m = masterFromRow(r);
+    if (m) out.push({ id: String(r.id), q: buildQueryFor(m), pos: 100, nome: String(r.name) });
+  }
+  return out;
+}
+
 export async function amazonCabecaQueue(): Promise<{ total: number; items: AmzQueueItem[] }> {
   const prio = (await cabecaPrioritaria()).slice(0, 10).map(({ id, q }) => ({ id, q }));
   const vistos = new Set(prio.map((x) => x.id));
   const lib = (await cabecaVerticaisLiberadas()).filter((x) => !vistos.has(x.id)).map(({ id, q }) => ({ id, q }));
-  const c = [...prio, ...lib];
+  const asp = (await cabecaAspiradores().catch(() => [])).filter((x) => !vistos.has(x.id) && !lib.some((l) => l.id === x.id)).map(({ id, q }) => ({ id, q }));
+  const c = [...prio, ...asp, ...lib];
   return { total: c.length, items: c };
 }
 

@@ -814,6 +814,9 @@ Pedido: "No canal de jogos, de 30 em 30 minutos mandem em uma unica mensagem os 
 - **Diagnostico:** so com historico elegivel (R-91); sem ele, "Novo em monitoramento" (1 oferta) ou "Em monitoramento" (2 ou mais). Nunca percentual sem historico.
 - **Controles:** `VITRINE_GAMES=off` desliga; `?dry=1` monta sem enviar; `?force=1` reenvia ignorando a trava de 27 min. Teste `scripts/test-vitrine-games.ts`. **Rodizio (dono, 2026-11-17):** o jogo que saiu numa vitrine descansa 3 vitrines (1h30) e so volta depois; faltando jogo, completa com quem saiu ha mais tempo; a ordem de qualidade (abaixo do normal, mais ofertas, maior queda) decide dentro de quem esta descansado. Pool de 200 jogos; `escolherTopRodizio` em `src/lib/messaging/vitrine-games.ts`; historico em `collector_runs.meta.masters` (previa `dry` nao conta).
 
+### 15.14 Aspiradores na Amazon (dono, 2026-11-17)
+A passada rapida da Amazon (`amazonCabecaQueue`) ganha ate 12 masters de aspirador de USO DOMESTICO por rodada (de po, vertical, sem fio, robo, portatil; fora industrial, profissional, automotivo, piscina, extratora), primeiro os que a Amazon nunca buscou, depois a checagem mais antiga (`AMAZON_ASPIRADOR_CABECA`, 0 desliga). Independe da liberacao da vertical nas mensagens. Teste `scripts/test-amazon-aspirador-cabeca.ts`. Janela de 7 dias: ver fila #149.
+
 ## 16. Inventário de canais (conferido no banco e no código em 2026-11-17)
 Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o roteamento de `src/server/messaging/group-queue.ts` (`chatForStore(loja) ?? telegramChatFor(vertical)`). **Existem 7 lojas, uma por vertical, cada uma com canal do Telegram próprio verificado e com o bot podendo postar, e cada uma com grupo de WhatsApp cadastrado.** Nenhuma regra do tipo "abrir canal novo para os 7 departamentos" é necessária: eles já existem. Os identificadores (chat id e link de convite) ficam só no banco e não são copiados para a documentação.
 
