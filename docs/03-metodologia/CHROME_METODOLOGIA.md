@@ -9,6 +9,12 @@ Pedido do dono: "como anda a busca, a abertura e o controle dos produtos pelo Ch
 - **Métodos pesados:** `cupons-24h`, `shopee-cupons` e `amazon-promocoes` abrem **iframes** (renderizam a página inteira); `amazon-assistida` e o linkbuilder usam `fetch` (leve). ML item e Shopee são SPA.
 - Servidor não é o gargalo da ingestão: rota de cupom responde em 0,6 s.
 
+### Causa raiz encontrada (2026-11-18, medida na máquina do dono)
+- **Falta de memória:** 685 MB livres de 13,3 GB (5%), com o Chrome em 41 processos (2,6 GB) e **um servidor Next.js de outro projeto (`wemake`, `start-server.js`) rodando desde 16/11 com 2,1 GB**, além de IDE e antivírus. Com memória nesse nível o Windows comprime e o Chrome congela/descarta abas em segundo plano: foi o que aconteceu ao testar agora (todas as abas, até a que estava aberta, deram `Runtime.evaluate` estourando 45 s, inclusive um comando trivial).
+- **Por isso** os loops rodam em rajada logo depois da reinjeção e param: a aba congela, o Chrome a substitui e o loop injetado se perde.
+- **Ação do dono:** encerrar esse servidor de outro projeto quando não estiver em uso e manter o Chrome só com as abas dos loops. Eu não encerro processo de outro projeto sem pedido.
+- **Meta de máquina:** pelo menos 2 GB livres; o vigia deve registrar memória livre junto do batimento (pendente).
+
 ## 2. Regras de uso do Chrome
 1. **Uma aba = um loop** (Amazon home, Amazon conta, ML linkbuilder, ML cupons, Shopee), todas no mesmo grupo MCP, nunca minimizadas nem em janela de outro perfil.
 2. **Leitura por `fetch` + `DOMParser` na própria aba logada** (cookies do dono), nunca aba nova nem iframe quando a página entrega o dado no HTML. Iframe só onde o site exige renderização (SPA da Shopee), com fatia curta e `src` descartado ao terminar.

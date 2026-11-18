@@ -34,7 +34,8 @@ Fonte das regras: `docs/03-metodologia/FLUXO_MESTRE.md` §15.10 a 15.18 e `CLAUD
 ### Plataforma e operação
 - [ ] **Amazon independente do Chrome:** exige assinar o Keepa e autorizar que escreva preço. [?] pergunta 2.
 - [ ] **Coletores `collect-vertical:*` lentos** (4 a 5 min cada, parciais, 8 lojas sobrepostas): reduzir carga no banco.
-- [ ] **Loops do Chrome congelam** e o Chrome troca as abas: diagnosticar a causa (memória, abas de outros grupos) e estabilizar; vigia de 30 em 30 min reinjeta.
+- [ ] **Loops do Chrome congelam: causa raiz = memoria da maquina (685 MB livres de 13,3 GB; servidor Next.js do projeto wemake rodando desde 16/11 com 2,1 GB).** Dono decide encerrar esse processo; metodologia e batimento de saude no ar (R-102). Falta reinjetar os 5 loops com a versao com batimento e medir leituras/h.
+- [ ] (antigo) **Loops do Chrome congelam** e o Chrome troca as abas: diagnosticar a causa (memória, abas de outros grupos) e estabilizar; vigia de 30 em 30 min reinjeta.
 - [ ] **ML: links `meli.la` pendentes** (1.176 ofertas ativas invisíveis) e quarentena sem motivo (165) e `review` sem prazo (relatório de retenção, itens 3 a 5).
 - [ ] Medidor de retenção no portão (`scripts/medir-retencao.ts`) e alarme se livres/ativas < 90%.
 - [ ] Home "Compare preços": conferir visual e uso real; capa da vitrine conferida no Telegram.
