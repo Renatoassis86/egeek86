@@ -38,7 +38,9 @@ export const MAX_SENDS_PER_RUN = 60;
 export const PENDING_LIMIT = 840;
 /** Invocação própria de envio (fase 'envio'): sem detecção, o envio ganha quase o minuto inteiro (maxDuration da rota = 120 s; o cron seguinte espera a trava). */
 export const SEND_BUDGET_ENVIO_MS = 52_000;
-export const CYCLE_HARD_CAP_ENVIO_MS = 58_000;
+export const CYCLE_HARD_CAP_ENVIO_MS = 105_000;
+/** Janela MINIMA do envio a partir do inicio do laco (banco lento: a preparacao do ciclo nao pode zerar o envio). */
+export const SEND_MIN_WINDOW_ENVIO_MS = 30_000;
 
 /**
  * Ciclo do cron das mensagens (a cada 5 min quando for agendado; NÃO está no vercel.json). Idempotente e tolerante a
@@ -250,8 +252,10 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
         const conta = (k: string) => { resultados[k] = (resultados[k] ?? 0) + 1; };
         const temposEnvio: number[] = [];
         // Prazo do envio: o orçamento de 38 s do ciclo, mas nunca menos que SEND_MIN_WINDOW_MS a partir de agora (a detecção lenta não pode zerar o envio) e nunca além do teto do ciclo.
+        // 2026-11-18: com o banco lento a PREPARACAO do ciclo (expirar, contagem de inscritos, historico) passava de 52 s e o envio nascia sem tempo (5 ciclos, 0 envios, 0 falhas).
+        // Agora o envio ganha pelo menos SEND_MIN_WINDOW_ENVIO_MS a partir de AGORA, ate o teto CYCLE_HARD_CAP_ENVIO_MS (maxDuration da rota = 120 s).
         const sendDeadline = soEnvio
-          ? started.getTime() + SEND_BUDGET_ENVIO_MS
+          ? Math.min(started.getTime() + CYCLE_HARD_CAP_ENVIO_MS, Math.max(started.getTime() + SEND_BUDGET_ENVIO_MS, Date.now() + SEND_MIN_WINDOW_ENVIO_MS))
           : Math.min(started.getTime() + CYCLE_HARD_CAP_MS, Math.max(started.getTime() + SEND_BUDGET_MS, Date.now() + SEND_MIN_WINDOW_MS));
         // 2026-11-17 (dono: "precisamos ser mais rapidos ... nao perdermos produtos"): cada canal tem o proprio espacamento, entao as filas de cada loja drenam EM PARALELO
         // (antes uma fila unica: cada envio levava ~10 s de revalidacao e render, 2 a 5 por ciclo para 7 canais). O espacamento por chat e o 429 continuam valendo dentro de cada fila.
