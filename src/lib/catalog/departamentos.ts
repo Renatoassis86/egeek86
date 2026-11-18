@@ -53,6 +53,8 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
   { slug: 'esporte', rotulo: 'Esporte', descricao: 'Artigos esportivos.', tipoCartao: 'esporte', flag: 'dept_esporte' },
   // Fechado ao público: não existe linha dept_impressao3d em feature_flags e MERCADO_UI segue desligada (ata 2026-11-11).
   { slug: 'impressao3d', rotulo: 'Impressão 3D', descricao: 'Impressoras 3D, filamentos e resinas.', tipoCartao: 'tecnologia', flag: 'dept_impressao3d' },
+  // Beleza (2026-11-17): maquiagem primeiro, depois skincare, cabelo e perfumaria. Flag dept_beleza; o departamento so abre com 3+ masters aprovados e visiveis.
+  { slug: 'beleza', rotulo: 'Beleza', descricao: 'Maquiagem, skincare, cabelo e perfumaria das melhores marcas.', tipoCartao: 'tecnologia', flag: 'dept_beleza' },
 ];
 
 export function departamentoPorSlug(slug: string): Departamento | null {

@@ -1,7 +1,7 @@
 // E5 (#146, R-90): rodízio da coleta da Shopee entre verticais DENTRO do cron único `collect-shopee` (*/5).
 // A API da Shopee limita por app (erro 10030) e o tick de Games usa ~4 dos 5 min; crons paralelos por vertical disputariam a mesma cota.
 // Padrão: 1 tick em 3 vai para uma vertical que não é Games, em rodízio (cada vertical a cada 75 min com 5 verticais). COLLECT_SHOPEE_FATIA_OUTRAS=0 desliga.
-export const VERTICAIS_SHOPEE_OUTRAS = ['esporte', 'eletrodomesticos', 'tecnologia', 'eletroeletronicos', 'impressao3d'] as const;
+export const VERTICAIS_SHOPEE_OUTRAS = ['esporte', 'eletrodomesticos', 'tecnologia', 'eletroeletronicos', 'impressao3d', 'beleza'] as const;
 
 export function fatiaOutras(env: Record<string, string | undefined> = process.env): number {
   const raw = (env.COLLECT_SHOPEE_FATIA_OUTRAS ?? '').trim();

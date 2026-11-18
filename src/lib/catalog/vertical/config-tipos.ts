@@ -378,7 +378,64 @@ const ESPORTE: SegmentConfig[] = [
   }),
 ];
 
-export const NOVOS_SEGMENTOS_TIPOS: SegmentConfig[] = [...ELETRO, ...TECNOLOGIA, ...I3D, ...CASA, ...ESPORTE];
+// ---------------------------------------------------------------------------------------------------------------------
+// BELEZA (dono, 2026-11-17: "não estou vendo produtos de beleza, principalmente maquiagens; de preferência das melhores marcas")
+// Maquiagem primeiro (rank 200+), depois skincare, cabelo e perfumaria. Marcas: as MELHORES abrem cada lista (a semeadura vai na ordem dos
+// termos), depois as grandes do mercado brasileiro. Domínios do ML a confirmar no 1º dry-run (regex de varredura, busca sem domain_id).
+// Só produto novo e em linha: amostra, miniatura, brinde e kit de revenda ficam fora pelo porteiro (gate.ts) e usado/Open Box pela regra geral.
+// ---------------------------------------------------------------------------------------------------------------------
+export const MARCAS_MAQUIAGEM_TOP = ['mac', 'dior', 'chanel', 'yves saint laurent', 'lancome', 'estee lauder', 'charlotte tilbury', 'nars', 'fenty beauty', 'rare beauty', 'huda beauty', 'urban decay', 'too faced', 'benefit', 'clinique', 'kiko milano'];
+export const MARCAS_MAQUIAGEM_BR = ['maybelline', 'loreal paris', 'nyx', 'revlon', 'max factor', 'vult', 'quem disse berenice', 'boca rosa', 'bruna tavares', 'oceane', 'o boticario', 'natura', 'eudora', 'mary kay', 'avon', 'vizzela', 'ruby rose', 'dailus', 'payot', 'tracta', 'cuidado'];
+const MARCAS_MAQ = [...MARCAS_MAQUIAGEM_TOP, ...MARCAS_MAQUIAGEM_BR];
+const MARCAS_SKIN = ['la roche posay', 'vichy', 'cerave', 'the ordinary', 'neutrogena', 'avene', 'bioderma', 'eucerin', 'sallve', 'principia', 'adcos', 'isdin', 'skinceuticals', 'lancome', 'clinique', 'estee lauder', 'dior', 'shiseido', 'garnier', 'nivea'];
+const MARCAS_CABELO = ['kerastase', 'olaplex', 'wella', 'truss', 'inoar', 'lola cosmetics', 'cadiveu', 'redken', 'loreal professionnel', 'tresemme', 'pantene', 'elseve', 'seda', 'dove', 'amend', 'brae', 'bio extratus', 'babyliss', 'taiff', 'gama italy', 'philips'];
+const MARCAS_PERFUME = ['carolina herrera', 'paco rabanne', 'jean paul gaultier', 'dior', 'chanel', 'yves saint laurent', 'lancome', 'giorgio armani', 'dolce gabbana', 'versace', 'calvin klein', 'hugo boss', 'azzaro', 'o boticario', 'natura', 'eudora', 'montblanc', 'burberry', 'tom ford', 'victor hugo'];
+const BELEZA_RE = (re: RegExp) => [re];
+
+const BELEZA_SEG: SegmentConfig[] = [
+  seg({
+    key: 'batom', vertical: 'beleza', label: 'Batom e lábios', rank: 200, domains: BELEZA_RE(/LIPSTICK|LIP_|LIPS|LIPGLOSS|LIP_BALM|LIP_STAIN/),
+    terms: combineTerms('batom', ['', 'matte', 'liquido', 'cremoso', 'em bastao', 'gloss', 'tint labial'], MARCAS_MAQ.slice(0, 16)),
+  }),
+  seg({
+    key: 'base-corretivo', vertical: 'beleza', label: 'Base, corretivo e primer', rank: 201, domains: BELEZA_RE(/FOUNDATION|CONCEALER|PRIMER|BB_CREAM|CC_CREAM|FACE_MAKEUP/),
+    terms: [...combineTerms('base', ['liquida', 'matte', 'alta cobertura', 'stick', 'efeito natural'], MARCAS_MAQ.slice(0, 14)), ...combineTerms('corretivo', ['liquido', 'alta cobertura', 'em bastao'], MARCAS_MAQ.slice(0, 10)), ...combineTerms('primer', ['facial', 'hidratante', 'matificante'], MARCAS_MAQ.slice(0, 8))],
+  }),
+  seg({
+    key: 'po-blush-iluminador', vertical: 'beleza', label: 'Pó, blush e iluminador', rank: 202, domains: BELEZA_RE(/BLUSH|POWDER|HIGHLIGHT|BRONZER|CONTOUR|SETTING_SPRAY|FACE_POWDER/),
+    terms: [...combineTerms('po compacto', ['', 'translucido', 'matte', 'facial'], MARCAS_MAQ.slice(0, 12)), ...combineTerms('blush', ['', 'liquido', 'em po', 'cremoso'], MARCAS_MAQ.slice(0, 12)), ...combineTerms('iluminador', ['', 'liquido', 'em po', 'stick'], MARCAS_MAQ.slice(0, 10)), 'fixador de maquiagem', 'spray fixador de maquiagem'],
+  }),
+  seg({
+    key: 'olhos-maquiagem', vertical: 'beleza', label: 'Sombra, máscara de cílios e delineador', rank: 203, domains: BELEZA_RE(/EYE|MASCARA|EYELINER|EYESHADOW|EYEBROW|LASH/),
+    terms: [...combineTerms('paleta de sombras', ['', 'nude', 'glitter', 'matte'], MARCAS_MAQ.slice(0, 14)), ...combineTerms('mascara de cilios', ['', 'a prova dagua', 'volume', 'alongamento'], MARCAS_MAQ.slice(0, 12)), ...combineTerms('delineador', ['', 'liquido', 'em gel', 'a prova dagua'], MARCAS_MAQ.slice(0, 8)), ...combineTerms('sobrancelha', ['gel', 'lapis', 'pomada'], MARCAS_MAQ.slice(0, 6))],
+  }),
+  seg({
+    key: 'esmalte', vertical: 'beleza', label: 'Esmalte e unhas', rank: 204, domains: BELEZA_RE(/NAIL_POLISH|NAIL_|MANICURE/),
+    terms: combineTerms('esmalte', ['', 'gel', 'cremoso', 'cintilante', 'kit'], ['risque', 'colorama', 'dailus', 'impala', 'mavala', 'opi', 'essie', 'vult', 'ruby rose', 'avon', 'o boticario', 'natura']),
+  }),
+  seg({
+    key: 'kit-pinceis', vertical: 'beleza', label: 'Pincéis e acessórios de maquiagem', rank: 205, domains: BELEZA_RE(/MAKEUP_BRUSHES|BRUSH|SPONGE|MAKEUP_TOOLS|EYELASH_CURLER/),
+    terms: [...combineTerms('kit de pinceis', ['maquiagem', 'profissional'], ['real techniques', 'macrilan', 'vult', 'ruby rose', 'klass vough', 'mac', 'sigma', 'morphe', 'bruna tavares']), 'esponja de maquiagem beauty blender', 'curvex curvador de cilios'],
+  }),
+  seg({
+    key: 'skincare', vertical: 'beleza', label: 'Skincare e protetor solar', rank: 210, domains: BELEZA_RE(/SKIN|FACIAL|SERUM|SUNSCREEN|SUN_|MOISTURIZER|CLEANSER|ANTI_AGING/),
+    terms: [...combineTerms('serum facial', ['vitamina c', 'acido hialuronico', 'niacinamida', 'retinol'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('protetor solar facial', ['fps 50', 'fps 70', 'toque seco', 'com cor'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('hidratante facial', ['', 'oil free', 'anti idade'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('limpeza facial', ['gel', 'agua micelar', 'espuma'], MARCAS_SKIN.slice(0, 8))],
+  }),
+  seg({
+    key: 'cabelo', vertical: 'beleza', label: 'Cabelo (tratamento e finalizador)', rank: 220, domains: BELEZA_RE(/SHAMPOO|CONDITIONER|HAIR_|HAIRCARE|HAIR_MASK|HAIR_TREATMENT/),
+    terms: [...combineTerms('shampoo', ['', 'hidratacao', 'reparador', 'antirresiduos'], MARCAS_CABELO.slice(0, 12)), ...combineTerms('mascara capilar', ['', 'reconstrucao', 'hidratante'], MARCAS_CABELO.slice(0, 10)), ...combineTerms('olaplex', ['n 3', 'n 4', 'n 5', 'n 7', 'kit'], [''])],
+  }),
+  seg({
+    key: 'secador-prancha', vertical: 'beleza', label: 'Secador e prancha de cabelo', rank: 221, profile: GTIN_P(['ALPHANUMERIC_MODEL', 'VOLTAGE']), domains: BELEZA_RE(/HAIR_DRYERS|HAIR_STRAIGHTENERS|FLAT_IRONS|HAIR_CURLERS|HAIR_STYLERS/),
+    terms: [...combineTerms('secador de cabelo', ['profissional', 'ionico', 'bivolt', '2400w'], ['taiff', 'philips', 'babyliss', 'gama italy', 'mondial', 'wahl', 'dyson', 'remington', 'ghd']), ...combineTerms('prancha', ['cabelo', 'alisadora', 'ceramica', 'bivolt'], ['taiff', 'philips', 'babyliss', 'gama italy', 'ghd', 'remington', 'mondial'])],
+  }),
+  seg({
+    key: 'perfume', vertical: 'beleza', label: 'Perfume', rank: 230, domains: BELEZA_RE(/PERFUME|FRAGRANCE|EAU_DE|COLOGNE|BODY_SPLASH/),
+    terms: [...combineTerms('perfume', ['feminino', 'masculino', 'eau de parfum', 'importado', 'edp 100ml', 'edt'], MARCAS_PERFUME.slice(0, 14)), ...combineTerms('perfume', ['feminino', 'masculino'], ['natura', 'o boticario', 'eudora', 'avon', 'jequiti'])],
+  }),
+];
+
+export const NOVOS_SEGMENTOS_TIPOS: SegmentConfig[] = [...ELETRO, ...TECNOLOGIA, ...I3D, ...CASA, ...ESPORTE, ...BELEZA_SEG];
 
 // ---------------------------------------------------------------------------------------------------------------------
 // TERMOS EXTRAS DE SEGMENTOS JÁ EXISTENTES (anexados ao fim; mais modelos e marcas por tipo, sem teto)

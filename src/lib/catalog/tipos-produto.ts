@@ -160,7 +160,22 @@ const LIVROS: TipoDef[] = [
   { slug: 'saude', rotulo: 'Saúde e bem-estar', re: r(' (medicina|saude|psicologia|autoajuda|coaching|nutricao|diagnostico|oncologia|inteligencia emocional|inteligencia relacional|inteligencia social) ') },
 ];
 
+// BELEZA (dono, 2026-11-17: "principalmente maquiagens, de preferência das melhores marcas"). Maquiagem abre a lista (vence empate de posição).
+const BELEZA: TipoDef[] = [
+  { slug: 'batom-labios', rotulo: 'Batons e lábios', re: r(' (batom|batons|lip tint|gloss|labial|lapis labial|lip oil|balm labial|hidratante labial|lip liner|liquid lip) ') },
+  { slug: 'base-corretivo', rotulo: 'Bases e corretivos', re: r(' (base liquida|base facial|base de maquiagem|base mate|base matte|base stick|corretivo|primer|bb cream|cc cream|skin tint|fundacao|foundation|concealer) ') },
+  { slug: 'po-blush-iluminador', rotulo: 'Pós, blush e iluminadores', re: r(' (po compacto|po facial|po solto|po translucido|blush|rubor|iluminador|bronzer|contorno|highlighter|setting powder|fixador de maquiagem|spray fixador) ') },
+  { slug: 'olhos', rotulo: 'Olhos e sobrancelhas', re: r(' (sombra|sombras|paleta de sombras|paleta|mascara de cilios|mascara para cilios|rimel|delineador|lapis de olho|kajal|sobrancelha|gel de sobrancelha|cilios) ') },
+  { slug: 'unhas', rotulo: 'Unhas', re: r(' (esmalte|esmaltes|base fortalecedora|top coat|removedor de esmalte|gel para unhas) ') },
+  { slug: 'skincare', rotulo: 'Skincare', re: r(' (serum|sérum|hidratante facial|protetor solar|filtro solar|limpeza facial|sabonete facial|esfoliante facial|tonico facial|agua micelar|creme anti idade|anti idade|acido hialuronico|vitamina c|retinol|niacinamida|mascara facial|contorno dos olhos) ') },
+  { slug: 'cabelo', rotulo: 'Cabelo', re: r(' (shampoo|condicionador|mascara capilar|leave in|oleo capilar|finalizador|creme para pentear|escova progressiva|secador de cabelo|prancha|babyliss|chapinha|tintura|coloracao) ') },
+  { slug: 'perfumaria', rotulo: 'Perfumes', re: r(' (perfume|perfumes|eau de parfum|eau de toilette|colonia|body splash|parfum|deo colonia) ') },
+  { slug: 'corpo-banho', rotulo: 'Corpo e banho', re: r(' (hidratante corporal|body lotion|oleo corporal|sabonete liquido|esfoliante corporal|desodorante|creme para as maos|creme para os pes) ') },
+  { slug: 'acessorios-maquiagem', rotulo: 'Pincéis e acessórios', re: r(' (pincel|pinceis|esponja de maquiagem|beauty blender|kit de pinceis|necessaire|curvex|curvador de cilios|espelho de maquiagem) ') },
+];
+
 export const TIPOS_POR_DEPT: Record<DepartamentoSlug, readonly TipoDef[]> = {
+  beleza: BELEZA,
   eletroeletronicos: ELETRONICOS,
   eletrodomesticos: CASA,
   tecnologia: TECNOLOGIA,

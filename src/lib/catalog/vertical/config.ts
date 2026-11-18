@@ -568,6 +568,7 @@ export const PLUS_REFRESH_CEILING_MIN: Record<NonGamesVertical, number> = {
   impressao3d: 30,
   tecnologia: 30,
   eletroeletronicos: 30,
+  beleza: 30,
 };
 
 /** Intervalo de recoleta de um departamento: a menor frequência-alvo dos segmentos, limitada pelo teto Plus e pelos termos do ML. */

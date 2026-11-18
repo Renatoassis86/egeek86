@@ -59,6 +59,8 @@ const OUT_OF_SCOPE: Record<NonGamesVertical, RegExp> = {
   esporte: /\b(balao|bexiga|chaveiro|bomba|miniatura|pelucia|brinquedo|inflavel|calcador)\b/,
   // Impressão 3D (onda 1: impressora, filamento, resina). Peças/bicos/mesas entram só na onda seguinte, com compatibilidade escrita.
   impressao3d: /\b(capa|bolsa|mochila|garantia estendida|miniatura pronta|action figure|estatueta|caneta 3d|scanner|escaner|digitalizador|kit de pecas|pecas de reposicao)\b/,
+  // Beleza (2026-11-17): amostra, miniatura, brinde, expositor, brinquedo/maquiagem infantil, fantasia e kit de revenda nao sao o produto.
+  beleza: /\b(amostra|amostras|sample|miniatura|mini kit|brinde|expositor|display|brinquedo|brinquedos|infantil|fantasia|necessaire vazia|estojo vazio|kit revenda|atacado)\b/,
 };
 
 /** Segmentos cujo próprio produto é o que o léxico do departamento trata como acessório (cabo, adaptador): quem decide é scope.ts. */
