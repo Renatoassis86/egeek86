@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { buildGoLink } from '@/lib/messaging/group-messages';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
-import { VITRINE_INTERVALO_MIN, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherTop, janelaKey, montarLegenda, vitrineLigada, type JogoVitrine } from '@/lib/messaging/vitrine-games';
+import { VITRINE_INTERVALO_MIN, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherTopRodizio, janelaKey, montarLegenda, vitrineLigada, type JogoVitrine } from '@/lib/messaging/vitrine-games';
 import { aptaSql } from '@/server/queries/ranking-busca';
 import { getOfferListingMetrics } from '@/server/queries/affiliate';
 import { resolveCover } from '@/server/messaging/card-cover';
@@ -31,7 +31,7 @@ export async function carregarJogosVitrine(): Promise<JogoVitrine[]> {
     GROUP BY m.id
     HAVING min(o.current_price_cents) <= ${VITRINE_TETO_CENTAVOS}
     ORDER BY count(*) DESC, m.id
-    LIMIT 80`));
+    LIMIT 200`));
   const base: JogoVitrine[] = r.map((x) => ({
     masterId: x.mid, slug: x.slug, titulo: x.name, plataforma: GAME_PLATFORM_GEN_LABELS[x.plat] ?? '', precoCentavos: x.minp, ofertas: x.n, imagem: x.img,
   }));
@@ -70,7 +70,9 @@ export async function rodarVitrineGames(o: { now?: Date; dry?: boolean; force?: 
     if (ult && now.getTime() - new Date(ult.s).getTime() < (VITRINE_INTERVALO_MIN - 3) * 60_000) return { acao: 'recente', ms: Date.now() - t0 };
   }
   const candidatos = await carregarJogosVitrine();
-  const top = escolherTop(candidatos, VITRINE_TOP);
+  // Rodízio: o que saiu nas últimas vitrines descansa (VITRINE_REPOUSO_RODADAS); prévias (dry) não contam.
+  const recentes = rows<{ m: string[] | null }>(await db.execute(sql`SELECT meta->'masters' AS m FROM collector_runs WHERE job = ${JOB_VITRINE_GAMES} AND status = 'ok' ORDER BY started_at DESC LIMIT 12`)).map((x) => x.m ?? []);
+  const top = escolherTopRodizio(candidatos, recentes, VITRINE_TOP);
   if (top.length < 3) return { acao: 'poucos_jogos', candidatos: candidatos.length, ms: Date.now() - t0 };
   const key = janelaKey(now);
   const hora = horaSP(now);

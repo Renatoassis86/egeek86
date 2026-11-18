@@ -1,7 +1,7 @@
 // Vitrine de jogos até R$ 200 no canal de games, a cada 30 min (dono, 2026-11-17).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { VITRINE_CAPTION_MAX, diagnosticoCurto, escolherTop, janelaKey, montarLegenda, tituloCurto, visivel, vitrineLigada, type JogoVitrine } from '../src/lib/messaging/vitrine-games';
+import { VITRINE_CAPTION_MAX, diagnosticoCurto, escolherTop, escolherTopRodizio, janelaKey, montarLegenda, tituloCurto, visivel, vitrineLigada, type JogoVitrine } from '../src/lib/messaging/vitrine-games';
 
 const j = (i: number, o: Partial<JogoVitrine> = {}): JogoVitrine => ({ masterId: `m${i}`, slug: `jogo-${i}`, titulo: `Jogo Exemplo Muito Longo Numero ${i} Edicao Especial Colecionador PS5`, plataforma: 'PlayStation 5', precoCentavos: 10000 + i, ofertas: 2, imagem: null, ...o });
 
@@ -16,6 +16,19 @@ assert.deepEqual(escolherTop(lista).map((x) => x.masterId).sort(), ['m1', 'm4'])
 const top = escolherTop([j(1, { ofertas: 9 }), j(2, { elegivel: true, veredito: 'below', ofertas: 2, deltaPct: 20 }), j(3, { elegivel: true, veredito: 'below', ofertas: 5, deltaPct: 10 }), j(4, { elegivel: false, veredito: 'below', ofertas: 7 })]);
 assert.deepEqual(top.map((x) => x.masterId), ['m3', 'm2', 'm1', 'm4']);
 assert.equal(escolherTop(Array.from({ length: 30 }, (_, i) => j(i + 1))).length, 10);
+
+// rodízio: quem saiu nas últimas 3 vitrines descansa; quem nunca saiu entra; faltando gente, volta quem saiu há mais tempo
+const tudo = Array.from({ length: 40 }, (_, i) => j(i + 1, { ofertas: 50 - i }));
+const r1 = escolherTopRodizio(tudo, []).map((x) => x.masterId);
+assert.deepEqual(r1, tudo.slice(0, 10).map((x) => x.masterId), 'sem histórico: os 10 principais');
+const r2 = escolherTopRodizio(tudo, [r1]).map((x) => x.masterId);
+assert.ok(r2.every((id) => !r1.includes(id)), 'a rodada seguinte não repete a anterior');
+const r3 = escolherTopRodizio(tudo, [r2, r1]).map((x) => x.masterId);
+assert.ok(r3.every((id) => !r1.includes(id) && !r2.includes(id)), 'duas rodadas de repouso');
+const pouco = Array.from({ length: 12 }, (_, i) => j(i + 1));
+const r4 = escolherTopRodizio(pouco, [['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10'], ['m11', 'm12']]);
+assert.equal(r4.length, 10, 'com poucos jogos completa com os que saíram há mais tempo');
+assert.equal(new Set(r4.map((x) => x.masterId)).size, 10);
 
 // diagnóstico só com histórico elegível (R-91)
 assert.equal(diagnosticoCurto({ ofertas: 1, elegivel: false }).texto, 'Novo em monitoramento');

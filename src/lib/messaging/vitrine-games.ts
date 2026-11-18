@@ -70,6 +70,26 @@ export function escolherTop(jogos: readonly JogoVitrine[], n = VITRINE_TOP): Jog
     .slice(0, n);
 }
 
+
+/** Rodadas (vitrines de 30 min) em que um jogo descansa depois de aparecer: 3 = 1h30 fora da capa (dono, 2026-11-17: "rodizio entre os jogos menores de 200"). */
+export const VITRINE_REPOUSO_RODADAS = 3;
+
+/**
+ * RODIZIO entre todos os jogos até R$ 200. `recentes` = masters de cada vitrine já enviada, da mais nova para a mais antiga.
+ * Quem não saiu nas últimas VITRINE_REPOUSO_RODADAS vitrines (ou nunca saiu) concorre pela ordem de qualidade de `escolherTop`; faltando gente,
+ * completa com quem saiu há mais tempo. Assim todos passam pela capa e os melhores voltam primeiro.
+ */
+export function escolherTopRodizio(jogos: readonly JogoVitrine[], recentes: ReadonlyArray<readonly string[]>, n = VITRINE_TOP, repouso = VITRINE_REPOUSO_RODADAS): JogoVitrine[] {
+  const ordenados = escolherTop(jogos, jogos.length);
+  const ultima = new Map<string, number>();
+  recentes.forEach((ids, i) => { for (const id of ids) if (!ultima.has(id)) ultima.set(id, i); });
+  const descansados = ordenados.filter((j) => !ultima.has(j.masterId) || (ultima.get(j.masterId) as number) >= repouso);
+  if (descansados.length >= n) return descansados.slice(0, n);
+  const tomados = new Set(descansados.map((j) => j.masterId));
+  const resto = ordenados.filter((j) => !tomados.has(j.masterId)).sort((a, b) => (ultima.get(b.masterId) ?? 99) - (ultima.get(a.masterId) ?? 99));
+  return [...descansados, ...resto].slice(0, n);
+}
+
 /** Legenda HTML do Telegram (<= 1024 caracteres visíveis). `link(i)` devolve o link de saída (/go) do jogo i. */
 export function montarLegenda(top: readonly JogoVitrine[], hora: string, link: (i: number) => string): string {
   const monta = (max: number) => {
