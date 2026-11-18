@@ -877,3 +877,10 @@ Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o ro
 - **8ª loja, Beleza:** canal criado pelo dono em 2026-11-17 (`t.me/egeek86_beleza`, público, título "Espaço Geek 86 . Beleza"); o bot `EspacoGeek86Bot` é administrador e pode postar (conferido por leitura, sem mensagem de teste). **Ainda sem vertical, catálogo nem loja no banco:** nenhum envio até haver produto novo e em linha aprovado. Cor própria da loja já definida (`#571D26`, `cor-loja.ts`). Depende de catálogo (seção 15.9) e do ok do dono.
 - Corrige a minha proposta de 2026-11-17 ("3 canais próprios + Achados"): estava errada, os 7 canais já existem.
 
+
+### 15.21 R-103, vazao do envio e prioridade por popularidade (dono, 2026-11-18)
+- **Meta:** todas as ofertas dignas de envio saem em tempo real. O laco de cada loja ESPERA o espacamento do chat (3 s) e segue enviando dentro do orcamento do ciclo; nunca para no primeiro envio. Conta e medicao em `docs/arquitetura-v2/FLUXO_ENVIO_E_PESQUISAS_2026-11-18.md`.
+- **Repeticao:** proposta que expira sem envio nao consome o produto; pode ser proposta de novo na hora seguinte. Cooldown (R-47) e regra de 72 h (R-77, R-100) valem so para o que foi ENVIADO.
+- **Prioridade (a implementar):** a ordem na fila e na vitrine usa popularidade das plataformas (mais vendidos do ML, vendas e ordem por vendas da Shopee, salesRank do Keepa para a Amazon), normalizada por plataforma, sem tirar nenhum produto: so define quem vem primeiro.
+- **Diversidade:** mais tipos por loja; teto por tipo continua por hora (R-100).
+- **Gatilho:** qualquer mudanca no laco de envio roda `scripts/test-envio-concorrencia.ts` e mede envios por hora depois do deploy.
