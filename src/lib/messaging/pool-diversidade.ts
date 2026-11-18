@@ -5,6 +5,18 @@
 // de entrada por média/movimento (1 vendedor) entram pelo grupo ACHADO.
 
 import { classificarTipo, TIPO_OUTROS } from '@/lib/catalog/tipos-produto';
+import { ehMarcaPreferida, normalizaNome } from '@/lib/messaging/cota-item';
+import { marcaDoItem } from '@/lib/messaging/marcas-lojas';
+
+/**
+ * Ordem de MARCA dentro do tipo (dono, 2026-11-18: "destaque as principais marcas do mercado", exceto games; as 5 marcas da Beleza primeiro): 0 = marca preferida do dono,
+ * 1 = principal marca da loja, 2 = as demais (e todo item de games). Só ORDEM: nenhum produto sai do pool por isso.
+ */
+export function marcaRank(vertical: string, name: string): number {
+  if (vertical === 'games') return 2;
+  if (ehMarcaPreferida(vertical, name)) return 0;
+  return marcaDoItem(vertical, normalizaNome(name)) ? 1 : 2;
+}
 
 export interface PoolRow {
   mid: string;
@@ -69,7 +81,7 @@ export function rodizioPorTipo(rows: readonly PoolRow[], hourKey: string, sends:
     (groups.get(k) ?? groups.set(k, []).get(k)!).push(row);
   }
   const order = [...groups.keys()].sort((a, b) => (sends[a] ?? 0) - (sends[b] ?? 0) || hash32(a + hourKey) - hash32(b + hourKey) || a.localeCompare(b));
-  const lists = order.map((k) => (groups.get(k) as PoolRow[]).slice().sort((x, y) => x.r - y.r || hash32(x.mid + hourKey) - hash32(y.mid + hourKey) || x.mid.localeCompare(y.mid)));
+  const lists = order.map((k) => (groups.get(k) as PoolRow[]).slice().sort((x, y) => marcaRank(x.v, x.name) - marcaRank(y.v, y.name) || x.r - y.r || hash32(x.mid + hourKey) - hash32(y.mid + hourKey) || x.mid.localeCompare(y.mid)));
   const out: PoolRow[] = [];
   for (let round = 0; out.length < limit; round++) {
     let took = false;
