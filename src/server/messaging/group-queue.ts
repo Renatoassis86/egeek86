@@ -11,6 +11,7 @@ import {
   cardAllowed,
   composeRadar,
   masterCooldownHours,
+  masterRepeatHoursFor,
   netKind,
   priceWithinTolerance,
   type Candidate,
@@ -115,6 +116,11 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   // R-47 (2026-11-13): (a) a janela também rodizia por TIPO dentro de cada (gatilho, loja), para um tipo não encher as 300 vagas; (b) o pré-filtro
   // de produto passa a barrar qualquer envio do mesmo master dentro de 60 min, de qualquer gatilho (o cooldown de horas é do plano; 60 min é o piso
   // das exceções, então nada que o plano liberaria é escondido aqui). Ambos atrás de GROUP_MASTER_COOLDOWN_H (0/off = SQL de antes, byte a byte).
+  // 2026-11-18 (dono: "fluxo parado"): o aviso AC de master enviado dentro da janela da R-77 (72 h; 24 h na impressao 3D) o plano SEMPRE adia; so ocupava vaga da janela.
+  const acJanela = Math.max(RULES.ACHADO_PRODUCT_GAP_HOURS, masterRepeatHoursFor('games') || 0);
+  const acJanela3d = Math.max(RULES.ACHADO_PRODUCT_GAP_HOURS, masterRepeatHoursFor('impressao3d') || 0);
+  // Janela por loja: o total pedido dividido entre as 8 lojas (minimo 40 por loja).
+  const perV = Math.max(40, Math.ceil(limit / 7));
   const novo = masterCooldownHours() > 0;
   const tipoPart = novo ? sql`, g.candidate ->> 'tipo'` : sql``;
   const cupomWin = novo
@@ -125,6 +131,7 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
     : sql`(g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int))`;
   const rows = await db.execute<Row>(sql`
     SELECT * FROM (
+    SELECT q.*, row_number() OVER (PARTITION BY q.vertical ORDER BY q.rn_fair, (q.trigger = 'AC'), q.created_at) AS rn_v FROM (
       SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical${tipoPart} ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, g.created_at) AS rn_fair
       FROM group_messages g
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
@@ -133,13 +140,16 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
         AND NOT (g.master_product_id IS NOT NULL AND EXISTS (
           SELECT 1 FROM group_messages s
           WHERE s.master_product_id = g.master_product_id AND s.channel = 'tg' AND s.status IN ('enviada', 'enviando')
-            AND ((g.trigger = 'AC' AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(hours => ${RULES.ACHADO_PRODUCT_GAP_HOURS}::int))
+            AND ((g.trigger = 'AC' AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(hours => (CASE g.vertical WHEN 'impressao3d' THEN ${acJanela3d}::int ELSE ${acJanela}::int END)))
               OR ${cupomWin}
               OR ${precoWin})
         ))
     ) q
-    -- R-90: dentro de cada rodada do rodízio, queda de preço (G/OK/T/P) sai antes do aviso de monitoramento (AC); o rodízio segue garantindo vaga ao AC.
-    ORDER BY q.rn_fair, (q.trigger = 'AC'), q.created_at LIMIT ${limit}::int
+  ) w
+    -- 2026-11-18 (dono: "fluxo parado"): cada loja tem a PROPRIA janela (perV linhas). Antes uma janela unica era ocupada por quem tem mais tipos (rn_fair baixo) e as
+    -- lojas sem tipo, como Games, ficavam sem vaga: Games parou 1h44 com 461 propostas na fila. Dentro da loja vale a mesma ordem de antes.
+    WHERE w.rn_v <= ${perV}::int
+    ORDER BY w.rn_v, w.rn_fair, (w.trigger = 'AC'), w.created_at LIMIT ${limit}::int
   `);
   return rows.map(mapRow);
 }

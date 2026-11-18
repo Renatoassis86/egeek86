@@ -35,7 +35,7 @@ export const DETECT_BUDGET_MS = 22_000;
 /** Teto de segurança de voltas por execução (não é teto diário: a próxima execução continua de onde parou). */
 export const MAX_SENDS_PER_RUN = 60;
 /** Linhas lidas da fila por execução (fila acumulada + novas). */
-export const PENDING_LIMIT = 300;
+export const PENDING_LIMIT = 840;
 
 /**
  * Ciclo do cron das mensagens (a cada 5 min quando for agendado; NÃO está no vercel.json). Idempotente e tolerante a
