@@ -22,4 +22,5 @@ assert.equal(COTA_MARCA_HORAS, 6);
 for (const v of ['tecnologia', 'eletroeletronicos', 'eletrodomesticos', 'esporte', 'livros', 'impressao3d', 'beleza', 'games']) assert.ok((MARCAS_POR_LOJA[v] ?? []).length >= 8, `${v}: pelo menos 8 marcas principais`);
 const q = fs.readFileSync('src/server/messaging/group-queue.ts', 'utf8');
 assert.ok(q.includes('marca6 AS MATERIALIZED') && /b\.fam_sent6 ASC, b\.marca_sent6 ASC, b\.pop DESC/.test(q), 'variedade de marcas na ordem: depois da cota de familia, antes da popularidade');
+assert.ok(q.includes("WHEN g.vertical <> 'games' AND") && q.includes('THEN 1 ELSE 2 END'), 'principais marcas da loja (exceto games) vem antes das demais; marca preferida do dono antes de todas');
 console.log('test-marcas-lojas: OK');

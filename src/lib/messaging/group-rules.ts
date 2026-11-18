@@ -1852,6 +1852,15 @@ export function tipoCotaAlertaOn(env: Record<string, string | undefined> = proce
  * saíram nas últimas 72 h). Aqui o excedente espera a hora seguinte (volta a ser proposto; o produto não é consumido). GROUP_TIPO_AC_POR_HORA: inteiro 1 a 30; 0/off desliga.
  */
 export const TIPO_AC_MAX_PER_HOUR = 3;
+/**
+ * Teto ADAPTATIVO (dono, 2026-11-18: "escolha a quantidade pelo aprendizado do fluxo, mas sem prender o fluxo"): o teto horario do achado por tipo e o MAIOR entre o piso
+ * (TIPO_AC_MAX_PER_HOUR) e a parcela TIPO_AC_SHARE_PCT do volume horario medio da propria loja nas ultimas 24 h (minimo de referencia 20 por hora). Loja que envia muito
+ * ganha teto maior; loja pequena fica no piso. O primeiro teto fixo (3 por hora) derrubou o envio de ~290 para ~115 por hora.
+ */
+export const TIPO_AC_SHARE_PCT = 30;
+export function tipoAcShareLimite(sent24: number, piso: number, sharePct: number = TIPO_AC_SHARE_PCT): number {
+  return Math.max(piso, Math.ceil((sharePct / 100) * Math.max(20, sent24 / 24)));
+}
 export function tipoAcPorHora(env: Record<string, string | undefined> = process.env): number {
   const raw = env.GROUP_TIPO_AC_POR_HORA?.trim();
   if (!raw) return TIPO_AC_MAX_PER_HOUR;
@@ -2414,9 +2423,12 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   const acPorHora = tipoAcPorHora();
   for (const c of ok0) {
     // Teto horário DURO do achado por tipo e loja (sem exigir alternativa na fila): o excedente espera a hora seguinte.
-    if (acPorHora > 0 && (c.trigger === 'AC' || c.trigger === 'N1') && c.tipo && c.tipo !== 'outros' && c.vertical && tipoHourCount(c.vertical, c.tipo, real, now) >= acPorHora) {
-      deferred.push({ messageKey: c.messageKey, reason: `tipo_${c.tipo}_achado_limite_${acPorHora}_por_hora_na_loja` });
-      continue;
+    if (acPorHora > 0 && (c.trigger === 'AC' || c.trigger === 'N1') && c.tipo && c.tipo !== 'outros' && c.vertical) {
+      const limiteAc = tipoAcShareLimite(storeLast24h(real, c.vertical, now).length, acPorHora);
+      if (tipoHourCount(c.vertical, c.tipo, real, now) >= limiteAc) {
+        deferred.push({ messageKey: c.messageKey, reason: `tipo_${c.tipo}_achado_limite_${limiteAc}_por_hora_na_loja` });
+        continue;
+      }
     }
     // Régua de destaque (dono, 2026-11-12): o teto de 1/3 do degrau 1 só vale quando há oferta dos degraus 2 a 5 elegível esperando no mesmo grupo; sem ela o degrau 1 sai sem teto.
     if (c.regua?.degrau === 1 && ok0.some((x) => x.vertical === c.vertical && (x.regua?.degrau ?? 0) >= 2)) {

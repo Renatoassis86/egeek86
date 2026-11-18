@@ -167,8 +167,10 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
       LEFT JOIN marca6 mc ON mc.vertical = g.vertical AND mc.marca = ${marcaDe(nomeNorm, sql`g.vertical`)}`
     : sql``;
   const marcasVerticais = marcasPreferidasLigadas() ? Object.keys(MARCAS_PREFERIDAS).filter((v) => padraoMarcas(v)) : [];
-  const colMarca = marcasVerticais.length
-    ? sql`(CASE ${sql.join(marcasVerticais.map((v) => sql`WHEN g.vertical = ${v} AND regexp_replace(${nomeNorm}, '\\s+', ' ', 'g') ~ ${padraoMarcas(v)} THEN 0`), sql` `)} ELSE 1 END)`
+  // Ordem de MARCA (dono, 2026-11-18: "destaque as principais marcas do mercado", exceto games): 0 = marca preferida do dono (Beleza), 1 = principal marca da loja, 2 = outras.
+  const lojasMarcaPrincipal = lojasComMarca.filter((v) => v !== 'games');
+  const colMarca = marcasPreferidasLigadas() && lojasMarcaPrincipal.length
+    ? sql`(CASE ${sql.join(marcasVerticais.map((v) => sql`WHEN g.vertical = ${v} AND regexp_replace(${nomeNorm}, '\s+', ' ', 'g') ~ ${padraoMarcas(v)} THEN 0`), sql` `)} WHEN g.vertical <> 'games' AND ${marcaDe(nomeNorm, sql`g.vertical`)} IS NOT NULL THEN 1 ELSE 2 END)`
     : sql`1`;
   const tipoPartB = novo ? sql`, b.candidate ->> 'tipo'` : sql``;
   const popCol = popularidadeLigada()
