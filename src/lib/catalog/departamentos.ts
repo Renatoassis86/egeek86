@@ -37,8 +37,8 @@ export const POR_PAGINA = 24;
 export const OFERTA_CLICAVEL_MAX_HORAS = 24;
 /** Mediana de preço só com este mínimo de vendedores distintos. */
 export const MIN_VENDEDORES_MEDIANA = 3;
-/** Idade máxima do último check de uma oferta clicável da Amazon. NÃO mudou no R2-3: a licença da Amazon permite guardar preço por até 24 h (risco contratual, alto). */
-export const OFERTA_CLICAVEL_MAX_HORAS_AMAZON = 24;
+/** Amazon igual às outras lojas (dono, 2026-11-17). Histórico: a licença da Amazon fala em 24 h de preço guardado (risco contratual apontado no R2-3); o dono decidiu a regra única. */
+export const OFERTA_CLICAVEL_MAX_HORAS_AMAZON = OFERTA_CLICAVEL_MAX_HORAS; // dono, 2026-11-17: Amazon igual às outras lojas (sem regra própria)
 /**
  * Redes que podem aparecer em departamento. Amazon entra SÓ como oferta e menor preço (dono, 2026-11-13): nunca na mediana (a mediana
  * é "apenas Mercado Livre") e sem histórico ou média da Amazon nos departamentos.

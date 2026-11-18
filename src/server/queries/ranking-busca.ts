@@ -8,11 +8,10 @@ import { RANKING_MAX_PRODUTOS, classificar, tokensDaBusca, type Classificacao } 
 
 /**
  * Oferta APTA para o ranking: ativa com preço, elegível (fora de quarentena, rascunho, porteiro e título de usado/Open Box), link de afiliado publicável (R-70)
- * e, so na Amazon, leitura de ate 24 h (licenca); ML e Shopee ficam enquanto o anuncio estiver ativo (R-90). Só leitura; nada é gravado.
+ * e sem corte por idade em nenhuma rede, Amazon inclusive (R-90; dono, 2026-11-17). Só leitura; nada é gravado.
  */
 export function aptaSql() {
-  return sql`o.status = 'active' AND o.current_price_cents > 0 AND ${eligibleOfferSql('o')} AND ${linkPublicavelFilter('o')}
-    AND (n.slug <> 'amazon' OR o.last_checked_at > now() - interval '24 hours')`; // R-90: sem corte por idade fora da Amazon (a licença da Amazon limita a 24 h)
+  return sql`o.status = 'active' AND o.current_price_cents > 0 AND ${eligibleOfferSql('o')} AND ${linkPublicavelFilter('o')}`; // sem corte por idade em nenhuma rede (R-90; dono 2026-11-17: Amazon igual às outras)
 }
 const ASCII = sql.raw(`translate(lower(m.name), 'áàâãäéèêëíìîïóòôõöúùûüçñ', 'aaaaaeeeeiiiiooooouuuucn')`);
 
