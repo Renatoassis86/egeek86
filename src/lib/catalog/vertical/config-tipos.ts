@@ -394,43 +394,43 @@ const BELEZA_RE = (re: RegExp) => [re];
 
 const BELEZA_SEG: SegmentConfig[] = [
   seg({
-    key: 'batom', vertical: 'beleza', label: 'Batom e lábios', rank: 200, domains: BELEZA_RE(/LIPSTICK|LIP_|LIPS|LIPGLOSS|LIP_BALM|LIP_STAIN/),
+    key: 'batom', vertical: 'beleza', label: 'Batom e lábios', rank: 300, domains: BELEZA_RE(/LIPSTICK|LIP_|LIPS|LIPGLOSS|LIP_BALM|LIP_STAIN/),
     terms: combineTerms('batom', ['', 'matte', 'liquido', 'cremoso', 'em bastao', 'gloss', 'tint labial'], MARCAS_MAQ.slice(0, 16)),
   }),
   seg({
-    key: 'base-corretivo', vertical: 'beleza', label: 'Base, corretivo e primer', rank: 201, domains: BELEZA_RE(/FOUNDATION|CONCEALER|PRIMER|BB_CREAM|CC_CREAM|FACE_MAKEUP/),
+    key: 'base-corretivo', vertical: 'beleza', label: 'Base, corretivo e primer', rank: 301, domains: BELEZA_RE(/FOUNDATION|CONCEALER|PRIMER|BB_CREAM|CC_CREAM|FACE_MAKEUP/),
     terms: [...combineTerms('base', ['liquida', 'matte', 'alta cobertura', 'stick', 'efeito natural'], MARCAS_MAQ.slice(0, 14)), ...combineTerms('corretivo', ['liquido', 'alta cobertura', 'em bastao'], MARCAS_MAQ.slice(0, 10)), ...combineTerms('primer', ['facial', 'hidratante', 'matificante'], MARCAS_MAQ.slice(0, 8))],
   }),
   seg({
-    key: 'po-blush-iluminador', vertical: 'beleza', label: 'Pó, blush e iluminador', rank: 202, domains: BELEZA_RE(/BLUSH|POWDER|HIGHLIGHT|BRONZER|CONTOUR|SETTING_SPRAY|FACE_POWDER/),
+    key: 'po-blush-iluminador', vertical: 'beleza', label: 'Pó, blush e iluminador', rank: 302, domains: BELEZA_RE(/BLUSH|POWDER|HIGHLIGHT|BRONZER|CONTOUR|SETTING_SPRAY|FACE_POWDER/),
     terms: [...combineTerms('po compacto', ['', 'translucido', 'matte', 'facial'], MARCAS_MAQ.slice(0, 12)), ...combineTerms('blush', ['', 'liquido', 'em po', 'cremoso'], MARCAS_MAQ.slice(0, 12)), ...combineTerms('iluminador', ['', 'liquido', 'em po', 'stick'], MARCAS_MAQ.slice(0, 10)), 'fixador de maquiagem', 'spray fixador de maquiagem'],
   }),
   seg({
-    key: 'olhos-maquiagem', vertical: 'beleza', label: 'Sombra, máscara de cílios e delineador', rank: 203, domains: BELEZA_RE(/EYE|MASCARA|EYELINER|EYESHADOW|EYEBROW|LASH/),
+    key: 'olhos-maquiagem', vertical: 'beleza', label: 'Sombra, máscara de cílios e delineador', rank: 303, domains: BELEZA_RE(/EYE|MASCARA|EYELINER|EYESHADOW|EYEBROW|LASH/),
     terms: [...combineTerms('paleta de sombras', ['', 'nude', 'glitter', 'matte'], MARCAS_MAQ.slice(0, 14)), ...combineTerms('mascara de cilios', ['', 'a prova dagua', 'volume', 'alongamento'], MARCAS_MAQ.slice(0, 12)), ...combineTerms('delineador', ['', 'liquido', 'em gel', 'a prova dagua'], MARCAS_MAQ.slice(0, 8)), ...combineTerms('sobrancelha', ['gel', 'lapis', 'pomada'], MARCAS_MAQ.slice(0, 6))],
   }),
   seg({
-    key: 'esmalte', vertical: 'beleza', label: 'Esmalte e unhas', rank: 204, domains: BELEZA_RE(/NAIL_POLISH|NAIL_|MANICURE/),
+    key: 'esmalte', vertical: 'beleza', label: 'Esmalte e unhas', rank: 304, domains: BELEZA_RE(/NAIL_POLISH|NAIL_|MANICURE/),
     terms: combineTerms('esmalte', ['', 'gel', 'cremoso', 'cintilante', 'kit'], ['risque', 'colorama', 'dailus', 'impala', 'mavala', 'opi', 'essie', 'vult', 'ruby rose', 'avon', 'o boticario', 'natura']),
   }),
   seg({
-    key: 'kit-pinceis', vertical: 'beleza', label: 'Pincéis e acessórios de maquiagem', rank: 205, domains: BELEZA_RE(/MAKEUP_BRUSHES|BRUSH|SPONGE|MAKEUP_TOOLS|EYELASH_CURLER/),
+    key: 'kit-pinceis', vertical: 'beleza', label: 'Pincéis e acessórios de maquiagem', rank: 305, domains: BELEZA_RE(/MAKEUP_BRUSHES|BRUSH|SPONGE|MAKEUP_TOOLS|EYELASH_CURLER/),
     terms: [...combineTerms('kit de pinceis', ['maquiagem', 'profissional'], ['real techniques', 'macrilan', 'vult', 'ruby rose', 'klass vough', 'mac', 'sigma', 'morphe', 'bruna tavares']), 'esponja de maquiagem beauty blender', 'curvex curvador de cilios'],
   }),
   seg({
-    key: 'skincare', vertical: 'beleza', label: 'Skincare e protetor solar', rank: 210, domains: BELEZA_RE(/SKIN|FACIAL|SERUM|SUNSCREEN|SUN_|MOISTURIZER|CLEANSER|ANTI_AGING/),
+    key: 'skincare', vertical: 'beleza', label: 'Skincare e protetor solar', rank: 310, domains: BELEZA_RE(/SKIN|FACIAL|SERUM|SUNSCREEN|SUN_|MOISTURIZER|CLEANSER|ANTI_AGING/),
     terms: [...combineTerms('serum facial', ['vitamina c', 'acido hialuronico', 'niacinamida', 'retinol'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('protetor solar facial', ['fps 50', 'fps 70', 'toque seco', 'com cor'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('hidratante facial', ['', 'oil free', 'anti idade'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('limpeza facial', ['gel', 'agua micelar', 'espuma'], MARCAS_SKIN.slice(0, 8))],
   }),
   seg({
-    key: 'cabelo', vertical: 'beleza', label: 'Cabelo (tratamento e finalizador)', rank: 220, domains: BELEZA_RE(/SHAMPOO|CONDITIONER|HAIR_|HAIRCARE|HAIR_MASK|HAIR_TREATMENT/),
+    key: 'cabelo', vertical: 'beleza', label: 'Cabelo (tratamento e finalizador)', rank: 320, domains: BELEZA_RE(/SHAMPOO|CONDITIONER|HAIR_|HAIRCARE|HAIR_MASK|HAIR_TREATMENT/),
     terms: [...combineTerms('shampoo', ['', 'hidratacao', 'reparador', 'antirresiduos'], MARCAS_CABELO.slice(0, 12)), ...combineTerms('mascara capilar', ['', 'reconstrucao', 'hidratante'], MARCAS_CABELO.slice(0, 10)), ...combineTerms('olaplex', ['n 3', 'n 4', 'n 5', 'n 7', 'kit'], [''])],
   }),
   seg({
-    key: 'secador-prancha', vertical: 'beleza', label: 'Secador e prancha de cabelo', rank: 221, profile: GTIN_P(['ALPHANUMERIC_MODEL', 'VOLTAGE']), domains: BELEZA_RE(/HAIR_DRYERS|HAIR_STRAIGHTENERS|FLAT_IRONS|HAIR_CURLERS|HAIR_STYLERS/),
+    key: 'secador-prancha', vertical: 'beleza', label: 'Secador e prancha de cabelo', rank: 321, profile: GTIN_P(['ALPHANUMERIC_MODEL', 'VOLTAGE']), domains: BELEZA_RE(/HAIR_DRYERS|HAIR_STRAIGHTENERS|FLAT_IRONS|HAIR_CURLERS|HAIR_STYLERS/),
     terms: [...combineTerms('secador de cabelo', ['profissional', 'ionico', 'bivolt', '2400w'], ['taiff', 'philips', 'babyliss', 'gama italy', 'mondial', 'wahl', 'dyson', 'remington', 'ghd']), ...combineTerms('prancha', ['cabelo', 'alisadora', 'ceramica', 'bivolt'], ['taiff', 'philips', 'babyliss', 'gama italy', 'ghd', 'remington', 'mondial'])],
   }),
   seg({
-    key: 'perfume', vertical: 'beleza', label: 'Perfume', rank: 230, domains: BELEZA_RE(/PERFUME|FRAGRANCE|EAU_DE|COLOGNE|BODY_SPLASH/),
+    key: 'perfume', vertical: 'beleza', label: 'Perfume', rank: 330, domains: BELEZA_RE(/PERFUME|FRAGRANCE|EAU_DE|COLOGNE|BODY_SPLASH/),
     terms: [...combineTerms('perfume', ['feminino', 'masculino', 'eau de parfum', 'importado', 'edp 100ml', 'edt'], MARCAS_PERFUME.slice(0, 14)), ...combineTerms('perfume', ['feminino', 'masculino'], ['natura', 'o boticario', 'eudora', 'avon', 'jequiti'])],
   }),
 ];

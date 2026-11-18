@@ -12,6 +12,7 @@ export const LOJAS: ReadonlyArray<{ slug: Vertical; rotulo: string }> = [
   { slug: 'eletrodomesticos', rotulo: 'Casa e eletrodomésticos' },
   { slug: 'eletroeletronicos', rotulo: 'Eletrônicos' },
   { slug: 'esporte', rotulo: 'Esporte' },
+  { slug: 'beleza', rotulo: 'Beleza' },
 ];
 
 export function rotuloLoja(v: string): string {

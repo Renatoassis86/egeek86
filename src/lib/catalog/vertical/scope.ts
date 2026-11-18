@@ -148,6 +148,17 @@ const LEX: Record<string, SegmentLexicon> = {
     noun: /\b(esteira)\b/,
     accessory: /\b(correia|lona|lubrificante|oleo|silicone|tapete|capa|protetor|motor|placa|painel|sensor|rolo|peca|pecas|kit|manta)\b/,
   },
+  // ---- Beleza (2026-11-17): o nome do produto e o item; estojo, pincel e necessaire sao acessorio ----
+  batom: { noun: /\b(batom|gloss|labial|lip tint|tint labial|lip oil|liquid lip)\b/, accessory: /\b(estojo|porta|apontador|pincel|necessaire|expositor|display|kit de pinceis)\b/ },
+  'base-corretivo': { noun: /\b(base|corretivo|primer|bb cream|cc cream|skin tint|concealer|foundation)\b/, accessory: /\b(esponja|pincel|beauty blender|estojo|necessaire|expositor|display|aplicador)\b/ },
+  'po-blush-iluminador': { noun: /\b(po compacto|po facial|po solto|blush|rubor|iluminador|bronzer|contorno|highlighter|fixador)\b/, accessory: /\b(pincel|esponja|estojo|necessaire|expositor|display|refil vazio)\b/ },
+  'olhos-maquiagem': { noun: /\b(sombra|sombras|paleta|mascara de cilios|mascara para cilios|rimel|delineador|sobrancelha|lapis)\b/, accessory: /\b(pincel|curvex|curvador|estojo|necessaire|expositor|display|cilios postico|cilios postiços)\b/ },
+  esmalte: { noun: /\b(esmalte|esmaltes|gel para unhas|top coat)\b/, accessory: /\b(lixa|alicate|estojo|cabine|forno|mesa|expositor|display|cortador)\b/ },
+  'kit-pinceis': { noun: /\b(pincel|pinceis|esponja|beauty blender|curvex|curvador)\b/, accessory: /\b(base liquida|batom|po compacto|sombra|perfume|expositor|display)\b/ },
+  skincare: { noun: /\b(serum|hidratante|protetor solar|filtro solar|limpeza facial|agua micelar|sabonete facial|esfoliante|tonico|creme|mascara facial|gel)\b/, accessory: /\b(aparelho|massageador|rolo|gua sha|estojo|necessaire|expositor|display|refil vazio)\b/ },
+  cabelo: { noun: /\b(shampoo|condicionador|mascara capilar|leave in|oleo capilar|finalizador|creme para pentear|tratamento capilar|olaplex|tintura)\b/, accessory: /\b(touca|escova|pente|presilha|elastico|viseira|necessaire|expositor|display)\b/ },
+  'secador-prancha': { noun: /\b(secador|prancha|chapinha|babyliss|modelador|alisador)\b/, accessory: /\b(bocal|difusor|concentrador|capa|resistencia|filtro|pe[cç]a|pecas|suporte|case|estojo)\b/ },
+  perfume: { noun: /\b(perfume|eau de parfum|eau de toilette|colonia|parfum|body splash|deo colonia)\b/, accessory: /\b(porta perfume|estojo|atomizador vazio|frasco vazio|expositor|display|amostra)\b/ },
   'bicicleta-ergometrica': {
     noun: /\b(bicicleta|bike|ergometrica|spinning)\b/,
     accessory: /\b(pedal|pedais|selim|banco|capa|suporte|tapete|sensor|kit)\b/,

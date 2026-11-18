@@ -28,7 +28,7 @@ function check(name: string, cond: boolean, extra?: unknown) {
 }
 
 async function main() {
-  const LOJAS: NonGamesVertical[] = ['livros', 'eletrodomesticos', 'eletroeletronicos', 'esporte', 'tecnologia', 'impressao3d'];
+  const LOJAS: NonGamesVertical[] = ['livros', 'eletrodomesticos', 'eletroeletronicos', 'esporte', 'tecnologia', 'impressao3d', 'beleza'];
 
   // ---------------- mapa tipo x loja ----------------
   for (const t of TIPOS_ESPERADOS) {

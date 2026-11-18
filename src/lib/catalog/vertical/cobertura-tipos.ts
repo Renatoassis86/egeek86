@@ -38,8 +38,20 @@ const C = 'eletrodomesticos' as const;
 const S = 'esporte' as const;
 const L = 'livros' as const;
 const I = 'impressao3d' as const;
+const B = 'beleza' as const;
 
 export const TIPOS_ESPERADOS: TipoEsperado[] = [
+  // ---- Beleza (2026-11-17) ----
+  t(B, 'Batom e lábios', 'batom'),
+  t(B, 'Base, corretivo e primer', 'base-corretivo'),
+  t(B, 'Pó, blush e iluminador', 'po-blush-iluminador'),
+  t(B, 'Sombra, máscara de cílios e delineador', 'olhos-maquiagem'),
+  t(B, 'Esmalte e unhas', 'esmalte'),
+  t(B, 'Pincéis e acessórios de maquiagem', 'kit-pinceis'),
+  t(B, 'Skincare e protetor solar', 'skincare'),
+  t(B, 'Cabelo (tratamento e finalizador)', 'cabelo'),
+  t(B, 'Secador e prancha de cabelo', 'secador-prancha'),
+  t(B, 'Perfume', 'perfume'),
   // ---- Eletrônicos ----
   t(E, 'Smart TV', 'smart-tv'),
   t(E, 'Soundbar', 'soundbar'),

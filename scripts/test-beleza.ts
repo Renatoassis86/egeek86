@@ -30,7 +30,7 @@ const bel = NOVOS_SEGMENTOS_TIPOS.filter((s) => s.vertical === 'beleza');
 assert.ok(bel.length >= 10, 'segmentos de beleza');
 const ranks = bel.map((s) => s.seedRank);
 assert.equal(bel.find((s) => s.seedRank === Math.min(...ranks))?.key, 'batom', 'maquiagem (batom) e a primeira');
-assert.ok(bel.filter((s) => s.seedRank < 210).every((s) => /batom|base|po-|olhos|esmalte|pinceis/.test(s.key)), 'rank < 210 e so maquiagem');
+assert.ok(bel.filter((s) => s.seedRank < 310).every((s) => /batom|base|po-|olhos|esmalte|pinceis/.test(s.key)), 'rank < 210 e so maquiagem');
 const batom = bel.find((s) => s.key === 'batom')!;
 assert.ok(/mac/.test(batom.terms[0]) && MARCAS_MAQUIAGEM_TOP[0] === 'mac', 'a melhor marca abre a lista de termos');
 
