@@ -1,7 +1,7 @@
 // Vitrine de jogos até R$ 200 no canal de games, a cada 30 min (dono, 2026-11-17).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { VITRINE_CAPTION_MAX, diagnosticoCurto, escolherTop, escolherTopRodizio, janelaKey, montarLegenda, tituloCurto, visivel, vitrineLigada, type JogoVitrine } from '../src/lib/messaging/vitrine-games';
+import { VITRINE_CAPTION_MAX, diagnosticoCurto, escolherTop, escolherTopRodizio, familiaDe, janelaKey, montarLegenda, tituloCurto, visivel, vitrineLigada, type JogoVitrine } from '../src/lib/messaging/vitrine-games';
 
 const j = (i: number, o: Partial<JogoVitrine> = {}): JogoVitrine => ({ masterId: `m${i}`, slug: `jogo-${i}`, titulo: `Jogo Exemplo Muito Longo Numero ${i} Edicao Especial Colecionador PS5`, plataforma: 'PlayStation 5', precoCentavos: 10000 + i, ofertas: 2, imagem: null, ...o });
 
@@ -29,6 +29,25 @@ const pouco = Array.from({ length: 12 }, (_, i) => j(i + 1));
 const r4 = escolherTopRodizio(pouco, [['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'm10'], ['m11', 'm12']]);
 assert.equal(r4.length, 10, 'com poucos jogos completa com os que saíram há mais tempo');
 assert.equal(new Set(r4.map((x) => x.masterId)).size, 10);
+
+// as 4 famílias saem SEMPRE juntas: PlayStation 4, Xbox 2, Switch 1 2, Switch 2 2 (dono, 2026-11-17)
+const ORD = ['playstation', 'xbox', 'switch_1', 'switch_2'];
+const gens = ['ps5', 'ps4', 'xbox_series', 'xbox_one', 'switch_1', 'switch_2'];
+const mix = Array.from({ length: 60 }, (_, i) => j(i + 1, { gen: gens[i % 6], ofertas: 90 - i }));
+const fam = (arr: JogoVitrine[]) => arr.map((x) => familiaDe(x.gen));
+const f1 = escolherTopRodizio(mix, []);
+assert.equal(f1.length, 10);
+assert.deepEqual(ORD.map((f) => fam(f1).filter((x) => x === f).length), [4, 2, 2, 2]);
+assert.deepEqual(fam(f1).map((x) => ORD.indexOf(x as string)), fam(f1).map((x) => ORD.indexOf(x as string)).sort((a, b) => a - b), 'agrupados por família');
+const f2 = escolherTopRodizio(mix, [f1.map((x) => x.masterId)]);
+assert.ok(f2.every((x) => !f1.some((y) => y.masterId === x.masterId)), 'rodízio também por família');
+const semXbox = mix.filter((x) => familiaDe(x.gen) !== 'xbox');
+const f3 = escolherTopRodizio(semXbox, []);
+assert.equal(f3.length, 10);
+assert.equal(fam(f3).filter((x) => x === 'xbox').length, 0, 'sem jogo de Xbox até R$ 200, as vagas vão às outras');
+assert.ok(['playstation', 'switch_1', 'switch_2'].every((f) => fam(f3).includes(f as never)));
+assert.equal(familiaDe('xbox_360'), 'xbox');
+assert.equal(familiaDe('unknown'), null);
 
 // diagnóstico só com histórico elegível (R-91)
 assert.equal(diagnosticoCurto({ ofertas: 1, elegivel: false }).texto, 'Novo em monitoramento');

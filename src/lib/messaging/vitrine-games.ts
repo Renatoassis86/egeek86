@@ -14,6 +14,8 @@ export interface JogoVitrine {
   slug: string;
   titulo: string;
   plataforma: string;
+  /** Geração da plataforma (ps4, ps5, xbox_one, xbox_series, xbox_360, switch_1, switch_2). */
+  gen?: string | null;
   precoCentavos: number;
   ofertas: number;
   imagem: string | null;
@@ -79,7 +81,7 @@ export const VITRINE_REPOUSO_RODADAS = 3;
  * Quem não saiu nas últimas VITRINE_REPOUSO_RODADAS vitrines (ou nunca saiu) concorre pela ordem de qualidade de `escolherTop`; faltando gente,
  * completa com quem saiu há mais tempo. Assim todos passam pela capa e os melhores voltam primeiro.
  */
-export function escolherTopRodizio(jogos: readonly JogoVitrine[], recentes: ReadonlyArray<readonly string[]>, n = VITRINE_TOP, repouso = VITRINE_REPOUSO_RODADAS): JogoVitrine[] {
+function rodizioSimples(jogos: readonly JogoVitrine[], recentes: ReadonlyArray<readonly string[]>, n = VITRINE_TOP, repouso = VITRINE_REPOUSO_RODADAS): JogoVitrine[] {
   const ordenados = escolherTop(jogos, jogos.length);
   const ultima = new Map<string, number>();
   recentes.forEach((ids, i) => { for (const id of ids) if (!ultima.has(id)) ultima.set(id, i); });
@@ -88,6 +90,45 @@ export function escolherTopRodizio(jogos: readonly JogoVitrine[], recentes: Read
   const tomados = new Set(descansados.map((j) => j.masterId));
   const resto = ordenados.filter((j) => !tomados.has(j.masterId)).sort((a, b) => (ultima.get(b.masterId) ?? 99) - (ultima.get(a.masterId) ?? 99));
   return [...descansados, ...resto].slice(0, n);
+}
+
+/** Famílias que saem SEMPRE juntas na mesma vitrine (dono, 2026-11-17): PlayStation, Xbox, Nintendo Switch 1 e Nintendo Switch 2. */
+export const VITRINE_FAMILIAS = ['playstation', 'xbox', 'switch_1', 'switch_2'] as const;
+export type FamiliaVitrine = (typeof VITRINE_FAMILIAS)[number];
+/** Vagas por família nos 10 da capa (soma 10). Família sem jogo cede as vagas às demais. */
+export const VITRINE_COTAS: Record<FamiliaVitrine, number> = { playstation: 4, xbox: 2, switch_1: 2, switch_2: 2 };
+export function familiaDe(gen: string | null | undefined): FamiliaVitrine | null {
+  if (gen === 'ps4' || gen === 'ps5') return 'playstation';
+  if (gen === 'xbox_one' || gen === 'xbox_series' || gen === 'xbox_360') return 'xbox';
+  if (gen === 'switch_1') return 'switch_1';
+  if (gen === 'switch_2') return 'switch_2';
+  return null;
+}
+
+/**
+ * Vitrine com as 4 famílias SEMPRE presentes: cada família escolhe os seus pelo rodízio (cota própria) e as vagas que sobrarem
+ * (família sem jogo até R$ 200) vão para os melhores das outras. Na capa, os jogos ficam agrupados na ordem PlayStation, Xbox, Switch 1, Switch 2.
+ * Sem nenhum jogo com geração conhecida, cai no rodízio simples.
+ */
+export function escolherTopRodizio(jogos: readonly JogoVitrine[], recentes: ReadonlyArray<readonly string[]>, n = VITRINE_TOP, repouso = VITRINE_REPOUSO_RODADAS): JogoVitrine[] {
+  const porFamilia = new Map<FamiliaVitrine, JogoVitrine[]>();
+  for (const j of jogos) {
+    const f = familiaDe(j.gen);
+    if (f) (porFamilia.get(f) ?? porFamilia.set(f, []).get(f)!).push(j);
+  }
+  if (!porFamilia.size) return rodizioSimples(jogos, recentes, n, repouso);
+  const escolhidos: JogoVitrine[] = [];
+  for (const f of VITRINE_FAMILIAS) {
+    const lista = porFamilia.get(f);
+    if (lista) escolhidos.push(...rodizioSimples(lista, recentes, VITRINE_COTAS[f], repouso));
+  }
+  const falta = n - escolhidos.length;
+  if (falta > 0) {
+    const ja = new Set(escolhidos.map((j) => j.masterId));
+    escolhidos.push(...rodizioSimples(jogos.filter((j) => !ja.has(j.masterId) && familiaDe(j.gen)), recentes, falta, repouso));
+  }
+  const ordem = (j: JogoVitrine) => VITRINE_FAMILIAS.indexOf(familiaDe(j.gen) as FamiliaVitrine);
+  return escolhidos.slice(0, n).sort((a, b) => ordem(a) - ordem(b));
 }
 
 /** Legenda HTML do Telegram (<= 1024 caracteres visíveis). `link(i)` devolve o link de saída (/go) do jogo i. */

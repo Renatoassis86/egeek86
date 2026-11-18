@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { buildGoLink } from '@/lib/messaging/group-messages';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
-import { VITRINE_INTERVALO_MIN, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherTopRodizio, janelaKey, montarLegenda, vitrineLigada, type JogoVitrine } from '@/lib/messaging/vitrine-games';
+import { familiaDe, VITRINE_INTERVALO_MIN, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherTopRodizio, janelaKey, montarLegenda, vitrineLigada, type JogoVitrine } from '@/lib/messaging/vitrine-games';
 import { aptaSql } from '@/server/queries/ranking-busca';
 import { getOfferListingMetrics } from '@/server/queries/affiliate';
 import { resolveCover } from '@/server/messaging/card-cover';
@@ -17,7 +17,7 @@ const horaSP = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', min
 
 /** Jogos NOVOS com oferta ativa, elegível, link de afiliado publicável e leitura fresca (Amazon: 45 min, R-81), menor preço até R$ 200, com mais ofertas primeiro. */
 export async function carregarJogosVitrine(): Promise<JogoVitrine[]> {
-  const r = rows<{ mid: string; name: string; plat: GamePlatformGen; n: number; oid: string; slug: string; minp: number; img: string | null }>(await db.execute(sql`
+  const tudo = rows<{ mid: string; name: string; plat: GamePlatformGen; n: number; oid: string; slug: string; minp: number; img: string | null }>(await db.execute(sql`
     SELECT m.id::text AS mid, m.name, m.game_platform_gen AS plat, count(*)::int AS n,
            (array_agg(o.id::text ORDER BY o.current_price_cents, o.id))[1] AS oid,
            (array_agg(o.slug::text ORDER BY o.current_price_cents, o.id))[1] AS slug,
@@ -27,13 +27,21 @@ export async function carregarJogosVitrine(): Promise<JogoVitrine[]> {
     JOIN affiliate_offers o ON o.master_product_id = m.id
     JOIN affiliate_networks n ON n.id = o.network_id
     WHERE m.vertical = 'games' AND m.product_type = 'game' AND NOT (m.attributes ? 'mergedInto') AND ${aptaSql()}
+      AND m.name !~* '(c[aâ]mera|controle|joystick|capa para|case |suporte|cabo |carregador|pel[ií]cula|headset|amiibo)'
       AND (n.slug <> 'amazon' OR o.last_checked_at > now() - interval '45 minutes')
     GROUP BY m.id
     HAVING min(o.current_price_cents) <= ${VITRINE_TETO_CENTAVOS}
-    ORDER BY count(*) DESC, m.id
-    LIMIT 200`));
+    ORDER BY count(*) DESC, m.id`));
+  // 60 por família (PlayStation, Xbox, Switch 1, Switch 2), mais ofertas primeiro: o rodízio de cada família tem profundidade e nenhuma é engolida pela outra.
+  const cont = new Map<string, number>();
+  const r = tudo.filter((x) => {
+    const f = familiaDe(x.plat) ?? 'outra';
+    const c = (cont.get(f) ?? 0) + 1;
+    cont.set(f, c);
+    return c <= 60;
+  });
   const base: JogoVitrine[] = r.map((x) => ({
-    masterId: x.mid, slug: x.slug, titulo: x.name, plataforma: GAME_PLATFORM_GEN_LABELS[x.plat] ?? '', precoCentavos: x.minp, ofertas: x.n, imagem: x.img,
+    masterId: x.mid, gen: x.plat, slug: x.slug, titulo: x.name, plataforma: GAME_PLATFORM_GEN_LABELS[x.plat] ?? '', precoCentavos: x.minp, ofertas: x.n, imagem: x.img,
   }));
   const met = await getOfferListingMetrics(r.map((x) => x.oid)).catch(() => new Map());
   const porOferta = new Map(r.map((x) => [x.mid, x.oid]));
