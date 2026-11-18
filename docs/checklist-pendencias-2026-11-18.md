@@ -57,3 +57,7 @@ Fonte das regras: `docs/03-metodologia/FLUXO_MESTRE.md` §15.10 a 15.18 e `CLAUD
 
 ## 5. Arquitetura v2 (`docs/arquitetura-v2/PROPOSTA_V2.md`, ata e ADR 0010)
 - [ ] Aguardando decisao do dono (5 perguntas na secao 6 da proposta); Fase 0 ate a Black Friday: lock de sobreposicao, canario + segundo extrator Amazon, parar batimento como linha, materializar ofertas publicas, fechar o ciclo do alerta, JSON-LD, landing BF, medir precisao do alerta.
+
+## 6. Marca
+- [~] Logo v2 e kit do ChatGPT em `docs/marca/` (prompt com slogans, esquema dos cards por loja e submarca).
+- [?] Renomear "Espaço Geek Plus" (rota /plus, menu, home) para "Arkos Price" ou outro nome de monitoramento de preços: aguarda o dono confirmar o nome. Nenhuma mudança no site feita.
