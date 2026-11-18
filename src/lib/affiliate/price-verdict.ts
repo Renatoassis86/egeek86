@@ -21,7 +21,10 @@ export const SUGGESTED_TARGET_MARKUP_PERCENT = 5;
  * únicas: server (SQL em src/server/queries/public-offers.ts) e UI leem daqui.
  */
 /** Oferta só é pública com última coleta real em até N dias. */
-export const OFFER_FRESHNESS_DAYS = 7;
+// Dono, 2026-11-17: "o banco e de anuncios com precos ativos; a Amazon igual as outras lojas": o que tira a oferta do ar e o status do link (pausada, expirada, sem estoque,
+// sem venda), nao a idade da leitura. A idade so barra o absurdo (1 ano). OFFER_FRESHNESS_DAYS=7 (env) volta ao corte antigo. Vale para TODAS as redes (R-90, fila #149).
+const envDiasFrescor = Number(process.env.OFFER_FRESHNESS_DAYS);
+export const OFFER_FRESHNESS_DAYS = Number.isInteger(envDiasFrescor) && envDiasFrescor >= 1 && envDiasFrescor <= 3650 ? envDiasFrescor : 365;
 /** Oferta abaixo desse % da mediana do produto é descartada do público (quando há >= PLAUSIBILITY_MIN_OFFERS). */
 export const PLAUSIBILITY_FLOOR_PERCENT = 35;
 /** Nº mínimo de ofertas ativas e frescas do produto para a mediana valer como régua. */

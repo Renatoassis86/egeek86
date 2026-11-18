@@ -20,7 +20,7 @@ Arquitetura em `docs/03-metodologia/ARQUITETURA_AGENTES.md`. Instruções comple
 - **Só produto novo e em linha.** Retrô, usado e fora de linha (inclui Xbox One e PS4 console) ficam fora. A única restrição de entrada é usado/retrô; **barreira nova só com aval explícito do dono**. Grupos só de produtos iguais; indicadores não mudam de estrutura.
 - **Console é só videogame**: motores, frontais, bases, adesivos e acessórios nunca entram em Consoles. **Sem itens miúdos** (peças, cabos, grips, objetos impressos em 3D, itens de baixo valor) no banco e no site.
 - **Foto real do produto, nunca imagem gerada por IA.** Foto com mão decide **por oferta**, e só mão real (arte de caixa não conta): a oferta sai das médias, do selo e do histórico; o master volta.
-- **Frescor:** oferta de ML e Shopee só é clicável com preço confirmado nas últimas 24 h ("visto há X" após 6 h); a série usa 7 dias. **Sem teto de queda de 50%.** **Vendedor fraco** continua visível e fica fora só da média. Preço implausível (<35% ou >300% da mediana) vai para quarentena.
+- **Frescor (substituído em 2026-11-17, R-90 e fila #149):** o banco é de anúncios ativos; **a idade da leitura nunca tira oferta do ar**, só o status do link (pausada, expirada, sem estoque, sem venda). `OFFER_FRESHNESS_DAYS` = 365 e **Amazon igual às outras lojas** (sem regra própria). O preço dito em **mensagem** da Amazon segue R-81 (leitura de até 45 min) até o dono mandar mudar. **Sem teto de queda de 50%.** **Vendedor fraco** continua visível e fica fora só da média. Preço implausível (<35% ou >300% da mediana) vai para quarentena.
 - **Comissão prevista só no `/admin`**; nunca em página pública, mensagem ou API pública. Aviso de comissão foi retirado das telas de compra por decisão do dono (risco regulatório e de política das redes registrado; mitigação proposta na fila #74, depende dele).
 - **Contatos (Telegram/WhatsApp) só em `/contatos`**; mensagens sem termos proibidos ("amostra", "metodologia", "(Brasília)"); cards v2 de mensagem ligados por flag.
 - **Nenhum loop pode parar.** Erro, rede, 429, login e captcha viram pausa com recuo e retomada; aba fechada o vigia reabre. Relatório de 6 em 6 horas e vigia a cada 5 min.
@@ -31,3 +31,18 @@ Arquitetura em `docs/03-metodologia/ARQUITETURA_AGENTES.md`. Instruções comple
 
 > **Atualizado em 2026-11-15** (auditoria geral, `docs/auditoria-2026-11-15/00-sintese.md`): (1) corrigida a linha de coleta, que contradizia a coleta assistida; (2) registradas as regras acima, antes espalhadas na memória do dono; (3) registrada a regra "pedido novo vai para a lista". Retrato do negócio: `README.md` e `docs/PROJECT_BLUEPRINT.md`.
 
+
+## Regras do dono de 2026-11-17 e 2026-11-18 (executáveis em `scripts/test-regras-do-dono.ts`; texto em `FLUXO_MESTRE.md` §15.10 a 15.18)
+- **Toda loja nasce completa (R-94, R-97):** vertical nova entra em TODAS as listas (`VERTICALS`, `RELEASED_VERTICALS`, `RELEASED_PLUS` e padrão da detecção em `group-offers.ts`, `AMAZON_MODE_VERTICALS`, `LOJAS`, rodízio da Shopee, cron de coleta). O teste das regras do dono falha se faltar uma; foi a falta de uma lista que deixou a Beleza sem mensagens.
+- **Mesmo fluxo para todos os canais (R-94, R-100):** nenhuma exceção por loja no pool; todo envio rotaciona tipo, produto (72 h) e rede; nenhum tipo passa de 20% das mensagens da loja em 24 h; "proibido rodar só em cima de poucos produtos".
+- **Link de compra no texto de TODA postagem do Telegram (R-99)**, antes do carimbo; a legenda com foto cede divulgação e slogan, nunca o link, o preço nem o #publicidade.
+- **A vitrine de jogos até R$ 200 é um plus (R-96):** cron próprio, silenciosa, fora do ciclo normal e fora de `group_messages`; nunca importar o motor do ciclo nem escrever na fila. PlayStation, Xbox, Switch 1 e Switch 2 sempre juntos, com rodízio.
+- **Aprovação contínua libera todo produto checado em todas as lojas (R-93);** dúvida do robô, item miúdo e mídia/modelo/armazenamento ficam com o dono.
+- **Envio (R-98):** janela própria por loja, no máximo 3 lojas por vez (pool do banco da Vercel = 3 conexões), conexões órfãs encerradas no início do ciclo.
+
+## Definição de pronto (dono, 2026-11-18: "ou o código não finaliza a implementação ou não faz o que eu peço")
+1. Ler a regra no Guia Mestre **antes** de codar e citar o id (R-nn) no commit. Pedido novo vira regra no Guia, no mesmo commit.
+2. Toda regra do dono vira verificação em `scripts/test-regras-do-dono.ts` (ou teste próprio) que falha se a regra for desfeita.
+3. Edição por script (python/node/sed) **sempre com `assert` de que o trecho existia**; uma substituição silenciosa que não aplica foi o que deixou `OFFER_FRESHNESS_DAYS` em 7 depois de declarado 365. Depois de editar, reler o arquivo ou rodar o teste.
+4. "Feito" só com: testes verdes, deploy `READY`, e **medição em produção do efeito pedido** (ex.: envios/hora, mensagens da Beleza, notebooks no banco). Sem medição, o status é "implementado, não verificado".
+5. Se algo não puder terminar, entra na fila (`docs/fila-de-execucao.md`) com o que falta e o critério de pronto; nunca fica só no chat.
