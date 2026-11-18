@@ -827,6 +827,7 @@ Pedido: "Nao estou vendo produtos de beleza entrar, principalmente maquiagens. D
 ### 15.16 R-98, janela de envio por loja (dono, 2026-11-18: "o fluxo de mensagens para o Telegram esta muito parado")
 - **Causa medida:** Games ficou 1h44 sem enviar com 461 propostas na fila. `listPendingForSend` lia UMA janela de 300 linhas ordenada por `rn_fair` (rodizio por gatilho, loja e tipo): lojas com varios tipos tinham `rn_fair` baixo e enchiam a janela, Games (sem tipo) ficava com 16 linhas e quase todas adiadas pela R-77 (mesmo master 72 h). Ciclos de 51 a 66 s e metade com a deteccao passando de 22 s (candidatos 0) agravavam.
 - **Regra:** cada loja tem a PROPRIA janela (`perV` = `PENDING_LIMIT`/7, minimo 40; `PENDING_LIMIT` 300 -> 840), na mesma ordem de antes dentro da loja; o aviso AC de master enviado dentro da janela da R-77 (72 h; 24 h na impressao 3D) sai do SQL (o plano sempre o adiaria). Medido: Games 16 -> 120 linhas, Livros 80, demais 120, consulta 2,8 s.
+- **Espera sem reler o historico (2026-11-18):** no laco de envio, a espera do espacamento por chat (3,1 s) nao relê mais `loadSentHistory`: com 7 laços em paralelo eram ~2 consultas pesadas por segundo e o ciclo ia a 60 a 118 s com 1 a 2 envios. O historico so e relido apos um envio do proprio laco.
 - **Pendente:** a deteccao passa de 22 s em ~metade dos ciclos (pool de 150 por loja x 8 lojas); reduzir o custo de `publicOffersCtes` ou dividir a deteccao por loja.
 
 ## 16. Inventário de canais (conferido no banco e no código em 2026-11-17)

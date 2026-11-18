@@ -250,8 +250,9 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
               // Espaçamento por chat: se só falta esperar poucos segundos, espera dentro do orçamento em vez de perder a vez.
               const wait = plan.deferred.some((d) => d.reason.startsWith('intervalo_chat_')) && !plan.deferred.some((d) => !d.reason.startsWith('intervalo_chat_') && !d.reason.startsWith('produto_ja_enviado') && !d.reason.startsWith('mesmo_produto'));
               if (wait && Date.now() + 3_500 < sendDeadline) {
+                // 2026-11-18: NAO relê o histórico na espera. Ele só muda quando ESTE laço envia (relido logo depois do envio); relê-lo a cada 3 s em 7 laços paralelos
+                // eram ~2 consultas pesadas por segundo e deixavam o ciclo em 60 a 118 s com 1 a 2 envios.
                 await new Promise((r) => setTimeout(r, 3_100));
-                history = (await loadSentHistory('tg', new Date())).records;
                 continue;
               }
               outcome = { outcome: 'adiada', reason: plan.deferred[0]?.reason ?? 'limite' };
