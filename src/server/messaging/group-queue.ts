@@ -1,6 +1,7 @@
 import { ORCAMENTO } from '@/lib/frescor/orcamento';
 import 'server-only';
 import { sql } from 'drizzle-orm';
+import { POPULARIDADE_VALIDADE_DIAS, popularidadeLigada } from '@/lib/popularidade/score';
 import { db } from '@/lib/db';
 import { canSendTelegram, getAdTag } from '@/lib/messaging/group-config';
 import { dispositionOf, rowStatusFor, type AutomationState } from '@/lib/messaging/group-automation';
@@ -129,10 +130,15 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   const precoWin = novo
     ? sql`(g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int))`
     : sql`(g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int))`;
+  // R-103 (dono, 2026-11-18): popularidade da plataforma (mais vendidos do ML em offer_popularity) desempata DENTRO do mesmo degrau da regua, antes da recencia.
+  // Nunca exclui nada: so define quem vem primeiro. GROUP_POPULARIDADE=off volta a ordem de antes.
+  const popOrdem = popularidadeLigada()
+    ? sql`, COALESCE((SELECT max(p.score) FROM affiliate_offers po JOIN offer_popularity p ON p.network_id = po.network_id AND p.external_ref = po.external_ref WHERE po.id = g.offer_id AND p.observed_at > now() - make_interval(days => ${POPULARIDADE_VALIDADE_DIAS}::int)), 0) DESC`
+    : sql``;
   const rows = await db.execute<Row>(sql`
     SELECT * FROM (
     SELECT q.*, row_number() OVER (PARTITION BY q.vertical ORDER BY q.rn_fair, (q.trigger = 'AC'), q.created_at) AS rn_v FROM (
-      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical${tipoPart} ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, g.created_at DESC) AS rn_fair
+      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical${tipoPart} ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC${popOrdem}, g.created_at DESC) AS rn_fair
       FROM group_messages g
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
         -- Pre-filtro SEGURO (subconjunto do que o plano ja barra): produto ja enviado dentro da janela do proprio gatilho (Achado 24 h, cupom 1 h, demais 1 h

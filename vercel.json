@@ -89,6 +89,10 @@
       "schedule": "* * * * *"
     },
     {
+      "path": "/api/cron/popularidade",
+      "schedule": "11,41 * * * *"
+    },
+    {
       "path": "/api/cron/group-messages?fase=integridade",
       "schedule": "* * * * *"
     },
