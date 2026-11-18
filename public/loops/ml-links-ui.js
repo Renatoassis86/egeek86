@@ -410,28 +410,27 @@
 
   // o worker confirma em ~20 ms; só então o primeiro lote (a chamada que injeta devolve na hora)
   setTimeout(function () { principal(); }, 400);
-})();
-
-// BATIMENTO-GERAL v1 (2026-11-18, metodologia Chrome): um batimento por minuto para /api/ingest/loop-saude (estado, versao, atraso do timer, visibilidade, memoria).
-// O vigia le o banco (scripts/vigia-loops.ts) em vez de sondar a aba por CDP; atraso grande do timer = aba congelada ou thread principal travada.
-(function () {
-  try {
-    var NOME = 'ml-links-ui', REDE = 'mercado-livre', GLOBAL = '__mll', CFG = window['__MLL_CFG'] || {};
-    if (!CFG.api || !CFG.token) return;
-    if (window['__loopsaude_' + NOME]) clearInterval(window['__loopsaude_' + NOME]);
-    var ESPERADO = 60000, anterior = Date.now();
-    function bater() {
-      var agora = Date.now(), lag = Math.max(0, agora - anterior - ESPERADO); anterior = agora;
-      var g = window[GLOBAL], st = {};
-      try { st = (g && g.status && g.status()) || {}; } catch (e) { st = {}; }
-      var parado = st.rodando === false || st.running === false || (g && g.rodando === false);
-      var corpo = { estado: parado ? 'parado' : 'ok', versao: g && g.versao ? String(g.versao) : null, lagMs: lag, visivel: document.visibilityState,
-        memMb: (performance && performance.memory) ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null, url: location.pathname };
-      try {
-        fetch(CFG.api + '/api/ingest/loop-saude?rede=' + REDE + '&loop=' + NOME, { method: 'POST', headers: { Authorization: 'Bearer ' + CFG.token, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }).catch(function () {});
-      } catch (e) { /* o batimento nunca derruba o loop */ }
-    }
-    window['__loopsaude_' + NOME] = setInterval(bater, ESPERADO);
-    setTimeout(bater, 5000);
-  } catch (e) { /* ok */ }
+  // BATIMENTO-GERAL v1 (2026-11-18, metodologia Chrome): um batimento por minuto para /api/ingest/loop-saude (estado, versao, atraso do timer, visibilidade, memoria).
+  // Dentro da closure do loop: usa CFG e TOKEN (a configuracao e apagada da window na partida, o token nunca fica exposto). O vigia le o banco (scripts/vigia-loops.ts).
+  (function () {
+    try {
+      var NOME = 'ml-links-ui', REDE_BAT = 'mercado-livre', GLOBAL = '__mll';
+      if (!CFG.api || !TOKEN) return;
+      if (window['__loopsaude_' + NOME]) clearInterval(window['__loopsaude_' + NOME]);
+      var ESPERADO = 60000, anterior = Date.now();
+      var bater = function () {
+        var agora = Date.now(), lag = Math.max(0, agora - anterior - ESPERADO); anterior = agora;
+        var g = window[GLOBAL], st = {};
+        try { st = (g && g.status && g.status()) || {}; } catch (e) { st = {}; }
+        var parado = st.rodando === false || st.running === false || (g && g.rodando === false);
+        var corpo = { estado: parado ? 'parado' : 'ok', versao: g && g.versao ? String(g.versao) : null, lagMs: lag, visivel: document.visibilityState,
+          memMb: (performance && performance.memory) ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null, url: location.pathname };
+        try {
+          fetch(CFG.api + '/api/ingest/loop-saude?rede=' + REDE_BAT + '&loop=' + NOME, { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }).catch(function () {});
+        } catch (e) { /* o batimento nunca derruba o loop */ }
+      };
+      window['__loopsaude_' + NOME] = setInterval(bater, ESPERADO);
+      setTimeout(bater, 5000);
+    } catch (e) { /* ok */ }
+  })();
 })();
