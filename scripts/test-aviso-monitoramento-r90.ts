@@ -35,5 +35,5 @@ const q = fs.readFileSync('src/server/messaging/group-queue.ts', 'utf8');
 assert.ok(q.includes("'expirada sem envio: aviso de monitoramento não coube no ritmo em '"), 'AC expira com motivo');
 assert.ok(q.includes("'expirada sem envio: retida por 24 h sem liberação (gatilho '"), 'retida expira com motivo');
 assert.ok(!q.includes("COALESCE(error, 'expirada sem envio')\n    WHERE (status IN ('proposta', 'proposta_auto')"), 'sem expiração muda');
-assert.ok(q.includes("ORDER BY q.rn_fair, (q.trigger = 'AC'), q.created_at"), 'queda antes do aviso dentro do rodízio');
+assert.ok(q.includes("ORDER BY q.rn_fair, q.tipo_sent24, (q.trigger = 'AC'), q.created_at"), 'queda antes do aviso dentro do rodízio (a cota de tipo desempata antes do aviso)');
 console.log('test-aviso-monitoramento-r90: OK');

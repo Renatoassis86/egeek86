@@ -12,5 +12,5 @@ assert.ok(reaper.includes("application_name = 'egeek-web'") && reaper.includes("
 const route = fs.readFileSync('src/app/api/cron/group-messages/route.ts', 'utf8');
 assert.ok(route.includes('await encerrarBackendsOrfaos()') && route.indexOf('encerrarBackendsOrfaos()') < route.indexOf("fase(fases, 'ciclo_envio'"), 'o ciclo encerra conexoes orfas antes de enviar');
 const q = fs.readFileSync('src/server/messaging/group-queue.ts', 'utf8');
-assert.ok(q.includes('g.created_at DESC) AS rn_fair') && q.includes('w.created_at DESC LIMIT'), 'janela da loja: proposta mais NOVA primeiro (a velha expira na revalidacao)');
+assert.ok(q.includes('b.created_at DESC) AS rn_fair') && q.includes('w.created_at DESC LIMIT'), 'janela da loja: proposta mais NOVA primeiro (a velha expira na revalidacao)');
 console.log('test-envio-concorrencia: OK');
