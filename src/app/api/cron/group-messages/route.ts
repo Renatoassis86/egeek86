@@ -55,10 +55,16 @@ export async function GET(request: NextRequest) {
       lockI.release();
     }
   }
-  const lock = await acquireCycleLock();
+  // 2026-11-18 (dono: aumentar o fluxo de envio): detecção e envio em invocações próprias, cada uma com trava e orçamento próprios (o envio não espera
+  // nem disputa o pool do banco com a detecção). GROUP_FASES=junto volta ao ciclo único de antes (sem deploy de código).
+  const dividido = (process.env.GROUP_FASES ?? '').trim().toLowerCase() !== 'junto';
+  const faseParam = request.nextUrl.searchParams.get('fase');
+  const fase: 'deteccao' | 'envio' | undefined = !dividido ? undefined : faseParam === 'envio' ? 'envio' : 'deteccao';
+  if (!dividido && faseParam === 'envio') return NextResponse.json({ ok: true, skipped: 'GROUP_FASES=junto: o envio roda no ciclo único' });
+  const lock = await acquireCycleLock(fase === 'envio' ? 'group-messages:envio' : undefined);
   if (!lock.acquired) return NextResponse.json({ ok: true, skipped: 'ciclo anterior ainda em andamento (trava)' });
   try {
-    return await runCycle(request, lock.failedOpen);
+    return await runCycle(request, lock.failedOpen, fase);
   } finally {
     lock.release();
   }
@@ -97,7 +103,7 @@ async function runIntegridade() {
   return NextResponse.json({ ok: true, fase: 'integridade', fases, paineisImpressoras: paineis, agenteCupons: agente, cofre, auditoriaLinks, fretePrazo, anuncios, shopeeRenov });
 }
 
-async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
+async function runCycle(request: NextRequest, lockFailedOpen: boolean, faseCiclo?: 'deteccao' | 'envio') {
   const startedAt = Date.now();
 
   if (!isGroupMessagesEnabled()) return NextResponse.json({ ok: true, skipped: 'GROUP_MESSAGES_ENABLED desligado' });
@@ -114,6 +120,7 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
   // Cartão de histórico (PNG) e cupom verificado: injeções do ciclo (ambos tolerantes a falha; sem eles a mensagem sai em texto puro).
   const fases: Fases = {};
   const summary = await fase(fases, 'ciclo_envio', () => runGroupMessagesCycle({
+    fase: faseCiclo,
     renderCard: async (masterProductId: string) => (await renderHistoryCard(masterProductId))?.png ?? null,
     // Escolha do cartão: histórico (P1 e G5) ou card de oferta (capa + preço + insight) para alerta/insight de preço.
     cardFor: async ({ kind, offerId, masterProductId, candidate }) => {

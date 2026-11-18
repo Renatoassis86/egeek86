@@ -884,3 +884,4 @@ Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o ro
 - **Prioridade (a implementar):** a ordem na fila e na vitrine usa popularidade das plataformas (mais vendidos do ML, vendas e ordem por vendas da Shopee, salesRank do Keepa para a Amazon), normalizada por plataforma, sem tirar nenhum produto: so define quem vem primeiro.
 - **Diversidade:** mais tipos por loja; teto por tipo continua por hora (R-100).
 - **Gatilho:** qualquer mudanca no laco de envio roda `scripts/test-envio-concorrencia.ts` e mede envios por hora depois do deploy.
+- **Fases do ciclo (2026-11-18):** detecção (`/api/cron/group-messages`) e envio (`?fase=envio`) rodam em invocações próprias, cada uma com trava e orçamento (envio: 52 s). Motivo medido: a detecção deixava consultas pesadas no pool e os envios falhavam aos 30 s (`Failed query`). `GROUP_FASES=junto` volta ao ciclo único. Teste: `scripts/test-envio-fases.ts`.

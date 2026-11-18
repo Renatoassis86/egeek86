@@ -36,6 +36,9 @@ export const DETECT_BUDGET_MS = 22_000;
 export const MAX_SENDS_PER_RUN = 60;
 /** Linhas lidas da fila por execução (fila acumulada + novas). */
 export const PENDING_LIMIT = 840;
+/** Invocação própria de envio (fase 'envio'): sem detecção, o envio ganha quase o minuto inteiro (maxDuration da rota = 120 s; o cron seguinte espera a trava). */
+export const SEND_BUDGET_ENVIO_MS = 52_000;
+export const CYCLE_HARD_CAP_ENVIO_MS = 58_000;
 
 /**
  * Ciclo do cron das mensagens (a cada 5 min quando for agendado; NÃO está no vercel.json). Idempotente e tolerante a
@@ -59,6 +62,12 @@ export interface CycleDeps {
   cardFor?: CardForFn;
   couponLookup?: CouponLookupFn;
   onCouponSent?: CouponSentFn;
+  /**
+   * 2026-11-18 (dono: aumentar o fluxo de envio; envios falhavam aos 30 s porque a detecção deixava consultas pesadas ocupando o pool do banco).
+   * 'deteccao' = detecta e grava propostas, NAO envia. 'envio' = NAO detecta, so drena a fila já gravada (com orçamento próprio e maior).
+   * undefined = comportamento anterior (as duas coisas no mesmo ciclo). A rota liga as duas invocações; GROUP_FASES=junto volta ao ciclo único.
+   */
+  fase?: 'deteccao' | 'envio';
 }
 
 export interface CycleSummary {
@@ -193,7 +202,13 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     // propostas, e o laço de envio trabalha a fila já aprovada/persistida (cada linha ainda passa pela reconferência ao vivo antes de sair).
     let degraded: string | null = null;
     let detection: DetectionResult;
-    try {
+    const soEnvio = deps.fase === 'envio';
+    const semEnvio = deps.fase === 'deteccao';
+    if (soEnvio) {
+      // Fase de envio: só o histórico de envios e a fila já gravada; nenhuma consulta pesada de detecção compete pelo pool do banco.
+      detection = await degradedDetection(now);
+      detection.warnings = [];
+    } else try {
       const run = detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag() });
       run.catch(() => undefined); // evita rejeição não tratada se a corrida abaixo já terminou
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -214,7 +229,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
 
     const shadowWinner = state === 'shadow' && !degraded ? await pickShadowWinner(detection, now) : null;
     const tPersist0 = Date.now();
-    summary.persisted = degraded ? { inserted: 0, skipped: 0, byStatus: {} } : await persistProposals(detection, { state, shadowWinner });
+    summary.persisted = degraded || soEnvio ? { inserted: 0, skipped: 0, byStatus: {} } : await persistProposals(detection, { state, shadowWinner });
     summary.timing = { preDetectMs: tDetect0 - started.getTime(), detectMs: tDetect, ...detection.timingMs, persistMs: Date.now() - tPersist0 };
     if (state === 'shadow') summary.shadow = { winner: shadowWinner, deferred: detection.plan.deferred.length, state: detection.plan.state };
 
@@ -222,7 +237,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     const gate = canSendTelegram();
     const auto = canAutoSend(state, members.brake, gate.ok);
     let sentCount = 0;
-    if (mode === 'send' && gate.ok && state !== 'shadow') {
+    if (mode === 'send' && gate.ok && state !== 'shadow' && !semEnvio) {
       const statuses = auto.ok ? (['aprovada', 'proposta_auto'] as const) : (['aprovada'] as const);
       if (v2) {
         const pending0 = await listPendingForSend([...statuses], PENDING_LIMIT);
@@ -235,7 +250,9 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
         const conta = (k: string) => { resultados[k] = (resultados[k] ?? 0) + 1; };
         const temposEnvio: number[] = [];
         // Prazo do envio: o orçamento de 38 s do ciclo, mas nunca menos que SEND_MIN_WINDOW_MS a partir de agora (a detecção lenta não pode zerar o envio) e nunca além do teto do ciclo.
-        const sendDeadline = Math.min(started.getTime() + CYCLE_HARD_CAP_MS, Math.max(started.getTime() + SEND_BUDGET_MS, Date.now() + SEND_MIN_WINDOW_MS));
+        const sendDeadline = soEnvio
+          ? started.getTime() + SEND_BUDGET_ENVIO_MS
+          : Math.min(started.getTime() + CYCLE_HARD_CAP_MS, Math.max(started.getTime() + SEND_BUDGET_MS, Date.now() + SEND_MIN_WINDOW_MS));
         // 2026-11-17 (dono: "precisamos ser mais rapidos ... nao perdermos produtos"): cada canal tem o proprio espacamento, entao as filas de cada loja drenam EM PARALELO
         // (antes uma fila unica: cada envio levava ~10 s de revalidacao e render, 2 a 5 por ciclo para 7 canais). O espacamento por chat e o 429 continuam valendo dentro de cada fila.
         const porLoja = new Map<string, typeof pending0>();
@@ -310,7 +327,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
 
     if (v2) summary.rechecks = await runRechecks(now);
     await logRun(started, 'ok', {
-      state, degraded, timing: summary.timing, sendMs: (summary.sendRun as { ms?: number } | undefined)?.ms, sendRun: summary.sendRun, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
+      state, fase: deps.fase ?? 'junto', degraded, timing: summary.timing, sendMs: (summary.sendRun as { ms?: number } | undefined)?.ms, sendRun: summary.sendRun, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
       cupomGeradas: detection.cupom.generated, cupomEnviaveis: detection.cupom.sendable, cupomNoPool: detection.cupom.poolProducts, cupomPorLoja: detection.cupom.byStore,
       cupomBarradas: detection.cupom.barred, cupomEnviadas: (summary.sendRun as { cupomSent?: number } | undefined)?.cupomSent ?? 0,
     });

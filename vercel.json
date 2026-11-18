@@ -85,6 +85,10 @@
       "schedule": "* * * * *"
     },
     {
+      "path": "/api/cron/group-messages?fase=envio",
+      "schedule": "* * * * *"
+    },
+    {
       "path": "/api/cron/group-messages?fase=integridade",
       "schedule": "* * * * *"
     },
