@@ -173,6 +173,9 @@ export async function sendTelegramGroupMessage(input: SendTelegramGroupInput): P
       continue;
     }
 
+    // 2026-11-18: 'Bad Request: internal Server Error during file upload' e parentes sao falha TRANSITORIA do Telegram no upload da foto (nao do nosso pedido):
+    // volta para a fila (retryable) em vez de virar definitiva. Antes um 400 desses pausou a automacao inteira por ~25 min.
+    if (status === 400 && /internal server error|file upload|timeout|temporar|try again|too many requests/i.test(desc)) return { ok: false, status, error: desc, retryable: true };
     // 400 (chat not found, mensagem inválida), 401, 403 (bot removido/sem permissão), 404: definitivos.
     if (status >= 400 && status < 500) return { ok: false, status, error: desc, retryable: false };
     return { ok: false, status, error: desc, retryable: true };

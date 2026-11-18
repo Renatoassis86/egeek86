@@ -888,3 +888,4 @@ Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o ro
 
 ### 15.22 Nome da área multi-departamento: Arkos Price (dono, 2026-11-18)
 "Espaço Geek Plus" passa a se chamar **Arkos Price** (menu, home, rodapé, páginas, sitemap). A rota é `/arkos-price`; `/plus` responde 308 para ela. Nomes internos (`plus`, `lojas Plus`, `components/plus`) ficam como estão. Teste: `scripts/test-arkos-price.ts`.
+- **Pausa indevida (2026-11-18):** um 400 transitório do Telegram ("internal Server Error during file upload") pausou a automação inteira por ~25 min (10h37 a 11h05). Regra: erro transitório do Telegram volta para a fila; **só falha do bot ou do canal** (401, 403, 404, chat inexistente, bot removido) pausa a automação. Teste: `scripts/test-envio-falha-transitoria.ts`.

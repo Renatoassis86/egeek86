@@ -717,7 +717,10 @@ export async function sendQueuedTelegram(id: string, deps: SendDeps = {}): Promi
         WHERE id = ${id}::uuid
       `);
       // Falha definitiva (token revogado, bot removido, chat inexistente): pausa a automação inteira até o dono olhar.
-      await setAutomationState('off', `pausa automática: ${(sent.error ?? 'erro definitivo de envio').slice(0, 120)}`).catch(() => undefined);
+      // 2026-11-18: so pausa a automacao inteira quando o problema e do BOT/CANAL (token, bot removido, sem permissao, chat inexistente). Um 400 de uma mensagem
+      // especifica (ex.: foto invalida) marca so ela como erro; o fluxo dos outros canais e produtos NAO para (regra do dono: o fluxo nunca para).
+      const fatalDoBot = sent.status === 401 || sent.status === 403 || sent.status === 404 || /chat not found|bot was (blocked|kicked)|not enough rights|have no rights|unauthorized|forbidden|token/i.test(sent.error ?? '');
+      if (fatalDoBot) await setAutomationState('off', `pausa automática: ${(sent.error ?? 'erro definitivo de envio').slice(0, 120)}`).catch(() => undefined);
       return { ok: false, outcome: 'failed', reason: sent.error };
     }
     // 429 (limite de taxa do Telegram): NADA foi enviado. A linha volta para a fila SEM gastar tentativa (não vira 'erro' por limite de taxa).
