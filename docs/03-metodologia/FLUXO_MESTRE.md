@@ -851,6 +851,12 @@ Pedido: "estou sentindo falta de diversidade nos produtos de cada loja, tanto de
 - **Beneficio de cartao/credito da Amazon:** autorizado so com prova no item (texto exato, sem preco final). Verificado em 2026-11-18 na pagina do P2S Combo (aba logada, desktop): o DOM tem so "5% off a vista" (`promotionMessageInsideBuyBox`, ja tratado como `preco_a_vista`) e o widget de marketing "Chegou o Amazon Credito!" (`installmentCalculatorCentral`, o tipo de texto que causou o incidente "Itau Mastercard 15%"); o "20% off com Itau Mastercard, ate R$ 40, codigo ITAU20OFF" e o "Cupom de R$ 30 off Amazon Credito" que o dono viu no celular NAO existem no DOM do desktop. Sem prova estavel no item, nada e publicado; pendente: ler a pagina como o app a mostra (promocoes/Resgatar) e so entao estender `parseCardBenefit` e `provaDoBeneficio`.
 - **Reavaliar os 94 "digital entre parenteses" e o grupo `review`:** NAO (manter fora).
 
+### 15.20 R-102, metodologia de uso do Chrome (dono, 2026-11-18)
+Pedido: "implemente uma metodologia de uso do Chrome que seja a mais eficiente e resolva o problema de extracao pelo navegador". Documento: `docs/03-metodologia/CHROME_METODOLOGIA.md`.
+- **Medido:** Amazon 138 leituras/24 h, cupons 142 leituras/24 h, abas congeladas e substituidas pelo Chrome varias vezes por rodada, sonda CDP estourando 45 s.
+- **Regra:** uma aba = um loop; leitura por `fetch` + `DOMParser` (iframe so onde a SPA exige); timers em Worker; **batimento de saude por minuto de todo loop** (`/api/ingest/loop-saude`, job `loop:<nome>`, com atraso do timer, visibilidade e memoria); **o vigia le o banco** (`scripts/vigia-loops.ts`) e so reinjeta loop sem batimento ha mais de 6 min; nunca sondar aba por CDP.
+- **Teste:** `scripts/test-chrome-loops.ts` (os 5 loops com batimento, rota protegida e limitada, vigia, documento).
+
 ## 16. Inventário de canais (conferido no banco e no código em 2026-11-17)
 Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o roteamento de `src/server/messaging/group-queue.ts` (`chatForStore(loja) ?? telegramChatFor(vertical)`). **Existem 7 lojas, uma por vertical, cada uma com canal do Telegram próprio verificado e com o bot podendo postar, e cada uma com grupo de WhatsApp cadastrado.** Nenhuma regra do tipo "abrir canal novo para os 7 departamentos" é necessária: eles já existem. Os identificadores (chat id e link de convite) ficam só no banco e não são copiados para a documentação.
 

@@ -81,6 +81,6 @@ regra('R-70', read('src/lib/messaging/telegram-send.ts').includes('auditarUrlsDe
 
 // ---- pronto = no Guia: toda regra citada aqui existe no Fluxo Mestre ----
 const guia = read('docs/03-metodologia/FLUXO_MESTRE.md');
-for (const id of ['R-93', 'R-94', 'R-95', 'R-96', 'R-97', 'R-98', 'R-99', 'R-100', 'R-101']) regra(id, guia.includes(`${id},`) || guia.includes(`${id} `), 'regra ausente do Fluxo Mestre');
+for (const id of ['R-93', 'R-94', 'R-95', 'R-96', 'R-97', 'R-98', 'R-99', 'R-100', 'R-101', 'R-102']) regra(id, guia.includes(`${id},`) || guia.includes(`${id} `), 'regra ausente do Fluxo Mestre');
 
 console.log('test-regras-do-dono: OK');

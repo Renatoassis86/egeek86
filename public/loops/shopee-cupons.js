@@ -359,3 +359,27 @@
 
   agendar(2000);
 })();
+
+// BATIMENTO-GERAL v1 (2026-11-18, metodologia Chrome): um batimento por minuto para /api/ingest/loop-saude (estado, versao, atraso do timer, visibilidade, memoria).
+// O vigia le o banco (scripts/vigia-loops.ts) em vez de sondar a aba por CDP; atraso grande do timer = aba congelada ou thread principal travada.
+(function () {
+  try {
+    var NOME = 'shopee-cupons', REDE = 'shopee', GLOBAL = '__shp', CFG = window['__SHP_CFG'] || {};
+    if (!CFG.api || !CFG.token) return;
+    if (window['__loopsaude_' + NOME]) clearInterval(window['__loopsaude_' + NOME]);
+    var ESPERADO = 60000, anterior = Date.now();
+    function bater() {
+      var agora = Date.now(), lag = Math.max(0, agora - anterior - ESPERADO); anterior = agora;
+      var g = window[GLOBAL], st = {};
+      try { st = (g && g.status && g.status()) || {}; } catch (e) { st = {}; }
+      var parado = st.rodando === false || st.running === false || (g && g.rodando === false);
+      var corpo = { estado: parado ? 'parado' : 'ok', versao: g && g.versao ? String(g.versao) : null, lagMs: lag, visivel: document.visibilityState,
+        memMb: (performance && performance.memory) ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null, url: location.pathname };
+      try {
+        fetch(CFG.api + '/api/ingest/loop-saude?rede=' + REDE + '&loop=' + NOME, { method: 'POST', headers: { Authorization: 'Bearer ' + CFG.token, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) }).catch(function () {});
+      } catch (e) { /* o batimento nunca derruba o loop */ }
+    }
+    window['__loopsaude_' + NOME] = setInterval(bater, ESPERADO);
+    setTimeout(bater, 5000);
+  } catch (e) { /* ok */ }
+})();
