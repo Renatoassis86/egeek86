@@ -11,7 +11,7 @@ import { getCurrentProfile } from '@/lib/auth/require-admin';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Espaço Geek Plus',
+  title: 'Arkos Price',
   description: 'Além dos games: Impressão 3D, Tecnologia, Livros, Casa, Eletrônicos e Esporte, monitorados pelo mesmo motor de preço do Espaço Geek 86.',
 };
 
@@ -23,7 +23,7 @@ export default async function PlusPage() {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
       <header className="mb-8 flex flex-col gap-2 border-l-2 border-[var(--color-accent-primary)] pl-4">
-        <Text variant="label" color="tertiary">Espaço Geek Plus</Text>
+        <Text variant="label" color="tertiary">Arkos Price</Text>
         <Text as="h1" variant="display-md" className="font-black tracking-tight">Os outros departamentos, no mesmo motor de preço</Text>
         <Text variant="body-md" color="secondary" className="max-w-[62ch]">
           Games continua sendo o foco do Espaço Geek 86. O Plus reúne os demais departamentos que monitoramos com o mesmo método: só anúncios ativos, com link verificado nas últimas horas e preço lido na fonte.

@@ -40,7 +40,11 @@ const nextConfig: NextConfig = {
   },
   // D5 (ata 2026-11-13): o endereco antigo responde 308 de verdade (permanentRedirect dentro da pagina vira meta refresh com status 200 quando ha streaming).
   async redirects() {
-    return [{ source: '/inteligencia-gamer', destination: '/noticias', permanent: true }];
+    return [
+      { source: '/inteligencia-gamer', destination: '/noticias', permanent: true },
+      // 2026-11-18 (dono): 'Espaço Geek Plus' passa a se chamar 'Arkos Price'; o endereço antigo continua funcionando (308).
+      { source: '/plus', destination: '/arkos-price', permanent: true },
+    ];
   },
   // Compatibilidade: as imagens grandes foram reexportadas de .png para .webp no mesmo caminho logico. Referencias antigas
   // (capas gravadas no banco, scripts, links externos) a /images/x.png continuam funcionando quando o .png nao existe mais

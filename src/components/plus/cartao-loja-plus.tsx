@@ -21,7 +21,7 @@ const ICONES: Record<string, ComponentType<{ className?: string }>> = {
 /** Produto real em destaque do departamento (foto da loja, nome e menor preço lido). Nada de imagem gerada: se não houver, o cartão fica só com o ícone. */
 export interface DestaqueCartaoPlus { slug: string; nome: string; imagem: string | null; menorCents: number; lojaMenor: string | null; verificadoEm: string }
 
-/** Cartão de uma loja do Espaço Geek Plus. Área aberta leva aos produtos; fechada mostra o estado. Foto real do produto em destaque (sem selo nem média, R-36). */
+/** Cartão de uma loja do Arkos Price. Área aberta leva aos produtos; fechada mostra o estado. Foto real do produto em destaque (sem selo nem média, R-36). */
 export const ICONES_LOJA_PLUS = ICONES;
 
 export function CartaoLojaPlus({ loja, tipos, destaque }: { loja: LojaPlusView; tipos?: TipoLink[]; destaque?: DestaqueCartaoPlus | null }) {

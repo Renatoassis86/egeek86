@@ -31,7 +31,7 @@ const footerSections = [
       { href: '/ofertas', label: 'Ofertas' },
       { href: '/black-friday', label: 'Black Friday' },
       { href: '/ranking', label: 'Ranking' },
-      { href: '/plus', label: 'Espaço Geek Plus' },
+      { href: '/arkos-price', label: 'Arkos Price' },
       ...(MARKETPLACE_PUBLIC ? [{ href: '/hype-zone', label: 'Hype Zone' }] : []),
     ],
   },

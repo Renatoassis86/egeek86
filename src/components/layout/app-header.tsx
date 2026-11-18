@@ -172,8 +172,8 @@ export function AppHeader({
   const navItems: NavItem[] = [
     ...navLinks,
     {
-      href: '/plus',
-      label: 'Plus',
+      href: '/arkos-price',
+      label: 'Arkos Price',
       children: [
         // O item "Plus" já leva a /plus; o submenu lista só os departamentos (rótulos = cartões do Plus).
         ...departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label })),

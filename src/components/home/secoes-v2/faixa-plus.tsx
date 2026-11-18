@@ -11,7 +11,7 @@ export async function FaixaPlus() {
   const v = await getVitrine('plus');
   if (!v.visivel) return null;
   return (
-    <SessaoSimples id="faixa-plus" titulo="Espaço Geek Plus" subtitulo="Um achado de cada departamento além de games, com o menor preço do momento.">
+    <SessaoSimples id="faixa-plus" titulo="Arkos Price" subtitulo="Um achado de cada departamento além de games, com o menor preço do momento.">
       <ul className={GRADE_SIMPLES}>
         {v.itens.map((item) => {
           const dept = item.departamento;

@@ -885,3 +885,6 @@ Quem manda aqui é o banco (`store_sections` + `store_section_verticals`) e o ro
 - **Diversidade:** mais tipos por loja; teto por tipo continua por hora (R-100).
 - **Gatilho:** qualquer mudanca no laco de envio roda `scripts/test-envio-concorrencia.ts` e mede envios por hora depois do deploy.
 - **Fases do ciclo (2026-11-18):** detecção (`/api/cron/group-messages`) e envio (`?fase=envio`) rodam em invocações próprias, cada uma com trava e orçamento (envio: 52 s). Motivo medido: a detecção deixava consultas pesadas no pool e os envios falhavam aos 30 s (`Failed query`). `GROUP_FASES=junto` volta ao ciclo único. Teste: `scripts/test-envio-fases.ts`.
+
+### 15.22 Nome da área multi-departamento: Arkos Price (dono, 2026-11-18)
+"Espaço Geek Plus" passa a se chamar **Arkos Price** (menu, home, rodapé, páginas, sitemap). A rota é `/arkos-price`; `/plus` responde 308 para ela. Nomes internos (`plus`, `lojas Plus`, `components/plus`) ficam como estão. Teste: `scripts/test-arkos-price.ts`.

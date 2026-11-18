@@ -80,7 +80,7 @@ export function GuiaImpressoras3d({ itens }: { itens: ItemGuiaComRegistro[] }) {
   return (
     <section id="guia" aria-labelledby="guia-3d-titulo" className="mb-10 scroll-mt-24">
       <div className="mb-4 flex max-w-[70ch] flex-col gap-1 border-l-2 border-[var(--color-accent-primary)] pl-4">
-        <Text variant="label" color="tertiary">Espaço Geek Plus · Guia</Text>
+        <Text variant="label" color="tertiary">Arkos Price · Guia</Text>
         <Text as="h2" id="guia-3d-titulo" variant="heading-lg" className="font-black tracking-tight">Guia das impressoras 3D Bambu Lab</Text>
       </div>
       <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

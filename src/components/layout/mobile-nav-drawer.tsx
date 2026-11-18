@@ -191,7 +191,7 @@ export function MobileNavDrawer({ viewer = null, departamentos = [], isOpen, onC
             )}
             <NavGroup
               items={[
-                { href: '/plus', label: 'Espaço Geek Plus', icon: Sparkles },
+                { href: '/arkos-price', label: 'Arkos Price', icon: Sparkles },
                 ...departamentos.map((d) => ({ href: `/mercado/${d.slug}`, label: d.label, icon: Tag })),
               ]}
               onClose={onClose}

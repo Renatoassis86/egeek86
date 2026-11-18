@@ -83,7 +83,7 @@ export default async function DepartamentoPage({
     <section className="mx-auto w-full max-w-7xl px-4 py-8 lg:px-8 lg:py-12">
       <header className="mb-6 flex flex-col gap-2 border-l-2 border-[var(--color-accent-primary)] pl-4">
         <Text variant="label" color="tertiary">
-          <Link href="/plus" className="hover:underline">Espaço Geek Plus</Link> / Departamento
+          <Link href="/arkos-price" className="hover:underline">Arkos Price</Link> / Departamento
         </Text>
         <Text as="h1" variant="display-md" className="font-black tracking-tight">{dept.rotulo}</Text>
         <Text variant="body-md" color="secondary">

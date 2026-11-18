@@ -32,7 +32,7 @@ export async function FaixasPlusHome() {
             <div className="mx-auto max-w-7xl px-4 lg:px-8">
               <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div className="flex max-w-[60ch] flex-col gap-1 border-l-2 border-[var(--color-accent-primary)] pl-4">
-                  <Text variant="label" color="tertiary">Espaço Geek Plus</Text>
+                  <Text variant="label" color="tertiary">Arkos Price</Text>
                   <Text as="h2" id={tituloId} variant="heading-lg" className="font-black tracking-tight">{l.rotulo}</Text>
                   <Text variant="body-sm" color="secondary">
                     {l.chamada} Os menores preços do momento, com anúncio confirmado nas últimas horas.

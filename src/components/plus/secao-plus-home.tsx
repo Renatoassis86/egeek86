@@ -10,7 +10,7 @@ import { getCurrentProfile } from '@/lib/auth/require-admin';
 const ITENS_POR_ABA = 5;
 
 /**
- * Seção "Espaço Geek Plus" da home, resumida: só destaques de preço, uma faixa compacta por departamento, uma abaixo da outra.
+ * Seção "Arkos Price" da home, resumida: só destaques de preço, uma faixa compacta por departamento, uma abaixo da outra.
  * Mesma fonte de /mercado/<dept> (destaquesPlusCached, com cache SWR; a home nunca espera o banco). Sem selo, sem média, sem grupos de mensagens.
  * Departamento fechado para quem vê, ou com menos de 4 produtos, não aparece; sem nenhuma faixa a seção some.
  */
@@ -41,10 +41,10 @@ export async function SecaoPlusHome() {
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex max-w-[62ch] flex-col gap-1 border-l-2 border-[var(--color-accent-primary)] pl-4">
             <Text variant="label" color="tertiary">Plus</Text>
-            <Text as="h2" id="plus-titulo" variant="display-md" className="font-black tracking-tight">Espaço Geek Plus</Text>
+            <Text as="h2" id="plus-titulo" variant="display-md" className="font-black tracking-tight">Arkos Price</Text>
             <Text variant="body-sm" color="secondary">Os menores preços do momento nos outros departamentos, com anúncio confirmado nas últimas horas.</Text>
           </div>
-          <Link href="/plus" className="inline-flex min-h-11 items-center gap-2 text-[14px] font-bold text-[var(--color-accent-primary)] hover:underline">
+          <Link href="/arkos-price" className="inline-flex min-h-11 items-center gap-2 text-[14px] font-bold text-[var(--color-accent-primary)] hover:underline">
             Ver todo o Plus <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
