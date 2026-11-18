@@ -1,0 +1,10 @@
+// Envio por loja (2026-11-18): concorrencia limitada ao pool do banco; sem espera depois de um envio; resultados registrados.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const s = fs.readFileSync('src/server/messaging/group-auto.ts', 'utf8');
+assert.ok(s.includes('GROUP_SEND_CONC') && /Number\(process\.env\.GROUP_SEND_CONC\) \|\| 3/.test(s), 'concorrencia padrao 3 (pool do banco na Vercel = 3)');
+assert.ok(/Math\.min\(7,/.test(s), 'teto 7');
+assert.ok(s.includes('wait && !enviou'), 'depois de enviar, o laco da loja nao espera o proximo intervalo');
+assert.ok(s.includes('resultados') && s.includes('temposEnvioS') && s.includes('sendRun: summary.sendRun'), 'resumo do ciclo registra resultados e tempos');
+assert.ok(!/await Promise\.all\(\[\.\.\.porLoja\.values\(\)\]\.map/.test(s), 'nao dispara todas as lojas de uma vez');
+console.log('test-envio-concorrencia: OK');

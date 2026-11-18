@@ -244,6 +244,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
           let pending = inicial;
           let history = detection.history;
           let guard = 0;
+          let enviou = false;
           // Esvazia a fila da loja dentro do orcamento de tempo (sem teto diario; o freio e o espacamento por chat e o 429).
           // Cada volta envia UMA linha e relê o historico (a recem-enviada passa a contar para o espacamento do chat e o dedup).
           while (pending.length && guard++ < MAX_SENDS_PER_RUN && Date.now() < sendDeadline) {
@@ -252,7 +253,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
             if (!plan.next) {
               // Espaçamento por chat: se só falta esperar poucos segundos, espera dentro do orçamento em vez de perder a vez.
               const wait = plan.deferred.some((d) => d.reason.startsWith('intervalo_chat_')) && !plan.deferred.some((d) => !d.reason.startsWith('intervalo_chat_') && !d.reason.startsWith('produto_ja_enviado') && !d.reason.startsWith('mesmo_produto'));
-              if (wait && Date.now() + 3_500 < sendDeadline) {
+              if (wait && !enviou && Date.now() + 3_500 < sendDeadline) {
                 // 2026-11-18: NAO relê o histórico na espera. Ele só muda quando ESTE laço envia (relido logo depois do envio); relê-lo a cada 3 s em 7 laços paralelos
                 // eram ~2 consultas pesadas por segundo e deixavam o ciclo em 60 a 118 s com 1 a 2 envios.
                 await new Promise((r) => setTimeout(r, 3_100));
@@ -271,6 +272,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
             temposEnvio.push(Math.round((Date.now() - tEnvio) / 1000));
             pending = pending.filter((x) => x.id !== row.id);
             if (r.outcome === 'sent') {
+              enviou = true;
               sentCount++;
               if (row.candidate.trigger === 'CUPOM') cupomSent++;
               sentBy[row.candidate.vertical] = (sentBy[row.candidate.vertical] ?? 0) + 1;
@@ -281,7 +283,17 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
           }
           restante += pending.length;
         };
-        await Promise.all([...porLoja.values()].map((f) => drenar(f)));
+        // 2026-11-18: no maximo GROUP_SEND_CONC (padrao 3) lojas por vez, em rodizio por minuto. O pool do banco na Vercel tem 3 conexoes (DB_POOL_*); 7 laços juntos
+        // enfileiravam as consultas, o `stuckAwareSocket` derrubava as presas aos 30 s e 6 de 7 envios falhavam (resultados {failed: 6}, ~32 s cada).
+        const grupos = [...porLoja.values()];
+        const desloc = grupos.length ? Math.floor(started.getTime() / 60_000) % grupos.length : 0;
+        const ordem = [...grupos.slice(desloc), ...grupos.slice(0, desloc)];
+        const conc = Math.max(1, Math.min(7, Number(process.env.GROUP_SEND_CONC) || 3));
+        let prox = 0;
+        await Promise.all(Array.from({ length: Math.min(conc, ordem.length) }, async () => {
+          while (prox < ordem.length && Date.now() < sendDeadline) await drenar(ordem[prox++]);
+        }));
+        for (; prox < ordem.length; prox++) restante += ordem[prox].length;
         summary.sendRun = { sent: sentCount, cupomSent, expired: expiredCount, byStore: sentBy, remainingInQueue: restante, ms: Date.now() - started.getTime(), resultados, temposEnvioS: temposEnvio };
         summary.send = outcome;
       } else {
