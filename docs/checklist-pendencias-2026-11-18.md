@@ -54,3 +54,6 @@ Fonte das regras: `docs/03-metodologia/FLUXO_MESTRE.md` §15.10 a 15.18 e `CLAUD
 
 ## 4. Benchmark Keepa e similares (relatorio `docs/relatorios/2026-11-18-benchmark-keepa-e-similares.md`)
 - [ ] Roteiro: (1) vendidos do ML como sinal de demanda + canario de leitores + segundo extrator da Amazon; (2) agendamento por valor e fila fora do Postgres; (3) alerta por usuario no Telegram; (4) Keepa como fonte da Amazon; (5) extensao opt-in e API publica. Decisao do dono sobre a ordem.
+
+## 5. Arquitetura v2 (`docs/arquitetura-v2/PROPOSTA_V2.md`, ata e ADR 0010)
+- [ ] Aguardando decisao do dono (5 perguntas na secao 6 da proposta); Fase 0 ate a Black Friday: lock de sobreposicao, canario + segundo extrator Amazon, parar batimento como linha, materializar ofertas publicas, fechar o ciclo do alerta, JSON-LD, landing BF, medir precisao do alerta.
