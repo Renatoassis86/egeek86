@@ -42,6 +42,7 @@ const B = 'beleza' as const;
 
 export const TIPOS_ESPERADOS: TipoEsperado[] = [
   // ---- Beleza (2026-11-17) ----
+  t(B, "Marcas preferidas (Medicube, Tsubaki, Schwarzkopf, L'Oréal, Bioré)", 'marcas-beleza', undefined, 'busca por marca nos mesmos domínios de skincare, cabelo e maquiagem'),
   t(B, 'Batom e lábios', 'batom'),
   t(B, 'Base, corretivo e primer', 'base-corretivo'),
   t(B, 'Pó, blush e iluminador', 'po-blush-iluminador'),
