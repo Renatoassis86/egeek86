@@ -69,7 +69,9 @@ if (!isTransactionPooler) {
 type Sql = ReturnType<typeof postgres>;
 
 /** Silêncio máximo do socket com consulta pendente. Estourou: o socket é destruído (CONNECTION_CLOSED → o chamador repete em conexão nova). */
-const SOCKET_IDLE_MS: Record<PoolKind, number> = { live: 30_000, bg: 100_000 };
+// 2026-11-18: DB_SOCKET_IDLE_LIVE_MS (5000 a 60000) ajusta o silencio maximo do pool 'live' sem deploy de codigo; ausente = 30 s (como antes).
+const SOCKET_IDLE_LIVE_MS = (() => { const n = Number(process.env.DB_SOCKET_IDLE_LIVE_MS); return Number.isFinite(n) && n >= 5_000 && n <= 60_000 ? n : 30_000; })();
+const SOCKET_IDLE_MS: Record<PoolKind, number> = { live: SOCKET_IDLE_LIVE_MS, bg: 100_000 };
 
 /**
  * Socket próprio com timeout de inatividade (o driver não tem query_timeout): descarta de verdade a conexão

@@ -261,6 +261,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
           let pending = inicial;
           let history = detection.history;
           let guard = 0;
+          let falhasSeguidas = 0;
           // Esvazia a fila da loja dentro do orcamento de tempo (sem teto diario; o freio e o espacamento por chat e o 429).
           // Cada volta envia UMA linha e relê o historico (a recem-enviada passa a contar para o espacamento do chat e o dedup).
           while (pending.length && guard++ < MAX_SENDS_PER_RUN && Date.now() < sendDeadline) {
@@ -292,12 +293,18 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
             pending = pending.filter((x) => x.id !== row.id);
             if (r.outcome === 'sent') {
               sentCount++;
+              falhasSeguidas = 0;
               if (row.candidate.trigger === 'CUPOM') cupomSent++;
               sentBy[row.candidate.vertical] = (sentBy[row.candidate.vertical] ?? 0) + 1;
               history = (await loadSentHistory('tg', new Date())).records;
             } else if (r.outcome === 'expired') expiredCount++;
             else if (r.outcome === 'deferred') continue; // a linha foi devolvida à fila; tenta a próxima do plano
-            else break; // blocked / failed (inclui 429 longo): para; a linha volta à fila para o próximo ciclo
+            else if (r.outcome === 'failed' && falhasSeguidas < 2 && /socket sem resposta|Failed query|CONNECTION|ECONN|ETIMEDOUT|timeout/i.test(String((r as { reason?: string }).reason ?? ''))) {
+              // 2026-11-18: falha de CONEXAO com o banco (consulta sem resposta) e da linha, nao da loja: ela volta para a fila e o laco tenta a PROXIMA (ate 2 seguidas).
+              // Antes o laco parava e a loja ficava sem envio ate o proximo ciclo (~1 min) a cada falha.
+              falhasSeguidas++;
+              continue;
+            } else break; // blocked / failed (429 longo, erro do canal, falhas seguidas): para; a linha volta à fila para o próximo ciclo
           }
           restante += pending.length;
         };

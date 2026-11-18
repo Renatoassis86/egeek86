@@ -14,3 +14,8 @@ const route = fs.readFileSync('src/app/api/cron/group-messages/route.ts', 'utf8'
 assert.ok(route.includes("GROUP_FASES") && route.includes("'junto'"), 'GROUP_FASES=junto volta ao ciclo único sem deploy de código');
 assert.ok(route.includes("acquireCycleLock(fase === 'envio' ? 'group-messages:envio' : undefined)") || route.includes("group-messages:envio"), 'trava própria do envio');
 console.log('test-envio-fases: OK');
+// R-103: falha de CONEXAO com o banco numa linha nao para a loja: o laco tenta a proxima (ate 2 seguidas)
+const auto2 = fs.readFileSync('src/server/messaging/group-auto.ts', 'utf8');
+assert.ok(auto2.includes('falhasSeguidas < 2') && /socket sem resposta\|Failed query/.test(auto2) && auto2.includes('falhasSeguidas = 0;'), 'falha de conexao com o banco: tenta a proxima linha (ate 2 seguidas)');
+assert.ok(fs.readFileSync('src/lib/db/index.ts', 'utf8').includes('DB_SOCKET_IDLE_LIVE_MS'), 'silencio maximo do pool live configuravel por env (padrao 30 s)');
+console.log('test-envio-fases (conexao): OK');
