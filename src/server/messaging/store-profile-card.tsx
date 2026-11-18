@@ -19,6 +19,7 @@ export const STORE_PROFILES: Record<string, { label: string; tagline: string; bg
   casa: { label: 'CASA', tagline: 'Eletrodomésticos', bg: '#0C1A14', accent: '#4FD08F', edge: '#1B3A2B' },
   eletronicos: { label: 'ELETRÔNICOS', tagline: 'Eletroeletrônicos', bg: '#091C1C', accent: '#33D6C6', edge: '#17403F' },
   esporte: { label: 'ESPORTE', tagline: 'Esporte e fitness', bg: '#1E1109', accent: '#FF9242', edge: '#43260F' },
+  beleza: { label: 'BELEZA', tagline: 'Maquiagem, skincare e perfumes', bg: '#1E0A10', accent: '#F08CA6', edge: '#40202C' },
 };
 
 let logoUri: string | null = null;
