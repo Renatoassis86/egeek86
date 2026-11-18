@@ -34,9 +34,9 @@ export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: strin
           <div style={{ display: 'flex', border: `2px solid ${G.accent}`, color: G.accent, fontSize: 24, fontWeight: 800, letterSpacing: 4, padding: '10px 22px' }}>GAMES</div>
         </div>
         <div style={{ display: 'flex', width: 120, height: 8, background: G.accent, marginTop: 26 }} />
-        <div style={{ display: 'flex', fontSize: 84, fontWeight: 800, lineHeight: 1.15, letterSpacing: -2, marginTop: 14 }}>Jogos até R$ 200</div>
-        <div style={{ display: 'flex', fontSize: 28, color: SEC, marginTop: 30, fontWeight: 600 }}>Top {top.length} do catálogo · conferido às {hora}</div>
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 30, flexGrow: 1, justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', fontSize: 84, fontWeight: 800, lineHeight: 1, letterSpacing: -2, marginTop: 18, height: 112, alignItems: 'flex-start' }}>Jogos até R$ 200</div>
+        <div style={{ display: 'flex', fontSize: 28, color: SEC, marginTop: 4, fontWeight: 600 }}>Top {top.length} do catálogo · conferido às {hora}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 32, flexGrow: 1, justifyContent: 'space-between' }}>
           {linhas.map((par, li) => (
             <div key={li} style={{ display: 'flex', justifyContent: 'space-between' }}>
               {par.map((j, ci) => {
@@ -45,20 +45,20 @@ export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: strin
                 const foto = fotos[idx];
                 return (
                   <div key={j.masterId} style={{ display: 'flex', width: 486, height: 186, background: '#1A1230', border: `2px solid ${G.edge}` }}>
-                    <div style={{ display: 'flex', width: 186, height: 182, background: '#FFFFFF', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                    <div style={{ display: 'flex', width: 46, height: 182, background: G.accent, color: '#12091F', fontSize: 28, fontWeight: 800, alignItems: 'center', justifyContent: 'center' }}>{idx + 1}</div>
+                    <div style={{ display: 'flex', width: 150, height: 182, background: '#FFFFFF', alignItems: 'center', justifyContent: 'center' }}>
                       {foto ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={foto} alt="" style={{ width: 186, height: 182, objectFit: 'contain' }} />
+                        <img src={foto} alt="" style={{ width: 150, height: 182, objectFit: 'contain' }} />
                       ) : (
                         <div style={{ display: 'flex', fontSize: 80, fontWeight: 800, color: G.accent }}>{(j.titulo.trim()[0] ?? '?').toUpperCase()}</div>
                       )}
-                      <div style={{ display: 'flex', position: 'absolute', top: 0, left: 0, background: G.accent, color: '#12091F', fontSize: 26, fontWeight: 800, width: 48, height: 44, alignItems: 'center', justifyContent: 'center' }}>{idx + 1}</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '14px 16px', width: 296 }}>
-                      <div style={{ display: 'flex', fontSize: 23, fontWeight: 800, lineHeight: 1.12 }}>{tituloCurto(j.titulo, 40)}</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '12px 14px', width: 284 }}>
+                      <div style={{ display: 'flex', fontSize: 22, fontWeight: 800, lineHeight: 1.12 }}>{tituloCurto(j.titulo, 34)}</div>
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <div style={{ display: 'flex', fontSize: 19, color: SEC, fontWeight: 600 }}>{j.plataforma}</div>
-                        <div style={{ display: 'flex', fontSize: 38, fontWeight: 800, color: OURO, letterSpacing: -1 }}>{reais(j.precoCentavos)}</div>
+                        <div style={{ display: 'flex', fontSize: 36, fontWeight: 800, color: OURO, letterSpacing: -1 }}>{reais(j.precoCentavos)}</div>
                         <div style={{ display: 'flex', fontSize: 17, fontWeight: 600, color: d.diagnostico ? '#7CE0A5' : SEC }}>{d.texto}</div>
                       </div>
                     </div>
