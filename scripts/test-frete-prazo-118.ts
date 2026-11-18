@@ -49,7 +49,7 @@ ok(linhaFretePrazo(q({ readAt: new Date(now.getTime() + 3600_000) }), now) === '
 // R-88 (2026-11-16, caso P2S Combo): a estimativa de entrega da Amazon muda ao longo do dia (15:37 dizia 25/11, a pagina hoje diz 20/11). Entrega da Amazon vale o mesmo que o preco (R-81, 45 min); ML segue 12 h (API, data do anuncio).
 const am = (min: number) => q({ source: 'amazon_pagina', logistic: null, readAt: new Date(now.getTime() - min * 60_000) });
 ok(cotacaoValida(am(40), now), 'R-88: Amazon lida ha 40 min vale');
-ok(!cotacaoValida(am(46), now) && linhaFretePrazo(am(46), now) === 'Prazo ainda não lido', 'R-88: Amazon lida ha 46 min NAO vale (linha diz Prazo ainda não lido)');
+ok(!cotacaoValida(am(61), now) && linhaFretePrazo(am(61), now) === 'Prazo ainda não lido', 'R-88/R-101: Amazon lida ha 61 min NAO vale (linha diz Prazo ainda não lido)');
 ok(linhaFretePrazo(am(190), now) === 'Prazo ainda não lido', 'R-88: Amazon lida ha 3 h (caso real, 25/11 x 20/11) NAO vale');
 ok(cotacaoValida(q({ source: 'ml_api', readAt: new Date(now.getTime() - 3 * 3600_000) }), now), 'R-88: ML lido ha 3 h segue valendo (12 h)');
 ok(detalhesEntrega(am(190), now) === null, 'R-88: detalhes da Amazon velha tambem somem');

@@ -5,6 +5,7 @@ import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { buildGoLink } from '@/lib/messaging/group-messages';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { familiaDe, VITRINE_INTERVALO_MIN, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherTopRodizio, janelaKey, montarLegenda, vitrineLigada, type JogoVitrine } from '@/lib/messaging/vitrine-games';
+import { amazonFrescorMin } from '@/lib/messaging/confirmacao-preco';
 import { aptaSql } from '@/server/queries/ranking-busca';
 import { getOfferListingMetrics } from '@/server/queries/affiliate';
 import { resolveCover } from '@/server/messaging/card-cover';
@@ -15,7 +16,7 @@ export const JOB_VITRINE_GAMES = 'vitrine-games';
 const rows = <T>(r: unknown) => r as unknown as T[];
 const horaSP = (d: Date) => d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
 
-/** Jogos NOVOS com oferta ativa, elegível, link de afiliado publicável e leitura fresca (Amazon: 45 min, R-81), menor preço até R$ 200, com mais ofertas primeiro. */
+/** Jogos NOVOS com oferta ativa, elegível, link de afiliado publicável e leitura fresca (Amazon: mesma janela das outras lojas, R-101), menor preço até R$ 200, com mais ofertas primeiro. */
 export async function carregarJogosVitrine(): Promise<JogoVitrine[]> {
   const tudo = rows<{ mid: string; name: string; plat: GamePlatformGen; n: number; oid: string; slug: string; minp: number; img: string | null }>(await db.execute(sql`
     SELECT m.id::text AS mid, m.name, m.game_platform_gen AS plat, count(*)::int AS n,
@@ -28,7 +29,7 @@ export async function carregarJogosVitrine(): Promise<JogoVitrine[]> {
     JOIN affiliate_networks n ON n.id = o.network_id
     WHERE m.vertical = 'games' AND m.product_type = 'game' AND NOT (m.attributes ? 'mergedInto') AND ${aptaSql()}
       AND m.name !~* '(c[aâ]mera|controle|joystick|capa para|case |suporte|cabo |carregador|pel[ií]cula|headset|amiibo)'
-      AND (n.slug <> 'amazon' OR o.last_checked_at > now() - interval '45 minutes')
+      AND (n.slug <> 'amazon' OR o.last_checked_at > now() - make_interval(mins => ${amazonFrescorMin()}::int))
     GROUP BY m.id
     HAVING min(o.current_price_cents) <= ${VITRINE_TETO_CENTAVOS}
     ORDER BY count(*) DESC, m.id`));

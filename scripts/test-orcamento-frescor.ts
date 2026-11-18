@@ -5,9 +5,9 @@ import { orcamentoFrescor, ORCAMENTO } from '../src/lib/frescor/orcamento';
 import { RULES } from '../src/lib/messaging/group-rules';
 import { AGULHA } from '../src/lib/coupons/agulha';
 
-assert.equal(orcamentoFrescor({}).amazonDizerMin, 45);
+assert.equal(orcamentoFrescor({}).amazonDizerMin, 60, 'R-101: Amazon = janela das outras lojas (60 min)');
 assert.equal(orcamentoFrescor({ AMAZON_FRESCOR_MIN: '30' }).amazonDizerMin, 30);
-assert.equal(orcamentoFrescor({ AMAZON_FRESCOR_MIN: '5' }).amazonDizerMin, 45, 'valor fora de 10..360 volta ao padrão');
+assert.equal(orcamentoFrescor({ AMAZON_FRESCOR_MIN: '5' }).amazonDizerMin, 60, 'valor fora de 10..360 volta ao padrão');
 assert.equal(RULES.AMAZON_SEND_MAX_AGE_MIN, ORCAMENTO.amazonDizerMin, 'envio da Amazon = orçamento');
 assert.equal(RULES.AMAZON_DETECT_MAX_AGE_MIN, ORCAMENTO.amazonDizerMin, 'detecção da Amazon = orçamento');
 assert.equal(AGULHA.ITEM_FRESH_MIN, ORCAMENTO.cupomItemMin);

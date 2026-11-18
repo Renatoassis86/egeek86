@@ -71,5 +71,5 @@ assert.equal(vitrineLigada({ VITRINE_GAMES: 'off' }), false);
 const cfg = JSON.parse(fs.readFileSync('vercel.json', 'utf8')) as { crons: { path: string; schedule: string }[] };
 assert.ok(cfg.crons.some((c) => c.path.startsWith('/api/cron/vitrine-games') && c.schedule === '*/30 * * * *'), 'cron de 30 em 30 minutos');
 const srv = fs.readFileSync('src/server/messaging/vitrine-games.ts', 'utf8');
-assert.ok(srv.includes('aptaSql()') && srv.includes("'amazon' OR o.last_checked_at > now() - interval '45 minutes'") && srv.includes('silent: true'), 'só oferta apta, Amazon com preço fresco de 45 min, envio silencioso');
+assert.ok(srv.includes('aptaSql()') && srv.includes("'amazon' OR o.last_checked_at > now() - make_interval(mins => ${amazonFrescorMin()}::int)") && srv.includes('silent: true'), 'só oferta apta, Amazon com a janela de preço das outras lojas (R-101), envio silencioso');
 console.log('test-vitrine-games: OK');

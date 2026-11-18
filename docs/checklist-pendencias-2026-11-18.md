@@ -45,8 +45,8 @@ Fonte das regras: `docs/03-metodologia/FLUXO_MESTRE.md` §15.10 a 15.18 e `CLAUD
 - [ ] Média com 2 cotações no estado diário (D1) e estender a janela pública de indicadores.
 - [ ] Relatório final consolidado de tudo que foi feito (quando a lista fechar).
 
-## 3. Perguntas ao dono (só o que depende de decisão sua)
-1. Mensagens da Amazon: manter leitura de até 45 min (R-81) ou usar a regra das outras lojas?
-2. Amazon independente: assina o Keepa e autoriza que escreva preço?
-3. Benefício de cartão e crédito da Amazon: reativar `CARD_BENEFITS` só com prova no item?
-4. Os 94 "digital entre parênteses" e o grupo `review`: reavaliar agora?
+## 3. Respostas do dono (2026-11-18) e o que mudou
+1. **Amazon nas mensagens:** regra das outras lojas (R-101): feito no codigo e nos testes; falta deploy e medir as mensagens da Amazon em 24 h.
+2. **Keepa:** continua pelo Chrome, tentando solucoes de raspagem. **As 9h: explicar como assinar** (plano, custo, como a chave entra na Vercel). Pendente: preparar o passo a passo.
+3. **Cartao/credito da Amazon:** autorizado com prova no item. Verificado no desktop: o Itau/ITAU20OFF e o "R$ 30 Amazon Credito" nao estao no DOM da aba logada; so "5% off a vista" e um widget de marketing. Sem prova estavel nada sai; pendente ler a pagina como o app a mostra.
+4. **94 "digital entre parenteses" e `review`:** nao reavaliar (manter fora). Item removido da lista.

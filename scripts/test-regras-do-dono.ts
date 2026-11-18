@@ -71,11 +71,16 @@ regra('R-98', /GROUP_SEND_CONC\) \|\| 3/.test(auto) && !/await Promise\.all\(\[\
 const q = read('src/server/messaging/group-queue.ts');
 regra('R-98', q.includes('rn_v') && q.includes('perV'), 'janela do envio sem divisao por loja');
 
+// ---- R-101: Amazon nas mensagens = regra das outras lojas (sem janela propria de 45 min) ----
+const conf = read('src/lib/messaging/confirmacao-preco.ts');
+regra('R-101', /QUEDA_MIN_AMAZON: 60/.test(conf) && conf.includes('amazonFrescorExplicito()'), 'Amazon voltou a ter janela propria de 45 min');
+regra('R-101', !/interval '45 minutes'/.test(read('src/server/messaging/vitrine-games.ts')), 'vitrine com janela propria de 45 min para a Amazon');
+
 // ---- R-70: todo link ao usuario e de afiliado do dono (padrao negado no envio) ----
 regra('R-70', read('src/lib/messaging/telegram-send.ts').includes('auditarUrlsDeMensagem'), 'envio sem auditoria de link');
 
 // ---- pronto = no Guia: toda regra citada aqui existe no Fluxo Mestre ----
 const guia = read('docs/03-metodologia/FLUXO_MESTRE.md');
-for (const id of ['R-93', 'R-94', 'R-95', 'R-96', 'R-97', 'R-98', 'R-99', 'R-100']) regra(id, guia.includes(`${id},`) || guia.includes(`${id} `), 'regra ausente do Fluxo Mestre');
+for (const id of ['R-93', 'R-94', 'R-95', 'R-96', 'R-97', 'R-98', 'R-99', 'R-100', 'R-101']) regra(id, guia.includes(`${id},`) || guia.includes(`${id} `), 'regra ausente do Fluxo Mestre');
 
 console.log('test-regras-do-dono: OK');

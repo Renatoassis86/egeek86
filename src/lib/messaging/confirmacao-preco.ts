@@ -15,8 +15,9 @@ export const CONFIRMACAO = {
    * Amazon (R-81, dono 2026-11-16): o preço da Amazon mexe em horas (a P2S Combo subiu R$ 1.000 entre duas leituras) e o link vai direto para a página.
    * Preço de Amazon só é dito (mensagem, card OU lista) com leitura de até 45 min; sem isso a oferta NÃO entra (nunca preço velho). Ajuste: AMAZON_FRESCOR_MIN.
    */
-  QUEDA_MIN_AMAZON: 45,
-  LISTA_MIN_AMAZON: 45,
+  // R-101 (dono, 2026-11-18): "regra das outras lojas" tambem nas MENSAGENS da Amazon; supera os 45 min da R-81. AMAZON_FRESCOR_MIN (10..360) ainda sobrescreve se o dono quiser apertar.
+  QUEDA_MIN_AMAZON: 60,
+  LISTA_MIN_AMAZON: 60,
   /** Lista: preço confirmado há no máximo isto (min). */
   LISTA_MIN: 360,
 } as const;
@@ -25,6 +26,12 @@ export const CONFIRMACAO = {
 export function amazonFrescorMin(env: Record<string, string | undefined> = process.env): number {
   const n = Number((env.AMAZON_FRESCOR_MIN ?? '').trim());
   return Number.isFinite(n) && n >= 10 && n <= 360 ? Math.round(n) : CONFIRMACAO.LISTA_MIN_AMAZON;
+}
+
+/** Override explicito do dono (AMAZON_FRESCOR_MIN valido, 10..360 min); null = a Amazon segue a regra das outras lojas (R-101). */
+export function amazonFrescorExplicito(env: Record<string, string | undefined> = process.env): number | null {
+  const n = Number((env.AMAZON_FRESCOR_MIN ?? '').trim());
+  return Number.isFinite(n) && n >= 10 && n <= 360 ? Math.round(n) : null;
 }
 
 export type UsoPreco = 'queda' | 'lista';
@@ -191,7 +198,8 @@ export function avaliarConfirmacao(f: FatosConfirmacao, ligada = true): Veredito
   if (f.quarantined) return falha('em_quarentena');
   if ((f.missCount ?? 0) > 0) return falha('sumiu_da_api');
   if (!f.confirmedAt) return falha('sem_confirmacao');
-  const limite = /amazon/i.test(f.rede) ? amazonFrescorMin() : f.uso === 'lista' ? CONFIRMACAO.LISTA_MIN : CONFIRMACAO.QUEDA_MIN;
+  // R-101: sem override explicito, a Amazon segue a mesma janela das outras lojas (queda 60 min, lista 6 h).
+  const limite = /amazon/i.test(f.rede) && amazonFrescorExplicito() != null ? (amazonFrescorExplicito() as number) : f.uso === 'lista' ? CONFIRMACAO.LISTA_MIN : CONFIRMACAO.QUEDA_MIN;
   const idadeMin = (f.now.getTime() - f.confirmedAt.getTime()) / 60_000;
   if (idadeMin > limite) return falha('confirmacao_velha');
   const aud = avaliarAuditoria(f);

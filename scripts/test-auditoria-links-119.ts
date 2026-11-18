@@ -96,7 +96,7 @@ const fase = (t: LiveTarget) => runLivePhase({ now, targets: [t], mode: 'single'
   const ra = await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(200), auditoria: null }));
   ok(!ra.ok && /confirmacao_velha/.test(ra.reason ?? ''), 'canal escopo bambu: Amazon Bambu com leitura de 200 min não sai', ra.reason);
   ok((await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(30), auditoria: null }))).ok, 'canal escopo bambu: Amazon Bambu com leitura de 30 min sai');
-  ok(!(await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(60), auditoria: null }))).ok, 'canal escopo bambu: Amazon Bambu com leitura de 60 min NÃO sai (R-81, 45 min)');
+  ok(!(await fase(alvo({ networkSlug: 'amazon', ehBambu: true, externalItemId: null, confirmedAt: h(61), auditoria: null }))).ok, 'canal escopo bambu: Amazon Bambu com leitura de 61 min NÃO sai (R-101, 60 min)');
   delete process.env.CONFIRMACAO_ESTRITA_CANAL_ESCOPO;
   console.log(fails ? `${fails} falha(s)` : 'OK: auditoria de links #119');
   process.exit(fails ? 1 : 0);
