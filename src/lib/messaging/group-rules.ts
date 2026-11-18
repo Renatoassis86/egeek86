@@ -1846,6 +1846,20 @@ export function tipoCotaAlertaOn(env: Record<string, string | undefined> = proce
   return !/^(off|false|0)$/i.test(env.GROUP_TIPO_COTA_ALERTA?.trim() ?? '');
 }
 
+/**
+ * Dono, 2026-11-18 ("preciso de diversificação de itens dentro de cada loja"): o ACHADO (AC) e o aviso sem comparação (N1) tem teto HORÁRIO por tipo e loja que NÃO é suave:
+ * medido em 4 h, Esporte enviou 82 bolas de 110 e Casa 85 air fryers de 120, todos AC, porque a cota suave libera o tipo quando não há "alternativa" na fila (as demais já
+ * saíram nas últimas 72 h). Aqui o excedente espera a hora seguinte (volta a ser proposto; o produto não é consumido). GROUP_TIPO_AC_POR_HORA: inteiro 1 a 30; 0/off desliga.
+ */
+export const TIPO_AC_MAX_PER_HOUR = 3;
+export function tipoAcPorHora(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.GROUP_TIPO_AC_POR_HORA?.trim();
+  if (!raw) return TIPO_AC_MAX_PER_HOUR;
+  if (/^(off|false|nao|não)$/i.test(raw)) return 0;
+  const n = Number(raw);
+  return Number.isInteger(n) && n >= 0 && n <= 30 ? n : TIPO_AC_MAX_PER_HOUR;
+}
+
 /** Teto horário por tipo e loja (R-47b). GROUP_TIPO_POR_HORA: inteiro 1 a 60; 0/off = sem teto; ausente = RULES.TIPO_MAX_PER_HOUR. */
 export function tipoPorHora(env: Record<string, string | undefined> = process.env): number {
   const raw = env.GROUP_TIPO_POR_HORA?.trim();
@@ -2397,7 +2411,13 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     return s.total >= RULES.CUPOM_SHARE_MIN_SENT && s.pct >= RULES.CUPOM_MAX_SHARE_PCT;
   };
   const ok: Candidate[] = [];
+  const acPorHora = tipoAcPorHora();
   for (const c of ok0) {
+    // Teto horário DURO do achado por tipo e loja (sem exigir alternativa na fila): o excedente espera a hora seguinte.
+    if (acPorHora > 0 && (c.trigger === 'AC' || c.trigger === 'N1') && c.tipo && c.tipo !== 'outros' && c.vertical && tipoHourCount(c.vertical, c.tipo, real, now) >= acPorHora) {
+      deferred.push({ messageKey: c.messageKey, reason: `tipo_${c.tipo}_achado_limite_${acPorHora}_por_hora_na_loja` });
+      continue;
+    }
     // Régua de destaque (dono, 2026-11-12): o teto de 1/3 do degrau 1 só vale quando há oferta dos degraus 2 a 5 elegível esperando no mesmo grupo; sem ela o degrau 1 sai sem teto.
     if (c.regua?.degrau === 1 && ok0.some((x) => x.vertical === c.vertical && (x.regua?.degrau ?? 0) >= 2)) {
       const t = degrau1ShareBlock(c, all, now);

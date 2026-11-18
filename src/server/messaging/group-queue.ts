@@ -2,6 +2,7 @@ import { ORCAMENTO } from '@/lib/frescor/orcamento';
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { POPULARIDADE_VALIDADE_DIAS, popularidadeLigada } from '@/lib/popularidade/score';
+import { COTA_MARCA_HORAS, MARCAS_POR_LOJA, padraoMarcasLoja } from '@/lib/messaging/marcas-lojas';
 import { ACENTOS_DE, ACENTOS_PARA, COTA_FAMILIA_HORAS, COTA_TIPO_HORAS, MARCAS_PREFERIDAS, cotaItemLigada, marcasPreferidasLigadas, padraoMarcas } from '@/lib/messaging/cota-item';
 import { db } from '@/lib/db';
 import { canSendTelegram, getAdTag } from '@/lib/messaging/group-config';
@@ -141,10 +142,17 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   const nomeNormS = sql`lower(regexp_replace(translate(ms.name, ${ACENTOS_DE}, ${ACENTOS_PARA}), '[^A-Za-z0-9 ]', ' ', 'g'))`;
   const famDe = (nome: ReturnType<typeof sql>) => sql`array_to_string((regexp_split_to_array(btrim(regexp_replace(${nome}, '\\s+', ' ', 'g')), ' '))[1:3], ' ')`;
   // Valores por linha calculados UMA vez (camada interna) e juntados a tabelas pequenas (fam6, tipo24); em subconsulta correlacionada dentro do ORDER BY da janela estourava 30 s.
+  // Variedade de MARCAS (dono, 2026-11-18): marca principal do nome por loja (dicionario em marcas-lojas.ts); quem tem marca que ja saiu na loja nas ultimas
+  // COTA_MARCA_HORAS vai atras de quem tem marca que ainda nao saiu (so ordem). Nome sem marca do dicionario conta 0.
+  const lojasComMarca = Object.keys(MARCAS_POR_LOJA).filter((v) => padraoMarcasLoja(v));
+  const marcaDe = (nome: ReturnType<typeof sql>, vert: ReturnType<typeof sql>) => sql`(CASE ${sql.join(lojasComMarca.map((v) => sql`WHEN ${vert} = ${v} THEN substring(regexp_replace(${nome}, '\\s+', ' ', 'g') from ${padraoMarcasLoja(v)})`), sql` `)} ELSE NULL END)`;
   const cteCota = cota
     ? sql`WITH fam6 AS MATERIALIZED (
         SELECT ${famDe(nomeNormS)} AS fam, count(*)::int AS n FROM group_messages s JOIN master_products ms ON ms.id = s.master_product_id
         WHERE s.channel = 'tg' AND s.status = 'enviada' AND s.sent_at > now() - make_interval(hours => ${COTA_FAMILIA_HORAS}::int) GROUP BY 1
+      ), marca6 AS MATERIALIZED (
+        SELECT s.vertical, ${marcaDe(nomeNormS, sql`s.vertical`)} AS marca, count(*)::int AS n FROM group_messages s JOIN master_products ms ON ms.id = s.master_product_id
+        WHERE s.channel = 'tg' AND s.status = 'enviada' AND s.sent_at > now() - make_interval(hours => ${COTA_MARCA_HORAS}::int) GROUP BY 1, 2
       ), tipo24 AS MATERIALIZED (
         SELECT s.vertical, s.candidate ->> 'tipo' AS tipo, count(*)::int AS n FROM group_messages s
         WHERE s.channel = 'tg' AND s.status = 'enviada' AND s.sent_at > now() - make_interval(hours => ${COTA_TIPO_HORAS}::int) GROUP BY 1, 2
@@ -152,9 +160,11 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
     : sql``;
   const colFam = cota ? sql`COALESCE(f.n, 0)` : sql`0`;
   const colTipo = cota ? sql`COALESCE(t.n, 0)` : sql`0`;
+  const colMarcaN = cota ? sql`COALESCE(mc.n, 0)` : sql`0`;
   const joinsCota = cota
     ? sql`LEFT JOIN fam6 f ON f.fam = ${famDe(nomeNorm)}
-      LEFT JOIN tipo24 t ON t.vertical = g.vertical AND t.tipo IS NOT DISTINCT FROM g.candidate ->> 'tipo'`
+      LEFT JOIN tipo24 t ON t.vertical = g.vertical AND t.tipo IS NOT DISTINCT FROM g.candidate ->> 'tipo'
+      LEFT JOIN marca6 mc ON mc.vertical = g.vertical AND mc.marca = ${marcaDe(nomeNorm, sql`g.vertical`)}`
     : sql``;
   const marcasVerticais = marcasPreferidasLigadas() ? Object.keys(MARCAS_PREFERIDAS).filter((v) => padraoMarcas(v)) : [];
   const colMarca = marcasVerticais.length
@@ -168,9 +178,9 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
     ${cteCota}
     SELECT * FROM (
     SELECT q.*, row_number() OVER (PARTITION BY q.vertical ORDER BY q.rn_fair, q.tipo_sent24, (q.trigger = 'AC'), q.created_at) AS rn_v FROM (
-      SELECT b.*, row_number() OVER (PARTITION BY b.trigger, b.vertical${tipoPartB} ORDER BY b.marca_ord ASC, COALESCE((b.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, b.fam_sent6 ASC, b.pop DESC, b.created_at DESC) AS rn_fair
+      SELECT b.*, row_number() OVER (PARTITION BY b.trigger, b.vertical${tipoPartB} ORDER BY b.marca_ord ASC, COALESCE((b.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, b.fam_sent6 ASC, b.marca_sent6 ASC, b.pop DESC, b.created_at DESC) AS rn_fair
       FROM (
-      SELECT g.*, ${colMarca} AS marca_ord, ${colFam} AS fam_sent6, ${colTipo} AS tipo_sent24, ${popCol} AS pop
+      SELECT g.*, ${colMarca} AS marca_ord, ${colFam} AS fam_sent6, ${colTipo} AS tipo_sent24, ${colMarcaN} AS marca_sent6, ${popCol} AS pop
       FROM group_messages g LEFT JOIN master_products mp ON mp.id = g.master_product_id
       ${joinsCota}
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3

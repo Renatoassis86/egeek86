@@ -21,7 +21,7 @@ assert.equal(verticalDaJanela([], new Date()), null);
 
 const q = fs.readFileSync('src/server/messaging/group-queue.ts', 'utf8');
 assert.ok(q.includes('popularidadeLigada()') && q.includes('offer_popularity'), 'a ordem da fila usa a popularidade (com chave)');
-assert.ok(/b\.fam_sent6 ASC, b\.pop DESC, b\.created_at DESC\) AS rn_fair/.test(q), 'popularidade desempata DENTRO do degrau da regua, antes da recencia');
+assert.ok(/b\.fam_sent6 ASC, b\.marca_sent6 ASC, b\.pop DESC, b\.created_at DESC\) AS rn_fair/.test(q), 'popularidade desempata DENTRO do degrau da regua, antes da recencia');
 assert.ok(!/WHERE[^;]{0,200}offer_popularity[^;]{0,60}AND NOT/.test(q), 'popularidade nunca exclui linha da fila');
 const cfg = JSON.parse(fs.readFileSync('vercel.json', 'utf8')) as { crons: { path: string; schedule: string }[] };
 assert.ok(cfg.crons.some((c) => c.path === '/api/cron/popularidade' && c.schedule === '11,41 * * * *'), 'cron do coletor de popularidade a cada 30 min');
