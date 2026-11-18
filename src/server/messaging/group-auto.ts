@@ -32,6 +32,8 @@ export const SEND_MIN_WINDOW_MS = 14_000;
 export const CYCLE_HARD_CAP_MS = 46_000;
 /** Orçamento da detecção (P0 2026-11-12): passou disso, o ciclo NÃO aborta; envia a partir das propostas já gravadas (modo degradado). */
 export const DETECT_BUDGET_MS = 22_000;
+/** Fase 'deteccao' (invocacao propria, maxDuration 120 s): com o banco lento a consulta do pool passa de 22 s e abortar so empilhava consultas orfas e deixava 30 min sem proposta nova. */
+export const DETECT_BUDGET_DEDICADO_MS = 95_000;
 /** Teto de segurança de voltas por execução (não é teto diário: a próxima execução continua de onde parou). */
 export const MAX_SENDS_PER_RUN = 60;
 /** Linhas lidas da fila por execução (fila acumulada + novas). */
@@ -205,6 +207,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
     let degraded: string | null = null;
     let detection: DetectionResult;
     const soEnvio = deps.fase === 'envio';
+    const orcamentoDeteccao = deps.fase === 'deteccao' ? DETECT_BUDGET_DEDICADO_MS : DETECT_BUDGET_MS;
     const semEnvio = deps.fase === 'deteccao';
     if (soEnvio) {
       // Fase de envio: só o histórico de envios e a fila já gravada; nenhuma consulta pesada de detecção compete pelo pool do banco.
@@ -214,7 +217,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
       const run = detectGroupCandidates({ now, includeSimulated: state === 'shadow', adTag: getAdTag() });
       run.catch(() => undefined); // evita rejeição não tratada se a corrida abaixo já terminou
       let timer: ReturnType<typeof setTimeout> | undefined;
-      const limit = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error(`detecção passou de ${DETECT_BUDGET_MS / 1000} s`)), DETECT_BUDGET_MS); });
+      const limit = new Promise<never>((_, rej) => { timer = setTimeout(() => rej(new Error(`detecção passou de ${orcamentoDeteccao / 1000} s`)), orcamentoDeteccao); });
       try { detection = await Promise.race([run, limit]); } finally { if (timer) clearTimeout(timer); }
     } catch (e) {
       degraded = e instanceof Error ? e.message.slice(0, 200) : 'erro na detecção';
