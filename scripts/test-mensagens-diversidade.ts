@@ -194,7 +194,7 @@ ok(achadoQuotaBlock('eletroeletronicos', [acRec(10), acRec(40), ...others(30)], 
 ok(achadoQuotaBlock('livros', [acRec(100), acRec(200), acRec(300)], NOW) == null, 'cota do Achado: uma loja nao consome a cota da outra');
 
 // ---------------------------------------------------------------------------
-// 5) Diversidade no plano: cota suave de tipo (30%) e rodizio
+// 5) Diversidade no plano: cota suave de tipo (20%) e rodizio
 // ---------------------------------------------------------------------------
 const base = ac(evaluateProductV2(plus(), ctx)) as Candidate;
 const mk = (over: Partial<Candidate>): Candidate => ({ ...base, ...over, messageKey: over.messageKey ?? `k-${over.masterProductId}` });
@@ -204,8 +204,8 @@ const tv = mk({ masterProductId: 'tv9', trigger: 'AC', tipo: 'smart-tv', moveSco
 const hist10: SentRecord[] = Array.from({ length: 10 }, (_, i) => rec({ masterProductId: `h${i}`, tipo: i < 4 ? 'soundbar' : `t${i}`, sentAt: new Date(NOW.getTime() - (120 + i * 30) * MIN) }));
 ok(tipoShare('eletroeletronicos', 'soundbar', hist10, NOW).pct === 40 && tipoShare('eletroeletronicos', 'soundbar', hist10, NOW).total === 10, 'tipoShare: 4 de 10 = 40%');
 let plan = applyLimits([sb, tv], hist10, NOW);
-ok(plan.next?.masterProductId === 'tv9', 'tipo dominante (40% >= 30%) cede a vez ao Achado de outro tipo', plan.next?.masterProductId);
-ok(plan.deferred.some((d) => d.messageKey === sb.messageKey && /^tipo_soundbar_acima_de_30pct/.test(d.reason)), 'o adiado informa o motivo da cota de tipo', plan.deferred);
+ok(plan.next?.masterProductId === 'tv9', 'tipo dominante (40% >= 20%) cede a vez ao Achado de outro tipo', plan.next?.masterProductId);
+ok(plan.deferred.some((d) => d.messageKey === sb.messageKey && /^tipo_soundbar_acima_de_20pct/.test(d.reason)), 'o adiado informa o motivo da cota de tipo', plan.deferred);
 plan = applyLimits([sb], hist10, NOW);
 ok(plan.next?.masterProductId === 'sb1', 'cota SUAVE: sem alternativa de outro tipo, o tipo dominante ainda sai (canal nao para)');
 const histCurto: SentRecord[] = hist10.slice(0, 5).map((h, i) => ({ ...h, tipo: i < 3 ? 'soundbar' : 't' }));

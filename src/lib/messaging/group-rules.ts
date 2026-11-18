@@ -207,7 +207,7 @@ export const RULES = {
   N1_MAX_PER_HOUR: 1,
   N1_MAX_PER_DAY: 6,
   /** Cota de diversidade: nenhum TIPO passa desta parcela das mensagens da loja nas ultimas 24 h (so vale com alternativa de outro tipo e depois de TIPO_SHARE_MIN_SENT envios). */
-  TIPO_MAX_SHARE_PCT: 30,
+  TIPO_MAX_SHARE_PCT: 20,
   TIPO_SHARE_MIN_SENT: 6,
   /** Cooldown do MESMO produto entre TODOS os gatilhos (dono, 2026-11-13; R-47): horas (GROUP_MASTER_COOLDOWN_H; 0/off desliga). */
   MASTER_COOLDOWN_H: 8,
@@ -230,7 +230,7 @@ export const RULES = {
 } as const;
 
 /** Departamentos liberados no porteiro e no /go. Os demais geram G6 marcado como não enviável. */
-export const RELEASED_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d']; // todas as lojas (dono, 2026-11-11): cada uma envia ao seu canal
+export const RELEASED_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza']; // todas as lojas (dono, 2026-11-11): cada uma envia ao seu canal
 
 export type Trigger = 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'OK1' | 'OK2' | 'T1' | 'T2' | 'RADAR' | 'CUPOM' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'AC' | 'N1';
 
@@ -2418,7 +2418,13 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   const platOk = ok.filter((c) => c.cls === 'plataforma');
   // Rodizio de tipos: dentro da mesma classe (insight, radar), o tipo MENOS enviado hoje na loja vai primeiro; depois a ordem de sempre.
   const tipoCountOf = (c: Candidate) => (c.tipo && c.vertical ? tipoShare(c.vertical, c.tipo, real, now).tipoCount : 0);
-  const rotates = (c: Candidate) => c.cls === 'insight' || c.cls === 'radar' || (cotaAlerta && c.cls === 'alerta' && c.trigger !== 'G1' && c.trigger !== 'OK1');
+  // DIVERSIDADE (dono, 2026-11-18: "esta proibido de ficar rodando so em cima de poucos produtos"): o rodizio vale para TODA classe de preco (alerta, insight, radar), exceto os
+  // eventos de novo minimo (G1, OK1), que mantem prioridade. Dentro do mesmo degrau: tipo MENOS enviado hoje na loja, depois produto MENOS enviado em 72 h, depois a REDE
+  // (Mercado Livre, Shopee, Amazon) menos enviada hoje na loja; so entao a ordem de sempre. GROUP_DIVERSIDADE=off volta ao rodizio antigo.
+  const diversidadeOn = !/^(0|off|false|nao|não)$/i.test((process.env.GROUP_DIVERSIDADE ?? '').trim());
+  const rotates = (c: Candidate) => diversidadeOn ? c.cls !== 'plataforma' && c.trigger !== 'G1' && c.trigger !== 'OK1' : c.cls === 'insight' || c.cls === 'radar' || (cotaAlerta && c.cls === 'alerta' && c.trigger !== 'G1' && c.trigger !== 'OK1');
+  const masterCountOf = (c: Candidate) => real.filter((h) => h.masterProductId === c.masterProductId && now.getTime() - h.sentAt.getTime() < 72 * 3600_000).length;
+  const redeCountOf = (c: Candidate) => real.filter((h) => h.vertical === c.vertical && netKind({ networkSlug: h.networkSlug ?? '', networkName: h.networkSlug ?? '' }) === netKind(c) && now.getTime() - h.sentAt.getTime() < 24 * 3600_000).length;
   // Chave transitiva: classe; dentro de insight/radar, o ACHADO (sem comparacao) nunca passa na frente de um insight com comparacao real (G2, G3, T1...);
   // depois, o tipo MENOS enviado hoje na loja; depois a ordem de sempre (games e alertas: tipo nulo/classe propria, ordem inalterada entre si).
   const reforcoOn = reforcoBambuLigado();
@@ -2436,6 +2442,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
       (prio3d ? posicaoPrioridade3d(a.vertical, a.name, a.tipo) - posicaoPrioridade3d(b.vertical, b.name, b.tipo) : 0) ||
       (rotates(a) ? Number(a.trigger === 'AC' || a.trigger === 'N1') : 0) - (rotates(b) ? Number(b.trigger === 'AC' || b.trigger === 'N1') : 0) ||
       (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||
+      (diversidadeOn && rotates(a) && rotates(b) ? masterCountOf(a) - masterCountOf(b) || redeCountOf(a) - redeCountOf(b) : 0) ||
       compareCandidates(a, b)
     );
   const due = platformDue(history, now);
