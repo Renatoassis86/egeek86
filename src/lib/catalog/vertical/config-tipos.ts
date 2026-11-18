@@ -399,6 +399,13 @@ const MARCAS_PERFUME = ['carolina herrera', 'paco rabanne', 'jean paul gaultier'
 const BELEZA_RE = (re: RegExp) => [re];
 
 const BELEZA_SEG: SegmentConfig[] = [
+  // Dono, 2026-11-18: marcas preferidas (Medicube, Tsubaki, Schwarzkopf, L'Oreal, Biore). Rank 99 = ANTES de todos os outros segmentos: a semeadura divide as chamadas entre as lojas
+  // por rank e a Beleza (rank 300+) ficava sem chamadas atras de Tecnologia/Eletronicos (medido: 0 masters novos de Beleza em 24 h, 0 das cinco marcas).
+  seg({
+    key: 'marcas-beleza', vertical: 'beleza', label: "Marcas preferidas (Medicube, Tsubaki, Schwarzkopf, L'Oréal, Bioré)", rank: 99, domains: BELEZA_RE(/SKIN|FACIAL|SERUM|SUNSCREEN|MOISTURIZER|CLEANSER|SHAMPOO|CONDITIONER|HAIR|LIPSTICK|FOUNDATION|MASCARA|MAKEUP|COSMETIC|BEAUTY/),
+    terms: [...TERMOS_BELEZA_PREFERIDOS_SKIN, ...TERMOS_BELEZA_PREFERIDOS_CABELO, ...TERMOS_BELEZA_PREFERIDOS_MAQ],
+    refresh: 60,
+  }),
   seg({
     key: 'batom', vertical: 'beleza', label: 'Batom e lábios', rank: 300, domains: BELEZA_RE(/LIPSTICK|LIP_|LIPS|LIPGLOSS|LIP_BALM|LIP_STAIN/),
     terms: [...combineTerms('batom', ['', 'matte', 'liquido', 'cremoso', 'em bastao', 'gloss', 'tint labial'], MARCAS_MAQ.slice(0, 16)), ...TERMOS_BELEZA_PREFERIDOS_MAQ],

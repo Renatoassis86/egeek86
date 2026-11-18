@@ -29,8 +29,9 @@ assert.equal(t('Esmalte Risque Cremoso Vermelho'), 'unhas');
 const bel = NOVOS_SEGMENTOS_TIPOS.filter((s) => s.vertical === 'beleza');
 assert.ok(bel.length >= 10, 'segmentos de beleza');
 const ranks = bel.map((s) => s.seedRank);
-assert.equal(bel.find((s) => s.seedRank === Math.min(...ranks))?.key, 'batom', 'maquiagem (batom) e a primeira');
-assert.ok(bel.filter((s) => s.seedRank < 310).every((s) => /batom|base|po-|olhos|esmalte|pinceis/.test(s.key)), 'rank < 210 e so maquiagem');
+assert.equal(bel.find((s) => s.seedRank === Math.min(...ranks))?.key, 'marcas-beleza', 'as marcas preferidas do dono abrem a semeadura (rank 99, antes de tudo)');
+assert.equal(bel.filter((s) => s.key !== 'marcas-beleza').sort((a, b) => a.seedRank - b.seedRank)[0]?.key, 'batom', 'depois delas, maquiagem (batom) e a primeira');
+assert.ok(bel.filter((s) => s.seedRank < 310).every((s) => /marcas-beleza|batom|base|po-|olhos|esmalte|pinceis/.test(s.key)), 'rank < 310 e so maquiagem e as marcas preferidas');
 const batom = bel.find((s) => s.key === 'batom')!;
 assert.ok(/mac/.test(batom.terms[0]) && MARCAS_MAQUIAGEM_TOP[0] === 'mac', 'a melhor marca abre a lista de termos');
 
