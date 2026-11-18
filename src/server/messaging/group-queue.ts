@@ -132,7 +132,7 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   const rows = await db.execute<Row>(sql`
     SELECT * FROM (
     SELECT q.*, row_number() OVER (PARTITION BY q.vertical ORDER BY q.rn_fair, (q.trigger = 'AC'), q.created_at) AS rn_v FROM (
-      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical${tipoPart} ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, g.created_at) AS rn_fair
+      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical${tipoPart} ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, g.created_at DESC) AS rn_fair
       FROM group_messages g
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
         -- Pre-filtro SEGURO (subconjunto do que o plano ja barra): produto ja enviado dentro da janela do proprio gatilho (Achado 24 h, cupom 1 h, demais 1 h
@@ -149,7 +149,7 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
     -- 2026-11-18 (dono: "fluxo parado"): cada loja tem a PROPRIA janela (perV linhas). Antes uma janela unica era ocupada por quem tem mais tipos (rn_fair baixo) e as
     -- lojas sem tipo, como Games, ficavam sem vaga: Games parou 1h44 com 461 propostas na fila. Dentro da loja vale a mesma ordem de antes.
     WHERE w.rn_v <= ${perV}::int
-    ORDER BY w.rn_v, w.rn_fair, (w.trigger = 'AC'), w.created_at LIMIT ${limit}::int
+    ORDER BY w.rn_v, w.rn_fair, (w.trigger = 'AC'), w.created_at DESC LIMIT ${limit}::int
   `);
   return rows.map(mapRow);
 }

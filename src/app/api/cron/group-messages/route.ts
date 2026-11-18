@@ -9,6 +9,7 @@ import { consultarCupom, registrarDivulgacao } from '@/server/messaging/agente-c
 import { cicloAgenteCupons } from '@/server/messaging/guardiao-cupons';
 import { preencherAnuncios, renovarShopee } from '@/server/pricing/integridade-preco';
 import { cicloAuditoriaLinks } from '@/server/links/auditoria-links';
+import { encerrarBackendsOrfaos } from '@/server/messaging/reaper-backends';
 import { atualizarPaineisImpressoras } from '@/server/messaging/painel-impressoras';
 import { refreshShopeeCampaigns } from '@/server/collector/shopee-campaigns';
 import { loadOfferCardInput, renderOfferCard } from '@/server/messaging/offer-card';
@@ -103,6 +104,9 @@ async function runCycle(request: NextRequest, lockFailedOpen: boolean) {
 
   // Campanhas oficiais da Shopee (links de afiliado por categoria): 1x por hora, no minuto 7 (poucas chamadas; tolerante a falha).
   if (new Date().getUTCMinutes() === 7) await refreshShopeeCampaigns().catch(() => undefined);
+
+  // Conexoes orfas (funcao morta no meio de um UPDATE) seguram locks e fazem os envios falharem aos 30 s: encerra antes do ciclo.
+  await encerrarBackendsOrfaos();
 
   // Canais novos das lojas: o bot resolve o link público em chat id (só leitura; tolerante a falha).
   await discoverStoreChats(process.env.TELEGRAM_BOT_TOKEN).catch(() => []);
