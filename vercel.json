@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/collect-prices",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/10 * * * *"
     },
     {
       "path": "/api/cron/notify-price-drops",
@@ -10,23 +10,23 @@
     },
     {
       "path": "/api/cron/collect-shopee",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/10 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=stats",
-      "schedule": "*/30 * * * *"
+      "schedule": "7 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=showcase",
-      "schedule": "4-59/15 * * * *"
+      "schedule": "4-59/30 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=vitrines",
-      "schedule": "5-55/10 * * * *"
+      "schedule": "5-55/20 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=daily",
-      "schedule": "9-59/30 * * * *"
+      "schedule": "9 * * * *"
     },
     {
       "path": "/api/cron/refresh-snapshots?part=inventory",
@@ -94,11 +94,11 @@
     },
     {
       "path": "/api/cron/group-messages?fase=integridade",
-      "schedule": "* * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/cobertura-shopee?apply=1&pages=3&maxCalls=8&maxDuvidas=15&maxMasters=12",
-      "schedule": "4-54/10 * * * *"
+      "schedule": "4-54/20 * * * *"
     },
     {
       "path": "/api/cron/vitrine-games",
@@ -106,7 +106,7 @@
     },
     {
       "path": "/api/cron/aprovacao-auto?lote=100",
-      "schedule": "2-57/5 * * * *"
+      "schedule": "2-57/10 * * * *"
     },
     {
       "path": "/api/cron/discover-shopee-esporte?apply=1&terms=6&pages=2&maxCalls=40&maxMasters=12&maxOffers=60&link=offer",
@@ -118,7 +118,7 @@
     },
     {
       "path": "/api/cron/precos-fontes",
-      "schedule": "*/15 * * * *"
+      "schedule": "*/30 * * * *"
     }
   ]
 }

@@ -306,13 +306,16 @@ function tipoOfRow(r: Row): string | null {
   return nome ? classificarTipo(vert, nome) : null;
 }
 
+/** Janela do historico de envios lida a cada ciclo (a maior regra usa 72 h; +24 h de margem). */
+export const HISTORICO_ENVIOS_DIAS = 4;
 export async function loadSentHistory(
   channel: 'tg' | 'wa',
   now: Date,
   opts: { includeSimulated?: boolean; excludeId?: string } = {}
 ): Promise<{ records: SentRecord[]; source: DetectionResult['historySource'] }> {
   if (!(await groupMessagesTableExists())) return { records: [], source: 'nenhum (tabela ausente)' };
-  const since = new Date(now.getTime() - 7 * 86_400_000).toISOString();
+  // 2026-11-18 (banco sem folga de disco): a maior janela das regras e 72 h (R-77); 4 dias (+24 h de margem) em vez de 7 corta ~43% da leitura desta consulta (143 GB em 3 dias).
+  const since = new Date(now.getTime() - HISTORICO_ENVIOS_DIAS * 86_400_000).toISOString();
   const v2 = await groupMessagesV2Ready();
   const statuses = opts.includeSimulated && v2 ? ['enviada', 'enviando', 'simulada'] : v2 ? ['enviada', 'enviando'] : ['enviada'];
   const rows = await db.execute<Row>(
