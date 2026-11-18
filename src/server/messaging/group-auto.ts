@@ -231,6 +231,9 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
         let cupomSent = 0;
         let expiredCount = 0;
         let restante = 0;
+        const resultados: Record<string, number> = {};
+        const conta = (k: string) => { resultados[k] = (resultados[k] ?? 0) + 1; };
+        const temposEnvio: number[] = [];
         // Prazo do envio: o orçamento de 38 s do ciclo, mas nunca menos que SEND_MIN_WINDOW_MS a partir de agora (a detecção lenta não pode zerar o envio) e nunca além do teto do ciclo.
         const sendDeadline = Math.min(started.getTime() + CYCLE_HARD_CAP_MS, Math.max(started.getTime() + SEND_BUDGET_MS, Date.now() + SEND_MIN_WINDOW_MS));
         // 2026-11-17 (dono: "precisamos ser mais rapidos ... nao perdermos produtos"): cada canal tem o proprio espacamento, entao as filas de cada loja drenam EM PARALELO
@@ -256,12 +259,16 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
                 continue;
               }
               outcome = { outcome: 'adiada', reason: plan.deferred[0]?.reason ?? 'limite' };
+              conta(`adiada:${String(plan.deferred[0]?.reason ?? 'limite').replace(/\d+/g, 'N').slice(0, 40)}`);
               break;
             }
             const row = pending.find((r) => r.messageKey === plan.next?.messageKey);
             if (!row) break;
+            const tEnvio = Date.now();
             const r = await sendQueuedTelegram(row.id, { now: new Date(), fetchImpl: deps.fetchImpl, renderCard: deps.renderCard, cardFor: deps.cardFor, couponLookup: deps.couponLookup, onCouponSent: deps.onCouponSent });
             outcome = r;
+            conta(String((r as { outcome: string }).outcome));
+            temposEnvio.push(Math.round((Date.now() - tEnvio) / 1000));
             pending = pending.filter((x) => x.id !== row.id);
             if (r.outcome === 'sent') {
               sentCount++;
@@ -275,7 +282,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
           restante += pending.length;
         };
         await Promise.all([...porLoja.values()].map((f) => drenar(f)));
-        summary.sendRun = { sent: sentCount, cupomSent, expired: expiredCount, byStore: sentBy, remainingInQueue: restante, ms: Date.now() - started.getTime() };
+        summary.sendRun = { sent: sentCount, cupomSent, expired: expiredCount, byStore: sentBy, remainingInQueue: restante, ms: Date.now() - started.getTime(), resultados, temposEnvioS: temposEnvio };
         summary.send = outcome;
       } else {
         const next = await db
@@ -292,7 +299,7 @@ export async function runGroupMessagesCycle(deps: CycleDeps = {}): Promise<Cycle
 
     if (v2) summary.rechecks = await runRechecks(now);
     await logRun(started, 'ok', {
-      state, degraded, timing: summary.timing, sendMs: (summary.sendRun as { ms?: number } | undefined)?.ms, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
+      state, degraded, timing: summary.timing, sendMs: (summary.sendRun as { ms?: number } | undefined)?.ms, sendRun: summary.sendRun, candidates: detection.counts.candidates, sentCount, persisted: summary.persisted, brake: members.brake.paused, amazonPaused: detection.config.amazonPaused,
       cupomGeradas: detection.cupom.generated, cupomEnviaveis: detection.cupom.sendable, cupomNoPool: detection.cupom.poolProducts, cupomPorLoja: detection.cupom.byStore,
       cupomBarradas: detection.cupom.barred, cupomEnviadas: (summary.sendRun as { cupomSent?: number } | undefined)?.cupomSent ?? 0,
     });
