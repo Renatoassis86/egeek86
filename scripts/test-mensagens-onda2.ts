@@ -506,12 +506,13 @@ ok(lines[1] === '<b>R$ 94,00</b> no Mercado Livre', 'linha 2: preço em negrito 
 ok(paras[2].includes('• <b>Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && tg.includes('• <b>Menor registrado:</b> novo menor preço') && tg.includes('• <b>Histórico:</b> mais barato que em') && tg.includes('• <b>Leitura:</b> favorável') && tg.includes('• <b>Black Friday:</b> faltam 16 dias (27/11)'), 'tópicos: variação vs média em destaque; monitoramento (menor registrado, histórico, leitura, Black Friday) no fim', paras[2]);
 const bq = tg.match(/<blockquote>([\s\S]*?)<\/blockquote>/);
 ok(!!bq && bq[1].startsWith('<b>Monitoramento</b>') && tg.indexOf('Monitoramento') > tg.indexOf('Vs. média das lojas') && tg.indexOf('Monitoramento') < tg.indexOf('Conferido em'), 'monitoramento num bloco só, no fim da mensagem (antes do rodapé)', bq?.[1]);
-ok(!tg.includes('/go/') && (tg.match(/<a /g) ?? []).length === 1 && tg.includes('Histórico completo: <a href="https://www.egeek86.com/?s=tg&amp;m='), 'Telegram: sem link /go/ no texto (o botão cuida); só a divulgação do site como link');
+ok(tg.includes('Comprar:') && (tg.match(/<a /g) ?? []).length <= 1, 'Telegram: link de compra no texto (dono, 2026-11-18); a divulgação do site só cabe quando a legenda não passa de 1024');
 ok(tg.includes('• <b>Vendedor:</b> reputação verde'), 'tópico do vendedor ML (reputação verde)');
 const tgLines = tg.split('\n');
 ok(tgLines[tgLines.length - 2] === '<i>Conferido em 11/11 às 10:50. #publicidade</i>' && tgLines[tgLines.length - 1] === '<i>Espaço Geek 86 · Quem monitora, compra melhor.</i>', 'rodapé: carimbo com #publicidade e, por último, o slogan', tgLines.slice(-2));
 ok(countEmojis(tg) <= MAX_EMOJIS_PER_MESSAGE && !countEmojis(lines[0]), 'no máximo 2 emojis e nenhum no título', countEmojis(tg));
-ok(tg.length < TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024) e no limite (4096)', tg.length);
+const tgVisivel = tg.replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').length;
+ok(tgVisivel <= TELEGRAM_CAPTION_MAX_CHARS && tg.length < TELEGRAM_MAX_CHARS, 'mensagem típica cabe na legenda de foto (1024 VISIVEIS, como o Telegram conta) e no limite (4096)', tgVisivel);
 ok(textProblems(tg, 'tg').length === 0 && !/afiliad|vai cair|deve cair|tende a|garantid|previs|\bde\s*\/\s*por\b|% ?off/i.test(tg), 'barreira de texto limpa, sem previsão, de/por ou % OFF');
 const wa = c1.texts.whatsapp;
 ok(wa.startsWith('*🏆 MENOR PREÇO REGISTRADO*\n\n*Tomba! Edição Especial* _Switch · mídia física_\n\n*R$ 94,00* no Mercado Livre\n\n• *Vs. média das lojas:*') && wa.includes('\n> *Monitoramento*') && !/<[a-z/]/i.test(wa), 'WhatsApp equivalente: *negrito*, _itálico_, citação com "> " e sem HTML', wa);

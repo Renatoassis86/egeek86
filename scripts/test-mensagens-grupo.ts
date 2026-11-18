@@ -140,7 +140,7 @@ const r3 = buildGroupMessages(m3);
 ok(r3.telegram.includes('<b>R$ 229,99</b> na Shopee') && !r3.telegram.includes('R$ 320,00') && !r3.telegram.includes('Mercado Livre'), 'M3 TG só o menor preço, sem o preço de cada loja', r3.telegram);
 ok(r3.telegram.includes('<b>Menor preço:</b> entre as lojas que monitoramos hoje') && r3.telegram.includes('<b>Média das lojas:</b> R$ 367,05'), 'M3 TG menor preço do monitoramento e média', r3.telegram);
 ok(r3.telegram.includes('Conferido em 10/11 às 21:30.'), 'M3 usa a conferência mais antiga', r3.telegram);
-ok(!r3.telegram.includes('/go/'), 'M3 TG sem URL no texto (link no botão)');
+ok(r3.telegram.includes('Comprar:'), 'M3 TG com o link de compra no texto (dono, 2026-11-18)');
 ok(r3.whatsapp.includes('https://www.egeek86.com/go/jogo-nintendo-switch-sports-midia-fisica-shopee-e3a58b?s=wa&m=g3-261110-000ghi'), 'M3 WA link da oferta mais barata', r3.whatsapp);
 
 const items = [

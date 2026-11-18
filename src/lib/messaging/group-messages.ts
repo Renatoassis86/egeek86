@@ -1265,8 +1265,46 @@ export interface RenderedGroupMessage {
 }
 
 /** Monta os dois canais. Nunca lança por texto reprovado: devolve `problems` para o chamador marcar como não enviável. */
+/**
+ * LINK DE COMPRA NO TEXTO (dono, 2026-11-18: "toda postagem venha com o link para ir para a compra"). Alertas de preco (G2, OK, T, P...) levavam o link so no botao do Telegram;
+ * o botao some em reenvio/encaminhamento e nao aparece no texto. Todo texto do Telegram com UMA oferta ganha a linha "Comprar: <link>" antes do carimbo "Conferido em":
+ * o link de afiliado do dono (R-70, auditado no envio) ou, sem ele, o /go do site. Nao duplica quando o texto ja tem link de compra.
+ */
+export function comLinkDeCompra(text: string, input: GroupMessageInput, channel: GroupChannel): string {
+  if (channel !== 'tg') return text;
+  const src = input as unknown as { offer?: MsgOffer; cheap?: MsgOffer; messageKey?: string };
+  const o = src.offer ?? src.cheap;
+  if (!o || !o.slug || !src.messageKey) return text;
+  const buy = o.affiliateUrl && /^https:\/\/[^\s<>"]+$/.test(o.affiliateUrl) ? o.affiliateUrl : null;
+  if (/Comprar:|\/go\/|href="https:\/\/(meli\.la|s\.shopee\.com\.br)/i.test(text) || (buy && text.includes(escapeTelegramHtml(buy)))) return text;
+  let link: string;
+  try {
+    link = buy ?? buildGoLink(o.slug, 'tg', src.messageKey);
+  } catch {
+    return text;
+  }
+  const linha = `${TG.b('Comprar:')} ${escapeTelegramHtml(link)}`;
+  const SEP = '\n\n';
+  const blocos = text.split(SEP);
+  let i = -1;
+  for (let k = blocos.length - 1; k >= 0; k--) if (/Conferido em|Pre[cç]o sujeito/i.test(blocos[k])) { i = k; break; }
+  if (i < 0) blocos.push(linha);
+  else blocos.splice(i, 0, linha);
+  // O cartao (foto) so vai com legenda <= 1024 caracteres visiveis: o link de compra tem prioridade sobre o que e acessorio.
+  // Cede primeiro o bloco "Historico completo/Grupo no WhatsApp" e depois a linha do slogan (nunca o link, o preco nem o #publicidade).
+  const visivel = (b: string[]) => b.join(SEP).replace(/<[^>]+>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').length;
+  if (visivel(blocos) > 1024) {
+    const k = blocos.findIndex((b) => /Hist[oó]rico completo|Grupo no WhatsApp/i.test(b));
+    if (k >= 0) blocos.splice(k, 1);
+  }
+  if (visivel(blocos) > 1024) {
+    for (let k = 0; k < blocos.length; k++) blocos[k] = blocos[k].split('\n').filter((l) => !/Espaço Geek 86 ·/.test(l)).join('\n');
+  }
+  return blocos.filter((b) => b.trim() !== '').join(SEP);
+}
+
 export function buildGroupMessages(input: GroupMessageInput): RenderedGroupMessage {
-  const telegram = render(input, 'tg');
+  const telegram = comLinkDeCompra(render(input, 'tg'), input, 'tg');
   const whatsapp = render(input, 'wa');
   return {
     telegram,
@@ -1276,7 +1314,7 @@ export function buildGroupMessages(input: GroupMessageInput): RenderedGroupMessa
 }
 
 export function buildGroupMessage(input: GroupMessageInput, channel: GroupChannel): string {
-  return render(input, channel);
+  return comLinkDeCompra(render(input, channel), input, channel);
 }
 
 /** Link "Enviar no WhatsApp" (sem número: o dono escolhe o grupo no próprio app). */

@@ -158,7 +158,7 @@ const ok1 = ev.candidates.find((c) => c.trigger === 'OK1');
 ok(!!ok1 && ok1.cls === 'alerta' && ok1.status === 'auto' && !ok1.held && ok1.sendable, 'OK1 ML verde: alerta, automático, enviável', ok1);
 ok(!!ok1 && ok1.move?.dropPct === 6 && ok1.move?.seriesDays === 9, 'OK1: 6,0% e 9 dias de série');
 ok(!!ok1 && ok1.texts.telegram.includes('Menor registrado:</b> novo menor preço (o anterior era R$ 100,00)') && ok1.texts.telegram.includes('MENOR PREÇO REGISTRADO'), 'OK1: destaque de menor preço registrado e o anterior', ok1?.texts.telegram);
-ok(!!ok1 && !ok1.texts.telegram.includes('/go/') && ok1.texts.whatsapp.includes(`?s=wa&m=${ok1.messageKey}`), 'OK1: Telegram sem URL no texto (vai no botão); WhatsApp com link /go/?s=wa&m=<id>');
+ok(!!ok1 && ok1.texts.telegram.includes('Comprar:') && ok1.texts.whatsapp.includes(`?s=wa&m=${ok1.messageKey}`), 'OK1: Telegram com o link de compra no texto (dono, 2026-11-18); WhatsApp com link /go/?s=wa&m=<id>');
 ok(!!ok1 && ok1.texts.telegram.includes('Vs. média das lojas:</b> 18,3% abaixo (R$ 21,00); média R$ 115,00') && !/Série de|dias de série/.test(ok1.texts.telegram), 'variação vs média como tópico, sem frase de série', ok1?.texts.telegram);
 ok(!ev.candidates.some((c) => c.trigger === 'G1' || c.trigger === 'G2'), 'G1/G2 legados saem da v2');
 // o gatilho não exige média
