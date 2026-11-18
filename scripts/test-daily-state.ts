@@ -82,7 +82,8 @@ function offer(id: string, rows: Array<[string, number, string, number?, number?
   check('52 h: stale, não entra; dia vira gap', d3.freshOffers === 0 && d3.staleOffers === 1 && d3.quality === 'gap' && d3.minCents == null, d3);
   const old = offer('old', [['2026-10-25', 9_000, '08:00']]);
   const d4 = computeDayState('2026-11-03', NOW, [old]);
-  check('cotação de 9 dias: nem ativa no dia (stale 0)', d4.freshOffers === 0 && d4.staleOffers === 0 && d4.quality === 'gap', d4);
+  // R-90 (2026-11-17): a janela de 7 dias saiu (OFFER_ACTIVE_DAYS = OFFER_FRESHNESS_DAYS = 365). A cotação de 9 dias continua FORA da média do dia (fresh 0, dia vira gap): agora conta como stale em vez de sumir.
+  check('cotação de 9 dias: não entra na média do dia (fresh 0, dia vira gap)', d4.freshOffers === 0 && d4.quality === 'gap' && d4.minCents == null, d4);
 }
 
 // --- 3) média só com n>=3; min/mediana gravados com n<3 -------------------------------------
