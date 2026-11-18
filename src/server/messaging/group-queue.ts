@@ -2,6 +2,7 @@ import { ORCAMENTO } from '@/lib/frescor/orcamento';
 import 'server-only';
 import { sql } from 'drizzle-orm';
 import { POPULARIDADE_VALIDADE_DIAS, popularidadeLigada } from '@/lib/popularidade/score';
+import { ACENTOS_DE, ACENTOS_PARA, COTA_FAMILIA_HORAS, COTA_TIPO_HORAS, MARCAS_PREFERIDAS, cotaItemLigada, marcasPreferidasLigadas, padraoMarcas } from '@/lib/messaging/cota-item';
 import { db } from '@/lib/db';
 import { canSendTelegram, getAdTag } from '@/lib/messaging/group-config';
 import { dispositionOf, rowStatusFor, type AutomationState } from '@/lib/messaging/group-automation';
@@ -123,7 +124,6 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   // Janela por loja: o total pedido dividido entre as 8 lojas (minimo 40 por loja).
   const perV = Math.max(40, Math.ceil(limit / 7));
   const novo = masterCooldownHours() > 0;
-  const tipoPart = novo ? sql`, g.candidate ->> 'tipo'` : sql``;
   const cupomWin = novo
     ? sql`(g.trigger = 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.CUPOM_PRODUCT_GAP_MIN}::int))`
     : sql`(g.trigger = 'CUPOM' AND s.trigger = 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.CUPOM_PRODUCT_GAP_MIN}::int))`;
@@ -132,14 +132,47 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
     : sql`(g.trigger NOT IN ('AC', 'CUPOM', 'G1', 'OK1') AND s.trigger <> 'CUPOM' AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(mins => ${RULES.PRODUCT_GAP_MIN}::int))`;
   // R-103 (dono, 2026-11-18): popularidade da plataforma (mais vendidos do ML em offer_popularity) desempata DENTRO do mesmo degrau da regua, antes da recencia.
   // Nunca exclui nada: so define quem vem primeiro. GROUP_POPULARIDADE=off volta a ordem de antes.
-  const popOrdem = popularidadeLigada()
-    ? sql`, COALESCE((SELECT max(p.score) FROM affiliate_offers po JOIN offer_popularity p ON p.network_id = po.network_id AND p.external_ref = po.external_ref WHERE po.id = g.offer_id AND p.observed_at > now() - make_interval(days => ${POPULARIDADE_VALIDADE_DIAS}::int)), 0) DESC`
+  // Dono, 2026-11-18: preferencia de marcas (Beleza) e COTAS por item em todas as lojas. So ORDEM; nada e excluido (livre acesso, sem prender o fluxo).
+  //  - marca preferida abre cada tipo da loja que tem lista (GROUP_MARCAS_PREFERIDAS=off desliga);
+  //  - cota de FAMILIA (3 primeiras palavras do nome) em COTA_FAMILIA_HORAS: quem ja saiu vai atras de quem ainda nao saiu, dentro do mesmo degrau da regua;
+  //  - cota de TIPO por loja em COTA_TIPO_HORAS: o tipo menos enviado abre a fila (rodizio por deficit). GROUP_COTA_ITEM=off desliga as duas cotas.
+  const cota = cotaItemLigada();
+  const nomeNorm = sql`lower(regexp_replace(translate(mp.name, ${ACENTOS_DE}, ${ACENTOS_PARA}), '[^A-Za-z0-9 ]', ' ', 'g'))`;
+  const nomeNormS = sql`lower(regexp_replace(translate(ms.name, ${ACENTOS_DE}, ${ACENTOS_PARA}), '[^A-Za-z0-9 ]', ' ', 'g'))`;
+  const famDe = (nome: ReturnType<typeof sql>) => sql`array_to_string((regexp_split_to_array(btrim(regexp_replace(${nome}, '\\s+', ' ', 'g')), ' '))[1:3], ' ')`;
+  // Valores por linha calculados UMA vez (camada interna) e juntados a tabelas pequenas (fam6, tipo24); em subconsulta correlacionada dentro do ORDER BY da janela estourava 30 s.
+  const cteCota = cota
+    ? sql`WITH fam6 AS MATERIALIZED (
+        SELECT ${famDe(nomeNormS)} AS fam, count(*)::int AS n FROM group_messages s JOIN master_products ms ON ms.id = s.master_product_id
+        WHERE s.channel = 'tg' AND s.status = 'enviada' AND s.sent_at > now() - make_interval(hours => ${COTA_FAMILIA_HORAS}::int) GROUP BY 1
+      ), tipo24 AS MATERIALIZED (
+        SELECT s.vertical, s.candidate ->> 'tipo' AS tipo, count(*)::int AS n FROM group_messages s
+        WHERE s.channel = 'tg' AND s.status = 'enviada' AND s.sent_at > now() - make_interval(hours => ${COTA_TIPO_HORAS}::int) GROUP BY 1, 2
+      )`
     : sql``;
+  const colFam = cota ? sql`COALESCE(f.n, 0)` : sql`0`;
+  const colTipo = cota ? sql`COALESCE(t.n, 0)` : sql`0`;
+  const joinsCota = cota
+    ? sql`LEFT JOIN fam6 f ON f.fam = ${famDe(nomeNorm)}
+      LEFT JOIN tipo24 t ON t.vertical = g.vertical AND t.tipo IS NOT DISTINCT FROM g.candidate ->> 'tipo'`
+    : sql``;
+  const marcasVerticais = marcasPreferidasLigadas() ? Object.keys(MARCAS_PREFERIDAS).filter((v) => padraoMarcas(v)) : [];
+  const colMarca = marcasVerticais.length
+    ? sql`(CASE ${sql.join(marcasVerticais.map((v) => sql`WHEN g.vertical = ${v} AND regexp_replace(${nomeNorm}, '\\s+', ' ', 'g') ~ ${padraoMarcas(v)} THEN 0`), sql` `)} ELSE 1 END)`
+    : sql`1`;
+  const tipoPartB = novo ? sql`, b.candidate ->> 'tipo'` : sql``;
+  const popCol = popularidadeLigada()
+    ? sql`COALESCE((SELECT max(p.score) FROM affiliate_offers po JOIN offer_popularity p ON p.network_id = po.network_id AND p.external_ref = po.external_ref WHERE po.id = g.offer_id AND p.observed_at > now() - make_interval(days => ${POPULARIDADE_VALIDADE_DIAS}::int)), 0)`
+    : sql`0`;
   const rows = await db.execute<Row>(sql`
+    ${cteCota}
     SELECT * FROM (
-    SELECT q.*, row_number() OVER (PARTITION BY q.vertical ORDER BY q.rn_fair, (q.trigger = 'AC'), q.created_at) AS rn_v FROM (
-      SELECT g.*, row_number() OVER (PARTITION BY g.trigger, g.vertical${tipoPart} ORDER BY COALESCE((g.candidate -> 'regua' ->> 'degrau')::int, 0) DESC${popOrdem}, g.created_at DESC) AS rn_fair
-      FROM group_messages g
+    SELECT q.*, row_number() OVER (PARTITION BY q.vertical ORDER BY q.rn_fair, q.tipo_sent24, (q.trigger = 'AC'), q.created_at) AS rn_v FROM (
+      SELECT b.*, row_number() OVER (PARTITION BY b.trigger, b.vertical${tipoPartB} ORDER BY b.marca_ord ASC, COALESCE((b.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, b.fam_sent6 ASC, b.pop DESC, b.created_at DESC) AS rn_fair
+      FROM (
+      SELECT g.*, ${colMarca} AS marca_ord, ${colFam} AS fam_sent6, ${colTipo} AS tipo_sent24, ${popCol} AS pop
+      FROM group_messages g LEFT JOIN master_products mp ON mp.id = g.master_product_id
+      ${joinsCota}
       WHERE g.channel = 'tg' AND g.status IN (${sql.join(statuses.map((x) => sql`${x}`), sql`, `)}) AND g.claimed_at IS NULL AND g.attempts < 3
         -- Pre-filtro SEGURO (subconjunto do que o plano ja barra): produto ja enviado dentro da janela do proprio gatilho (Achado 24 h, cupom 1 h, demais 1 h
         -- exceto G1/OK1, que tem excecao de novo minimo). Linhas barradas so ocupavam as vagas da janela e escondiam as enviaveis.
@@ -150,6 +183,7 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
               OR ${cupomWin}
               OR ${precoWin})
         ))
+    ) b
     ) q
   ) w
     -- 2026-11-18 (dono: "fluxo parado"): cada loja tem a PROPRIA janela (perV linhas). Antes uma janela unica era ocupada por quem tem mais tipos (rn_fair baixo) e as

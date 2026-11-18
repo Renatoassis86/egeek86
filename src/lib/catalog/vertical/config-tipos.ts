@@ -386,16 +386,22 @@ const ESPORTE: SegmentConfig[] = [
 // ---------------------------------------------------------------------------------------------------------------------
 export const MARCAS_MAQUIAGEM_TOP = ['mac', 'dior', 'chanel', 'yves saint laurent', 'lancome', 'estee lauder', 'charlotte tilbury', 'nars', 'fenty beauty', 'rare beauty', 'huda beauty', 'urban decay', 'too faced', 'benefit', 'clinique', 'kiko milano'];
 export const MARCAS_MAQUIAGEM_BR = ['maybelline', 'loreal paris', 'nyx', 'revlon', 'max factor', 'vult', 'quem disse berenice', 'boca rosa', 'bruna tavares', 'oceane', 'o boticario', 'natura', 'eudora', 'mary kay', 'avon', 'vizzela', 'ruby rose', 'dailus', 'payot', 'tracta', 'cuidado'];
-const MARCAS_MAQ = [...MARCAS_MAQUIAGEM_TOP, ...MARCAS_MAQUIAGEM_BR];
-const MARCAS_SKIN = ['la roche posay', 'vichy', 'cerave', 'the ordinary', 'neutrogena', 'avene', 'bioderma', 'eucerin', 'sallve', 'principia', 'adcos', 'isdin', 'skinceuticals', 'lancome', 'clinique', 'estee lauder', 'dior', 'shiseido', 'garnier', 'nivea'];
-const MARCAS_CABELO = ['kerastase', 'olaplex', 'wella', 'truss', 'inoar', 'lola cosmetics', 'cadiveu', 'redken', 'loreal professionnel', 'tresemme', 'pantene', 'elseve', 'seda', 'dove', 'amend', 'brae', 'bio extratus', 'babyliss', 'taiff', 'gama italy', 'philips'];
+// Marcas PREFERIDAS pelo dono na Beleza (2026-11-18): Medicube, Tsubaki, Schwarzkopf, L'Oréal e Bioré. Entram PRIMEIRO nas listas (a semeadura segue a ordem dos termos)
+// e ganham termos proprios; na fila de envio abrem cada tipo (src/lib/messaging/cota-item.ts).
+export const MARCAS_BELEZA_PREFERIDAS = ['medicube', 'tsubaki', 'schwarzkopf', 'loreal paris', 'loreal professionnel', 'elseve', 'biore'];
+const TERMOS_BELEZA_PREFERIDOS_SKIN = ['medicube', 'medicube serum', 'medicube zero pore', 'medicube age r', 'biore', 'biore protetor solar', 'biore uv aqua rich', 'biore sabonete facial', 'biore limpeza facial'];
+const TERMOS_BELEZA_PREFERIDOS_CABELO = ['tsubaki', 'tsubaki premium repair', 'tsubaki shampoo', 'schwarzkopf', 'schwarzkopf professional', 'schwarzkopf bc bonacure', 'schwarzkopf gliss', 'loreal professionnel', 'loreal professionnel serie expert', 'elseve hidra', 'loreal paris elseve', 'loreal paris shampoo'];
+const TERMOS_BELEZA_PREFERIDOS_MAQ = ['loreal paris batom', 'loreal paris base', 'loreal paris mascara de cilios', 'loreal paris revitalift'];
+const MARCAS_MAQ = [MARCAS_MAQUIAGEM_TOP[0], 'loreal paris', ...MARCAS_MAQUIAGEM_TOP.slice(1), ...MARCAS_MAQUIAGEM_BR]; // MAC segue abrindo a lista (dono, 2026-11-17); L'Oréal logo depois
+const MARCAS_SKIN = ['medicube', 'biore', 'la roche posay', 'vichy', 'cerave', 'the ordinary', 'neutrogena', 'avene', 'bioderma', 'eucerin', 'sallve', 'principia', 'adcos', 'isdin', 'skinceuticals', 'lancome', 'clinique', 'estee lauder', 'dior', 'shiseido', 'garnier', 'nivea'];
+const MARCAS_CABELO = ['tsubaki', 'schwarzkopf', 'loreal professionnel', 'elseve', 'kerastase', 'olaplex', 'wella', 'truss', 'inoar', 'lola cosmetics', 'cadiveu', 'redken', 'loreal professionnel', 'tresemme', 'pantene', 'elseve', 'seda', 'dove', 'amend', 'brae', 'bio extratus', 'babyliss', 'taiff', 'gama italy', 'philips'];
 const MARCAS_PERFUME = ['carolina herrera', 'paco rabanne', 'jean paul gaultier', 'dior', 'chanel', 'yves saint laurent', 'lancome', 'giorgio armani', 'dolce gabbana', 'versace', 'calvin klein', 'hugo boss', 'azzaro', 'o boticario', 'natura', 'eudora', 'montblanc', 'burberry', 'tom ford', 'victor hugo'];
 const BELEZA_RE = (re: RegExp) => [re];
 
 const BELEZA_SEG: SegmentConfig[] = [
   seg({
     key: 'batom', vertical: 'beleza', label: 'Batom e lábios', rank: 300, domains: BELEZA_RE(/LIPSTICK|LIP_|LIPS|LIPGLOSS|LIP_BALM|LIP_STAIN/),
-    terms: combineTerms('batom', ['', 'matte', 'liquido', 'cremoso', 'em bastao', 'gloss', 'tint labial'], MARCAS_MAQ.slice(0, 16)),
+    terms: [...combineTerms('batom', ['', 'matte', 'liquido', 'cremoso', 'em bastao', 'gloss', 'tint labial'], MARCAS_MAQ.slice(0, 16)), ...TERMOS_BELEZA_PREFERIDOS_MAQ],
   }),
   seg({
     key: 'base-corretivo', vertical: 'beleza', label: 'Base, corretivo e primer', rank: 301, domains: BELEZA_RE(/FOUNDATION|CONCEALER|PRIMER|BB_CREAM|CC_CREAM|FACE_MAKEUP/),
@@ -419,11 +425,11 @@ const BELEZA_SEG: SegmentConfig[] = [
   }),
   seg({
     key: 'skincare', vertical: 'beleza', label: 'Skincare e protetor solar', rank: 310, domains: BELEZA_RE(/SKIN|FACIAL|SERUM|SUNSCREEN|SUN_|MOISTURIZER|CLEANSER|ANTI_AGING/),
-    terms: [...combineTerms('serum facial', ['vitamina c', 'acido hialuronico', 'niacinamida', 'retinol'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('protetor solar facial', ['fps 50', 'fps 70', 'toque seco', 'com cor'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('hidratante facial', ['', 'oil free', 'anti idade'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('limpeza facial', ['gel', 'agua micelar', 'espuma'], MARCAS_SKIN.slice(0, 8))],
+    terms: [...TERMOS_BELEZA_PREFERIDOS_SKIN, ...combineTerms('serum facial', ['vitamina c', 'acido hialuronico', 'niacinamida', 'retinol'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('protetor solar facial', ['fps 50', 'fps 70', 'toque seco', 'com cor'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('hidratante facial', ['', 'oil free', 'anti idade'], MARCAS_SKIN.slice(0, 10)), ...combineTerms('limpeza facial', ['gel', 'agua micelar', 'espuma'], MARCAS_SKIN.slice(0, 8))],
   }),
   seg({
     key: 'cabelo', vertical: 'beleza', label: 'Cabelo (tratamento e finalizador)', rank: 320, domains: BELEZA_RE(/SHAMPOO|CONDITIONER|HAIR_|HAIRCARE|HAIR_MASK|HAIR_TREATMENT/),
-    terms: [...combineTerms('shampoo', ['', 'hidratacao', 'reparador', 'antirresiduos'], MARCAS_CABELO.slice(0, 12)), ...combineTerms('mascara capilar', ['', 'reconstrucao', 'hidratante'], MARCAS_CABELO.slice(0, 10)), ...combineTerms('olaplex', ['n 3', 'n 4', 'n 5', 'n 7', 'kit'], [''])],
+    terms: [...TERMOS_BELEZA_PREFERIDOS_CABELO, ...combineTerms('shampoo', ['', 'hidratacao', 'reparador', 'antirresiduos'], MARCAS_CABELO.slice(0, 12)), ...combineTerms('mascara capilar', ['', 'reconstrucao', 'hidratante'], MARCAS_CABELO.slice(0, 10)), ...combineTerms('olaplex', ['n 3', 'n 4', 'n 5', 'n 7', 'kit'], [''])],
   }),
   seg({
     key: 'secador-prancha', vertical: 'beleza', label: 'Secador e prancha de cabelo', rank: 321, profile: GTIN_P(['ALPHANUMERIC_MODEL', 'VOLTAGE']), domains: BELEZA_RE(/HAIR_DRYERS|HAIR_STRAIGHTENERS|FLAT_IRONS|HAIR_CURLERS|HAIR_STYLERS/),
