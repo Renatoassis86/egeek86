@@ -6,7 +6,12 @@ import { deriveActions, type PilotPlan } from './aplicar-piloto-identidade';
 import { identPs5 } from './piloto-identidade-itens';
 
 const dir = path.resolve('docs/backups');
-const f = fs.readdirSync(dir).filter((x) => /^piloto-identidade-itens-plano-.*\.json$/.test(x)).sort().pop()!;
+const f = fs.readdirSync(dir).filter((x) => /^piloto-identidade-itens-plano-.*\.json$/.test(x)).sort().pop();
+// O plano do piloto e um backup LOCAL (docs/backups nao versiona esse arquivo): no CI (GitHub Actions) ele nao existe. Sem o arquivo o teste nao tem o que verificar: pula com aviso, nao falha.
+if (!f) {
+  console.log('test-aplicar-piloto-identidade: PULADO (plano do piloto ausente em docs/backups; arquivo local, nao versionado)');
+  process.exit(0);
+}
 const plan = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8')) as PilotPlan;
 const A = deriveActions(plan);
 const pairs = new Set(A.moves.map((m) => `${m.fromMasterId.slice(0, 8)}>${(m.destinoMasterId as string).slice(0, 8)}`));
