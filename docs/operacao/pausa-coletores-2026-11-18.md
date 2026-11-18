@@ -12,4 +12,4 @@
 ## Alivio de I/O em 2026-11-19 (alem da pausa acima)
 - **Indices criados** (`scripts/criar-indices-io.ts`): `collector_runs_job_status_fim_idx` e `group_messages_hist_envio_idx` (reversiveis: `DROP INDEX CONCURRENTLY IF EXISTS <nome>`).
 - **Historico de envios** lido por ciclo: 4 dias em vez de 7 (maior regra = 72 h).
-- **Crons mais espacados** (vercel.json; para restaurar, voltar ao commit anterior): collect-prices e collect-shopee 5→10 min; stats 30→60 min; showcase 15→30; vitrines 10→20; daily 30→60; integridade do envio 1→5 min; aprovacao-auto 5→10; precos-fontes 15→30; cobertura-shopee 10→20.
+- **Crons mais espacados** (vercel.json; para restaurar, voltar ao commit anterior): collect-prices 5→10 min (collect-shopee e vitrines ficam como estao, regra R-90); stats 30→60 min; showcase 15→30; daily 30→60; integridade do envio 1→5 min; aprovacao-auto 5→10; precos-fontes 15→30; cobertura-shopee 10→20.
