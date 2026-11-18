@@ -22,5 +22,18 @@ const LIMITE = li >= 0 ? Number(process.argv[li + 1]) || 6 : 6;
     console.log(`${velho ? 'REINJETAR' : 'ok       '} ${l.padEnd(18)} ${r ? `${r.min} min` : 'sem batimento'} ${r?.meta ? `v${r.meta.versao ?? '?'} lag ${r.meta.lagMs ?? '?'} ms ${r.meta.visivel ?? ''} ${r.meta.memMb ?? '?'} MB` : ''}`);
   }
   console.log(reinjetar.length ? `REINJETAR: ${reinjetar.join(', ')}` : 'todos os loops batendo');
+  // 2026-11-18: a automação do Telegram pausada em silêncio custou ~25 min de envios. O vigia avisa e, se a pausa foi AUTOMÁTICA (nota 'pausa automática') e o
+  // motivo não é do bot/canal, religa. Pausa feita pelo dono (sem essa nota) NUNCA é religada por aqui.
+  const au = (await db.execute(sql`SELECT rules->>'state' AS s, rules->>'note' AS n, extract(epoch from now() - updated_at)/60 AS min FROM feature_flags WHERE key = 'group_messages_auto'`)) as unknown as Array<{ s: string; n: string | null; min: number }>;
+  const a0 = au[0];
+  if (a0 && a0.s === 'off') {
+    const auto = /^pausa autom/i.test(a0.n ?? '');
+    const doBot = /unauthorized|forbidden|chat not found|bot was|not enough rights|token/i.test(a0.n ?? '');
+    console.log(`AUTOMACAO OFF ha ${Math.round(Number(a0.min))} min: ${String(a0.n ?? '(sem nota)').slice(0, 120)}${auto && !doBot ? ' => religando (pausa automatica sem causa no bot/canal)' : ' => NAO religo (pausa do dono ou causa no bot/canal)'}`);
+    if (auto && !doBot) {
+      const { setAutomationState } = await import('../src/server/messaging/group-automation-store');
+      await setAutomationState('on', 'religada pelo vigia: pausa automatica sem causa no bot/canal');
+    }
+  }
   process.exit(0);
 })().catch((e) => { console.error(String(e?.message ?? e).slice(0, 300)); process.exit(1); });
