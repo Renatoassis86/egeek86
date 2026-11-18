@@ -89,6 +89,10 @@
       "schedule": "4-54/10 * * * *"
     },
     {
+      "path": "/api/cron/vitrine-games",
+      "schedule": "*/30 * * * *"
+    },
+    {
       "path": "/api/cron/aprovacao-auto?lote=100",
       "schedule": "2-57/5 * * * *"
     },
