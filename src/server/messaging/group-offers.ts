@@ -308,20 +308,20 @@ function tipoOfRow(r: Row): string | null {
 
 /** Janela do historico de envios lida a cada ciclo (a maior regra usa 72 h; +24 h de margem). */
 export const HISTORICO_ENVIOS_DIAS = 4;
-export async function loadSentHistory(
+async function loadSentHistoryFull(
   channel: 'tg' | 'wa',
   now: Date,
-  opts: { includeSimulated?: boolean; excludeId?: string } = {}
-): Promise<{ records: SentRecord[]; source: DetectionResult['historySource'] }> {
+  opts: { includeSimulated?: boolean; excludeId?: string; sinceOverride?: Date; withIds?: boolean } = {}
+): Promise<{ records: SentRecord[]; source: DetectionResult['historySource']; byId?: Map<string, SentRecord[]> }> {
   if (!(await groupMessagesTableExists())) return { records: [], source: 'nenhum (tabela ausente)' };
   // 2026-11-18 (banco sem folga de disco): a maior janela das regras e 72 h (R-77); 4 dias (+24 h de margem) em vez de 7 corta ~43% da leitura desta consulta (143 GB em 3 dias).
-  const since = new Date(now.getTime() - HISTORICO_ENVIOS_DIAS * 86_400_000).toISOString();
+  const since = (opts.sinceOverride ?? new Date(now.getTime() - HISTORICO_ENVIOS_DIAS * 86_400_000)).toISOString();
   const v2 = await groupMessagesV2Ready();
   const statuses = opts.includeSimulated && v2 ? ['enviada', 'enviando', 'simulada'] : v2 ? ['enviada', 'enviando'] : ['enviada'];
   const rows = await db.execute<Row>(
     v2
       ? sql`
-    SELECT master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
+    SELECT id::text AS gm_id, master_product_id, price_cents_detected, COALESCE(sent_at, created_at) AS at, trigger, msg_class, is_sound, has_card,
            candidate ->> 'networkSlug' AS network_slug, candidate -> 'items' AS items, status, sim_state, candidate -> 'regua' ->> 'degrau' AS degrau_c,
            vertical AS vert, candidate ->> 'platformLabel' AS platform_label, candidate ->> 'tipo' AS tipo_c, candidate ->> 'name' AS nome_c, offer_id::text AS offer_main,
            CASE WHEN trigger ~ '^P[1-5]$' THEN candidate ->> 'masterProductId' END AS plat_pid,
@@ -341,7 +341,9 @@ export async function loadSentHistory(
   `
   );
   const records: SentRecord[] = [];
+  const byId = new Map<string, SentRecord[]>();
   for (const r of rows) {
+    const mark = records.length;
     if (r.status === 'simulada' && !String(r.sim_state ?? '').startsWith('enviaria')) continue;
     const at = new Date(r.at as string | Date);
     const cls = (r.msg_class as MessageClass | null) ?? null;
@@ -369,8 +371,59 @@ export async function loadSentHistory(
         if (it.masterProductId) records.push({ masterProductId: it.masterProductId, priceCents: Number(it.priceCents ?? 0), sentAt: at, trigger: 'RADAR', cls: 'radar', itemOnly: true });
       }
     }
+    if (opts.withIds && r.gm_id) byId.set(String(r.gm_id), records.slice(mark));
   }
-  return { records, source: 'group_messages' };
+  return { records, source: 'group_messages', byId: opts.withIds ? byId : undefined };
+}
+
+
+/**
+ * Cache incremental do histórico de envios (alívio de I/O, 2026-11-19; dono: "tabela por fora só alimentada com o novo").
+ * A leitura completa dos últimos 4 dias custava 161 GB de disco em 3 dias. Por instância: carrega tudo uma vez, a cada ciclo
+ * lê só as linhas com horário >= (última leitura - margem) (índice parcial group_messages_hist_envio_idx) e refaz a leitura
+ * COMPLETA a cada HISTORY_FULL_REFRESH_MS (pega linhas que saíram dos status, ex.: 'enviando' que falhou). Chamadas com
+ * includeSimulated/excludeId e o esquema antigo passam direto. HISTORY_CACHE=off desliga.
+ */
+const HISTORY_FULL_REFRESH_MS = 5 * 60_000;
+const HISTORY_DELTA_MARGIN_MS = 3 * 60_000;
+interface HistCache { byId: Map<string, SentRecord[]>; fullAt: number; deltaFrom: number; source: DetectionResult['historySource'] }
+const histCache = new Map<string, HistCache>();
+
+export function resetSentHistoryCache(): void {
+  histCache.clear();
+}
+
+export async function loadSentHistory(
+  channel: 'tg' | 'wa',
+  now: Date,
+  opts: { includeSimulated?: boolean; excludeId?: string } = {}
+): Promise<{ records: SentRecord[]; source: DetectionResult['historySource'] }> {
+  const off = /^(0|off|false)$/i.test((process.env.HISTORY_CACHE ?? '').trim());
+  if (off || opts.includeSimulated || opts.excludeId || !(await groupMessagesV2Ready())) return loadSentHistoryFull(channel, now, opts);
+  const key = channel;
+  const nowMs = now.getTime();
+  const windowStart = nowMs - HISTORICO_ENVIOS_DIAS * 86_400_000;
+  const c = histCache.get(key);
+  let next: HistCache;
+  if (!c || nowMs - c.fullAt >= HISTORY_FULL_REFRESH_MS || nowMs < c.deltaFrom) {
+    const full = await loadSentHistoryFull(channel, now, { withIds: true });
+    if (!full.byId) return { records: full.records, source: full.source };
+    next = { byId: full.byId, fullAt: nowMs, deltaFrom: nowMs, source: full.source };
+  } else {
+    const delta = await loadSentHistoryFull(channel, now, { withIds: true, sinceOverride: new Date(c.deltaFrom - HISTORY_DELTA_MARGIN_MS) });
+    if (!delta.byId) return { records: delta.records, source: delta.source };
+    const byId = new Map(c.byId);
+    for (const [id, recs] of delta.byId) byId.set(id, recs);
+    next = { byId, fullAt: c.fullAt, deltaFrom: nowMs, source: c.source };
+  }
+  const records: SentRecord[] = [];
+  for (const [id, recs] of next.byId) {
+    const kept = recs.filter((r) => r.sentAt.getTime() >= windowStart);
+    if (!kept.length) { next.byId.delete(id); continue; }
+    for (const r of kept) records.push(r);
+  }
+  histCache.set(key, next);
+  return { records, source: next.source };
 }
 
 /** Envios das últimas 24 h por 'loja|tipo' (rodízio: tipos menos enviados abrem cada rodada do pool). Sem tabela = {}. */
