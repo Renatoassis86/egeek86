@@ -52,15 +52,12 @@ export async function persistStatsChunk(ids: string[], opts: { rollup?: boolean 
   let agg: Row[] = [];
   let stats: Awaited<ReturnType<typeof getMasterProductPriceStatsBatchRaw>> | null = null;
   if (opts.rollup) {
-    // Resumo incremental (migration 0068): constrói o que faltar das ofertas do lote e calcula sem varrer as cotações. Qualquer falha cai no cálculo completo.
-    try {
-      const unbuilt = await productsWithUnbuiltOffers(ids);
-      if (unbuilt.size) await buildRollupOffers(await offersWithoutRollup({ productIds: [...unbuilt] }));
-      stats = await getMasterProductPriceStatsBatchRaw(ids, (rows) => { agg = rows; }, { rollup: true });
-    } catch (e) {
-      console.error('[stats-rollup] falhou, usando o calculo completo:', e instanceof Error ? e.message.slice(0, 160) : e);
-      stats = null;
-    }
+    // Resumo incremental (migration 0068): constrói o que faltar das ofertas do lote e calcula sem varrer as cotações.
+    // Falha (banco lento/socket): NÃO cai no cálculo completo do lote inteiro (120 produtos x ~8 s estouram os 300 s da função e derrubam o
+    // ciclo sem resumo); o lote conta como falho, os produtos mantêm a linha anterior e a próxima rodada tenta de novo. Nada é perdido.
+    const unbuilt = await productsWithUnbuiltOffers(ids);
+    if (unbuilt.size) await buildRollupOffers(await offersWithoutRollup({ productIds: [...unbuilt] }));
+    stats = await getMasterProductPriceStatsBatchRaw(ids, (rows) => { agg = rows; }, { rollup: true });
   }
   if (!stats) {
     stats = await getMasterProductPriceStatsBatchRaw(ids, (rows) => {
