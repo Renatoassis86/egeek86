@@ -2,6 +2,7 @@ import 'server-only';
 import { createPersistedQuery } from '@/lib/cache/server-cache';
 import { destaquesDepartamento, type CartaoDepartamento } from '@/server/queries/departamento';
 import type { DepartamentoSlug } from '@/lib/catalog/departamentos';
+import { hierarquizarCartoes } from '@/lib/vitrine/hierarquia-ofertas';
 
 /** Mínimo de produtos para a faixa aparecer na home (menos que isso = faixa escondida). */
 export const MIN_DESTAQUES_HOME = 4;
@@ -19,7 +20,8 @@ export async function getDestaquesPlus(depts: DepartamentoSlug[]): Promise<Recor
     depts.map(async (d) => {
       try {
         const itens = await porDept(d);
-        return [d, itens.length >= MIN_DESTAQUES_HOME ? itens : []] as const;
+        // Hierarquia da vitrine (VITRINE_HIERARQUIA): reordena o que ja passou pelos filtros (frescor, tipo, marca, loja); off = ordem de antes.
+        return [d, itens.length >= MIN_DESTAQUES_HOME ? hierarquizarCartoes(d, itens) : []] as const;
       } catch (e) {
         console.error(`Destaques Plus (${d}) indisponíveis:`, e);
         return [d, []] as const;

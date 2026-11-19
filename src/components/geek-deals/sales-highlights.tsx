@@ -5,6 +5,8 @@ import { Reveal } from '@/components/motion/reveal';
 import { OfferCard } from '@/components/affiliate/offer-card';
 import { ehConsoleDeVideoGame } from '@/lib/catalog/console-videogame';
 import { isHighlightEligibleSeller } from '@/lib/affiliate/price-verdict';
+import { hierarquizarOfertas } from '@/lib/vitrine/hierarquia-ofertas';
+import { carregarPopularidade } from '@/server/vitrine-popularidade';
 import { listRankedOffers, getFeaturedOffers, getOfferListingMetrics, type RankedOffersFilter, type OfferWithRelations } from '@/server/queries/affiliate';
 
 function deduplicateAndFilterOffers(
@@ -87,13 +89,14 @@ export async function SalesHighlights() {
     ];
 
     const allOfferIds = rawRows.flatMap((r) => r.rawOffers.map((o) => o.id));
-    const metricsMap = await getOfferListingMetrics(allOfferIds);
+    const [metricsMap, popMap] = await Promise.all([getOfferListingMetrics(allOfferIds), carregarPopularidade()]);
 
     const rows = rawRows
       .map((r) => ({
         title: r.title,
         href: r.href,
-        offers: deduplicateAndFilterOffers(r.rawOffers, metricsMap, 6),
+        // Hierarquia da vitrine (VITRINE_HIERARQUIA): reordena os candidatos da linha antes do corte de 6 (off = ordem de antes).
+        offers: deduplicateAndFilterOffers(hierarquizarOfertas(r.rawOffers, metricsMap, popMap), metricsMap, 6),
       }))
       .filter((r) => r.offers.length > 0);
 

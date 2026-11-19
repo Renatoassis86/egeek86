@@ -3,6 +3,11 @@ import { Badge } from '@/components/ui/badge';
 import { Text } from '@/components/ui/text';
 import { isHighlightEligibleSeller, sellerTier } from '@/lib/affiliate/price-verdict';
 import { listRankedOffers, getOfferListingMetrics } from '@/server/queries/affiliate';
+import { hierarquiaLigada } from '@/lib/vitrine/hierarquia';
+import { hierarquizarOfertas } from '@/lib/vitrine/hierarquia-ofertas';
+import { carregarPopularidade } from '@/server/vitrine-popularidade';
+
+const SLIDES = 9;
 import { WeeklyPromosCarousel, type CarouselSlide } from './weekly-promos-carousel';
 
 /**
@@ -12,15 +17,19 @@ import { WeeklyPromosCarousel, type CarouselSlide } from './weekly-promos-carous
  */
 export async function WeeklyPromosSection() {
   try {
-    let pool = await listRankedOffers({ sortBy: 'price_asc', limit: 9, gameFormat: 'physical' });
+    // Hierarquia da vitrine (VITRINE_HIERARQUIA): le um pool maior (mesma lista em cache) e a hierarquia escolhe os 9; off = os 9 mais baratos como antes.
+    const ligada = hierarquiaLigada();
+    const tam = ligada ? 30 : SLIDES;
+    let pool = await listRankedOffers({ sortBy: 'price_asc', limit: tam, gameFormat: 'physical' });
     if (pool.length === 0) {
-      pool = await listRankedOffers({ sortBy: 'price_asc', limit: 9 });
+      pool = await listRankedOffers({ sortBy: 'price_asc', limit: tam });
     }
     // Destaque não promove vendedor de reputação baixa (F-24).
     pool = pool.filter((o) => isHighlightEligibleSeller(o.seller));
     if (pool.length === 0) return null;
 
-    const metricsMap = await getOfferListingMetrics(pool.map((o) => o.id));
+    const [metricsMap, popMap] = await Promise.all([getOfferListingMetrics(pool.map((o) => o.id)), ligada ? carregarPopularidade() : Promise.resolve(new Map<string, number>())]);
+    if (ligada) pool = hierarquizarOfertas(pool, metricsMap, popMap).slice(0, SLIDES);
     const lowestEverCount = pool.filter((o) => metricsMap.get(o.id)?.isLowestEver && sellerTier(o.seller) !== 'low').length;
 
     const slides: CarouselSlide[] = pool.map((offer) => {

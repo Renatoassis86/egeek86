@@ -24,6 +24,8 @@ import {
 } from '@/server/queries/affiliate';
 import { isHighlightEligibleSeller } from '@/lib/affiliate/price-verdict';
 import { getPublicMetrics } from '@/server/queries/public-metrics';
+import { hierarquizarOfertas } from '@/lib/vitrine/hierarquia-ofertas';
+import { carregarPopularidade } from '@/server/vitrine-popularidade';
 import type { GameFormat, GamePlatformGen, ProductType } from '@/db/schema';
 
 type SP = { [key: string]: string | string[] | undefined };
@@ -189,7 +191,9 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
   });
   const featuredExtra = featuredRaw.filter((o) => !seenMasters.has(o.masterProduct.id));
   const candidates = [...pool, ...featuredExtra];
-  const metricsMap = await getOfferListingMetrics(candidates.map((o) => o.id));
+  const [metricsMap, popMap] = await Promise.all([getOfferListingMetrics(candidates.map((o) => o.id)), carregarPopularidade()]);
+  // Hierarquia da vitrine (VITRINE_HIERARQUIA, R-104): so ORDENA os blocos abaixo (nada some); off = ordem de antes.
+  const hv = (list: OfferWithRelations[]) => hierarquizarOfertas(list, metricsMap, popMap);
 
   const typeOf = (o: OfferWithRelations) => effectiveOfferType(o);
   const ordinary = (o: OfferWithRelations) => !isBundleOffer(o);
@@ -215,13 +219,13 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
       );
     })
     .sort((a, b) => (metricsMap.get(b.id)?.priceDrop?.percent ?? 0) - (metricsMap.get(a.id)?.priceDrop?.percent ?? 0));
-  const today = todayAll.length >= MIN_EDITORIAL ? todayAll.slice(0, MAX_PER_SHELF) : [];
+  const today = todayAll.length >= MIN_EDITORIAL ? hv(todayAll).slice(0, MAX_PER_SHELF) : [];
   take(today);
 
   // 3 (calculada antes por causa da cascata). Menor preço já visto, por aba de tipo.
-  const lowestAll = candidates
+  const lowestAll = hv(candidates
     .filter((o) => editorialOk(o) && metricsMap.get(o.id)?.isLowestEver === true && !used.has(o.masterProduct.id))
-    .sort((a, b) => (metricsMap.get(a.id)?.verdict.deltaPercent ?? 0) - (metricsMap.get(b.id)?.verdict.deltaPercent ?? 0));
+    .sort((a, b) => (metricsMap.get(a.id)?.verdict.deltaPercent ?? 0) - (metricsMap.get(b.id)?.verdict.deltaPercent ?? 0)));
   const lowestByType = (t: ProductType) => lowestAll.filter((o) => typeOf(o) === t);
   const lowestTabs = types.filter((t) => lowestByType(t).length >= MIN_EDITORIAL);
   const activeLowestTab = lowestTab && lowestTabs.includes(lowestTab) ? lowestTab : lowestTabs[0];
@@ -229,7 +233,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
   take(lowest);
 
   // 2. Destaques da semana: maiores quedas contra a média única (todas as lojas). Sem dado de venda: nome honesto.
-  const dropsAll = candidates
+  const dropsAll = hv(candidates
     .filter((o) => {
       const m = metricsMap.get(o.id);
       const pct = m?.verdict.deltaPercent;
@@ -242,7 +246,7 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
         pct >= -MAX_PLAUSIBLE_DROP_PERCENT
       );
     })
-    .sort((a, b) => (metricsMap.get(a.id)?.verdict.deltaPercent ?? 0) - (metricsMap.get(b.id)?.verdict.deltaPercent ?? 0));
+    .sort((a, b) => (metricsMap.get(a.id)?.verdict.deltaPercent ?? 0) - (metricsMap.get(b.id)?.verdict.deltaPercent ?? 0)));
   // Teto de 50% por tipo (acessório barato não engole jogo/console)
   const perType: Record<string, number> = {};
   const drops: OfferWithRelations[] = [];
@@ -258,7 +262,11 @@ export default async function OffersPage({ searchParams }: { searchParams: Promi
 
   // ---- Prateleiras de catálogo: tipo efetivo x plataforma/família ----
   const desc = explicitSort && sortBy === 'price_desc';
-  const sorted = (list: OfferWithRelations[]) => [...list].sort((a, b) => rankForShelf(a, b, metricsMap, desc));
+  // Ordem explicita do usuario (preco decrescente) vence a hierarquia.
+  const sorted = (list: OfferWithRelations[]) => {
+    const base = [...list].sort((a, b) => rankForShelf(a, b, metricsMap, desc));
+    return explicitSort ? base : hv(base);
+  };
   const ordinaryPool = pool.filter(ordinary);
 
   interface Shelf {
