@@ -1,0 +1,12 @@
+import { METODOS, histVazio, medir, type ItemSel } from '../src/lib/messaging/diversidade-selecao';
+let falhas = 0;
+const ok = (c: boolean, m: string) => { if (!c) { falhas++; console.error('FALHA', m); } else console.log('ok', m); };
+const it = (id: string, tipo: string, marca: string | null, fam: string, q: number): ItemSel => ({ id, vertical: 'esporte', tipo, marca, fam, q, prefer: false, created: Number(id.replace(/\D/g, '')) });
+const itens = [...Array.from({ length: 20 }, (_, i) => it(`b${i}`, 'bola', 'nike', `bola ${i}`, 300)), it('t1', 'tenis', 'adidas', 'tenis a', 200), it('h1', 'halter', 'acte', 'halter a', 100)];
+const m = Object.fromEntries(METODOS);
+const q = medir(m['M0 qualidade pura'](itens, histVazio(), 6), itens, 6);
+const r = medir(m['M1 rodizio por tipo'](itens, histVazio(), 6), itens, 6);
+ok(q.tipos === 1, 'qualidade pura so pega bola');
+ok(r.tipos === 3 && r.topoTipoPct <= 67, 'rodizio por tipo abre os 3 tipos');
+ok(m['M1 rodizio por tipo'](itens, histVazio(), 100).length === itens.length, 'nunca exclui item (so ordem)');
+process.exit(falhas ? 1 : 0);
