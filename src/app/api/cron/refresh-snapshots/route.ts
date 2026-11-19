@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const force = request.nextUrl.searchParams.get('force') === '1';
   const started = Date.now();
   // 'stats' roda o lote inteiro sozinho: 190 s deixam folga de ~110 s sob o teto de 300 s para o ultimo lote (rodadas de :30 ficavam 'running' para sempre por estourar o teto).
-  const BUDGET_MS = part === 'stats' ? 190_000 : 240_000;
+  const BUDGET_MS = part === 'stats' ? 120_000 : 240_000;
   const out: Record<string, unknown> = { part };
   // Registro de execucao (flag COLLECTOR_RUNS=1; no-op sem a flag; nunca lanca).
   const run = await startCollectorRun(`refresh-snapshots:${part}`, null);
