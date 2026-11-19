@@ -399,7 +399,7 @@ export async function loadSentHistory(
   opts: { includeSimulated?: boolean; excludeId?: string } = {}
 ): Promise<{ records: SentRecord[]; source: DetectionResult['historySource'] }> {
   const off = /^(0|off|false)$/i.test((process.env.HISTORY_CACHE ?? '').trim());
-  if (off || opts.includeSimulated || opts.excludeId || !(await groupMessagesV2Ready())) return loadSentHistoryFull(channel, now, opts);
+  if (off || opts.includeSimulated || !(await groupMessagesV2Ready())) return loadSentHistoryFull(channel, now, opts);
   const key = channel;
   const nowMs = now.getTime();
   const windowStart = nowMs - HISTORICO_ENVIOS_DIAS * 86_400_000;
@@ -418,6 +418,7 @@ export async function loadSentHistory(
   }
   const records: SentRecord[] = [];
   for (const [id, recs] of next.byId) {
+    if (opts.excludeId && id === opts.excludeId) continue; // a própria mensagem em envio não entra no histórico dela (mesmo efeito do `id <> excludeId` da leitura completa)
     const kept = recs.filter((r) => r.sentAt.getTime() >= windowStart);
     if (!kept.length) { next.byId.delete(id); continue; }
     for (const r of kept) records.push(r);
