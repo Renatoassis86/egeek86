@@ -46,15 +46,15 @@
     },
     {
       "path": "/api/cron/collect-vertical?v=eletroeletronicos",
-      "schedule": "6-59/15 * * * *"
+      "schedule": "6,36 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=livros",
-      "schedule": "11-59/15 * * * *"
+      "schedule": "11,41 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=eletrodomesticos",
-      "schedule": "3-59/15 * * * *"
+      "schedule": "3,33 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=esporte",
@@ -62,7 +62,7 @@
     },
     {
       "path": "/api/cron/collect-vertical?v=impressao3d",
-      "schedule": "13-59/15 * * * *"
+      "schedule": "13,43 * * * *"
     },
     {
       "path": "/api/cron/collect-vertical?v=beleza",
