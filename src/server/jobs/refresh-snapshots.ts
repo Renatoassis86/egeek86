@@ -156,13 +156,19 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
   const novaCotacao = rollupActive
     ? sql`(mod(abs(hashtext(mp.id::text)), 24) = extract(hour from now())::int)`
     : incremental
-    ? sql`(ps.computed_at < now() - (${STATS_INCREMENTAL_MAX_AGE_H} * interval '1 hour')
-           OR EXISTS (SELECT 1 FROM affiliate_offers o INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
-                      WHERE o.master_product_id = mp.id AND s.collected_at > ps.computed_at))`
+    ? sql`(ps.computed_at < now() - (${STATS_INCREMENTAL_MAX_AGE_H} * interval '1 hour') OR COALESCE(rc.last_at > ps.computed_at, false))`
     : sql`TRUE`;
+  // UMA leitura das cotações das últimas 25 h (índice de data) em vez de um EXISTS por produto (estourava 30 s com o banco carregado).
+  const recentCte = incremental && !rollupActive
+    ? sql`WITH recent AS (SELECT o.master_product_id AS mp, max(s.collected_at) AS last_at FROM affiliate_price_snapshots s INNER JOIN affiliate_offers o ON o.id = s.offer_id
+                          WHERE s.collected_at > now() - interval '25 hours' GROUP BY 1)`
+    : sql``;
+  const recentJoin = incremental && !rollupActive ? sql`LEFT JOIN recent rc ON rc.mp = mp.id` : sql``;
   const allRows = await db.execute<{ id: string; recalc: boolean }>(sql`
+    ${recentCte}
     SELECT mp.id, (ps.computed_at IS NULL OR ${novaCotacao}) AS recalc FROM master_products mp
     LEFT JOIN product_price_stats ps ON ps.master_product_id = mp.id
+    ${recentJoin}
     WHERE ${verticalSql('mp', GAMES)} AND NOT (mp.attributes ? 'mergedInto')
       AND (ps.computed_at IS NULL OR ps.computed_at < now() - (${minAgeSec} * interval '1 second'))
     ORDER BY ps.computed_at ASC NULLS FIRST, mp.id
