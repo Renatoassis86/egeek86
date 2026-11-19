@@ -61,6 +61,9 @@ export async function persistStatsChunk(ids: string[]): Promise<void> {
   `);
 }
 
+/** Idade máxima do cálculo de estatística no modo incremental (horas). */
+export const STATS_INCREMENTAL_MAX_AGE_H = 24;
+
 export interface StatsRefreshSummary {
   candidates: number;
   refreshed: number;
@@ -77,11 +80,20 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
   const minAgeSec = Math.round((opts.minAgeMs ?? 10 * 60_000) / 1000);
   const chunkSize = opts.chunkSize ?? 120;
   const concurrency = opts.concurrency ?? 2;
+  // Incremental (alivio de I/O, 2026-11-19): só recalcula o produto com cotação NOVA depois do último cálculo, ou sem
+  // cálculo, ou com cálculo mais velho que STATS_INCREMENTAL_MAX_AGE_H (rede de segurança: janelas de 90/365 dias, flags
+  // de vendedor/identidade). Nada é apagado; `PRICE_STATS_INCREMENTAL=off` volta a recalcular todos os velhos.
+  const incremental = !/^(0|off|false)$/i.test((process.env.PRICE_STATS_INCREMENTAL ?? '').trim());
+  const novaCotacao = incremental
+    ? sql`(ps.computed_at < now() - (${STATS_INCREMENTAL_MAX_AGE_H} * interval '1 hour')
+           OR EXISTS (SELECT 1 FROM affiliate_offers o INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
+                      WHERE o.master_product_id = mp.id AND s.collected_at > ps.computed_at))`
+    : sql`TRUE`;
   const rows = await db.execute<{ id: string }>(sql`
     SELECT mp.id FROM master_products mp
     LEFT JOIN product_price_stats ps ON ps.master_product_id = mp.id
     WHERE ${verticalSql('mp', GAMES)} AND NOT (mp.attributes ? 'mergedInto')
-      AND (ps.computed_at IS NULL OR ps.computed_at < now() - (${minAgeSec} * interval '1 second'))
+      AND (ps.computed_at IS NULL OR (ps.computed_at < now() - (${minAgeSec} * interval '1 second') AND ${novaCotacao}))
     ORDER BY ps.computed_at ASC NULLS FIRST, mp.id
   `);
   const ids = rows.map((r) => r.id);
