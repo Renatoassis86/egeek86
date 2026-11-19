@@ -89,13 +89,21 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
            OR EXISTS (SELECT 1 FROM affiliate_offers o INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
                       WHERE o.master_product_id = mp.id AND s.collected_at > ps.computed_at))`
     : sql`TRUE`;
-  const rows = await db.execute<{ id: string }>(sql`
-    SELECT mp.id FROM master_products mp
+  const allRows = await db.execute<{ id: string; recalc: boolean }>(sql`
+    SELECT mp.id, (ps.computed_at IS NULL OR ${novaCotacao}) AS recalc FROM master_products mp
     LEFT JOIN product_price_stats ps ON ps.master_product_id = mp.id
     WHERE ${verticalSql('mp', GAMES)} AND NOT (mp.attributes ? 'mergedInto')
-      AND (ps.computed_at IS NULL OR (ps.computed_at < now() - (${minAgeSec} * interval '1 second') AND ${novaCotacao}))
+      AND (ps.computed_at IS NULL OR ps.computed_at < now() - (${minAgeSec} * interval '1 second'))
     ORDER BY ps.computed_at ASC NULLS FIRST, mp.id
   `);
+  // Sem cotação nova: o resultado seria idêntico, então só "renova o carimbo" (UPDATE barato). Sem isso o produto envelhece além de
+  // STATS_PERSIST_MAX_AGE_MS e `statsSnapshotReady` (>= 80 % frescas) fica falso: as telas voltam a varrer as cotações brutas.
+  const touchIds = allRows.filter((r) => !r.recalc).map((r) => r.id);
+  for (let i = 0; i < touchIds.length; i += 2000) {
+    const part = touchIds.slice(i, i + 2000);
+    await db.execute(sql`UPDATE product_price_stats SET computed_at = now() WHERE master_product_id IN (${sql.join(part.map((x) => sql`${x}::uuid`), sql`, `)})`).catch((e) => console.error('[stats-touch]', e instanceof Error ? e.message.slice(0, 120) : e));
+  }
+  const rows = allRows.filter((r) => r.recalc);
   const ids = rows.map((r) => r.id);
   const chunks: string[][] = [];
   for (let i = 0; i < ids.length; i += chunkSize) chunks.push(ids.slice(i, i + chunkSize));
