@@ -140,6 +140,54 @@ export function weakSellerSql(alias: string): SQL {
 }
 
 /**
+ * "Redes vivas" em memória (alívio de I/O, 2026-11-19). A CTE `live_networks` varre as ofertas da vertical em TODA consulta
+ * pública (23 pontos de uso; ~28 mil execuções de 2,6 a 4,4 s em 3 dias) para devolver 2 ou 3 ids de rede que quase nunca mudam
+ * (a janela é OFFER_FRESHNESS_DAYS dias). O conjunto fica 10 min na memória do processo e entra na CTE como lista literal
+ * (mesmas linhas, mesmo nome `live_networks`, nenhuma regra alterada). Sem leitura pronta (partida a frio, falha, TTL vencido
+ * há mais de 1 h) a CTE original roda como antes. `LIVE_NETWORK_CACHE=off` desliga.
+ */
+const LIVE_NET_FRESH_MS = 10 * 60_000;
+const LIVE_NET_MAX_STALE_MS = 60 * 60_000;
+const liveNetCache = new Map<string, { ids: string[]; at: number }>();
+const liveNetInflight = new Map<string, Promise<void>>();
+
+function liveNetworkCacheOn(): boolean {
+  return !/^(0|off|false)$/i.test((process.env.LIVE_NETWORK_CACHE ?? '').trim());
+}
+
+/** Lê o conjunto de redes vivas da vertical (a mesma consulta da CTE) e guarda em memória. Nunca lança. */
+export async function primeLiveNetworks(vertical: Vertical): Promise<string[] | null> {
+  const days = sql.raw(String(Math.trunc(OFFER_FRESHNESS_DAYS)));
+  try {
+    const rows = await db.execute<{ network_id: string }>(sql`
+      SELECT DISTINCT lo.network_id::text AS network_id
+      FROM affiliate_offers lo
+      WHERE ${verticalSql('lo', vertical)}
+        AND lo.created_at < now() - interval '${days} days'
+        AND lo.last_price_change_at >= now() - interval '${days} days'
+        AND lo.network_id IS NOT NULL
+    `);
+    const ids = rows.map((r) => String(r.network_id)).sort();
+    liveNetCache.set(vertical, { ids, at: Date.now() });
+    return ids;
+  } catch {
+    return null;
+  }
+}
+
+/** Lista pronta (e não vencida) das redes vivas, ou null. Quando falta ou está velha, dispara a releitura por trás. */
+function liveNetworksFromCache(vertical: Vertical): string[] | null {
+  if (!liveNetworkCacheOn()) return null;
+  const hit = liveNetCache.get(vertical);
+  const age = hit ? Date.now() - hit.at : Infinity;
+  if (age >= LIVE_NET_FRESH_MS && !liveNetInflight.has(vertical)) {
+    const p = primeLiveNetworks(vertical).then(() => undefined).finally(() => liveNetInflight.delete(vertical));
+    liveNetInflight.set(vertical, p);
+  }
+  return hit && age < LIVE_NET_MAX_STALE_MS ? hit.ids : null;
+}
+
+/**
  * Definições de CTE para usar em `WITH ${publicOffersCtes('games')} ...`. Expõe `public_offers(id, master_product_id, current_price_cents, avg_excluded)`; quem calcula média/mediana filtra `NOT avg_excluded`.
  * `vertical` é OBRIGATÓRIO (ADR 0008, allow-list): o predicado `vertical = '<v>'` fica DENTRO de `live_networks` e
  * `fresh_offers` (ponto único); `product_median` e `public_offers` derivam de `fresh_offers` e herdam o filtro.
@@ -147,16 +195,23 @@ export function weakSellerSql(alias: string): SQL {
  */
 export function publicOffersCtes(vertical: Vertical): SQL {
   const days = sql.raw(String(Math.trunc(OFFER_FRESHNESS_DAYS)));
-  const floor = sql.raw(String(PLAUSIBILITY_FLOOR_PERCENT / 100));
-  const minOffers = sql.raw(String(Math.trunc(PLAUSIBILITY_MIN_OFFERS)));
-  return sql`
-    live_networks AS (
+  const cachedNets = liveNetworksFromCache(vertical);
+  const liveNetworksCte =
+    cachedNets === null
+      ? sql`live_networks AS (
       SELECT DISTINCT lo.network_id
       FROM affiliate_offers lo
       WHERE ${verticalSql('lo', vertical)}
         AND lo.created_at < now() - interval '${days} days'
         AND lo.last_price_change_at >= now() - interval '${days} days'
-    ),
+    )`
+      : cachedNets.length === 0
+        ? sql`live_networks AS (SELECT NULL::uuid AS network_id WHERE false)`
+        : sql`live_networks AS (SELECT unnest(ARRAY[${sql.join(cachedNets.map((id) => sql`${id}::uuid`), sql`, `)}]) AS network_id)`;
+  const floor = sql.raw(String(PLAUSIBILITY_FLOOR_PERCENT / 100));
+  const minOffers = sql.raw(String(Math.trunc(PLAUSIBILITY_MIN_OFFERS)));
+  return sql`
+    ${liveNetworksCte},
     fresh_offers AS (
       SELECT fo.id, fo.master_product_id, fo.current_price_cents, ${avgExcludedFlagSql('fo')} AS avg_excluded
       FROM affiliate_offers fo
