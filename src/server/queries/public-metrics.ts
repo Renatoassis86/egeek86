@@ -43,11 +43,39 @@ export interface PublicMetrics {
  * em "mil", então vive em cache próprio: fresco 15 min, recalculado por trás
  * (SWR), igual em TODAS as telas porque só existe esta função.
  */
-export const getQuoteCount = createPersistedQuery(
-  async (): Promise<number> => {
+const QUOTE_COUNT_SQL_FILTER = sql`s.price_cents > 0 AND s.offer_id IN (SELECT xo.id FROM affiliate_offers xo WHERE ${verticalSql('xo', GAMES)})`;
+
+/**
+ * Base exata do total de cotações (varre ~3 M de linhas: ~99 GB lidos em 3 dias quando refeita a cada 10 min).
+ * Alívio de I/O (2026-11-19): a base é refeita 1x por dia e guarda o instante da contagem; o total do dia soma só as
+ * cotações NOVAS (collected_at > instante), que o índice BRIN/btree de data lê barato. `QUOTE_COUNT_INCREMENTAL=off`
+ * volta à contagem completa a cada ciclo. O número é exibido arredondado em "mil".
+ */
+const getQuoteBase = createPersistedQuery(
+  async (): Promise<{ count: number; asOf: string }> => {
+    const asOf = new Date().toISOString();
     const rows = await db.execute<{ quotes: string }>(sql`
       SELECT COUNT(*)::bigint AS quotes FROM affiliate_price_snapshots s
-      WHERE s.price_cents > 0 AND s.offer_id IN (SELECT xo.id FROM affiliate_offers xo WHERE ${verticalSql('xo', GAMES)})
+      WHERE ${QUOTE_COUNT_SQL_FILTER} AND s.collected_at <= ${asOf}::timestamptz
+    `);
+    return { count: Number(rows[0]?.quotes ?? 0), asOf };
+  },
+  ['public-quote-base-v1'],
+  { revalidate: 24 * 3600, maxStaleSeconds: 7 * 24 * 3600, coldTimeoutSeconds: 8, persist: { maxAgeSeconds: 24 * 3600, maxStaleSeconds: 7 * 24 * 3600 } }
+);
+
+export const getQuoteCount = createPersistedQuery(
+  async (): Promise<number> => {
+    if (!/^(0|off|false)$/i.test((process.env.QUOTE_COUNT_INCREMENTAL ?? '').trim())) {
+      const base = await getQuoteBase();
+      const rows = await db.execute<{ quotes: string }>(sql`
+        SELECT COUNT(*)::bigint AS quotes FROM affiliate_price_snapshots s
+        WHERE ${QUOTE_COUNT_SQL_FILTER} AND s.collected_at > ${base.asOf}::timestamptz
+      `);
+      return base.count + Number(rows[0]?.quotes ?? 0);
+    }
+    const rows = await db.execute<{ quotes: string }>(sql`
+      SELECT COUNT(*)::bigint AS quotes FROM affiliate_price_snapshots s WHERE ${QUOTE_COUNT_SQL_FILTER}
     `);
     return Number(rows[0]?.quotes ?? 0);
   },

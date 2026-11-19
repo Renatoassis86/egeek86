@@ -1,6 +1,7 @@
 /**
  * Indices que cortam leitura de disco (analise de 2026-11-18: pg_stat_statements). SO ADICIONAM (reversivel com DROP INDEX), CONCURRENTLY (nao trava escrita).
  *  1) collector_runs: `SELECT max(COALESCE(finished_at, started_at)) ... WHERE job = $1 AND status = $2` lia 8 MB por chamada (65 GB em 3 dias).
+ *  3) affiliate_price_snapshots (collected_at): contagem/leitura incremental de cotacoes novas (o BRIN sozinho levou ~14 s para 1 h de cotacoes).
  *  2) group_messages: historico de envios (`loadSentHistory`, 7 dias por COALESCE(sent_at, created_at)) lia 11,8 MB por chamada (143 GB em 3 dias).
  * npx tsx --env-file=.env.local scripts/criar-indices-io.ts [--apply]    (rollback: DROP INDEX CONCURRENTLY IF EXISTS <nome>)
  */
@@ -10,6 +11,7 @@ const APPLY = process.argv.includes('--apply');
 const INDICES: Array<{ nome: string; sql: string }> = [
   { nome: 'collector_runs_job_status_fim_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS collector_runs_job_status_fim_idx ON collector_runs (job, status, (COALESCE(finished_at, started_at)) DESC)` },
   { nome: 'group_messages_hist_envio_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS group_messages_hist_envio_idx ON group_messages (channel, (COALESCE(sent_at, created_at)) DESC) WHERE status IN ('enviada', 'enviando', 'simulada')` },
+  { nome: 'affiliate_price_snapshots_collected_btree_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS affiliate_price_snapshots_collected_btree_idx ON affiliate_price_snapshots (collected_at)` },
 ];
 
 (async () => {

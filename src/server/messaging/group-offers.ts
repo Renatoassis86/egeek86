@@ -427,7 +427,17 @@ export async function loadSentHistory(
 }
 
 /** Envios das últimas 24 h por 'loja|tipo' (rodízio: tipos menos enviados abrem cada rodada do pool). Sem tabela = {}. */
+let tipoSendsMemo: { at: number; v: Record<string, number> } | null = null;
+const TIPO_SENDS_MEMO_MS = 60_000;
+/** Memo de 60 s por instância (rodízio de tipo é suave; alívio de I/O 2026-11-19). `HISTORY_CACHE=off` desliga. */
 export async function loadTipoSends24h(): Promise<Record<string, number>> {
+  const memoOn = !/^(0|off|false)$/i.test((process.env.HISTORY_CACHE ?? '').trim());
+  if (memoOn && tipoSendsMemo && Date.now() - tipoSendsMemo.at < TIPO_SENDS_MEMO_MS) return tipoSendsMemo.v;
+  const v = await loadTipoSends24hRaw();
+  tipoSendsMemo = { at: Date.now(), v };
+  return v;
+}
+async function loadTipoSends24hRaw(): Promise<Record<string, number>> {
   if (!(await groupMessagesTableExists())) return {};
   const rows = await db.execute<Row>(sql`
     SELECT m.vertical AS v, m.name AS name FROM group_messages g INNER JOIN master_products m ON m.id = g.master_product_id
