@@ -19,6 +19,7 @@ import {
   type SellerTier,
 } from '@/lib/affiliate/price-verdict';
 import { snapshotNaoIscaSql } from '@/server/pricing/preco-isca-sql';
+import { rollupStatsCtes } from '@/server/pricing/price-rollup';
 
 /**
  * FONTE ÚNICA de estatística de preço por `master_product` (ADR 0001).
@@ -296,7 +297,9 @@ function emptyStats(masterProductId: string): MasterProductPriceStats {
 export async function getMasterProductPriceStatsBatchRaw(
   masterProductIds: string[],
   /** Recebe as linhas cruas de `product_stats` (colunas canônicas) da MESMA consulta; usado pelo cron para persistir sem recalcular. */
-  onAggRows?: (rows: Row[]) => void
+  onAggRows?: (rows: Row[]) => void,
+  /** `rollup: true` = agregados lidos do resumo incremental (`product_price_rollup`, migration 0068; mesma fórmula, provada em scripts/test-rollup-equivalencia.ts). O chamador garante resumo construído e em dia. */
+  opts: { rollup?: boolean } = {}
 ): Promise<Map<string, MasterProductPriceStats>> {
   const result = new Map<string, MasterProductPriceStats>();
   const ids = [...new Set(masterProductIds.filter(Boolean))];
@@ -310,9 +313,10 @@ export async function getMasterProductPriceStatsBatchRaw(
   // UMA varredura dos snapshots do lote (`statsAggCtes`): piso estrito, teto só
   // nos agregados, mínimo sem vendedor fraco. O mínimo por janela nunca depende
   // da média nem do teto; empate => primeira ocorrência (menor collected_at).
-  const [aggRows, currentRows, nearRows] = await Promise.all([
-    db.execute<Row>(sql`
-      WITH ${statsAggCtes(sql`o.master_product_id IN (${list})`, GAMES)},
+  const scopeSql = sql`o.master_product_id IN (${list})`;
+  const aggHead = opts.rollup
+    ? rollupStatsCtes(scopeSql, GAMES)
+    : sql`${statsAggCtes(scopeSql, GAMES)},
       low_all AS (
         SELECT DISTINCT ON (q.master_product_id) q.master_product_id, q.offer_id, q.price_cents, q.collected_at
         FROM q INNER JOIN product_stats ps ON ps.master_product_id = q.master_product_id AND q.price_cents = ps.min_all
@@ -331,6 +335,10 @@ export async function getMasterProductPriceStatsBatchRaw(
         WHERE NOT q.weak_seller AND q.collected_at >= now() - interval '90 days'
         ORDER BY q.master_product_id, q.collected_at ASC
       )
+    `;
+  const [aggRows, currentRows, nearRows] = await Promise.all([
+    db.execute<Row>(sql`
+      WITH ${aggHead}
       SELECT ps.*,
              la.offer_id AS all_offer_id, la.price_cents::bigint AS all_price, la.collected_at AS all_at,
              ly.offer_id AS y_offer_id, ly.price_cents::bigint AS y_price, ly.collected_at AS y_at,

@@ -19,6 +19,15 @@ import { LOJAS_PLUS } from '@/lib/catalog/plus';
 import { todasAsChaves } from '@/lib/vitrines';
 import { atualizarTodasVitrines } from '@/server/vitrines';
 import { sincronizarVendedorFracoForaDaMedia } from '@/server/pricing/weak-seller-avg';
+import {
+  buildRollupOffers,
+  ingestRollupWindow,
+  offersToRebuild,
+  offersWithoutRollup,
+  productsWithUnbuiltOffers,
+  rollupFlagOn,
+  rollupUsable,
+} from '@/server/pricing/price-rollup';
 
 /**
  * Recalcula o pré-cálculo persistido da vitrine (Fase 2; ata 2026-11-03-fase2-precalculo.md).
@@ -39,11 +48,25 @@ function statsValues(id: string, r: Row | undefined, payload: unknown) {
     ${num(r?.n_all)}, ${num(r?.raw_min)}, ${num(r?.floor_cents)}, ${num(r?.pf_median)}, ${JSON.stringify(payload)}::jsonb, now())`;
 }
 
-export async function persistStatsChunk(ids: string[]): Promise<void> {
+export async function persistStatsChunk(ids: string[], opts: { rollup?: boolean } = {}): Promise<void> {
   let agg: Row[] = [];
-  const stats = await getMasterProductPriceStatsBatchRaw(ids, (rows) => {
-    agg = rows;
-  });
+  let stats: Awaited<ReturnType<typeof getMasterProductPriceStatsBatchRaw>> | null = null;
+  if (opts.rollup) {
+    // Resumo incremental (migration 0068): constrói o que faltar das ofertas do lote e calcula sem varrer as cotações. Qualquer falha cai no cálculo completo.
+    try {
+      const unbuilt = await productsWithUnbuiltOffers(ids);
+      if (unbuilt.size) await buildRollupOffers(await offersWithoutRollup({ productIds: [...unbuilt] }));
+      stats = await getMasterProductPriceStatsBatchRaw(ids, (rows) => { agg = rows; }, { rollup: true });
+    } catch (e) {
+      console.error('[stats-rollup] falhou, usando o calculo completo:', e instanceof Error ? e.message.slice(0, 160) : e);
+      stats = null;
+    }
+  }
+  if (!stats) {
+    stats = await getMasterProductPriceStatsBatchRaw(ids, (rows) => {
+      agg = rows;
+    });
+  }
   const byId = new Map(agg.map((r) => [String(r.master_product_id), r]));
   const values = ids.map((id) => statsValues(id, byId.get(id), stats.get(id)));
   await db.execute(sql`
@@ -70,6 +93,27 @@ export interface StatsRefreshSummary {
   failedChunks: number;
   elapsedMs: number;
   budgetExhausted: boolean;
+  /** true = recalculou pelo resumo incremental (PRICE_STATS_ROLLUP); `ingestedOffers` = ofertas com cotação nova lida nesta rodada. */
+  rollup?: boolean;
+  ingestedOffers?: number;
+}
+
+/** Ofertas reconstruídas por rodada (marca de isca mudou / rede de segurança de 72 h). */
+const ROLLUP_REBUILD_PER_RUN = 400;
+/** Ofertas novas (sem resumo) construídas por rodada; as do lote que faltarem são construídas no próprio lote. */
+const ROLLUP_BUILD_NEW_PER_RUN = 400;
+
+/** Produtos Games (não fundidos) das ofertas dadas. */
+async function productsOfOffers(offerIds: string[]): Promise<string[]> {
+  const out = new Set<string>();
+  for (let i = 0; i < offerIds.length; i += 1000) {
+    const part = offerIds.slice(i, i + 1000);
+    const rows = await db.execute<{ id: string }>(sql`
+      SELECT DISTINCT mp.id FROM affiliate_offers o INNER JOIN master_products mp ON mp.id = o.master_product_id
+      WHERE o.id IN (${sql.join(part.map((x) => sql`${x}::uuid`), sql`, `)}) AND ${verticalSql('mp', GAMES)} AND NOT (mp.attributes ? 'mergedInto')`);
+    for (const r of rows) out.add(String(r.id));
+  }
+  return [...out];
 }
 
 /** Produtos com estatística ausente ou mais velha que `minAgeMs`, os mais antigos primeiro, até acabar o orçamento de tempo. */
@@ -84,7 +128,34 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
   // cálculo, ou com cálculo mais velho que STATS_INCREMENTAL_MAX_AGE_H (rede de segurança: janelas de 90/365 dias, flags
   // de vendedor/identidade). Nada é apagado; `PRICE_STATS_INCREMENTAL=off` volta a recalcular todos os velhos.
   const incremental = !/^(0|off|false)$/i.test((process.env.PRICE_STATS_INCREMENTAL ?? '').trim());
-  const novaCotacao = incremental
+  // Resumo incremental exato (`PRICE_STATS_ROLLUP`, migration 0068): lê só as cotações NOVAS (id > marca d'água), reconstrói o que a isca/rede de segurança
+  // pedir e recalcula pelo resumo. Candidatos = produtos com cotação nova lida agora + sem cálculo + 1/24 dos produtos por hora (janelas de 90/365 dias).
+  // Falha em qualquer passo => cálculo completo como antes.
+  let rollupActive = false;
+  let ingestedOffers = 0;
+  const forced = new Set<string>();
+  if (incremental && rollupFlagOn()) {
+    try {
+      if (await rollupUsable()) {
+        const ing = await ingestRollupWindow();
+        if (ing.ok) {
+          const rebuilt = await offersToRebuild(ROLLUP_REBUILD_PER_RUN);
+          if (rebuilt.length) await buildRollupOffers(rebuilt);
+          const fresh = await offersWithoutRollup({ limit: ROLLUP_BUILD_NEW_PER_RUN });
+          if (fresh.length) await buildRollupOffers(fresh);
+          ingestedOffers = ing.touchedOffers.length;
+          for (const id of await productsOfOffers([...ing.touchedOffers, ...rebuilt, ...fresh])) forced.add(id);
+          rollupActive = true;
+        } else console.error('[stats-rollup] janela nao lida:', ing.reason);
+      }
+    } catch (e) {
+      console.error('[stats-rollup] preparo falhou, usando o calculo anterior:', e instanceof Error ? e.message.slice(0, 160) : e);
+      rollupActive = false;
+    }
+  }
+  const novaCotacao = rollupActive
+    ? sql`(mod(abs(hashtext(mp.id::text)), 24) = extract(hour from now())::int)`
+    : incremental
     ? sql`(ps.computed_at < now() - (${STATS_INCREMENTAL_MAX_AGE_H} * interval '1 hour')
            OR EXISTS (SELECT 1 FROM affiliate_offers o INNER JOIN affiliate_price_snapshots s ON s.offer_id = o.id
                       WHERE o.master_product_id = mp.id AND s.collected_at > ps.computed_at))`
@@ -98,13 +169,12 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
   `);
   // Sem cotação nova: o resultado seria idêntico, então só "renova o carimbo" (UPDATE barato). Sem isso o produto envelhece além de
   // STATS_PERSIST_MAX_AGE_MS e `statsSnapshotReady` (>= 80 % frescas) fica falso: as telas voltam a varrer as cotações brutas.
-  const touchIds = allRows.filter((r) => !r.recalc).map((r) => r.id);
+  const touchIds = allRows.filter((r) => !r.recalc && !forced.has(r.id)).map((r) => r.id);
   for (let i = 0; i < touchIds.length; i += 2000) {
     const part = touchIds.slice(i, i + 2000);
     await db.execute(sql`UPDATE product_price_stats SET computed_at = now() WHERE master_product_id IN (${sql.join(part.map((x) => sql`${x}::uuid`), sql`, `)})`).catch((e) => console.error('[stats-touch]', e instanceof Error ? e.message.slice(0, 120) : e));
   }
-  const rows = allRows.filter((r) => r.recalc);
-  const ids = rows.map((r) => r.id);
+  const ids = [...new Set([...allRows.filter((r) => r.recalc).map((r) => r.id), ...forced])];
   const chunks: string[][] = [];
   for (let i = 0; i < ids.length; i += chunkSize) chunks.push(ids.slice(i, i + chunkSize));
   let next = 0;
@@ -119,7 +189,7 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
       }
       const chunk = chunks[next++];
       try {
-        await runInBgPool(() => persistStatsChunk(chunk));
+        await runInBgPool(() => persistStatsChunk(chunk, { rollup: rollupActive }));
         refreshed += chunk.length;
       } catch (err) {
         failedChunks++;
@@ -128,7 +198,7 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
-  return { candidates: ids.length, refreshed, failedChunks, elapsedMs: Date.now() - started, budgetExhausted };
+  return { candidates: ids.length, refreshed, failedChunks, elapsedMs: Date.now() - started, budgetExhausted, rollup: rollupActive, ingestedOffers };
 }
 
 // ---------------------------------------------------------------------------------------------
