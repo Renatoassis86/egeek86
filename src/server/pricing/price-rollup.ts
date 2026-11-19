@@ -22,7 +22,7 @@ import { gatilhoIscaLigado } from '@/lib/pricing/preco-isca';
  *    isca muda (`marcado_em/liberado_em > built_at`) e, por rede de seguranca, a cada REBUILD_AFTER_HOURS (as mais antigas, em lotes).
  *  - Filtro de isca ligado/desligado diferente do que fez o resumo => resumo inutilizavel (cai no calculo completo).
  *  - Cotacao nunca e apagada; as 3 tabelas sao derivadas e podem ser reconstruidas a qualquer hora.
- * Flag: `PRICE_STATS_ROLLUP=on` liga (padrao desligado ate a equivalencia ser provada); sem ela vale o calculo completo (statsAggCtes).
+ * Flag: LIGADO por padrao desde 2026-11-19 (equivalencia provada, scripts/test-rollup-equivalencia-persistido.ts); `PRICE_STATS_ROLLUP=off` desliga e volta ao calculo completo (statsAggCtes).
  */
 
 /** Folga em ids de cotação (cotação ainda em transação não é perdida). `PRICE_ROLLUP_LAG_IDS` só para teste. */
@@ -31,8 +31,8 @@ export const ROLLUP_REBUILD_AFTER_HOURS = 72;
 const LOCK_KEY = 86068;
 
 export function rollupFlagOn(): boolean {
-  // PADRAO DESLIGADO ate a prova de equivalencia (scripts/test-rollup-equivalencia.ts) passar com >= 200 produtos.
-  return /^(1|on|true)$/i.test((process.env.PRICE_STATS_ROLLUP ?? '').trim());
+  // PADRAO LIGADO (2026-11-19): 296 produtos iguais ao calculo completo persistido, 0 diferencas (docs/evidencias/relatorio-otimizacao-2026-11-19.md). `off` desliga.
+  return !/^(0|off|false)$/i.test((process.env.PRICE_STATS_ROLLUP ?? '').trim());
 }
 
 type Row = Record<string, unknown>;

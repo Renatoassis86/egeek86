@@ -128,7 +128,7 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
   // cálculo, ou com cálculo mais velho que STATS_INCREMENTAL_MAX_AGE_H (rede de segurança: janelas de 90/365 dias, flags
   // de vendedor/identidade). Nada é apagado; `PRICE_STATS_INCREMENTAL=off` volta a recalcular todos os velhos.
   const incremental = !/^(0|off|false)$/i.test((process.env.PRICE_STATS_INCREMENTAL ?? '').trim());
-  // Resumo incremental exato (`PRICE_STATS_ROLLUP`, migration 0068): lê só as cotações NOVAS (id > marca d'água), reconstrói o que a isca/rede de segurança
+  // Resumo incremental exato (`PRICE_STATS_ROLLUP`, ligado por padrao, `off` desliga; migration 0068): lê só as cotações NOVAS (id > marca d'água), reconstrói o que a isca/rede de segurança
   // pedir e recalcula pelo resumo. Candidatos = produtos com cotação nova lida agora + sem cálculo + 1/24 dos produtos por hora (janelas de 90/365 dias).
   // Falha em qualquer passo => cálculo completo como antes.
   let rollupActive = false;
