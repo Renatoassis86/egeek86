@@ -12,6 +12,7 @@ const INDICES: Array<{ nome: string; sql: string }> = [
   { nome: 'collector_runs_job_status_fim_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS collector_runs_job_status_fim_idx ON collector_runs (job, status, (COALESCE(finished_at, started_at)) DESC)` },
   { nome: 'group_messages_hist_envio_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS group_messages_hist_envio_idx ON group_messages (channel, (COALESCE(sent_at, created_at)) DESC) WHERE status IN ('enviada', 'enviando', 'simulada')` },
   { nome: 'affiliate_price_snapshots_collected_btree_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS affiliate_price_snapshots_collected_btree_idx ON affiliate_price_snapshots (collected_at)` },
+  { nome: 'group_messages_tg_enviada_sent_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS group_messages_tg_enviada_sent_idx ON group_messages (sent_at DESC) WHERE channel = 'tg' AND status = 'enviada'` },
 ];
 
 (async () => {
