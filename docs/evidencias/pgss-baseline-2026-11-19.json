@@ -1,0 +1,107 @@
+[
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH \n    \n    q_all AS MATERIALIZED (\n      SELECT o.ma ter_product_id, o.id AS offer_id,",
+  "calls": "4781",
+  "ms": "39592347",
+  "lidos": "42286136"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "SELECT ma ter_product_id, price_cent _detected, COALESCE( ent_at, created_at) AS at, trigg",
+  "calls": "15969",
+  "ms": "29436106",
+  "lidos": "21270829"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH \n    \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affiliate",
+  "calls": "7052",
+  "ms": "28012946",
+  "lidos": "119414"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH \n    \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affiliate",
+  "calls": "6937",
+  "ms": "18129499",
+  "lidos": "8672"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affiliate_offe",
+  "calls": "5049",
+  "ms": "15601982",
+  "lidos": "46409"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affiliate_offe",
+  "calls": "5049",
+  "ms": "15197235",
+  "lidos": "203785"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": " elect \"price_cent \", \"collected_at\" from \"affiliate_price_ nap hot \" where \"affiliate_pri",
+  "calls": "2739774",
+  "ms": "14822742",
+  "lidos": "4214815"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affiliate_offe",
+  "calls": "3002",
+  "ms": "13309443",
+  "lidos": "24639"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH r AS MATERIALIZED (\n        SELECT  .offer_id,  .collected_at,  .price_cent ::bigint ",
+  "calls": "2896",
+  "ms": "12922669",
+  "lidos": "314992"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "SELECT DISTINCT ON ( .offer_id)  .offer_id,  .price_cent \n          FROM affiliate_price_ ",
+  "calls": "2916",
+  "ms": "12592842",
+  "lidos": "126283"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "SELECT MAX( .price_cent )::bigint AS max_price\n      FROM affiliate_price_ nap hot   \n    ",
+  "calls": "2893",
+  "ms": "12383108",
+  "lidos": "313055"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "SELECT d.ma ter_product_id AS mid, d.day::text AS day,\n           (n. lug || $803 || n.nam",
+  "calls": "2821",
+  "ms": "11025729",
+  "lidos": "7645612"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "WITH \n    \n    q_all AS MATERIALIZED (\n      SELECT o.ma ter_product_id, o.id AS offer_id,",
+  "calls": "1689",
+  "ms": "10810215",
+  "lidos": "258657"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "SELECT COUNT(*)::bigint AS total\n      FROM affiliate_offer  o\n      WHERE o.ma ter_produc",
+  "calls": "2913",
+  "ms": "9356989",
+  "lidos": "1614"
+ },
+ {
+  "ts": "2026-11-19 15:38:36.058783+00",
+  "q": "SELECT o.id AS offer_id, o.current_price_cent , n.name AS network_name, n.color_hex AS net",
+  "calls": "2890",
+  "ms": "8986244",
+  "lidos": "3011"
+ }
+]

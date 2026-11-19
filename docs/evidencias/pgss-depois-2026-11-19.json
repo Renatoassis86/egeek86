@@ -1,0 +1,227 @@
+[
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "2982003041345531303",
+  "q": "WITH \n    \n    q_all AS MATERIALIZED (\n      SELECT o.ma ter_product_id, o.id AS",
+  "calls": "4807",
+  "ms": "40112067",
+  "lidos": "42444745",
+  "medio": 8345
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "5006185339765373807",
+  "q": "SELECT ma ter_product_id, price_cent _detected, COALESCE( ent_at, created_at) AS",
+  "calls": "15969",
+  "ms": "29436106",
+  "lidos": "21270829",
+  "medio": 1843
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "6284896057951378479",
+  "q": "WITH \n    \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM",
+  "calls": "7053",
+  "ms": "28014079",
+  "lidos": "119418",
+  "medio": 3972
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-494071544337224479",
+  "q": "WITH \n    \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM",
+  "calls": "6937",
+  "ms": "18129499",
+  "lidos": "8672",
+  "medio": 2613
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-7755011818449909552",
+  "q": " elect \"price_cent \", \"collected_at\" from \"affiliate_price_ nap hot \" where \"aff",
+  "calls": "2815358",
+  "ms": "16679359",
+  "lidos": "4332552",
+  "medio": 6
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-1184967256912486668",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affi",
+  "calls": "5051",
+  "ms": "15606644",
+  "lidos": "46409",
+  "medio": 3090
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "6012842999033133940",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affi",
+  "calls": "5051",
+  "ms": "15202568",
+  "lidos": "203902",
+  "medio": 3010
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "1085598507045260676",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affi",
+  "calls": "3004",
+  "ms": "13316957",
+  "lidos": "24639",
+  "medio": 4433
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-2017798228033089226",
+  "q": "WITH r AS MATERIALIZED (\n        SELECT  .offer_id,  .collected_at,  .price_cent",
+  "calls": "2932",
+  "ms": "13082033",
+  "lidos": "319246",
+  "medio": 4462
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-7131123085919551701",
+  "q": "SELECT DISTINCT ON ( .offer_id)  .offer_id,  .price_cent \n          FROM affilia",
+  "calls": "2951",
+  "ms": "12703881",
+  "lidos": "128178",
+  "medio": 4305
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "3794791553994014701",
+  "q": "SELECT MAX( .price_cent )::bigint AS max_price\n      FROM affiliate_price_ nap h",
+  "calls": "2929",
+  "ms": "12528019",
+  "lidos": "316681",
+  "medio": 4277
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "244506928630946462",
+  "q": "WITH \n    \n    q_all AS MATERIALIZED (\n      SELECT o.ma ter_product_id, o.id AS",
+  "calls": "1734",
+  "ms": "11113758",
+  "lidos": "268129",
+  "medio": 6409
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-6235952596072491210",
+  "q": "SELECT d.ma ter_product_id AS mid, d.day::text AS day,\n           (n. lug || $80",
+  "calls": "2821",
+  "ms": "11025729",
+  "lidos": "7645612",
+  "medio": 3908
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "5057778620284215319",
+  "q": "SELECT COUNT(*)::bigint AS total\n      FROM affiliate_offer  o\n      WHERE o.ma ",
+  "calls": "2948",
+  "ms": "9415144",
+  "lidos": "1614",
+  "medio": 3194
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "7478888546876507294",
+  "q": "SELECT o.id AS offer_id, o.current_price_cent , n.name AS network_name, n.color_",
+  "calls": "2925",
+  "ms": "9042400",
+  "lidos": "3011",
+  "medio": 3091
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "6644179797360819720",
+  "q": "update \"affiliate_offer \"  et \"current_price_cent \" = $1 where \"affiliate_offer ",
+  "calls": "2789616",
+  "ms": "8761634",
+  "lidos": "569000",
+  "medio": 3
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-3520906931651829509",
+  "q": "SELECT o.id::text AS id, o.affiliate_url AS link, COALESCE(o.link_item_id, o.ext",
+  "calls": "3836",
+  "ms": "8711935",
+  "lidos": "1590289",
+  "medio": 2271
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-1518103930286223482",
+  "q": "SELECT o.ma ter_product_id, o.id AS offer_id, o. tatu  = $12 AS active, o.networ",
+  "calls": "53948",
+  "ms": "7997049",
+  "lidos": "456757",
+  "medio": 148
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "563752605920106597",
+  "q": "WITH \n    \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM",
+  "calls": "2659",
+  "ms": "7676610",
+  "lidos": "36006",
+  "medio": 2887
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-5282180504150189474",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affi",
+  "calls": "1722",
+  "ms": "7556055",
+  "lidos": "9840",
+  "medio": 4388
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "8135665957860671272",
+  "q": "WITH \n    live_network  AS (\n      SELECT DISTINCT lo.network_id\n      FROM affi",
+  "calls": "1707",
+  "ms": "6356599",
+  "lidos": "5715",
+  "medio": 3724
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "9040812713773091552",
+  "q": "SELECT max(COALESCE(fini hed_at,  tarted_at)) AS at FROM collector_run  WHERE jo",
+  "calls": "11790",
+  "ms": "6271393",
+  "lidos": "8775859",
+  "medio": 532
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "3955114101545180976",
+  "q": "SELECT id::text AS gm_id, ma ter_product_id, price_cent _detected, COALESCE( ent",
+  "calls": "2332",
+  "ms": "6196287",
+  "lidos": "918036",
+  "medio": 2657
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "-8441520661658538540",
+  "q": "UPDATE group_me age  SET  tatu  = $3, claimed_at = $4, updated_at = now(), error",
+  "calls": "3995",
+  "ms": "6036193",
+  "lidos": "1015432",
+  "medio": 1511
+ },
+ {
+  "ts": "2026-11-19 19:33:50.570976+00",
+  "qid": "5816981660158250272",
+  "q": "WITH \n    \n    q_all AS MATERIALIZED (\n      SELECT o.ma ter_product_id, o.id AS",
+  "calls": "187",
+  "ms": "6009612",
+  "lidos": "2735358",
+  "medio": 32137
+ }
+]
