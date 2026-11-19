@@ -13,6 +13,10 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/cron/public-offers-mat",
+      "schedule": "2-59/3 * * * *"
+    },
+    {
       "path": "/api/cron/refresh-snapshots?part=stats",
       "schedule": "19 * * * *"
     },

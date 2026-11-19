@@ -20,6 +20,7 @@
     "test:gate": "tsx scripts/test-gate.ts",
     "test:quarentena-preco": "tsx scripts/test-quarentena-preco-risco.ts",
     "test:preco-isca": "tsx scripts/test-preco-isca.ts",
+    "test:vitrine-hierarquia": "tsx scripts/test-vitrine-hierarquia.ts",
     "test:link-afiliado": "tsx scripts/test-link-afiliado-r70.ts",
     "medir:links-afiliado": "tsx --env-file=.env.local scripts/medir-links-afiliado.ts",
     "test:tipo-preco": "tsx scripts/test-tipo-preco-amazon-124.ts",
@@ -57,7 +58,8 @@
     "test:vitrine-regras": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-vitrine-regras.ts",
     "test:vitrine-plataforma": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-vitrine-plataforma.ts",
     "test:front-regras": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-front-regras.ts",
-    "test:home-sem-orfaos": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-home-sem-orfaos.ts"
+    "test:home-sem-orfaos": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-home-sem-orfaos.ts",
+    "test:public-offers-mat": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-public-offers-mat-equivalencia.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

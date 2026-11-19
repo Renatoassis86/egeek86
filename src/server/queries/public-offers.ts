@@ -66,14 +66,24 @@ export function catalogGateVisibleSql(masterIdCol: string): SQL {
  * a regex roda uma vez por oferta (~dezenas de milhares), não por cotação (~3 M).
  * `offerIdCol` = coluna do id da oferta na consulta.
  */
-export function offerIdentityVisibleSql(offerIdCol: string, options: { activeOnly?: boolean } = {}): SQL {
+export function offerIdentityVisibleSql(offerIdCol: string, options: { activeOnly?: boolean; masters?: string[] } = {}): SQL {
   // activeOnly: quem só olha ofertas ativas (fresh_offers) não precisa varrer as ~8 mil encerradas (~45% menos tempo).
   const scope = options.activeOnly ? sql`xo.status = 'active' AND ` : sql``;
   const c = sql.raw(offerIdCol.replace(/[^a-z0-9_.]/gi, ''));
   // QUARENTENA DE PREÇO ABSURDO (migration 0023, delegação 2026-11-03): `quarantined_at` preenchido tira a
   // oferta e as cotações dela de TODO consumidor desta função (ofertas públicas, estatísticas, histórico).
   // Vale para qualquer status (histórico absurdo de oferta encerrada também), por isso fica fora do `scope`.
-  return sql`${c} NOT IN (SELECT xo.id FROM affiliate_offers xo INNER JOIN master_products xm ON xm.id = xo.master_product_id CROSS JOIN LATERAL (SELECT lower(xo.title) AS lt) xl WHERE (${scope}${offerExcludedTitleSql('xl.lt', 'xm.product_type', 'xm.game_format')}) OR xo.quarantined_at IS NOT NULL)`;
+  // `masters` (só o refresco incremental das ofertas materializadas): restringe a subconsulta aos produtos recalculados; o resultado para
+  // esses produtos é idêntico (a consulta externa só pergunta por ofertas deles), mas o regex deixa de varrer o catálogo inteiro.
+  const only = options.masters?.length ? sql`xo.master_product_id IN (${mastersList(options.masters)}) AND ` : sql``;
+  return sql`${c} NOT IN (SELECT xo.id FROM affiliate_offers xo INNER JOIN master_products xm ON xm.id = xo.master_product_id CROSS JOIN LATERAL (SELECT lower(xo.title) AS lt) xl WHERE ${only}((${scope}${offerExcludedTitleSql('xl.lt', 'xm.product_type', 'xm.game_format')}) OR xo.quarantined_at IS NOT NULL))`;
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function mastersList(ids: string[]): SQL {
+  const ok = ids.filter((i) => UUID_RE.test(i));
+  if (ok.length !== ids.length) throw new Error('master_product_id inválido na lista de recálculo');
+  return sql.join(ok.map((i) => sql`${i}::uuid`), sql`, `);
 }
 
 /**
@@ -188,12 +198,76 @@ function liveNetworksFromCache(vertical: Vertical): string[] | null {
 }
 
 /**
+ * Prontidão da tabela materializada (migration 0069), lida do controle a cada 60 s. Pronta = reconciliação completa da vertical feita E
+ * última rodada incremental há menos de MAT_MAX_AGE_MIN min. Sem isso (tabela ausente, cron parado, partida a frio) a CTE original responde.
+ * `PUBLIC_OFFERS_MAT=off` volta sempre à CTE.
+ */
+const MAT_MAX_AGE_MIN = 15;
+const MAT_CHECK_MS = 60_000;
+let matState: { at: number; ready: Set<string> } | null = null;
+let matInflight: Promise<void> | null = null;
+
+export function publicOffersMatOn(): boolean {
+  return !/^(0|off|false)$/i.test((process.env.PUBLIC_OFFERS_MAT ?? '').trim());
+}
+
+/** Lê o controle e guarda em memória. Nunca lança. Exportada para testes e para o cron. */
+export async function primePublicOffersMat(): Promise<Set<string>> {
+  const ready = new Set<string>();
+  try {
+    const rows = await db.execute<{ key: string; fresh: boolean }>(sql`
+      SELECT key, (ran_at > now() - interval '${sql.raw(String(MAT_MAX_AGE_MIN))} minutes') AS fresh FROM public_offers_mat_meta`);
+    const wmFresh = rows.some((r) => r.key === 'wm' && r.fresh === true);
+    if (wmFresh) for (const r of rows) if (r.key.startsWith('full:')) ready.add(r.key.slice(5));
+  } catch {
+    /* tabela ausente ou banco ocupado: segue na CTE */
+  }
+  matState = { at: Date.now(), ready };
+  return ready;
+}
+
+function matUsable(vertical: Vertical): boolean {
+  if (!publicOffersMatOn()) return false;
+  const age = matState ? Date.now() - matState.at : Infinity;
+  if (age >= MAT_CHECK_MS && !matInflight) {
+    matInflight = primePublicOffersMat().then(() => undefined).finally(() => { matInflight = null; });
+  }
+  // Prontidão vencida há mais de 3 min sem releitura (banco travado) não vale: volta à CTE.
+  return !!matState && age < MAT_CHECK_MS * 3 && matState.ready.has(vertical);
+}
+
+/**
+ * `public_offers` a partir da tabela materializada. A tabela decide o CONJUNTO (entrada incremental, até o intervalo do cron); a saída
+ * é conferida AO VIVO na própria oferta (ativa, com preço, fora de quarentena, mesma vertical e produto) e o preço/marca vêm da oferta:
+ * pausa, falta de estoque, quarentena e mudança de preço valem na hora, sem esperar o cron (R-90).
+ */
+function publicOffersFromMat(vertical: Vertical): SQL {
+  return sql`
+    public_offers AS (
+      SELECT m.id, m.master_product_id, mo.current_price_cents, ${avgExcludedFlagSql('mo')} AS avg_excluded
+      FROM public_offers_mat m
+      INNER JOIN affiliate_offers mo ON mo.id = m.id
+      WHERE m.vertical = ${sql.raw(`'${vertical}'`)}
+        AND mo.vertical = ${sql.raw(`'${vertical}'`)}
+        AND mo.master_product_id = m.master_product_id
+        AND mo.status = 'active'
+        AND mo.current_price_cents > 0
+        AND mo.quarantined_at IS NULL
+    )
+  `;
+}
+
+/**
  * Definições de CTE para usar em `WITH ${publicOffersCtes('games')} ...`. Expõe `public_offers(id, master_product_id, current_price_cents, avg_excluded)`; quem calcula média/mediana filtra `NOT avg_excluded`.
  * `vertical` é OBRIGATÓRIO (ADR 0008, allow-list): o predicado `vertical = '<v>'` fica DENTRO de `live_networks` e
  * `fresh_offers` (ponto único); `product_median` e `public_offers` derivam de `fresh_offers` e herdam o filtro.
  * `live_networks` também filtra: a "rede viva" de um departamento não pode ser provada por coleta de outro.
  */
-export function publicOffersCtes(vertical: Vertical): SQL {
+export function publicOffersCtes(vertical: Vertical, opts: { onlyMasters?: string[]; forceLive?: boolean } = {}): SQL {
+  // OFERTAS PÚBLICAS MATERIALIZADAS (migration 0069): com a tabela pronta e fresca a leitura troca a CTE pesada por `public_offers_mat`
+  // (mantida pelo cron public-offers-mat). Mesmas colunas, mesmo nome `public_offers`. `forceLive` = o próprio refresco calcula pela CTE.
+  if (!opts.forceLive && !opts.onlyMasters && matUsable(vertical)) return publicOffersFromMat(vertical);
+  const onlyM = opts.onlyMasters?.length ? sql`AND fo.master_product_id IN (${mastersList(opts.onlyMasters)})` : sql``;
   const days = sql.raw(String(Math.trunc(OFFER_FRESHNESS_DAYS)));
   const cachedNets = liveNetworksFromCache(vertical);
   const liveNetworksCte =
@@ -217,7 +291,8 @@ export function publicOffersCtes(vertical: Vertical): SQL {
       FROM affiliate_offers fo
       WHERE ${verticalSql('fo', vertical)}
         AND ${catalogGateVisibleSql('fo.master_product_id')}
-        AND ${offerIdentityVisibleSql('fo.id', { activeOnly: true })}
+        AND ${offerIdentityVisibleSql('fo.id', { activeOnly: true, masters: opts.onlyMasters })}
+        ${onlyM}
         AND fo.status = 'active'
         AND fo.current_price_cents > 0
         AND fo.last_checked_at >= now() - interval '${days} days'

@@ -725,23 +725,48 @@ function amazonContidaSql(verticalCol: string): SQL {
  * elegíveis) nos dias em que price_daily_state tem qualidade complete/partial, desde PRICE_DAILY_REGIME_START (31/10).
  * Dia sem coleta fica lacuna (nada é interpolado).
  */
-async function loadSeries(ids: string[], today: string, mode: AmazonMode, verticalBy: Map<string, string> = new Map()): Promise<Map<string, { main: DayPoint[]; amazon: DayPoint[] }>> {
+const SERIE_MEMO_MS = 20 * 60_000;
+const serieMemo = new Map<string, { at: number; rows: Row[] }>();
+
+export async function loadSeries(ids: string[], today: string, mode: AmazonMode, verticalBy: Map<string, string> = new Map()): Promise<Map<string, { main: DayPoint[]; amazon: DayPoint[] }>> {
   const out = new Map<string, { main: DayPoint[]; amazon: DayPoint[] }>();
   if (!ids.length) return out;
   const scope = amazonScope(mode);
-  const rows = await db.execute<Row>(sql`
+  // MEMO DA SÉRIE (alívio de I/O, 2026-11-19): a série cobre dias ANTERIORES a hoje (dia fechado, R-74) e quase não muda dentro do dia;
+  // a consulta lia 7,6 M de blocos em 2,8 mil chamadas. As linhas brutas por produto ficam 20 min em memória (chave = hoje + produto);
+  // só os produtos sem memo vão ao banco. Mesmas linhas, mesmo processamento abaixo. GRUPO_SERIE_MEMO=off desliga.
+  const memoOn = !/^(0|off|false)$/i.test((process.env.GRUPO_SERIE_MEMO ?? '').trim());
+  const nowMs = Date.now();
+  const rows: Row[] = [];
+  const missing: string[] = [];
+  for (const id of ids) {
+    const hit = memoOn ? serieMemo.get(`${today}|${id}`) : undefined;
+    if (hit && nowMs - hit.at < SERIE_MEMO_MS) rows.push(...hit.rows);
+    else missing.push(id);
+  }
+  if (missing.length) {
+  const fetched = await db.execute<Row>(sql`
     SELECT d.master_product_id AS mid, d.day::text AS day,
            (n.slug || ' ' || n.name) ILIKE '%amazon%' AS amz, min(d.min_cents) AS mn, max(s.median_offer_day_cents) AS mx
     FROM price_daily_offer d
     INNER JOIN affiliate_offers o ON o.id = d.offer_id
     INNER JOIN affiliate_networks n ON n.id = o.network_id
     INNER JOIN price_daily_state s ON s.master_product_id = d.master_product_id AND s.day = d.day AND s.quality IN ('complete', 'partial')
-    WHERE d.master_product_id IN (${idList(ids)}) AND d.day >= ${PRICE_DAILY_REGIME_START}::date AND d.day < ${today}::date
+    WHERE d.master_product_id IN (${idList(missing)}) AND d.day >= ${PRICE_DAILY_REGIME_START}::date AND d.day < ${today}::date
       AND d.min_cents > 0 AND ${eligibleOfferSql('o')}
       AND ((n.slug || ' ' || n.name) ILIKE '%mercado%' OR (n.slug || ' ' || n.name) ILIKE '%shopee%' OR (n.slug || ' ' || n.name) ILIKE '%amazon%')
     GROUP BY d.master_product_id, d.day, ((n.slug || ' ' || n.name) ILIKE '%amazon%')
     ORDER BY d.day
   `);
+  const byMid = new Map<string, Row[]>(missing.map((id) => [id, []]));
+  for (const r of fetched) (byMid.get(String(r.mid)) ?? byMid.set(String(r.mid), []).get(String(r.mid))!).push(r);
+  if (memoOn) {
+    if (serieMemo.size > 6000) serieMemo.clear();
+    for (const [id, rs] of byMid) serieMemo.set(`${today}|${id}`, { at: nowMs, rows: rs });
+  }
+  for (const rs of byMid.values()) rows.push(...rs);
+  }
+  rows.sort((x, y) => String(x.day).localeCompare(String(y.day)));
   for (const r of rows) {
     const mid = String(r.mid);
     const e = out.get(mid) ?? out.set(mid, { main: [], amazon: [] }).get(mid)!;
