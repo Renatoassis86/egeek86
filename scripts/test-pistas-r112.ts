@@ -51,7 +51,14 @@ assert.match(barra({ belowAvgPct: 70 }), /preco_isca/);
 assert.match(barra({ sendable: false, notSendableReason: 'sem_estoque' }), /nao_enviavel_sem_estoque/);
 assert.match(barra({ status: 'review' }), /exige_revisao/);
 // preco fresco R-81/R-101
-assert.match(barra({ confirmedAt: minAtras(61) }), /preco_velho_61min_acima_de_60/);
+assert.match(barra({ confirmedAt: minAtras(61), networkSlug: 'amazon', affiliateUrl: LINK_AMZ }), /preco_velho_61min_acima_de_/);
+assert.match(gatesInegociaveis(entrada({ m: { confirmedAt: minAtras(61) } })) ?? '', /preco_velho_61min_acima_de_60/, 'o gate puro continua nomeando o preco velho');
+// preco velho NA PROPOSTA (ML/Shopee): o envio real reconfere ao vivo; a admissao libera so com exigeConfirmacao (nunca preco velho dito)
+r = admitir(entrada({ m: { confirmedAt: minAtras(68) } }));
+assert.equal(r.decisao, 'enviaria'); assert.equal(r.exigeConfirmacao, true); assert.match(r.motivo, /^ok_apos_confirmacao_de_preco_68min_piso$/);
+assert.equal(admitir(entrada({ m: { confirmedAt: minAtras(5) } })).exigeConfirmacao, undefined);
+assert.match(admitir(entrada({ m: { confirmedAt: minAtras(68), held: true } })).motivo, /preco_isca/, 'preco velho nao abre porta para isca');
+assert.match(admitir(entrada({ m: { confirmedAt: minAtras(68), affiliateUrl: null } })).motivo, /sem_link_de_afiliado/, 'nem para link fora do padrao (R-70)');
 assert.equal(barra({ confirmedAt: minAtras(59) }), 'ok_piso_do_canal');
 assert.match(barra({ confirmedAt: '' }), /sem_prova_de_preco_fresco/);
 assert.match(barra({ networkSlug: 'amazon', affiliateUrl: LINK_AMZ, confirmedAt: minAtras(75) }), /preco_velho/);
@@ -79,15 +86,40 @@ assert.equal(admitir(entrada({ historico: [envio(30 * 60, 5000)] })).decisao, 'd
 assert.equal(admitir(entrada({ historico: [envio(80 * 60, 5000)] })).decisao, 'enviaria', 'passou da janela');
 assert.equal(admitir(entrada({ historico: [envio(2 * 60, 5000)], config: pistaConfig({ GROUP_MASTER_REPEAT_SEM_NOVIDADE_H: 'off' }) })).decisao, 'descartaria', 'repeticao desligada no env nao baixa de 24 h na pista');
 assert.equal(admitir(entrada({ historico: [{ ...envio(60, 5000), masterProductId: 'outro' }] })).decisao, 'enviaria');
+assert.match(admitir(entrada({ m: { confirmedAt: minAtras(68) }, historico: [envio(60, 5000)] })).motivo, /master_repetido/, 'preco velho confirmado nao fura a repeticao');
 
 // --- vaga por tipo: TIPO_MAX_PER_HOUR (2) e teto especial R-106
 assert.equal(admitir(entrada({ estado: est(1, 1) })).decisao, 'enviaria');
-assert.match(admitir(entrada({ estado: est(2, 2) })).motivo, /teto_tipo_livro-programacao_2_por_hora/);
+assert.match(admitir(entrada({ m: { trigger: 'G2' }, estado: est(2, 2) })).motivo, /teto_tipo_livro-programacao_2_por_hora/);
+assert.equal(admitir(entrada({ estado: est(2, 2) })).decisao, 'enviaria', 'OK1 (novo minimo) e isento da cota de tipo, como no envio real');
+assert.equal(admitir(entrada({ m: { trigger: 'G2', regua: { degrau: 4 } as never }, estado: est(2, 2) })).decisao, 'enviaria', 'degrau 4 da regua e isento');
 assert.equal(admitir(entrada({ tipo: null, estado: est(2, 9) })).decisao, 'enviaria', 'sem tipo (games) nao tem vaga por tipo');
 assert.match(admitir(entrada({ canal: 'tecnologia', tipo: 'mouse', m: { vertical: 'tecnologia', name: 'Mouse Gamer' }, estado: est(4, 5) })).motivo, /teto_tipo_mouse_5_por_hora/);
 assert.equal(admitir(entrada({ canal: 'tecnologia', tipo: 'mouse', m: { vertical: 'tecnologia', name: 'Mouse Gamer' }, estado: est(4, 4) })).decisao, 'enviaria');
 assert.match(admitir(entrada({ canal: 'esporte', tipo: 'bola', m: { vertical: 'esporte', name: 'Bola de Futebol Campo' }, estado: est(3, 2) })).motivo, /teto_tipo_bola_2_por_hora/);
 assert.equal(admitir(entrada({ estado: est(1, 1), config: pistaConfig({ GROUP_TIPO_POR_HORA: '4' }) })).decisao, 'enviaria');
+
+// --- R-112 ajuste (2026-11-20): a cota por tipo espelha o envio real. Os 4 casos de Livros medidos em 3 h (rpg 19:16 G2 e AC; repeticao por decisao simulada).
+{
+  const rpg = { tipo: 'rpg', m: { trigger: 'G2', name: 'Old Dragon 2 - Tu1' } as Partial<MasterPista> };
+  // cota SUAVE (G2 com 2 do tipo na hora): sem alternativa de outro tipo na fila o envio real nao segura; com alternativa segura
+  assert.equal(admitir(entrada({ ...rpg, estado: est(3, 3), alternativaOutroTipo: false })).decisao, 'enviaria', 'caso Livros: G2 rpg sem alternativa sai');
+  assert.match(admitir(entrada({ ...rpg, estado: est(3, 3), alternativaOutroTipo: true })).motivo, /teto_tipo_rpg_2_por_hora/);
+  assert.match(admitir(entrada({ ...rpg, estado: est(3, 3) })).motivo, /teto_tipo_rpg_2_por_hora/, 'sem informacao de fila: conservador');
+  // achado (AC): teto DURO adaptativo (piso 3, share 30% de max(20, volume/24) = 6), nao 2
+  const ac = { tipo: 'rpg', m: { trigger: 'AC', cls: 'insight', name: 'Pathfinder 2 Escudo' } as Partial<MasterPista> };
+  assert.equal(admitir(entrada({ ...ac, estado: est(3, 3), alternativaOutroTipo: true })).decisao, 'descartaria', 'AC acima do limite adaptativo 6 nao ha: 3 < 6 mas a cota suave segura com alternativa');
+  assert.equal(admitir(entrada({ ...ac, estado: est(3, 3), alternativaOutroTipo: false })).decisao, 'enviaria', 'caso Livros: AC rpg (3 na hora < 6) sem alternativa sai');
+  assert.match(admitir(entrada({ ...ac, estado: est(7, 6), alternativaOutroTipo: false })).motivo, /teto_tipo_rpg_achado_6_por_hora/, 'o teto do achado e duro, com ou sem alternativa');
+  assert.match(admitir(entrada({ ...ac, estado: est(13, 13), alternativaOutroTipo: false, volume24h: 1000 })).motivo, /teto_tipo_rpg_achado_13_por_hora/, 'volume alto da loja sobe o teto (30% de 41,7 = 13)');
+  // repeticao: so a decisao SIMULADA de outra proposta do mesmo master e "coberto" (a pista ja teria enviado); envio real continua repeticao
+  const sim = { ...envio(20, 5000), simulado: true };
+  assert.match(admitir(entrada({ historico: [sim] })).motivo, /^coberto_pela_pista_master_repetido_sem_novidade_\d+h/);
+  assert.equal(admitir(entrada({ historico: [sim] })).decisao, 'descartaria');
+  assert.match(admitir(entrada({ historico: [envio(20, 5000)] })).motivo, /^master_repetido_sem_novidade_\d+h/, 'envio real nunca vira coberto');
+  assert.match(admitir(entrada({ historico: [sim, envio(20, 5000)] })).motivo, /^master_repetido/, 'real + simulado: vale o real');
+  assert.equal(admitir(entrada({ historico: [{ ...sim, priceCents: 5000 }], m: { priceCents: 4000 } })).decisao, 'enviaria', 'novidade de preco continua valendo');
+}
 
 // --- teto por marca
 assert.match(admitir(entrada({ marca: 'novatec', estado: est(3, 0, 3) })).motivo, /teto_marca_novatec_3_por_hora/);

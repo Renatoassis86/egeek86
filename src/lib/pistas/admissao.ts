@@ -9,7 +9,7 @@
  * ou teto especial R-106), marca/hora, canal/hora com PISO (vaga garantida) e TETO (a sobra so passa com oferta fresca).
  */
 import {
-  iscaSuspeita, isOutOfLine, masterRepeatHoursFor, masterSemNovidadeBlock, tipoPorHora, tipoTetoHoraEspecial,
+  iscaSuspeita, isOutOfLine, masterRepeatHoursFor, masterSemNovidadeBlock, tipoAcPorHora, tipoAcShareLimite, tipoCotaAlertaOn, tipoPorHora, tipoTetoHoraEspecial,
   type Candidate, type SentRecord,
 } from '@/lib/messaging/group-rules';
 import { orcamentoFrescor } from '@/lib/frescor/orcamento';
@@ -88,6 +88,9 @@ export type MasterPista = Pick<Candidate, 'masterProductId' | 'vertical' | 'name
     affiliateLinkPending?: boolean | null;
   };
 
+/** Registro do historico de repeticao; `simulado` = veio de uma decisao 'enviaria' da sombra (nao foi enviado de verdade). */
+export type RegistroHistorico = SentRecord & { simulado?: boolean };
+
 export interface EntradaAdmissao {
   canal: string;
   tipo: string | null;
@@ -96,8 +99,15 @@ export interface EntradaAdmissao {
   agora: Date;
   estado: EstadoContadores;
   /** Historico de envios (reais + simulados) das ultimas 24 h ou mais, para a repeticao do master. */
-  historico: SentRecord[];
+  historico: RegistroHistorico[];
   config: PistaConfig;
+  /**
+   * Existe, na mesma fila/ciclo, oferta elegivel de OUTRO tipo (a cota suave por tipo so segura quando ha alternativa, igual ao envio real: applyLimits/tipoOver).
+   * Ausente = tratado como true (conservador, so a sombra sabe medir).
+   */
+  alternativaOutroTipo?: boolean;
+  /** Envios do canal nas ultimas 24 h (reais), base do teto adaptativo do achado por tipo (tipoAcShareLimite). Ausente = 0 (referencia minima de 20/h). */
+  volume24h?: number;
 }
 
 export type Decisao = 'enviaria' | 'descartaria';
@@ -108,6 +118,8 @@ export interface ResultadoAdmissao {
   cotaUsada: number;
   /** Para 'enviaria': vaga do piso ou sobra fresca. */
   faixa?: 'piso' | 'sobra';
+  /** true = o preco estava velho na proposta; o envio SO pode sair depois do recheck ao vivo (R-81/R-88), como o envio real faz. */
+  exigeConfirmacao?: boolean;
 }
 
 const SEM_PRODUTO_UNICO = new Set(['G4', 'RADAR']);
@@ -152,24 +164,56 @@ export function gatesInegociaveis(i: Pick<EntradaAdmissao, 'master' | 'agora' | 
   return null;
 }
 
+/** Cota por tipo e hora espelhando o envio real (group-rules applyLimits): teto especial R-106 duro; achado/N1 com teto adaptativo duro; demais, cota suave. */
+function tipoBloqueio(i: EntradaAdmissao): string | null {
+  const { master: m, estado: e, config: c } = i;
+  const tipo = i.tipo;
+  if (!tipo) return null;
+  const esp = tipoTetoHoraEspecial(m.vertical, tipo, c.env);
+  if (esp) return e.tipoHora >= esp.porHora ? `teto_tipo_${tipo}_${esp.porHora}_por_hora` : null;
+  const cotaAlerta = tipoCotaAlertaOn(c.env);
+  const isento = m.cls === 'plataforma' || (m.cls === 'alerta' && (!cotaAlerta || m.trigger === 'G1' || m.trigger === 'OK1' || (m.regua?.degrau ?? 0) >= 4));
+  if (isento) return null;
+  // Achado e N1: teto horario DURO adaptativo (o excedente espera a hora seguinte).
+  const acPorHora = tipoAcPorHora(c.env);
+  if (acPorHora > 0 && (m.trigger === 'AC' || m.trigger === 'N1') && tipo !== 'outros') {
+    const lim = tipoAcShareLimite(i.volume24h ?? 0, acPorHora);
+    if (e.tipoHora >= lim) return `teto_tipo_${tipo}_achado_${lim}_por_hora`;
+  }
+  // Cota SUAVE (TIPO_MAX_PER_HOUR): so segura se houver alternativa de outro tipo; sem alternativa o canal nao fica parado.
+  const porHora = tipoPorHora(c.env);
+  if (cotaAlerta && porHora > 0 && e.tipoHora >= porHora && i.alternativaOutroTipo !== false) return `teto_tipo_${tipo}_${porHora}_por_hora`;
+  return null;
+}
+
 export function admitir(i: EntradaAdmissao): ResultadoAdmissao {
   const { master: m, estado: e, config: c } = i;
   const cota = e.canalHora;
   const gate = gatesInegociaveis(i);
-  if (gate) return descarta(gate, cota);
+  if (gate) {
+    // Preco velho NA PROPOSTA nao e descarte: o envio real confere o preco ao vivo antes de enviar (R-81/R-88). Reavalia como se confirmado agora e
+    // marca exigeConfirmacao: a Fase 3 so envia depois do recheck. Confirmacao que falhar = expirada, nunca preco velho dito.
+    // Amazon fica de fora: o preco dela so e valido com leitura fresca do coletor (R-81/R-82); nunca "confirmado no ato".
+    if (gate.startsWith('preco_velho_') && m.networkSlug !== 'amazon') {
+      const idade = Math.floor(idadeConfirmacaoMin(m.confirmedAt, i.agora) ?? 0);
+      const r = admitir({ ...i, master: { ...m, confirmedAt: i.agora.toISOString() } });
+      return r.decisao === 'enviaria' ? { ...r, motivo: `ok_apos_confirmacao_de_preco_${idade}min_${r.faixa}`, exigeConfirmacao: true } : r;
+    }
+    return descarta(gate, cota);
+  }
 
   // Repeticao do master: janela do projeto (R-77), nunca abaixo de 24 h na pista.
   const h = masterRepeatHoursFor(m.vertical, c.env);
   const horas = Math.max(h > 0 ? h : PISTA_REPETICAO_MIN_H, PISTA_REPETICAO_MIN_H);
   const rep = masterSemNovidadeBlock(m, i.historico, i.agora, horas);
-  if (rep) return descarta(rep, cota);
-
-  // Vaga por tipo (so onde ha taxonomia): teto especial (R-106) ou TIPO_MAX_PER_HOUR.
-  if (i.tipo) {
-    const esp = tipoTetoHoraEspecial(m.vertical, i.tipo, c.env);
-    const limTipo = esp ? esp.porHora : tipoPorHora(c.env);
-    if (e.tipoHora >= limTipo) return descarta(`teto_tipo_${i.tipo}_${limTipo}_por_hora`, cota);
+  if (rep) {
+    // So a sombra (decisao simulada de outra proposta do mesmo master) segura: a pista ja teria enviado o produto antes. Nao e divergencia de regra.
+    const soReal = masterSemNovidadeBlock(m, i.historico.filter((x) => !x.simulado), i.agora, horas);
+    return descarta(soReal ? rep : `coberto_pela_pista_${rep}`, cota);
   }
+
+  const tipoBlock = tipoBloqueio(i);
+  if (tipoBlock) return descarta(tipoBlock, cota);
   if (i.marca && e.marcaHora >= c.marcaHora) return descarta(`teto_marca_${i.marca.replace(/\s+/g, '_')}_${c.marcaHora}_por_hora`, cota);
 
   // Cota do canal: piso = vaga garantida; sobra = so oferta fresca; teto = fim.

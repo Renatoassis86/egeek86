@@ -2,9 +2,8 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { runInBgPool } from '@/lib/db/pool-context';
-import { admitir, canaisSombra, horaBucket, pistaConfig } from '@/lib/pistas/admissao';
+import { admitir, canaisSombra, horaBucket, pistaConfig, type RegistroHistorico } from '@/lib/pistas/admissao';
 import { marcaDoCandidato, masterDeLinha, tipoDoCandidato, type FatosOferta } from '@/lib/pistas/candidato';
-import type { Candidate, SentRecord } from '@/lib/messaging/group-rules';
 import { contadores, gravarLote, reconstruirDeDecisoes } from './contadores';
 
 /**
@@ -87,10 +86,14 @@ export async function rodarSombra(now: Date = new Date(), env: Record<string, st
       SELECT g.master_product_id::text, g.price_cents_detected::text, g.created_at AS t, g.trigger, g.candidate -> 'regua' ->> 'degrau' AS degrau, g.offer_id::text, g.vertical::text, d.tipo
       FROM pista_decisao d JOIN group_messages g ON g.id = d.mensagem_id
       WHERE d.decisao = 'enviaria' AND d.criado_em >= now() - interval '26 hours' AND d.canal = ANY(${lista(canais)}) AND g.master_product_id IS NOT NULL LIMIT 2000`))) as unknown as LinhaHist[];
-    const historico: SentRecord[] = [...hist, ...sim].map((h) => ({
+    const paraRegistro = (h: LinhaHist, simulado: boolean): RegistroHistorico => ({
       masterProductId: h.master_product_id, priceCents: Number(h.price_cents_detected ?? 0), sentAt: new Date(h.t), trigger: h.trigger,
-      degrau: h.degrau == null ? null : Number(h.degrau), offerId: h.offer_id, vertical: h.vertical, tipo: h.tipo,
-    }));
+      degrau: h.degrau == null ? null : Number(h.degrau), offerId: h.offer_id, vertical: h.vertical, tipo: h.tipo, simulado,
+    });
+    const historico: RegistroHistorico[] = [...hist.map((h) => paraRegistro(h, false)), ...sim.map((h) => paraRegistro(h, true))];
+    // Base do teto adaptativo do achado por tipo: envios REAIS do canal nas ultimas 24 h (a janela de 26 h aproxima).
+    const volume24h = new Map<string, number>();
+    for (const h of hist) volume24h.set(h.vertical, (volume24h.get(h.vertical) ?? 0) + 1);
 
     // 3) fatos das ofertas (PK): link do dono (R-70), pendencia, atividade e quarentena
     const ofertaIds = Array.from(new Set(props.map((p) => p.offer_id).filter((x): x is string => !!x)));
@@ -104,16 +107,30 @@ export async function rodarSombra(now: Date = new Date(), env: Record<string, st
 
     // 4) admissao em ordem de criacao; cada 'enviaria' consome vaga (simulada) e entra no historico
     const decisoes: Array<{ canal: string; msg: string; master: string | null; oferta: string | null; tipo: string | null; marca: string | null; decisao: string; motivo: string; cota: number; janela: Date }> = [];
-    for (const p of props) {
-      if (prazo()) { r.parou = 'orcamento_de_tempo'; break; }
-      const c = p.candidate as unknown as Candidate & { tipo?: string | null };
+    // Pre-calculo por proposta + "ciclos" (propostas criadas no mesmo minuto formam a fila que o envio real via junta): base da alternativa de outro tipo.
+    const pre = props.map((p) => {
       const agora = new Date(p.created_at);
-      const hora = horaBucket(agora);
       const tipo = tipoDoCandidato(p.vertical, p.candidate);
-      const marca = marcaDoCandidato(p.vertical, p.candidate);
       const of = p.offer_id ? ofertas.get(p.offer_id) : undefined;
-      const master = masterDeLinha(p, of);
-      const res = admitir({ canal: p.vertical, tipo, marca, master, agora, estado: contadores.ler(p.vertical, hora, tipo, marca), historico, config: cfg });
+      return { p, agora, hora: horaBucket(agora), tipo, marca: marcaDoCandidato(p.vertical, p.candidate), master: masterDeLinha(p, of), ciclo: `${p.vertical}|${Math.floor(agora.getTime() / 60_000)}` };
+    });
+    const porCiclo = new Map<string, typeof pre>();
+    for (const x of pre) (porCiclo.get(x.ciclo) ?? porCiclo.set(x.ciclo, []).get(x.ciclo)!).push(x);
+    const LIM_ALT = 40;
+    for (const x of pre) {
+      if (prazo()) { r.parou = 'orcamento_de_tempo'; break; }
+      const { p, agora, hora, tipo, marca, master } = x;
+      const entrada = (y: typeof x, alternativaOutroTipo?: boolean) => ({
+        canal: y.p.vertical, tipo: y.tipo, marca: y.marca, master: y.master, agora: y.agora, estado: contadores.ler(y.p.vertical, y.hora, y.tipo, y.marca), historico, config: cfg,
+        volume24h: volume24h.get(y.p.vertical) ?? 0, alternativaOutroTipo,
+      });
+      // So pergunta pela alternativa quando a cota suave seria o motivo do descarte (barato): pre-admissao com alternativa=true e depois sem.
+      let res = admitir(entrada(x, true));
+      if (res.decisao === 'descartaria' && /^teto_tipo_.*_por_hora$/.test(res.motivo) ) {
+        const outros = (porCiclo.get(x.ciclo) ?? []).filter((y) => y !== x && y.tipo && y.tipo !== tipo).slice(0, LIM_ALT);
+        const alt = outros.some((y) => admitir(entrada(y, false)).decisao === 'enviaria');
+        if (!alt) res = admitir(entrada(x, false));
+      }
       if (res.decisao === 'enviaria') {
         contadores.incrementar(p.vertical, hora, tipo, marca, 1, true);
         historico.push({ masterProductId: master.masterProductId, priceCents: master.priceCents, sentAt: agora, trigger: master.trigger, degrau: master.regua?.degrau ?? null, offerId: master.offerIds[0] ?? null, vertical: p.vertical, tipo });
