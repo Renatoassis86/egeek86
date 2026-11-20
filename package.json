@@ -61,7 +61,8 @@
     "test:vitrine-plataforma": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-vitrine-plataforma.ts",
     "test:front-regras": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-front-regras.ts",
     "test:home-sem-orfaos": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-home-sem-orfaos.ts",
-    "test:public-offers-mat": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-public-offers-mat-equivalencia.ts"
+    "test:public-offers-mat": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-public-offers-mat-equivalencia.ts",
+    "test:foto-nao-nova": "tsx scripts/test-foto-nao-nova.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
@@ -95,6 +96,7 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@huggingface/transformers": "^3.8.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
