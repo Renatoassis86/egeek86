@@ -3,6 +3,7 @@
  *  1) collector_runs: `SELECT max(COALESCE(finished_at, started_at)) ... WHERE job = $1 AND status = $2` lia 8 MB por chamada (65 GB em 3 dias).
  *  3) affiliate_price_snapshots (collected_at): contagem/leitura incremental de cotacoes novas (o BRIN sozinho levou ~14 s para 1 h de cotacoes).
  *  2) group_messages: historico de envios (`loadSentHistory`, 7 dias por COALESCE(sent_at, created_at)) lia 11,8 MB por chamada (143 GB em 3 dias).
+ *  5) collector_runs parcial (cota Plus, R-111): plusCallsUsed lia ~9.000 linhas de 24 h para somar ~500.
  * npx tsx --env-file=.env.local scripts/criar-indices-io.ts [--apply]    (rollback: DROP INDEX CONCURRENTLY IF EXISTS <nome>)
  */
 import postgres from 'postgres';
@@ -13,6 +14,7 @@ const INDICES: Array<{ nome: string; sql: string }> = [
   { nome: 'group_messages_hist_envio_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS group_messages_hist_envio_idx ON group_messages (channel, (COALESCE(sent_at, created_at)) DESC) WHERE status IN ('enviada', 'enviando', 'simulada')` },
   { nome: 'affiliate_price_snapshots_collected_btree_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS affiliate_price_snapshots_collected_btree_idx ON affiliate_price_snapshots (collected_at)` },
   { nome: 'group_messages_tg_enviada_sent_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS group_messages_tg_enviada_sent_idx ON group_messages (sent_at DESC) WHERE channel = 'tg' AND status = 'enviada'` },
+  { nome: 'collector_runs_plus_calls_idx', sql: `CREATE INDEX CONCURRENTLY IF NOT EXISTS collector_runs_plus_calls_idx ON collector_runs (started_at DESC) WHERE job LIKE 'collect-vertical:%' OR job LIKE 'semear-vertical:%'` },
 ];
 
 (async () => {

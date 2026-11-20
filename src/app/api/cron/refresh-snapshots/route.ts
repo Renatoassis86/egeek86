@@ -42,7 +42,12 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  try {
+  // Vigia de fechamento (R-111): o registro 'running' nunca fica aberto. Se o trabalho passar de WATCHDOG_MS (maxDuration - 30 s), a rota fecha
+  // o registro como parcial (meta.watchdog) e responde antes do teto da Vercel; sem isto a funcao morria no teto, o finally nao rodava e o
+  // collector-health fechava a linha como erro 10 min depois (16 de 24 rodadas de stats em 19-20/11). `CRON_WATCHDOG=off` desliga.
+  const watchdogOn = !/^(0|off|false)$/i.test((process.env.CRON_WATCHDOG ?? '').trim());
+  const WATCHDOG_MS = (maxDuration - 30) * 1000;
+  const work = async () => {
     // E6 (#147): vendedor fraco fora da média sincronizado também a cada 10 min (antes só a cada 30 min, no part=stats): a janela em que uma oferta nova de vendedor fraco pesa na média cai de 30 para 10 min.
     if (part === 'vitrines') await sincronizarVendedorFracoForaDaMedia({ apply: true }).catch((e) => console.error('[weak-seller-avg]', e instanceof Error ? e.message : e));
     if (part === 'vitrines') out.vitrines = await refreshVitrines({ budgetMs: 60_000 });
@@ -83,6 +88,28 @@ export async function GET(request: NextRequest) {
     // Inventário do catálogo: tolerante a falha por construção (nunca lança; erro vai no retorno).
     if (part === 'inventory' || part === 'all') {
       out.inventory = await gravarSnapshotInventario();
+    }
+  };
+  try {
+    if (watchdogOn) {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      const working = work();
+      working.catch(() => undefined);
+      const outcome = await Promise.race([
+        working.then(() => 'done' as const),
+        new Promise<'watchdog'>((resolve) => { timer = setTimeout(() => resolve('watchdog'), WATCHDOG_MS); }),
+      ]).finally(() => { if (timer) clearTimeout(timer); });
+      if (outcome === 'watchdog') {
+        vitrinesLock?.release();
+        out.elapsedMs = Date.now() - started;
+        out.watchdog = true;
+        console.warn(`[cron refresh-snapshots] vigia: part=${part} passou de ${WATCHDOG_MS} ms; registro fechado como parcial`);
+        await run.finish({ stoppedBecause: 'watchdog', budgetExhausted: true, meta: out });
+        return NextResponse.json(out);
+      }
+      await working;
+    } else {
+      await work();
     }
   } catch (err) {
     vitrinesLock?.release();

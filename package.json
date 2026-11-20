@@ -63,6 +63,8 @@
     "test:home-sem-orfaos": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-home-sem-orfaos.ts",
     "test:public-offers-mat": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-public-offers-mat-equivalencia.ts",
     "test:foto-nao-nova": "tsx scripts/test-foto-nao-nova.ts",
+    "test:r111": "tsx scripts/test-health-hourly-memo.ts && tsx scripts/test-cron-watchdog-r111.ts",
+    "test:r111-identidade": "tsx --conditions=react-server --env-file=.env.local scripts/test-identity-scope-equivalencia.ts",
     "test:r110": "tsx scripts/test-r110-fluxo-variedade.ts"
   },
   "dependencies": {

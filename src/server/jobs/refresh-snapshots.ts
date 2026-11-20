@@ -93,7 +93,13 @@ export interface StatsRefreshSummary {
   /** true = recalculou pelo resumo incremental (PRICE_STATS_ROLLUP); `ingestedOffers` = ofertas com cotação nova lida nesta rodada. */
   rollup?: boolean;
   ingestedOffers?: number;
+  /** Tempo do preparo (antes dos lotes) e do maior lote, para diagnosticar rodada lenta. */
+  prepMs?: number;
+  maxChunkMs?: number;
 }
+
+/** Folga além do orçamento que um lote ainda pode levar antes de ser abandonado (R-111). */
+const STATS_CHUNK_GRACE_MS = 45_000;
 
 /** Ofertas reconstruídas por rodada (marca de isca mudou / rede de segurança de 72 h). */
 const ROLLUP_REBUILD_PER_RUN = 400;
@@ -184,24 +190,46 @@ export async function refreshProductStats(opts: { budgetMs: number; minAgeMs?: n
   let refreshed = 0;
   let failedChunks = 0;
   let budgetExhausted = false;
+  // R-111: o orçamento só era conferido ANTES de cada lote; um lote lento (banco carregado) passava dos 300 s e a rota morria sem fechar o registro.
+  // Agora não começa lote cujo tempo previsto (o maior já medido) estoura o orçamento, e um lote que passa de orçamento + folga é abandonado
+  // (conta como falho; os produtos mantêm a linha anterior e a próxima rodada repete). `STATS_CHUNK_GUARD=off` volta ao comportamento anterior.
+  const guard = !/^(0|off|false)$/i.test((process.env.STATS_CHUNK_GUARD ?? '').trim());
+  const hardEnd = started + opts.budgetMs + STATS_CHUNK_GRACE_MS;
+  let maxChunkMs = 0;
+  const prepMs = Date.now() - started;
   const worker = async () => {
     while (next < chunks.length) {
-      if (Date.now() - started > opts.budgetMs) {
+      const now = Date.now();
+      if (now - started > opts.budgetMs || (guard && now - started + maxChunkMs > opts.budgetMs)) {
         budgetExhausted = true;
         return;
       }
       const chunk = chunks[next++];
+      const t0 = Date.now();
       try {
-        await runInBgPool(() => persistStatsChunk(chunk, { rollup: rollupActive }));
+        const run = runInBgPool(() => persistStatsChunk(chunk, { rollup: rollupActive }));
+        if (guard) {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const late = new Promise<'late'>((resolve) => { timer = setTimeout(() => resolve('late'), Math.max(1_000, hardEnd - t0)); });
+          run.catch(() => undefined);
+          const r = await Promise.race([run.then(() => 'ok' as const), late]).finally(() => { if (timer) clearTimeout(timer); });
+          if (r === 'late') {
+            failedChunks++;
+            budgetExhausted = true;
+            console.error('[refresh-snapshots] lote de estatística abandonado por passar do orçamento + folga');
+            return;
+          }
+        } else await run;
         refreshed += chunk.length;
       } catch (err) {
         failedChunks++;
         console.error('[refresh-snapshots] lote de estatística falhou:', err instanceof Error ? err.message : err);
       }
+      maxChunkMs = Math.max(maxChunkMs, Date.now() - t0);
     }
   };
   await Promise.all(Array.from({ length: concurrency }, worker));
-  return { candidates: ids.length, refreshed, failedChunks, elapsedMs: Date.now() - started, budgetExhausted, rollup: rollupActive, ingestedOffers };
+  return { candidates: ids.length, refreshed, failedChunks, elapsedMs: Date.now() - started, budgetExhausted, rollup: rollupActive, ingestedOffers, prepMs, maxChunkMs };
 }
 
 // ---------------------------------------------------------------------------------------------

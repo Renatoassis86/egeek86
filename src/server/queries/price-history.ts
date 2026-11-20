@@ -204,6 +204,10 @@ export async function getMasterProductPriceHistory(
 
   const masterProductIds = [masterProductId];
   const idsSql = sql.join(masterProductIds.map((id) => sql`${id}`), sql`, `);
+  // R-111: a consulta externa so olha as ofertas destes produtos; a subconsulta de identidade varria o catalogo inteiro (~62 mil ofertas, regex por titulo:
+  // 3 a 4 s por consulta, 5 consultas por abertura de produto). Restringida aos mesmos produtos o resultado e identico (prova em
+  // scripts/test-identity-scope-equivalencia.ts). `IDENTITY_SCOPE_MASTERS=off` volta a subconsulta do catalogo inteiro.
+  const identityVisible = () => offerIdentityVisibleSql('o.id', /^(0|off|false)$/i.test((process.env.IDENTITY_SCOPE_MASTERS ?? '').trim()) ? {} : { masters: masterProductIds });
 
   const bucketMs = AVG_BUCKET_MS[timeframe];
   const bucketSeconds = Math.max(1, Math.floor(bucketMs / 1000));
@@ -236,7 +240,7 @@ export async function getMasterProductPriceHistory(
           SELECT DISTINCT ON (s.offer_id) s.offer_id, s.price_cents
           FROM affiliate_price_snapshots s
           INNER JOIN affiliate_offers o ON o.id = s.offer_id
-          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
+          WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${identityVisible()}
             AND s.collected_at < now() - (${interval})::interval AND ${snapshotNaoIscaSql('s')}
           ORDER BY s.offer_id, s.collected_at DESC
         `)
@@ -249,7 +253,7 @@ export async function getMasterProductPriceHistory(
                (floor(extract(epoch FROM s.collected_at) / ${bucketSeconds}::numeric) * ${bucketSeconds}::numeric)::bigint AS bucket
         FROM affiliate_price_snapshots s
         INNER JOIN affiliate_offers o ON o.id = s.offer_id
-        WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
+        WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${identityVisible()}
           AND ${snapshotNaoIscaSql('s')}
           ${windowFilter}
       ),
@@ -315,13 +319,13 @@ export async function getMasterProductPriceHistory(
       SELECT MAX(s.price_cents)::bigint AS max_price
       FROM affiliate_price_snapshots s
       INNER JOIN affiliate_offers o ON o.id = s.offer_id
-      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')} AND ${snapshotNaoIscaSql('s')}
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${identityVisible()} AND ${snapshotNaoIscaSql('s')}
     `),
 
     db.execute<{ total: string }>(sql`
       SELECT COUNT(*)::bigint AS total
       FROM affiliate_offers o
-      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')}
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${identityVisible()}
     `),
 
     db.execute<{
@@ -335,7 +339,7 @@ export async function getMasterProductPriceHistory(
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       LEFT JOIN affiliate_sellers sel ON sel.id = o.seller_id
-      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${offerIdentityVisibleSql('o.id')} AND o.current_price_cents > 0
+      WHERE o.master_product_id IN (${idsSql}) AND o.status = 'active' AND ${identityVisible()} AND o.current_price_cents > 0
     `),
   ]);
 
