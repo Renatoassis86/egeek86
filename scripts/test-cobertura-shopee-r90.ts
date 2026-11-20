@@ -14,11 +14,11 @@ assert.equal(fatiaOutras({ COLLECT_SHOPEE_FATIA_OUTRAS: '0' }), 0);
 assert.equal(fatiaOutras({ COLLECT_SHOPEE_FATIA_OUTRAS: 'x' }), 3);
 assert.equal(verticalDoTick(new Date(), { COLLECT_SHOPEE_FATIA_OUTRAS: '0' }), null, 'desligado = só Games');
 
-// Simula 5 horas de ticks de 5 min: 1/3 vai para fora de Games e todas as 5 verticais aparecem em rodízio.
+// Simula 6 horas de ticks de 5 min: 1/3 vai para fora de Games e todas as verticais aparecem em rodízio.
 const t0 = Date.UTC(2026, 10, 17, 0, 0, 0);
 const cont = new Map<string, number>();
 let fora = 0;
-const total = 60;
+const total = 72; // 6 h: com 7 verticais fora de Games cada uma aparece >= 3 vezes
 for (let i = 0; i < total; i++) {
   const v = verticalDoTick(new Date(t0 + i * 300_000), {});
   if (v) { fora++; cont.set(v, (cont.get(v) ?? 0) + 1); }

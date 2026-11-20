@@ -96,6 +96,8 @@ const TECNOLOGIA: TipoDef[] = [
   { slug: 'memoria-ram', rotulo: 'Memória RAM', re: r(' (memoria ram|ddr[345]|memoria ddr) ') },
   { slug: 'placa-mae-gabinete', rotulo: 'Placa-mãe, fonte e gabinete', re: r(' (placa mae|motherboard|gabinete|fonte atx|fonte 80|water cooler|cooler) | fonte .*(80 plus|atx|pfc|[0-9]{3,4}w) ') },
   { slug: 'headset', rotulo: 'Headsets', re: r(' (headset|headphone|fone) ') },
+  { slug: 'ferramentas-eletricas', rotulo: 'Ferramentas elétricas', re: r(' (furadeira|furadeiras|parafusadeira|parafusadeiras|aparafusadeira|esmerilhadeira|esmerilhadeiras|lixadeira|lixadeiras|plaina eletrica|micro retifica|martelete|soprador termico|pistola de calor|serra (circular|tico tico|marmore|sabre|de bancada|esquadria)|tico tico|ferro de solda|ferro de soldar|soldador) ') },
+  { slug: 'ferramentas-manuais', rotulo: 'Ferramentas manuais e kits', re: r(' (jogo de (chaves|soquetes|ferramentas)|kit de ferramentas|kit ferramentas|maleta de ferramentas|caixa de ferramentas|chave inglesa|torquimetro|chave combinada) ') },
   { slug: 'mousepad', rotulo: 'Mousepads', re: r(' (mousepad|mousepads|mouse pad) ') },
   { slug: 'mouse', rotulo: 'Mouses', re: r(' (mouse|mouses) ') },
   { slug: 'teclado', rotulo: 'Teclados', re: r(' (teclado|teclados) ') },
@@ -174,7 +176,21 @@ const BELEZA: TipoDef[] = [
   { slug: 'acessorios-maquiagem', rotulo: 'Pincéis e acessórios', re: r(' (pincel|pinceis|esponja de maquiagem|beauty blender|kit de pinceis|necessaire|curvex|curvador de cilios|espelho de maquiagem) ') },
 ];
 
+// BRINQUEDOS E COLECIONAVEIS (dono, 2026-11-20, R-105). Marca/linha forte abre cada tipo; peca, refil e acessorio avulso nao entram (gate.ts).
+const BRINQUEDOS: TipoDef[] = [
+  { slug: 'lego-blocos', rotulo: 'LEGO e blocos de montar', re: r(' (lego|playmobil|blocos de montar|bloco de montar) ') },
+  { slug: 'action-figure', rotulo: 'Bonecos e action figures', re: r(' (action figure|action figures|funko|funko pop|marvel legends|figuarts|s h figuarts|nendoroid|figma|boneco colecionavel|figure colecionavel|hot toys|banpresto|pop mart|labubu) ') },
+  { slug: 'miniatura-carrinho', rotulo: 'Carrinhos e miniaturas', re: r(' (hot wheels|matchbox|maisto|majorette|greenlight|burago|carrinho colecionavel|miniatura de carro|miniatura colecionavel) ') },
+  { slug: 'jogo-tabuleiro', rotulo: 'Jogos de tabuleiro e cartas', re: r(' (jogo de tabuleiro|tabuleiro|baralho|pokemon tcg|booster|magic the gathering|banco imobiliario|jogo da vida|catan|carcassonne|ticket to ride|dixit|uno|jogo de cartas|card game) ') },
+  { slug: 'quebra-cabeca', rotulo: 'Quebra-cabeças', re: r(' (quebra cabeca|quebra cabecas|puzzle|cubo magico|rubik) ') },
+  { slug: 'pelucia', rotulo: 'Pelúcias', re: r(' (pelucia|pelucias|plush|jellycat) ') },
+  { slug: 'boneca', rotulo: 'Bonecas', re: r(' (boneca|bonecas|barbie|monster high|polly pocket|baby alive|lol surprise|bratz|rainbow high) ') },
+  { slug: 'replica-estatua', rotulo: 'Réplicas e estátuas', re: r(' (estatua|estatuas|replica|busto|diorama|sabre de luz|infinity gauntlet) ') },
+  { slug: 'kits-montar', rotulo: 'Kits de montar', re: r(' (gunpla|gundam|model kit|kit de montar|maquete|revell|tamiya) ') },
+];
+
 export const TIPOS_POR_DEPT: Record<DepartamentoSlug, readonly TipoDef[]> = {
+  brinquedos: BRINQUEDOS,
   beleza: BELEZA,
   eletroeletronicos: ELETRONICOS,
   eletrodomesticos: CASA,

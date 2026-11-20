@@ -2,6 +2,7 @@
 import { LEX_AMPLIACAO, NICHO_AMPLIACAO } from './scope-ampliacao';
 import { LEX_TIPOS, NICHO_TIPOS } from './scope-tipos';
 import { LEX_CIENCIA, NICHO_CIENCIA } from './scope-ciencia';
+import { LEX_FERRAMENTAS, NICHO_FERRAMENTAS } from './scope-ferramentas';
 
 /**
  * ESCOPO DO TÍTULO (ata 2026-11-08, achados do dry-run 2): o domain_id do catálogo do ML às vezes deixa passar
@@ -42,6 +43,7 @@ const LEX: Record<string, SegmentLexicon> = {
   ...LEX_AMPLIACAO,
   ...LEX_TIPOS,
   ...LEX_CIENCIA,
+  ...LEX_FERRAMENTAS,
   'placa-de-video': {
     noun: /\b(placa de video|geforce|radeon|rtx|gtx|gpu)\b/,
     accessory: /\b(suporte|cabo|riser|backplate|bracket|waterblock|dissipador|adaptador|capa|fan|ventilador|pasta termica)\b/,
@@ -161,6 +163,16 @@ const LEX: Record<string, SegmentLexicon> = {
   cabelo: { noun: /\b(shampoo|condicionador|mascara capilar|leave in|oleo capilar|finalizador|creme para pentear|tratamento capilar|olaplex|tintura)\b/, accessory: /\b(touca|escova|pente|presilha|elastico|viseira|necessaire|expositor|display)\b/ },
   'secador-prancha': { noun: /\b(secador|prancha|chapinha|babyliss|modelador|alisador)\b/, accessory: /\b(bocal|difusor|concentrador|capa|resistencia|filtro|pe[cç]a|pecas|suporte|case|estojo)\b/ },
   perfume: { noun: /\b(perfume|eau de parfum|eau de toilette|colonia|parfum|body splash|deo colonia)\b/, accessory: /\b(porta perfume|estojo|atomizador vazio|frasco vazio|expositor|display|amostra)\b/ },
+  // ---- Brinquedos e Colecionaveis (2026-11-20, R-105): o nome do produto e o item; peca, refil, estante e capa sao acessorio ----
+  'lego-blocos': { noun: /\b(lego|playmobil|blocos|bloco de montar|set)\b/, accessory: /\b(luz|led|iluminacao|expositor|estante|vitrine|acrilico|suporte|display|case|caixa de armazenamento|organizador|pecas avulsas|refil)\b/ },
+  'action-figure': { noun: /\b(action figure|boneco|figure|funko|pop|figuarts|marvel legends|figura|estatueta|nendoroid|figma)\b/, accessory: /\b(protetor|case|expositor|estante|vitrine|acrilico|suporte|display|base|capa|caixa protetora|cenario)\b/ },
+  'miniatura-carrinho': { noun: /\b(hot wheels|carrinho|carrinhos|miniatura|matchbox|maisto|diecast|die cast)\b/, accessory: /\b(expositor|estante|vitrine|acrilico|suporte|display|case|caixa de protecao|protetor|organizador|maleta)\b/ },
+  'jogo-tabuleiro': { noun: /\b(jogo|jogos|tabuleiro|baralho|cartas|booster|deck|box|banco imobiliario|catan|uno|war)\b/, accessory: /\b(sleeve|sleeves|protetor de cartas|deck box|playmat|tapete|dados avulsos|organizador|expositor|suporte)\b/ },
+  'quebra-cabeca': { noun: /\b(quebra cabeca|quebra cabecas|puzzle|cubo magico|rubik)\b/, accessory: /\b(moldura|quadro|cola|tapete|suporte|mesa|expositor)\b/ },
+  pelucia: { noun: /\b(pelucia|pelucias|plush)\b/, accessory: /\b(capa|roupa|roupinha|fantasia|chaveiro|almofada|expositor)\b/ },
+  boneca: { noun: /\b(boneca|bonecas|barbie|monster high|polly|baby alive|lol surprise|bratz)\b/, accessory: /\b(roupa|roupinha|vestido|sapato|cabide|casinha vazia|acessorio|acessorios|cabelo|peruca|expositor)\b/ },
+  'replica-estatua': { noun: /\b(estatua|estatuas|replica|busto|diorama|figure|sabre|espada|capacete|varinha|gauntlet)\b/, accessory: /\b(base|suporte|expositor|estante|vitrine|acrilico|display|case|luz|led|capa)\b/ },
+  'kits-montar': { noun: /\b(gunpla|gundam|model kit|kit de montar|revell|tamiya|maquete)\b/, accessory: /\b(tinta|pincel|ferramenta|ferramentas|alicate|cola|primer|verniz|decal|decalque|base de exposicao|suporte|expositor|led|aerografo|compressor)\b/ },
   'bicicleta-ergometrica': {
     noun: /\b(bicicleta|bike|ergometrica|spinning)\b/,
     accessory: /\b(pedal|pedais|selim|banco|capa|suporte|tapete|sensor|kit)\b/,
@@ -177,6 +189,7 @@ const NICHO: Record<string, { require?: RegExp; forbid?: RegExp }> = {
   ...NICHO_AMPLIACAO,
   ...NICHO_TIPOS,
   ...NICHO_CIENCIA,
+  ...NICHO_FERRAMENTAS,
   // Impressão 3D (2026-11-11). Impressora: tem que dizer "3d" e não pode ser caneta 3D, scanner, impressora de papel/etiqueta/gravadora
   // nem kit/peças soltas. Filamento: não pode ser caneta 3D nem lâmpada de filamento; tem que dizer 3d ou um material. Resina: só de
   // impressora 3D (3d/uv/lcd/dlp/sla), nunca epóxi, poliéster, odontológica ou de artesanato.
@@ -224,7 +237,7 @@ export function nichoIssue(segmentKey: string, name: string): ScopeIssue | null 
 // 
 const COMBO_E_VARIANTE = new Set(['impressora-3d']);
 /** "Kit" é o próprio produto (conjunto de resistências): palavra de pacote não dispara; o "+" com outro produto/acessório continua disparando. */
-const KIT_E_O_PRODUTO = new Set(['faixa-elastica']);
+const KIT_E_O_PRODUTO = new Set(['ferramenta-manual', 'ferramenta-eletrica', 'faixa-elastica', 'lego-blocos', 'action-figure', 'jogo-tabuleiro', 'quebra-cabeca', 'kits-montar', 'boneca', 'miniatura-carrinho']);
 
 /** Segmentos sem léxico (livros: "capa dura" é legítimo; tênis: só revisão de qualquer forma). */
 const NO_SCOPE_LEXICON = new Set(['livros']);

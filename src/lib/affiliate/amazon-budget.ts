@@ -18,11 +18,11 @@ export const DEFAULT_DISCOVER_COOLDOWN_H = 72;
 
 /** Atualização (masters que já têm oferta da Amazon). */
 export const REFRESH_WEIGHT: Record<Vertical, number> = {
-  games: 110, tecnologia: 25, eletroeletronicos: 15, eletrodomesticos: 25, livros: 20, esporte: 15, impressao3d: 10, beleza: 15,
+  games: 110, tecnologia: 25, eletroeletronicos: 15, eletrodomesticos: 25, livros: 20, esporte: 15, impressao3d: 10, beleza: 15, brinquedos: 15,
 };
 /** Descoberta (masters sem oferta da Amazon). */
 export const DISCOVER_WEIGHT: Record<Vertical, number> = {
-  games: 20, tecnologia: 25, eletroeletronicos: 20, eletrodomesticos: 30, livros: 25, esporte: 20, impressao3d: 15, beleza: 25,
+  games: 20, tecnologia: 25, eletroeletronicos: 20, eletrodomesticos: 30, livros: 25, esporte: 20, impressao3d: 15, beleza: 25, brinquedos: 25,
 };
 
 export type QueueMode = 'queue' | 'refresh' | 'discover';

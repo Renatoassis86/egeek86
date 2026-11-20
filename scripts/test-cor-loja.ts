@@ -4,7 +4,7 @@ import { OFFER_CARD_COLORS as C } from '../src/lib/pricing/offer-card-model';
 let fails = 0;
 const ck = (n: string, ok: boolean, d?: unknown) => { if (!ok) { fails++; console.error('FALHOU:', n, d ?? ''); } };
 const lojas = Object.entries(COR_FUNDO_LOJA);
-ck('8 lojas (7 atuais + Beleza)', lojas.length === 8);
+ck('9 lojas (7 atuais + Beleza + Brinquedos)', lojas.length === 9);
 for (const [k, v] of lojas) {
   ck(`${k} texto AA`, contraste(v, C.text) >= 7, contraste(v, C.text));
   ck(`${k} secundário AA`, contraste(v, C.secondary) >= 4.5, contraste(v, C.secondary));

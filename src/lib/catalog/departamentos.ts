@@ -55,6 +55,8 @@ export const DEPARTAMENTOS: readonly Departamento[] = [
   { slug: 'impressao3d', rotulo: 'Impressão 3D', descricao: 'Impressoras 3D, filamentos e resinas.', tipoCartao: 'tecnologia', flag: 'dept_impressao3d' },
   // Beleza (2026-11-17): maquiagem primeiro, depois skincare, cabelo e perfumaria. Flag dept_beleza; o departamento so abre com 3+ masters aprovados e visiveis.
   { slug: 'beleza', rotulo: 'Beleza', descricao: 'Maquiagem, skincare, cabelo e perfumaria das melhores marcas.', tipoCartao: 'tecnologia', flag: 'dept_beleza' },
+  // Brinquedos e Colecionaveis (2026-11-20): flag dept_brinquedos; so abre com 3+ masters aprovados e visiveis. Vertical desligada por padrao (VERTICAL_BRINQUEDOS_ENABLED).
+  { slug: 'brinquedos', rotulo: 'Brinquedos e Colecionáveis', descricao: 'Bonecos, LEGO, miniaturas, jogos de tabuleiro e colecionáveis geek das melhores marcas.', tipoCartao: 'tecnologia', flag: 'dept_brinquedos' },
 ];
 
 export function departamentoPorSlug(slug: string): Departamento | null {

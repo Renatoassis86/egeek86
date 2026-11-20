@@ -20,6 +20,8 @@ export const COR_FUNDO_LOJA: Readonly<Record<string, string>> = {
   esporte: '#104522',
   // 2026-11-17: Beleza (loja nova, canal criado pelo dono) = vinho rosado escuro; luminância 0,0304 (no teto da regra), distância 40 das demais e contraste 10,4:1 com o creme.
   beleza: '#571D26',
+  // 2026-11-20: Brinquedos e Colecionaveis = oliva escuro (medido: luminancia < 0,028, distancia >= 48 das demais, contraste AA com o creme).
+  brinquedos: '#1C2000',
 };
 
 export function fundoDaLoja(vertical: string | null | undefined): string {

@@ -4,6 +4,7 @@ import { combineTerms, dedupeTerms } from './seed-utils';
 import { NOVOS_SEGMENTOS, REQUIRE_BRAND_KEYS, SEARCH_DOMAIN_EXTRAS, TERMOS_EXTRAS } from './config-ampliacao';
 import { NOVOS_SEGMENTOS_TIPOS, TERMOS_EXTRAS_TIPOS } from './config-tipos';
 import { NOVOS_SEGMENTOS_CIENCIA } from './config-ciencia';
+import { NOVOS_SEGMENTOS_FERRAMENTAS } from './config-ferramentas';
 
 /**
  * CONFIGURAÇÃO POR DEPARTAMENTO (vertical) E SEGMENTO. ADR 0008 itens 4 e 5; ata 2026-11-08, Fase 2.
@@ -512,7 +513,7 @@ export const SEGMENTS: SegmentConfig[] = [
 ];
 
 // Ampliação 2026-11-11 (config-ampliacao.ts): segmentos novos, termos extras (anexados ao fim) e filtro de marca.
-SEGMENTS.push(...NOVOS_SEGMENTOS, ...NOVOS_SEGMENTOS_TIPOS, ...NOVOS_SEGMENTOS_CIENCIA);
+SEGMENTS.push(...NOVOS_SEGMENTOS, ...NOVOS_SEGMENTOS_TIPOS, ...NOVOS_SEGMENTOS_CIENCIA, ...NOVOS_SEGMENTOS_FERRAMENTAS);
 for (const s of SEGMENTS) {
   const extra = TERMOS_EXTRAS[s.key];
   if (extra?.length) s.terms = dedupeTerms([...s.terms, ...extra]);
@@ -569,6 +570,7 @@ export const PLUS_REFRESH_CEILING_MIN: Record<NonGamesVertical, number> = {
   tecnologia: 30,
   eletroeletronicos: 30,
   beleza: 30,
+  brinquedos: 30,
 };
 
 /** Intervalo de recoleta de um departamento: a menor frequência-alvo dos segmentos, limitada pelo teto Plus e pelos termos do ML. */

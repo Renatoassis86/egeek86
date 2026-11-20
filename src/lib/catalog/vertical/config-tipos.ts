@@ -448,7 +448,57 @@ const BELEZA_SEG: SegmentConfig[] = [
   }),
 ];
 
-export const NOVOS_SEGMENTOS_TIPOS: SegmentConfig[] = [...ELETRO, ...TECNOLOGIA, ...I3D, ...CASA, ...ESPORTE, ...BELEZA_SEG];
+// ---------------------------------------------------------------------------------------------------------------------
+// BRINQUEDOS E COLECIONAVEIS (dono, 2026-11-20: "Vamos criar no Telegram a loja Brinquedos e Colecionaveis"). R-105.
+// Ranks 400+ (depois da Beleza). Marcas de topo abrem cada lista de termos (a semeadura vai na ordem dos termos).
+// So produto NOVO e em linha de marca: usado/retro/open box, pecas e acessorios soltos, slime/fidget, bijuteria e imitacao ficam fora (gate.ts).
+// Dominios do ML a confirmar no 1o dry-run (regex de varredura, busca sem domain_id). Vertical DESLIGADA ate VERTICAL_BRINQUEDOS_ENABLED=1.
+// ---------------------------------------------------------------------------------------------------------------------
+export const MARCAS_BRINQUEDOS_TOP = ['lego', 'hasbro', 'mattel', 'funko', 'bandai', 'estrela', 'grow', 'copag', 'playmobil', 'hot wheels', 'pop mart', 'good smile'];
+const MARCAS_FIGURA = ['funko pop', 'bandai', 'banpresto', 'good smile', 'hot toys', 'sh figuarts', 'marvel legends', 'hasbro', 'mattel', 'neca', 'mcfarlane', 'pop mart', 'kotobukiya', 'megahouse'];
+const MARCAS_TABULEIRO = ['galapagos', 'copag', 'grow', 'estrela', 'devir', 'mosaico', 'meeple br', 'papergames', 'hasbro', 'mattel'];
+const BRINQ_RE = (re: RegExp) => [re];
+
+const BRINQUEDOS_SEG: SegmentConfig[] = [
+  seg({
+    key: 'lego-blocos', vertical: 'brinquedos', label: 'LEGO e blocos de montar', rank: 400, domains: BRINQ_RE(/BUILDING_BLOCKS|BUILDING_TOYS|LEGO|CONSTRUCTION_TOYS|BLOCK/),
+    terms: [...combineTerms('lego', ['star wars', 'marvel', 'harry potter', 'technic', 'icons', 'city', 'ideas', 'botanicals', 'speed champions', 'super mario', 'architecture', 'creator', 'disney', 'ninjago', 'friends'], ['']), 'playmobil', 'lego set colecionador'],
+  }),
+  seg({
+    key: 'action-figure', vertical: 'brinquedos', label: 'Bonecos e action figures colecionáveis', rank: 401, domains: BRINQ_RE(/ACTION_FIGURES|COLLECTIBLE|FIGURES|FIGURINES|DOLLS_AND_ACTION|STATUES/),
+    terms: [...combineTerms('action figure', ['', 'marvel', 'dragon ball', 'star wars', 'naruto', 'one piece', 'dc comics', 'pokemon', 'demon slayer', 'batman'], MARCAS_FIGURA.slice(0, 8)), ...combineTerms('funko pop', ['', 'marvel', 'star wars', 'dragon ball', 'naruto', 'pokemon', 'harry potter', 'dc'], ['']), ...combineTerms('marvel legends', ['', 'homem aranha', 'x men', 'vingadores'], ['']), ...combineTerms('s h figuarts', ['', 'dragon ball', 'naruto'], [''])],
+  }),
+  seg({
+    key: 'miniatura-carrinho', vertical: 'brinquedos', label: 'Carrinhos e miniaturas colecionáveis', rank: 402, domains: BRINQ_RE(/DIECAST|DIE_CAST|CARS_TOYS|TOY_CARS|MODEL_CARS|VEHICLE|MINIATURE/),
+    terms: [...combineTerms('hot wheels', ['', 'premium', 'collectors', 'rlc', 'track builder', 'pista', 'kit 5 carrinhos'], ['']), ...combineTerms('miniatura', ['carro', 'metal 1 24', 'colecionavel'], ['maisto', 'matchbox', 'greenlight', 'burago', 'majorette', 'minichamps', 'hot wheels']), 'matchbox carrinho', 'maisto miniatura 1 18'],
+  }),
+  seg({
+    key: 'jogo-tabuleiro', vertical: 'brinquedos', label: 'Jogos de tabuleiro e de cartas', rank: 403, domains: BRINQ_RE(/BOARD_GAMES|CARD_GAMES|GAMES_BOARD|TABLETOP|PARLOUR|TRADING_CARD|CARDS/),
+    terms: [...combineTerms('jogo de tabuleiro', ['', 'estrategia', 'cooperativo', 'familia', 'party game', 'rpg'], MARCAS_TABULEIRO.slice(0, 8)), ...combineTerms('pokemon tcg', ['booster', 'elite trainer box', 'box colecao', 'deck', 'blister'], ['']), ...combineTerms('magic the gathering', ['booster', 'commander', 'bundle', 'deck'], ['']), 'baralho copag', 'catan', 'carcassonne', 'ticket to ride', 'banco imobiliario', 'jogo da vida', 'war estrela', 'uno mattel', 'detetive estrela', 'dixit'],
+  }),
+  seg({
+    key: 'quebra-cabeca', vertical: 'brinquedos', label: 'Quebra-cabeças', rank: 404, domains: BRINQ_RE(/PUZZLE|JIGSAW/),
+    terms: [...combineTerms('quebra cabeca', ['1000 pecas', '500 pecas', '2000 pecas', '3d', 'adulto', 'panoramico'], ['grow', 'toyster', 'ravensburger', 'educa', 'clementoni', 'game office', 'nig']), 'rubik cubo magico', 'cubo magico moyu'],
+  }),
+  seg({
+    key: 'pelucia', vertical: 'brinquedos', label: 'Pelúcias de marca', rank: 405, domains: BRINQ_RE(/PLUSH|STUFFED|SOFT_TOYS|PLUSHES/),
+    terms: [...combineTerms('pelucia', ['pokemon', 'pikachu', 'stitch', 'mario', 'sonic', 'minecraft', 'hello kitty', 'sanrio', 'marvel', 'baby yoda'], ['']), ...combineTerms('pelucia', ['', 'grande'], ['pop mart', 'jellycat', 'build a bear', 'funko', 'disney', 'fofys', 'buba']), 'labubu pop mart'],
+  }),
+  seg({
+    key: 'boneca', vertical: 'brinquedos', label: 'Bonecas (Barbie e similares)', rank: 406, domains: BRINQ_RE(/DOLLS|FASHION_DOLLS|BABY_DOLLS/),
+    terms: [...combineTerms('boneca', ['barbie', 'barbie colecionavel', 'monster high', 'ever after high', 'lol surprise', 'polly pocket', 'baby alive', 'my little pony', 'bratz', 'rainbow high', 'frozen'], ['']), 'barbie signature', 'barbie dreamhouse', 'boneca susi', 'boneca adora'],
+  }),
+  seg({
+    key: 'replica-estatua', vertical: 'brinquedos', label: 'Réplicas e estátuas geek', rank: 407, domains: BRINQ_RE(/STATUES|REPLICAS|COLLECTIBLE|FIGURES|BUSTS|FIGURINES/),
+    terms: [...combineTerms('estatua', ['marvel', 'star wars', 'dragon ball', 'naruto', 'pokemon', 'anime', 'dc comics', 'harry potter', 'one piece'], ['']), ...combineTerms('replica', ['sabre de luz', 'espada', 'capacete', 'varinha harry potter', 'infinity gauntlet'], ['']), 'busto colecionavel', 'diorama colecionavel', ...combineTerms('figure', ['dragon ball', 'one piece', 'demon slayer', 'jujutsu kaisen', 'my hero academia'], ['banpresto', 'bandai', 'good smile', 'nendoroid', 'figma', 'pop up parade'])],
+  }),
+  seg({
+    key: 'kits-montar', vertical: 'brinquedos', label: 'Kits de montar (Gundam/Gunpla)', rank: 408, domains: BRINQ_RE(/MODEL_KITS|SCALE_MODELS|GUNDAM|GUNPLA|ASSEMBLY|HOBBY/),
+    terms: [...combineTerms('gunpla', ['', 'hg', 'rg', 'mg', 'pg', 'sd', 'gundam'], ['bandai']), ...combineTerms('gundam', ['hg 1 144', 'rg 1 144', 'mg 1 100', 'wing', 'barbatos', 'rx 78'], ['bandai']), 'model kit star wars bandai', 'revell kit montar', 'tamiya kit montar'],
+  }),
+];
+
+export const NOVOS_SEGMENTOS_TIPOS: SegmentConfig[] = [...ELETRO, ...TECNOLOGIA, ...I3D, ...CASA, ...ESPORTE, ...BELEZA_SEG, ...BRINQUEDOS_SEG];
 
 // ---------------------------------------------------------------------------------------------------------------------
 // TERMOS EXTRAS DE SEGMENTOS JÁ EXISTENTES (anexados ao fim; mais modelos e marcas por tipo, sem teto)

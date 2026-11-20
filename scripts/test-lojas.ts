@@ -22,7 +22,7 @@ async function main() {
   const { getStores, getStoreByVertical, chatForStore, mapLoja } = await import('../src/server/stores');
 
   // ---- Puras ----
-  check('VERTICALS contém beleza, impressao3d e as 6 anteriores', ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza'].every((v) => (VERTICALS as readonly string[]).includes(v)) && VERTICALS.length === 8);
+  check('VERTICALS contém beleza, impressao3d e as 6 anteriores', ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza', 'brinquedos'].every((v) => (VERTICALS as readonly string[]).includes(v)) && VERTICALS.length === 9);
   check('departamento impressao3d registrado com flag dept_impressao3d', DEPARTAMENTOS.some((d) => d.slug === 'impressao3d' && d.flag === 'dept_impressao3d') && FLAG_KEYS.includes('dept_impressao3d'));
   check(
     'impressao3d fechada: trava mestra desligada => fechado',

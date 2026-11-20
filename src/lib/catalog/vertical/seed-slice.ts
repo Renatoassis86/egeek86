@@ -23,7 +23,7 @@ import { plusCallQuota, type QuotaResult } from './queue';
  */
 
 /** Lojas aceitas em SEMEADURA_LOJAS (apelidos para o que o dono chama de "Eletrônicos"). */
-const LOJA_ALIAS: Record<string, NonGamesVertical> = { eletronicos: 'eletroeletronicos', eletronico: 'eletroeletronicos', casa: 'eletrodomesticos', '3d': 'impressao3d', maquiagem: 'beleza' };
+const LOJA_ALIAS: Record<string, NonGamesVertical> = { eletronicos: 'eletroeletronicos', eletronico: 'eletroeletronicos', casa: 'eletrodomesticos', '3d': 'impressao3d', maquiagem: 'beleza', brinquedo: 'brinquedos', colecionaveis: 'brinquedos' };
 
 /** `SEMEADURA_LOJAS=eletroeletronicos` ou `eletroeletronicos,esporte`. Vazio/inválido = nenhuma (desligada). Nunca `games`. */
 export function parseLojas(raw: string | undefined | null): NonGamesVertical[] {

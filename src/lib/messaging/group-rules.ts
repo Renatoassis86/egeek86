@@ -230,7 +230,7 @@ export const RULES = {
 } as const;
 
 /** Departamentos liberados no porteiro e no /go. Os demais geram G6 marcado como não enviável. */
-export const RELEASED_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza']; // todas as lojas (dono, 2026-11-11): cada uma envia ao seu canal
+export const RELEASED_VERTICALS: readonly string[] = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza', 'brinquedos']; // todas as lojas (dono, 2026-11-11): cada uma envia ao seu canal
 
 export type Trigger = 'G1' | 'G2' | 'G3' | 'G4' | 'G5' | 'G6' | 'OK1' | 'OK2' | 'T1' | 'T2' | 'RADAR' | 'CUPOM' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'AC' | 'N1';
 
@@ -1879,6 +1879,46 @@ export function tipoPorHora(env: Record<string, string | undefined> = process.en
 }
 
 /**
+ * R-106 (dono, 2026-11-20: "vamos enviar so os 5 menores precos a cada hora" dos mouses da Tecnologia): TETO HORARIO ESPECIAL por 'loja|tipo', DURO (nao exige
+ * alternativa na fila) e com ordem propria. Substitui, para esse par, a cota suave por hora (TIPO_MAX_PER_HOUR), a cota de participacao e o teto duro do achado:
+ * dentro da hora saem no maximo `porHora` do tipo e, entre os candidatos elegiveis da janela, os de MENOR PRECO primeiro. O excedente e ADIADO (volta a ser
+ * proposto na hora seguinte; o produto nao e consumido). Candidato suspeito de preco-isca (retido, queda ou desconto >= ISCA_SUSPEITA_PCT) vai para o FIM da ordem:
+ * "menor preco" nunca promove isca (a barreira de verdade e o gatilho R-61 na coleta; esta e a segunda trava). Nao afeta nenhuma outra loja ou tipo.
+ */
+export const ISCA_SUSPEITA_PCT = 60;
+export interface TetoHoraEspecial {
+  /** Variavel de ambiente que sobrescreve o padrao (inteiro 1 a 60; 0/off desliga o teto especial e o tipo volta as regras gerais). */
+  env: string;
+  porHoraPadrao: number;
+  /** menor_preco = os mais baratos primeiro (mouse); normal = a ordem de sempre (compareCandidates: qualidade/popularidade). */
+  ordem: 'menor_preco' | 'normal';
+}
+export const TIPO_TETO_HORA_ESPECIAL: Readonly<Record<string, TetoHoraEspecial>> = {
+  'tecnologia|mouse': { env: 'TECNOLOGIA_MOUSE_POR_HORA', porHoraPadrao: 5, ordem: 'menor_preco' },
+  // Dono, 2026-11-20: "diminua tambem a frequencia de air fryer" (54% dos envios de Casa em 24 h). Ordem normal.
+  'eletrodomesticos|air-fryer': { env: 'CASA_AIRFRYER_POR_HORA', porHoraPadrao: 2, ordem: 'normal' },
+  // Dono, 2026-11-20: "de esportes tambem coloque o teto para bolas" (65 de ~179 envios de Esporte em 24 h). Ordem normal.
+  'esporte|bola': { env: 'ESPORTE_BOLA_POR_HORA', porHoraPadrao: 2, ordem: 'normal' },
+};
+export function tipoTetoHoraEspecial(vertical: string | null | undefined, tipo: string | null | undefined, env: Record<string, string | undefined> = process.env): { porHora: number; ordem: 'menor_preco' | 'normal' } | null {
+  if (!vertical || !tipo) return null;
+  const def = TIPO_TETO_HORA_ESPECIAL[`${vertical}|${tipo}`];
+  if (!def) return null;
+  const raw = env[def.env]?.trim();
+  if (raw && /^(off|false|nao|não|0)$/i.test(raw)) return null;
+  const n = Number(raw);
+  return { porHora: raw && Number.isInteger(n) && n >= 1 && n <= 60 ? n : def.porHoraPadrao, ordem: def.ordem };
+}
+/** Suspeita de preco-isca no candidato (segunda trava; a primeira e o R-61 na coleta). */
+export function iscaSuspeita(c: Pick<Candidate, 'held' | 'dropPct' | 'belowAvgPct'>): boolean {
+  return !!c.held || (c.dropPct ?? 0) >= ISCA_SUSPEITA_PCT || (c.belowAvgPct ?? 0) >= ISCA_SUSPEITA_PCT;
+}
+/** Ordem do teto especial: nao suspeito antes de suspeito; depois menor preco; desempate estavel pela chave da mensagem. */
+export function compararMenorPreco(a: Pick<Candidate, 'held' | 'dropPct' | 'belowAvgPct' | 'priceCents' | 'messageKey'>, b: Pick<Candidate, 'held' | 'dropPct' | 'belowAvgPct' | 'priceCents' | 'messageKey'>): number {
+  return Number(iscaSuspeita(a)) - Number(iscaSuspeita(b)) || a.priceCents - b.priceCents || a.messageKey.localeCompare(b.messageKey);
+}
+
+/**
  * Cooldown único por produto entre TODOS os gatilhos (dono, 2026-11-13: o mesmo produto saiu em duas mensagens seguidas, CUPOM e Boa compra).
  * O mesmo master só volta depois de masterCooldownHours (padrão 8 h), qualquer que seja o gatilho do envio anterior. Exceções (mudança material,
  * sempre contra o ÚLTIMO envio do produto): (1) cupom NOVO (referência ainda não divulgada em nenhuma mensagem do produto na janela), depois de 1 h;
@@ -2409,6 +2449,7 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
     c.cls === 'plataforma' || (prio3d && ehPrioridade3d(c.vertical, c.name, c.tipo)) || (c.cls === 'alerta' && (!cotaAlerta || c.trigger === 'G1' || c.trigger === 'OK1' || (c.regua?.degrau ?? 0) >= 4));
   const tipoOver = (c: Candidate): boolean => {
     if (!c.tipo || !c.vertical || tipoIsento(c)) return false;
+    if (tipoTetoHoraEspecial(c.vertical, c.tipo)) return false; // R-106: o teto especial (duro, por menor preco) substitui a cota suave do tipo
     const s = tipoShare(c.vertical, c.tipo, real, now);
     if (s.total >= RULES.TIPO_SHARE_MIN_SENT && s.pct >= RULES.TIPO_MAX_SHARE_PCT) return true;
     return cotaAlerta && porHoraTipo > 0 && tipoHourCount(c.vertical, c.tipo, real, now) >= porHoraTipo;
@@ -2421,9 +2462,38 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
   };
   const ok: Candidate[] = [];
   const acPorHora = tipoAcPorHora();
+  // R-106: teto horario ESPECIAL por loja|tipo (mouses da Tecnologia: 5 por hora, os de menor preco). Vagas = teto - enviados na ultima hora; a janela de candidatos
+  // elegiveis (produtos distintos) e ordenada por menor preco (suspeito de isca por ultimo) e so as primeiras `vagas` seguem; o resto e adiado, nunca descartado.
+  const espAdiado = new Map<string, string>();
+  {
+    const grupos = new Map<string, { teto: number; cands: Candidate[] }>();
+    for (const c of ok0) {
+      if (c.cls === 'plataforma') continue;
+      const e = tipoTetoHoraEspecial(c.vertical, c.tipo);
+      if (!e) continue;
+      const k = `${c.vertical}|${c.tipo}`;
+      (grupos.get(k) ?? grupos.set(k, { teto: e.porHora, cands: [] }).get(k)!).cands.push(c);
+    }
+    for (const [k, g] of grupos) {
+      const [vert, tp] = k.split('|');
+      const vagas = Math.max(0, g.teto - tipoHourCount(vert, tp, real, now));
+      const ordenados = g.cands.slice().sort(tipoTetoHoraEspecial(vert, tp)?.ordem === 'menor_preco' ? compararMenorPreco : compareCandidates);
+      const vistos = new Set<string>();
+      for (const c of ordenados) {
+        const id = c.masterProductId || c.messageKey;
+        if (!vistos.has(id)) vistos.add(id);
+        if ([...vistos].indexOf(id) >= vagas) espAdiado.set(c.messageKey, `tipo_${tp}_teto_${g.teto}_por_hora`);
+      }
+    }
+  }
+  const ok0Viva = ok0.filter((x) => !espAdiado.has(x.messageKey));
   for (const c of ok0) {
+    if (espAdiado.has(c.messageKey)) {
+      deferred.push({ messageKey: c.messageKey, reason: espAdiado.get(c.messageKey)! });
+      continue;
+    }
     // Teto horário DURO do achado por tipo e loja (sem exigir alternativa na fila): o excedente espera a hora seguinte.
-    if (acPorHora > 0 && (c.trigger === 'AC' || c.trigger === 'N1') && c.tipo && c.tipo !== 'outros' && c.vertical) {
+    if (acPorHora > 0 && (c.trigger === 'AC' || c.trigger === 'N1') && c.tipo && c.tipo !== 'outros' && c.vertical && !tipoTetoHoraEspecial(c.vertical, c.tipo)) {
       const limiteAc = tipoAcShareLimite(storeLast24h(real, c.vertical, now).length, acPorHora);
       if (tipoHourCount(c.vertical, c.tipo, real, now) >= limiteAc) {
         deferred.push({ messageKey: c.messageKey, reason: `tipo_${c.tipo}_achado_limite_${limiteAc}_por_hora_na_loja` });
@@ -2438,11 +2508,11 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
         continue;
       }
     }
-    if (cupomOver(c) && ok0.some((x) => x.vertical === c.vertical && x.trigger !== 'CUPOM' && x.cls !== 'plataforma')) {
+    if (cupomOver(c) && ok0Viva.some((x) => x.vertical === c.vertical && x.trigger !== 'CUPOM' && x.cls !== 'plataforma')) {
       deferred.push({ messageKey: c.messageKey, reason: `cupom_acima_de_${RULES.CUPOM_MAX_SHARE_PCT}pct_do_dia_na_loja` });
       continue;
     }
-    if (tipoOver(c) && ok0.some((x) => x.vertical === c.vertical && !!x.tipo && x.tipo !== c.tipo && !tipoOver(x))) {
+    if (tipoOver(c) && ok0Viva.some((x) => x.vertical === c.vertical && !!x.tipo && x.tipo !== c.tipo && !tipoOver(x))) {
       deferred.push({ messageKey: c.messageKey, reason: `tipo_${c.tipo}_acima_de_${RULES.TIPO_MAX_SHARE_PCT}pct_do_dia_na_loja` });
     } else ok.push(c);
   }
@@ -2474,6 +2544,8 @@ export function applyLimits(cands: Candidate[], history: SentRecord[], now: Date
       (prio3d ? posicaoPrioridade3d(a.vertical, a.name, a.tipo) - posicaoPrioridade3d(b.vertical, b.name, b.tipo) : 0) ||
       (rotates(a) ? Number(a.trigger === 'AC' || a.trigger === 'N1') : 0) - (rotates(b) ? Number(b.trigger === 'AC' || b.trigger === 'N1') : 0) ||
       (rotates(a) ? tipoCountOf(a) : 0) - (rotates(b) ? tipoCountOf(b) : 0) ||
+      // R-106: dentro do tipo com teto especial, MENOR PRECO primeiro (suspeito de isca por ultimo).
+      (a.vertical === b.vertical && a.tipo === b.tipo && tipoTetoHoraEspecial(a.vertical, a.tipo)?.ordem === 'menor_preco' ? compararMenorPreco(a, b) : 0) ||
       (diversidadeOn && rotates(a) && rotates(b) ? masterCountOf(a) - masterCountOf(b) || redeCountOf(a) - redeCountOf(b) : 0) ||
       compareCandidates(a, b)
     );

@@ -61,6 +61,8 @@ const OUT_OF_SCOPE: Record<NonGamesVertical, RegExp> = {
   impressao3d: /\b(capa|bolsa|mochila|garantia estendida|miniatura pronta|action figure|estatueta|caneta 3d|scanner|escaner|digitalizador|kit de pecas|pecas de reposicao)\b/,
   // Beleza (2026-11-17): amostra, miniatura, brinde, expositor, brinquedo/maquiagem infantil, fantasia e kit de revenda nao sao o produto.
   beleza: /\b(amostra|amostras|sample|miniatura|mini kit|brinde|expositor|display|brinquedo|brinquedos|infantil|fantasia|necessaire vazia|estojo vazio|kit revenda|atacado)\b/,
+  // Brinquedos e Colecionaveis (2026-11-20): so produto novo, de marca e em linha. Fora: slime, fidget/spinner, bijuteria, peca/refil/reposicao avulsa, usado/retro/seminovo/open box, impresso em 3D, imitacao, fantasia, atacado, acessorio avulso.
+  brinquedos: /\b(slime|fidget|spinner|bijuteria|bijuterias|pecas de reposicao|peca avulsa|pecas avulsas|refil|usado|usada|seminovo|seminova|retro|open box|impresso em 3d|impressao 3d|similar|inspirado|inspirada|tipo lego|compativel com lego|fantasia|atacado|kit revenda|brinde|chaveiro|adesivo|sticker|capa para|case para|expositor|display)\b/,
 };
 
 /** Segmentos cujo próprio produto é o que o léxico do departamento trata como acessório (cabo, adaptador): quem decide é scope.ts. */

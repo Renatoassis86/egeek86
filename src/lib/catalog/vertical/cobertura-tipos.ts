@@ -39,8 +39,19 @@ const S = 'esporte' as const;
 const L = 'livros' as const;
 const I = 'impressao3d' as const;
 const B = 'beleza' as const;
+const BQ = 'brinquedos' as const;
 
 export const TIPOS_ESPERADOS: TipoEsperado[] = [
+  // ---- Brinquedos e Colecionáveis (2026-11-20, R-105) ----
+  t(BQ, 'LEGO e blocos de montar', 'lego-blocos'),
+  t(BQ, 'Bonecos e action figures colecionáveis', 'action-figure'),
+  t(BQ, 'Carrinhos e miniaturas colecionáveis', 'miniatura-carrinho'),
+  t(BQ, 'Jogos de tabuleiro e de cartas', 'jogo-tabuleiro'),
+  t(BQ, 'Quebra-cabeças', 'quebra-cabeca'),
+  t(BQ, 'Pelúcias de marca', 'pelucia'),
+  t(BQ, 'Bonecas (Barbie e similares)', 'boneca'),
+  t(BQ, 'Réplicas e estátuas geek', 'replica-estatua'),
+  t(BQ, 'Kits de montar (Gundam/Gunpla)', 'kits-montar'),
   // ---- Beleza (2026-11-17) ----
   t(B, "Marcas preferidas (Medicube, Tsubaki, Schwarzkopf, L'Oréal, Bioré)", 'marcas-beleza', undefined, 'busca por marca nos mesmos domínios de skincare, cabelo e maquiagem'),
   t(B, 'Batom e lábios', 'batom'),
@@ -132,7 +143,9 @@ export const TIPOS_ESPERADOS: TipoEsperado[] = [
   t(T, 'Plotter de recorte e cortadora de vinil', 'plotter-corte'),
   t(T, 'Medidor de distância a laser', 'medidor-laser'),
   t(T, 'NAS e servidores', null, 'sem_catalogo_ml', 'medido em 2026-11-15: o catálogo do ML não tem domínio de NAS/servidor (a busca cai em docking, fita e servidor de impressão); só anúncio livre'),
-  t(T, 'Ferramentas elétricas e máquinas de solda industrial', null, 'decisao_dono', 'departamento próprio (Ferramentas) depende de aprovação do dono; ver docs/mapa-categorias-ciencia-tecnologia-2026-11-15.md'),
+  t(T, 'Ferramentas elétricas (furadeira, parafusadeira, serra, esmerilhadeira, lixadeira, soldador)', 'ferramenta-eletrica', undefined, 'aprovado pelo dono em 2026-11-20 (R-106): saem no canal de Tecnologia, sem departamento próprio; só marca reconhecida'),
+  t(T, 'Ferramentas manuais e kits (jogo de chaves, soquetes, maleta de ferramentas)', 'ferramenta-manual', undefined, 'aprovado pelo dono em 2026-11-20 (R-106): saem no canal de Tecnologia; peça avulsa é item miúdo'),
+  t(T, 'Máquinas de solda industrial (MIG, TIG, inversora)', null, 'decisao_dono', 'fora da aprovação de 2026-11-20 (só ferramentas): máquina de solda industrial segue barrada até o dono decidir'),
   t(T, 'Sensores, módulos e kits de eletrônica de baixo valor', null, 'escopo', 'item miúdo (regra do dono 2026-11-13): barrado de propósito'),
   t(T, 'Notebook', 'notebook'),
   t(T, 'Computador desktop, mini PC e all-in-one', 'computador-desktop'),

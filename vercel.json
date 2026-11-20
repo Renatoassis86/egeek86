@@ -69,6 +69,10 @@
       "schedule": "9-59/15 * * * *"
     },
     {
+      "path": "/api/cron/collect-vertical?v=brinquedos",
+      "schedule": "21,51 * * * *"
+    },
+    {
       "path": "/api/cron/semear-vertical?apply=1",
       "schedule": "7-57/20 * * * *"
     },

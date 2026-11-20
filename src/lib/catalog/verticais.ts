@@ -10,7 +10,7 @@ import { sql, type SQL } from 'drizzle-orm';
  * Toda consulta PÚBLICA recebe um `Vertical` OBRIGATÓRIO (sem default silencioso): quem chama declara o
  * departamento da superfície. Superfícies gamer passam `GAMES`.
  */
-export const VERTICALS = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza'] as const;
+export const VERTICALS = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza', 'brinquedos'] as const;
 export type Vertical = (typeof VERTICALS)[number];
 
 /** Departamento das superfícies gamer (home, busca, ofertas, notícias, /api/produtos, /go, sitemap). */

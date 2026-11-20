@@ -278,7 +278,7 @@ async function loadPlatStats(now: Date): Promise<Map<string, { median: number; n
   platStatsCache = { at: Date.now(), map };
   return map;
 }
-const RELEASED_PLUS = ['tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza'];
+const RELEASED_PLUS = ['tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza', 'brinquedos'];
 
 /** Último lote da coleta assistida da Amazon (collector_runs job 'amazon-assistida', status ok). */
 export async function loadAmazonLastRun(): Promise<Date | null> {
@@ -1045,7 +1045,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
  */
 export async function detectGroupCandidates(opts: DetectOptions = {}): Promise<DetectionResult> {
   const now = opts.now ?? new Date();
-  const verticals = (opts.verticals ?? ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza']).filter(isVertical);
+  const verticals = (opts.verticals ?? ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza', 'brinquedos']).filter(isVertical);
   if (!verticals.length) throw new Error('nenhum departamento válido');
   const maxAgeMin = opts.maxAgeMin ?? RULES.DETECT_MAX_AGE_MIN;
   const eventWindowHours = opts.eventWindowHours ?? 24;
