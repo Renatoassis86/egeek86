@@ -21,7 +21,7 @@ const RETENCAO_DIAS = 7;
 type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 async function leve<T>(ms: string, fn: (tx: Tx) => Promise<T>): Promise<T> {
   return runInBgPool(() => db.transaction(async (tx) => {
-    await tx.execute(sql`SET LOCAL statement_timeout = ${ms}`);
+    await tx.execute(sql.raw(`SET LOCAL statement_timeout = '${ms.replace(/[^0-9a-z]/g, '')}'`));
     await tx.execute(sql`SET LOCAL lock_timeout = '2s'`);
     return fn(tx);
   }));

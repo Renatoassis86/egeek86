@@ -1,5 +1,6 @@
 // R-112 (pistas autonomas, Fase 1, sombra): admissao pura, cotas piso/teto, tipo, marca, repeticao, gates, contadores e paridade. Sem banco, sem rede.
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { admitir, canaisSombra, gatesInegociaveis, horaBucket, pistaConfig, type EntradaAdmissao, type MasterPista } from '../src/lib/pistas/admissao';
 import { ContadoresMem } from '../src/lib/pistas/contadores-mem';
 import { resumoParidade, veredito } from './pista-paridade';
@@ -166,3 +167,12 @@ c.limpar(); assert.equal(c.ler('livros', h0, null, null).canalHora, 0);
 }
 
 console.log('OK: R-112 (admissao, gates R-70/R-81/isca/novo/barrado, repeticao 24 h, vagas tipo/marca/canal piso e teto, contadores, paridade).');
+
+// Regressao: SET LOCAL nao aceita parametro ($1) no Postgres; o cron de sombra falhou em silencio por isso em 2026-11-20.
+{
+
+  for (const f of ['src/server/pistas/sombra.ts', 'src/server/pistas/contadores.ts']) {
+    const src = fs.readFileSync(f, 'utf8');
+    assert.ok(!/sql`SET LOCAL [a-z_]+ = \$\{/.test(src), `${f}: SET LOCAL parametrizado`);
+  }
+}
