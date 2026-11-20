@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { buildGoLink } from '@/lib/messaging/group-messages';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
-import { familiaDe, VITRINE_INTERVALO_MIN, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherTopRodizio, janelaKey, montarLegenda, vitrineLigada, type JogoVitrine } from '@/lib/messaging/vitrine-games';
+import { familiaDe, VITRINE_INTERVALO_MIN, VITRINE_PLATAFORMAS, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherMenores, escolherTopRodizio, janelaKey, montarLegenda, montarLegendaPlataforma, vitrineLigada, vitrinePorPlataformaLigada, type JogoVitrine } from '@/lib/messaging/vitrine-games';
 import { amazonFrescorMin } from '@/lib/messaging/confirmacao-preco';
 import { aptaSql } from '@/server/queries/ranking-busca';
 import { getOfferListingMetrics } from '@/server/queries/affiliate';
@@ -79,6 +79,7 @@ export async function rodarVitrineGames(o: { now?: Date; dry?: boolean; force?: 
     if (ult && now.getTime() - new Date(ult.s).getTime() < (VITRINE_INTERVALO_MIN - 3) * 60_000) return { acao: 'recente', ms: Date.now() - t0 };
   }
   const candidatos = await carregarJogosVitrine();
+  if (vitrinePorPlataformaLigada()) return rodarVitrinesPorPlataforma({ now, dry: !!o.dry, force: !!o.force, candidatos, token, chatId, t0 });
   // Rodízio: o que saiu nas últimas vitrines descansa (VITRINE_REPOUSO_RODADAS); prévias (dry) não contam.
   const recentes = rows<{ m: string[] | null }>(await db.execute(sql`SELECT meta->'masters' AS m FROM collector_runs WHERE job = ${JOB_VITRINE_GAMES} AND status = 'ok' ORDER BY started_at DESC LIMIT 12`)).map((x) => x.m ?? []);
   const top = escolherTopRodizio(candidatos, recentes, VITRINE_TOP);
@@ -94,4 +95,50 @@ export async function rodarVitrineGames(o: { now?: Date; dry?: boolean; force?: 
     VALUES (${JOB_VITRINE_GAMES}, 'telegram', ${now.toISOString()}::timestamptz, now(), ${Date.now() - t0}, ${r.ok ? 'ok' : 'error'}, ${top.length},
             ${JSON.stringify({ janela: key, messageId: r.messageId, erro: r.ok ? undefined : r.error, fotoSkipped: r.photoSkipped, masters: top.map((j) => j.masterId) })}::text::jsonb)`);
   return { acao: r.ok ? 'enviada' : 'falhou', enviados: r.ok ? 1 : 0, messageId: r.messageId, motivo: ok ? undefined : r.error, candidatos: candidatos.length, ms: Date.now() - t0 };
+}
+
+/**
+ * VITRINE POR PLATAFORMA (dono, 2026-11-20): uma mensagem com cartão para cada plataforma (Switch 1, Switch 2, Xbox One/Series, PS5, PS4), sempre os 10 menores preços até R$ 200.
+ * Cada plataforma tem a sua trava de 27 min (collector_runs job `vitrine-games:<chave>`): falha numa não repete as outras. Os cartões são montados em paralelo e enviados em sequência.
+ */
+async function rodarVitrinesPorPlataforma(a: { now: Date; dry: boolean; force: boolean; candidatos: JogoVitrine[]; token?: string; chatId?: string; t0: number }): Promise<ResultadoVitrine & { legenda?: string; capa?: Buffer; top?: JogoVitrine[]; plataformas?: Array<Record<string, unknown>> }> {
+  const hora = horaSP(a.now);
+  const key = janelaKey(a.now);
+  const jobDe = (k: string) => `${JOB_VITRINE_GAMES}:${k}`;
+  const pendentes: typeof VITRINE_PLATAFORMAS[number][] = [];
+  for (const p of VITRINE_PLATAFORMAS) {
+    if (!a.dry && !a.force) {
+      const ult = rows<{ s: string }>(await db.execute(sql`SELECT started_at::text AS s FROM collector_runs WHERE job = ${jobDe(p.key)} AND status = 'ok' ORDER BY started_at DESC LIMIT 1`))[0];
+      if (ult && a.now.getTime() - new Date(ult.s).getTime() < (VITRINE_INTERVALO_MIN - 3) * 60_000) continue;
+    }
+    pendentes.push(p);
+  }
+  if (!pendentes.length) return { acao: 'recente', candidatos: a.candidatos.length, ms: Date.now() - a.t0 };
+  const montados = await Promise.all(pendentes.map(async (p) => {
+    const top = escolherMenores(a.candidatos, p.gens, VITRINE_TOP);
+    if (top.length < 1) return { p, top, legenda: "", capa: null as Buffer | null };
+    const legenda = montarLegendaPlataforma(top, hora, p.rotulo, p.gens.length > 1, (i) => buildGoLink(top[i].slug, 'tg', `${key}-${p.key.replace(/_/g, '')}-${i + 1}`));
+    const capa = await renderCapaVitrine(top, hora, await fotosDoTop(top), p.rotulo);
+    return { p, top, legenda, capa };
+  }));
+  const resumo: Array<Record<string, unknown>> = [];
+  let enviados = 0;
+  for (const m of montados) {
+    if (!m.capa) { resumo.push({ plataforma: m.p.key, acao: 'poucos_jogos', jogos: m.top.length }); continue; }
+    if (a.dry) { resumo.push({ plataforma: m.p.key, acao: 'previa', jogos: m.top.length, menor: m.top[0]?.precoCentavos, maior: m.top[m.top.length - 1]?.precoCentavos, legendaChars: m.legenda.length, capaBytes: m.capa.length }); continue; }
+    const t1 = Date.now();
+    const r = await sendTelegramGroupMessage({ token: a.token as string, chatId: a.chatId as string, text: m.legenda, photo: m.capa, silent: true });
+    await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, checked, meta)
+      VALUES (${jobDe(m.p.key)}, 'telegram', ${a.now.toISOString()}::timestamptz, now(), ${Date.now() - t1}, ${r.ok ? 'ok' : 'error'}, ${m.top.length},
+              ${JSON.stringify({ janela: key, plataforma: m.p.key, messageId: r.messageId, erro: r.ok ? undefined : r.error, fotoSkipped: r.photoSkipped, masters: m.top.map((j) => j.masterId) })}::text::jsonb)`);
+    if (r.ok) enviados++;
+    resumo.push({ plataforma: m.p.key, acao: r.ok ? 'enviada' : 'falhou', jogos: m.top.length, messageId: r.messageId, erro: r.ok ? undefined : r.error });
+    await new Promise((res) => setTimeout(res, 3_000));
+  }
+  // O job de controle da vitrine única também registra a rodada (a trava de 27 min e o monitor de saúde continuam enxergando a atividade).
+  if (!a.dry && enviados > 0) {
+    await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, checked, meta)
+      VALUES (${JOB_VITRINE_GAMES}, 'telegram', ${a.now.toISOString()}::timestamptz, now(), ${Date.now() - a.t0}, 'ok', ${enviados}, ${JSON.stringify({ janela: key, porPlataforma: true, plataformas: resumo.map((x) => x.plataforma) })}::text::jsonb)`);
+  }
+  return { acao: a.dry ? 'previa' : enviados > 0 ? 'enviada' : 'falhou', enviados, candidatos: a.candidatos.length, ms: Date.now() - a.t0, plataformas: resumo, top: montados[0]?.top };
 }

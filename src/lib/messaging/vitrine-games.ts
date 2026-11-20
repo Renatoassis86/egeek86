@@ -161,3 +161,53 @@ export function janelaKey(now: Date, intervaloMin = VITRINE_INTERVALO_MIN): stri
 export function vitrineLigada(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.VITRINE_GAMES ?? '').trim());
 }
+
+// ---------------------------------------------------------------------------------------------------------------------
+// VITRINE POR PLATAFORMA (dono, 2026-11-20): uma mensagem e um cartão para CADA plataforma, sempre os 10 MENORES preços até R$ 200.
+// Switch 1, Switch 2, Xbox (One e Series juntos), PlayStation 5 e PlayStation 4. `VITRINE_POR_PLATAFORMA=off` volta à vitrine única de 4 famílias.
+// ---------------------------------------------------------------------------------------------------------------------
+export interface PlataformaVitrine {
+  key: 'switch_1' | 'switch_2' | 'xbox' | 'ps5' | 'ps4';
+  rotulo: string;
+  /** Gerações do catálogo que entram nesta plataforma. */
+  gens: readonly string[];
+}
+export const VITRINE_PLATAFORMAS: readonly PlataformaVitrine[] = [
+  { key: 'switch_1', rotulo: 'Nintendo Switch', gens: ['switch_1'] },
+  { key: 'switch_2', rotulo: 'Nintendo Switch 2', gens: ['switch_2'] },
+  { key: 'xbox', rotulo: 'Xbox One / Series', gens: ['xbox_one', 'xbox_series'] },
+  { key: 'ps5', rotulo: 'PlayStation 5', gens: ['ps5'] },
+  { key: 'ps4', rotulo: 'PlayStation 4', gens: ['ps4'] },
+];
+
+export function vitrinePorPlataformaLigada(env: Record<string, string | undefined> = process.env): boolean {
+  return !/^(0|off|false|nao|não)$/i.test((env.VITRINE_POR_PLATAFORMA ?? '').trim());
+}
+
+/** Os `n` MENORES preços da plataforma (até R$ 200, preço > 0, um por produto). Desempate: mais ofertas, depois id (ordem estável). */
+export function escolherMenores(jogos: readonly JogoVitrine[], gens: readonly string[], n = VITRINE_TOP): JogoVitrine[] {
+  const vistos = new Set<string>();
+  return jogos
+    .filter((j) => !!j.gen && gens.includes(j.gen) && j.precoCentavos > 0 && j.precoCentavos <= VITRINE_TETO_CENTAVOS && !vistos.has(j.masterId) && !!vistos.add(j.masterId))
+    .sort((a, b) => a.precoCentavos - b.precoCentavos || b.ofertas - a.ofertas || a.masterId.localeCompare(b.masterId))
+    .slice(0, n);
+}
+
+/** Legenda HTML da vitrine de UMA plataforma (<= 1024 caracteres visíveis). A plataforma só aparece em cada linha quando o grupo mistura gerações (Xbox One / Series). */
+export function montarLegendaPlataforma(top: readonly JogoVitrine[], hora: string, rotulo: string, misto: boolean, link: (i: number) => string): string {
+  const monta = (max: number) => {
+    const linhas = top.map((j, i) => {
+      const d = diagnosticoCurto(j);
+      const plat = misto ? ` · ${esc(j.plataforma)}` : '';
+      return `${i + 1}. <a href="${esc(link(i))}">${esc(tituloCurto(j.titulo, max))}</a>${plat} · <b>${reais(j.precoCentavos)}</b>
+    ${esc(d.texto)}`;
+    });
+    return [`<b>🎮 Jogos até R$ 200 · ${esc(rotulo)} · ${esc(hora)}</b>`, `Os ${top.length} menores preços`, '', ...linhas, '', 'Atualizada a cada 30 min. O diagnóstico só aparece com histórico suficiente.'].join('\n');
+  };
+  let out = monta(34);
+  for (const max of [30, 26, 22, 18]) {
+    if (visivel(out) <= VITRINE_CAPTION_MAX) break;
+    out = monta(max);
+  }
+  return out;
+}

@@ -16,7 +16,7 @@ const OURO = '#D4AF37';
 const TEXTO = '#F4EFFF';
 const SEC = '#B9AEDB';
 
-export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: string, fotos: ReadonlyArray<string | null>): Promise<Buffer> {
+export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: string, fotos: ReadonlyArray<string | null>, rotulo?: string): Promise<Buffer> {
   const logo = await loadLogo();
   const fonts = await loadFontsV2();
   const linhas: JogoVitrine[][] = [];
@@ -31,11 +31,11 @@ export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: strin
           ) : (
             <div style={{ display: 'flex', fontSize: 34, color: OURO, fontWeight: 800 }}>ESPAÇO GEEK 86</div>
           )}
-          <div style={{ display: 'flex', border: `2px solid ${G.accent}`, color: G.accent, fontSize: 24, fontWeight: 800, letterSpacing: 4, padding: '10px 22px' }}>GAMES</div>
+          <div style={{ display: 'flex', border: `2px solid ${G.accent}`, color: G.accent, fontSize: 24, fontWeight: 800, letterSpacing: 4, padding: '10px 22px' }}>{rotulo ? rotulo.toUpperCase() : 'GAMES'}</div>
         </div>
         <div style={{ display: 'flex', width: 120, height: 8, background: G.accent, marginTop: 26 }} />
         <div style={{ display: 'flex', fontSize: 84, fontWeight: 800, lineHeight: 1, letterSpacing: -2, marginTop: 18, height: 112, alignItems: 'flex-start' }}>Jogos até R$ 200</div>
-        <div style={{ display: 'flex', fontSize: 28, color: SEC, marginTop: 4, fontWeight: 600 }}>Top {top.length} do catálogo · conferido às {hora}</div>
+        <div style={{ display: 'flex', fontSize: 28, color: SEC, marginTop: 4, fontWeight: 600 }}>{rotulo ? `${rotulo} · ${top.length} menores preços` : `Top ${top.length} do catálogo`} · conferido às {hora}</div>
         <div style={{ display: 'flex', flexDirection: 'column', marginTop: 32, flexGrow: 1, justifyContent: 'space-between' }}>
           {linhas.map((par, li) => (
             <div key={li} style={{ display: 'flex', justifyContent: 'space-between' }}>
