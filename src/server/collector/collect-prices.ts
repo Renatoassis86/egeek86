@@ -835,6 +835,8 @@ async function applySnapshotsToGroup(
       listPriceCents: result.listPriceCents,
       source: 'api',
       itemId: group.networkSlug === 'mercado-livre' ? result.externalItemId : null,
+      // R-107: frete grátis do ANÚNCIO desta oferta (flag da API do catálogo); sem informação não mexe.
+      ...(group.networkSlug === 'mercado-livre' && typeof result.freeShipping === 'boolean' ? { metricas: { freeShipping: result.freeShipping } } : {}),
     });
     if (rec.inserted) snapshotsWritten++;
     if (rec.ignorado) continue; // anúncio irmão do link lido há pouco: não confirma o preço nem mexe no link (#119)

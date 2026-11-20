@@ -32,6 +32,25 @@ export async function gravarBeneficiosCartao(offerId: string, source: string, te
   }
 }
 
+/**
+ * R-107 (métricas de decisão de compra): do mesmo texto da página do item, espelha o PARCELAMENTO GERAL (sem cartão específico: "em até 10x de R$ 845,91 sem juros")
+ * nas colunas da oferta. Parcela com emissor ("18x com cartão Mercado Pago") não vale para todo comprador e fica de fora. Independe da flag CARD_BENEFITS
+ * (que governa desconto de cartão): parcelamento é "o que a página imprime junto do preço do próprio item". Nunca lança.
+ * Entre vários, vale o de maior número de parcelas. A coerência com o preço atual é conferida na hora de usar (metricas-compra.ts).
+ */
+export async function gravarParcelamentoDaPagina(offerId: string, textos: unknown, baseCents: number | null): Promise<boolean> {
+  if (!Array.isArray(textos) || !textos.length) return false;
+  try {
+    const gerais = parseCardBenefits(textos, baseCents).filter((b) => b.kind === 'parcelas' && b.installments != null && b.installmentCents != null && !b.issuer);
+    if (!gerais.length) return false;
+    const b = gerais.sort((x, y) => (y.installments ?? 0) - (x.installments ?? 0))[0];
+    await db.execute(sql`UPDATE affiliate_offers SET installments_qty = ${b.installments}, installment_cents = ${b.installmentCents}, installments_no_interest = ${b.noInterest}, installments_seen_at = now() WHERE id = ${offerId}::uuid`);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export interface BeneficioVivo extends CardBenefit {
   offerId: string;
   lastSeenAt: string;

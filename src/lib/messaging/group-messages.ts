@@ -3,6 +3,8 @@
 // Regras: todo número vem do dado recebido; sem "de/por", sem "% OFF" de marketplace; linha com variável vazia some;
 // a palavra "afiliado" nunca aparece; Amazon nunca (preço da Amazon fica fora de mensagem).
 
+import type { MetricasCompra } from './metricas-compra';
+
 export type GroupChannel = 'tg' | 'wa';
 export type GroupModel = 'menor-preco' | 'abaixo-media' | 'comparativo' | 'resumo-dia' | 'foto-preco' | 'departamento' | 'movimento' | 'media' | 'plataforma' | 'radar' | 'achado' | 'cupom' | 'preco-agora';
 
@@ -247,6 +249,8 @@ export interface MsgOffer {
    */
   freeShipping?: boolean;
   officialStore?: string | null;
+  /** R-107: métricas de decisão de compra JÁ PROVADAS e frescas (parcelamento, Pix, frete grátis); ver metricas-compra.ts. Sem prova = ausente. */
+  compra?: MetricasCompra | null;
   /** Shopee: link da campanha oficial (categoria "Gaming & Consoles" ou a mais adequada, ainda no prazo). Só diz ONDE resgatar; nunca promete valor. */
   shopeeCampaignUrl?: string | null;
 }
@@ -533,7 +537,8 @@ export const MAX_EMOJIS_PER_MESSAGE = 2;
 
 /** Quantos emojis o texto tem (símbolos pictográficos; variation selector e ZWJ não contam). */
 export function countEmojis(text: string): number {
-  return (text.match(/\p{Extended_Pictographic}/gu) ?? []).length;
+  // R-107: 💳 ⚡ 🚚 são das linhas de métrica de compra (dono), não marcadores: ficam fora do teto de 2.
+  return (text.replace(/[💳⚡🚚]/gu, '').match(/\p{Extended_Pictographic}/gu) ?? []).length;
 }
 
 const pct1 = (x: number) => x.toFixed(1).replace('.', ',');
@@ -650,7 +655,7 @@ export function formatOfferMessage(input: OfferMessageInput, channel: GroupChann
   const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
   const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
   const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
-  const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
+  const priceLine = [`${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`, ...compraLines(o, f)].join('\n');
   // Por tópicos, objetivo (dono, 2026-11-11): só o que ajuda a decidir; sem "série de N dias" nem frases longas.
   const topics: string[] = [];
   const price = o.priceCents;
@@ -735,7 +740,7 @@ export function formatAchadoMessage(input: Extract<GroupMessageInput, { model: '
   const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
   const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
   const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
-  const priceLine = `${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
+  const priceLine = [`${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`, ...compraLines(o, f)].join('\n');
   const n = Math.max(1, Math.round(input.offersCount));
   // Tamanho da amostra é metodologia interna (dono, 2026-11-12): só alega "menor preço entre as N" quando N é robusto (>= MIN_AVG_OFFERS_CLAIM); senão, sem texto de leitura.
   // Dono (2026-11-12): Achado sem veredito de queda, sem comparação e sem prescrição de compra: só "Novo no monitoramento".
@@ -772,7 +777,7 @@ export function formatPrecoAgoraMessage(input: Extract<GroupMessageInput, { mode
   const head = `${pre}${f.b(title)}${input.meta ? ` ${italic(input.meta)}` : ''}`;
   const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
   const showStore = storeLabel.length >= 2 && storeLabel.toLowerCase().replace(/\.com(\.br)?$/, '') !== o.networkName.trim().toLowerCase();
-  const priceLine = `${f.t('Preço agora:')} ${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}, ${f.t(`lido às ${fmtClock(o.confirmedAt)}`)}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`;
+  const priceLine = [`${f.t('Preço agora:')} ${f.b(fmtBRL(o.priceCents))} ${f.t(inNetwork(o.networkName))}, ${f.t(`lido às ${fmtClock(o.confirmedAt)}`)}${showStore ? `\nVendido por ${f.b(storeLabel)}` : ''}`, ...compraLines(o, f)].join('\n');
   const topics: string[] = [];
   const sellerText = sellerLine(o);
   if (sellerText) topics.push(topic(f, 'Vendedor', sellerText));
@@ -912,6 +917,26 @@ function cleanStoreName(v: string | null | undefined): string | null {
 }
 
 /**
+ * R-107: linhas de decisão de compra logo abaixo do preço, nesta ordem e só com prova fresca (metricas-compra.ts):
+ *   💳 R$ 385,90 em até 7x de R$ 55,13 sem juros   (sem juros só se provado; com juros: "💳 em até 12x de R$ 350,00")
+ *   ⚡ R$ 358,89 no Pix                              (valor LIDO, nunca derivado de percentual)
+ *   🚚 Frete grátis
+ * Os 3 emojis de métrica não contam no teto de 2 emojis de marcador (countEmojis ignora).
+ */
+export function compraLines(o: MsgOffer, f: Fmt): string[] {
+  const c = o.compra;
+  if (!c) return [];
+  const out: string[] = [];
+  if (c.parcelas && c.parcelas.qty >= 2 && c.parcelas.cents > 0) {
+    const p = c.parcelas;
+    out.push(p.semJuros ? `💳 ${f.b(fmtBRL(o.priceCents))} ${f.t(`em até ${p.qty}x de ${fmtBRL(p.cents)} sem juros`)}` : `💳 ${f.t(`em até ${p.qty}x de ${fmtBRL(p.cents)}`)}`);
+  }
+  if (c.pixCents && c.pixCents > 0 && c.pixCents < o.priceCents) out.push(`⚡ ${f.b(fmtBRL(c.pixCents))} ${f.t('no Pix')}`);
+  if (c.freteGratis === true) out.push(`🚚 ${f.t('Frete grátis')}`);
+  return out;
+}
+
+/**
  * Tópicos de selo (dono, 2026-11-11), sempre atrás de dado real e fora da Amazon (Amazon fica só com o carimbo):
  *   • Frete: grátis            (só com freeShipping === true)
  *   • Loja oficial: <nome>     (só com o nome lido da API)
@@ -920,7 +945,7 @@ function cleanStoreName(v: string | null | undefined): string | null {
 function seloLines(o: MsgOffer, f: Fmt): string[] {
   if (isAmazonOffer(o)) return [];
   const out: string[] = [];
-  if (o.freeShipping === true) out.push(topic(f, 'Frete', 'grátis'));
+  if (o.freeShipping === true && o.compra?.freteGratis !== true) out.push(topic(f, 'Frete', 'grátis'));
   const store = cleanStoreName(o.officialStore);
   if (store) out.push(topic(f, 'Loja oficial', store));
   if (/shopee/i.test(o.networkSlug) && o.shopeeCampaignUrl && /^https:\/\/[^\s<>"]+$/.test(o.shopeeCampaignUrl)) {

@@ -321,7 +321,7 @@ async function applyVerticalGroup(
       // "Preco errado" decidido pelo dono na fila: a coleta nao libera a quarentena.
       sql`NOT EXISTS (SELECT 1 FROM identity_decisions d WHERE d.offer_id = ${affiliateOffers.id} AND d.undone_at IS NULL AND d.axis = 'preco' AND d.value = 'preco_errado')`,
     ));
-    const rec = await recordPriceSnapshotDetalhado({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api', itemId: r.externalItemId });
+    const rec = await recordPriceSnapshotDetalhado({ offerId, priceCents: r.priceCents, listPriceCents: r.listPriceCents, source: 'api', itemId: r.externalItemId, ...(typeof r.freeShipping === 'boolean' ? { metricas: { freeShipping: r.freeShipping } } : {}) });
     if (rec.inserted) out.snapshots++;
     if (rec.ignorado) { out.ignoredSiblings++; continue; } // anúncio irmão: não confirma o preço nem mexe no link (#119)
     await alinharLinkAoAnuncio(offerId, r.externalItemId);

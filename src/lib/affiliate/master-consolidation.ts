@@ -22,6 +22,8 @@ export interface Listing {
   externalItemId: string;
   /** Vendas acumuladas do ANUNCIO (sold_quantity), SO se a API as entregou no payload; null/ausente = nao informado (nunca 0 por chute). */
   soldQuantity?: number | null;
+  /** R-107: shipping.free_shipping do anúncio, SÓ se a API o entregou (boolean); ausente = não informado. */
+  freeShipping?: boolean | null;
 }
 
 /**
@@ -419,6 +421,7 @@ export function parseMeliCatalogPage(body: unknown, offset = 0): CatalogPage<Lis
         externalSellerId: String(r.seller_id),
         externalItemId: String(r.item_id),
         soldQuantity: extractSoldQuantity(r.sold_quantity),
+        freeShipping: typeof (r.shipping as { free_shipping?: unknown } | null | undefined)?.free_shipping === 'boolean' ? (r.shipping as { free_shipping: boolean }).free_shipping : null,
       });
     }
   });

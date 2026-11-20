@@ -9,6 +9,7 @@ interface RawMeliItem {
   original_price: number | null;
   seller_id: number;
   condition: string | null;
+  shipping?: { free_shipping?: boolean } | null;
 }
 
 /**
@@ -74,6 +75,7 @@ const mercadoLivreSource: PriceSource = {
               listPriceCents: r.original_price != null ? Math.round(r.original_price * 100) : null,
               externalSellerId: String(r.seller_id),
               externalItemId: r.item_id,
+              freeShipping: typeof r.shipping?.free_shipping === 'boolean' ? r.shipping.free_shipping : null,
             });
           }
         }

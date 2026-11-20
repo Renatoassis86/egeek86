@@ -70,6 +70,8 @@ export async function gravarEntregasAmazon(rows: Array<{ id?: unknown; entrega?:
     const ok = (await db.execute(sql`SELECT 1 FROM affiliate_offers o JOIN affiliate_networks nn ON nn.id = o.network_id WHERE o.id = ${String(r.id)}::uuid AND nn.slug = 'amazon' LIMIT 1`)) as unknown as unknown[];
     if (!ok.length) { recusadas++; continue; }
     await gravarCotacao(String(r.id), { zip: p.zip, costCents: p.costCents!, free: p.free, etaFrom: p.etaFrom, etaTo: p.etaTo, soldBy: p.soldBy, source: 'amazon_pagina', rawText: e.texto }, now);
+    // R-107: o frete grátis da PÁGINA do item (CEP da conta; frete condicionado a Prime/primeiro pedido já foi recusado no parser) vira a flag da oferta, com a data da leitura.
+    await db.execute(sql`UPDATE affiliate_offers SET free_shipping = ${p.free}, shipping_seen_at = ${now.toISOString()}::timestamptz WHERE id = ${String(r.id)}::uuid`).catch(() => undefined);
     gravadas++;
   }
   return { gravadas, recusadas };

@@ -39,6 +39,8 @@ export interface AmzCand {
   px?: number;
   /** R-88 (leitor v1.3.0): entrega que a PÁGINA do produto mostra para o CEP da conta (texto do bloco de entrega + CEP de 8 dígitos). Só com pg=1. O servidor interpreta e valida. */
   ent?: { t: string; z?: string };
+  /** R-107 (leitor v1.4.0): parcelamento que o card/página mostra junto do preço do próprio item: n parcelas de c centavos, sj 1 = o texto diz "sem juros". Só o que está escrito; ausente = não lido. */
+  par?: { n: number; c: number; sj?: number };
 }
 
 /**

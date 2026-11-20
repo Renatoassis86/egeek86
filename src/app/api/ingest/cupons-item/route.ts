@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { couponCors as cors, couponGuard as guard } from '@/server/coupons/ingest-guard';
 import { listarFilaRevalidacao, resolverUrlsLeitura } from '@/server/coupons/revalidation-queue';
 import { sanitizeCouponCode, sanitizeCouponName } from '@/lib/coupons/coupon-name';
-import { gravarBeneficiosCartao } from '@/server/coupons/card-benefits';
+import { gravarBeneficiosCartao, gravarParcelamentoDaPagina } from '@/server/coupons/card-benefits';
 import { nomeColunasLigadas } from '@/server/coupons/nome-colunas';
 import { cupomMlExigeProva, selecionarProvados } from '@/lib/coupons/prova-cupom';
 
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
     if (!offer[0]) continue;
     const price = Number(offer[0].price);
     await gravarBeneficiosCartao(r.id, 'ml-pagina', r.beneficios_cartao, price);
+    await gravarParcelamentoDaPagina(r.id, r.beneficios_cartao, price); // R-107
     const valid = (Array.isArray(r.coupons) ? r.coupons : [])
       .map((c) => ({ campaign: /^\d{3,12}$/.test(String(c.campaign_id ?? '')) ? String(c.campaign_id) : null, label: String(c.label ?? '').slice(0, 120), status: String(c.status ?? '').slice(0, 40), name: sanitizeCouponName(c.name), code: sanitizeCouponCode(c.code) }))
       .map((c) => ({ ...c, cents: centsFromLabel(c.label) }))

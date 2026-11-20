@@ -19,6 +19,8 @@ export interface PriceSnapshotResult {
    * para a rechecagem de identidade da oferta (offer-identity.ts); ausente = sem rechecagem.
    */
   sellerTitle?: string | null;
+  /** R-107: shipping.free_shipping do anúncio na resposta da API (ML). Ausente = a API não informou. */
+  freeShipping?: boolean | null;
 }
 
 /**

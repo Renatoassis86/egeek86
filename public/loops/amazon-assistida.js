@@ -18,7 +18,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = '1.3.0'; // 1.3.0 (R-88): lê a ENTREGA (e o CEP da conta) da página do produto junto com o preço, para o prazo da lista do privado nunca passar de 45 min. 1.2.0 (R-81): passada rápida da cabeça prioritária (impressoras do privado) a cada ~20 min, para o preço da Amazon nunca passar de 45 min. 1.1.0 (R-69): marca px (preço em destaque é "à vista no Pix") e lista sem parcela
+  var VERSAO = '1.4.0'; // 1.4.0 (R-107): lê o parcelamento ("em até Nx de R$ y") do card e da página junto do preço, sem leitura extra. 1.3.0 (R-88): lê a ENTREGA (e o CEP da conta) da página do produto junto com o preço, para o prazo da lista do privado nunca passar de 45 min. 1.2.0 (R-81): passada rápida da cabeça prioritária (impressoras do privado) a cada ~20 min, para o preço da Amazon nunca passar de 45 min. 1.1.0 (R-69): marca px (preço em destaque é "à vista no Pix") e lista sem parcela
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-amazon-assistida.ts
@@ -51,18 +51,23 @@
 
   /** Pares (classe, texto) dos <span class="a-price ..."><span class="a-offscreen">R$ ..</span>: preço atual (sem a-text-price) e preço de lista (a-text-price). */
   PURO.precosDe = function (html) {
-    var re = /<span[^>]*\bclass="(a-price(?:\s[^"]*)?)"[^>]*>\s*<span[^>]*\bclass="a-offscreen"[^>]*>([^<]*)<\/span>/g, m, p = null, l = null, lde = false;
+    var re = /<span[^>]*\bclass="(a-price(?:\s[^"]*)?)"[^>]*>\s*<span[^>]*\bclass="a-offscreen"[^>]*>([^<]*)<\/span>/g, m, p = null, l = null, lde = false, par = null;
     while ((m = re.exec(html))) {
       var preco = PURO.normalizarPreco(m[2]);
       if (!preco) continue;
       if (/\ba-text-price\b/.test(m[1])) {
         // R-69: a PARCELA ("em até 12x de R$ 793,32") também é a-text-price e NÃO é preço de lista; o texto logo antes dela termina em "Nx de".
         var antes = PURO.textoDe(String(html).slice(Math.max(0, m.index - 300), m.index));
-        if (/\d\s*x\s*de\s*$/i.test(antes)) continue;
+        var mpar = /(\d{1,2})\s*x\s*de\s*$/i.exec(antes);
+        if (mpar) { // R-107: a parcela lida junto do preço do item (n x valor); "sem juros" só se o texto logo depois disser
+          var np = Number(mpar[1]);
+          if (!par && np >= 2 && np <= 24) par = { n: np, c: preco, sj: /^\s*(?:sem juros|sem acr[eé]scimo)/i.test(PURO.textoDe(String(html).slice(m.index + m[0].length, m.index + m[0].length + 160))) ? 1 : 0 };
+          continue;
+        }
         if (!l) { l = preco; lde = /(?:^|\s)de:?\s*$/i.test(antes) || /^\s*de:/i.test(PURO.decodificar(m[2])); } // "De: R$ X" = preço antigo da promoção, NÃO o cheio do Pix
       } else if (!p) p = preco;
     }
-    return { p: p, l: l, lde: lde };
+    return { p: p, l: l, lde: lde, par: par };
   };
 
   /** R-69: o texto do card/bloco diz que o preço em destaque é "à vista no Pix" (ou NuPay). Com isto o destaque NÃO é o preço cheio e a lista é o cheio. */
@@ -98,6 +103,7 @@
       var img = im && AMZ_IMG_RE.test(PURO.decodificar(im[1])) ? PURO.decodificar(im[1]) : null;
       vistos[am[1]] = 1;
       var c = { a: am[1], t: titulo.slice(0, 300), p: patro ? null : pr.p, l: patro ? null : pr.l, s: patro ? 1 : 0 };
+      if (!patro && pr.par) c.par = pr.par; // R-107
       if (!patro) { c.px = PURO.pixNoTexto(chunk) ? 1 : 0; if (c.px && pr.lde) c.l = null; } // R-69: tipo do preço em destaque (1 = à vista no Pix; 0 = preço cheio/de venda)
       if (img) c.i = img;
       out.push(c);
@@ -166,6 +172,7 @@
     var jan = html.slice(ini, ini + 7000), cort = jan.search(/id="[^"]*(?:similar|sims|sp_detail|carousel)[^"]*"/i);
     var pxp = PURO.pixNoTexto(cort >= 0 ? jan.slice(0, cort) : jan) ? 1 : 0;
     var r1 = { ok: true, p: pr.p, l: pxp && pr.lde ? null : pr.l, px: pxp, pl: 'preco_a_pagar' };
+    if (pr.par) r1.par = pr.par; // R-107: parcelamento da página do item
     var e1 = PURO.entregaDoHtml(html, html); if (e1) r1.ent = e1; // R-88
     return r1;
   };
@@ -176,6 +183,7 @@
     if (pagina.px === 0 || pagina.px === 1) c.px = pagina.px;
     if (pagina.pl) c.pl = pagina.pl;
     if (pagina.ent) c.ent = pagina.ent; // R-88: entrega lida na página
+    if (pagina.par) c.par = pagina.par; // R-107
     if (cand.i) c.i = cand.i;
     return c;
   };
@@ -205,6 +213,7 @@
         if (pg) o.pg = 1;
         if (pg && (c.pl === 'oferta_em_destaque' || c.pl === 'preco_a_pagar')) o.pl = c.pl;
         if (c.px === 1 || c.px === 0) o.px = c.px; // R-69: tipo do preço em destaque (1 = à vista no Pix)
+        if (c.par && Number.isInteger(c.par.n) && c.par.n >= 2 && c.par.n <= 24 && Number.isInteger(c.par.c) && c.par.c > 0 && c.par.c < 100000000) o.par = { n: c.par.n, c: c.par.c, sj: c.par.sj === 1 ? 1 : 0 }; // R-107: parcelamento lido
         if (pg && c.ent && typeof c.ent.t === 'string' && c.ent.t.trim()) { o.ent = { t: c.ent.t.trim().slice(0, 300) }; if (typeof c.ent.z === 'string' && /^\d{8}$/.test(c.ent.z)) o.ent.z = c.ent.z; } // R-88: entrega lida na PÁGINA
         if (typeof c.i === 'string' && AMZ_IMG_RE.test(c.i)) o.i = c.i;
         cs.push(o);

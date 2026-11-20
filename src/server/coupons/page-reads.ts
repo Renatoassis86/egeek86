@@ -2,7 +2,7 @@ import 'server-only';
 import { sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { nomeColunasLigadas } from '@/server/coupons/nome-colunas';
-import { gravarBeneficiosCartao } from '@/server/coupons/card-benefits';
+import { gravarBeneficiosCartao, gravarParcelamentoDaPagina } from '@/server/coupons/card-benefits';
 import { normalizePageRow, PAGE_SOURCE, type PageNetwork, type PageRowIn } from '@/lib/coupons/page-read';
 
 export interface PageIngestStats {
@@ -47,6 +47,7 @@ export async function ingestPageReads(network: PageNetwork, rows: PageRowIn[]): 
       }
     }
     await gravarBeneficiosCartao(String(r.id), source, r.beneficios_cartao, res.seen);
+    await gravarParcelamentoDaPagina(String(r.id), r.beneficios_cartao, res.seen); // R-107
     stats.lidas++;
   }
   return stats;

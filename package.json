@@ -43,6 +43,7 @@
     "test:vertical-identity": "tsx scripts/test-vertical-identity.ts",
     "test:plus-reconfirmacao": "tsx scripts/test-plus-reconfirmacao.ts",
     "test:brinquedos": "tsx --conditions=react-server scripts/test-brinquedos.ts",
+    "test:metricas-compra": "tsx --conditions=react-server scripts/test-metricas-compra.ts",
     "test:cobertura-tipos": "tsx scripts/test-cobertura-tipos.ts",
     "test:cobertura-total": "tsx --conditions=react-server scripts/test-cobertura-total.ts",
     "test:semeadura-servidor": "tsx scripts/test-semeadura-servidor.ts",

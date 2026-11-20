@@ -18,6 +18,7 @@ import { decidirPrecoAmazon } from './amazon-tipo-preco';
 import { enfileirarDuvidaAmazon } from './amazon-fila';
 import { gravarEntregasPorAsin } from '@/server/shipping/frete-prazo';
 import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from './price-plausibility';
+import { parcelaDoLeitor } from '@/lib/messaging/metricas-compra';
 
 /**
  * Coleta ASSISTIDA da Amazon (decisão do dono, ata 2026-11-10-integracao-amazon-aliexpress.md; todas as frentes desde 2026-11-11).
@@ -28,6 +29,12 @@ import { getMasterReferencePrices, isImplausiblyHigh, isImplausiblyLow } from '.
 
 export { parseBrl, buildAmazonQuery } from '@/lib/affiliate/amazon-identity';
 export type { AmzCand } from '@/lib/affiliate/amazon-identity';
+
+/** R-107: parcelamento lido no card/página do item (leitor v1.4.0+); sem `par` válido não mexe nas métricas gravadas. */
+function metricasDoCandidato(c: AmzCand): { metricas?: { installments: { qty: number; cents: number; semJuros: boolean } } } {
+  const ins = parcelaDoLeitor(c.par);
+  return ins ? { metricas: { installments: ins } } : {};
+}
 
 const AMZ_IMG_RE = /^https:\/\/m\.media-amazon\.com\/images\/[A-Za-z0-9_\-\/.%+,]{6,200}$/;
 export const safeAmazonImage = (u: unknown): string | null => (typeof u === 'string' && AMZ_IMG_RE.test(u) ? u : null);
@@ -374,7 +381,7 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
       // Oferta existente: atualiza preço/checagem, mas NUNCA muda o status (draft só sai por promoção humana; ativa com dúvida fica como está).
       if (existing) {
         if (isDraft && existing.status === 'active') { stats.motivos['ativa_com_duvida_nova'] = (stats.motivos['ativa_com_duvida_nova'] ?? 0) + 1; continue; }
-        await recordPriceSnapshot({ offerId: existing.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape', pixCents: pixAttr });
+        await recordPriceSnapshot({ offerId: existing.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape', pixCents: pixAttr, ...metricasDoCandidato(a.c) });
         const img = safeAmazonImage(a.c.i);
         await db.execute(sql`UPDATE affiliate_offers SET last_checked_at = now(), last_price_confirmed_at = now(), image_url = COALESCE(${img}, image_url) WHERE id = ${existing.id}`);
         if (quarentena) await db.execute(sql`UPDATE affiliate_offers SET quarantined_at = COALESCE(quarantined_at, now()), updated_at = now() WHERE id = ${existing.id}`);
@@ -390,7 +397,7 @@ export async function ingestAmazonRows(rows: AmzRow[], opts: { tag: string; appl
         imageUrl: safeAmazonImage(a.c.i), storeName: 'Amazon', externalRef: ref, currentPriceCents: 0,
         status: isDraft ? 'draft' : 'active', publishedAt: isDraft ? null : new Date(), lastCheckedAt: new Date(),
       }).returning({ id: affiliateOffers.id });
-      await recordPriceSnapshot({ offerId: o.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape', pixCents: pixAttr });
+      await recordPriceSnapshot({ offerId: o.id, priceCents: a.price, listPriceCents: listCents, source: 'scrape', pixCents: pixAttr, ...metricasDoCandidato(a.c) });
       await db.execute(sql`UPDATE affiliate_offers SET last_price_confirmed_at = now() WHERE id = ${o.id}`);
       if (quarentena) await db.execute(sql`UPDATE affiliate_offers SET quarantined_at = now(), updated_at = now() WHERE id = ${o.id}`);
       if (isDraft) {

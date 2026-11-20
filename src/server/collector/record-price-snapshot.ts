@@ -18,6 +18,12 @@ export interface RecordSnapshotInput {
    * (a leitura de agora nao mostra Pix), indefinido nao mexe (redes que nao tem esse conceito).
    */
   pixCents?: number | null;
+  /**
+   * R-107 (metricas de decisao de compra): o que a MESMA leitura provou sobre ESTE anuncio. Indefinido = a leitura nao trouxe o dado (nao mexe);
+   * freeShipping: boolean grava (true/false) com a data da leitura; installments: numero grava (qty x valor, "sem juros" so se lido), null limpa.
+   * Nunca derivado: so o que a resposta/pagina disse. Gravado so quando o preco tambem foi aceito (anuncio irmao ignorado nao grava).
+   */
+  metricas?: { freeShipping?: boolean | null; installments?: { qty: number; cents: number; semJuros: boolean } | null };
 }
 
 /**
@@ -130,6 +136,21 @@ export async function recordPriceSnapshotDetalhado(inputOriginal: RecordSnapshot
       await tx.execute(input.pixCents != null
         ? sql`UPDATE affiliate_offers SET pix_cents = ${input.pixCents}, pix_visto_em = now() WHERE id = ${input.offerId}::uuid`
         : sql`UPDATE affiliate_offers SET pix_cents = NULL WHERE id = ${input.offerId}::uuid AND pix_cents IS NOT NULL`);
+    }
+
+    // R-107: frete gratis e parcelamento lidos junto do preco (so UPDATE quando muda ou a leitura anterior tem > 20 min: nada de escrita a cada ciclo).
+    if (input.metricas?.freeShipping === true || input.metricas?.freeShipping === false) {
+      const fs = input.metricas.freeShipping;
+      await tx.execute(sql`UPDATE affiliate_offers SET free_shipping = ${fs}, shipping_seen_at = now()
+        WHERE id = ${input.offerId}::uuid AND (free_shipping IS DISTINCT FROM ${fs} OR shipping_seen_at IS NULL OR shipping_seen_at < now() - interval '20 minutes')`);
+    }
+    if (input.metricas && input.metricas.installments !== undefined) {
+      const ins = input.metricas.installments;
+      await tx.execute(ins
+        ? sql`UPDATE affiliate_offers SET installments_qty = ${ins.qty}, installment_cents = ${ins.cents}, installments_no_interest = ${ins.semJuros}, installments_seen_at = now()
+            WHERE id = ${input.offerId}::uuid`
+        : sql`UPDATE affiliate_offers SET installments_qty = NULL, installment_cents = NULL, installments_no_interest = NULL
+            WHERE id = ${input.offerId}::uuid AND installments_qty IS NOT NULL`);
     }
 
     await tx

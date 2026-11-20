@@ -20,6 +20,7 @@ import { loadShopeeCampaignUrl } from '@/server/collector/shopee-campaigns';
 import { buildPlatformCandidates } from '@/lib/messaging/group-platform';
 import { cupomGatilhoLigado, offersWithPositiveRead, validateCouponOffers, type CouponValidation } from '@/server/messaging/coupon-offers';
 import { AGULHA } from '@/lib/coupons/agulha';
+import { metricasDaLinha, provarMetricas } from '@/lib/messaging/metricas-compra';
 import {
   RULES,
   amazonLoopPaused,
@@ -809,7 +810,9 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
              -- ML só sai em mensagem com o link OFICIAL de afiliado (meli.la); sem ele a oferta fica de fora do envio (dono, 2026-11-11)
              (o.affiliate_link_pending OR (n.slug = 'mercado-livre' AND COALESCE(o.affiliate_url, '') NOT LIKE 'https://meli.la/%')) AS affiliate_link_pending,
              (COALESCE(o.affiliate_url, '') LIKE 'https://meli.la/%') AS official_link, o.affiliate_url,
-             o.consecutive_miss_count AS miss_count
+             o.consecutive_miss_count AS miss_count,
+             -- R-107: métricas de compra (parcelas, Pix, frete); cada uma com a data da leitura que a provou
+             o.installments_qty, o.installment_cents, o.installments_no_interest, o.installments_seen_at, o.pix_cents, o.pix_visto_em, o.free_shipping, o.shipping_seen_at
       FROM affiliate_offers o
       INNER JOIN affiliate_networks n ON n.id = o.network_id
       LEFT JOIN affiliate_sellers s ON s.id = o.seller_id
@@ -906,6 +909,7 @@ async function loadFacts(ids: string[], o: { now: Date; maxAgeMin: number; amazo
       liveVerifiedAt: o.liveVerified?.has(String(r.id)) ? o.now : null,
       ownMedian14: ownMedianBy.get(String(r.id)) ?? null,
       shopeeCampaignUrl: /shopee/i.test(String(r.net_slug)) ? shopeeUrlBy.get(verticalBy.get(mid) ?? '') ?? null : null,
+      compra: provarMetricas(metricasDaLinha(r), { amazon: /amazon/i.test(String(r.net_slug)), priceCents: Number(r.current_price_cents), now: o.now }),
     };
     (offersBy.get(mid) ?? offersBy.set(mid, []).get(mid)!).push(f);
   }
