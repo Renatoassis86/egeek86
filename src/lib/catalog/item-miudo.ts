@@ -84,6 +84,7 @@ const CABECA_FORTE = MIL(
     'frontal|frontais|carcaca|carcacas|refil|refis|tampa|tampas|lamina|laminas|resistencia|vedacao|junta|' +
     'analogico|analogicos|gatilho|gatilhos|botao|botoes|d pad|dpad|thumb|thumbstick|thumbsticks|flat|flats|' +
     'bico|bicos|nozzle|nozzles|hotend|extrusora|extrusor|bocal|ptfe|fep|cuba|' +
+    'broca|brocas|bits|serra copo|disco de corte|discos de corte|disco de desbaste|disco diamantado|disco flap|mandril|' +
     'ferramenta|ferramentas|espatula|alicate|lixa|lixas|pasta termica|lubrificante|cola|' +
     'peca|pecas|kit de acabamento|kit de limpeza|' +
     'miniatura|miniaturas|estatueta|estatuetas|busto|bustos|vaso|vasos|' +

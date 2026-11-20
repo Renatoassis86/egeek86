@@ -19,5 +19,5 @@ assert.equal(tipoAcShareLimite(700, 3), 9);
 assert.equal(tipoAcShareLimite(1200, 3), 15);
 assert.equal(tipoAcShareLimite(1200, 20), 20, 'o piso configurado nunca e rebaixado');
 assert.ok(r.includes('tipoAcShareLimite(storeLast24h(real, c.vertical, now).length, acPorHora)'), 'o teto usa o volume da propria loja');
-assert.ok(r.indexOf('achado_limite_') < r.indexOf('cupomOver(c) && ok0.some'), 'o teto duro vem antes das cotas suaves');
+assert.ok(r.indexOf('achado_limite_') < r.indexOf('cupomOver(c) && ok0Viva.some'), 'o teto duro vem antes das cotas suaves');
 console.log('test-tipo-achado-duro: OK');

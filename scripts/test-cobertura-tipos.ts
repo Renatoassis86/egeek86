@@ -7,6 +7,7 @@ import { SEGMENTS, segmentByKey, segmentsOf, domainMatches, type NonGamesVertica
 import { MIN_TERMOS_COBERTO, TIPOS_ESPERADOS, existiaAntes, situacaoDepois } from '../src/lib/catalog/vertical/cobertura-tipos';
 import { NOVOS_SEGMENTOS_TIPOS, PROBE_CALLS_PER_RUN } from '../src/lib/catalog/vertical/config-tipos';
 import { NOVOS_SEGMENTOS_CIENCIA } from '../src/lib/catalog/vertical/config-ciencia';
+import { NOVOS_SEGMENTOS_FERRAMENTAS } from '../src/lib/catalog/vertical/config-ferramentas';
 import { hasScopeLexicon, scopeIssue } from '../src/lib/catalog/vertical/scope';
 import { evaluateIdentity } from '../src/lib/catalog/vertical/identity';
 import { createMlClient } from '../src/lib/catalog/vertical/ml-api';
@@ -70,7 +71,7 @@ async function main() {
   const keys = SEGMENTS.map((s) => s.key);
   check('chaves de segmento unicas', new Set(keys).size === keys.length);
   const rankNovos = NOVOS_SEGMENTOS_TIPOS.map((s) => s.seedRank);
-  check('seedRank dos tipos novos unico e depois dos antigos', new Set(rankNovos).size === rankNovos.length && Math.min(...rankNovos) > Math.max(...SEGMENTS.filter((s) => !NOVOS_SEGMENTOS_TIPOS.includes(s) && !NOVOS_SEGMENTOS_CIENCIA.includes(s)).map((s) => s.seedRank)));
+  check('seedRank dos tipos novos unico e depois dos antigos', new Set(rankNovos).size === rankNovos.length && Math.min(...rankNovos) > Math.max(...SEGMENTS.filter((s) => !NOVOS_SEGMENTOS_TIPOS.includes(s) && !NOVOS_SEGMENTOS_CIENCIA.includes(s) && !NOVOS_SEGMENTOS_FERRAMENTAS.includes(s)).map((s) => s.seedRank)));
   for (const s of NOVOS_SEGMENTOS_TIPOS) {
     check(`${s.key}: dominio nao confirmado => sem searchDomain (busca sem filtro) e flag ligada`, s.domainUnconfirmed === true && !s.searchDomain);
     check(`${s.key}: orcamento proprio por execucao (${s.callsPerRun})`, s.callsPerRun === PROBE_CALLS_PER_RUN && callsPerRunOf(s) <= DEFAULT_CALLS_PER_TYPE_RUN);

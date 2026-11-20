@@ -9,7 +9,9 @@ import { canSendTelegram, getAdTag } from '@/lib/messaging/group-config';
 import { dispositionOf, rowStatusFor, type AutomationState } from '@/lib/messaging/group-automation';
 import { withCouponBlock, withWhatsappGroup, buildGoLink, type CouponInfo } from '@/lib/messaging/group-messages';
 import {
+  ISCA_SUSPEITA_PCT,
   RULES,
+  TIPO_TETO_HORA_ESPECIAL,
   applyLimits,
   cardAllowed,
   composeRadar,
@@ -18,6 +20,7 @@ import {
   netKind,
   priceWithinTolerance,
   type Candidate,
+  tipoTetoHoraEspecial,
   type MessageClass,
 } from '@/lib/messaging/group-rules';
 import { getStoreByVertical, chatForStore } from '@/server/stores';
@@ -173,6 +176,13 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
     ? sql`(CASE ${sql.join(marcasVerticais.map((v) => sql`WHEN g.vertical = ${v} AND regexp_replace(${nomeNorm}, '\s+', ' ', 'g') ~ ${padraoMarcas(v)} THEN 0`), sql` `)} WHEN g.vertical <> 'games' AND ${marcaDe(nomeNorm, sql`g.vertical`)} IS NOT NULL THEN 1 ELSE 2 END)`
     : sql`1`;
   const tipoPartB = novo ? sql`, b.candidate ->> 'tipo'` : sql``;
+  // R-106 (dono, 2026-11-20): no tipo com teto horario especial (mouses da Tecnologia) a janela abre pelos de MENOR PRECO (suspeito de isca por ultimo), para os 5 mais baratos
+  // elegiveis estarem na janela lida. So vale com a particao por tipo (novo); a regra do plano (applyLimits) aplica o teto e a mesma ordem.
+  const especiais = Object.keys(TIPO_TETO_HORA_ESPECIAL).map((k) => k.split('|') as [string, string]).filter(([v, t]) => tipoTetoHoraEspecial(v, t)?.ordem === 'menor_preco');
+  const ehEspecial = novo && especiais.length ? sql`(${sql.join(especiais.map(([v, t]) => sql`(b.vertical = ${v} AND b.candidate ->> 'tipo' = ${t})`), sql` OR `)})` : null;
+  const ordEspecial = ehEspecial
+    ? sql`CASE WHEN ${ehEspecial} THEN (CASE WHEN COALESCE((b.candidate ->> 'dropPct')::numeric, 0) >= ${ISCA_SUSPEITA_PCT}::int OR COALESCE((b.candidate ->> 'belowAvgPct')::numeric, 0) >= ${ISCA_SUSPEITA_PCT}::int THEN 1 ELSE 0 END) END ASC NULLS LAST, CASE WHEN ${ehEspecial} THEN (b.candidate ->> 'priceCents')::numeric END ASC NULLS LAST, `
+    : sql``;
   const popCol = popularidadeLigada()
     ? sql`COALESCE((SELECT max(p.score) FROM affiliate_offers po JOIN offer_popularity p ON p.network_id = po.network_id AND p.external_ref = po.external_ref WHERE po.id = g.offer_id AND p.observed_at > now() - make_interval(days => ${POPULARIDADE_VALIDADE_DIAS}::int)), 0)`
     : sql`0`;
@@ -180,7 +190,7 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
     ${cteCota}
     SELECT * FROM (
     SELECT q.*, row_number() OVER (PARTITION BY q.vertical ORDER BY q.rn_fair, q.tipo_sent24, (q.trigger = 'AC'), q.created_at) AS rn_v FROM (
-      SELECT b.*, row_number() OVER (PARTITION BY b.trigger, b.vertical${tipoPartB} ORDER BY b.marca_ord ASC, COALESCE((b.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, b.fam_sent6 ASC, b.marca_sent6 ASC, b.pop DESC, b.created_at DESC) AS rn_fair
+      SELECT b.*, row_number() OVER (PARTITION BY b.trigger, b.vertical${tipoPartB} ORDER BY ${ordEspecial}b.marca_ord ASC, COALESCE((b.candidate -> 'regua' ->> 'degrau')::int, 0) DESC, b.fam_sent6 ASC, b.marca_sent6 ASC, b.pop DESC, b.created_at DESC) AS rn_fair
       FROM (
       SELECT g.*, ${colMarca} AS marca_ord, ${colFam} AS fam_sent6, ${colTipo} AS tipo_sent24, ${colMarcaN} AS marca_sent6, ${popCol} AS pop
       FROM group_messages g LEFT JOIN master_products mp ON mp.id = g.master_product_id
