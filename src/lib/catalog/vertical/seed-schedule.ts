@@ -71,16 +71,25 @@ export function cursorFor(state: CursorState, seg: SegmentConfig): SegCursor {
   return { termsFrom: 0, depth: 0, cycles: 0, dead: [], termsSig: sig, lastRunAt: cur?.lastRunAt ?? null, totalCalls: cur?.totalCalls ?? 0, totalPlanned: cur?.totalPlanned ?? 0 };
 }
 
-/** Tipos na ordem de prioridade: nunca semeado primeiro (seedRank), depois o mais antigo; empate por seedRank. */
+/**
+ * Tipos na ordem de prioridade: nunca semeado primeiro, depois o mais antigo.
+ * R-110 (2026-11-20): entre os NUNCA semeados a vez e por LOJA em rodizio (1o de cada loja pelo seedRank, depois o 2o de cada...), nao uma fila unica por seedRank:
+ * brinquedos (seedRank 400+) ficava atras de 53 tipos de outras lojas e a loja tinha 0 masters; a semeadura faz ~2 tipos por fatia. Dentro da loja vale o seedRank.
+ */
 export function priorityOrder(segs: SegmentConfig[], state: CursorState): SegmentConfig[] {
   const at = (s: SegmentConfig) => {
     const t = state.segments[s.key]?.lastRunAt;
     return t ? Date.parse(t) : Number.NEGATIVE_INFINITY;
   };
+  const nunca = segs.filter((s) => at(s) === Number.NEGATIVE_INFINITY).sort((a, b) => a.seedRank - b.seedRank || a.key.localeCompare(b.key));
+  const volta = new Map<string, number>();
+  const turno = new Map<string, number>();
+  for (const s of nunca) { const v = String(s.vertical); const n = volta.get(v) ?? 0; turno.set(s.key, n); volta.set(v, n + 1); }
   return [...segs].sort((a, b) => {
     const ta = at(a);
     const tb = at(b);
     if (ta !== tb) return ta < tb ? -1 : 1;
+    if (ta === Number.NEGATIVE_INFINITY) return (turno.get(a.key) ?? 0) - (turno.get(b.key) ?? 0) || a.seedRank - b.seedRank || a.key.localeCompare(b.key);
     return a.seedRank - b.seedRank || a.key.localeCompare(b.key);
   });
 }

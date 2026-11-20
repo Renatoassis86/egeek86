@@ -167,7 +167,10 @@ async function main() {
   // ---------------- orcamento proprio por tipo e fila ----------------
   const state = emptyCursorState();
   const order0 = priorityOrder(SEGMENTS, state);
-  check('fila: sem historico segue o seedRank', order0.every((s, i) => i === 0 || order0[i - 1].seedRank <= s.seedRank));
+  // R-110: entre os nunca semeados a vez e por loja em rodizio; dentro de cada loja vale o seedRank.
+  check('fila: sem historico segue o seedRank dentro de cada loja', [...new Set(order0.map((s) => s.vertical))].every((v) => { const l = order0.filter((s) => s.vertical === v); return l.every((s, k) => k === 0 || l[k - 1].seedRank <= s.seedRank); }));
+  const nVert = new Set(order0.map((s) => s.vertical)).size;
+  check('fila: as primeiras vagas dao uma vez a cada loja (brinquedos nao fica por ultimo)', new Set(order0.slice(0, nVert).map((s) => s.vertical)).size === nVert);
   const alloc = allocate(SEGMENTS, state, 1000);
   check('fila: cada tipo ganha o seu orcamento (nenhum come o dos outros)', alloc.every((a) => a.calls <= callsPerRunOf(a.segment)) && alloc.reduce((n, a) => n + a.calls, 0) <= 1000);
   check('fila: o ultimo tipo recebe so o que sobra', alloc[alloc.length - 1].calls <= callsPerRunOf(alloc[alloc.length - 1].segment));
