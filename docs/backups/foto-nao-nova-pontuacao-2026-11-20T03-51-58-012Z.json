@@ -1,0 +1,2284 @@
+{
+ "criadoEm": "2026-11-20T03:58:59.049Z",
+ "modelo": {
+  "versao": 1,
+  "limiarAlto": 0.7,
+  "limiarMedio": 0.21
+ },
+ "alto": [
+  {
+   "oferta": "d7d81d4b-22a9-4bed-b820-f257d985bebe",
+   "master": "0d24016e-a801-4888-99e3-0fe9ee05c0d1",
+   "nome": "Need for speed Ps4 Midia fisica Somente o Cd",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-mcy0zvwbky0i13",
+   "vendedor": "RJGAMES ",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-mcy0zvwbky0i13",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.93,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "e631e2c1-c204-4a9f-9787-1e41d55624cb",
+   "master": "1152163b-1701-4500-8286-33e24ddab175",
+   "nome": "STAR WARS JEDI FALLEN ORDER | Testado + Pronto para Jogar | Mídia Física Jogo Original Ps4",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81z1k-mf0bfk9eg2rp81",
+   "vendedor": "Ninja Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-mf0bfk9eg2rp81",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.721,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 27.9%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "b69e877d-dfd2-4cae-83e9-a0693950a3de",
+   "master": "2bb7262c-c7f4-4b77-b423-f0dc29efb853",
+   "nome": "Jogo Ps5 Dragon Age The Veilguard Midia Fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lr-mrozbdvsz3et0d",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_798665-MLA99378459200_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.918,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 21.2%"
+   ],
+   "dist": 40
+  },
+  {
+   "oferta": "47d425c8-7e90-4148-816f-1c74c2260cda",
+   "master": "1f22c74a-95e6-4763-815d-ba05c5c72607",
+   "nome": "Jogo ARMS Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820l8-mp3of68o3r46aa",
+   "vendedor": "Draw e Joga Colecionáveis",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820l8-mp3of68o3r46aa",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.761,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "bc743c01-35e3-412e-9d55-1a3fd33c2acb",
+   "master": "fe2ece36-501a-41e3-8ada-4ed58e740a45",
+   "nome": "Resident evil revelations Lacrado Nintendo switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lv-mq14bcuov6rmbd",
+   "vendedor": "Resident Evil Fã e Colecionáveis",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lv-mq14bcuov6rmbd",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.861,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "a344d3f5-3871-4c2b-bfb0-2e9364531b4e",
+   "master": "46362d54-0984-4192-aea6-c7c6f9c2b942",
+   "nome": "Jogo Nintendo Switch Everybody 1 - 2 Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81z1k-mi9jbo9y0v7n3a",
+   "vendedor": "TGCComercio",
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_863096-MLU70461160962_072023-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.917,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 31.2%"
+   ],
+   "dist": 21
+  },
+  {
+   "oferta": "bd96df78-0a46-472b-816c-2da69b1e9e25",
+   "master": "35aa9b48-b7dd-4c04-99d4-2b54bbb72046",
+   "nome": "Team sonic racing-Jogo de PS4 original mídia física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820ma-mu4fuebnxvcyc9",
+   "vendedor": "Mane's games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820ma-mu4fuebnxvcyc9",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.795,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "0d4fc5d1-4a95-45c3-9277-b81f6ee3ba40",
+   "master": "f4e42fe7-d3a6-40ad-9662-87da5f948ebe",
+   "nome": "Super Mario 3d All Stars Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lb-mr7jgkzurc3p49",
+   "vendedor": "dssilva80",
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_742125-MLA99932450053_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.811,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 28.7%"
+   ],
+   "dist": 43
+  },
+  {
+   "oferta": "1f87ddda-652e-4406-88c1-978ce7f6dbb0",
+   "master": "92792bea-c2bb-4106-971f-4aa3265fe596",
+   "nome": "Jogo Creed champions Playstation 4 PS4 Mídia fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lz-mrjgxu5dvmdi33",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lz-mrjgxu5dvmdi33",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.735,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 38.1%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "ac1c6348-3571-4a62-bacf-83172c8763ee",
+   "master": "74e2d674-a1e8-49ec-a7d0-73dbed5fcd2d",
+   "nome": "Leia o anúncio Somente o cartucho Jogo para Nintendo Switch Pokemon Shining Pear",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820m5-mso7nw4nlekm1b",
+   "vendedor": "Mario Br Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820m5-mso7nw4nlekm1b",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.83,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "ec15ad35-de46-4a02-b3a7-93c8c2c04d6e",
+   "master": "01b8b503-7f96-40cc-a85c-aa3cf3ddcbf7",
+   "nome": "Toaplan Arcade Collection Vol 1 Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_666320-MLA97382827316_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_666320-MLA97382827316_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.735,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "6d96ba5b-00c8-48bb-8a41-6b0497e05d3d",
+   "master": "4416c702-dd44-4c03-9565-b0085ad69182",
+   "nome": "Pokemon Mystery Dungeon Rescue Team DX Nintendo Switch Jogos Física Media",
+   "url": "https://cf.shopee.com.br/file/30d694fa2e0f7c49d0c8f2a2f2d8e1f0",
+   "vendedor": "Loja de jogos Casco",
+   "catalogo": "https://cf.shopee.com.br/file/30d694fa2e0f7c49d0c8f2a2f2d8e1f0",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.79,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 32.7%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "2e3108dd-c040-49a7-ae80-84cc87374100",
+   "master": "9b4d4ff0-24c8-4eff-a6a6-25e375d67435",
+   "nome": "Jogo Ps4 - The Sims 4 Mídia Física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lu-ms7czk3ofg923f",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_665316-MLA116657429953_082026-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.857,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 30.6%"
+   ],
+   "dist": 30
+  },
+  {
+   "oferta": "63359b19-1fa9-466a-ae0b-8cf08f99d8aa",
+   "master": "49200f7b-5572-4e72-b1b9-5962f290670e",
+   "nome": "Paw Patrol: Mighty Pups - Save Adventure Bay (física) Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820ld-mvm84prti58h81",
+   "vendedor": "GVL Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820ld-mvm84prti58h81",
+   "gate": null,
+   "pont": 0.723,
+   "faixa": "alto",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  }
+ ],
+ "medio": [
+  {
+   "oferta": "28798a48-8366-4596-a1c6-35533f2ed62c",
+   "master": "8a2ffc0b-2528-442b-9aff-1f33c09e13ef",
+   "nome": "Hades Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_658434-MLA115845330593_082026-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_658434-MLA115845330593_082026-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.218,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 31.0%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "b3913c6f-634f-498b-9b2b-fc2311532660",
+   "master": "1171296c-8879-4cdc-831f-463b64de275a",
+   "nome": "Battle Chasers Nightwar Switch Original Mídia Física Nintendo Switch BattleChasers",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lh-mrc8if5eyih333",
+   "vendedor": "TGCComercio",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lh-mrc8if5eyih333",
+   "gate": null,
+   "pont": 0.424,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 17.2%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "93cbb2b6-861a-4e31-a822-739e5053d803",
+   "master": "b3f6bc83-c0a6-486a-a6ad-9eba4c5267d5",
+   "nome": "Locomoto Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_673951-MLA99986209661_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_673951-MLA99986209661_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.351,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 6.6%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "00d56cdc-5ad2-4599-a441-b80ecc720607",
+   "master": "584bda4a-15cc-4b16-b190-5d29b52af882",
+   "nome": "Gas Guzzlers Extreme Standard Gs2 Games Nintendo Switch Físico",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_753481-MLA99524344528_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_753481-MLA99524344528_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.422,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "d957f9f5-72d3-4e50-9e8c-1a67754a8525",
+   "master": "79e6b5ac-3d99-452c-81aa-a9c622f6148d",
+   "nome": "Indika PS5 Midia Fisica",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-825zp-ml23pctcrymb9e",
+   "vendedor": "Gamer Hut",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-825zp-ml23pctcrymb9e",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.254,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "6c9c1e5a-26db-4665-8c1b-768763219b21",
+   "master": "30df4961-abaf-46d3-acd6-c99119ca8dac",
+   "nome": "Star Wars: Battlefront - PS4 - Original",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81ztn-mku37kyitdkz3f",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-m3w4zrulfo6tf4",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.428,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 26.9%"
+   ],
+   "dist": 23
+  },
+  {
+   "oferta": "1cabb4ad-193f-490d-b6c4-52923700f20c",
+   "master": "a9cfb846-6a5a-4db8-ac58-9173d5fe9cf9",
+   "nome": "Jogo Nintendo Switch Connectank Midia Fisica",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_913011-MLA99453210168_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_913011-MLA99453210168_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.364,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "e2efacd2-a1d1-4acf-96ea-f0894b54f08a",
+   "master": "e375ab92-b838-4e02-aa5c-9613504fa5f9",
+   "nome": "Jogo The golf club 2 Playstation 4 PS4 Mídia física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81ztc-mj1b4ee5tjbae7",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81ztc-mj1b4ee5tjbae7",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.494,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 17.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "4b3e1d88-86ca-4bfc-a67e-db9ab3bcfb88",
+   "master": "b0ee810c-b100-4516-b41c-c8699f768451",
+   "nome": "Dynasty Warriors 9 Empires Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_694820-MLU70096923097_062023-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_694820-MLU70096923097_062023-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.639,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 7.1%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "bd3085a9-e86c-4b8a-9d86-5a59d17badba",
+   "master": "3231ab3f-21ee-4919-b7bd-36e488f291ae",
+   "nome": "Nascar Arcade Rush - Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_873101-MLA99870226671_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_873101-MLA99870226671_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-15T00:57:26.662Z",
+    "reason": "nao_identificado:descoberta_duvida:tipo_por_classificador_estatistico",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "auto:r2-11",
+    "previousVerdict": "review"
+   },
+   "pont": 0.386,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "4a8a1233-d347-4585-ae70-e2f28fd62de4",
+   "master": "39dd9819-b640-43d4-8a64-ba7cf3ac8aee",
+   "nome": "Lacrado Marvel's Midnight Suns - Xbox Series X",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-mbsyv86rb68p16",
+   "vendedor": "GiEsp",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-mbsyv86rb68p16",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.572,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 21.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "0195a03c-d427-45c4-bf22-0a83dc2498b2",
+   "master": "9cd259ee-a623-4e33-b763-70db16974357",
+   "nome": "Jogo F1 2016 Playstation 4 PS4 Mídia Fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lj-mtmzeedk81z5f1",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lj-mtmzeedk81z5f1",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.248,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 27.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "5892956a-8162-49f8-804c-6bda8c6fc3a9",
+   "master": "09904db9-bc5d-4855-b14f-6193bd873d5e",
+   "nome": "Beyond The Ice Palace 2 Nintendo Switch Lacrado",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-8258g-mtyioodp924m43",
+   "vendedor": "JR GAMES LTDA",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-8258g-mtyioodp924m43",
+   "gate": null,
+   "pont": 0.292,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 33.0%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "c6e02f05-8e78-4f2e-a16d-97a408e5290a",
+   "master": "37541be9-7a52-44bf-a9c0-6502ebe7d363",
+   "nome": "Wreckfest Drive Hard Nintendo Switch Físico",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_651384-MLU70661224415_072023-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_651384-MLU70661224415_072023-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.493,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 17.5%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "f994160d-1265-41ac-846d-57ba65754718",
+   "master": "4ce3b28f-6f64-4e40-87e1-8788e1c4b180",
+   "nome": "South Park The Fractured But Whole Nintendo Switch Físico",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820m3-mv1xxjhir6ki34",
+   "vendedor": "TGCComercio",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820m3-mv1xxjhir6ki34",
+   "gate": null,
+   "pont": 0.228,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 21.7%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "a7b844e9-5a6d-4135-9d78-ecf8bab4a2fb",
+   "master": "0eb78739-44d5-4cc2-a456-3870c9e6cc0b",
+   "nome": "Jogo para Nintendo switch Detetive Pikachu Novo lacrado",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-m4m1xr150f9143",
+   "vendedor": "Mario Br Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-m4m1xr150f9143",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.483,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 15.6%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "f49c4ff5-bb7d-4afa-ab9d-0ee611b321f6",
+   "master": "f998cffd-8c5c-4053-8752-9bde0ab453a7",
+   "nome": "Immortals Fenyx Rising Nintendo Switch - Mídia fisica 100% original",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81ztc-mk8jcnxgu0w3d1",
+   "vendedor": "Game House Vila Velha",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81ztc-mk8jcnxgu0w3d1",
+   "gate": null,
+   "pont": 0.375,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "25d97885-7c05-4a17-af98-232e5f30f4a0",
+   "master": "ac48a444-1561-4da0-a38d-f180005c5a52",
+   "nome": "W 2K22 Xbox Series X Físico Novo LACRADO",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-mbs7a4f4l9rb9d",
+   "vendedor": "Virtualgamesplay",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-mgp9gdcwsn47be",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.385,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": 13
+  },
+  {
+   "oferta": "96662290-cb64-4003-8977-c8e00b318af1",
+   "master": "7cbf2258-f55e-48db-8ad0-0569aa58d121",
+   "nome": "GTA Para PS5 mídia física Novo",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lm-mr6ip43mjbpi12",
+   "vendedor": "LC Games e Acessórios",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lm-mr6ip43mjbpi12",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.34,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 31.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "890902e9-2f93-46cd-99c0-186e06aa6be9",
+   "master": "703e72c7-960e-4cb8-b0e3-011d8c4e789e",
+   "nome": "Table Top Racers Racing Nitro Edition (mídia Física) - Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820m5-mruvig0x6o052f",
+   "vendedor": "GVL Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820m5-mruvig0x6o052f",
+   "gate": null,
+   "pont": 0.621,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "5c03ad45-69b1-425b-9423-c45498888e6d",
+   "master": "a2851b27-ce44-4d15-8270-0d56f7941faf",
+   "nome": "Wonder Boy Collection - Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_664197-MLA99574283572_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_664197-MLA99574283572_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.286,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "3f5eda71-d1e0-433c-95f6-6c281d275cb2",
+   "master": "9e936417-86a0-46d6-ac96-f7710c8afb66",
+   "nome": "Leia o anúncio por gentileza Jogo para Nintendo switch Rocket League mídia física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81zud-mklbbfm8xzwi45",
+   "vendedor": "Mario Br Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81zud-mklbbfm8xzwi45",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.664,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 15.5%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "7ce2e83f-4998-451c-ab6f-3cac443b5c75",
+   "master": "0275aea6-d5b4-4f44-adc3-16c617d76fb4",
+   "nome": "Jogo Moonlighter Nintendo Switch - Mídia Física (Original)",
+   "url": "https://cf.shopee.com.br/file/br-11134201-820mc-mtp7i90dkqgzbd",
+   "vendedor": "GameboycollectionBr",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134201-820mc-mtp7i90dkqgzbd",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.216,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 7.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "2e6d854e-fdf5-4f37-b775-e9746aef988b",
+   "master": "2aba7072-0044-4120-abbe-14ea35dbefb3",
+   "nome": "Variable Barricade Original Mídia Física Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81z1k-mhuqghqle686ee",
+   "vendedor": "TGCComercio",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-mhuqghqle686ee",
+   "gate": null,
+   "pont": 0.594,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "2fea740f-f7f2-4e82-be42-b664ac36b2f2",
+   "master": "b83b514f-8448-43bd-902b-b2ea5eef92e3",
+   "nome": "Slave Zero X - Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134201-820m5-mtp7wb4lx3b6ac",
+   "vendedor": "GameboycollectionBr",
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_688450-MLA104791583518_012026-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.252,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 29.4%"
+   ],
+   "dist": 15
+  },
+  {
+   "oferta": "54150cb7-981b-4756-b9d2-239f026aa105",
+   "master": "bc3ca42f-0164-413c-8db8-428b4b2bf5d2",
+   "nome": "WRC 9 NINTENDO SWITCH LACRADO",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-8258r-mg5l8foawwsu0c",
+   "vendedor": "NtendoSan VanessaGames",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-8258r-mg5l8foawwsu0c",
+   "gate": null,
+   "pont": 0.353,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 8.4%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "1fe92941-5bb6-43aa-b383-98261f920b82",
+   "master": "ce223eec-efbd-47dc-baff-59c9d0d8f051",
+   "nome": "Assassin's Creed the Ezio Collection - SWITCH",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lq-mv441jslenlt1d",
+   "vendedor": "Console Lab",
+   "catalogo": "https://m.media-amazon.com/images/I/71s4t+ajRAL._AC_UL320_AIweblab1378949,T1_.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.489,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": 30
+  },
+  {
+   "oferta": "83c52967-984a-4ea4-8425-eb0b582d285b",
+   "master": "6de89f90-35da-4e42-8a1e-3770856ff8ea",
+   "nome": "Ancestors Legacy – Nintendo Switch (MÍDIA FÍSICA)",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-mcdlafd8plk8f8",
+   "vendedor": "THEGAMECOLLECTOR",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-mikghuwy718j28",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.622,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 48.5%"
+   ],
+   "dist": 10
+  },
+  {
+   "oferta": "88b2daa6-7775-4f9b-a43b-ad63469caced",
+   "master": "0b56cb05-dd72-4ee4-af84-48ad0adea052",
+   "nome": "For The King Nintendo Switch Original",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-m65xmy7xh2mdc9",
+   "vendedor": "smilepg",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-m65xmy7xh2mdc9",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.552,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "2092638b-d186-41bb-b9a2-cb193cfa691d",
+   "master": "6b1cfbcf-0db1-4642-b8d5-5f29f828b452",
+   "nome": "JOGO 1-2 NINTENDO SWITCH MIDIA FISICA ENVIO IMEDIATO",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81zu4-ml4ev52njyf41a",
+   "vendedor": "NURGAMES14",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81zu4-ml4ev52njyf41a",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.501,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 20.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "ca430f45-66e2-4bb4-a6d5-8cfd4cfc4849",
+   "master": "8d981244-5f65-436a-a382-b28ef151b6af",
+   "nome": "Bloodstained Ritual of the Night Nintendo Switch Mídia Física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lq-mp3w42skvfglb7",
+   "vendedor": "NtendoSan VanessaGames",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-mbom48anymcn98",
+   "gate": {
+    "at": "2026-11-15T06:42:09.733Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.425,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": 18
+  },
+  {
+   "oferta": "c11dc4e2-c86b-4181-89b1-e1ddffe4ca5e",
+   "master": "57accd52-0a3b-4486-9998-ed1f55b278fe",
+   "nome": "Bitmap Bureal Collection Switch Lacrado",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-81zv3-mmj9pdmrp3bj82",
+   "vendedor": "JR GAMES LTDA",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-81zv3-mmj9pdmrp3bj82",
+   "gate": null,
+   "pont": 0.215,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 10.0%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "908c3c51-462a-4c13-9c20-6e300a94b0de",
+   "master": "69be86af-a569-4a26-a547-e2510af328b3",
+   "nome": "Sonic 2 games in 1 Nintendo Switch - Mídia fisica 100% original",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lh-mptx2wcppfk1a7",
+   "vendedor": "Game House Vila Velha",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lh-mptx2wcppfk1a7",
+   "gate": null,
+   "pont": 0.45,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 9.2%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "22e371bb-4f00-4892-83cf-21dc4e4a05d9",
+   "master": "bb77861a-a1d8-4ec8-bf02-087ad1e03712",
+   "nome": "Super Crazy Rhythm Castle Ps5 Lacrado",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81z1k-mi6uyk2u8lc284",
+   "vendedor": "Gregório Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-mi6uyk2u8lc284",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.325,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 22.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "a5e273d2-e740-4b5c-a3f0-4d453c24ba62",
+   "master": "5aa79388-a93a-4f00-9bad-5e4f20418e1f",
+   "nome": "Under the Island Switch Midia Fisica",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-8259h-mu3orrb95eyob2",
+   "vendedor": "Gamer Hut",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-8259h-mu3orrb95eyob2",
+   "gate": null,
+   "pont": 0.695,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 22.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "c86c7b8f-d01a-4684-986e-80324761405a",
+   "master": "91987c60-0847-467b-80c8-1151e6a6f1f3",
+   "nome": "One piece world seeker- Jogo de PS4 original mídia física",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-8257t-mrl4qw5o4jk0b5",
+   "vendedor": "Mane's games",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-8257t-mrl4qw5o4jk0b5",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.283,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 7.7%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "19ec161e-63a0-4125-b684-78cd64135b6a",
+   "master": "8d4ad69b-c21d-453b-b2cd-1caf8e000eac",
+   "nome": "Megaman 11 Nintendo Switch Mídia Física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820mg-mn1k22hcxn9d7a",
+   "vendedor": "moisesclemos",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820mg-mn1k22hcxn9d7a",
+   "gate": null,
+   "pont": 0.499,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 7.1%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "9d60609e-fce4-4c65-9fd2-ba715c3fad1d",
+   "master": "c215461f-c6bd-4b69-9d15-2c0ad7c9fa66",
+   "nome": "Jogo DOOM Playstation 4 PS4 Mídia física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81ztc-mj1c4py1jq4hbd",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81ztc-mj1c4py1jq4hbd",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.363,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 22.7%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "0731e195-d63e-4ef3-832e-c7bf4ff2b018",
+   "master": "d687a03f-6560-4d85-93e4-f30ee70e7a62",
+   "nome": "Jogo Xbox Series X Real Farm Mídia Física Conservado",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-mc0p0wpo9pd319",
+   "vendedor": "monepatch",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-mc0p0wpo9pd319",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.542,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 53.4%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "0dbef3bc-8ee5-460a-83c1-2d7fd3295067",
+   "master": "3c0082a1-43c3-4410-adba-c886c972a771",
+   "nome": "Dragon Quest Vii reimaginado -eu- Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_952725-MLA109639861659_032026-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_952725-MLA109639861659_032026-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.238,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "10e36ecc-d5f3-4c59-9779-0be73d6f0c1f",
+   "master": "88b253ef-5d75-4278-a331-a8a77e88b5d3",
+   "nome": "Jogo para Nintendo Switch Ary and the Secret of Seasons  LACRADO em perfeito estado",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81z1k-mg6ws8qzb0u812",
+   "vendedor": "NtendoSan VanessaGames",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-mg6ws8qzb0u812",
+   "gate": null,
+   "pont": 0.221,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 11.7%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "cd7be8f2-cc49-4b63-a482-0df913dac883",
+   "master": "d32cefac-6352-4b07-b489-2a086e6e4d0e",
+   "nome": "Transformers Battlegrounds Nintendo Switch Jogo Multijogador 2020",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_661702-MLA99934579445_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_661702-MLA99934579445_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.275,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "e08df25c-5c56-4a52-83a3-87e40568c0af",
+   "master": "adaa1188-1374-4502-bbdc-b26b3358ca7a",
+   "nome": "Nba 2k19 Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_627206-MLA99935463173_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_627206-MLA99935463173_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.375,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "04c21d60-d41b-485a-9d5c-1c20a3b0f4ee",
+   "master": "1d2c03e8-e6e7-4d25-984c-fabb20687b73",
+   "nome": "Jogo BATS Bloodsucker Anti Terror Squad para Nintendo Switch Físico",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_883826-MLU79048856221_092024-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_883826-MLU79048856221_092024-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.23,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 29.0%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "45bd38d7-5aa0-4f15-bdb5-6c190e4b55da",
+   "master": "9b47e60b-2989-4eb2-831c-d7562ebc3eee",
+   "nome": "Neptunia Game Maker R Evolution Nintendo Switch Jogo Físico",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_734937-MLA100072563069_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_734937-MLA100072563069_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.349,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "f36f4727-8540-4c04-bb9d-415a86f7f921",
+   "master": "24ac58d0-e4ab-464c-89dc-ff3ef5f163ea",
+   "nome": "Jogo Dragon ball FighterZ Playstation 4 PS4 Mídia fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lj-ms0k9hpt7mrpa2",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lj-ms0k9hpt7mrpa2",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.306,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 32.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "40a467a9-328a-4b5c-8f29-332710fb6781",
+   "master": "25b129b5-33ff-4c56-a682-3346ef12905a",
+   "nome": "Streets of Red Devil's Dare NOVO LACRADO Switch Original Mídia Física Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81z1k-megeavbwbt3686",
+   "vendedor": "THEGAMECOLLECTOR",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-megeavbwbt3686",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.506,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 34.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "be0820a2-8687-499a-84a8-88c9afed70d8",
+   "master": "66585bf6-253f-425b-b620-cbb140483e0c",
+   "nome": "Gearshifters para Nintendo Switch, Jogo Físico de Ação e Corrida",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_935358-MLA99576748316_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_935358-MLA99576748316_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.327,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 17.5%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "d718585f-42e3-453d-8c69-5f9fc8fc46fc",
+   "master": "ec41aec4-73d1-4f67-a637-ebd60b835385",
+   "nome": "Star Wars Republic Commando - Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_626908-MLA99954210321_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_626908-MLA99954210321_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.315,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 6.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "17cd20c3-e506-4d19-b548-6b069451b793",
+   "master": "0a4b9e93-8272-4e90-a046-90030d267976",
+   "nome": "Jogo Trine Ultimate Collection Para Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_859721-MLU54977264479_042023-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_859721-MLU54977264479_042023-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.319,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "59267719-bd23-40cf-8478-8c45e027d80a",
+   "master": "4d7722c3-a46a-4554-8f7b-2e1d4bf57cf6",
+   "nome": "NBA 2K21 - PS4 - Original",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820m0-mqwlwnofukudd7",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81zum-mkwlkirak3cwc7",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.658,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 17.2%"
+   ],
+   "dist": 25
+  },
+  {
+   "oferta": "9f462b85-f702-4d08-9c0d-d679db4f4dc1",
+   "master": "101eae0f-bf5f-4370-bfbb-ba8e02c0d534",
+   "nome": "Jogo Driveclub Playstation 4 PS4 Midia fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820md-mmlpc81tvsp024",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820md-mmlpc81tvsp024",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.235,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 6.5%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "4c5010c6-d2fa-4a38-96c0-878a3402b912",
+   "master": "8bb3de1a-3be7-4c11-bfec-073496f19e7a",
+   "nome": "Super Mario Galaxy + Super Mario Galaxy 2 - Nintendo Switch Mídia Física Envio Imediato",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_798042-MLA99508665430_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820m2-mp5d6o4yz7r7ac",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.312,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": 17
+  },
+  {
+   "oferta": "662ebb97-4c5e-4221-b4ac-8006529ffa66",
+   "master": "4d91d642-e108-4596-a707-4f327a7ada13",
+   "nome": "Pokkén Tournament DX (mídia física) - Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lt-mul7nxqwzpj5c4",
+   "vendedor": "GVL Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lt-mul7nxqwzpj5c4",
+   "gate": null,
+   "pont": 0.493,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 6.4%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "6dbd8e4f-ec86-4236-9369-915db68eebe9",
+   "master": "776344c7-4ec2-4234-82ec-524660720032",
+   "nome": "Streets of Rage 4 novo lacrado Nintendo switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lf-mlpgpdmkh91h20",
+   "vendedor": "Ceduh",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lf-mlpgpdmkh91h20",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.666,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 13.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "97e60bc3-f850-4f11-a074-6b9a4f1d7d77",
+   "master": "5a069316-a379-48fd-992c-e93138ac2392",
+   "nome": "Jogo Just Dance 2020 PS4 Playstation 4 Mídia fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820mg-mnill8avd5he9d",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820mg-mnill8avd5he9d",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.672,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 12.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "8b055de8-a898-4a2a-b883-b43c24a7d74d",
+   "master": "81b0700d-5fc7-4b44-98c1-5b5998000021",
+   "nome": "Far Cry 6 Ultimate Edition Xbox Series X Lacrado",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-m7imkcz4tz8yc3",
+   "vendedor": "Gregório Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-m7imkcz4tz8yc3",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.299,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 19.9%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "4e27d297-9cc2-45c6-b54e-7aadc3ec5044",
+   "master": "15f2b27f-4794-4ac9-9e40-112eff5665de",
+   "nome": "Jogo Xbox Series X Luta WWE 2K22 Mídia Física Novo Lacrado",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-7rbl2-lnrgnl3u07ph5b",
+   "vendedor": "Power Hit Games (PHGAMES)",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-7rbl2-lnrgnl3u07ph5b",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.34,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "170e784e-b025-409a-b739-7e8626a07b75",
+   "master": "b27de413-e02f-4d06-b3d3-9256a845897d",
+   "nome": "Jogo Sumikko Gurashi The Movie Nintendo Switch Mídia Física Original",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820mg-mr8vb40lje9w81",
+   "vendedor": "EduardoMorenoGames",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820mg-mr8vb40lje9w81",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.641,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "4389ed0f-e5d0-487c-8ca9-88aa73f2e9b8",
+   "master": "fd71a911-f031-4a89-8980-381de193626c",
+   "nome": "Beyond Good e Evil 20th Anniversary Edition Switch Lacrado",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-823om-mokf5n0wlc0205",
+   "vendedor": "JR GAMES LTDA",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-823om-mokf5n0wlc0205",
+   "gate": null,
+   "pont": 0.47,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 31.9%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "c7511fb5-fd0c-46f5-9086-cca78d393162",
+   "master": "373f4021-4461-425b-a1b0-b9171287ff44",
+   "nome": "Paw Patrol On A Roll Original Nintendo Switch Midia Fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820m2-mt2o6sl51n2ce0",
+   "vendedor": "Console Lab",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820m2-mt2o6sl51n2ce0",
+   "gate": null,
+   "pont": 0.579,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "10699623-3ce6-4675-87e2-ae210b0e3287",
+   "master": "7216f3fc-365a-43b1-93ba-0b5888dfd452",
+   "nome": "Jogo Nintendo Switch Lego Dc Super Villains Mídia Física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820le-mv453i9poruq69",
+   "vendedor": "Console Lab",
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_658099-MLA99518058900_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.399,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 24.9%"
+   ],
+   "dist": 33
+  },
+  {
+   "oferta": "94193055-f73f-4663-ae2c-5e4a4ba665c9",
+   "master": "15f0fba4-2daa-459e-b93f-a1b9019aab9c",
+   "nome": "Scribblenauts Showdown (mídia física) - Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820li-mtptlqhu7k74e6",
+   "vendedor": "GVL Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820li-mtptlqhu7k74e6",
+   "gate": null,
+   "pont": 0.296,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "09105d47-90b1-498c-bf37-c8e304df92af",
+   "master": "d02506c7-efdd-41b9-8227-2e2fb726d016",
+   "nome": "Yoshi's Crafted World (mídia Física) - Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820m5-mul6frr4nj0i5b",
+   "vendedor": "GVL Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820m5-mul6frr4nj0i5b",
+   "gate": null,
+   "pont": 0.348,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "fb92e5ce-5c14-4a8a-89f5-93fb3f32e8d1",
+   "master": "9985b3e1-1970-4412-a158-06c3170af9e0",
+   "nome": "Jogo Lego Marvel Vingadores Playstation 4 PS4 Mídia fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820l7-mod2g5ptkao754",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820l7-mod2g5ptkao754",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.491,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 30.4%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "6b8265a5-479b-4a81-bb6f-1b4d393d14b3",
+   "master": "cd5fddc7-0c7e-4687-ba9a-8042f988b1ce",
+   "nome": "Double Dragon Neon - Nintendo Switch - Limited Run Games",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_938558-MLA100030076743_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_938558-MLA100030076743_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.385,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "1ea4e2e8-a578-4162-b153-9b900e8de740",
+   "master": "f252b1ab-1eb6-4274-85fc-8b6458ba472b",
+   "nome": "Beholder 3 p/ Nintendo Switch Físico – Jogo de Aventura",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_732604-MLA91060436836_092025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_732604-MLA91060436836_092025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.393,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "0aa745ae-01f4-4ff1-a86f-6489669e0b5f",
+   "master": "81ab743a-75da-434c-a3ce-117a97682b56",
+   "nome": "Jogo Scribblenauts Mega Pack para Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_755086-MLA100014307525_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_755086-MLA100014307525_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.255,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 6.1%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "1ed36e58-9557-449a-a050-ff0f70c823bb",
+   "master": "e25916ed-0c14-4463-9b92-b77c7c4c5bd5",
+   "nome": "Girafa E Annika Para Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_616024-MLA94485307733_102025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_616024-MLA94485307733_102025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.279,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 14.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "fc67e8e9-fa64-4704-9131-57c0b1db8044",
+   "master": "7908870c-496d-4c4e-9872-29876abc96fc",
+   "nome": "Deathloop Jogo Playstation 5 Ps5 Mídia Física Original",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820ls-msomxg0nshs511",
+   "vendedor": "Ninja Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820ls-msomxg0nshs511",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.656,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "438be15b-6999-4a4f-9850-aedfe9b1dff5",
+   "master": "9b6fe2d2-d830-4049-ba32-0fe4fbb468ae",
+   "nome": "Jogo Marvel's Spider-Man PS4 Mídia Física Original Compatível com PS5 PT-BR",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820ld-mqcbn7j8q5tua6",
+   "vendedor": "KAUZGAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820ld-mqcbn7j8q5tua6",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.546,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 21.0%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "963f1d49-02f8-4df3-b700-fa19db646312",
+   "master": "8efe5486-bce4-45c8-946f-841e6b8c1758",
+   "nome": "Hunting Simulator Nintendo Switch Mídia Física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820me-moukowk2kzr935",
+   "vendedor": "NURGAMES14",
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_934176-MLA79561420201_092024-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.33,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": 20
+  },
+  {
+   "oferta": "fb4270a6-598c-4532-96a6-3a9cfd46f007",
+   "master": "fbbbcbb8-00e8-4216-8c18-adeb4998a2e1",
+   "nome": "A lenda de Zelda Breath Of The Wild Nintendo Switch 2",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_817752-MLA99581968576_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_817752-MLA99581968576_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.459,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 35.4%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "3d3cecf4-666e-42e2-953d-ad1d60d7909e",
+   "master": "0f816de8-6c0b-42fd-9b5d-6f71bf206526",
+   "nome": "L.A. Noire Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_947960-MLA100028126389_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_947960-MLA100028126389_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.441,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 30.2%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "33a6307b-7204-4af0-9256-925d9f266aa2",
+   "master": "d7985e9f-c694-4741-9d6b-74f8e7194b07",
+   "nome": "Grand Theft Auto The Trilogy The definitive Edition GTA PS4 Midia Fisica",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-7ra17-mbmduunaylukd4",
+   "vendedor": "Gamer Hut",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-7ra17-mbmduunaylukd4",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.357,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 10.0%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "1d6d82da-d95f-474b-a6f2-5a9cb39a8628",
+   "master": "be1141b1-a980-44d7-87ab-ac9d38a42a7b",
+   "nome": "Venda ou troca de Ps4 Physical Ps4 Dakmor da coleção Outbreak",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_649598-MLA96569492000_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_649598-MLA96569492000_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.286,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "436ab685-a8fa-4b2c-84f2-c7ee4b7c708d",
+   "master": "4f5f9513-dc84-4cbb-ac0a-79ad40642fcc",
+   "nome": "Jogo FIFA 21 NXT LVL Edition Playstation 5 PS5 Mídia Fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lh-mtpx1ljc9gjk78",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lh-mtpx1ljc9gjk78",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.616,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "46600187-0444-4f0d-9848-17aa986ea99b",
+   "master": "dedc78db-24d2-4718-a91c-25cfeca3d2bc",
+   "nome": "Jogo Lego Super Heroes 2 Playstation 4 PS4 Mídia fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820m3-mljp63donqx222",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820m3-mljp63donqx222",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.271,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 15.1%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "f38d2bae-4a90-4ba5-9a37-d90a09860f2b",
+   "master": "e469568e-e751-4747-aa1e-d44b12940548",
+   "nome": "Jogo Truck Driver Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_735790-MLA99523344296_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_735790-MLA99523344296_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.409,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 11.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "c4698b08-9480-4c02-94e1-f8b1d64460c9",
+   "master": "25780fe4-db4b-4eea-8658-e457f11b5b98",
+   "nome": "Ps4 Resident Evil Revelations 2",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_909253-MLA99369353546_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_909253-MLA99369353546_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.43,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "7fac6eb4-806e-4bb3-b3bb-c21face4c92d",
+   "master": "2576c127-43d9-41a8-a79f-227caef427fd",
+   "nome": "Jogo The Lego Movie Playstation PS4 Midia Fisica",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820me-mslyigai5blx1a",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820me-mslyigai5blx1a",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.348,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 17.4%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "6bd14430-d73c-4f4a-ba88-299760db64cc",
+   "master": "1654d61d-f6a0-4269-841b-4111bb0adf09",
+   "nome": "God Of Rock (mídia Física) - Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-7r98o-lwrkc3206efmd8",
+   "vendedor": "GVL Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-7r98o-lwrkc3206efmd8",
+   "gate": null,
+   "pont": 0.321,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 36.1%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "6f900ba6-2357-482c-88a8-49cb95889fcf",
+   "master": "cfcaff81-8993-4b61-b438-d1975ea09dc8",
+   "nome": "Poison Control Nintendo Switch",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_675815-MLA99496419440_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_675815-MLA99496419440_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.412,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "291ce867-712a-4b18-ae0a-8e83eb86e05b",
+   "master": "55c0b0cb-b6be-4802-a09e-797ed0a65b81",
+   "nome": "The king of fighters XV- Jogo de PS4 original mídia física",
+   "url": "https://cf.shopee.com.br/file/sg-11134201-8259z-mrl3n2shrdvpb7",
+   "vendedor": "Mane's games",
+   "catalogo": "https://cf.shopee.com.br/file/sg-11134201-8259z-mrl3n2shrdvpb7",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.497,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 13.8%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "f3ae660e-ac5f-42f3-88ab-176b61449bf3",
+   "master": "774f4f23-2065-4327-a573-122bc2e9c86c",
+   "nome": "Jogo The show 18 Playstation 4 PS4 Mídia Física",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lg-mpqi7r3abr43b3",
+   "vendedor": "NT7 GAMES",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lg-mpqi7r3abr43b3",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.445,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 15.4%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "ef40ac8f-da04-4521-9335-6e3567f020f2",
+   "master": "d2c519b4-9269-4328-a9f0-f77e86ef0f79",
+   "nome": "Fifa 22 Nintendo Switch Mídia Física Ea Sports Fifa 22",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820mb-mv91udcdt9tvfc",
+   "vendedor": "TGCComercio",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820mb-mv91udcdt9tvfc",
+   "gate": null,
+   "pont": 0.212,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 18.3%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "ec0a862a-ad12-4526-855a-db50befa5820",
+   "master": "390437c0-16f0-4ce1-bc96-5b473fd472cd",
+   "nome": "Beholder 3 - Ps5",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_861373-MLA99525904772_122025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_861373-MLA99525904772_122025-F.jpg",
+   "gate": {
+    "at": "2026-11-15T00:57:26.662Z",
+    "reason": "nao_identificado:descoberta_duvida:tipo_por_classificador_estatistico",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "auto:r2-11",
+    "previousVerdict": "review"
+   },
+   "pont": 0.632,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "b915f1ba-5151-4aec-a83c-7c06107e59cf",
+   "master": "ec6778aa-3d4f-42e1-912b-e5eeed100152",
+   "nome": "Spider Man Miles Morales | PS4 Jogo Original | Mídia Física Testado e Funcionando",
+   "url": "https://cf.shopee.com.br/file/br-11134207-81z1k-mhf06a631mo45e",
+   "vendedor": "Ninja Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-81z1k-mhf06a631mo45e",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.307,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "mancha de pele 40.2%"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "b5f58739-2b88-4019-b53a-15350d645895",
+   "master": "7de2705e-8838-41a8-8929-24881b3a25e9",
+   "nome": "The Pathless (mídia física) - Nintendo Switch",
+   "url": "https://cf.shopee.com.br/file/br-11134207-820lz-ms1vetfujzeta8",
+   "vendedor": "GVL Games",
+   "catalogo": "https://cf.shopee.com.br/file/br-11134207-820lz-ms1vetfujzeta8",
+   "gate": null,
+   "pont": 0.221,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  },
+  {
+   "oferta": "7407b587-81f0-4fcb-ad4d-57d7fd2fd4a8",
+   "master": "2541db02-639a-474e-ae8b-189040c31362",
+   "nome": "Console Playstation 5 Pro 2tb Branco Sony Bivolt Branco",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_727482-MLA99962144409_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_727482-MLA99962144409_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.446,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [
+    "fundo branco de estudio: no maximo medio"
+   ],
+   "dist": null
+  },
+  {
+   "oferta": "1837ab9a-15ca-45b3-ab2c-e45df271f8e6",
+   "master": "6f2ccb73-9da4-45d4-9e12-33b3f8c2b6d0",
+   "nome": "Jogo No More Heroes 1 Físico Nintendo Switch Ação 2020",
+   "url": "https://http2.mlstatic.com/D_NQ_NP_717148-MLA99941905865_112025-F.jpg",
+   "vendedor": null,
+   "catalogo": "https://http2.mlstatic.com/D_NQ_NP_717148-MLA99941905865_112025-F.jpg",
+   "gate": {
+    "at": "2026-11-14T00:42:00.986Z",
+    "reason": "sem_sinal_de_risco",
+    "matched": null,
+    "verdict": "approved",
+    "version": 1,
+    "category": "ok",
+    "approvedBy": "bloco:q4q5:2026-11-13"
+   },
+   "pont": 0.289,
+   "faixa": "medio",
+   "motivo": "foto_com_mao",
+   "razoes": [],
+   "dist": null
+  }
+ ]
+}
