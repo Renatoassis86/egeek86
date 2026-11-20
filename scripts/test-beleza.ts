@@ -20,8 +20,8 @@ assert.equal(t('Batom Mac Frost - Fabby'), 'batom-labios');
 assert.equal(t('Base Liquida Dior Forever Matte 30ml'), 'base-corretivo');
 assert.equal(t('Paleta de Sombras Urban Decay Naked 3'), 'olhos');
 assert.equal(t('Mascara de Cilios Maybelline Lash Sensational'), 'olhos');
-assert.equal(t('Perfume Carolina Herrera Good Girl Eau de Parfum 80ml'), 'perfumaria');
-assert.equal(t('Shampoo Kerastase Nutritive 250ml'), 'cabelo');
+assert.equal(t('Perfume Carolina Herrera Good Girl Eau de Parfum 80ml'), 'perfume-feminino');
+assert.equal(t('Shampoo Kerastase Nutritive 250ml'), 'shampoo-condicionador');
 assert.equal(t('Serum Facial Vitamina C La Roche-Posay'), 'skincare');
 assert.equal(t('Esmalte Risque Cremoso Vermelho'), 'unhas');
 

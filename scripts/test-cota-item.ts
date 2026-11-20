@@ -30,7 +30,7 @@ assert.equal(marcasPreferidasLigadas({ GROUP_MARCAS_PREFERIDAS: '0' }), false);
 // SQL da fila: camadas, tabelas pequenas materializadas, ordem marca > regua > cota de familia > popularidade > recencia; nada exclui
 const q = fs.readFileSync('src/server/messaging/group-queue.ts', 'utf8');
 assert.ok(q.includes('fam6 AS MATERIALIZED') && q.includes('tipo24 AS MATERIALIZED'), 'cotas em CTE materializada (em subconsulta correlacionada no ORDER BY a consulta estourava 30 s)');
-assert.ok(/ORDER BY b\.marca_ord ASC, COALESCE\(\(b\.candidate -> 'regua' ->> 'degrau'\)::int, 0\) DESC, b\.fam_sent6 ASC, b\.marca_sent6 ASC, b\.pop DESC, b\.created_at DESC\) AS rn_fair/.test(q), 'ordem: marca preferida, degrau da regua, cota de familia, popularidade, recencia');
+assert.ok(/ORDER BY (?:\$\{ordEspecial\})?b\.marca_ord ASC, COALESCE\(\(b\.candidate -> 'regua' ->> 'degrau'\)::int, 0\) DESC, b\.fam_sent6 ASC, b\.marca_sent6 ASC, b\.pop DESC, b\.created_at DESC\) AS rn_fair/.test(q), 'ordem: marca preferida, degrau da regua, cota de familia, popularidade, recencia');
 assert.ok(/ORDER BY q\.rn_fair, q\.tipo_sent24, \(q\.trigger = 'AC'\), q\.created_at\) AS rn_v/.test(q), 'cota de tipo por loja (o tipo menos enviado em 24 h abre a fila)');
 assert.ok(!/fam6[^;]{0,120}(AND NOT|NOT EXISTS|WHERE\s+f\.n)/.test(q), 'as cotas nunca excluem linha');
 

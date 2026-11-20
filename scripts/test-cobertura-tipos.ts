@@ -7,6 +7,8 @@ import { SEGMENTS, segmentByKey, segmentsOf, domainMatches, type NonGamesVertica
 import { MIN_TERMOS_COBERTO, TIPOS_ESPERADOS, existiaAntes, situacaoDepois } from '../src/lib/catalog/vertical/cobertura-tipos';
 import { NOVOS_SEGMENTOS_TIPOS, PROBE_CALLS_PER_RUN } from '../src/lib/catalog/vertical/config-tipos';
 import { NOVOS_SEGMENTOS_CIENCIA } from '../src/lib/catalog/vertical/config-ciencia';
+import { NOVOS_SEGMENTOS_VARIEDADE } from '../src/lib/catalog/vertical/config-variedade';
+import { naoOfertavel } from '../src/lib/catalog/nao-ofertavel';
 import { NOVOS_SEGMENTOS_FERRAMENTAS } from '../src/lib/catalog/vertical/config-ferramentas';
 import { hasScopeLexicon, scopeIssue } from '../src/lib/catalog/vertical/scope';
 import { evaluateIdentity } from '../src/lib/catalog/vertical/identity';
@@ -71,7 +73,7 @@ async function main() {
   const keys = SEGMENTS.map((s) => s.key);
   check('chaves de segmento unicas', new Set(keys).size === keys.length);
   const rankNovos = NOVOS_SEGMENTOS_TIPOS.map((s) => s.seedRank);
-  check('seedRank dos tipos novos unico e depois dos antigos', new Set(rankNovos).size === rankNovos.length && Math.min(...rankNovos) > Math.max(...SEGMENTS.filter((s) => !NOVOS_SEGMENTOS_TIPOS.includes(s) && !NOVOS_SEGMENTOS_CIENCIA.includes(s) && !NOVOS_SEGMENTOS_FERRAMENTAS.includes(s)).map((s) => s.seedRank)));
+  check('seedRank dos tipos novos unico e depois dos antigos', new Set(rankNovos).size === rankNovos.length && Math.min(...rankNovos) > Math.max(...SEGMENTS.filter((s) => !NOVOS_SEGMENTOS_TIPOS.includes(s) && !NOVOS_SEGMENTOS_CIENCIA.includes(s) && !NOVOS_SEGMENTOS_FERRAMENTAS.includes(s) && !NOVOS_SEGMENTOS_VARIEDADE.includes(s)).map((s) => s.seedRank)));
   for (const s of NOVOS_SEGMENTOS_TIPOS) {
     check(`${s.key}: dominio nao confirmado => sem searchDomain (busca sem filtro) e flag ligada`, s.domainUnconfirmed === true && !s.searchDomain);
     check(`${s.key}: orcamento proprio por execucao (${s.callsPerRun})`, s.callsPerRun === PROBE_CALLS_PER_RUN && callsPerRunOf(s) <= DEFAULT_CALLS_PER_TYPE_RUN);
@@ -84,6 +86,46 @@ async function main() {
   }
   check('segmentos da loja Esporte passaram de 40', segmentsOf('esporte').length >= 40, segmentsOf('esporte').length);
 
+  // ---------------- variedade (R-108, 2026-11-20) ----------------
+  const VAR = NOVOS_SEGMENTOS_VARIEDADE;
+  const lojasVar = new Set(VAR.map((x) => x.vertical));
+  check('variedade: segmentos novos em Casa, Esporte, Eletronicos, Beleza e Livros (>= 28)', VAR.length >= 28 && ['eletrodomesticos', 'esporte', 'eletroeletronicos', 'beleza', 'livros'].every((l) => lojasVar.has(l as NonGamesVertical)), VAR.length);
+  check('variedade: nenhum segmento duplica chave ja existente', VAR.every((x) => SEGMENTS.filter((y) => y.key === x.key).length === 1));
+  const rankVar = VAR.map((x) => x.seedRank);
+  check('variedade: seedRank unico e depois de todos os outros', new Set(rankVar).size === rankVar.length && Math.min(...rankVar) > Math.max(...SEGMENTS.filter((x) => !VAR.includes(x)).map((x) => x.seedRank)));
+  for (const x of VAR) {
+    check(`${x.key}: orcamento proprio (${x.callsPerRun}) e >= ${MIN_TERMOS_COBERTO} consultas`, x.callsPerRun === PROBE_CALLS_PER_RUN && x.terms.length >= MIN_TERMOS_COBERTO, x.terms.length);
+    check(`${x.key}: tem lexico aparelho x acessorio`, hasScopeLexicon(x.key));
+    check(`${x.key}: nao e games e nao casa dominio de livros/jogos (salvo livros)`, x.vertical !== ('games' as string) && (x.vertical === 'livros' || (!domainMatches(x, 'MLB-BOOKS') && !domainMatches(x, 'MLB-VIDEO_GAMES'))));
+    check(`${x.key}: perfil sem cor (cor junta)`, !x.profile.keyExtras.includes('COLOR') && !x.profile.fallbackAttrs.includes('COLOR'));
+    if (x.vertical === 'livros') {
+      check(`${x.key}: livro so em MLB-BOOKS (conferido ao vivo), so ISBN`, x.searchDomain === 'MLB-BOOKS' && !x.domainUnconfirmed && x.profile.strategy === 'isbn_only' && domainMatches(x, 'MLB-BOOKS'));
+    } else {
+      check(`${x.key}: dominio a confirmar (sem searchDomain) e exige marca real`, x.domainUnconfirmed === true && !x.searchDomain && x.requireBrand === true);
+    }
+  }
+  check('variedade: Livros agora tem um segmento por genero alem do geral (>= 10 + 1)', segmentsOf('livros').length >= 11, segmentsOf('livros').length);
+  const abre = (k: string, re: RegExp) => re.test(segmentByKey(k)!.terms.slice(0, 3).join(' | '));
+  check('variedade: marcas fortes abrem a lista (extratora=wap, climatizador=ventisol, adega=dako, kimono=koral, gimbal=dji, lente=canon, barbeador=philips, hidratante=nivea)',
+    abre('extratora-higienizadora', /wap|karcher/) && abre('climatizador-portatil', /ventisol|electrolux/) && abre('adega-cervejeira', /dako|philco/) && abre('kimono-artes-marciais', /koral|keiko/) &&
+    abre('gimbal-estabilizador', /dji|zhiyun/) && abre('lente-camera', /canon|nikon/) && abre('barbeador-aparador', /philips|gillette/) && abre('hidratante-corporal', /nivea|natura/));
+  check('variedade: termos extras de tipos existentes entraram (tenis de corrida asics, garrafa termica stanley, smart tv 55 samsung, caixa jbl flip)',
+    segmentByKey('tenis')!.terms.some((x) => /tenis de corrida.*asics|asics.*tenis de corrida/.test(x) || /tenis de corrida asics/.test(x)) && segmentByKey('garrafa-esportiva')!.terms.some((x) => /garrafa termica.*stanley/.test(x)) &&
+    segmentByKey('smart-tv')!.terms.some((x) => /smart tv 55 polegadas samsung/.test(x)) && segmentByKey('caixa-de-som')!.terms.some((x) => /jbl flip/.test(x)));
+  // Lexico: aparelho passa; peca/acessorio avulso vai para revisao
+  const okv = (seg: string, t: string) => scopeIssue(seg, t) === null;
+  const badv = (seg: string, t: string) => scopeIssue(seg, t) !== null;
+  check('extratora: aparelho passa e bico/filtro nao', okv('extratora-higienizadora', 'Extratora Portatil Spot Cleaner W3 Wap 127v') && badv('extratora-higienizadora', 'Bico Para Extratora Karcher Puzzi'));
+  check('adega: aparelho passa e prateleira nao', okv('adega-cervejeira', 'Adega Climatizada 12 Garrafas Dako') && badv('adega-cervejeira', 'Prateleira Para Adega Philco'));
+  check('kimono: kimono passa e faixa/patch nao', okv('kimono-artes-marciais', 'Kimono Jiu Jitsu Koral Trancado Branco A2') && badv('kimono-artes-marciais', 'Faixa Para Kimono Jiu Jitsu Preta') && badv('kimono-artes-marciais', 'Patch Bordado Para Kimono'));
+  check('cama elastica: aparelho passa e lona/molas nao', okv('cama-elastica', 'Cama Elastica 305 Bel Fix') && badv('cama-elastica', 'Lona Para Cama Elastica 305') && badv('cama-elastica', 'Molas Para Cama Elastica'));
+  check('gimbal: gimbal passa e bolsa nao', okv('gimbal-estabilizador', 'Gimbal Dji Osmo Mobile 6 Cinza') && badv('gimbal-estabilizador', 'Bolsa Para Gimbal Dji'));
+  check('lente: lente de camera passa e filtro/lente de contato nao', okv('lente-camera', 'Lente Canon Ef 50mm F1.8 Stm') && badv('lente-camera', 'Filtro Uv Para Lente Canon 58mm') && badv('lente-camera', 'Lente Para Celular Smartphone Clip'));
+  check('barbeador: aparelho passa e lamina/refil nao', okv('barbeador-aparador', 'Barbeador Eletrico Philips Serie 5000') && badv('barbeador-aparador', 'Lamina De Reposicao Para Barbeador') && badv('barbeador-aparador', 'Refil Gillette Mach3'));
+  check('livro de genero: livro passa e caderno/poster nao', okv('livros-manga', 'Manga Naruto Gold Vol 1 Panini') && badv('livros-manga', 'Caderno Naruto Capa Dura') && badv('livros-biblia-teologia', 'Poster Biblia Versiculo'));
+  // Porteiro de itens que nunca sao oferta da loja
+  check('nao ofertavel: coldre, algema e municao no Esporte; fritador industrial na Casa', ['Coldre Velado Couro Para Glock G25', 'Chave De Algema Invictus', 'Baleiro Para 6 Municoes 38'].every((n) => naoOfertavel('esporte', n)) && ['Fritador Pasteleiro Industrial 7L', 'Tacho Eletrico 7 Litros Aluminio'].every((n) => naoOfertavel('eletrodomesticos', n)));
+  check('nao ofertavel: produto de verdade passa (bola, pistola de massagem, air fryer, aspirador)', !naoOfertavel('esporte', 'Bola De Futebol Campo Penalty') && !naoOfertavel('esporte', 'Pistola De Massagem Muscular Theragun') && !naoOfertavel('eletrodomesticos', 'Air Fryer Mondial 4l') && !naoOfertavel('eletrodomesticos', 'Aspirador De Po Robo Xiaomi') && !naoOfertavel('beleza', 'Perfume Dior Sauvage'));
   // Dominio nao confirmado: nenhum master nasce fora do dominio (o porteiro de identidade barra antes de qualquer chamada)
   const cel = segmentByKey('celular')!;
   const off = evaluateIdentity({ id: 'MLBX', name: 'Capinha Para Celular', domain_id: 'MLB-PHONE_CASES', attributes: [] }, cel);

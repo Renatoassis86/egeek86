@@ -23,7 +23,7 @@ check('aspirador: com fio, sem fio, vertical e portatil', ['com fio', 'sem fio',
 
 const NOME_ASP = 'Aspirador de Pó Vertical Sem Fio 3 em 1 Electrolux Ergorapido Experience Cyclonic Power 30 min Azul PTEC101 Bivolt';
 const NOME_CAD = 'Cadeira Orbital 360 I-size, Black, Safety 1st';
-check('tipo: ergorapido = aspirador', classificarTipo('eletrodomesticos', NOME_ASP) === 'aspirador');
+check('tipo: ergorapido = aspirador', classificarTipo('eletrodomesticos', NOME_ASP) === 'aspirador-sem-fio');
 check('tipo: Orbital 360 (cadeira para auto) = cadeirinha-auto', classificarTipo('eletrodomesticos', 'Cadeira para Auto Safety 1st Orbital 360 Preta') === 'cadeirinha-auto');
 check('tipo: cadeirinha / bebe conforto', classificarTipo('eletrodomesticos', 'Bebê Conforto Chicco Keyfit 30 Isofix') === 'cadeirinha-auto' && classificarTipo('eletrodomesticos', 'Cadeirinha para Carro Burigotto Matrix') === 'cadeirinha-auto');
 check('escopo: cadeirinha de verdade passa', scopeIssue('cadeirinha-auto', 'Cadeira Para Auto Safety 1st Orbital 360 I-size Preta') === null);

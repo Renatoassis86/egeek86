@@ -3,6 +3,7 @@ import { LEX_AMPLIACAO, NICHO_AMPLIACAO } from './scope-ampliacao';
 import { LEX_TIPOS, NICHO_TIPOS } from './scope-tipos';
 import { LEX_CIENCIA, NICHO_CIENCIA } from './scope-ciencia';
 import { LEX_FERRAMENTAS, NICHO_FERRAMENTAS } from './scope-ferramentas';
+import { LEX_VARIEDADE, NICHO_VARIEDADE } from './scope-variedade';
 
 /**
  * ESCOPO DO TÍTULO (ata 2026-11-08, achados do dry-run 2): o domain_id do catálogo do ML às vezes deixa passar
@@ -44,6 +45,7 @@ const LEX: Record<string, SegmentLexicon> = {
   ...LEX_TIPOS,
   ...LEX_CIENCIA,
   ...LEX_FERRAMENTAS,
+  ...LEX_VARIEDADE,
   'placa-de-video': {
     noun: /\b(placa de video|geforce|radeon|rtx|gtx|gpu)\b/,
     accessory: /\b(suporte|cabo|riser|backplate|bracket|waterblock|dissipador|adaptador|capa|fan|ventilador|pasta termica)\b/,
@@ -190,6 +192,7 @@ const NICHO: Record<string, { require?: RegExp; forbid?: RegExp }> = {
   ...NICHO_TIPOS,
   ...NICHO_CIENCIA,
   ...NICHO_FERRAMENTAS,
+  ...NICHO_VARIEDADE,
   // Impressão 3D (2026-11-11). Impressora: tem que dizer "3d" e não pode ser caneta 3D, scanner, impressora de papel/etiqueta/gravadora
   // nem kit/peças soltas. Filamento: não pode ser caneta 3D nem lâmpada de filamento; tem que dizer 3d ou um material. Resina: só de
   // impressora 3D (3d/uv/lcd/dlp/sla), nunca epóxi, poliéster, odontológica ou de artesanato.

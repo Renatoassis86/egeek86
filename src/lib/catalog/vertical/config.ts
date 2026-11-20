@@ -5,6 +5,7 @@ import { NOVOS_SEGMENTOS, REQUIRE_BRAND_KEYS, SEARCH_DOMAIN_EXTRAS, TERMOS_EXTRA
 import { NOVOS_SEGMENTOS_TIPOS, TERMOS_EXTRAS_TIPOS } from './config-tipos';
 import { NOVOS_SEGMENTOS_CIENCIA } from './config-ciencia';
 import { NOVOS_SEGMENTOS_FERRAMENTAS } from './config-ferramentas';
+import { NOVOS_SEGMENTOS_VARIEDADE } from './config-variedade';
 
 /**
  * CONFIGURAÇÃO POR DEPARTAMENTO (vertical) E SEGMENTO. ADR 0008 itens 4 e 5; ata 2026-11-08, Fase 2.
@@ -513,7 +514,7 @@ export const SEGMENTS: SegmentConfig[] = [
 ];
 
 // Ampliação 2026-11-11 (config-ampliacao.ts): segmentos novos, termos extras (anexados ao fim) e filtro de marca.
-SEGMENTS.push(...NOVOS_SEGMENTOS, ...NOVOS_SEGMENTOS_TIPOS, ...NOVOS_SEGMENTOS_CIENCIA, ...NOVOS_SEGMENTOS_FERRAMENTAS);
+SEGMENTS.push(...NOVOS_SEGMENTOS, ...NOVOS_SEGMENTOS_TIPOS, ...NOVOS_SEGMENTOS_CIENCIA, ...NOVOS_SEGMENTOS_FERRAMENTAS, ...NOVOS_SEGMENTOS_VARIEDADE);
 for (const s of SEGMENTS) {
   const extra = TERMOS_EXTRAS[s.key];
   if (extra?.length) s.terms = dedupeTerms([...s.terms, ...extra]);

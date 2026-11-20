@@ -2,6 +2,7 @@
 import type { SegmentConfig } from './config';
 import { REQUIRE_BRAND_KEYS } from './config-ampliacao';
 import { combineTerms, dedupeTerms } from './seed-utils';
+import { TERMOS_EXTRAS_VARIEDADE } from './config-variedade';
 
 /**
  * AMPLIAÇÃO POR TIPO (pedido do dono, 2026-11-12): "quero TODOS os itens relacionados a cada área; o máximo de produtos por TIPO em
@@ -545,3 +546,6 @@ export const TERMOS_EXTRAS_TIPOS: Record<string, string[]> = {
   'filamento-3d': [...combineTerms('filamento', ['pla 1kg', 'petg 1kg', 'abs 1kg', 'tpu 1kg', 'pla silk', 'pla matte', 'pla carbono', 'pla+ 1kg', 'asa 1kg', 'pa nylon', 'pla madeira', 'pla glow'], ['hatchbox', 'geeetech', 'kingroon', 'sunlu', 'esun', 'eryone', 'jayo', 'polymaker', 'prusament', 'amolen', 'tianse', 'sain smart', 'tecnoprint', 'cliever', '3d fila', 'flashforge', 'inland', 'rosa 3d', 'filamentos brasil', 'atomic filament', 'reprap brasil'])],
   'resina-3d': [...combineTerms('resina', ['3d standard', '3d abs like', '3d water washable', '3d 8k', '3d tough', '3d flexible', 'castable', 'plant based'], ['elegoo', 'anycubic', 'creality', 'siraya tech', 'phrozen', 'esun', 'sunlu', 'jayo', 'amazon basics', 'liqcreate', 'formlabs', 'monocure', 'uniz', 'tecnoprint', 'wanhao'])],
 };
+
+// Variedade (R-108, 2026-11-20): termos extras de tipos que já existem, com as marcas mais fortes de cada um abrindo a lista.
+for (const [k, v] of Object.entries(TERMOS_EXTRAS_VARIEDADE)) TERMOS_EXTRAS_TIPOS[k] = [...(TERMOS_EXTRAS_TIPOS[k] ?? []), ...v];

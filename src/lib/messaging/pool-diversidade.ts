@@ -7,6 +7,7 @@
 import { classificarTipo, TIPO_OUTROS } from '@/lib/catalog/tipos-produto';
 import { ehMarcaPreferida, normalizaNome } from '@/lib/messaging/cota-item';
 import { marcaDoItem } from '@/lib/messaging/marcas-lojas';
+import { naoOfertavel } from '@/lib/catalog/nao-ofertavel';
 
 /**
  * Ordem de MARCA dentro do tipo (dono, 2026-11-18: "destaque as principais marcas do mercado", exceto games; as 5 marcas da Beleza primeiro): 0 = marca preferida do dono,
@@ -75,6 +76,7 @@ export function rodizioPorTipo(rows: readonly PoolRow[], hourKey: string, sends:
   if (limit <= 0 || !rows.length) return [];
   const groups = new Map<string, PoolRow[]>();
   for (const row of rows) {
+    if (naoOfertavel(row.v, row.name)) continue; // R-108: armaria (Esporte) e equipamento de restaurante (Casa) nunca entram no pool
     const tipo = row.grupo ?? classificarTipo(row.v, row.name);
     if (opts.skipOutros && tipo === TIPO_OUTROS && !row.grupo) continue;
     const k = tipoKey(row.v, tipo);

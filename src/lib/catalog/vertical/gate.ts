@@ -4,6 +4,7 @@ import { domainMatches, segmentByKey, type NonGamesVertical, type SegmentConfig 
 import { foldText, type IdentityResult } from './identity';
 import { scopeIssue } from './scope';
 import { avaliarItemMiudo } from '../item-miudo';
+import { naoOfertavel } from '../nao-ofertavel';
 
 /**
  * PORTEIRO POR DEPARTAMENTO (ADR 0008 item 4): `gateFor(vertical)`.
@@ -103,6 +104,12 @@ function evaluateFor(vertical: NonGamesVertical, input: VerticalGateInput): Vert
   for (const t of SKIP_OUT_OF_SCOPE.has(input.segment) ? [] : [input.name, ...(input.offerTitles ?? [])]) {
     const m = re.exec(foldText(t));
     if (m) return mk('review', 'out_of_scope', 'lexico_fora_do_escopo', m[0]);
+  }
+
+  // 4a. R-108 (2026-11-20): armaria/tatico no Esporte e equipamento de restaurante na Casa nunca sao oferta da loja (nome do catalogo e anuncios).
+  for (const t of [input.name, ...(input.offerTitles ?? [])]) {
+    const f = naoOfertavel(vertical, t);
+    if (f) return mk('review', 'out_of_scope', 'nao_ofertavel', f);
   }
 
   // 4b. Pacote de 2+ produtos ou acessório/peça (nome do catálogo e anúncios): scope.ts.

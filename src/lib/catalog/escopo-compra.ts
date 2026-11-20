@@ -32,12 +32,16 @@ export const TIPOS_EXCLUIDOS: ReadonlySet<string> = new Set(['eletroeletronicos:
 const PISOS_CENTS: Readonly<Record<string, number>> = {
   'eletroeletronicos:carregadores': 10_000,
   'eletroeletronicos:fones': 8_000,
+  'eletroeletronicos:fones-tws': 8_000, // R-108: carve-out de 'fones' mantem o mesmo piso
   'eletroeletronicos:*': 10_000,
   'eletrodomesticos:*': 10_000,
   'tecnologia:mouse': 8_000,
   'tecnologia:teclado': 8_000,
   'tecnologia:headset': 8_000,
   'esporte:bola': 6_000,
+  'esporte:bola-quadra': 6_000, // R-108: carve-outs de 'bola' e 'protecao' mantem o piso do tipo de origem
+  'esporte:bola-pilates': 5_000,
+  'esporte:artes-marciais': 5_000,
   'esporte:protecao': 5_000,
   'esporte:fitness': 5_000,
   'esporte:garrafas': 5_000,
