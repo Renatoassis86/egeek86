@@ -43,18 +43,16 @@ async function preencherTipoRecente(canais: readonly string[]): Promise<number> 
     SELECT id::text, vertical::text, candidate ->> 'tipo' AS tipo_c, candidate ->> 'name' AS nome_c FROM group_messages
     WHERE status = ANY(ARRAY['enviada','expirada','rejeitada','retida','erro']::text[]) AND created_at >= now() - interval '3 hours' AND tipo IS NULL
       AND vertical = ANY(${lista(canais)}) LIMIT 200`));
-  const porTipo = new Map<string, string[]>();
+  // Um UNICO UPDATE (unnest de ids e tipos): antes era um UPDATE (uma transacao) por tipo, ~9 idas ao banco em canal com muitos tipos (beleza).
+  const ids: string[] = []; const tipos: string[] = [];
   for (const r of rows as unknown as Array<{ id: string; vertical: string; tipo_c: string | null; nome_c: string | null }>) {
     const t = tipoDoCandidato(r.vertical, { tipo: r.tipo_c, name: r.nome_c });
-    if (!t) continue;
-    (porTipo.get(t) ?? porTipo.set(t, []).get(t)!).push(r.id);
+    if (!t || !/^[0-9a-f-]{36}$/.test(r.id)) continue;
+    ids.push(r.id); tipos.push(t);
   }
-  let n = 0;
-  for (const [t, ids] of porTipo) {
-    await leve('4s', (tx) => tx.execute(sql`UPDATE group_messages SET tipo = ${t} WHERE id = ANY(${sql.raw(`ARRAY[${ids.map((x) => `'${x.replace(/[^0-9a-f-]/g, '')}'`).join(',')}]::uuid[]`)}) AND tipo IS NULL`));
-    n += ids.length;
-  }
-  return n;
+  if (!ids.length) return 0;
+  await leve('4s', (tx) => tx.execute(sql`UPDATE group_messages g SET tipo = v.t FROM (SELECT unnest(${sql.raw(`ARRAY[${ids.map((x) => `'${x}'`).join(',')}]::uuid[]`)}) AS id, unnest(${sql.raw(`ARRAY[${tipos.map((x) => `'${x.replace(/[^a-z0-9_-]/gi, '')}'`).join(',')}]::text[]`)}) AS t) v WHERE g.id = v.id AND g.tipo IS NULL`));
+  return ids.length;
 }
 
 export async function rodarSombra(now: Date = new Date(), env: Record<string, string | undefined> = process.env): Promise<ResumoSombra> {
