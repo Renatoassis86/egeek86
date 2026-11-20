@@ -150,23 +150,23 @@ ok(comAchado.candidates.some((c) => c.trigger === 'AC' && c.sendable) && !n1(com
 // 6) Cota por canal: 1 por hora e 6 por dia
 const rec = (trigger: string, minAgo: number, vertical = 'eletroeletronicos', id = `p${minAgo}`): SentRecord =>
   ({ trigger, cls: 'insight', vertical, masterProductId: id, priceCents: 100000, sentAt: new Date(NOW.getTime() - minAgo * MIN), sound: false, tipo: null } as unknown as SentRecord);
-ok(RULES.N1_MAX_PER_HOUR === 1 && RULES.N1_MAX_PER_DAY === 6, 'limites de RULES: 1/h e 6/dia');
+ok(RULES.N1_MAX_PER_HOUR === 2 && RULES.N1_MAX_PER_DAY === 12, 'limites de RULES: 2/h e 12/dia (R-110)');
 ok(neutroQuotaBlock('eletroeletronicos', [], NOW) === null, 'sem histórico: pode');
-ok(/n1_maximo_1_por_hora/.test(neutroQuotaBlock('eletroeletronicos', [rec('N1', 30)], NOW) ?? ''), '1 na última hora bloqueia o próximo');
+ok(/n1_maximo_2_por_hora/.test(neutroQuotaBlock('eletroeletronicos', [rec('N1', 30), rec('N1', 40)], NOW) ?? ''), '2 na última hora bloqueiam o próximo');
 ok(neutroQuotaBlock('eletroeletronicos', [rec('N1', 90)], NOW) === null, 'há mais de 1 h: libera');
 ok(neutroQuotaBlock('eletroeletronicos', [rec('N1', 30, 'games')], NOW) === null, 'cota é por canal: outra loja não conta');
 ok(neutroQuotaBlock('eletroeletronicos', [rec('AC', 10), rec('G2', 5)], NOW) === null, 'outros gatilhos não consomem a cota do N1');
-const seis = [90, 200, 300, 400, 500, 600].map((m) => rec('N1', m));
-ok(/n1_cota_diaria_do_canal_6_de_6/.test(neutroQuotaBlock('eletroeletronicos', seis, NOW) ?? ''), '6 em 24 h bloqueia o sétimo');
-ok(neutroQuotaBlock('eletroeletronicos', seis.slice(0, 5), NOW) === null, '5 em 24 h ainda libera o sexto');
+const seis = [90, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200].map((m) => rec('N1', m));
+ok(/n1_cota_diaria_do_canal_12_de_12/.test(neutroQuotaBlock('eletroeletronicos', seis, NOW) ?? ''), '12 em 24 h bloqueiam o 13o');
+ok(neutroQuotaBlock('eletroeletronicos', seis.slice(0, 11), NOW) === null, '11 em 24 h ainda libera o 12o');
 ok(neutroQuotaBlock('eletroeletronicos', [rec('N1', 25 * 60)], NOW) === null, 'envio de mais de 24 h não conta');
 // o ambiente só pode BAIXAR
-ok(neutroLimites({ GROUP_N1_POR_HORA: '5', GROUP_N1_POR_DIA: '50' }).porHora === 1 && neutroLimites({ GROUP_N1_POR_DIA: '50' }).porDia === 6, 'ambiente não consegue subir as cotas');
+ok(neutroLimites({ GROUP_N1_POR_HORA: '5', GROUP_N1_POR_DIA: '50' }).porHora === 2 && neutroLimites({ GROUP_N1_POR_DIA: '50' }).porDia === 12, 'ambiente não consegue subir as cotas');
 ok(neutroLimites({ GROUP_N1_POR_DIA: '3' }).porDia === 3, 'ambiente pode baixar a cota diária');
-ok(neutroLimites({ GROUP_N1_POR_DIA: 'x' }).porDia === 6 && neutroLimites({ GROUP_N1_POR_HORA: '0' }).porHora === 1, 'valor inválido volta ao padrão');
+ok(neutroLimites({ GROUP_N1_POR_DIA: 'x' }).porDia === 12 && neutroLimites({ GROUP_N1_POR_HORA: '0' }).porHora === 2, 'valor inválido volta ao padrão');
 // applyLimits aplica a cota e o dedup de 24 h
-const plano1 = applyLimits([c1], [rec('N1', 20)], NOW);
-ok(plano1.next === null && plano1.deferred.some((d) => /n1_maximo_1_por_hora/.test(d.reason)), 'applyLimits adia o N1 acima de 1/h', plano1.deferred);
+const plano1 = applyLimits([c1], [rec('N1', 20, 'eletroeletronicos', 'a'), rec('N1', 25, 'eletroeletronicos', 'b')], NOW);
+ok(plano1.next === null && plano1.deferred.some((d) => /n1_maximo_2_por_hora/.test(d.reason)), 'applyLimits adia o N1 acima de 2/h', plano1.deferred);
 const plano2 = applyLimits([c1], [], NOW);
 ok(plano2.next?.trigger === 'N1', 'applyLimits libera o N1 dentro da cota', plano2.deferred);
 ok(/produto_ja_enviado|achado_produto_ja_enviado/.test(productDedupBlock(c1, [{ ...rec('N1', 600, 'eletroeletronicos', c1.masterProductId) }], NOW) ?? ''), 'mesmo produto não repete em 24 h');

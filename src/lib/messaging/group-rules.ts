@@ -204,8 +204,9 @@ export const RULES = {
   ACHADO_OWN_MAX_RATIO: 1.1,
   ACHADO_OWN_MIN_RATIO: 0.5,
   /** PREÇO AGORA (N1, dono 2026-11-13; produto sem base de preço): por canal (loja), no máximo isto por hora e por dia (GROUP_N1_POR_HORA / GROUP_N1_POR_DIA só podem BAIXAR). */
-  N1_MAX_PER_HOUR: 1,
-  N1_MAX_PER_DAY: 6,
+  // R-110 (dono, 2026-11-20: "maior fluxo com a maior quantidade de categorias"): medido em 6 h, TODA loja bateu os 6/dia e 133 N1 de 3 a 4 tipos esperavam; dobrado para 2/h e 12/dia (o env so baixa).
+  N1_MAX_PER_HOUR: 2,
+  N1_MAX_PER_DAY: 12,
   /** Cota de diversidade: nenhum TIPO passa desta parcela das mensagens da loja nas ultimas 24 h (so vale com alternativa de outro tipo e depois de TIPO_SHARE_MIN_SENT envios). */
   TIPO_MAX_SHARE_PCT: 20,
   TIPO_SHARE_MIN_SENT: 6,

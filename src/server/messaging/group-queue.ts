@@ -17,6 +17,8 @@ import {
   composeRadar,
   masterCooldownHours,
   masterRepeatHoursFor,
+  NOVIDADE_QUEDA_CENTS,
+  NOVIDADE_QUEDA_PCT,
   netKind,
   priceWithinTolerance,
   type Candidate,
@@ -186,6 +188,34 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
   const popCol = popularidadeLigada()
     ? sql`COALESCE((SELECT max(p.score) FROM affiliate_offers po JOIN offer_popularity p ON p.network_id = po.network_id AND p.external_ref = po.external_ref WHERE po.id = g.offer_id AND p.observed_at > now() - make_interval(days => ${POPULARIDADE_VALIDADE_DIAS}::int)), 0)`
     : sql`0`;
+  // R-110 (dono, 2026-11-20: "o MAIOR FLUXO de envios"): a janela lida (perV por loja) era ocupada por linhas que o plano SEMPRE barra por repeticao do mesmo master
+  // (R-77 e cooldown R-47): 30 a 60 de cada 120 vagas por loja, e a Impressao 3D ficava com 54 propostas todas barradas. Pre-filtro SEGURO (subconjunto do que o plano barra):
+  // so tira da janela a linha cujo master saiu na janela E NENHUM envio da janela da novidade que o plano aceitaria (queda de preco, degrau mais forte), conferindo TODOS os
+  // envios da janela (se o ultimo nao der novidade, nenhum da). Gatilhos sem produto unico (G4, RADAR, plataforma) e CUPOM/G1/OK1 (excecoes proprias) ficam como estavam.
+  // GROUP_JANELA_PREFILTRO=off volta ao SQL de antes.
+  const prefiltroRepeticao = !/^(0|off|false)$/i.test((process.env.GROUP_JANELA_PREFILTRO ?? '').trim()) && novo
+    ? (() => {
+        const verts = ['games', 'tecnologia', 'eletroeletronicos', 'livros', 'eletrodomesticos', 'esporte', 'impressao3d', 'beleza', 'brinquedos'];
+        const r77 = sql`(CASE g.vertical ${sql.join(verts.map((v) => sql`WHEN ${v} THEN ${masterRepeatHoursFor(v)}::int`), sql` `)} ELSE ${masterRepeatHoursFor('games')}::int END)`;
+        const cdH = masterCooldownHours();
+        const queda = Number(process.env.GROUP_MASTER_COOLDOWN_QUEDA_PCT);
+        const quedaPct = Number.isFinite(queda) && queda > 0 ? queda : RULES.MASTER_COOLDOWN_QUEDA_PCT;
+        const precoG = sql`COALESCE((g.candidate ->> 'priceCents')::numeric, g.price_cents_detected)`;
+        const degrauMaior = sql`(g.candidate -> 'regua' ->> 'degrau') IS NOT NULL AND (s.candidate -> 'regua' ->> 'degrau') IS NOT NULL AND (g.candidate -> 'regua' ->> 'degrau')::numeric > (s.candidate -> 'regua' ->> 'degrau')::numeric`;
+        const sBase = sql`s.master_product_id = g.master_product_id AND s.channel = 'tg' AND s.status IN ('enviada', 'enviando') AND s.msg_class IS DISTINCT FROM 'plataforma'`;
+        const noR77 = sql`${sBase} AND COALESCE(s.sent_at, s.created_at) >= now() - (${r77} * interval '1 hour')`;
+        const noCd = sql`${sBase} AND COALESCE(s.sent_at, s.created_at) >= now() - make_interval(hours => ${cdH}::int)`;
+        const blocoR77 = sql`${r77} > 0 AND EXISTS (SELECT 1 FROM group_messages s WHERE ${noR77})
+          AND NOT EXISTS (SELECT 1 FROM group_messages s WHERE ${noR77} AND ((s.price_cents_detected > 0 AND ${precoG} > 0 AND (s.price_cents_detected - ${precoG} >= ${NOVIDADE_QUEDA_CENTS} OR ${precoG} <= s.price_cents_detected * ${1 - NOVIDADE_QUEDA_PCT / 100}::numeric)) OR (${degrauMaior})))`;
+        const blocoCd = cdH > 0
+          ? sql`OR (g.trigger NOT IN ('G1', 'OK1') AND g.vertical <> 'impressao3d' AND EXISTS (SELECT 1 FROM group_messages s WHERE ${noCd})
+          AND NOT EXISTS (SELECT 1 FROM group_messages s WHERE ${noCd} AND COALESCE(s.sent_at, s.created_at) <= now() - make_interval(mins => ${RULES.MASTER_COOLDOWN_EXC_MIN}::int)
+            AND ((s.price_cents_detected > 0 AND ${precoG} > 0 AND ${precoG} <= s.price_cents_detected * ${1 - quedaPct / 100}::numeric) OR (${degrauMaior}))))`
+          : sql``;
+        return sql`AND NOT (g.master_product_id IS NOT NULL AND g.trigger NOT IN ('CUPOM', 'G4', 'RADAR') AND g.trigger !~ '^P[1-5]$' AND g.msg_class IS DISTINCT FROM 'plataforma'
+          AND ((${blocoR77}) ${blocoCd}))`;
+      })()
+    : sql``;
   const rows = await db.execute<Row>(sql`
     ${cteCota}
     SELECT * FROM (
@@ -205,6 +235,7 @@ export async function listPendingForSend(statuses: GroupStatus[], limit = 40): P
               OR ${cupomWin}
               OR ${precoWin})
         ))
+        ${prefiltroRepeticao}
     ) b
     ) q
   ) w

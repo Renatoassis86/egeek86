@@ -62,7 +62,8 @@
     "test:front-regras": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-front-regras.ts",
     "test:home-sem-orfaos": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-home-sem-orfaos.ts",
     "test:public-offers-mat": "npx tsx --conditions=react-server --env-file=.env.local scripts/test-public-offers-mat-equivalencia.ts",
-    "test:foto-nao-nova": "tsx scripts/test-foto-nao-nova.ts"
+    "test:foto-nao-nova": "tsx scripts/test-foto-nao-nova.ts",
+    "test:r110": "tsx scripts/test-r110-fluxo-variedade.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
