@@ -260,7 +260,7 @@ function montar(i: MensagemV4Input, canal: GroupChannel, sem: ReadonlySet<Opcion
     const cmp = textoComparacaoMedia(price, i.avg, amz);
     if (cmp) bullets.push(topic(f, 'Vs. média', cmp));
     else if (i.diagnostico) bullets.push(topic(f, 'Vs. histórico do produto', i.diagnostico));
-    else bullets.push(topic(f, 'Vs. média', 'ainda não há média de comparação para este produto'));
+    // Sem média (e sem histórico próprio): a linha é OMITIDA por completo, não bloqueia o envio (dono, 2026-11-22). Quando a média existir, a linha entra sozinha.
     for (const b of movimentoBullets(f, i, amz)) bullets.push(b);
     if (!sem.has('faixa')) {
       if (i.faixa) bullets.push(topic(f, 'Faixa registrada', faixaTexto(i.faixa)));

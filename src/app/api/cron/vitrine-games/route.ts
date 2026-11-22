@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 150;
 
 /**
- * VITRINE DE JOGOS ATE R$ 200 (dono, 2026-11-17): a cada 30 min, UMA mensagem no canal de games com a capa dos 10 principais e o diagnostico curto de cada um.
+ * VITRINE DE JOGOS ATE R$ 250 (dono, 2026-11-17): a cada 30 min, UMA mensagem no canal de games com a capa dos 10 principais e o diagnostico curto de cada um.
  *   VITRINE_GAMES=off   desliga (nao toca o banco nem o Telegram)
  *   ?dry=1              monta a legenda e a capa e responde so o resumo (nada e enviado)
  *   ?force=1            ignora a trava de 27 min (reenvio manual)

@@ -1,9 +1,13 @@
-// PURO (sem banco, sem rede, sem relógio). Vitrine de jogos até R$ 200 no canal de games, a cada 30 minutos (dono, 2026-11-17):
+// PURO (sem banco, sem rede, sem relógio). Vitrine de jogos até R$ 250 no canal de games, a cada 30 minutos (dono, 2026-11-17):
 // UMA mensagem com capa premium dos 10 principais, nome e breve diagnóstico de cada um. Só dado real; diagnóstico só com histórico elegível (R-91).
 import { classificar } from '@/lib/ranking-busca';
 import type { VerdictKind } from '@/lib/affiliate/price-verdict';
+import { condicaoNaoNova } from '@/lib/pricing/condicao-nao-nova';
+import { sinaisTexto } from '@/lib/catalog/foto-nao-nova';
 
-export const VITRINE_TETO_CENTAVOS = 20_000;
+export const VITRINE_TETO_CENTAVOS = 25_000;
+/** Texto do teto para legendas, capa e paginas (derivado da constante: trocar o teto muda tudo). */
+export const VITRINE_TETO_TEXTO = `R$ ${VITRINE_TETO_CENTAVOS / 100}`;
 export const VITRINE_TOP = 10;
 export const VITRINE_INTERVALO_MIN = 30;
 /** Limite de legenda do Telegram contado depois do HTML interpretado. */
@@ -60,7 +64,7 @@ export function diagnosticoCurto(j: Pick<JogoVitrine, 'ofertas' | 'elegivel' | '
 
 /**
  * Os 10 principais: primeiro quem tem diagnóstico "abaixo do normal", dentro disso quem tem mais ofertas (mais lojas = mais procura; evita premiar só a maior queda, que pode ser anomalia), depois a maior queda,
- * depois o menor preço e o id (desempate estável). Só jogo até R$ 200 com preço > 0; um por produto.
+ * depois o menor preço e o id (desempate estável). Só jogo até R$ 250 com preço > 0; um por produto.
  */
 export function escolherTop(jogos: readonly JogoVitrine[], n = VITRINE_TOP): JogoVitrine[] {
   const vistos = new Set<string>();
@@ -77,7 +81,7 @@ export function escolherTop(jogos: readonly JogoVitrine[], n = VITRINE_TOP): Jog
 export const VITRINE_REPOUSO_RODADAS = 3;
 
 /**
- * RODIZIO entre todos os jogos até R$ 200. `recentes` = masters de cada vitrine já enviada, da mais nova para a mais antiga.
+ * RODIZIO entre todos os jogos até R$ 250. `recentes` = masters de cada vitrine já enviada, da mais nova para a mais antiga.
  * Quem não saiu nas últimas VITRINE_REPOUSO_RODADAS vitrines (ou nunca saiu) concorre pela ordem de qualidade de `escolherTop`; faltando gente,
  * completa com quem saiu há mais tempo. Assim todos passam pela capa e os melhores voltam primeiro.
  */
@@ -107,7 +111,7 @@ export function familiaDe(gen: string | null | undefined): FamiliaVitrine | null
 
 /**
  * Vitrine com as 4 famílias SEMPRE presentes: cada família escolhe os seus pelo rodízio (cota própria) e as vagas que sobrarem
- * (família sem jogo até R$ 200) vão para os melhores das outras. Na capa, os jogos ficam agrupados na ordem PlayStation, Xbox, Switch 1, Switch 2.
+ * (família sem jogo até R$ 250) vão para os melhores das outras. Na capa, os jogos ficam agrupados na ordem PlayStation, Xbox, Switch 1, Switch 2.
  * Sem nenhum jogo com geração conhecida, cai no rodízio simples.
  */
 export function escolherTopRodizio(jogos: readonly JogoVitrine[], recentes: ReadonlyArray<readonly string[]>, n = VITRINE_TOP, repouso = VITRINE_REPOUSO_RODADAS): JogoVitrine[] {
@@ -138,7 +142,7 @@ export function montarLegenda(top: readonly JogoVitrine[], hora: string, link: (
       const d = diagnosticoCurto(j);
       return `${i + 1}. <a href="${esc(link(i))}">${esc(tituloCurto(j.titulo, max))}</a> · ${esc(j.plataforma)} · <b>${reais(j.precoCentavos)}</b>\n    ${d.diagnostico ? '' : ''}${esc(d.texto)}`;
     });
-    return [`<b>🎮 Jogos até R$ 200 · ${esc(hora)}</b>`, '', ...linhas, '', 'Atualizada a cada 30 min. O diagnóstico só aparece com histórico suficiente.'].join('\n');
+    return [`<b>🎮 Jogos até ${VITRINE_TETO_TEXTO} · ${esc(hora)}</b>`, '', ...linhas, '', 'Atualizada a cada 30 min. O diagnóstico só aparece com histórico suficiente.'].join('\n');
   };
   let out = monta(34);
   for (const max of [30, 26, 22, 18]) {
@@ -163,7 +167,7 @@ export function vitrineLigada(env: Record<string, string | undefined> = process.
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-// VITRINE POR PLATAFORMA (dono, 2026-11-20): uma mensagem e um cartão para CADA plataforma, sempre os 10 MENORES preços até R$ 200.
+// VITRINE POR PLATAFORMA (dono, 2026-11-20): uma mensagem e um cartão para CADA plataforma, sempre os 10 MENORES preços até R$ 250.
 // Switch 1, Switch 2, Xbox (One e Series juntos), PlayStation 5 e PlayStation 4. `VITRINE_POR_PLATAFORMA=off` volta à vitrine única de 4 famílias.
 // ---------------------------------------------------------------------------------------------------------------------
 export interface PlataformaVitrine {
@@ -184,7 +188,7 @@ export function vitrinePorPlataformaLigada(env: Record<string, string | undefine
   return !/^(0|off|false|nao|não)$/i.test((env.VITRINE_POR_PLATAFORMA ?? '').trim());
 }
 
-/** Os `n` MENORES preços da plataforma (até R$ 200, preço > 0, um por produto). Desempate: mais ofertas, depois id (ordem estável). */
+/** Os `n` MENORES preços da plataforma (até R$ 250, preço > 0, um por produto). Desempate: mais ofertas, depois id (ordem estável). */
 export function escolherMenores(jogos: readonly JogoVitrine[], gens: readonly string[], n = VITRINE_TOP): JogoVitrine[] {
   const vistos = new Set<string>();
   return jogos
@@ -202,7 +206,7 @@ export function montarLegendaPlataforma(top: readonly JogoVitrine[], hora: strin
       return `${i + 1}. <a href="${esc(link(i))}">${esc(tituloCurto(j.titulo, max))}</a>${plat} · <b>${reais(j.precoCentavos)}</b>
     ${esc(d.texto)}`;
     });
-    return [`<b>🎮 Jogos até R$ 200 · ${esc(rotulo)} · ${esc(hora)}</b>`, `Os ${top.length} menores preços`, '', ...linhas, '', 'Atualizada a cada 30 min. O diagnóstico só aparece com histórico suficiente.'].join('\n');
+    return [`<b>🎮 Jogos até ${VITRINE_TETO_TEXTO} · ${esc(rotulo)} · ${esc(hora)}</b>`, `Os ${top.length} menores preços`, '', ...linhas, '', 'Atualizada a cada 30 min. O diagnóstico só aparece com histórico suficiente.'].join('\n');
   };
   let out = monta(34);
   for (const max of [30, 26, 22, 18]) {
@@ -210,4 +214,97 @@ export function montarLegendaPlataforma(top: readonly JogoVitrine[], hora: strin
     out = monta(max);
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// R-116, SO JOGO NOVO NA VITRINE (dono, 2026-11-22). A vitrine e mais rigorosa que o envio normal: padrao negado em 3 camadas.
+//   (a) condicao/titulo/vendedor da OFERTA (usado, seminovo, aberto, sem lacre, lote, midia solta, revendedor de midia sem lacre);
+//   (b) oferta em quarentena (R-109: foto_nao_nova/foto_com_mao; ja fora de `aptaSql`) e foto 'alto' OU 'medio' (suspeita) na tabela de pontuacao;
+//   (c) oferta sem pontuacao de foto (ou velha) tambem fica de fora: sem prova de foto, nao entra.
+// A pontuacao (CLIP local) roda em script agendado fora do envio (scripts/foto-vitrine-pontuar.ts); a vitrine so le o resultado.
+// ---------------------------------------------------------------------------------------------------------------------
+export type FaixaFoto = 'alto' | 'medio' | 'baixo';
+/** Validade de uma pontuacao de foto: a imagem de uma URL raramente muda; 14 dias. */
+export const VITRINE_FOTO_VALIDADE_DIAS = 14;
+
+export interface OfertaVitrine {
+  ofertaId: string;
+  masterId: string;
+  slug: string;
+  /** Titulo do ANUNCIO (nao o do master). */
+  tituloOferta: string;
+  vendedor?: string | null;
+  masterNome: string;
+  gen: string | null;
+  plataforma: string;
+  precoCentavos: number;
+  imagem: string | null;
+  /** Total de ofertas aptas do master (diagnostico), antes de qualquer filtro desta vitrine. */
+  ofertasDoMaster: number;
+  /** Pontuacao de foto gravada pelo script; null = sem pontuacao. */
+  fotoFaixa?: FaixaFoto | null;
+  /** Idade da pontuacao em dias; ausente = valida. */
+  fotoIdadeDias?: number | null;
+  /** Oferta em quarentena (defesa em profundidade: `aptaSql` ja a exclui). */
+  quarentena?: boolean;
+}
+
+const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const RE_NAO_NOVO_VITRINE = new RegExp([
+  '\\b(usad[oa]s?|seminov[oa]s?|semi[ -]nov[oa]s?|recondicionad[oa]s?|renovad[oa]s?|segunda mao|de segunda|pouco usad[oa]|como novo|quase novo|bem conservad[oa])\\b',
+  '\\bsem\\s+(o\\s+|a\\s+)?(lacre|lacrad[oa]|caixa|estojo|capa|encarte|manual|embalagem)\\b',
+  '\\b(lacre|caixa|embalagem|estojo|jogo|midia)\\s+(aberta|aberto|violad[oa]|rompid[oa]|rasgad[oa])\\b',
+  '\\b(aberto|aberta)\\s+(sem uso|so para|apenas para|para teste)\\b',
+  '\\b(so|somente|apenas)\\s+(o\\s+|a\\s+)?(disco|cartucho|midia)\\b',
+  '\\b(disco|cartucho|midia|jogo)\\s+solt[oa]\\b',
+  '\\b(lote|colecao de jogos|kit (com )?\\d+ jogos|\\d+ jogos|combo de jogos|pacote de jogos)\\b',
+  '\\b(retirad[oa] de|com marcas? de uso|com arranh|riscad[oa]|com defeito|testad[oa] e funcionando)\\b',
+].join('|'));
+const RE_REVENDEDOR = /\b(usados|games usados|seminovos|troca|sebo|retro)\b/;
+
+/** Camada (a): o titulo do anuncio ou o vendedor declaram/sugerem que o jogo nao e novo e lacrado. Devolve o motivo ou null. */
+export function condicaoSuspeita(tituloOferta: string, masterNome = '', vendedor: string | null = ''): string | null {
+  const t = semAcento(`${tituloOferta} ${masterNome}`);
+  const v = semAcento(vendedor ?? '');
+  if (condicaoNaoNova(tituloOferta)) return 'open_box_vitrine';
+  const sx = sinaisTexto(tituloOferta, vendedor ?? '');
+  if (sx.usado) return 'usado';
+  if (sx.lote) return 'lote';
+  const m = RE_NAO_NOVO_VITRINE.exec(t);
+  if (m) return `texto:${m[0].slice(0, 30)}`;
+  // revendedor de usados anunciando "midia fisica" sem nenhuma palavra de produto novo/lacrado
+  if ((RE_REVENDEDOR.test(v) || sx.revendedor) && /\bmidia fisica\b/.test(t) && !/\b(lacrad[oa]|lacre|novo|nova|sealed)\b/.test(t)) return 'revendedor_sem_lacre';
+  return null;
+}
+
+export type CamadaBarra = 'condicao' | 'quarentena' | 'foto_suspeita' | 'foto_sem_pontuacao';
+
+/** Camadas (a), (b) e (c) para UMA oferta. null = elegivel. Padrao negado: sem pontuacao de foto = barrada. */
+export function barraOfertaVitrine(o: Pick<OfertaVitrine, 'tituloOferta' | 'masterNome' | 'vendedor' | 'quarentena' | 'fotoFaixa' | 'fotoIdadeDias' | 'imagem'>): CamadaBarra | null {
+  if (condicaoSuspeita(o.tituloOferta, o.masterNome, o.vendedor ?? '')) return 'condicao';
+  if (o.quarentena) return 'quarentena';
+  if (!o.imagem || !o.fotoFaixa) return 'foto_sem_pontuacao';
+  if (o.fotoIdadeDias != null && o.fotoIdadeDias > VITRINE_FOTO_VALIDADE_DIAS) return 'foto_sem_pontuacao';
+  if (o.fotoFaixa !== 'baixo') return 'foto_suspeita'; // 'alto' e 'medio' (suspeita) ficam fora: a vitrine e mais rigorosa que o envio
+  return null;
+}
+
+/**
+ * Ofertas aptas -> jogos da vitrine. Cada master vale pelo MENOR preco entre as ofertas que passaram nas 3 camadas
+ * (oferta barrada nunca define preco, slug nem imagem do cartao). Se a mais barata for barrada, entra a proxima elegivel.
+ */
+export function montarJogosVitrine(ofertas: readonly OfertaVitrine[]): { jogos: JogoVitrine[]; barradas: Record<CamadaBarra, number> } {
+  const barradas: Record<CamadaBarra, number> = { condicao: 0, quarentena: 0, foto_suspeita: 0, foto_sem_pontuacao: 0 };
+  const melhor = new Map<string, OfertaVitrine>();
+  for (const o of ofertas) {
+    if (!(o.precoCentavos > 0) || o.precoCentavos > VITRINE_TETO_CENTAVOS) continue;
+    const b = barraOfertaVitrine(o);
+    if (b) { barradas[b]++; continue; }
+    const atual = melhor.get(o.masterId);
+    if (!atual || o.precoCentavos < atual.precoCentavos || (o.precoCentavos === atual.precoCentavos && o.ofertaId < atual.ofertaId)) melhor.set(o.masterId, o);
+  }
+  const jogos: JogoVitrine[] = [...melhor.values()].map((o) => ({
+    masterId: o.masterId, gen: o.gen, slug: o.slug, titulo: o.masterNome, plataforma: o.plataforma, precoCentavos: o.precoCentavos, ofertas: o.ofertasDoMaster, imagem: o.imagem,
+  }));
+  return { jogos, barradas };
 }

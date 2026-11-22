@@ -1,5 +1,5 @@
 // Vitrine POR PLATAFORMA (dono, 2026-11-20): um cartão e uma mensagem para cada plataforma (Switch 1, Switch 2, Xbox One/Series, PS5, PS4),
-// sempre os 10 MENORES preços até R$ 200. Teste puro (sem banco, sem rede).
+// sempre os 10 MENORES preços até R$ 250. Teste puro (sem banco, sem rede).
 import assert from 'node:assert/strict';
 import { VITRINE_CAPTION_MAX, VITRINE_PLATAFORMAS, escolherMenores, montarLegendaPlataforma, visivel, vitrinePorPlataformaLigada, type JogoVitrine } from '../src/lib/messaging/vitrine-games';
 
@@ -25,8 +25,8 @@ assert.deepEqual(escolherMenores(mix, ['xbox_one', 'xbox_series']).map((x) => x.
 assert.deepEqual(escolherMenores(mix, ['switch_1']).map((x) => x.masterId), ['m6']);
 assert.deepEqual(escolherMenores(mix, ['switch_2']).map((x) => x.masterId), ['m7']);
 
-// teto de R$ 200 inclusivo, preço > 0, um por produto, sem gen conhecida fica de fora
-const bordas = [j(1, 'ps4', 20000), j(2, 'ps4', 20001), j(3, 'ps4', 0), j(4, 'ps4', 5000), j(4, 'ps4', 4000), { ...j(5, 'ps4', 3000), gen: null }];
+// teto de R$ 250 inclusivo, preço > 0, um por produto, sem gen conhecida fica de fora
+const bordas = [j(1, 'ps4', 25000), j(2, 'ps4', 25001), j(3, 'ps4', 0), j(4, 'ps4', 5000), j(4, 'ps4', 4000), { ...j(5, 'ps4', 3000), gen: null }];
 assert.deepEqual(escolherMenores(bordas, ['ps4']).map((x) => x.masterId).sort(), ['m1', 'm4']);
 
 // desempate estável: mesmo preço, mais ofertas primeiro, depois id
@@ -35,7 +35,7 @@ assert.deepEqual(escolherMenores(empate, ['ps5']).map((x) => x.masterId), ['m2',
 
 // legenda: título com a plataforma, 10 linhas, links na ordem, limite de 1024 caracteres visíveis
 const leg = montarLegendaPlataforma(top, '22:00', 'PlayStation 5', false, (i) => `https://www.egeek86.com/go/x-${i}`);
-assert.match(leg, /Jogos até R\$ 200 · PlayStation 5 · 22:00/);
+assert.match(leg, /Jogos até R\$ 250 · PlayStation 5 · 22:00/);
 assert.match(leg, /Os 10 menores preços/);
 assert.equal((leg.match(/<a href=/g) ?? []).length, 10);
 assert.ok(leg.indexOf('go/x-0') < leg.indexOf('go/x-9'));

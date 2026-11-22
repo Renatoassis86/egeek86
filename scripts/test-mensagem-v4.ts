@@ -136,7 +136,8 @@ ok(textoComparacaoMedia(90000, { cents: 100000, offers: 6 }, true) === null, 'Am
 ok(/mediana de 14 dias deste anúncio/.test(textoComparacaoMedia(90000, { cents: 100000, offers: 1, scope: 'own', days: 14 }, true) ?? ''), 'Amazon própria: mediana do anúncio');
 {
   const t = comporMensagemV4(entrada('monitoramento', REDES[0].offer, false, { avg: null }), 'tg') as string;
-  ok(/Vs\. média:<\/b> ainda não há média de comparação/.test(t), 'em monitoramento sem média diz que ainda não há (não inventa)', t);
+  ok(!/m[ée]dia/i.test(t) && !/Vs\./.test(t), 'em monitoramento sem média OMITE a linha por completo (nada sobre média; dono 2026-11-22)', t);
+  ok(/Comprar/.test(t) && /Situação|Vendedor|R\$/.test(t), 'sem média: mantém preço, link no corpo e demais campos', t);
   const ac = comporMensagemV4(entrada('monitoramento', REDES[0].offer, false, { avg: null, diagnostico: 'em linha com a mediana dos últimos 10 dias de coleta deste produto' }), 'tg') as string;
   ok(/Vs\. histórico do produto:<\/b> em linha com a mediana dos últimos 10 dias/.test(ac), 'achado com histórico próprio compara com ele', ac);
 }
@@ -263,7 +264,7 @@ const achado = (r: ReturnType<typeof evaluateProductV2>) => r.candidates.find((c
   // antigo (produto já acompanhado): Em monitoramento
   const velho = evaluateProductV2(prod({ primeiraVezDoProdutoAt: new Date(NOW.getTime() - 5 * 86_400_000) }), base);
   const cv = achado(velho);
-  ok(!!cv && /<b>Em monitoramento<\/b>/.test(cv.texts.telegram) && /Vs\. média/.test(cv.texts.telegram), 'produto já acompanhado = Em monitoramento, com a linha de média', cv?.texts.telegram);
+  ok(!!cv && /<b>Em monitoramento<\/b>/.test(cv.texts.telegram) && !/ainda não há média/.test(cv.texts.telegram), 'produto já acompanhado = Em monitoramento, sem a frase de ausência de média (a linha "Vs. média" entra sozinha quando há média)', cv?.texts.telegram);
   // flag off = formato anterior (rótulo antigo sem segmentação, sem link "Comprar" em linha própria de URL pura)
   process.env.MENSAGEM_V4 = 'off';
   const off = achado(evaluateProductV2(prod(), base));

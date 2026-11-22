@@ -1,4 +1,4 @@
-// Vitrine de jogos até R$ 200 no canal de games, a cada 30 min (dono, 2026-11-17).
+// Vitrine de jogos até R$ 250 no canal de games, a cada 30 min (dono, 2026-11-17).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { VITRINE_CAPTION_MAX, diagnosticoCurto, escolherTop, escolherTopRodizio, familiaDe, janelaKey, montarLegenda, tituloCurto, visivel, vitrineLigada, type JogoVitrine } from '../src/lib/messaging/vitrine-games';
@@ -9,8 +9,8 @@ assert.equal(tituloCurto('Jogo Ps4 Grand Theft Auto V Premium Edition Gta 5', 24
 assert.equal(tituloCurto('Mortal Kombat 1 - PS5 Standard'), 'Mortal Kombat 1');
 assert.equal(tituloCurto('Resident Evil 2 Ps5 Mídia Física'), 'Resident Evil 2');
 
-// teto de R$ 200 inclusivo, preço > 0, um por produto
-const lista = [j(1, { precoCentavos: 20000 }), j(2, { precoCentavos: 20001 }), j(3, { precoCentavos: 0 }), j(4), j(4)];
+// teto de R$ 250 inclusivo, preço > 0, um por produto
+const lista = [j(1, { precoCentavos: 25000 }), j(2, { precoCentavos: 25001 }), j(3, { precoCentavos: 0 }), j(4), j(4)];
 assert.deepEqual(escolherTop(lista).map((x) => x.masterId).sort(), ['m1', 'm4']);
 // diagnóstico "abaixo do normal" abre; dentro disso, mais ofertas; sem histórico elegível não ganha a vaga por diagnóstico
 const top = escolherTop([j(1, { ofertas: 9 }), j(2, { elegivel: true, veredito: 'below', ofertas: 2, deltaPct: 20 }), j(3, { elegivel: true, veredito: 'below', ofertas: 5, deltaPct: 10 }), j(4, { elegivel: false, veredito: 'below', ofertas: 7 })]);
@@ -44,7 +44,7 @@ assert.ok(f2.every((x) => !f1.some((y) => y.masterId === x.masterId)), 'rodízio
 const semXbox = mix.filter((x) => familiaDe(x.gen) !== 'xbox');
 const f3 = escolherTopRodizio(semXbox, []);
 assert.equal(f3.length, 10);
-assert.equal(fam(f3).filter((x) => x === 'xbox').length, 0, 'sem jogo de Xbox até R$ 200, as vagas vão às outras');
+assert.equal(fam(f3).filter((x) => x === 'xbox').length, 0, 'sem jogo de Xbox até R$ 250, as vagas vão às outras');
 assert.ok(['playstation', 'switch_1', 'switch_2'].every((f) => fam(f3).includes(f as never)));
 assert.equal(familiaDe('xbox_360'), 'xbox');
 assert.equal(familiaDe('unknown'), null);
