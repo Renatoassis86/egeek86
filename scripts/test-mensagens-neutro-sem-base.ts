@@ -19,6 +19,7 @@ import {
   type SentRecord,
 } from '../src/lib/messaging/group-rules';
 import { textProblems } from '../src/lib/messaging/group-messages';
+process.env.MENSAGEM_V4 = 'off'; // R-114: este teste fixa o formato ANTERIOR das mensagens (rollback MENSAGEM_V4=off); a v4 tem o seu teste (test-mensagem-v4.ts)
 
 let fails = 0;
 let total = 0;

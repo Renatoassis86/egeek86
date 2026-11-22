@@ -357,6 +357,11 @@ export interface ReguaTextoInput {
   faixa?: FaixaPreco | null;
 }
 
+/** Linha do veredito (bloco de cor, selo, marcas e rótulo) a partir do degrau gravado no candidato (R-114, mensagem v4). */
+export function cabecalhoDeDegrau(degrau: Degrau, rotulo: string, canal: 'tg' | 'wa'): string {
+  return cabecalho({ degrau, rotulo } as Veredito, canal);
+}
+
 function cabecalho(v: Veredito, canal: 'tg' | 'wa'): string {
   const d = DEGRAUS[v.degrau];
   const nome = v.rotulo;

@@ -447,22 +447,24 @@ const DEPARTMENTS: Record<string, string> = {
   eletrodomesticos: 'Eletrodomésticos',
   esporte: 'Esporte',
   impressao3d: 'Impressão 3D',
+  beleza: 'Beleza',
+  brinquedos: 'Brinquedos',
 };
 export function departmentLabel(vertical: string): string {
   return DEPARTMENTS[vertical] ?? vertical;
 }
 
-interface Fmt {
+export interface Fmt {
   b(s: string): string; // negrito
   t(s: string): string; // texto escapado
   link(url: string, label: string): string;
 }
-const TG: Fmt = {
+export const TG: Fmt = {
   b: (s) => `<b>${escapeTelegramHtml(s)}</b>`,
   t: escapeTelegramHtml,
   link: (url, label) => `<a href="${escapeTelegramAttr(url)}">${escapeTelegramHtml(label)}</a>`,
 };
-const WA: Fmt = {
+export const WA: Fmt = {
   b: (s) => `*${escapeWhatsapp(s)}*`,
   t: escapeWhatsapp,
   link: (url) => url,
@@ -479,7 +481,7 @@ export function isAmazonOffer(o: { networkSlug: string; networkName: string }): 
 }
 
 /** 'YYYY-MM-DD' vira data de meio-dia em Brasília (para fmtDay). */
-function dayToDate(day: string): Date {
+export function dayToDate(day: string): Date {
   return new Date(`${day}T12:00:00-03:00`);
 }
 
@@ -881,7 +883,7 @@ export function readingOf(price: number, avg: number | null, min: number | null)
 }
 
 /** Tópico "• Rótulo: valor" (rótulo em negrito). */
-function topic(f: Fmt, label: string, value: string): string {
+export function topic(f: Fmt, label: string, value: string): string {
   return `• ${f.b(`${label}:`)} ${f.t(value)}`;
 }
 
@@ -942,7 +944,7 @@ export function compraLines(o: MsgOffer, f: Fmt): string[] {
  *   • Loja oficial: <nome>     (só com o nome lido da API)
  *   • Cupons e ofertas Shopee: <link>   (só Shopee, só com link https de campanha oficial; não promete valor)
  */
-function seloLines(o: MsgOffer, f: Fmt): string[] {
+export function seloLines(o: MsgOffer, f: Fmt): string[] {
   if (isAmazonOffer(o)) return [];
   const out: string[] = [];
   if (o.freeShipping === true && o.compra?.freteGratis !== true) out.push(topic(f, 'Frete', 'grátis'));

@@ -10,6 +10,7 @@ import { countEmojis, formatAchadoMessage, textProblems, TELEGRAM_CAPTION_MAX_CH
 import { AVISO_DEGRAU_5, DEGRAUS, REGUA, arredondar1, calcularVeredito, contraste, degrauDaQueda, reguaConfig, reguaDaLoja, reguaFront, reguaTelegram, reguaWhatsapp, vaiParaDestaques, type Veredito } from '../src/lib/messaging/regua';
 import { captionVisibleLength } from '../src/lib/messaging/telegram-send';
 import { codigoCurtoValido, destinoDoCodigo, gerarCodigoCurto, linkCurto } from '../src/lib/messaging/short-code';
+process.env.MENSAGEM_V4 = 'off'; // R-114: este teste fixa o formato ANTERIOR das mensagens (rollback MENSAGEM_V4=off); a v4 tem o seu teste (test-mensagem-v4.ts)
 
 let ok = 0, bad = 0;
 const eq = (n: string, a: unknown, b: unknown) => { if (JSON.stringify(a) === JSON.stringify(b)) ok++; else { bad++; console.error('FALHOU', n, a, b); } };

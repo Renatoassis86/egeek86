@@ -7,6 +7,7 @@ import { evaluateProductV2, detectMovement, type Candidate, type OfferFact, type
 import { textProblems } from '../src/lib/messaging/group-messages';
 import { calcularVeredito, faixaPreco, faixaTexto, noMenorRegistrado, reguaConfig, reguaFront, reguaTelegram, reguaWhatsapp, type Veredito } from '../src/lib/messaging/regua';
 import { captionVisibleLength } from '../src/lib/messaging/telegram-send';
+process.env.MENSAGEM_V4 = 'off'; // R-114: este teste fixa o formato ANTERIOR das mensagens (rollback MENSAGEM_V4=off); a v4 tem o seu teste (test-mensagem-v4.ts)
 
 let ok = 0, bad = 0;
 const eq = (n: string, a: unknown, b: unknown) => { if (JSON.stringify(a) === JSON.stringify(b)) ok++; else { bad++; console.error('FALHOU', n, JSON.stringify(a), JSON.stringify(b)); } };

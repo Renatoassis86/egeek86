@@ -25,6 +25,8 @@ import {
 import { AMAZON_OWN_MIN_DAYS, amazonCountsIn, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { emFaseDeFormacao, mediaSimples, minLojas } from '@/lib/messaging/fase-formacao';
 import { calcularVeredito, degrauDaQueda, faixaPreco, noMenorRegistrado, reguaConfig, reguaDaLoja, reguaInfoDe, reguaTelegram, reguaWhatsapp, type ReguaInfo } from '@/lib/messaging/regua';
+import { bloqueioCondicaoNaoNova, comporMensagemV4, estadoDaMensagem, marcaParaExibicao, mensagemV4Ligada } from '@/lib/messaging/mensagem-v4';
+import { rotuloTipo } from '@/lib/catalog/tipos-produto';
 import { AGULHA } from '@/lib/coupons/agulha';
 import type { CouponRefMeta } from '@/lib/coupons/guardiao-model';
 import type { CouponInfo } from '@/lib/messaging/group-messages';
@@ -439,7 +441,7 @@ export function foldTitle(s: string): string {
 
 const REGION_RE = /\b(japon\w*|japan\w*|jp|jpn|ntsc\w*|pal|eur|euro\w*|usa|eua|asia\w*|asiatic\w*|chin\w*|korea\w*|coreano|hk|import\w*|american\w*|regiao|region\w*)\b|\bversao internacional\b/;
 const REGION_US_RE = /\bversao us\b|\boriginal us\b|\bimportado us\b/;
-const CONDITION_RE = /\b(open ?box|usado|usada|seminovo|seminova|recondicionad\w*|vitrine|mostruario|sem lacre)\b/;
+const CONDITION_RE = /\b(open ?box|usado|usada|seminovo|seminova|recondicionad\w*|vitrine|mostruario|sem lacre|caixa aberta|lacre (?:aberto|rompido|violado)|embalagem aberta)\b/;
 
 const EDITION_MARKERS: Array<[string, RegExp]> = [
   ['deluxe', /\bdeluxe\b/],
@@ -789,6 +791,58 @@ function aplicarRegua(
   return { info: reguaInfoDe(v, common.faixa, viaMinima && degrauDaQueda(pct) == null), telegram: reguaTelegram(common), whatsapp: reguaWhatsapp({ ...common, link }) };
 }
 
+/**
+ * R-114: monta a mensagem v4 do candidato (só modelos de UM produto: media, movimento, achado, preco-agora). null = mantém o texto anterior.
+ * O estado vem do mapa de `estadoDaMensagem` (os estados que o sistema já tem); a comparação com a média sai em todo estado menos "Novo no monitoramento".
+ */
+function comporV4(
+  p: ProductFacts,
+  input: GroupMessageInput,
+  primary: OfferFact,
+  reguaInfo: ReguaInfo | undefined,
+  ctx: EvalContext
+): { telegram: string; whatsapp: string } | null {
+  if (input.model !== 'media' && input.model !== 'movimento' && input.model !== 'achado' && input.model !== 'preco-agora') return null;
+  const avg = input.model === 'media' ? input.avg : input.model === 'movimento' ? input.avg ?? null : null;
+  const seriesDays = input.model === 'media' ? input.seriesDays : input.model === 'movimento' ? input.move.seriesDays : 0;
+  const estado = estadoDaMensagem({
+    model: input.model,
+    novo: input.model === 'achado' ? input.novo === true : undefined,
+    veredito: reguaInfo ? { rotulo: reguaInfo.rotulo } : null,
+    emFormacao: formacaoDoProduto(p, ctx.now),
+    avg,
+    seriesDays,
+  });
+  const amz = netKind(primary) === 'amazon';
+  const cfg = reguaConfig();
+  const faixa = reguaInfo?.faixa ?? (!amz && cfg.minMaxOn ? faixaPreco(p.series, primary.priceCents, cfg.minMaxDias, spDayStr(ctx.now)) : null);
+  const games = p.vertical === 'games';
+  const base = {
+    estado,
+    vertical: p.vertical,
+    titulo: ('title' in input && input.title ? input.title : input.name) as string,
+    tipoLabel: games ? (p.productType === 'console' ? 'Console' : 'Jogo') : p.tipo ? rotuloTipo(p.vertical, p.tipo) : null,
+    marca: marcaParaExibicao(p.vertical, p.masterName),
+    plataforma: p.platformLabel,
+    formato: games ? p.format : null,
+    messageKey: input.messageKey,
+    adTag: input.adTag,
+    avg,
+    veredito: estado === 'diagnostico' && reguaInfo ? { degrau: reguaInfo.degrau, rotulo: reguaInfo.rotulo } : null,
+    faixa,
+  };
+  const extra =
+    input.model === 'media'
+      ? { move: null, refCents: input.refCents ?? null, sinceDay: input.sinceDay ?? null, ind: input.ind ?? null, diagnostico: null }
+      : input.model === 'movimento'
+        ? { move: input.move, refCents: null, sinceDay: null, ind: input.ind ?? null, diagnostico: null }
+        : { move: null, refCents: null, sinceDay: null, ind: null, diagnostico: input.model === 'achado' ? input.diagnostico ?? null : null };
+  const mk = (canal: 'tg' | 'wa') => comporMensagemV4({ ...base, ...extra, offer: input.offer }, canal);
+  const telegram = mk('tg');
+  const whatsapp = mk('wa');
+  return telegram && whatsapp ? { telegram, whatsapp } : null;
+}
+
 export function finish(
   p: ProductFacts,
   trigger: Trigger,
@@ -823,10 +877,18 @@ export function finish(
       rendered = { telegram: rg.telegram, whatsapp: rg.whatsapp, problems: [] };
       problems = [...textProblems(rg.telegram, 'tg'), ...textProblems(rg.whatsapp, 'wa')];
     }
+    // R-114 (dono, 2026-11-22): mensagem v4 (3 estados, segmentação, indicadores, comparação com a média, link de compra no corpo). MENSAGEM_V4=off = formato anterior.
+    const v4 = mensagemV4Ligada() ? comporV4(p, input, base.primary, reguaInfo, ctx) : null;
+    if (v4) {
+      rendered = { telegram: v4.telegram, whatsapp: v4.whatsapp, problems: [] };
+      problems = [...textProblems(v4.telegram, 'tg'), ...textProblems(v4.whatsapp, 'wa')];
+    }
   } catch (e) {
     rendered = { telegram: '', whatsapp: '', problems: [] };
     problems = [e instanceof Error ? e.message : 'erro ao montar texto'];
   }
+  // Só produto NOVO (dono): última barreira da mensagem, vale com a v4 ligada ou desligada. Nome do master e título da oferta.
+  const condBlock = bloqueioCondicaoNaoNova(p.masterName, base.primary.title);
   // Régua de 10% (dono, 2026-11-11): mensagem de preço (alerta, insight, radar) só com preço >= 10% abaixo da média única.
   const priceClass = (base.cls ?? TRIGGER_CLASS[trigger]) as MessageClass;
   const belowAvgPct = base.avgCents != null && base.avgCents > 0 ? ((base.avgCents - base.primary.priceCents) / base.avgCents) * 100 : null;
@@ -840,7 +902,7 @@ export function finish(
       ? `abaixo_da_media_menos_de_${minBelow}pct`
       : null;
   const notSendable =
-    base.notSendable ?? belowRule ?? (problems.length ? `texto reprovado: ${problems.join('; ')}` : null) ?? null;
+    base.notSendable ?? condBlock ?? belowRule ?? (problems.length ? `texto reprovado: ${problems.join('; ')}` : null) ?? null;
   const reviewReasons = relaxShopee(base.reviewReasons, base.primary, base.dropPct);
   return {
     messageKey: input.messageKey,
@@ -1211,9 +1273,12 @@ export function riskAssess(
 const OUT_OF_LINE_PLATFORM = /\b(?:xbox one(?: [sx])?|xbox 360|ps ?[123]|playstation ?[123]|psp|ps vita|wii(?: u)?|3ds|2ds|nintendo ds|gamecube|n64|nintendo 64|snes|game ?boy|mega ?drive|dreamcast)\b/i;
 /** PS4 como APARELHO saiu de linha (dono, 2026-11-14); jogos de PS4 seguem (ainda vendem novos). */
 const OUT_OF_LINE_CONSOLE_ONLY = /(?:ps ?4|playstation ?4)/i;
-export function isOutOfLine(p: Pick<ProductFacts, 'vertical' | 'platformLabel'> & { productType?: string | null }): boolean {
+/** Título que declara o APARELHO (não o jogo): "Console Playstation 4 e Jogo ...". Pega o console de PS4 gravado como 'game' no cadastro (R-114, auditoria de 22/11). */
+const TITULO_DE_APARELHO = /\b(console|video ?game|videogame)\b/i;
+export function isOutOfLine(p: Pick<ProductFacts, 'vertical' | 'platformLabel'> & { productType?: string | null; masterName?: string | null }): boolean {
   if (p.vertical !== 'games') return false;
   if (OUT_OF_LINE_PLATFORM.test(p.platformLabel ?? '')) return true;
+  if (OUT_OF_LINE_CONSOLE_ONLY.test(p.platformLabel ?? '') && TITULO_DE_APARELHO.test(p.masterName ?? '')) return true;
   return p.productType === 'console' && OUT_OF_LINE_CONSOLE_ONLY.test(p.platformLabel ?? '');
 }
 
