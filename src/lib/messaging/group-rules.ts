@@ -25,6 +25,7 @@ import {
 import { AMAZON_OWN_MIN_DAYS, amazonCountsIn, type AmazonMode } from '@/lib/pricing/amazon-mode';
 import { emFaseDeFormacao, mediaSimples, minLojas } from '@/lib/messaging/fase-formacao';
 import { calcularVeredito, degrauDaQueda, faixaPreco, noMenorRegistrado, reguaConfig, reguaDaLoja, reguaInfoDe, reguaTelegram, reguaWhatsapp, type ReguaInfo } from '@/lib/messaging/regua';
+import { menorPrecoLigado, menorPrecoRegistrado } from '@/lib/messaging/menor-preco-registrado';
 import { bloqueioCondicaoNaoNova, comporMensagemV4, estadoDaMensagem, marcaParaExibicao, mensagemV4Ligada } from '@/lib/messaging/mensagem-v4';
 import { rotuloTipo } from '@/lib/catalog/tipos-produto';
 import { AGULHA } from '@/lib/coupons/agulha';
@@ -837,7 +838,9 @@ function comporV4(
       : input.model === 'movimento'
         ? { move: input.move, refCents: null, sinceDay: null, ind: input.ind ?? null, diagnostico: null }
         : { move: null, refCents: null, sinceDay: null, ind: null, diagnostico: input.model === 'achado' ? input.diagnostico ?? null : null };
-  const mk = (canal: 'tg' | 'wa') => comporMensagemV4({ ...base, ...extra, offer: input.offer }, canal);
+  // R-117: menor preço já registrado. Série que já está em memória (a mesma da média e da régua; Amazon usa a própria, de preço cheio). Sem consulta nova.
+  const menor = menorPrecoLigado() ? menorPrecoRegistrado(amz ? p.amazonSeries : p.series, primary.priceCents, spDayStr(ctx.now)) : null;
+  const mk = (canal: 'tg' | 'wa') => comporMensagemV4({ ...base, ...extra, menor, offer: input.offer }, canal);
   const telegram = mk('tg');
   const whatsapp = mk('wa');
   return telegram && whatsapp ? { telegram, whatsapp } : null;

@@ -6,6 +6,8 @@ import { buildGoLink } from '@/lib/messaging/group-messages';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
 import { familiaDe, VITRINE_INTERVALO_MIN, VITRINE_PLATAFORMAS, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherMenores, escolherTopRodizio, janelaKey, montarJogosVitrine, montarLegenda, montarLegendaPlataforma, vitrineLigada, vitrinePorPlataformaLigada, type CamadaBarra, type FaixaFoto, type JogoVitrine, type OfertaVitrine } from '@/lib/messaging/vitrine-games';
 import { FOTO_NAO_NOVA_VERSAO } from '@/lib/catalog/foto-nao-nova';
+import { escolherVerificados, vivoLigado } from '@/lib/messaging/verdade-viva';
+import { prepararVerificacaoViva } from '@/server/messaging/verdade-viva';
 import { amazonFrescorMin } from '@/lib/messaging/confirmacao-preco';
 import { aptaSql } from '@/server/queries/ranking-busca';
 import { getOfferListingMetrics } from '@/server/queries/affiliate';
@@ -145,8 +147,22 @@ async function rodarVitrinesPorPlataforma(a: { now: Date; dry: boolean; force: b
     pendentes.push(p);
   }
   if (!pendentes.length) return { acao: 'recente', candidatos: a.candidatos.length, ms: Date.now() - a.t0 };
+  // R-117, VERDADE VIVA: ate 30 candidatos por plataforma (do mais barato) passam pela verificacao de preco e disponibilidade; so os verificados entram (padrao negado), o proximo repoe.
+  const vivoOn = vivoLigado();
+  const ordenadosPor = new Map(pendentes.map((p) => [p.key, escolherMenores(a.candidatos, p.gens, vivoOn ? 30 : VITRINE_TOP)]));
+  const verificar = vivoOn ? await prepararVerificacaoViva([...ordenadosPor.values()].flat(), VITRINE_TETO_CENTAVOS).catch((e) => { console.error('[vitrine-games] verificacao viva indisponivel:', String(e).slice(0, 120)); return null; }) : null;
+  const vivoPor: Record<string, Record<string, number>> = {};
   const montados = await Promise.all(pendentes.map(async (p) => {
-    const top = escolherMenores(a.candidatos, p.gens, VITRINE_TOP); // R-116: candidatos ja sao so jogos NOVOS (3 camadas); quem sai, o proximo mais barato elegivel repoe
+    const ordenados = ordenadosPor.get(p.key) ?? [];
+    let top = ordenados.slice(0, VITRINE_TOP); // R-116: candidatos ja sao so jogos NOVOS (3 camadas); quem sai, o proximo mais barato elegivel repoe
+    if (vivoOn) {
+      if (!verificar) top = []; // sem como verificar ao vivo: NAO lista
+      else {
+        const r = await escolherVerificados(ordenados, verificar, VITRINE_TOP, { lote: 4, maxChecagens: 30, orcamentoMs: 45_000 });
+        top = r.escolhidos.map((e) => ({ ...e.item, precoCentavos: e.decisao.precoCents })).sort((x, y) => x.precoCentavos - y.precoCentavos || x.masterId.localeCompare(y.masterId));
+        vivoPor[p.key] = { ...r.barrados, checados: r.checados, preco_vivo_diferente: r.escolhidos.filter((e) => e.decisao.usouVivo).length };
+      }
+    }
     if (top.length < 1) return { p, top, legenda: "", capa: null as Buffer | null };
     const legenda = montarLegendaPlataforma(top, hora, p.rotulo, p.gens.length > 1, (i) => buildGoLink(top[i].slug, 'tg', `${key}-${p.key.replace(/_/g, '')}-${i + 1}`));
     const capa = await renderCapaVitrine(top, hora, await fotosDoTop(top), p.rotulo);
@@ -156,12 +172,12 @@ async function rodarVitrinesPorPlataforma(a: { now: Date; dry: boolean; force: b
   let enviados = 0;
   for (const m of montados) {
     if (!m.capa) { resumo.push({ plataforma: m.p.key, acao: 'poucos_jogos', jogos: m.top.length }); continue; }
-    if (a.dry) { resumo.push({ plataforma: m.p.key, acao: 'previa', jogos: m.top.length, barradas: a.barradasPorGen[m.p.key], titulos: m.top.map((j) => j.titulo.slice(0, 40)), menor: m.top[0]?.precoCentavos, maior: m.top[m.top.length - 1]?.precoCentavos, legendaChars: m.legenda.length, capaBytes: m.capa.length }); continue; }
+    if (a.dry) { resumo.push({ plataforma: m.p.key, acao: 'previa', jogos: m.top.length, barradas: a.barradasPorGen[m.p.key], vivo: vivoPor[m.p.key], precos: m.top.map((j) => j.precoCentavos), titulos: m.top.map((j) => j.titulo.slice(0, 40)), menor: m.top[0]?.precoCentavos, maior: m.top[m.top.length - 1]?.precoCentavos, legendaChars: m.legenda.length, capaBytes: m.capa.length }); continue; }
     const t1 = Date.now();
     const r = await sendTelegramGroupMessage({ token: a.token as string, chatId: a.chatId as string, text: m.legenda, photo: m.capa, silent: true });
     await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, checked, meta)
       VALUES (${jobDe(m.p.key)}, 'telegram', ${a.now.toISOString()}::timestamptz, now(), ${Date.now() - t1}, ${r.ok ? 'ok' : 'error'}, ${m.top.length},
-              ${JSON.stringify({ janela: key, plataforma: m.p.key, messageId: r.messageId, erro: r.ok ? undefined : r.error, fotoSkipped: r.photoSkipped, masters: m.top.map((j) => j.masterId), teto: VITRINE_TETO_CENTAVOS, menor: m.top[0]?.precoCentavos, maior: m.top[m.top.length - 1]?.precoCentavos, barradas: a.barradasPorGen[m.p.key] })}::text::jsonb)`);
+              ${JSON.stringify({ janela: key, plataforma: m.p.key, messageId: r.messageId, erro: r.ok ? undefined : r.error, fotoSkipped: r.photoSkipped, masters: m.top.map((j) => j.masterId), teto: VITRINE_TETO_CENTAVOS, menor: m.top[0]?.precoCentavos, maior: m.top[m.top.length - 1]?.precoCentavos, barradas: a.barradasPorGen[m.p.key], vivo: vivoPor[m.p.key] })}::text::jsonb)`);
     if (r.ok) enviados++;
     resumo.push({ plataforma: m.p.key, acao: r.ok ? 'enviada' : 'falhou', jogos: m.top.length, messageId: r.messageId, erro: r.ok ? undefined : r.error });
     await new Promise((res) => setTimeout(res, 3_000));

@@ -1,0 +1,10 @@
+{
+ "oferta": "ded37404-142d-430e-8e46-94bb9b3232ff",
+ "antes": {
+  "status": "active",
+  "q": null,
+  "quarantine_reason": null
+ },
+ "motivo": "esgotado_pagina (leitura do dono no celular, 22/11 11:15: Esgotado a R$ 119,62)",
+ "rollback": "UPDATE affiliate_offers SET status='active', quarantined_at=NULL, quarantine_reason=NULL WHERE id=oferta"
+}

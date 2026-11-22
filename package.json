@@ -46,6 +46,7 @@
     "test:metricas-compra": "tsx --conditions=react-server scripts/test-metricas-compra.ts",
     "test:cobertura-tipos": "tsx scripts/test-cobertura-tipos.ts",
     "test:cesta-nlp": "tsx scripts/test-cesta-nlp.ts",
+    "test:menor-preco": "tsx scripts/test-menor-preco.ts",
     "test:cobertura-total": "tsx --conditions=react-server scripts/test-cobertura-total.ts",
     "test:semeadura-servidor": "tsx scripts/test-semeadura-servidor.ts",
     "simular:semeadura-plus": "tsx scripts/simular-semeadura-plus.ts",

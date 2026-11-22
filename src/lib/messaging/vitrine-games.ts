@@ -15,6 +15,8 @@ export const VITRINE_CAPTION_MAX = 1024;
 
 export interface JogoVitrine {
   masterId: string;
+  /** Oferta que define preco, link e imagem do cartao (R-117: e ela que e verificada ao vivo). */
+  ofertaId?: string;
   slug: string;
   titulo: string;
   plataforma: string;
@@ -304,7 +306,7 @@ export function montarJogosVitrine(ofertas: readonly OfertaVitrine[]): { jogos: 
     if (!atual || o.precoCentavos < atual.precoCentavos || (o.precoCentavos === atual.precoCentavos && o.ofertaId < atual.ofertaId)) melhor.set(o.masterId, o);
   }
   const jogos: JogoVitrine[] = [...melhor.values()].map((o) => ({
-    masterId: o.masterId, gen: o.gen, slug: o.slug, titulo: o.masterNome, plataforma: o.plataforma, precoCentavos: o.precoCentavos, ofertas: o.ofertasDoMaster, imagem: o.imagem,
+    masterId: o.masterId, ofertaId: o.ofertaId, gen: o.gen, slug: o.slug, titulo: o.masterNome, plataforma: o.plataforma, precoCentavos: o.precoCentavos, ofertas: o.ofertasDoMaster, imagem: o.imagem,
   }));
   return { jogos, barradas };
 }

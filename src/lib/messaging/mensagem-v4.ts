@@ -47,6 +47,7 @@ import {
 } from '@/lib/messaging/group-messages';
 import { cabecalhoDeDegrau, faixaTexto, ROTULO_MONITORAMENTO, REGUA, type Degrau, type FaixaPreco } from '@/lib/messaging/regua';
 import { captionVisibleLength } from '@/lib/messaging/telegram-send';
+import type { MenorPrecoRegistrado } from '@/lib/messaging/menor-preco-registrado';
 
 export type EstadoMensagem = 'novo' | 'monitoramento' | 'diagnostico';
 
@@ -198,6 +199,8 @@ export interface MensagemV4Input {
   faixa?: FaixaPreco | null;
   /** Achado com histórico próprio: frase pronta (ex.: "em linha com a mediana dos últimos 10 dias de coleta deste produto"). */
   diagnostico?: string | null;
+  /** R-117: menor preço já registrado (série fechada, antes de hoje) frente ao preço atual. null/ausente = sem registro anterior: a linha é omitida. */
+  menor?: MenorPrecoRegistrado | null;
 }
 
 type Opcional = 'bf' | 'faixa' | 'vendedor' | 'promo' | 'slogan' | 'selos';
@@ -223,6 +226,14 @@ function movimentoBullets(f: Fmt, i: MensagemV4Input, amz: boolean): string[] {
     else out.push(topic(f, 'Menor preço registrado', `${fmtBRL(ref)} (este preço é ${pct1(((price - ref) / ref) * 100)}% maior)`));
   }
   return out;
+}
+
+/** R-117: a linha do menor preço já registrado, com a data. Texto simples (sobrevive ao copiar para o WhatsApp). */
+export function linhaMenorPreco(f: Fmt, m: MenorPrecoRegistrado): string {
+  const quando = `${fmtBRL(m.cents)} em ${fmtDay(dayToDate(m.day))}`;
+  if (m.situacao === 'novo-minimo') return topic(f, 'Menor preço já registrado', `este é o menor preço que já vimos (o anterior era ${quando})`);
+  if (m.situacao === 'igual') return topic(f, 'Menor preço já registrado', `este preço iguala o menor que já vimos, ${quando}`);
+  return topic(f, 'Menor preço registrado', `${quando} · agora +${pct1(m.acimaPct ?? 0)}%`);
 }
 
 function montar(i: MensagemV4Input, canal: GroupChannel, sem: ReadonlySet<Opcional>): string | null {
@@ -256,12 +267,17 @@ function montar(i: MensagemV4Input, canal: GroupChannel, sem: ReadonlySet<Opcion
   const bullets: string[] = [];
   if (i.estado === 'novo') {
     bullets.push(topic(f, 'Situação', 'começamos a acompanhar o preço deste produto agora'));
+    // Só com registro anterior de verdade (nunca inventa): sem histórico a linha não existe.
+    if (i.menor) bullets.push(linhaMenorPreco(f, i.menor));
   } else {
     const cmp = textoComparacaoMedia(price, i.avg, amz);
     if (cmp) bullets.push(topic(f, 'Vs. média', cmp));
     else if (i.diagnostico) bullets.push(topic(f, 'Vs. histórico do produto', i.diagnostico));
     // Sem média (e sem histórico próprio): a linha é OMITIDA por completo, não bloqueia o envio (dono, 2026-11-22). Quando a média existir, a linha entra sozinha.
-    for (const b of movimentoBullets(f, i, amz)) bullets.push(b);
+    // R-117: com o dado do menor preço já registrado (e a data), a linha dele substitui a antiga "Menor preço registrado" (uma só, sem repetir).
+    const lm = i.menor ? linhaMenorPreco(f, i.menor) : null;
+    for (const b of movimentoBullets(f, i, amz)) if (!lm || !b.includes('Menor preço registrado')) bullets.push(b);
+    if (lm) bullets.push(lm);
     if (!sem.has('faixa')) {
       if (i.faixa) bullets.push(topic(f, 'Faixa registrada', faixaTexto(i.faixa)));
       else if (i.ind && i.ind.days >= 3) bullets.push(topic(f, 'Histórico', `mais barato que em ${i.ind.cheaperThanDays} de ${i.ind.days} dias; mínimo ${fmtBRL(i.ind.minCents)}, máximo ${fmtBRL(i.ind.maxCents)}`));
