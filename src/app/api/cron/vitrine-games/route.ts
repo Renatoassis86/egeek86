@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const { capa, legenda, top, ...resto } = r as typeof r & { plataformas?: unknown };
     return NextResponse.json({ ...resto, jogos: top?.map((j) => ({ t: j.titulo.slice(0, 40), p: j.precoCentavos })), legendaChars: legenda?.length, capaBytes: capa?.length });
   } catch (e) {
-    console.error('[cron vitrine-games] falhou:', e instanceof Error ? e.message.slice(0, 200) : e);
+    console.error('[cron vitrine-games] falhou:', e instanceof Error ? e.message.slice(0, 60) : e, '| causa:', String((e as { cause?: { message?: string; code?: string } })?.cause?.code ?? ''), String((e as { cause?: { message?: string } })?.cause?.message ?? '').slice(0, 200));
     return NextResponse.json({ error: 'falha' }, { status: 500 });
   }
 }

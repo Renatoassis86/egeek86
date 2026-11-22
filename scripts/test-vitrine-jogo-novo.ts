@@ -20,6 +20,7 @@ assert.match(montarLegenda([], '10:00', () => ''), /Jogos até R\$ 250/);
 
 // camada (a): condicao no titulo/vendedor
 const barrados = [
+  'JOGOS PS4 ORIGINAIS MÍDIA FÍSICA VARIEDADES',
   'God of War Ragnarok PS5 Usado', 'Jogo PS5 Seminovo em otimo estado', 'Mario Kart Switch Caixa Aberta', 'Zelda Switch sem lacre', 'Jogo PS4 lacre rompido',
   'Lote 3 jogos PS4', 'Kit com 5 jogos Switch', 'Cartucho solto Switch Mario', 'Somente o disco PS5', 'Jogo PS5 Open Box', 'FIFA 24 PS4 sem caixa', 'Jogo PS5 com marcas de uso',
 ];

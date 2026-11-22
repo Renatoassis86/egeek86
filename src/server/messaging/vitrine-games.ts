@@ -27,19 +27,21 @@ export const vitrineFotoLigada = (env: Record<string, string | undefined> = proc
 export async function carregarOfertasVitrine(): Promise<OfertaVitrine[]> {
   const fotoOn = vitrineFotoLigada();
   const r = rows<{ oid: string; slug: string; titulo: string; loja: string | null; p: number; img: string | null; mid: string; nome: string; plat: GamePlatformGen; n: number; faixa: string | null; idade: number | null }>(await db.execute(sql`
-    SELECT * FROM (
-      SELECT o.id::text AS oid, o.slug::text AS slug, o.title AS titulo, o.store_name AS loja, o.current_price_cents::int AS p, o.image_url AS img,
-             m.id::text AS mid, m.name AS nome, m.game_platform_gen AS plat, (count(*) OVER (PARTITION BY m.id))::int AS n,
-             fp.faixa AS faixa, (extract(epoch FROM now() - fp.pontuado_em) / 86400.0)::float8 AS idade
+    WITH apt AS MATERIALIZED (
+      SELECT o.id AS oid, o.slug, o.title, o.store_name, o.current_price_cents AS p, o.image_url, m.id AS mid, m.name, m.game_platform_gen AS plat
       FROM master_products m
       JOIN affiliate_offers o ON o.master_product_id = m.id
       JOIN affiliate_networks n ON n.id = o.network_id
-      LEFT JOIN vitrine_foto_pontuacao fp ON fp.url_hash = md5(o.image_url) AND fp.versao = ${FOTO_NAO_NOVA_VERSAO}
       WHERE m.vertical = 'games' AND m.product_type = 'game' AND NOT (m.attributes ? 'mergedInto') AND ${aptaSql()} AND o.quarantined_at IS NULL
         AND m.name !~* '(c[aâ]mera|controle|joystick|capa para|case |suporte|cabo |carregador|pel[ií]cula|headset|amiibo)'
         AND (n.slug <> 'amazon' OR o.last_checked_at > now() - make_interval(mins => ${amazonFrescorMin()}::int))
-    ) x
-    WHERE x.p <= ${VITRINE_TETO_CENTAVOS}
+    ), cnt AS (SELECT mid, count(*)::int AS n FROM apt GROUP BY mid)
+    SELECT a.oid::text AS oid, a.slug::text AS slug, a.title AS titulo, a.store_name AS loja, a.p::int AS p, a.image_url AS img, a.mid::text AS mid, a.name AS nome, a.plat AS plat, c.n AS n,
+           fp.faixa AS faixa, (extract(epoch FROM now() - fp.pontuado_em) / 86400.0)::float8 AS idade
+    FROM apt a
+    JOIN cnt c ON c.mid = a.mid
+    LEFT JOIN vitrine_foto_pontuacao fp ON fp.url_hash = md5(a.image_url) AND fp.versao = ${FOTO_NAO_NOVA_VERSAO}
+    WHERE a.p <= ${VITRINE_TETO_CENTAVOS}
     LIMIT 8000`));
   return r.map((x) => ({
     ofertaId: x.oid, masterId: x.mid, slug: x.slug, tituloOferta: x.titulo, vendedor: x.loja, masterNome: x.nome, gen: x.plat, plataforma: GAME_PLATFORM_GEN_LABELS[x.plat] ?? '',

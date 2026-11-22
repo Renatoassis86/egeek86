@@ -257,7 +257,7 @@ const RE_NAO_NOVO_VITRINE = new RegExp([
   '\\b(aberto|aberta)\\s+(sem uso|so para|apenas para|para teste)\\b',
   '\\b(so|somente|apenas)\\s+(o\\s+|a\\s+)?(disco|cartucho|midia)\\b',
   '\\b(disco|cartucho|midia|jogo)\\s+solt[oa]\\b',
-  '\\b(lote|colecao de jogos|kit (com )?\\d+ jogos|\\d+ jogos|combo de jogos|pacote de jogos)\\b',
+  '\\b(lote|variedades?|colecao de jogos|kit (com )?\\d+ jogos|\\d+ jogos|combo de jogos|pacote de jogos)\\b',
   '\\b(retirad[oa] de|com marcas? de uso|com arranh|riscad[oa]|com defeito|testad[oa] e funcionando)\\b',
 ].join('|'));
 const RE_REVENDEDOR = /\b(usados|games usados|seminovos|troca|sebo|retro)\b/;
