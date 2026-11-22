@@ -1,0 +1,46 @@
+{
+ "quando": "2026-11-22T13:24:33.258Z",
+ "ofertas": [],
+ "juncoes": [
+  {
+   "canonico": "78ca15cc-0410-40ca-af2f-8a6d0a3bc953",
+   "incorporado": "042ec55a-10b7-482e-a047-691acf5c58b8",
+   "ofertas": [
+    "60de770d-d587-4b35-a14e-9fb023903e07",
+    "45df38ee-0380-4c0b-91ae-15dcc7387696",
+    "8c7a3fdc-ae09-4b68-b5c8-e84c75a17b20"
+   ]
+  },
+  {
+   "canonico": "04504f06-2a6b-42fb-bc05-9ec5ffcba615",
+   "incorporado": "839c0cdd-8654-4568-9e85-8e26726b1e7d",
+   "ofertas": [
+    "0da61fd1-2963-4956-bc6c-33b9b7d88d9c",
+    "c8781e77-3ae4-4d6f-ad4f-7dd26eca7a26"
+   ]
+  },
+  {
+   "canonico": "2f648d63-b66e-47f5-90e0-e3030806cdae",
+   "incorporado": "108c7e53-e4b3-4d0c-97e5-9809d24ca007",
+   "ofertas": [
+    "2a880e20-c78f-4b6a-8d37-dff7c76d1d9d",
+    "c0169991-e5cf-4b90-9ebc-adef346a218c"
+   ]
+  },
+  {
+   "canonico": "53f602bc-4f6c-4162-9f79-dce24cd45a2a",
+   "incorporado": "fe85c249-0b1e-48a4-92d0-3f5895b83c90",
+   "ofertas": [
+    "56bd3ed6-1ecc-4ec5-b2d4-9598d7d9e35e"
+   ]
+  },
+  {
+   "canonico": "80758c3c-3817-4c18-bc56-bdb6cbfb1d43",
+   "incorporado": "d45304c2-6492-4c2a-aeb6-4de0f8f5a125",
+   "ofertas": [
+    "eb28db87-5f99-456a-a212-f8d96f703b1a",
+    "1e292378-4dfa-49fa-bb17-f1426bee7ada"
+   ]
+  }
+ ]
+}

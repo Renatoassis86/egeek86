@@ -841,3 +841,27 @@ Ex.: 110V e 220V na mesma cesta (decisão do dono: voltagem, região, capacidade
 | Mário vs. Donkey Kong Nintendo Switch | 14 | 1 | R$ 330.54 | R$ 342.90 | R$ 333.45 | R$ 337.00 | sho R$ 170 🧩 Mario vs. Donkey Kong (Nintendo Switch) - Edição Japonesa |
 | Placa de Captura de Vídeo HDMI Nintendo Switch Hlily, 4 | 6 | 1 | R$ 140.87 | R$ 135.95 | R$ 142.40 | R$ 132.90 | ama R$ 165 Placa de captura de vídeo Nintendo Switch, Placa de captura  |
 | Turok Trilogy Nintendo Switch Mídia Física Ação Aventur | 5 | 1 | R$ 300.97 | R$ 311.25 | R$ 259.89 | R$ 278.85 | sho R$ 260 Turok Trilogy Bundle Switch Midia Fisica |
+
+---
+
+## Junções de masters aplicadas (autorização do dono, 2026-11-22: "Ok. Autorizo")
+
+Reexecutado o modo `sugerir` às 13:2x (dados mudaram desde as 07:30): 404 pares, 22 com confiança >= 0,97, sem trava e com ofertas ativas a mover (eram 26). Nenhum tem `catalogGate.manual`. Revisei cada par pelos títulos das ofertas dos dois lados (voltagem, região, condição, pack, modelo) e **apliquei 15**, em 3 lotes de 5 (`--lote 0 --juncoes 5`, CESTA_NLP=aplicar), medindo envio antes e depois de cada lote.
+
+**Fora (7):** pares 1 e 2 (Xiaomi H50 Pro: cadeia A>B e B>A, e a cesta de origem mistura S40 Pro bivolt e 110/220V); 8 e 13 (peças de air fryer/aspirador); 12 (Penalty Bola 8 x Bola 8 X, modelo possivelmente diferente); 18 (cadeia com o par 19 dos Redmi Buds 6 Play, o 19 foi aplicado); 20 (a oferta M908 Impact estava na cesta do M808 Storm, erro de cadastro que a junção propagaria; fica para o dono decidir o nome/cesta).
+
+**Impacto no envio:** enviadas na última hora 231 -> 233, 227 -> 225, 225 -> 227; erros de group_messages na hora: 7 -> 7. Sem queda.
+
+**Ofertas movidas:** 83 (8 + 10 + 65). Logs reversíveis (rollback: `scripts/cesta-nlp.ts rollback --log <arquivo> --apply`): `docs/backups/cesta-nlp-log-2026-11-22T13-23-40-454Z.json`, `...T13-24-33-256Z.json`, `...T13-25-12-213Z.json`. Backup lógico = o log (ids das ofertas e do master de origem); os masters incorporados ficam vazios, nada foi apagado.
+
+**Média da cesta (preço atual das ofertas ativas, não em quarentena; antes -> depois; menor preço):**
+
+| Cesta canônica | Ofertas | Média | Menor oferta |
+|---|---|---|---|
+| Carregador Turbo 65W Kaidi | 7 -> 14 | R$ 101,43 -> 87,70 | R$ 79,99 -> 69,90 |
+| Controle DualSense Chroma Teal | 5 -> 9 | R$ 512,63 -> 663,00 | R$ 427,57 -> 427,57 |
+| Câmera Canon R100 | 4 -> 7 | R$ 7.645,01 -> 6.830,49 | R$ 5.725,01 -> 5.725,01 |
+| Switch 2 Bundle Mario Kart World | 2 -> 3 | R$ 5.449,99 -> 5.233,23 | R$ 4.899,99 -> 4.799,70 |
+| Fritadeira WAP AB1050 | 1 -> 2 | R$ 738,24 -> 923,62 | R$ 738,24 -> 738,24 |
+
+Outras: Redmi Buds 6 Play 97 -> 141 ofertas (R$ 131,26 -> 132,73); Fujifilm X-e5 6 -> 9 (R$ 14.325 -> 14.974). Medido sobre o preço corrente, não sobre a série oferta-dia. Cestas com 1 oferta ganharam base para média; as que subiram trocaram ofertas de cor/embalagem diferentes do mesmo modelo.

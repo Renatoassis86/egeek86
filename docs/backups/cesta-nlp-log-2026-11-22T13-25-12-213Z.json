@@ -1,0 +1,101 @@
+{
+ "quando": "2026-11-22T13:25:12.214Z",
+ "ofertas": [],
+ "juncoes": [
+  {
+   "canonico": "47726125-6990-4a60-8a8b-5106675bf3e4",
+   "incorporado": "e7b7c792-7890-4ce1-8c4c-c3915cf3ccf2",
+   "ofertas": [
+    "d6c359a3-08fd-48e2-928a-33262c256fb7",
+    "b222ac53-c98e-49b8-bffb-f3d35cc30b5e",
+    "47a38127-0f60-43cf-a434-acf27c1588d7",
+    "591064a2-d5d0-4e5d-90ff-404b0288fbf1",
+    "a4f47651-9bc7-4921-9c47-766dcde0ce2b",
+    "5f64c4fc-0a95-434b-aeb3-e5d4831d9674",
+    "29876a01-f435-4f74-be4a-52ae41174cb6"
+   ]
+  },
+  {
+   "canonico": "115c69f6-27c6-43cc-a26b-0aab9081f1cf",
+   "incorporado": "a0d2b4c4-4c67-49db-b844-0b6b9f0cf726",
+   "ofertas": [
+    "f3cbf7be-a8fe-4ed6-9a3b-ec43597b8151",
+    "1e9d798d-c5fa-4c5c-b589-388f0d97de3f",
+    "1fdaee9c-5041-4487-9116-262329e37b3a",
+    "f5322a9e-65e7-4025-9b76-1c672539cebf",
+    "c110d564-f8ff-44aa-b533-99c1ee0f0039",
+    "a6636491-aea0-4c8e-b4a1-c9e5f4f6ebd5",
+    "65e9f382-4403-4164-99b3-bbd1fae00fc8"
+   ]
+  },
+  {
+   "canonico": "f3689fe7-f5d2-4862-8953-49825b66770a",
+   "incorporado": "f72916ee-911b-457f-afef-946d1396cf07",
+   "ofertas": [
+    "975b4906-bb69-48f1-a943-94048641e8b1",
+    "0f53ac22-dcde-4999-8702-746d76af0294",
+    "de9fc219-d518-4027-8695-ce50691c58b3",
+    "dd7b8944-e6be-4691-8afb-4220ef1d365c",
+    "aad60d4c-d60b-4d7b-b524-5bafb3a5fba9",
+    "e0e2120d-1eb1-4bdc-975e-267c0a40e908",
+    "4e92ed4d-3087-4f48-a295-4e715fdaa3ff",
+    "38c35f0d-8e8e-4d5f-88ce-662195985e8c",
+    "05846cf6-df0b-4052-8bf5-d816e01b2a67",
+    "b7cb425d-fe34-4ad8-82dc-7872c526e87b",
+    "e187ea99-f693-456f-b087-1e8fd75f598c",
+    "111e39e9-c197-4b6f-967c-be6cdafcb092",
+    "1c98f1e0-3c48-469e-b206-8c1dcaff0e5c",
+    "f18642c6-a563-4f2e-91ec-56a389c94948",
+    "3883c581-cbd8-4c30-9b05-4fc51c63128f",
+    "cce5abb2-6cfc-47b0-8897-d66663d4dcaa",
+    "0bf66c8f-2543-4d98-9d54-9dff7f6da226",
+    "1d999eb1-c156-43c6-83cd-91dd8cbe3b95",
+    "53a1d4e6-ce9d-45f2-a891-69cedcfc51d5",
+    "694234c9-967e-4a77-9315-840254c78fff",
+    "e1286938-e2e0-43bd-8b12-1ebc6ac44fb1",
+    "bfff6c94-538d-4b85-a543-d8f29dcf479c",
+    "285821cf-1208-4664-a362-34d39c4e5b48",
+    "9777c7cc-657f-4c6b-8d34-f418813808b4",
+    "1b520d4c-607f-45cd-947c-48d7f98242f6",
+    "2dedcf82-f7f5-4702-9232-303f0507cab4",
+    "a4b99771-b358-4089-b748-82f9d50fbf62",
+    "779632a2-2dee-4d01-aae6-e9fde8f1dc45",
+    "90b0018b-c5a8-4492-80a7-1f0aa480e1c5",
+    "09646fa6-82bb-4db3-9139-d433e31beb8c",
+    "71caf9d6-4456-4955-a70f-7f198246feb1",
+    "6b624cfc-94f6-474f-817c-7bfafbc2f35d",
+    "ad51bc06-2056-4d1f-a653-1f0efdd912f0",
+    "0c128d81-abf7-4883-9e50-5e48916d1130",
+    "18921bcb-32b9-4911-a848-e993732aa1f4",
+    "573ca521-e23f-4e5f-b453-b0b5ed8fd08d",
+    "606e9c05-eff0-44f1-8c8a-fc21cf5e2e80",
+    "8c581fee-d4c0-4254-a770-aaf107eaf4ab",
+    "a1cae0e1-13d3-4bd1-9f02-4cbe2296a954",
+    "a8e7b2f9-02d9-4d24-8408-d867d20886d7",
+    "dc5abdcc-f3ac-4174-8eab-93ff8f3d280c",
+    "e2db78d8-f3e0-426c-9dc3-0a8aa9846d8f",
+    "e37850d5-4377-4875-a36d-556c36135ffb",
+    "ec4f9024-7941-41d0-8065-5ce5eb7bfd8f",
+    "f39360cf-5cce-4ac3-b2b2-5271988c477a",
+    "ff06a464-361a-4e68-bb43-bbcd0a4c5f2b"
+   ]
+  },
+  {
+   "canonico": "8cb83e8c-842d-46e2-8df3-ea5e41e12aef",
+   "incorporado": "2b605346-a6ed-4f3b-b720-a5b74c6b31ca",
+   "ofertas": [
+    "9f7cab9a-d5e3-42be-84c7-cfcb0bf4934a",
+    "78ca72a7-6ef5-48db-a1ec-1919c5fc65eb"
+   ]
+  },
+  {
+   "canonico": "edeb8339-f2be-4432-81bb-6d4690037ac8",
+   "incorporado": "d65d74f6-2d5a-4ef9-992e-d616110bb11c",
+   "ofertas": [
+    "7b354f74-4ad0-4f0c-9456-00e0652e377f",
+    "f08bd52d-6088-4cb8-9bf8-e575904eea3a",
+    "9eee2868-0a47-4236-b974-82562e3b0530"
+   ]
+  }
+ ]
+}
