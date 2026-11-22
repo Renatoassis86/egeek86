@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  * estoura em 45 s numa aba congelada e a troca de aba descarta o loop). Mesma protecao das rotas de cupom (origem por rede + token). Grava no maximo 1 linha por loop a cada 4 min.
  *   POST /api/ingest/loop-saude?rede=amazon|mercado-livre|shopee&loop=<nome>   { estado, versao?, lagMs?, visivel?, memMb?, url? }
  */
-const LOOPS = new Set(['amazon-assistida', 'cupons-24h', 'ml-cupons-item', 'ml-links-ui', 'shopee-cupons']);
+const LOOPS = new Set(['amazon-assistida', 'cupons-24h', 'ml-cupons-item', 'ml-links-ui', 'shopee-cupons', 'shopee-vivo']);
 const REDES = new Set(['amazon', 'mercado-livre', 'shopee']);
 
 export async function OPTIONS(request: NextRequest) {

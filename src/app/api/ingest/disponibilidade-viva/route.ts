@@ -37,17 +37,18 @@ export async function POST(request: NextRequest) {
   const linhas = (Array.isArray(body.rows) ? body.rows : []).slice(0, 20).map((r) => validarLeituraPagina(r ?? {}));
   const validas = linhas.filter((l): l is Extract<typeof l, { ok: true }> => l.ok);
   if (!validas.length) return NextResponse.json({ error: 'sem_linhas_validas', recusadas: linhas.length }, { status: 400, headers });
-  let gravadas = 0, expiradas = 0;
+  let gravadas = 0, expiradas = 0, disponiveis = 0, divergentes = 0, somaDivPct = 0;
   const recusadas: string[] = linhas.filter((l) => !l.ok).map((l) => (l as { erro: string }).erro);
   for (const l of validas) {
     await db.transaction(async (tx) => {
-      const of = ((await tx.execute(sql`SELECT n.slug AS rede FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id WHERE o.id = ${l.offerId}::uuid`)) as unknown as { rede: string }[])[0];
+      const of = ((await tx.execute(sql`SELECT n.slug AS rede, o.current_price_cents::int AS banco FROM affiliate_offers o JOIN affiliate_networks n ON n.id = o.network_id WHERE o.id = ${l.offerId}::uuid`)) as unknown as { rede: string; banco: number }[])[0];
       // a aba so fala da propria rede (a da Shopee nao atesta oferta da Amazon)
       if (!of || (redeAba && of.rede !== redeAba)) { recusadas.push(!of ? 'oferta_inexistente' : 'rede_diferente_da_aba'); return; }
       await tx.execute(sql`INSERT INTO oferta_verificacao_viva (offer_id, verificado_em, fonte, disponivel, preco_cents, motivo)
         VALUES (${l.offerId}::uuid, now(), ${'pagina_' + of.rede}, ${l.disponivel}, ${l.precoCents}, ${l.motivo})
         ON CONFLICT (offer_id) DO UPDATE SET verificado_em = now(), fonte = EXCLUDED.fonte, disponivel = EXCLUDED.disponivel, preco_cents = EXCLUDED.preco_cents, motivo = EXCLUDED.motivo`);
       gravadas++;
+      if (l.disponivel && l.precoCents && of.banco > 0) { disponiveis++; const dv = (Math.abs(l.precoCents - of.banco) / of.banco) * 100; somaDivPct += dv; if (dv > 2) divergentes++; }
       if (!l.disponivel) {
         // QUARENTENA (alem de 'expired'): o coletor reativa 'expired' quando a API de afiliados volta a listar o item (a Shopee lista item esgotado), mas nunca mexe em quarantined_at.
         const u = (await tx.execute(sql`UPDATE affiliate_offers SET status = 'expired', quarantined_at = COALESCE(quarantined_at, now()), quarantine_reason = COALESCE(quarantine_reason, ${MOTIVO_ESGOTADO}), updated_at = now()
@@ -58,6 +59,11 @@ export async function POST(request: NextRequest) {
         await tx.execute(sql`UPDATE affiliate_offers SET status = 'active', quarantined_at = NULL, quarantine_reason = NULL, updated_at = now() WHERE id = ${l.offerId}::uuid AND quarantine_reason = ${MOTIVO_ESGOTADO}`);
       }
     });
+  }
+  // R-119: cada lote vira uma linha de controle (o ritmo por hora da fila da Shopee e a medicao saem daqui); falha ao gravar nunca derruba a resposta
+  if (redeAba && gravadas > 0) {
+    await db.execute(sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, checked, meta)
+      VALUES ('disponibilidade-viva', ${redeAba}, now(), now(), 0, 'ok', ${gravadas}, ${JSON.stringify({ expiradas, disponiveis, divergentes, divMediaPct: disponiveis ? Math.round((somaDivPct / disponiveis) * 10) / 10 : null })}::text::jsonb)`).catch(() => undefined);
   }
   return NextResponse.json({ gravadas, expiradas, recusadas }, { headers });
 }

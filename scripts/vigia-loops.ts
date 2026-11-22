@@ -6,7 +6,7 @@
 import { sql } from 'drizzle-orm';
 import { db } from '../src/lib/db';
 
-const LOOPS = ['amazon-assistida', 'cupons-24h', 'ml-cupons-item', 'ml-links-ui', 'shopee-cupons'];
+const LOOPS = ['amazon-assistida', 'cupons-24h', 'ml-cupons-item', 'ml-links-ui', 'shopee-cupons', 'shopee-vivo'];
 const li = process.argv.indexOf('--limite');
 const LIMITE = li >= 0 ? Number(process.argv[li + 1]) || 6 : 6;
 (async () => {

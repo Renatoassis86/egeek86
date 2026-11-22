@@ -67,7 +67,8 @@
     "test:foto-nao-nova": "tsx scripts/test-foto-nao-nova.ts",
     "test:r111": "tsx scripts/test-health-hourly-memo.ts && tsx scripts/test-cron-watchdog-r111.ts",
     "test:r111-identidade": "tsx --conditions=react-server --env-file=.env.local scripts/test-identity-scope-equivalencia.ts",
-    "test:r110": "tsx scripts/test-r110-fluxo-variedade.ts"
+    "test:r110": "tsx scripts/test-r110-fluxo-variedade.ts",
+    "test:shopee-vivo": "tsx scripts/test-shopee-vivo.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",

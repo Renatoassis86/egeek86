@@ -5,6 +5,10 @@
  *   npx tsx --conditions=react-server --env-file=.env.local scripts/foto-vitrine-pontuar.ts [--por-plataforma 40] [--orcamento 240] [--dry]
  *   npx tsx --conditions=react-server --env-file=.env.local scripts/foto-vitrine-pontuar.ts --loop [--cada 8]     # laco continuo (reinicia em erro)
  *
+ * PERMANENTE (R-119, B): tarefa agendada do Windows `Egeek86-FotoVitrine` (scripts/foto-vitrine-tarefa.ps1 -Acao Instalar) roda UMA rodada (sem --loop) a cada 8 min; se a maquina
+ * reiniciar ou o processo morrer, a proxima disparada recomeca (reinicio automatico). Cada rodada bate em collector_runs, job `foto-vitrine-pontuar` (status ok|error, checked =
+ * pontuadas, meta = contagem), que o vigia le. O CLIP local (@huggingface/transformers + onnxruntime + sharp, centenas de MB) nao cabe em funcao serverless: por isso e local.
+ *
  * Candidatas: por plataforma, as N ofertas MAIS BARATAS que passam na camada de condicao (titulo/vendedor) e ainda nao tem pontuacao valida (< 10 dias).
  * Orcamento de tempo por rodada; imagem ilegivel/indisponivel = nao grava (o jogo continua fora).
  */
@@ -25,7 +29,18 @@ const MODELO = path.resolve('src/lib/catalog/foto-nao-nova-modelo.json');
 const md5 = async (s: string) => (await import('node:crypto')).createHash('md5').update(s).digest('hex');
 const pausa = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function rodada() {
+/** Batimento em collector_runs (job foto-vitrine-pontuar): nunca derruba a rodada. */
+async function bater(status: 'ok' | 'error', t0: number, checked: number, meta: Record<string, unknown>) {
+  if (DRY) return;
+  const sql = connect();
+  try {
+    await sql`SET statement_timeout = 8000`;
+    await sql`INSERT INTO collector_runs (job, network, started_at, finished_at, duration_ms, status, checked, meta)
+      VALUES ('foto-vitrine-pontuar', 'local', ${new Date(t0).toISOString()}::timestamptz, now(), ${Date.now() - t0}, ${status}, ${checked}, ${JSON.stringify(meta)}::text::jsonb)`;
+  } catch { /* o batimento nunca derruba a rodada */ } finally { await sql.end({ timeout: 5 }).catch(() => undefined); }
+}
+
+async function rodada(): Promise<{ pontuadas: number; meta: Record<string, unknown> }> {
   const t0 = Date.now();
   const { carregarOfertasVitrine } = await import('../src/server/messaging/vitrine-games');
   const { VITRINE_PLATAFORMAS, condicaoSuspeita, VITRINE_FOTO_VALIDADE_DIAS } = await import('../src/lib/messaging/vitrine-games');
@@ -38,7 +53,7 @@ async function rodada() {
   const porPlat = VITRINE_PLATAFORMAS.map((p) => faltam.filter((o) => !!o.gen && p.gens.includes(o.gen)).sort((a, b) => a.precoCentavos - b.precoCentavos).slice(0, POR_PLAT));
   for (let i = 0; i < POR_PLAT; i++) for (const l of porPlat) if (l[i] && !escolhidas.has(l[i]!.imagem!)) escolhidas.set(l[i]!.imagem!, l[i]!);
   console.log(`[${new Date().toISOString()}] ofertas<=teto: ${ofertas.length}; sem pontuacao valida (e sem barra de texto): ${faltam.length}; a pontuar agora: ${escolhidas.size}`);
-  if (!escolhidas.size || DRY) return;
+  if (!escolhidas.size || DRY) return { pontuadas: 0, meta: { ofertas: ofertas.length, faltam: faltam.length, a_pontuar: escolhidas.size } };
   const sql = connect();
   try {
     const mids = [...new Set([...escolhidas.values()].map((o) => o.masterId))];
@@ -70,13 +85,24 @@ async function rodada() {
       await pausa(500);
     }
     console.log(`  resultado: ${JSON.stringify(cont)} em ${Math.round((Date.now() - t0) / 1000)} s`);
+    return { pontuadas: cont.pontuadas, meta: { ...cont, ofertas: ofertas.length, faltam: faltam.length, a_pontuar: escolhidas.size } };
   } finally { await sql.end({ timeout: 5 }); }
 }
 
+/** Uma rodada com batimento. Em modo tarefa agendada, erro vira batimento 'error' e codigo de saida 0: a proxima disparada recomeca sozinha. */
+async function rodadaComBatimento() {
+  const t0 = Date.now();
+  try { const r = await rodada(); await bater('ok', t0, r.pontuadas, r.meta); } catch (e) {
+    const msg = String((e as Error)?.message ?? e).slice(0, 200);
+    console.error('ERRO na rodada (segue):', msg);
+    await bater('error', t0, 0, { erro: msg });
+  }
+}
+
 (async () => {
-  if (!LOOP) { await rodada(); process.exit(0); }
+  if (!LOOP) { await rodadaComBatimento(); process.exit(0); }
   for (;;) { // regra do dono: loop nao para; erro = reinicia na proxima volta
-    try { await rodada(); } catch (e) { console.error('ERRO na rodada (segue):', String((e as Error)?.message ?? e).slice(0, 200)); }
+    await rodadaComBatimento();
     await pausa(CADA_MIN * 60_000);
   }
 })().catch((e) => { console.error('ERRO:', String((e as Error)?.message ?? e).slice(0, 300)); process.exit(1); });
