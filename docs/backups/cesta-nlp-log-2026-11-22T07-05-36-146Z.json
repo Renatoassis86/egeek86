@@ -1,0 +1,265 @@
+{
+ "quando": "2026-11-22T07:05:36.146Z",
+ "ofertas": [
+  {
+   "id": "dd8a72ed-660f-45c1-bbb2-f388833b694a",
+   "masterAntes": "02146b3d-7ec0-41b6-bc8c-eeb9ab8fbabe",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "26e7d4c0-87e5-4e53-8619-0194005449bb",
+   "masterAntes": "05f37d01-c190-4002-bd74-22ad15313992",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "ce0c8362-5c73-4214-9df3-3f43adf89029",
+   "masterAntes": "05f37d01-c190-4002-bd74-22ad15313992",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "81fa7352-41fd-4ffa-8024-87a6b996f21c",
+   "masterAntes": "07f41846-b4fd-474c-bf1d-3f0ddf8bb9f3",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "a574c299-736f-4bd1-bb92-6b6207e82562",
+   "masterAntes": "07f41846-b4fd-474c-bf1d-3f0ddf8bb9f3",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "277616ba-5036-4637-b409-3498f716f7e4",
+   "masterAntes": "0cdd48bd-c7c6-44c5-9b39-3baedf0f9750",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "a3292b9e-cf19-440a-9349-9d5876ca7b2e",
+   "masterAntes": "0d15dc75-53f5-4cc6-87c0-e2687e6abafa",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "34feb95e-0cf9-4303-a414-c03c622e8881",
+   "masterAntes": "18dde4bf-f7fe-474f-a833-7e3c6633598f",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "6bd16978-04b6-4416-8286-8c0e4c19c89d",
+   "masterAntes": "1b620e05-aee9-4281-8079-45c3f1ccb4bd",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "aa105e35-9850-471c-bdf8-5f25b9837b3b",
+   "masterAntes": "1bab0dd6-53e5-4df9-a79c-49e5c36747ef",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "88d34ee8-1000-49b3-b742-e105ea5ab322",
+   "masterAntes": "215e132c-a1e2-4199-91bc-ce0521255a56",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "a897e857-0cd8-43ed-a075-68de0679a531",
+   "masterAntes": "2e4a5bd1-27d7-42c6-bc62-dfa1d5eace45",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "d7ed4ff2-b0dd-4a27-b543-94b88070b960",
+   "masterAntes": "2f0ef643-27d4-42d2-9e4f-3b2a6e0d2b2b",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "2bc5c9f1-69b2-433c-8b36-b52d7dba919d",
+   "masterAntes": "34ca9079-e355-4c18-9d99-9940c2dc0188",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "579fa9cf-fd97-447f-8ce0-bc58adf7118d",
+   "masterAntes": "38524232-d95e-402c-9108-52c54e6a9cdc",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "a93114f4-dd69-4275-88d7-20b61257ddd9",
+   "masterAntes": "38524232-d95e-402c-9108-52c54e6a9cdc",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "f9f3fe01-eb9d-4152-a5da-cd3a88a46639",
+   "masterAntes": "394a13fd-138b-457b-930f-0b4fac181071",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "2c3df41b-23c0-4aa5-8f8e-67d716a54362",
+   "masterAntes": "39879f67-521b-4f86-9e3b-e648616ce02a",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "b85c5930-fa4d-49aa-bfbd-97326a43e69f",
+   "masterAntes": "3f28e2b8-a266-47ca-aefc-514d996762a6",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "df600a78-b0a0-4ac7-95be-ff183ff9161e",
+   "masterAntes": "3f28e2b8-a266-47ca-aefc-514d996762a6",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "f6fdfe6c-95be-4139-aa4d-b5b5e21d8088",
+   "masterAntes": "3f28e2b8-a266-47ca-aefc-514d996762a6",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "2d2dc50c-63b3-4b28-9ddc-8085aed8fd55",
+   "masterAntes": "3f7e6ece-6aa1-45b9-90dd-8beaa112c376",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "8befe8e6-8c9b-4fdf-8dfc-8ba0ef89641c",
+   "masterAntes": "3f7e6ece-6aa1-45b9-90dd-8beaa112c376",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "3a8d7f30-05fd-49c3-b39f-288ea831962f",
+   "masterAntes": "41b7a55e-da48-4cbb-b154-2c5ed854386f",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "d431e6c4-ed05-465e-8e96-301eb40af3cb",
+   "masterAntes": "4668ca49-d18e-42c8-93e5-1fb14a4b2db5",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "7e160f3e-f809-47e3-9a07-c3731a7b9405",
+   "masterAntes": "493ad575-ba5f-4ebf-99f0-cdc6e2d77972",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "df6b517f-870c-4810-a1d6-fbfdcb327b2e",
+   "masterAntes": "493ad575-ba5f-4ebf-99f0-cdc6e2d77972",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "87a88951-3578-44b2-b6d5-ec8ca62900d2",
+   "masterAntes": "51acaae7-80d9-4781-9c22-b415f4e203b7",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "c17eae0f-6c02-4db4-9ce4-0a22c9f83090",
+   "masterAntes": "597021e4-10eb-4813-8b8c-f52c885f1860",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "221bf487-55c9-4a29-8e67-cab1c288fd90",
+   "masterAntes": "5ad60b2e-b57a-42fc-8436-c0668c402738",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "58646cd7-1ccd-42fa-a5e4-1ccadc1ef88d",
+   "masterAntes": "5ea24cf6-5ba5-4e30-a18e-9836a9df12dc",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "058b8524-beb8-4b97-a539-5f1596d85eb5",
+   "masterAntes": "67462a10-0504-4187-9a3e-f9c0035356f3",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "3326d217-8afe-4517-9ddc-535956959279",
+   "masterAntes": "67462a10-0504-4187-9a3e-f9c0035356f3",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "f2375673-24ca-460d-a5ae-2284d612dcda",
+   "masterAntes": "6fc3b345-6766-4a4c-8c57-799eef502685",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "668db7b7-2af4-4de9-9fe1-01becc127120",
+   "masterAntes": "8328b6c2-c0fe-431b-89f7-10feb85f0f44",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "130910a5-0482-4c04-9278-46491b32609c",
+   "masterAntes": "9239011d-041f-4951-b909-d455f91d1fb2",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  },
+  {
+   "id": "3f4e30ac-4f82-486c-8d71-defbcc356404",
+   "masterAntes": "991a10f2-b955-48cc-9592-2794bde002da",
+   "masterDepois": null,
+   "quarentenaAntes": null,
+   "tipo": "quarentena"
+  }
+ ],
+ "juncoes": []
+}
