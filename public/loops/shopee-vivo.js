@@ -15,7 +15,7 @@
  */
 (function () {
   'use strict';
-  var VERSAO = 'shopee-vivo-1.0.0';
+  var VERSAO = 'shopee-vivo-1.0.1';
 
   // =====================================================================================================================
   // LÓGICA PURA (sem DOM, sem rede): testada em scripts/test-shopee-vivo.ts
@@ -249,8 +249,10 @@
   async function lerItem(item) {
     var f = novoFrame(item.url);
     try {
-      var t0 = Date.now(), ant = null, iguais = 0, docVisto = false, ultima = null;
-      while (Date.now() - t0 < 50000 && !parado) {
+      var t0 = Date.now(), ant = null, iguais = 0, docVisto = false, ultima = null, diag = null;
+      // aba em segundo plano: o Chrome estrangula o desenho da pagina; espera bem mais antes de desistir
+      var limite = document.visibilityState === 'hidden' ? 100000 : 55000;
+      while (Date.now() - t0 < limite && !parado) {
         await sleep(2500);
         var doc = docDe(f);
         if (!doc) continue;
@@ -258,6 +260,7 @@
         var loc = null; try { loc = f.contentWindow.location; } catch (e) { loc = null; }
         var a = PURO.analisarPagina({ pathname: loc ? loc.pathname : '', search: loc ? loc.search : '', texto: doc.body.innerText, itemIdEsperado: item.item_id });
         ultima = a;
+        diag = { caminho: loc ? (loc.pathname + loc.search).slice(0, 120) : null, tamanho: (doc.body.innerText || '').length, amostra: (doc.body.innerText || '').replace(/\s+/g, ' ').slice(0, 300), visivel: document.visibilityState };
         if (a.estado === 'verificacao' || a.estado === 'login') return { bloqueio: a.estado };
         if (a.estado === 'item_diferente') return { analise: a };
         if (a.estado === 'carregando') { ant = null; iguais = 0; continue; }
@@ -266,7 +269,7 @@
         if (iguais >= 1) return { analise: a };
       }
       if (!docVisto) return { falha: 'iframe_bloqueado' };
-      return { falha: 'nao_conclusiva', ultima: ultima && ultima.estado };
+      return { falha: 'nao_conclusiva', ultima: ultima && ultima.estado, motivo: ultima && ultima.motivo, diag: diag };
     } finally { fecharFrame(f); }
   }
 
@@ -323,7 +326,9 @@
         var e = res.analise.estado;
         if (e === 'esgotado') S.totais.esgotados++; else if (e === 'indisponivel') S.totais.indisponiveis++; else if (e === 'disponivel') { if (linhaRota) S.totais.disponiveis++; else S.totais.incoerentes++; }
         linha({ item: it.item_id, estado: e, preco: res.analise.precoCents, esperado: it.preco_esperado_cents, grava: !!linhaRota });
-      } else { S.totais.duvidosas++; inuteis++; linha({ item: it.item_id, falha: res.falha, ultima: res.ultima }); }
+      } else { S.totais.duvidosas++; inuteis++; linha({ item: it.item_id, falha: res.falha, ultima: res.ultima, motivo: res.motivo, diag: res.diag }); }
+      // SIMULACAO: registra TODA leitura (conclusiva ou nao), nao so as que gravariam, para conferir preco e estoque sem gravar nada
+      if (!CFG.enviar) { S.sim.push({ item: it.item_id, esperado: it.preco_esperado_cents, analise: res.analise || null, falha: res.falha || null, motivo: res.motivo || null, diag: res.diag || null, gravaria: linhaRota }); if (S.sim.length > 6) S.sim.shift(); linhaRota = null; }
       if (linhaRota && (await gravar(linhaRota)) === 'parar') return;
     }
     if (parado) return;
