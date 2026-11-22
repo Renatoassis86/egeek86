@@ -10,7 +10,7 @@ import type { JogoVitrine } from '@/lib/messaging/vitrine-games';
 const rows = <T>(r: unknown) => r as unknown as T[];
 
 /**
- * R-117: prepara a verificacao VIVA de uma lista de jogos da vitrine (um LiveTarget por oferta; uma leitura da tabela de verificacoes).
+ * R-118: prepara a verificacao VIVA de uma lista de jogos da vitrine (um LiveTarget por oferta; uma leitura da tabela de verificacoes).
  *  - Mercado Livre: API oficial (vencedores do catalogo = anuncio ativo, novo e COM ESTOQUE; some quando esgota) na hora do envio; grava a verificacao e o snapshot.
  *  - Shopee: a API de afiliados (productOfferV2) NAO traz estoque e devolve o preco de lista da API, que diverge da pagina (medido: 139,90 vs 119,62 num item esgotado na pagina);
  *    so vale a leitura da PAGINA do anuncio feita pela aba logada (`pagina_shopee`, rota /api/ingest/disponibilidade-viva) dentro da janela. Sem ela: nao verificavel.

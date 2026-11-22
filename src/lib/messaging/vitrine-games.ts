@@ -15,7 +15,7 @@ export const VITRINE_CAPTION_MAX = 1024;
 
 export interface JogoVitrine {
   masterId: string;
-  /** Oferta que define preco, link e imagem do cartao (R-117: e ela que e verificada ao vivo). */
+  /** Oferta que define preco, link e imagem do cartao (R-118: e ela que e verificada ao vivo). */
   ofertaId?: string;
   slug: string;
   titulo: string;

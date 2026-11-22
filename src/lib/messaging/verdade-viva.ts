@@ -1,4 +1,4 @@
-// R-117 (dono 2026-11-22): VERDADE VIVA. PURO (sem banco, sem rede). Nada e listado numa vitrine sem verificacao de PRECO e de DISPONIBILIDADE dentro de uma janela curta.
+// R-118 (dono 2026-11-22): VERDADE VIVA. PURO (sem banco, sem rede). Nada e listado numa vitrine sem verificacao de PRECO e de DISPONIBILIDADE dentro de uma janela curta.
 // Padrao negado: sem como verificar ao vivo = NAO LISTA e o proximo elegivel repoe. O preco exibido e o VIVO (preco de lista; cupom so com prova), nunca o do banco defasado.
 
 /** Janela maxima da leitura viva para a vitrine (dono: <= 15 min). Amazon segue a R-81 (45 min: a coleta assistida e a unica fonte). */

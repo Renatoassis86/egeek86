@@ -1,5 +1,5 @@
 /**
- * Aplica a migration 0075 (R-117: tabela oferta_verificacao_viva). ADITIVA e reversivel; tabela vazia nasce sem reescrever nada.
+ * Aplica a migration 0075 (R-118: tabela oferta_verificacao_viva). ADITIVA e reversivel; tabela vazia nasce sem reescrever nada.
  *   npx tsx --env-file=.env.local scripts/apply-verificacao-viva.ts                    # dry-run
  *   npx tsx --env-file=.env.local scripts/apply-verificacao-viva.ts --apply
  *   npx tsx --env-file=.env.local scripts/apply-verificacao-viva.ts --rollback --apply

@@ -147,7 +147,7 @@ async function rodarVitrinesPorPlataforma(a: { now: Date; dry: boolean; force: b
     pendentes.push(p);
   }
   if (!pendentes.length) return { acao: 'recente', candidatos: a.candidatos.length, ms: Date.now() - a.t0 };
-  // R-117, VERDADE VIVA: ate 30 candidatos por plataforma (do mais barato) passam pela verificacao de preco e disponibilidade; so os verificados entram (padrao negado), o proximo repoe.
+  // R-118, VERDADE VIVA: ate 30 candidatos por plataforma (do mais barato) passam pela verificacao de preco e disponibilidade; so os verificados entram (padrao negado), o proximo repoe.
   const vivoOn = vivoLigado();
   const ordenadosPor = new Map(pendentes.map((p) => [p.key, escolherMenores(a.candidatos, p.gens, vivoOn ? 30 : VITRINE_TOP)]));
   const verificar = vivoOn ? await prepararVerificacaoViva([...ordenadosPor.values()].flat(), VITRINE_TETO_CENTAVOS).catch((e) => { console.error('[vitrine-games] verificacao viva indisponivel:', String(e).slice(0, 120)); return null; }) : null;

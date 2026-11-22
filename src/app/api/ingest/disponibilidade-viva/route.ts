@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
 /**
- * R-117, VERDADE VIVA. A aba logada (Shopee/ML/Amazon) le a PAGINA do anuncio (preco de lista e disponibilidade) e manda aqui:
+ * R-118, VERDADE VIVA. A aba logada (Shopee/ML/Amazon) le a PAGINA do anuncio (preco de lista e disponibilidade) e manda aqui:
  *   { rows: [{ offer_id, disponivel: boolean, preco_cents?: number (obrigatorio se disponivel), motivo?: string }] }  (ate 20 linhas)
  * Grava a leitura viva (`oferta_verificacao_viva`, fonte `pagina_<rede>`); `disponivel:false` (esgotado/pausado) EXPIRA a oferta na mesma transacao (status 'expired',
  * motivo na verificacao): ela sai da vitrine, das mensagens e do site. Reversivel: a coleta reativa a oferta quando a API voltar a lista-la com preco. Origem por REDE (a aba so

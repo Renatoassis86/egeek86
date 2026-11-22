@@ -1,5 +1,5 @@
 /**
- * R-117: passada leve de verdade viva nos candidatos das 5 vitrines de games (30 mais baratos de cada plataforma, ja filtrados pelas 3 camadas de jogo novo).
+ * R-118: passada leve de verdade viva nos candidatos das 5 vitrines de games (30 mais baratos de cada plataforma, ja filtrados pelas 3 camadas de jogo novo).
  *   npx tsx --conditions=react-server --env-file=.env.local scripts/reconciliar-vivo-vitrines.ts
  * Para cada candidato: Mercado Livre = API oficial (ativo/estoque/preco; grava `oferta_verificacao_viva`); Shopee = so vale leitura de PAGINA recente (sem ela, nao verificavel);
  * Amazon = coleta (R-81). Imprime por plataforma e por rede: verificados, preco vivo diferente de mais de 2%, esgotados, nao verificaveis. Nao expira nada sozinho (a Shopee so expira pela rota

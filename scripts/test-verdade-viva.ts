@@ -1,4 +1,4 @@
-// R-117: verdade viva (preco + disponibilidade) na vitrine. Teste puro.
+// R-118: verdade viva (preco + disponibilidade) na vitrine. Teste puro.
 import assert from 'node:assert/strict';
 import { VIVO_JANELA_VITRINE_MIN, decidirVivo, escolherVerificados, validarLeituraPagina, vivoLigado, type DecisaoVivo, type LeituraViva } from '../src/lib/messaging/verdade-viva';
 
