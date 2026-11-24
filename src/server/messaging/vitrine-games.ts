@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { GAME_PLATFORM_GEN_LABELS } from '@/lib/affiliate/labels';
 import { buildGoLink } from '@/lib/messaging/group-messages';
 import { sendTelegramGroupMessage } from '@/lib/messaging/telegram-send';
-import { familiaDe, VITRINE_INTERVALO_MIN, VITRINE_PLATAFORMAS, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherMenores, escolherTopRodizio, janelaKey, montarJogosVitrine, montarLegenda, montarLegendaPlataforma, vitrineLigada, vitrinePorPlataformaLigada, type CamadaBarra, type FaixaFoto, type JogoVitrine, type OfertaVitrine } from '@/lib/messaging/vitrine-games';
+import { familiaDe, VITRINE_INTERVALO_MIN, VITRINE_PLATAFORMAS, VITRINE_TETO_CENTAVOS, VITRINE_TOP, escolherMenores, escolherTopRodizio, janelaKey, minimoJogosPlataforma, montarJogosVitrine, montarLegenda, montarLegendaPlataforma, vitrineLigada, vitrinePorPlataformaLigada, type CamadaBarra, type FaixaFoto, type JogoVitrine, type OfertaVitrine } from '@/lib/messaging/vitrine-games';
 import { FOTO_NAO_NOVA_VERSAO } from '@/lib/catalog/foto-nao-nova';
 import { escolherVerificados, vivoLigado } from '@/lib/messaging/verdade-viva';
 import { prepararVerificacaoViva } from '@/server/messaging/verdade-viva';
@@ -163,7 +163,8 @@ async function rodarVitrinesPorPlataforma(a: { now: Date; dry: boolean; force: b
         vivoPor[p.key] = { ...r.barrados, checados: r.checados, preco_vivo_diferente: r.escolhidos.filter((e) => e.decisao.usouVivo).length };
       }
     }
-    if (top.length < 1) return { p, top, legenda: "", capa: null as Buffer | null };
+    // Dono, 2026-11-23: menos de 10 jogos nao e admitido (so o Switch 2 sai com quantos houver; o cartao dele se ajusta a quantidade).
+    if (top.length < minimoJogosPlataforma(p.key)) return { p, top, legenda: "", capa: null as Buffer | null };
     const legenda = montarLegendaPlataforma(top, hora, p.rotulo, p.gens.length > 1, (i) => buildGoLink(top[i].slug, 'tg', `${key}-${p.key.replace(/_/g, '')}-${i + 1}`));
     const capa = await renderCapaVitrine(top, hora, await fotosDoTop(top), p.rotulo);
     return { p, top, legenda, capa };
@@ -171,7 +172,7 @@ async function rodarVitrinesPorPlataforma(a: { now: Date; dry: boolean; force: b
   const resumo: Array<Record<string, unknown>> = [];
   let enviados = 0;
   for (const m of montados) {
-    if (!m.capa) { resumo.push({ plataforma: m.p.key, acao: 'poucos_jogos', jogos: m.top.length }); continue; }
+    if (!m.capa) { resumo.push({ plataforma: m.p.key, acao: 'abaixo_do_minimo', jogos: m.top.length, minimo: minimoJogosPlataforma(m.p.key) }); continue; }
     if (a.dry) { resumo.push({ plataforma: m.p.key, acao: 'previa', jogos: m.top.length, barradas: a.barradasPorGen[m.p.key], vivo: vivoPor[m.p.key], precos: m.top.map((j) => j.precoCentavos), titulos: m.top.map((j) => j.titulo.slice(0, 40)), menor: m.top[0]?.precoCentavos, maior: m.top[m.top.length - 1]?.precoCentavos, legendaChars: m.legenda.length, capaBytes: m.capa.length }); continue; }
     const t1 = Date.now();
     const r = await sendTelegramGroupMessage({ token: a.token as string, chatId: a.chatId as string, text: m.legenda, photo: m.capa, silent: true });

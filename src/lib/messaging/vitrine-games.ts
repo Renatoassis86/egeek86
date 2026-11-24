@@ -4,6 +4,7 @@ import { classificar } from '@/lib/ranking-busca';
 import type { VerdictKind } from '@/lib/affiliate/price-verdict';
 import { condicaoNaoNova } from '@/lib/pricing/condicao-nao-nova';
 import { sinaisTexto } from '@/lib/catalog/foto-nao-nova';
+import { jogoSoMidia, naoEhJogoPorTexto } from '@/lib/catalog/jogo-novo-texto';
 
 export const VITRINE_TETO_CENTAVOS = 25_000;
 /** Texto do teto para legendas, capa e paginas (derivado da constante: trocar o teto muda tudo). */
@@ -186,6 +187,15 @@ export const VITRINE_PLATAFORMAS: readonly PlataformaVitrine[] = [
   { key: 'ps4', rotulo: 'PlayStation 4', gens: ['ps4'] },
 ];
 
+/**
+ * MINIMO DE JOGOS POR CARTAO (dono, 2026-11-23): a vitrine de uma plataforma so sai com os 10 menores precos; "menos de dez nao e admitido".
+ * Unica excecao: o Nintendo Switch 2, que tem poucos jogos novos ate o teto e sai com quantos houver (>= 1); o cartao dele se ajusta a quantidade.
+ */
+export const VITRINE_SEM_MINIMO: readonly PlataformaVitrine['key'][] = ['switch_2'];
+export function minimoJogosPlataforma(key: PlataformaVitrine['key']): number {
+  return VITRINE_SEM_MINIMO.includes(key) ? 1 : VITRINE_TOP;
+}
+
 export function vitrinePorPlataformaLigada(env: Record<string, string | undefined> = process.env): boolean {
   return !/^(0|off|false|nao|não)$/i.test((env.VITRINE_POR_PLATAFORMA ?? '').trim());
 }
@@ -199,6 +209,11 @@ export function escolherMenores(jogos: readonly JogoVitrine[], gens: readonly st
     .slice(0, n);
 }
 
+/** "O menor preço" / "Os 4 menores preços": concordância correta quando o Switch 2 sai com poucos jogos. */
+export function menoresTexto(n: number): string {
+  return n === 1 ? 'O menor preço' : `Os ${n} menores preços`;
+}
+
 /** Legenda HTML da vitrine de UMA plataforma (<= 1024 caracteres visíveis). A plataforma só aparece em cada linha quando o grupo mistura gerações (Xbox One / Series). */
 export function montarLegendaPlataforma(top: readonly JogoVitrine[], hora: string, rotulo: string, misto: boolean, link: (i: number) => string): string {
   const monta = (max: number) => {
@@ -208,7 +223,7 @@ export function montarLegendaPlataforma(top: readonly JogoVitrine[], hora: strin
       return `${i + 1}. <a href="${esc(link(i))}">${esc(tituloCurto(j.titulo, max))}</a>${plat} · <b>${reais(j.precoCentavos)}</b>
     ${esc(d.texto)}`;
     });
-    return [`<b>🎮 Jogos até ${VITRINE_TETO_TEXTO} · ${esc(rotulo)} · ${esc(hora)}</b>`, `Os ${top.length} menores preços`, '', ...linhas, '', 'Atualizada a cada 30 min. O diagnóstico só aparece com histórico suficiente.'].join('\n');
+    return [`<b>🎮 Jogos até ${VITRINE_TETO_TEXTO} · ${esc(rotulo)} · ${esc(hora)}</b>`, menoresTexto(top.length), '', ...linhas, '', 'Atualizada a cada 30 min. O diagnóstico só aparece com histórico suficiente.'].join('\n');
   };
   let out = monta(34);
   for (const max of [30, 26, 22, 18]) {
@@ -269,6 +284,10 @@ export function condicaoSuspeita(tituloOferta: string, masterNome = '', vendedor
   const t = semAcento(`${tituloOferta} ${masterNome}`);
   const v = semAcento(vendedor ?? '');
   if (condicaoNaoNova(tituloOferta)) return 'open_box_vitrine';
+  const soMidia = jogoSoMidia(tituloOferta); // R-119: apenas cartucho / sem caixa / midia solta = nao novo
+  if (soMidia) return `so_midia:${soMidia}`;
+  const naoJogo = naoEhJogoPorTexto(tituloOferta); // R-119: so JOGO entra (acessorio, pacote, cartao presente, assinatura, console, DLC, codigo)
+  if (naoJogo) return `nao_jogo:${naoJogo}`;
   const sx = sinaisTexto(tituloOferta, vendedor ?? '');
   if (sx.usado) return 'usado';
   if (sx.lote) return 'lote';

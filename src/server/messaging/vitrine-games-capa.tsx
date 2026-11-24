@@ -2,7 +2,7 @@ import 'server-only';
 import { ImageResponse } from 'next/og';
 import { STORE_PROFILES, loadLogo } from '@/server/messaging/store-profile-card';
 import { loadFontsV2 } from '@/server/messaging/card-v2';
-import { diagnosticoCurto, reais, tituloCurto, type JogoVitrine } from '@/lib/messaging/vitrine-games';
+import { diagnosticoCurto, menoresTexto, reais, tituloCurto, type JogoVitrine } from '@/lib/messaging/vitrine-games';
 
 /**
  * CAPA da vitrine "Jogos até R$ 250" (dono, 2026-11-17): 1080x1350 (4:5), identidade do canal de games (roxo profundo, destaque violeta, cantos quadrados),
@@ -11,6 +11,16 @@ import { diagnosticoCurto, reais, tituloCurto, type JogoVitrine } from '@/lib/me
  */
 export const CAPA_W = 1080;
 export const CAPA_H = 1350;
+// Dono, 2026-11-23: o cartao se ajusta a quantidade de jogos (Switch 2 sai com poucos). 10 jogos (5 linhas) = layout de sempre, 1350 de altura;
+// com menos linhas a altura encolhe (cabecalho + linhas + rodape) e nao sobra um vazio no meio do cartao.
+const CARD_H = 186;
+const GAP_LINHAS = 12;
+const CABECALHO_E_RODAPE = 463;
+export function alturaCapa(n: number): number {
+  const linhas = Math.max(1, Math.ceil(n / 2));
+  if (linhas >= 5) return CAPA_H;
+  return CABECALHO_E_RODAPE + linhas * CARD_H + (linhas - 1) * GAP_LINHAS;
+}
 const G = STORE_PROFILES.games;
 const OURO = '#D4AF37';
 const TEXTO = '#F4EFFF';
@@ -19,11 +29,13 @@ const SEC = '#B9AEDB';
 export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: string, fotos: ReadonlyArray<string | null>, rotulo?: string): Promise<Buffer> {
   const logo = await loadLogo();
   const fonts = await loadFontsV2();
+  const altura = alturaCapa(top.length);
+  const compacta = altura < CAPA_H;
   const linhas: JogoVitrine[][] = [];
   for (let i = 0; i < top.length; i += 2) linhas.push(top.slice(i, i + 2));
   const res = new ImageResponse(
     (
-      <div style={{ width: CAPA_W, height: CAPA_H, display: 'flex', flexDirection: 'column', background: `linear-gradient(160deg, #1D1338 0%, ${G.bg} 55%, #0B0714 100%)`, color: TEXTO, fontFamily: 'Inter, sans-serif', padding: 44 }}>
+      <div style={{ width: CAPA_W, height: altura, display: 'flex', flexDirection: 'column', background: `linear-gradient(160deg, #1D1338 0%, ${G.bg} 55%, #0B0714 100%)`, color: TEXTO, fontFamily: 'Inter, sans-serif', padding: 44 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           {logo ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -35,10 +47,10 @@ export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: strin
         </div>
         <div style={{ display: 'flex', width: 120, height: 8, background: G.accent, marginTop: 26 }} />
         <div style={{ display: 'flex', fontSize: 84, fontWeight: 800, lineHeight: 1, letterSpacing: -2, marginTop: 18, height: 112, alignItems: 'flex-start' }}>Jogos até R$ 250</div>
-        <div style={{ display: 'flex', fontSize: 28, color: SEC, marginTop: 4, fontWeight: 600 }}>{rotulo ? `${rotulo} · ${top.length} menores preços` : `Top ${top.length} do catálogo`} · conferido às {hora}</div>
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 32, flexGrow: 1, justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', fontSize: 28, color: SEC, marginTop: 4, fontWeight: 600 }}>{rotulo ? `${rotulo} · ${menoresTexto(top.length).toLowerCase()}` : `Top ${top.length} do catálogo`} · conferido às {hora}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', marginTop: 32, ...(compacta ? { gap: GAP_LINHAS } : { flexGrow: 1, justifyContent: 'space-between' }) }}>
           {linhas.map((par, li) => (
-            <div key={li} style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div key={li} style={{ display: 'flex', justifyContent: top.length === 1 ? 'center' : 'space-between' }}>
               {par.map((j, ci) => {
                 const idx = li * 2 + ci;
                 const d = diagnosticoCurto(j);
@@ -74,7 +86,7 @@ export async function renderCapaVitrine(top: readonly JogoVitrine[], hora: strin
         </div>
       </div>
     ),
-    { width: CAPA_W, height: CAPA_H, ...(fonts ? { fonts } : {}) },
+    { width: CAPA_W, height: altura, ...(fonts ? { fonts } : {}) },
   );
   return Buffer.from(await res.arrayBuffer());
 }
