@@ -17,7 +17,6 @@ import { normalizarTitulo, ROTULO_OUTROS } from '@/lib/catalog/tipos-produto';
 import {
   TG,
   WA,
-  blackFridayIndicator,
   buildGoLink,
   compraLines,
   dayToDate,
@@ -36,7 +35,6 @@ import {
   stampLine,
   topic,
   withTag,
-  MIN_AVG_OFFERS_CLAIM,
   GROUP_LINK_BASE,
   type Fmt,
   type GroupChannel,
@@ -236,6 +234,15 @@ export function linhaMenorPreco(f: Fmt, m: MenorPrecoRegistrado): string {
   return topic(f, 'Menor preço registrado', `${quando} · agora +${pct1(m.acimaPct ?? 0)}%`);
 }
 
+/** "Nome do jogo (Console)": só o nome do console entre parênteses; não duplica se o título já termina com ele. */
+export function tituloGames(titulo: string, plataforma: string | null | undefined): string {
+  const p = (plataforma ?? '').trim();
+  if (!p) return titulo;
+  const fim = titulo.toLowerCase().replace(/\s+/g, ' ');
+  if (fim.endsWith(`(${p.toLowerCase()})`)) return titulo;
+  return `${titulo} (${p})`;
+}
+
 function montar(i: MensagemV4Input, canal: GroupChannel, sem: ReadonlySet<Opcional>): string | null {
   const f: Fmt = canal === 'tg' ? TG : WA;
   const italic = (s: string) => (canal === 'tg' ? `<i>${escapeTelegramHtml(s)}</i>` : `_${escapeWhatsapp(s)}_`);
@@ -256,7 +263,8 @@ function montar(i: MensagemV4Input, canal: GroupChannel, sem: ReadonlySet<Opcion
   const segB = [i.marca ? `Marca: ${i.marca}` : null, i.plataforma ? `Plataforma: ${i.plataforma}` : null, rotuloFormato(i.formato) ? `Formato: ${rotuloFormato(i.formato)}` : null, 'Condição: Novo']
     .filter(Boolean)
     .join(' · ');
-  const blocoTitulo = [f.b(titulo), f.t(segA), f.t(segB)].join('\n');
+  // R-122 (dono, 2026-11-24): em games o início é só "Nome do jogo (Console)"; sem linhas de categoria/tipo/formato/condição.
+  const blocoTitulo = i.vertical === 'games' ? f.b(tituloGames(titulo, i.plataforma)) : [f.b(titulo), f.t(segA), f.t(segB)].join('\n');
 
   // 3) Preço, loja e métricas de compra (R-107)
   const storeLabel = o.storeName ? o.storeName.replace(/https?:\/\/\S+/gi, ' ').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40) : '';
@@ -293,11 +301,7 @@ function montar(i: MensagemV4Input, canal: GroupChannel, sem: ReadonlySet<Opcion
     if (v) bullets.push(topic(f, 'Vendedor', v));
   }
   if (!sem.has('selos')) for (const t of seloLines(o, f)) bullets.push(t);
-  if (!sem.has('bf') && i.estado !== 'novo') {
-    const avgOk = !amz && i.avg && i.avg.offers >= MIN_AVG_OFFERS_CLAIM ? i.avg.cents : null;
-    const bf = blackFridayIndicator(o.confirmedAt, i.move?.sinceDay ?? i.sinceDay ?? null, { price, avgCents: avgOk, firstCents: i.ind?.firstCents ?? null, firstDay: i.ind?.firstDay ?? null });
-    if (bf) bullets.push(topic(f, 'Black Friday', bf));
-  }
+  // R-122: a linha "Black Friday" saiu das mensagens (dono, 2026-11-24).
 
   // 5) Link de compra: URL em texto puro, linha própria
   const link = linkDeCompraDoTexto(o, canal, i.messageKey);

@@ -138,8 +138,8 @@ ok(/mediana de 14 dias deste anúncio/.test(textoComparacaoMedia(90000, { cents:
   const t = comporMensagemV4(entrada('monitoramento', REDES[0].offer, false, { avg: null }), 'tg') as string;
   ok(!/m[ée]dia/i.test(t) && !/Vs\./.test(t), 'em monitoramento sem média OMITE a linha por completo (nada sobre média; dono 2026-11-22)', t);
   ok(/Comprar/.test(t) && /Situação|Vendedor|R\$/.test(t), 'sem média: mantém preço, link no corpo e demais campos', t);
-  const ac = comporMensagemV4(entrada('monitoramento', REDES[0].offer, false, { avg: null, diagnostico: 'em linha com a mediana dos últimos 10 dias de coleta deste produto' }), 'tg') as string;
-  ok(/Vs\. histórico do produto:<\/b> em linha com a mediana dos últimos 10 dias/.test(ac), 'achado com histórico próprio compara com ele', ac);
+  const ac = comporMensagemV4(entrada('monitoramento', REDES[0].offer, false, { avg: null, diagnostico: 'em linha com o preço habitual de R$ 200,00 (mediana de 10 dias de coleta)' }), 'tg') as string;
+  ok(/Vs\. histórico do produto:<\/b> em linha com o preço habitual/.test(ac), 'achado com histórico próprio compara com ele', ac);
 }
 
 // ---------------------------------------------------------------------------
@@ -173,8 +173,8 @@ ok(linkDeCompraDoTexto({ ...mlBase, slug: 'tem espaco', affiliateUrl: null }, 't
 // ---------------------------------------------------------------------------
 {
   const t = comporMensagemV4(entrada('novo', REDES[1].offer, false, { vertical: 'games', titulo: 'Pac-Man World Re-Pac', tipoLabel: 'Jogo', marca: null, plataforma: 'Switch', formato: 'physical' }), 'tg') as string;
-  ok(/Categoria: Games · Tipo: Jogo/.test(t) && /Plataforma: Switch · Formato: Mídia física · Condição: Novo/.test(t), 'games: categoria, tipo, plataforma, formato e condição', t);
-  ok(!/Marca:/.test(t), 'games sem linha de marca');
+  ok(/<b>Pac-Man World Re-Pac \(Switch\)<\/b>/.test(t), 'games: início = "Nome do jogo (Console)"', t);
+  ok(!/Categoria:|Tipo:|Plataforma:|Formato:|Condição:|Marca:|Black Friday/.test(t), 'games: sem linhas de segmentação nem Black Friday', t);
 }
 ok(marcaParaExibicao('tecnologia', 'Mouse Gamer Logitech G203') === 'Logitech', 'marca do dicionário');
 ok(marcaParaExibicao('tecnologia', 'Notebook HP 15 Core i5') === 'HP', 'marca curta em maiúsculas');

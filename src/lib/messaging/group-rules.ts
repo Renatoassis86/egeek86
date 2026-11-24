@@ -576,10 +576,11 @@ export function diagnosticoAchado(priceCents: number, ownDayMinsCents: number[],
   const mid = s.length >> 1;
   const med = s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
   const pct = ((priceCents - med) / med) * 100;
-  const base = `mediana dos últimos ${dias.length} dias de coleta deste produto`;
-  if (pct <= -3) return `${Math.round(-pct)}% abaixo da ${base}`;
-  if (pct >= 3) return `${Math.round(pct)}% acima da ${base}`;
-  return `em linha com a ${base}`;
+  // R-122: frase clara, com o preço habitual (mediana) e a base medida.
+  const base = `preço habitual de ${fmtBRL(Math.round(med))} (mediana de ${dias.length} dias de coleta)`;
+  if (pct <= -3) return `${Math.round(-pct)}% abaixo do ${base}`;
+  if (pct >= 3) return `${Math.round(pct)}% acima do ${base}`;
+  return `em linha com o ${base}`;
 }
 
 /** R-72: "Novo no monitoramento" só para oferta que entrou há no máximo ACHADO_NOVO_MAX_HORAS (sem data = não afirma). */

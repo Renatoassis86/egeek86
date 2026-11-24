@@ -9,19 +9,19 @@ import { textProblems } from '../src/lib/messaging/group-messages';
 // diagnóstico puro
 assert.equal(diagnosticoAchado(19900, [20000, 20000]), null, 'menos de 3 dias = sem base');
 assert.equal(diagnosticoAchado(0, [1, 2, 3, 4]), null);
-assert.match(diagnosticoAchado(18000, [20000, 20000, 20000])!, /^10% abaixo da mediana dos últimos 3 dias/);
-assert.match(diagnosticoAchado(22000, [20000, 20000, 20000, 20000])!, /^10% acima da mediana/);
-assert.match(diagnosticoAchado(20100, [20000, 20000, 20000])!, /^em linha com a mediana/);
+assert.match(diagnosticoAchado(18000, [20000, 20000, 20000])!, /^10% abaixo do preço habitual de R\$\s200,00 \(mediana de 3 dias/);
+assert.match(diagnosticoAchado(22000, [20000, 20000, 20000, 20000])!, /^10% acima do preço habitual/);
+assert.match(diagnosticoAchado(20100, [20000, 20000, 20000])!, /^em linha com o preço habitual/);
 
 const base = { model: 'achado', name: 'Panela X', offer: { slug: 'panela-x', networkSlug: 'mercado-livre', networkName: 'Mercado Livre', priceCents: 19900, confirmedAt: new Date() }, offersCount: 8, isLowest: true, vertical: 'eletrodomesticos', messageKey: 'ac-261117-abc123', adTag: '#publicidade' };
 const sem = formatAchadoMessage({ ...base, novo: true } as never, 'tg');
 assert.match(sem, /Novo no monitoramento/);
 assert.match(sem, /estamos monitorando o preço deste produto/, 'sem base: diz que está sendo monitorado');
 assert.doesNotMatch(sem, /%/, 'sem base: nenhuma comparação inventada');
-const com = formatAchadoMessage({ ...base, novo: false, diagnostico: '10% abaixo da mediana dos últimos 5 dias de coleta deste produto' } as never, 'tg');
+const com = formatAchadoMessage({ ...base, novo: false, diagnostico: '10% abaixo do preço habitual de R$ 200,00 (mediana de 5 dias de coleta)' } as never, 'tg');
 assert.match(com, /Em monitoramento/);
 assert.match(com, /Diagnóstico/);
-assert.match(com, /10% abaixo da mediana/);
+assert.match(com, /10% abaixo do preço habitual/);
 assert.doesNotMatch(com, /estamos monitorando o preço/);
 assert.deepEqual(textProblems(sem, 'tg'), [], 'sem termo banido (sem base)');
 
