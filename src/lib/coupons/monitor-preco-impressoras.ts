@@ -4,6 +4,8 @@ import { escapeTelegramHtml, GROUP_LINK_BASE } from '@/lib/messaging/group-messa
 import { MODELOS_GUIA_3D } from '@/lib/messaging/prioridade-3d';
 
 export function monitorPrecoLigado(env: Record<string, string | undefined> = process.env): boolean {
+  // 2026-11-25: impressoras fora do privado do dono (só volta com PRIVADO_IMPRESSORAS=on).
+  if ((env.PRIVADO_IMPRESSORAS ?? '').toLowerCase() !== 'on') return false;
   return (env.PRINTER_PRICE_ALERT ?? '').toLowerCase() !== 'off';
 }
 

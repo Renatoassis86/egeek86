@@ -44,7 +44,7 @@ ok(ordem.join(',') === 'p2s-combo,p1s-combo,a1-combo,a1-mini-combo,p2s,p1s,a1,a1
 ok(modeloGuia3d('Impressora 3D Bambu Lab P2S Combo AMS')?.slug === 'p2s-combo' && modeloGuia3d('Impressora 3D Bambu Lab P2S')?.slug === 'p2s', 'combo nunca se mistura com avulsa');
 
 // Flag.
-ok(monitorPrecoLigado({}) && !monitorPrecoLigado({ PRINTER_PRICE_ALERT: 'off' }), 'flag padrão ligada, off desliga');
+ok(!monitorPrecoLigado({}) && monitorPrecoLigado({ PRIVADO_IMPRESSORAS: 'on' }) && !monitorPrecoLigado({ PRIVADO_IMPRESSORAS: 'on', PRINTER_PRICE_ALERT: 'off' }), 'padrão desligada (2026-11-25, impressoras fora do privado); PRIVADO_IMPRESSORAS=on liga, off desliga');
 
 async function db() {
   // Sem variáveis de envio: dry-run garantido (não envia, não grava).

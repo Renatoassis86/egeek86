@@ -392,6 +392,8 @@ async function rodarAlvo(alvo: Alvo, L: ListaCongelada, now: Date, deadline: num
  * Gera a lista a cada 10 min (uma por ciclo, compartilhada pelos destinos) e a entrega com cursor.
  */
 export async function atualizarPaineisImpressoras(now: Date = new Date(), opts: { budgetMs?: number; force?: boolean; alvos?: Alvo[] } = {}): Promise<ResultadoPaineis> {
+  // 2026-11-25: impressoras fora do privado do dono (só volta com PRIVADO_IMPRESSORAS=on).
+  if ((process.env.PRIVADO_IMPRESSORAS ?? '').toLowerCase() !== 'on') return { ligado: false, alvos: [] };
   const alvos = opts.alvos ?? alvosLigados();
   if (!alvos.length) return { ligado: false, alvos: [] };
   const deadline = Date.now() + (opts.budgetMs ?? 25_000);

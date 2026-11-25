@@ -27,6 +27,7 @@ import { resumoSaude, saudeAgulha } from '@/server/coupons/agulha-health';
 import { vigiaRedesCupons } from '@/server/coupons/heartbeat-store';
 import { alertarCuponsImpressoras } from '@/server/coupons/aviso-impressoras';
 import { monitorarPrecoImpressoras } from '@/server/coupons/monitor-preco-impressoras';
+import { espelharNoPrivado } from '@/server/messaging/privado-dono';
 
 /**
  * GUARDIÃO DE CUPONS (Agente de Cupons). A cada ~5 min (passo do cron group-messages): para cada cupom que JÁ DIVULGAMOS confere se
@@ -334,6 +335,8 @@ export async function cicloAgenteCupons(opts: { budgetMs?: number; force?: boole
     const avisoImp = await alertarCuponsImpressoras(started).catch(() => null);
     // Monitor de preco das impressoras 3D (#114; PRINTER_PRICE_ALERT): aviso PRIVADO de queda; consulta unica com limite de 8 s; nunca derruba o ciclo.
     const avisoPreco = await monitorarPrecoImpressoras(started).catch(() => null);
+    // Privado do dono (2026-11-25): só filamentos, jogos de Switch e consoles bem abaixo da média, espelhando o que já foi ao canal.
+    await espelharNoPrivado(started).catch(() => null);
     const rel = await relatorioCupons(started);
     // Cobertura na agulha: histórico a cada ~30 min (consulta mais pesada que o resto do ciclo).
     const saude = started.getUTCMinutes() % 30 < 5 ? await saudeAgulha().then(resumoSaude).catch(() => ({})) : {};

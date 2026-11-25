@@ -14,7 +14,7 @@ const t = textoAvisoImpressora({ tipo: 'cartao', chave: 'x', modelo: 'Bambu Lab 
 ok(/Desconto no cartão novo: Bambu Lab P2S Combo/.test(t) && /a confirmar no carrinho/.test(t) && /Validade: não informada/.test(t) && /Link: https:/.test(t), 'texto do aviso', t);
 ok(!/comiss/i.test(t), 'sem aviso de comissão');
 ok(!/<script/i.test(textoAvisoImpressora({ tipo: 'cupom', chave: 'y', modelo: '<script>', rede: 'ML', titulo: 'a', regra: 'b', validade: 'c', link: null, anuncioCents: 100, finalCents: null, confirmar: false })), 'escapa HTML');
-ok(avisoImpressoraLigado({}) && !avisoImpressoraLigado({ PRINTER_COUPON_ALERT: 'off' }), 'flag padrão ligada, off desliga');
+ok(!avisoImpressoraLigado({}) && avisoImpressoraLigado({ PRIVADO_IMPRESSORAS: 'on' }) && !avisoImpressoraLigado({ PRIVADO_IMPRESSORAS: 'on', PRINTER_COUPON_ALERT: 'off' }), 'padrão desligada (2026-11-25, impressoras fora do privado); PRIVADO_IMPRESSORAS=on liga, off desliga');
 ok(linhasAviso(null).length === 0 && linhasAviso({ cupom: null, cartoes: [] }).length === 0, 'sem aviso: nada na tela');
 ok(linhasAviso({ cupom: 'Cupom: X', cartoes: ['Desconto no cartão: Y'] }).join('|') === 'Cupom: X|Desconto no cartão: Y', 'ordem cupom e cartão');
 ok(textProblems('Desconto no cartão: Itaú Mastercard 15% (a confirmar no carrinho)', 'tg').filter((p) => /termo proibido/.test(p)).length === 0, 'copy sem termo proibido');

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import { motivoPrivado } from '../src/server/messaging/privado-dono';
+const b = { preco: 80000, media: 100000, plataforma: null as string | null, tipoProduto: null as string | null };
+assert.equal(motivoPrivado({ ...b, vertical: 'impressao3d', nome: 'Filamento PLA 1kg Voolt3D' }), 'filamento');
+assert.equal(motivoPrivado({ ...b, vertical: 'impressao3d', nome: 'Impressora 3D Bambu Lab A1 Combo' }), null, 'impressora fora');
+assert.equal(motivoPrivado({ ...b, vertical: 'games', nome: 'Zelda', tipoProduto: 'game', plataforma: 'switch_1' }), 'jogo_switch');
+assert.equal(motivoPrivado({ ...b, vertical: 'games', nome: 'Zelda', tipoProduto: 'game', plataforma: 'ps5' }), null, 'jogo de outra plataforma fora');
+assert.equal(motivoPrivado({ ...b, vertical: 'games', nome: 'Switch OLED', tipoProduto: 'console', plataforma: 'switch_1' }), 'console');
+assert.equal(motivoPrivado({ ...b, preco: 95000, vertical: 'games', nome: 'Switch OLED', tipoProduto: 'console' }), null, 'abaixo de 15% não vale');
+assert.equal(motivoPrivado({ ...b, vertical: 'esporte', nome: 'Tênis' }), null);
+console.log('test-privado-dono: OK');

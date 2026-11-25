@@ -3,6 +3,8 @@
 import { escapeTelegramHtml } from '@/lib/messaging/group-messages';
 
 export function avisoImpressoraLigado(env: Record<string, string | undefined> = process.env): boolean {
+  // 2026-11-25: impressoras fora do privado do dono (só volta com PRIVADO_IMPRESSORAS=on).
+  if ((env.PRIVADO_IMPRESSORAS ?? '').toLowerCase() !== 'on') return false;
   return (env.PRINTER_COUPON_ALERT ?? '').toLowerCase() !== 'off';
 }
 
