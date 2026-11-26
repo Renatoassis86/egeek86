@@ -20,6 +20,7 @@ import {
 import { eligibleOfferSql } from '@/server/pricing/eligibility-sql';
 import { snapshotNaoIscaSql } from '@/server/pricing/preco-isca-sql';
 import { avgExcludedFlagSql } from '@/server/queries/public-offers';
+import { frescorMercadoLivre } from '@/lib/pricing/ml-frescor';
 import { AMAZON_FRESH_MAX_AGE_MS, amazonScope, getAmazonMode, isAmazonSlug, type AmazonMode, type AmazonScope } from '@/lib/pricing/amazon-mode';
 import { amazonScopeSql } from '@/server/pricing/amazon-scope-sql';
 import type { AmazonShadowDiff } from '@/lib/pricing/amazon-shadow';
@@ -112,7 +113,7 @@ export async function loadOffers(exec: Exec, productIds: string[], fromDay: stri
         active: r.active === true && !(amazon && Number(r.miss_count ?? 0) > 0),
         isAmazon: amazon,
         avgExcluded: r.avg_excluded === true,
-        freshness: amazon && r.last_price_confirmed_at ? { confirmedAt: iso(r.last_price_confirmed_at), maxAgeMs: AMAZON_FRESH_MAX_AGE_MS } : null,
+        freshness: amazon && r.last_price_confirmed_at ? { confirmedAt: iso(r.last_price_confirmed_at), maxAgeMs: AMAZON_FRESH_MAX_AGE_MS } : (amazon ? null : frescorMercadoLivre(String(r.net_slug), r.last_price_confirmed_at ? iso(r.last_price_confirmed_at) : null)),
         rows: [],
       };
       byOffer.set(oid, o);
@@ -356,7 +357,7 @@ export async function loadReconOffers(exec: Exec, productIds: string[], fromAtIs
         networkId: (r.network_id as string | null) ?? null,
         sellerId: (r.seller_id as string | null) ?? null,
         active: r.active === true,
-        freshness: isAmazonSlug(String(r.net_slug)) && r.last_price_confirmed_at ? { confirmedAt: iso(r.last_price_confirmed_at), maxAgeMs: AMAZON_FRESH_MAX_AGE_MS } : null,
+        freshness: isAmazonSlug(String(r.net_slug)) && r.last_price_confirmed_at ? { confirmedAt: iso(r.last_price_confirmed_at), maxAgeMs: AMAZON_FRESH_MAX_AGE_MS } : (isAmazonSlug(String(r.net_slug)) ? null : frescorMercadoLivre(String(r.net_slug), r.last_price_confirmed_at ? iso(r.last_price_confirmed_at) : null)),
         snaps: [],
       };
       by.set(oid, o);
